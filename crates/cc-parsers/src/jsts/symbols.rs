@@ -361,6 +361,7 @@ impl JsTsParser {
         );
         let uid = StableId::symbol_uid(file_path, qname, kind.as_str(), signature);
         SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id: sid,
             file_path: file_path.to_string(),
             name: name.to_string(),

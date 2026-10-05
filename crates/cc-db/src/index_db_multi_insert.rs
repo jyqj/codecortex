@@ -514,11 +514,11 @@ impl IndexDb {
         or_replace: bool,
     ) -> CcResult<()> {
         let head = if or_replace {
-            "INSERT OR REPLACE INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES"
+            "INSERT OR REPLACE INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements,cpp_qualified_owner) VALUES"
         } else {
-            "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES"
+            "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements,cpp_qualified_owner) VALUES"
         };
-        multi_insert(conn, head, 25, rows, |stmt, base, s| {
+        multi_insert(conn, head, 26, rows, |stmt, base, s| {
             bind_row!(
                 stmt,
                 base,
@@ -548,6 +548,7 @@ impl IndexDb {
                     s.param_count,
                     &s.base_types,
                     &s.implements,
+                    s.cpp_qualified_owner.as_str(),
                 ]
             );
             Ok(())

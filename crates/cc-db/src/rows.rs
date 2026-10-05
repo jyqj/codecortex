@@ -11,9 +11,10 @@ use crate::index_db::{CallEdgeLite, HttpCallEdgeLite, RouteEdgeLite, SymbolLiteR
 
 /// Map a row selected as:
 /// `symbol_id, symbol_uid, name, kind, file_path, container, start_line,
-///  end_line, qname, signature` (from `symbols`).
+///  end_line, qname, signature, cpp_qualified_owner` (from `symbols`).
 pub(crate) fn symbol_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<SymbolRow> {
     Ok(SymbolRow {
+        cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(row, 10)?,
         symbol_id: row.get(0)?,
         symbol_uid: row.get(1)?,
         name: row.get(2)?,

@@ -11,6 +11,9 @@ pub const RESOLUTION_VERSION: u32 = 3;
 /// Syntax proves a binding exists but its target is not statically supported.
 /// Do not replace it with a coincidental global name or type-catalog fallback.
 pub const PARSER_UNSUPPORTED_BINDING: &str = "parser_unsupported_binding";
+/// B1 declaration ownership does not establish call-site binding. Keep this
+/// C++ negative evidence terminal through generic resolution and dirty reload.
+pub const CPP_QUALIFIED_OWNER_UNPROVEN_BINDING: &str = "cpp_qualified_owner_unproven";
 /// A C++ namespace-function target lacks declaration-owner proof. Name-only
 /// resolution and type backfill must not turn this negative evidence into a UID.
 pub const CPP_NAMESPACE_UNPROVEN_BINDING: &str = "cpp_namespace_owner_unproven";
@@ -338,6 +341,11 @@ impl ResolutionManifest {
 /// function bodies or duplicating different DB/in-memory fingerprint formulas.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct ResolutionSymbol {
+    #[serde(
+        default,
+        skip_serializing_if = "crate::cpp_owner::CppQualifiedOwnerState::is_non_b1"
+    )]
+    pub cpp_qualified_owner: crate::cpp_owner::CppQualifiedOwnerState,
     pub name: String,
     pub qname: Option<String>,
     pub symbol_id: String,
@@ -354,6 +362,7 @@ pub struct ResolutionSymbol {
 impl From<&crate::SymbolRecord> for ResolutionSymbol {
     fn from(s: &crate::SymbolRecord) -> Self {
         Self {
+            cpp_qualified_owner: s.cpp_qualified_owner,
             name: s.name.clone(),
             qname: s.qname.clone(),
             symbol_id: s.symbol_id.clone(),

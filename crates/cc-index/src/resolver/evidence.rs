@@ -62,6 +62,11 @@ impl SymbolCatalog {
     ) -> Option<ResolutionOutcome> {
         let index = uid.and_then(|u| self.find_by_uid(u))?;
         let e = &self.entries[index];
+        if e.cpp_qualified_owner.is_b1() {
+            return Some(ResolutionOutcome::Unresolved {
+                reason: CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into(),
+            });
+        }
         if file.is_some_and(|f| f != e.file_path) || id.is_some_and(|i| i != e.symbol_id) {
             return None;
         }

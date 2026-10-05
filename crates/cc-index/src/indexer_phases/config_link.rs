@@ -47,10 +47,18 @@ impl Indexer {
         raw_tokens: &[RawConfigToken],
     ) -> CcResult<Vec<FileWriteUnit>> {
         let mut known_symbols = HashSet::new();
+        let mut b1_qnames = HashSet::new();
+        let mut b1_names = HashSet::new();
         let mut qname_lookup: HashMap<String, (String, Option<String>, String)> = HashMap::new();
         let mut basename_lookup: HashMap<String, Vec<(String, Option<String>, String)>> =
             HashMap::new();
         for sym in symbol_targets {
+            if sym.cpp_qualified_owner.is_b1() {
+                b1_names.insert(sym.name.clone());
+                if let Some(qname) = &sym.qname {
+                    b1_qnames.insert(qname.clone());
+                }
+            }
             if let Some(qname) = sym.qname.clone() {
                 known_symbols.insert(qname.clone());
                 qname_lookup.insert(
@@ -113,36 +121,106 @@ impl Indexer {
                     resolution_kind,
                     resolution_confidence,
                     resolution_strategy,
-                ) = match link.link_kind {
+                ) = if match link.link_kind {
                     ConfigLinkKind::ModulePath => {
-                        if let Some((sid, suid, fpath)) = qname_lookup.get(&link.referenced_value) {
-                            (
-                                Some(sid.clone()),
-                                suid.clone(),
-                                Some(fpath.clone()),
-                                ResolutionKind::Exact,
-                                link.confidence,
-                                "config_module_exact".to_string(),
-                            )
-                        } else {
-                            let tail = link
-                                .referenced_value
-                                .rsplit('.')
-                                .next()
-                                .unwrap_or(&link.referenced_value);
-                            match basename_lookup.get(tail) {
-                                Some(candidates) if candidates.len() == 1 => {
-                                    let (sid, suid, fpath) = &candidates[0];
-                                    (
-                                        Some(sid.clone()),
-                                        suid.clone(),
-                                        Some(fpath.clone()),
-                                        ResolutionKind::Heuristic,
-                                        link.confidence,
-                                        "config_module_suffix".to_string(),
-                                    )
+                        b1_qnames.contains(&link.referenced_value)
+                            || (!qname_lookup.contains_key(&link.referenced_value)
+                                && b1_names.contains(
+                                    link.referenced_value
+                                        .rsplit('.')
+                                        .next()
+                                        .unwrap_or(&link.referenced_value),
+                                ))
+                    }
+                    ConfigLinkKind::DependencyImport => {
+                        b1_qnames.contains(&link.referenced_value)
+                            || (!qname_lookup.contains_key(&link.referenced_value)
+                                && b1_names.contains(&link.referenced_value))
+                    }
+                    ConfigLinkKind::FilePath => false,
+                } {
+                    // Keep the tagged rows in the lookup inventories: removing
+                    // them could promote a same-name ordinary candidate.
+                    (
+                        None,
+                        None,
+                        None,
+                        ResolutionKind::Unresolved,
+                        0.0,
+                        cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.to_string(),
+                    )
+                } else {
+                    match link.link_kind {
+                        ConfigLinkKind::ModulePath => {
+                            if let Some((sid, suid, fpath)) =
+                                qname_lookup.get(&link.referenced_value)
+                            {
+                                (
+                                    Some(sid.clone()),
+                                    suid.clone(),
+                                    Some(fpath.clone()),
+                                    ResolutionKind::Exact,
+                                    link.confidence,
+                                    "config_module_exact".to_string(),
+                                )
+                            } else {
+                                let tail = link
+                                    .referenced_value
+                                    .rsplit('.')
+                                    .next()
+                                    .unwrap_or(&link.referenced_value);
+                                match basename_lookup.get(tail) {
+                                    Some(candidates) if candidates.len() == 1 => {
+                                        let (sid, suid, fpath) = &candidates[0];
+                                        (
+                                            Some(sid.clone()),
+                                            suid.clone(),
+                                            Some(fpath.clone()),
+                                            ResolutionKind::Heuristic,
+                                            link.confidence,
+                                            "config_module_suffix".to_string(),
+                                        )
+                                    }
+                                    _ => (
+                                        None,
+                                        None,
+                                        None,
+                                        ResolutionKind::Unresolved,
+                                        0.0,
+                                        "unresolved".to_string(),
+                                    ),
                                 }
-                                _ => (
+                            }
+                        }
+                        ConfigLinkKind::FilePath => {
+                            let resolved_path = if known_files.contains(&link.referenced_value) {
+                                Some(link.referenced_value.clone())
+                            } else {
+                                Path::new(&link.referenced_value)
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .and_then(|base| file_basename_lookup.get(base))
+                                    .filter(|paths| paths.len() == 1)
+                                    .and_then(|paths| paths.first().cloned())
+                            };
+                            match resolved_path {
+                                Some(path) => (
+                                    None,
+                                    None,
+                                    Some(path),
+                                    if known_files.contains(&link.referenced_value) {
+                                        ResolutionKind::Exact
+                                    } else {
+                                        ResolutionKind::Heuristic
+                                    },
+                                    link.confidence,
+                                    if known_files.contains(&link.referenced_value) {
+                                        "config_file_exact".to_string()
+                                    } else {
+                                        "config_file_basename".to_string()
+                                    },
+                                ),
+                                None => (
                                     None,
                                     None,
                                     None,
@@ -152,67 +230,63 @@ impl Indexer {
                                 ),
                             }
                         }
-                    }
-                    ConfigLinkKind::FilePath => {
-                        let resolved_path = if known_files.contains(&link.referenced_value) {
-                            Some(link.referenced_value.clone())
-                        } else {
-                            Path::new(&link.referenced_value)
-                                .file_name()
-                                .and_then(|n| n.to_str())
-                                .and_then(|base| file_basename_lookup.get(base))
-                                .filter(|paths| paths.len() == 1)
-                                .and_then(|paths| paths.first().cloned())
-                        };
-                        match resolved_path {
-                            Some(path) => (
-                                None,
-                                None,
-                                Some(path),
-                                if known_files.contains(&link.referenced_value) {
-                                    ResolutionKind::Exact
-                                } else {
-                                    ResolutionKind::Heuristic
-                                },
-                                link.confidence,
-                                if known_files.contains(&link.referenced_value) {
-                                    "config_file_exact".to_string()
-                                } else {
-                                    "config_file_basename".to_string()
-                                },
-                            ),
-                            None => (
-                                None,
-                                None,
-                                None,
-                                ResolutionKind::Unresolved,
-                                0.0,
-                                "unresolved".to_string(),
-                            ),
-                        }
-                    }
-                    ConfigLinkKind::DependencyImport => {
-                        if let Some((sid, suid, fpath)) = qname_lookup.get(&link.referenced_value) {
-                            (
-                                Some(sid.clone()),
-                                suid.clone(),
-                                Some(fpath.clone()),
-                                ResolutionKind::Exact,
-                                link.confidence,
-                                "config_dependency_exact".to_string(),
-                            )
-                        } else if let Some(candidates) = basename_lookup.get(&link.referenced_value)
-                        {
-                            if candidates.len() == 1 {
-                                let (sid, suid, fpath) = &candidates[0];
+                        ConfigLinkKind::DependencyImport => {
+                            if let Some((sid, suid, fpath)) =
+                                qname_lookup.get(&link.referenced_value)
+                            {
                                 (
                                     Some(sid.clone()),
                                     suid.clone(),
                                     Some(fpath.clone()),
-                                    ResolutionKind::Heuristic,
+                                    ResolutionKind::Exact,
                                     link.confidence,
-                                    "config_dependency_symbol".to_string(),
+                                    "config_dependency_exact".to_string(),
                                 )
+                            } else if let Some(candidates) =
+                                basename_lookup.get(&link.referenced_value)
+                            {
+                                if candidates.len() == 1 {
+                                    let (sid, suid, fpath) = &candidates[0];
+                                    (
+                                        Some(sid.clone()),
+                                        suid.clone(),
+                                        Some(fpath.clone()),
+                                        ResolutionKind::Heuristic,
+                                        link.confidence,
+                                        "config_dependency_symbol".to_string(),
+                                    )
+                                } else {
+                                    (
+                                        None,
+                                        None,
+                                        None,
+                                        ResolutionKind::Unresolved,
+                                        0.0,
+                                        "unresolved".to_string(),
+                                    )
+                                }
+                            } else if let Some(paths) =
+                                file_basename_lookup.get(&link.referenced_value)
+                            {
+                                if paths.len() == 1 {
+                                    (
+                                        None,
+                                        None,
+                                        Some(paths[0].clone()),
+                                        ResolutionKind::Heuristic,
+                                        link.confidence,
+                                        "config_dependency_file".to_string(),
+                                    )
+                                } else {
+                                    (
+                                        None,
+                                        None,
+                                        None,
+                                        ResolutionKind::Unresolved,
+                                        0.0,
+                                        "unresolved".to_string(),
+                                    )
+                                }
                             } else {
                                 (
                                     None,
@@ -223,36 +297,6 @@ impl Indexer {
                                     "unresolved".to_string(),
                                 )
                             }
-                        } else if let Some(paths) = file_basename_lookup.get(&link.referenced_value)
-                        {
-                            if paths.len() == 1 {
-                                (
-                                    None,
-                                    None,
-                                    Some(paths[0].clone()),
-                                    ResolutionKind::Heuristic,
-                                    link.confidence,
-                                    "config_dependency_file".to_string(),
-                                )
-                            } else {
-                                (
-                                    None,
-                                    None,
-                                    None,
-                                    ResolutionKind::Unresolved,
-                                    0.0,
-                                    "unresolved".to_string(),
-                                )
-                            }
-                        } else {
-                            (
-                                None,
-                                None,
-                                None,
-                                ResolutionKind::Unresolved,
-                                0.0,
-                                "unresolved".to_string(),
-                            )
                         }
                     }
                 };
@@ -989,5 +1033,91 @@ mod config_link_write_path_tests {
             0,
             "the zero-token fast path must leave zero config refs in place"
         );
+    }
+}
+
+#[cfg(test)]
+mod cpp_qualified_owner_config_tests {
+    use super::*;
+    use crate::config_linker::RawTokenKind;
+    use cc_model::cpp_owner::CppQualifiedOwnerState as State;
+
+    #[test]
+    fn cpp_qualified_owner_config_qname_and_leaf_candidates_abstain_without_neighbor_promotion() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("owned.toml"), "entry = 'leaf'\n").unwrap();
+        for state in [
+            State::ProvenNamespace,
+            State::ProvenType,
+            State::Unproven,
+            State::Ambiguous,
+        ] {
+            for (value, kind) in [
+                ("owner::leaf", RawTokenKind::Dotted),
+                ("leaf", RawTokenKind::Dotted),
+                ("leaf", RawTokenKind::DependencySpec),
+            ] {
+                for reverse in [false, true] {
+                    let mut targets = vec![
+                        SymbolTargetRow {
+                            cpp_qualified_owner: state,
+                            symbol_id: "tagged".into(),
+                            symbol_uid: state.is_proven().then(|| "tagged-uid".into()),
+                            name: "leaf".into(),
+                            qname: state.is_proven().then(|| "owner::leaf".into()),
+                            file_path: "tagged.cpp".into(),
+                        },
+                        SymbolTargetRow {
+                            cpp_qualified_owner: State::NonB1,
+                            symbol_id: "neighbor".into(),
+                            symbol_uid: Some("neighbor-uid".into()),
+                            name: "leaf".into(),
+                            qname: Some(
+                                if value == "owner::leaf" {
+                                    "owner::leaf"
+                                } else {
+                                    "pkg.leaf"
+                                }
+                                .into(),
+                            ),
+                            file_path: "neighbor.ts".into(),
+                        },
+                    ];
+                    if reverse {
+                        targets.reverse();
+                    }
+                    // An unproven row has no qname evidence. Exercise its leaf
+                    // rejection, rather than claiming it owns an unknown qname.
+                    if !state.is_proven() && value == "owner::leaf" {
+                        continue;
+                    }
+                    let units = Indexer::build_config_link_units_from_snapshot(
+                        root.path(),
+                        targets,
+                        &[],
+                        &[RawConfigToken {
+                            config_file: "owned.toml".into(),
+                            config_key: "entry".into(),
+                            value: value.into(),
+                            line: 1,
+                            kind,
+                        }],
+                    )
+                    .unwrap();
+                    assert_eq!(units.len(), 1);
+                    assert_eq!(units[0].outcome.symbol_refs.len(), 1);
+                    let reference = &units[0].outcome.symbol_refs[0];
+                    assert_eq!(reference.target_symbol_id, None);
+                    assert_eq!(reference.target_symbol_uid, None);
+                    assert_eq!(reference.target_file_path, None);
+                    assert_eq!(reference.resolution_kind, ResolutionKind::Unresolved);
+                    assert_eq!(reference.resolution_confidence, 0.0);
+                    assert_eq!(
+                        reference.resolution_strategy,
+                        cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
+                    );
+                }
+            }
+        }
     }
 }

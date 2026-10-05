@@ -391,6 +391,7 @@ impl SpecDrivenParser {
                     let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), None);
 
                     symbols.push(SymbolRecord {
+                        cpp_qualified_owner: Default::default(),
                         symbol_id,
                         file_path: file_path.to_string(),
                         name,
@@ -458,6 +459,7 @@ impl SpecDrivenParser {
             let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), None);
 
             symbols.push(SymbolRecord {
+                cpp_qualified_owner: Default::default(),
                 symbol_id,
                 file_path: file_path.to_string(),
                 name,
@@ -508,6 +510,7 @@ impl SpecDrivenParser {
             let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), None);
 
             symbols.push(SymbolRecord {
+                cpp_qualified_owner: Default::default(),
                 symbol_id,
                 file_path: file_path.to_string(),
                 name,

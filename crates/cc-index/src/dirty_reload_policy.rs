@@ -135,12 +135,26 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // dirty reload quadratic in a large file's reference/symbol counts.
     let local_identities: std::collections::HashSet<_> = symbols
         .iter()
+        .filter(|s| !s.cpp_qualified_owner.is_b1())
         .filter_map(|s| {
             s.symbol_uid
                 .as_deref()
                 .map(|uid| (s.file_path.as_str(), s.symbol_id.as_str(), uid))
         })
         .collect();
+    let b1_ids: std::collections::HashSet<_> = symbols
+        .iter()
+        .filter(|s| s.cpp_qualified_owner.is_b1())
+        .map(|s| s.symbol_id.as_str())
+        .collect();
+    let b1_uids: std::collections::HashSet<_> = symbols
+        .iter()
+        .filter(|s| s.cpp_qualified_owner.is_b1())
+        .filter_map(|s| s.symbol_uid.as_deref())
+        .collect();
+    let is_b1_target = |id: Option<&str>, uid: Option<&str>| {
+        id.is_some_and(|id| b1_ids.contains(id)) || uid.is_some_and(|uid| b1_uids.contains(uid))
+    };
     let local_parser_target = |file: &str,
                                target_file: Option<&str>,
                                id: Option<&str>,
@@ -162,6 +176,13 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // re-resolved edge is indistinguishable from a freshly parsed one.
     if should_clear(ReloadedEdgeCategory::CallEdges) {
         for edge in &mut call_edges {
+            if is_b1_target(
+                edge.target_symbol_id.as_deref(),
+                edge.callee_symbol_uid.as_deref(),
+            ) {
+                edge.resolution_strategy =
+                    cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into();
+            }
             if local_parser_target(
                 &edge.file_path,
                 edge.target_file_path.as_deref(),
@@ -180,6 +201,7 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
                 edge.resolution_strategy.as_str(),
                 cc_model::resolution::PARSER_UNSUPPORTED_BINDING
                     | cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING
+                    | cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
             ) {
                 edge.resolution_strategy = String::new();
             }
@@ -187,6 +209,13 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
         for sym_ref in &mut symbol_refs {
+            if is_b1_target(
+                sym_ref.target_symbol_id.as_deref(),
+                sym_ref.target_symbol_uid.as_deref(),
+            ) {
+                sym_ref.resolution_strategy =
+                    cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into();
+            }
             if local_parser_target(
                 &sym_ref.file_path,
                 sym_ref.target_file_path.as_deref(),
@@ -205,6 +234,7 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
                 sym_ref.resolution_strategy.as_str(),
                 cc_model::resolution::PARSER_UNSUPPORTED_BINDING
                     | cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING
+                    | cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
             ) {
                 sym_ref.resolution_strategy = String::new();
             }

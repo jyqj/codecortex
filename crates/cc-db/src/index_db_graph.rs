@@ -475,26 +475,39 @@ impl<'a> SymbolGraphReads<'a> {
     }
 
     /// `(symbol_uid, name, kind, container)` for every symbols row with a
-    /// UID — the lookup-table input of dispatch synthesis.
+    /// UID and NonB1 eligibility — the lookup-table input of dispatch synthesis.
     pub fn symbol_dispatch_rows(&self) -> CcResult<Vec<crate::index_db::SymbolDispatchRow>> {
         let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
-                "SELECT symbol_uid, name, kind, container FROM symbols \
+                "SELECT symbol_uid, name, kind, container, cpp_qualified_owner FROM symbols \
                  WHERE symbol_uid IS NOT NULL",
             )
             .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
-                Ok(crate::index_db::SymbolDispatchRow {
-                    symbol_uid: row.get(0)?,
-                    name: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
-                    kind: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
-                    container: row.get(3)?,
-                })
+                // Read strictly before filtering: malformed states are errors,
+                // and no B1 declaration becomes a generic dispatch target.
+                let state = crate::sql_util::cpp_qualified_owner(row, 4)?;
+                Ok((
+                    state,
+                    crate::index_db::SymbolDispatchRow {
+                        symbol_uid: row.get(0)?,
+                        name: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                        kind: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                        container: row.get(3)?,
+                    },
+                ))
             })
             .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+        let mut eligible = Vec::new();
+        for row in rows {
+            let (state, row) = row.map_err(db_err)?;
+            if state.is_non_b1() {
+                eligible.push(row);
+            }
+        }
+        Ok(eligible)
     }
 
     /// Seed lookup for the Cypher lazy-BFS fast path: `symbol_uid`s of rows
@@ -536,7 +549,7 @@ impl<'a> SymbolGraphReads<'a> {
             let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
             let sql = format!(
                 "SELECT symbol_id, symbol_uid, name, kind, file_path, container, \
-                        start_line, end_line, qname, signature \
+                        start_line, end_line, qname, signature, cpp_qualified_owner \
                  FROM symbols WHERE symbol_uid IN ({})",
                 placeholders.join(",")
             );
@@ -834,7 +847,7 @@ impl<'a> SymbolGraphReads<'a> {
             .collect::<Vec<_>>()
             .join(",");
         let sql = format!(
-            "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature \
+            "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature, cpp_qualified_owner \
              FROM symbols WHERE name = ?1 AND kind IN ({}) ORDER BY file_path",
             placeholders
         );
@@ -874,7 +887,7 @@ impl<'a> SymbolGraphReads<'a> {
                 .collect::<Vec<_>>()
                 .join(",");
             let sql = format!(
-                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature \
+                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature, cpp_qualified_owner \
                  FROM symbols WHERE name IN ({}) AND kind IN ({}) ORDER BY name, file_path",
                 name_placeholders, kind_placeholders
             );
@@ -950,18 +963,22 @@ impl<'a> SymbolGraphReads<'a> {
         member_symbol_uid: &str,
         method_name: &str,
     ) -> CcResult<Option<String>> {
-        let container: Option<String> = conn
+        let member = conn
             .query_row(
-                "SELECT container FROM symbols WHERE symbol_uid = ?1",
+                "SELECT container, cpp_qualified_owner FROM symbols WHERE symbol_uid = ?1",
                 rusqlite::params![member_symbol_uid],
-                |row| row.get(0),
+                |row| {
+                    Ok((
+                        row.get::<_, Option<String>>(0)?,
+                        crate::sql_util::cpp_qualified_owner(row, 1)?,
+                    ))
+                },
             )
             .optional()
-            .map_err(db_err)?
-            .flatten();
-        let container = match container {
-            Some(c) => c,
-            None => return Ok(None),
+            .map_err(db_err)?;
+        let container = match member {
+            Some((Some(container), state)) if state.is_non_b1() => container,
+            _ => return Ok(None),
         };
         let file_path: Option<String> = conn
             .query_row(
@@ -975,16 +992,15 @@ impl<'a> SymbolGraphReads<'a> {
             Some(fp) => fp,
             None => return Ok(None),
         };
-        let result: Option<String> = conn
+        let result = conn
             .query_row(
-                "SELECT symbol_uid FROM symbols WHERE file_path = ?1 AND container = ?2 AND name = ?3 AND kind = 'method' LIMIT 1",
+                "SELECT symbol_uid, cpp_qualified_owner FROM symbols WHERE file_path = ?1 AND container = ?2 AND name = ?3 AND kind = 'method' LIMIT 1",
                 rusqlite::params![file_path, container, method_name],
-                |row| row.get(0),
+                |row| Ok((row.get::<_, Option<String>>(0)?, crate::sql_util::cpp_qualified_owner(row, 1)?)),
             )
             .optional()
-            .map_err(db_err)?
-            .flatten();
-        Ok(result)
+            .map_err(db_err)?;
+        Ok(result.and_then(|(uid, state)| state.is_non_b1().then_some(uid).flatten()))
     }
 
     /// Fetch methods for many containers (class/struct names) in a single
@@ -1016,7 +1032,7 @@ impl<'a> SymbolGraphReads<'a> {
             .collect::<Vec<_>>()
             .join(",");
         let sql = format!(
-            "SELECT container, symbol_uid, name, file_path, start_line \
+            "SELECT container, symbol_uid, name, file_path, start_line, cpp_qualified_owner \
              FROM symbols WHERE container IN ({}) AND kind = 'method' AND symbol_uid IS NOT NULL \
              ORDER BY file_path, start_line",
             placeholders
@@ -1036,11 +1052,15 @@ impl<'a> SymbolGraphReads<'a> {
                     row.get::<_, String>(2)?,
                     row.get::<_, String>(3)?,
                     row.get::<_, u32>(4)?,
+                    crate::sql_util::cpp_qualified_owner(row, 5)?,
                 ))
             })
             .map_err(db_err)?;
         for row in rows {
-            let (container, uid, name, file_path, line) = row.map_err(db_err)?;
+            let (container, uid, name, file_path, line, state) = row.map_err(db_err)?;
+            if state.is_b1() {
+                continue;
+            }
             grouped
                 .entry(container)
                 .or_default()
@@ -1075,7 +1095,7 @@ impl<'a> SymbolGraphReads<'a> {
             .collect::<Vec<_>>()
             .join(",");
         let sql = format!(
-            "SELECT DISTINCT container, file_path \
+            "SELECT DISTINCT container, file_path, cpp_qualified_owner \
              FROM symbols WHERE kind = 'method' AND container IS NOT NULL AND name IN ({}) \
              ORDER BY file_path",
             placeholders
@@ -1089,10 +1109,21 @@ impl<'a> SymbolGraphReads<'a> {
             params.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
             .query_map(param_refs.as_slice(), |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    crate::sql_util::cpp_qualified_owner(row, 2)?,
+                ))
             })
             .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+        let mut eligible = Vec::new();
+        for row in rows {
+            let (container, file_path, state) = row.map_err(db_err)?;
+            if state.is_non_b1() {
+                eligible.push((container, file_path));
+            }
+        }
+        Ok(eligible)
     }
 
     /// Compatibility name for the unified versioned PublicSurface fingerprint.
@@ -1215,7 +1246,7 @@ impl<'a> SymbolGraphReads<'a> {
                 "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,\
                  signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,\
                  export_name,is_default_export,symbol_uid,framework_role,receiver_type,\
-                 param_types,return_type,param_count,base_types,implements \
+                 param_types,return_type,param_count,base_types,implements,cpp_qualified_owner \
                  FROM symbols WHERE file_path = ?1 ORDER BY start_line",
             )
             .map_err(db_err)?;
@@ -1252,6 +1283,7 @@ impl<'a> SymbolGraphReads<'a> {
                     param_count: param_count.map(|v| v as u32),
                     base_types: row.get(23)?,
                     implements: row.get(24)?,
+                    cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(row, 25)?,
                 })
             })
             .map_err(db_err)?;
@@ -1537,7 +1569,7 @@ impl<'a> SymbolGraphReads<'a> {
         let placeholders: Vec<&str> = file_paths.iter().map(|_| "?").collect();
         let sql = format!(
             "SELECT symbol_id, symbol_uid, name, kind, file_path, container, \
-                    start_line, end_line, qname, signature \
+                    start_line, end_line, qname, signature, cpp_qualified_owner \
              FROM symbols \
              WHERE file_path IN ({}) AND symbol_uid IS NOT NULL \
              ORDER BY file_path, start_line",

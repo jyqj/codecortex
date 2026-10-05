@@ -89,6 +89,7 @@ pub fn parse_sfc(
         Some("component"),
     );
     let component_symbol = SymbolRecord {
+        cpp_qualified_owner: Default::default(),
         symbol_id: StableId::edge_id("sym", file_path, 1, 0),
         file_path: file_path.to_string(),
         name: component_name.clone(),

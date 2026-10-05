@@ -110,6 +110,7 @@ mod tests {
 
     fn sym(name: &str, kind: SymbolKind, start_line: u32, end_line: u32) -> SymbolRecord {
         SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id: format!("sym:{name}"),
             file_path: "t.rs".to_string(),
             name: name.to_string(),

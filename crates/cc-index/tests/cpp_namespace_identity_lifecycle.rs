@@ -183,7 +183,10 @@ fn fresh_owned_v25_rebuild_reparses_unchanged_source_then_reopen_rename_delete()
         SchemaStatus::Initialized,
         "semantic parser change must invalidate owned v25 cache even with unchanged source"
     );
-    assert_eq!(db.reads().schema_version().unwrap(), 26);
+    assert_eq!(
+        db.reads().schema_version().unwrap(),
+        cc_db::index_migrate::CURRENT_SCHEMA_VERSION
+    );
     let generation = db.reads().read_generation().unwrap();
     assert!(generation.index_epoch > old_generation.index_epoch);
     assert!(generation.evidence_epoch > old_generation.evidence_epoch);

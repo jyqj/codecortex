@@ -183,6 +183,7 @@ impl GoParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -256,6 +257,7 @@ impl GoParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -368,6 +370,7 @@ impl GoParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -424,6 +427,7 @@ impl GoParser {
         let symbol_uid = StableId::symbol_uid(file_path, &qname, "type_alias", None);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),

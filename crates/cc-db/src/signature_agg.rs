@@ -21,13 +21,13 @@
 //!
 //! | group              | table          | rows                              | columns                                              |
 //! |--------------------|----------------|-----------------------------------|------------------------------------------------------|
-//! | `symbols_full`     | symbols        | `symbol_uid IS NOT NULL`          | symbol_uid, name, kind, container                    |
+//! | `symbols_full`     | symbols        | `symbol_uid IS NOT NULL`          | symbol_uid, name, kind, container, B1 eligibility    |
 //! | `symbols_community`| symbols        | `symbol_uid IS NOT NULL`          | symbol_uid, name, kind                               |
 //! | `call_real`        | call_edges     | both uids set, not synthesized    | caller_symbol_uid, callee_symbol_uid                 |
 //! | `call_synthetic`   | call_edges     | both uids set, synthesized        | caller_symbol_uid, callee_symbol_uid                 |
 //! | `semantic_real`    | semantic_edges | `edge_id NOT LIKE 'synth:%'`      | source_symbol_uid, target_symbol_uid, relation_kind  |
 //! | `dispatch_sites`   | dispatch_sites | all                               | site_kind, key, file_path, enclosing/handler uid, line |
-//! | `symbols_seed`     | symbols        | all                               | the 15 resolver-seed columns (`SEED_COLUMNS` in `index_db_query`) |
+//! | `symbols_seed`     | symbols        | all                               | the 16 resolver-seed columns (`SEED_COLUMNS` in `index_db_query`) |
 //! | `files_state`      | files          | all                               | file_path, content_hash, mtime, size, chunk_policy, document_spec (scan-diff projection) |
 //!
 //! NULL (or non-TEXT) values hash as `""` in the gate groups, matching the
@@ -75,7 +75,8 @@ pub(crate) const GRAPH_SIG_AGG_KEY: &str = "graph_sig_aggregates";
 /// Version "3": added the `files_state` group.
 // v4: chunk policy is part of the file-state cache projection.
 // v5: document encoding spec participates independently of the chunk policy.
-const FORMAT_VERSION: &str = "5";
+// v6: durable C++ qualified-owner eligibility participates in seed and dispatch inputs.
+const FORMAT_VERSION: &str = "6";
 
 /// One group's aggregate: row count plus wrapping sum of per-row hashes.
 /// Equal multisets of rows produce equal aggregates; add/remove commute.
@@ -229,12 +230,18 @@ fn hash_symbol_full(
     name: Option<&str>,
     kind: Option<&str>,
     container: Option<&str>,
+    cpp_qualified_owner: cc_model::cpp_owner::CppQualifiedOwnerState,
 ) -> u64 {
     let mut hasher = DefaultHasher::new();
     text(uid).hash(&mut hasher);
     text(name).hash(&mut hasher);
     text(kind).hash(&mut hasher);
     text(container).hash(&mut hasher);
+    // Preserve the historical NonB1 hash while invalidating dispatch/interface
+    // gates when eligibility alone changes on a durable B1 declaration.
+    if cpp_qualified_owner.is_b1() {
+        cpp_qualified_owner.as_str().hash(&mut hasher);
+    }
     hasher.finish()
 }
 
@@ -246,12 +253,12 @@ fn hash_symbol_community(uid: Option<&str>, name: Option<&str>, kind: Option<&st
     hasher.finish()
 }
 
-/// Per-row hash over the 15 resolver-seed columns, in `SEED_COLUMNS` order
+/// Per-row hash over the 16 resolver-seed columns, in `SEED_COLUMNS` order
 /// (see `index_db_query::resolver_seed_symbols_excluding`). Text columns
 /// hash as `Option` (NULL distinct from `''`) because the seed cache serves
 /// row *content*: two states this hash cannot distinguish must materialize
 /// identical seed rows.
-fn hash_symbol_seed(texts: &[Option<&str>; 11], ints: &[i64; 3], param_count: Option<i64>) -> u64 {
+fn hash_symbol_seed(texts: &[Option<&str>; 12], ints: &[i64; 3], param_count: Option<i64>) -> u64 {
     let mut hasher = DefaultHasher::new();
     for value in texts {
         value.hash(&mut hasher);
@@ -410,7 +417,7 @@ impl Table {
                 // `symbol_uid IS NOT NULL` filter, applied in the fold.
                 "SELECT symbol_uid, name, kind, container, symbol_id, file_path, qname, \
                  export_name, receiver_type, base_types, implements, start_line, end_line, \
-                 is_default_export, param_count FROM symbols{scope}",
+                 is_default_export, param_count, cpp_qualified_owner FROM symbols{scope}",
                 " WHERE file_path IN ({in})",
             ),
             Table::CallEdges => (
@@ -454,6 +461,8 @@ fn fold_query(
                 let name = col_text(row, 1).map_err(db_err)?;
                 let kind = col_text(row, 2).map_err(db_err)?;
                 let container = col_text(row, 3).map_err(db_err)?;
+                let cpp_qualified_owner =
+                    crate::sql_util::cpp_qualified_owner(row, 15).map_err(db_err)?;
                 // Gate groups keep the historical `symbol_uid IS NOT NULL`
                 // row filter (previously in the SQL).
                 if uid.is_some() {
@@ -462,6 +471,7 @@ fn fold_query(
                         name.as_deref(),
                         kind.as_deref(),
                         container.as_deref(),
+                        cpp_qualified_owner,
                     ));
                     aggs.symbols_community.add_row(hash_symbol_community(
                         uid.as_deref(),
@@ -493,6 +503,7 @@ fn fold_query(
                         receiver_type.as_deref(),
                         base_types.as_deref(),
                         implements.as_deref(),
+                        Some(cpp_qualified_owner.as_str()),
                     ],
                     &[start_line, end_line, is_default_export],
                     param_count,
@@ -842,6 +853,7 @@ mod tests {
             param_count: None,
             base_types: None,
             implements: None,
+            cpp_qualified_owner: Default::default(),
         }
     }
 

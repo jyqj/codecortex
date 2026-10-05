@@ -123,6 +123,7 @@ impl PythonParser {
         let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), Some(params));
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -187,6 +188,7 @@ impl PythonParser {
         let symbol_uid = StableId::symbol_uid(file_path, &qname, "class", None);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),

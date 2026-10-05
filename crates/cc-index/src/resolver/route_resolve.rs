@@ -250,6 +250,11 @@ impl SymbolCatalog {
 
     /// Find-best fallback: prefer qname → same-file → import-distance.
     pub(in crate::resolver) fn find_best(&self, name: &str, current_file: &str) -> Option<usize> {
+        self.find_best_inner(name, current_file)
+            .filter(|&idx| !self.entries[idx].cpp_qualified_owner.is_b1())
+    }
+
+    fn find_best_inner(&self, name: &str, current_file: &str) -> Option<usize> {
         let lower = name.to_lowercase();
 
         // Try qualified name first
@@ -334,8 +339,18 @@ impl SymbolCatalog {
             Some(v) => v,
             None => return Vec::new(),
         };
+        let blocked_files: std::collections::HashSet<_> = indices
+            .iter()
+            .filter_map(|&i| {
+                self.entries[i]
+                    .cpp_qualified_owner
+                    .is_b1()
+                    .then_some(self.entries[i].file_path.as_str())
+            })
+            .collect();
         stable_candidates(&self.entries, indices)
             .into_iter()
+            .filter(|&i| !blocked_files.contains(self.entries[i].file_path.as_str()))
             .map(|i| {
                 let e = &self.entries[i];
                 (

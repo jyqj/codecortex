@@ -2,10 +2,12 @@
 use crate::{index_db::FileWriteUnit, sql_util::db_err};
 use cc_model::retrieval_cost::SqlWork;
 use cc_model::{
+    cpp_owner::{CppQualifiedOwnerProof, CppQualifiedOwnerState},
+    id::StableId,
     identity::DocumentRef,
     source::{BoundaryKind, ChunkSource},
     symbol_identity::ChunkSymbolIdentity,
-    CcError, CcResult,
+    CcError, CcResult, SymbolKind, SymbolRecord,
 };
 use rusqlite::{Connection, OptionalExtension};
 
@@ -41,13 +43,83 @@ fn invalid() -> CcError {
     CcError::Database("source-bound symbol identity mismatch".into())
 }
 
+/// Persistence can validate the parser's evidence against the already-validated
+/// identity and symbol, but cannot independently reparse the absent full source.
+fn b1_proof_matches(
+    proof: &CppQualifiedOwnerProof,
+    identity: &ChunkSymbolIdentity,
+    symbol: &SymbolRecord,
+) -> bool {
+    proof.source == identity.source
+        && proof.definition == identity.owner
+        && proof.owner_declaration.start < proof.owner_declaration.end
+        && proof.owner_declaration.end <= proof.definition.start
+        && !proof.owner_path.is_empty()
+        && proof.owner_path.len() <= 64
+        && proof
+            .owner_path
+            .iter()
+            .all(|part| !part.is_empty() && !part.contains("::"))
+        && proof.state == symbol.cpp_qualified_owner
+        && proof.symbol_id == identity.symbol_id
+        && proof.qname == identity.qname
+        && proof.qname == format!("{}::{}", proof.owner_path.join("::"), symbol.name)
+        && proof.symbol_uid == identity.symbol_uid
+        && b1_identity_shape(
+            proof.state,
+            identity,
+            symbol.signature.as_deref(),
+            symbol.container.as_deref(),
+        )
+}
+
+fn b1_identity_shape(
+    state: CppQualifiedOwnerState,
+    identity: &ChunkSymbolIdentity,
+    signature: Option<&str>,
+    container: Option<&str>,
+) -> bool {
+    let expected_kind = match state {
+        CppQualifiedOwnerState::ProvenNamespace => SymbolKind::Function,
+        CppQualifiedOwnerState::ProvenType => SymbolKind::Method,
+        _ => return false,
+    };
+    let Some((owner, leaf)) = identity.qname.rsplit_once("::") else {
+        return false;
+    };
+    let parts: Vec<_> = owner.split("::").collect();
+    identity.kind == expected_kind
+        && container.is_none()
+        && leaf == identity.name
+        && parts.len() <= 64
+        && parts.iter().all(|part| !part.is_empty())
+        && identity.symbol_uid
+            == StableId::symbol_uid(
+                &identity.file_path,
+                &identity.qname,
+                expected_kind.as_str(),
+                signature,
+            )
+}
+
 fn symbol_matches_on(
     conn: &Connection,
     identity: &ChunkSymbolIdentity,
+    expected_state: Option<CppQualifiedOwnerState>,
     work: &mut Option<&mut SqlWork>,
 ) -> CcResult<bool> {
-    query_on(conn,"SELECT EXISTS(SELECT 1 FROM symbols WHERE symbol_id=?1 AND file_path=?2 AND symbol_uid=?3 AND name=?4 AND kind=?5 AND qname=?6 AND start_line=?7 AND start_col=?8 AND end_line=?9 AND end_col=?10)",
-        rusqlite::params![identity.symbol_id,identity.file_path,identity.symbol_uid,identity.name,identity.kind.as_str(),identity.qname,identity.start_line,identity.start_col,identity.end_line,identity.end_col], work, |r| r.get(0))?.ok_or_else(invalid)
+    let row = query_on(conn,"SELECT cpp_qualified_owner,signature,container FROM symbols WHERE symbol_id=?1 AND file_path=?2 AND symbol_uid=?3 AND name=?4 AND kind=?5 AND qname=?6 AND start_line=?7 AND start_col=?8 AND end_line=?9 AND end_col=?10",
+        rusqlite::params![identity.symbol_id,identity.file_path,identity.symbol_uid,identity.name,identity.kind.as_str(),identity.qname,identity.start_line,identity.start_col,identity.end_line,identity.end_col], work, |r| Ok((crate::sql_util::cpp_qualified_owner(r, 0)?, r.get::<_, Option<String>>(1)?, r.get::<_, Option<String>>(2)?)))?;
+    let Some((state, signature, container)) = row else {
+        return Ok(false);
+    };
+    if expected_state.is_some_and(|expected| expected != state)
+        || (state.is_b1()
+            && !b1_identity_shape(state, identity, signature.as_deref(), container.as_deref()))
+    {
+        return Err(invalid());
+    }
+    Ok(true)
 }
 
 pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
@@ -90,6 +162,13 @@ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()>
                 .or_default()
                 .push(boundary);
         }
+    }
+    let mut b1_proofs = std::collections::BTreeMap::<_, Vec<_>>::new();
+    for proof in &file.outcome.cpp_qualified_owner_proofs {
+        b1_proofs
+            .entry(proof.symbol_id.as_str())
+            .or_default()
+            .push(proof);
     }
     let mut seen = std::collections::BTreeSet::new();
     for identity in &file.outcome.symbol_identities {
@@ -134,9 +213,23 @@ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()>
         {
             return Err(invalid());
         }
+        let symbol = candidates[0];
+        let owner_proofs = b1_proofs.get(symbol.symbol_id.as_str());
+        if symbol.cpp_qualified_owner.is_b1() {
+            if file.language != cc_model::Language::Cpp
+                || !owner_proofs.is_some_and(|proofs| {
+                    proofs.len() == 1 && b1_proof_matches(proofs[0], identity, symbol)
+                })
+            {
+                return Err(invalid());
+            }
+        } else if owner_proofs.is_some() {
+            // A mismatched enum cannot strip the proof requirement from a B1 row.
+            return Err(invalid());
+        }
         // The actual SQL survivor is authoritative; parser candidates replaced
         // by existing write semantics cannot acquire an association.
-        if !symbol_matches_on(conn, identity, &mut None)? {
+        if !symbol_matches_on(conn, identity, Some(symbol.cpp_qualified_owner), &mut None)? {
             continue;
         }
         conn.execute("INSERT INTO chunk_symbol_identity(chunk_id,file_path,doc_key,doc_version,symbol_id,format_version,record_json) VALUES(?1,?2,?3,?4,?5,?6,?7)",
@@ -195,7 +288,7 @@ pub(crate) fn load_on(
         || source.owner != Some(identity.owner)
         || name != Some(&identity.name)
         || kind != Some(identity.kind.as_str())
-        || !symbol_matches_on(conn, &identity, &mut work)?
+        || !symbol_matches_on(conn, &identity, None, &mut work)?
     {
         return Err(invalid());
     }

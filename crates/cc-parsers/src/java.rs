@@ -251,6 +251,7 @@ impl JavaParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -339,6 +340,7 @@ impl JavaParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -409,6 +411,7 @@ impl JavaParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),

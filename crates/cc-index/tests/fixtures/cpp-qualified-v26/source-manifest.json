@@ -1,0 +1,42 @@
+[
+  {
+    "blake3": "c1204b7dba7c147f194e7eacfab3e46ccad29dfba0f70a479f1a44a5de7e4ddc",
+    "file_path": "namespace_owner.cpp",
+    "mtime_nanos": 488412840,
+    "mtime_ns": "1791206972488412840",
+    "mtime_seconds": 1791206972,
+    "size": 144,
+    "source": "namespace grove { int leaf(); }\nnamespace other { int leaf(); }\nint grove::leaf() { return 1; }\nint wrong_namespace() { return other::leaf(); }\n",
+    "sha256": "68a6103cdecfb27265cd2dc9fac244151c255af7e2f599b8b6a0e355d0ef3945"
+  },
+  {
+    "blake3": "1ee3c427e5ce0842dad23dc7e85c11399a7341fdcab954a16dae94cc05301895",
+    "file_path": "direct_type_owners.cpp",
+    "mtime_nanos": 488412840,
+    "mtime_ns": "1791206972488412840",
+    "mtime_seconds": 1791206972,
+    "size": 167,
+    "source": "namespace grove {\nclass Box { public: int member(); };\nstruct packet { int read(); };\n}\nint grove::Box::member() { return 2; }\nint grove::packet::read() { return 3; }\n",
+    "sha256": "1b23d6db42e812c221331dbeeb9aed9c5c247530d82be15d9928ef9eaea8e2fa"
+  },
+  {
+    "blake3": "a0f22d842a50065363b72cdc7bdf2ef666de7ea52e967b4c68f21978e7fe1319",
+    "file_path": "duplicate_owner_paths.cpp",
+    "mtime_nanos": 488412840,
+    "mtime_ns": "1791206972488412840",
+    "mtime_seconds": 1791206972,
+    "size": 337,
+    "source": "namespace left::shared { int duplicate(); class Box { public: int twin(); }; }\nnamespace right::shared { int duplicate(); class Box { public: int twin(); }; }\nint left::shared::duplicate() { return 4; }\nint right::shared::duplicate() { return 5; }\nint left::shared::Box::twin() { return 6; }\nint right::shared::Box::twin() { return 7; }\n",
+    "sha256": "c59011259c53b7605b8ebde576e474dfda2b0f3b4af9354540446c7608fc6b07"
+  },
+  {
+    "blake3": "b35516fb4e7abf3746062412fdb2d0e15e8233437f584a200db5fa198e44a572",
+    "file_path": "unknown_owner.cpp",
+    "mtime_nanos": 488412840,
+    "mtime_ns": "1791206972488412840",
+    "mtime_seconds": 1791206972,
+    "size": 70,
+    "source": "int missing::Unknown::orphan() { return missing::Unknown::orphan(); }\n",
+    "sha256": "be0a593f78db80ba8e1b849ca72cc864605cb2cc33b9c5b95538a34e314b11ff"
+  }
+]

@@ -181,7 +181,9 @@ impl CapturedProject {
                 ))
                 && !matches!(
                     call.resolution_strategy.as_str(),
-                    PARSER_UNSUPPORTED_BINDING | CPP_NAMESPACE_UNPROVEN_BINDING
+                    PARSER_UNSUPPORTED_BINDING
+                        | CPP_NAMESPACE_UNPROVEN_BINDING
+                        | CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
                 )
             {
                 call.target_symbol_id = None;
@@ -196,7 +198,9 @@ impl CapturedProject {
             if blocked_name(sref.ref_name.as_deref().unwrap_or(&sref.symbol_name))
                 && !matches!(
                     sref.resolution_strategy.as_str(),
-                    PARSER_UNSUPPORTED_BINDING | CPP_NAMESPACE_UNPROVEN_BINDING
+                    PARSER_UNSUPPORTED_BINDING
+                        | CPP_NAMESPACE_UNPROVEN_BINDING
+                        | CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
                 )
             {
                 sref.target_symbol_id = None;

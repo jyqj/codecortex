@@ -487,6 +487,22 @@ impl SymbolCatalog {
 
         let result =
             self.resolve_name_inner(trimmed, file, line, scopes, imports, container, signals);
+        let result = match &result {
+            NameResolution::Ambiguous {
+                candidates,
+                truncated,
+                ..
+            } if candidates
+                .iter()
+                .any(|&idx| self.entries[idx].cpp_qualified_owner.is_b1())
+                || (*truncated && self.has_cpp_qualified_name(trimmed)) =>
+            {
+                NameResolution::Unresolved(
+                    cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                )
+            }
+            _ => result,
+        };
 
         self.resolve_cache.put(key, result.clone());
         result
@@ -529,6 +545,15 @@ impl SymbolCatalog {
                     }
                 }
                 ResolveStep::SameFile => {
+                    if self
+                        .cpp_qualified_file_names
+                        .get(file)
+                        .is_some_and(|names| names.contains(&name.to_lowercase()))
+                    {
+                        return NameResolution::Unresolved(
+                            cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                        );
+                    }
                     match self.best_same_file_candidate(name, file, scopes, line, container) {
                         Some(idx) => {
                             let kind = if parts.len() > 1 {
@@ -556,6 +581,9 @@ impl SymbolCatalog {
                 ResolveStep::Import => match self.import_decision(imports, name) {
                     NameResolution::Resolved(result) => StepOutcome::Resolved(result),
                     result @ NameResolution::Ambiguous { .. } => StepOutcome::Ambiguous(result),
+                    result @ NameResolution::Unresolved(
+                        cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                    ) => StepOutcome::Ambiguous(result),
                     NameResolution::Unresolved(_)
                         if imports
                             .iter()
@@ -571,6 +599,11 @@ impl SymbolCatalog {
                     None => StepOutcome::Continue,
                 },
                 ResolveStep::GlobalUnique => {
+                    if self.has_cpp_qualified_name(name) {
+                        return NameResolution::Unresolved(
+                            cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                        );
+                    }
                     if self
                         .by_name
                         .get(&leaf.to_lowercase())
@@ -657,7 +690,19 @@ impl SymbolCatalog {
             };
 
             match outcome {
-                StepOutcome::Resolved(result) => return NameResolution::Resolved(result),
+                StepOutcome::Resolved(result) => {
+                    // Retain tagged rows as negative evidence, never as a
+                    // generic target, even if a scope/qname lookup found one.
+                    if self.entries[result.catalog_index]
+                        .cpp_qualified_owner
+                        .is_b1()
+                    {
+                        return NameResolution::Unresolved(
+                            cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                        );
+                    }
+                    return NameResolution::Resolved(result);
+                }
                 StepOutcome::Ambiguous(result) => return result,
                 StepOutcome::Abort => {
                     return NameResolution::Unresolved("authoritative_lookup_miss")
@@ -669,7 +714,25 @@ impl SymbolCatalog {
         NameResolution::Unresolved("no_candidate")
     }
 
+    fn has_cpp_qualified_name(&self, name: &str) -> bool {
+        let lower = name.to_lowercase();
+        self.cpp_qualified_names.contains_key(&lower)
+            || self
+                .cpp_qualified_names
+                .contains_key(lower.rsplit('.').next().unwrap_or(&lower))
+    }
+
     pub(crate) fn ambiguous(&self, candidates: &[usize], reason: &'static str) -> NameResolution {
+        // Check before evidence sorting/truncation, so a late B1 candidate
+        // cannot become an ordinary ambiguity that dirty reload may reopen.
+        if candidates
+            .iter()
+            .any(|&idx| self.entries[idx].cpp_qualified_owner.is_b1())
+        {
+            return NameResolution::Unresolved(
+                cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+            );
+        }
         let mut sorted = stable_candidates(&self.entries, candidates);
         let count = sorted.len();
         let cap = cc_model::resolution::MAX_RESOLUTION_CANDIDATES;

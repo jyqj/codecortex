@@ -35,6 +35,24 @@ pub fn db_err(err: impl std::fmt::Display) -> cc_model::CcError {
     cc_model::CcError::Database(err.to_string())
 }
 
+/// Persisted B1 eligibility is never inferred from a fallback enum value.
+pub(crate) fn cpp_qualified_owner(
+    row: &rusqlite::Row<'_>,
+    idx: usize,
+) -> rusqlite::Result<cc_model::cpp_owner::CppQualifiedOwnerState> {
+    let raw: String = row.get(idx)?;
+    cc_model::cpp_owner::CppQualifiedOwnerState::from_str_strict(&raw).ok_or_else(|| {
+        rusqlite::Error::FromSqlConversionFailure(
+            idx,
+            rusqlite::types::Type::Text,
+            Box::new(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "invalid C++ qualified-owner state",
+            )),
+        )
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::escape_like;

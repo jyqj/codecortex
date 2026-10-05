@@ -60,6 +60,7 @@ fn symbol(rel_path: &str, file_idx: usize, sym_idx: usize) -> SymbolRecord {
         param_count: Some(1),
         base_types: None,
         implements: None,
+        cpp_qualified_owner: Default::default(),
     }
 }
 

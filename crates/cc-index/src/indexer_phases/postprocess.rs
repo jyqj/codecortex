@@ -1012,6 +1012,7 @@ mod graph_signature_coverage_tests {
             return_type: None,
             param_count: None,
             base_types: None,
+            cpp_qualified_owner: Default::default(),
             implements: None,
         };
         let unit = |file: &str, outcome: ParseOutcome| FileWriteUnit {

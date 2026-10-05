@@ -49,6 +49,11 @@ where
 
     // Rule 1 & 2: Symbol containment
     for sym in symbols {
+        // B1 leaves container unset and has no source-bound hierarchy proof.
+        // In particular, namespace Functions must not gain file Defines edges.
+        if sym.cpp_qualified_owner.is_b1() {
+            continue;
+        }
         // Rule 2: If symbol has a container (e.g. "MyClass"), find the container symbol
         // and generate a DefinesMethod edge.
         if let Some(ref container) = sym.container {
@@ -177,6 +182,7 @@ mod tests {
             return_type: None,
             param_count: None,
             base_types: None,
+            cpp_qualified_owner: Default::default(),
             implements: None,
         }
     }

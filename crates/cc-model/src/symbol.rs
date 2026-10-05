@@ -84,6 +84,12 @@ impl std::fmt::Display for SymbolKind {
 /// A symbol definition extracted from source code.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SymbolRecord {
+    /// Durable B1 eligibility; omitted for all pre-existing/non-C++ symbols.
+    #[serde(
+        default,
+        skip_serializing_if = "crate::cpp_owner::CppQualifiedOwnerState::is_non_b1"
+    )]
+    pub cpp_qualified_owner: crate::cpp_owner::CppQualifiedOwnerState,
     pub symbol_id: String,
     pub file_path: String,
     pub name: String,

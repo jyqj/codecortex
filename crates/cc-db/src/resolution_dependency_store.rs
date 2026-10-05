@@ -157,7 +157,7 @@ impl ReadOps<'_> {
         let conn = self.0.read_conn()?;
         let mut result = Vec::new();
         for batch in paths.chunks(IN_BATCH_SIZE) {
-            let sql=format!("SELECT name,qname,symbol_id,symbol_uid,kind,signature,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols WHERE file_path IN ({})",sql_in_placeholders(batch.len()));
+            let sql=format!("SELECT name,qname,symbol_id,symbol_uid,kind,signature,receiver_type,param_types,return_type,param_count,base_types,implements,cpp_qualified_owner FROM symbols WHERE file_path IN ({})",sql_in_placeholders(batch.len()));
             let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(rusqlite::params_from_iter(batch.iter()), |r| {
@@ -174,6 +174,7 @@ impl ReadOps<'_> {
                         param_count: r.get(9)?,
                         base_types: r.get(10)?,
                         implements: r.get(11)?,
+                        cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(r, 12)?,
                     })
                 })
                 .map_err(db_err)?;

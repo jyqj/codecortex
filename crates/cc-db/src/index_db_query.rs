@@ -54,7 +54,7 @@ impl<'a> QueryReads<'a> {
         let conn = self.db.read_conn()?;
         let (sql, param): (&str, String) = if exact {
             (
-                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
+                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature, cpp_qualified_owner
                  FROM symbols WHERE name = ?1 ORDER BY file_path LIMIT ?2",
                 name.to_string(),
             )
@@ -63,7 +63,7 @@ impl<'a> QueryReads<'a> {
             // mirror of symbols(name), so a leading-wildcard LIKE is index-served
             // instead of forcing a full table scan. Join back for full columns.
             (
-                "SELECT s.symbol_id, s.symbol_uid, s.name, s.kind, s.file_path, s.container, s.start_line, s.end_line, s.qname, s.signature
+                "SELECT s.symbol_id, s.symbol_uid, s.name, s.kind, s.file_path, s.container, s.start_line, s.end_line, s.qname, s.signature, s.cpp_qualified_owner
                  FROM symbols_fts f JOIN symbols s ON s.symbol_id = f.symbol_id
                  WHERE f.name LIKE ?1 ORDER BY s.file_path LIMIT ?2",
                 format!("%{}%", name),
@@ -72,7 +72,7 @@ impl<'a> QueryReads<'a> {
             // Patterns shorter than 3 chars cannot use trigram acceleration; fall
             // back to a bounded LIKE scan on symbols(name).
             (
-                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
+                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature, cpp_qualified_owner
                  FROM symbols WHERE name LIKE ?1 ORDER BY file_path LIMIT ?2",
                 format!("%{}%", name),
             )
@@ -98,7 +98,7 @@ impl<'a> QueryReads<'a> {
     ) -> CcResult<Vec<SymbolRow>> {
         let mut stmt = conn
             .prepare(
-                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
+                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature, cpp_qualified_owner
                  FROM symbols WHERE file_path = ?1 ORDER BY start_line",
             )
             .map_err(db_err)?;
@@ -112,7 +112,7 @@ impl<'a> QueryReads<'a> {
         let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
-                "SELECT symbol_id, symbol_uid, name, qname, file_path
+                "SELECT symbol_id, symbol_uid, name, qname, file_path, cpp_qualified_owner
                  FROM symbols
                  ORDER BY file_path, start_line",
             )
@@ -120,6 +120,7 @@ impl<'a> QueryReads<'a> {
         let rows = stmt
             .query_map([], |row| {
                 Ok(SymbolTargetRow {
+                    cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(row, 5)?,
                     symbol_id: row.get(0)?,
                     symbol_uid: row.get(1)?,
                     name: row.get(2)?,
@@ -338,7 +339,7 @@ impl IndexDb {
     /// Column contract: the SELECT is trimmed to the fields those two
     /// consumers actually read — catalog entries (symbol_id, file_path,
     /// name, kind, container, qname, export_name, is_default_export,
-    /// symbol_uid, start/end_line) plus the type-catalog inputs
+    /// symbol_uid, start/end_line, cpp_qualified_owner) plus the type-catalog inputs
     /// (receiver_type, param_count, base_types, implements). The remaining
     /// `SymbolRecord` fields (signature, doc, cols, parser tier/confidence,
     /// parent_symbol_id, framework_role, param/return types) are filled with
@@ -428,7 +429,7 @@ impl IndexDb {
     ) -> CcResult<Vec<SymbolRecord>> {
         const SEED_COLUMNS: &str = "symbol_id,file_path,name,kind,container,start_line,end_line,\
              qname,export_name,is_default_export,symbol_uid,receiver_type,param_count,\
-             base_types,implements";
+             base_types,implements,cpp_qualified_owner";
         // One JSON array parameter avoids SQLite's variable limit when a
         // cold build excludes tens of thousands of freshly parsed files.
         // The bundled SQLite already provides JSON for document/recovery
@@ -483,6 +484,7 @@ impl IndexDb {
                     param_count: param_count.map(|v| v as u32),
                     base_types: row.get(13)?,
                     implements: row.get(14)?,
+                    cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(row, 15)?,
                 })
             })
             .map_err(db_err)?;

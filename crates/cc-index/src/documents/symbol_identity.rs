@@ -42,6 +42,17 @@ pub fn prepare(
                 .push(boundary);
         }
     }
+    let mut cpp_proofs = BTreeMap::<_, Vec<_>>::new();
+    for proof in &outcome.cpp_qualified_owner_proofs {
+        cpp_proofs
+            .entry((
+                proof.definition.start,
+                proof.definition.end,
+                proof.symbol_id.as_str(),
+            ))
+            .or_default()
+            .push(proof);
+    }
     let mut identities = Vec::new();
     for chunk in &outcome.chunks {
         let Some(proof) = &chunk.source else {
@@ -92,6 +103,20 @@ pub fn prepare(
             || boundary.symbol_kind != Some(symbol.kind)
         {
             continue;
+        }
+        if symbol.cpp_qualified_owner.is_b1()
+            || cpp_proofs.contains_key(&(owner.start, owner.end, symbol.symbol_id.as_str()))
+        {
+            // A durable eligibility flag is not declaration provenance. Only
+            // the current parser snapshot's unique exact-span proof can admit
+            // a B1 identity; dirty reload never manufactures this evidence.
+            let Some(proofs) = cpp_proofs.get(&(owner.start, owner.end, symbol.symbol_id.as_str()))
+            else {
+                continue;
+            };
+            if proofs.len() != 1 || !proofs[0].matches(source, owner, symbol) {
+                continue;
+            }
         }
         let (Some(qname), Some(uid), Some(document)) = (
             &symbol.qname,

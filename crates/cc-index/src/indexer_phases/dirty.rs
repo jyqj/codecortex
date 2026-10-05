@@ -294,6 +294,7 @@ mod export_fingerprint_contract_tests {
             return_type: None,
             param_count: None,
             base_types: None,
+            cpp_qualified_owner: Default::default(),
             implements: None,
         }
     }

@@ -127,6 +127,8 @@ pub struct CallEdgeLite {
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct SymbolRow {
+    #[serde(skip_serializing_if = "cc_model::cpp_owner::CppQualifiedOwnerState::is_non_b1")]
+    pub cpp_qualified_owner: cc_model::cpp_owner::CppQualifiedOwnerState,
     pub symbol_id: String,
     pub symbol_uid: Option<String>,
     pub name: String,
@@ -151,7 +153,7 @@ pub struct DispatchCallEdgeRow {
 }
 
 /// `(symbol_uid, name, kind, container)` projection of `symbols` rows with a
-/// UID — the lookup-table input of dispatch synthesis.
+/// UID and NonB1 eligibility — the lookup-table input of dispatch synthesis.
 #[derive(Debug, Clone)]
 pub struct SymbolDispatchRow {
     pub symbol_uid: String,
@@ -191,6 +193,7 @@ pub struct SymbolDegreeInfo {
 
 #[derive(Debug, Clone)]
 pub struct SymbolTargetRow {
+    pub cpp_qualified_owner: cc_model::cpp_owner::CppQualifiedOwnerState,
     pub symbol_id: String,
     pub symbol_uid: Option<String>,
     pub name: String,

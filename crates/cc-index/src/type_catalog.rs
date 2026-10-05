@@ -101,6 +101,10 @@ impl TypeCatalog {
     /// Register one symbol's contributions (methods, type hierarchy, alias).
     /// Reads combine contributions independently of insertion order.
     pub(crate) fn add_symbol(&mut self, sym: &SymbolRecord) {
+        // Declaration owner proof does not prove any generic call binding.
+        if sym.cpp_qualified_owner.is_b1() {
+            return;
+        }
         let uid = match sym.symbol_uid.as_ref() {
             Some(u) => u.clone(),
             None => return,
@@ -566,6 +570,7 @@ mod tests {
             return_type: None,
             param_count,
             base_types: None,
+            cpp_qualified_owner: Default::default(),
             implements: None,
         }
     }
@@ -606,6 +611,7 @@ mod tests {
             return_type: None,
             param_count: None,
             base_types: base_types.map(String::from),
+            cpp_qualified_owner: Default::default(),
             implements: None,
         }
     }
@@ -690,6 +696,7 @@ mod tests {
             return_type: None,
             param_count: None,
             base_types: Some("RealType".into()),
+            cpp_qualified_owner: Default::default(),
             implements: None,
         });
         let catalog = TypeCatalog::build_from_symbols(&symbols);

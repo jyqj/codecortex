@@ -117,7 +117,8 @@ struct SymbolScope<'a> {
 }
 
 struct CallTarget<'a> {
-    ids: (&'a str, &'a str),
+    ids: Option<(&'a str, &'a str)>,
+    qualified_owner: bool,
     namespace_qname: Option<&'a str>,
     ambiguous: bool,
 }
@@ -381,6 +382,7 @@ impl CCppParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -548,6 +550,7 @@ impl CCppParser {
         };
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -605,6 +608,7 @@ impl CCppParser {
         let doc = self.extract_doc_comment(node, source);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -669,6 +673,7 @@ impl CCppParser {
             StableId::symbol_uid(file_path, &qname, SymbolKind::TypeAlias.as_str(), None);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name,
@@ -721,6 +726,7 @@ impl CCppParser {
             StableId::symbol_uid(file_path, &qname, SymbolKind::Namespace.as_str(), None);
 
         Some(SymbolRecord {
+            cpp_qualified_owner: Default::default(),
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
@@ -851,7 +857,7 @@ impl CCppParser {
         // namespace identities through ambiguous short-name first matches.
         let mut by_name: HashMap<String, CallTarget<'_>> = HashMap::new();
         for sym in symbols {
-            if let Some(uid) = &sym.symbol_uid {
+            if sym.symbol_uid.is_some() || sym.cpp_qualified_owner.is_b1() {
                 let namespace_qname =
                     (self.is_cpp && sym.kind == SymbolKind::Function && sym.container.is_some())
                         .then_some(sym.qname.as_deref())
@@ -860,10 +866,15 @@ impl CCppParser {
                     .entry(sym.name.clone())
                     .and_modify(|target| {
                         target.ambiguous = true;
+                        target.qualified_owner |= sym.cpp_qualified_owner.is_b1();
                         target.namespace_qname = target.namespace_qname.or(namespace_qname);
                     })
                     .or_insert(CallTarget {
-                        ids: (sym.symbol_id.as_str(), uid.as_str()),
+                        ids: sym
+                            .symbol_uid
+                            .as_deref()
+                            .map(|uid| (sym.symbol_id.as_str(), uid)),
+                        qualified_owner: sym.cpp_qualified_owner.is_b1(),
                         namespace_qname,
                         ambiguous: false,
                     });
@@ -1039,6 +1050,8 @@ impl CCppParser {
         let target = by_name
             .get(&callee)
             .and_then(|target| Self::proven_call_target(target, func_node, source, *caller_sym));
+        let qualified_unproven =
+            target.is_none() && by_name.get(&callee).is_some_and(|t| t.qualified_owner);
         let namespace_unproven = target.is_none()
             && by_name
                 .get(&callee)
@@ -1066,6 +1079,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if qualified_unproven {
+                cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into()
             } else if namespace_unproven {
                 cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
@@ -1107,6 +1122,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if qualified_unproven {
+                cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into()
             } else if namespace_unproven {
                 cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
@@ -1132,8 +1149,12 @@ impl CCppParser {
         source: &[u8],
         caller: Option<&SymbolRecord>,
     ) -> Option<(&'a str, &'a str)> {
+        if target.qualified_owner {
+            return None;
+        }
+        let ids = target.ids?;
         let Some(qname) = target.namespace_qname else {
-            return Some(target.ids);
+            return Some(ids);
         };
         if target.ambiguous {
             return None;
@@ -1149,7 +1170,7 @@ impl CCppParser {
                 return None;
             }
             return (caller.qname.as_deref()?.rsplit_once("::")?.0 == qname.rsplit_once("::")?.0)
-                .then_some(target.ids);
+                .then_some(ids);
         }
         if name.kind() != "qualified_identifier" {
             return None;
@@ -1174,7 +1195,7 @@ impl CCppParser {
         let mut pending = vec![name];
         for _ in 0..128 {
             let Some(part) = pending.pop() else {
-                return (parts.join("::") == qname).then_some(target.ids);
+                return (parts.join("::") == qname).then_some(ids);
             };
             if part.has_error() || part.is_missing() {
                 return None;
@@ -1318,8 +1339,10 @@ impl CCppParser {
         // a colliding type/function short name. Keep legacy-only type lookup.
         let target = by_name
             .get(&type_name)
-            .filter(|target| target.namespace_qname.is_none())
-            .map(|target| target.ids);
+            .filter(|target| target.namespace_qname.is_none() && !target.qualified_owner)
+            .and_then(|target| target.ids);
+        let qualified_unproven =
+            target.is_none() && by_name.get(&type_name).is_some_and(|t| t.qualified_owner);
         let namespace_unproven = target.is_none()
             && by_name
                 .get(&type_name)
@@ -1347,6 +1370,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if qualified_unproven {
+                cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into()
             } else if namespace_unproven {
                 cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
@@ -1383,6 +1408,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if qualified_unproven {
+                cc_model::resolution::CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into()
             } else if namespace_unproven {
                 cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
@@ -1596,8 +1623,8 @@ impl CCppParser {
             // to belong to one callable span instead of choosing a neighbor.
             for (edge, capture) in edges.iter_mut().zip(C_ENV_ACCESS_RE.captures_iter(content)) {
                 if !symbols.iter().any(|s| {
-                    s.kind == SymbolKind::Function
-                        && s.container.is_some()
+                    ((s.kind == SymbolKind::Function && s.container.is_some())
+                        || s.cpp_qualified_owner.is_b1())
                         && s.start_line <= edge.line
                         && edge.line <= s.end_line
                 }) {
@@ -1644,7 +1671,12 @@ impl FileParser for CCppParser {
         let tree =
             crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
-        let symbols = self.extract_symbols(&tree, content.as_bytes(), file_path);
+        let mut symbols = self.extract_symbols(&tree, content.as_bytes(), file_path);
+        let cpp_qualified_owner_proofs = if self.is_cpp {
+            crate::cpp_owner::apply(&tree, content.as_bytes(), &mut symbols)
+        } else {
+            Vec::new()
+        };
         let imports = self.extract_imports(&tree, content.as_bytes(), file_path);
         let (symbol_refs, call_edges) =
             self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
@@ -1680,6 +1712,7 @@ impl FileParser for CCppParser {
         );
 
         Ok(ParseOutcome {
+            cpp_qualified_owner_proofs,
             summary,
             source_structure: Some(source_structure),
             chunks,

@@ -206,6 +206,7 @@ fn project_seed(sym: &SymbolRecord) -> SymbolRecord {
         param_count: sym.param_count,
         base_types: sym.base_types.clone(),
         implements: sym.implements.clone(),
+        cpp_qualified_owner: sym.cpp_qualified_owner,
     }
 }
 
@@ -459,6 +460,7 @@ mod tests {
             param_count: None,
             base_types: None,
             implements: None,
+            cpp_qualified_owner: Default::default(),
         }
     }
 

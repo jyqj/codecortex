@@ -25,6 +25,8 @@ pub(crate) use types::{
 };
 
 #[cfg(test)]
+mod cpp_qualified_owner_tests;
+#[cfg(test)]
 mod p2b_tests;
 
 // ---------------------------------------------------------------------------
@@ -79,6 +81,7 @@ mod tests {
             return_type: None,
             param_count: None,
             base_types: None,
+            cpp_qualified_owner: Default::default(),
             implements: None,
         }
     }

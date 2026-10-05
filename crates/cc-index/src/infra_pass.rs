@@ -159,10 +159,31 @@ pub fn bind_infra_to_symbols(
             continue;
         }
 
+        // Preserve negative candidates at their original heuristic rank.
+        // Dropping a tagged exact/prefix match must not promote a neighbor.
+        let b1_confidence = symbols
+            .iter()
+            .filter(|sym| sym.cpp_qualified_owner.is_b1())
+            .map(|sym| {
+                let name = sym.name.to_lowercase();
+                if name == normalized {
+                    1.0_f64
+                } else if name.starts_with(&normalized) {
+                    0.85
+                } else if name.contains(&normalized) {
+                    0.7
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0_f64, f64::max);
         let mut best_uid: Option<String> = None;
         let mut best_confidence = 0.0_f64;
 
         for sym in symbols {
+            if sym.cpp_qualified_owner.is_b1() {
+                continue;
+            }
             let sym_lower = sym.name.to_lowercase();
 
             // Exact match
@@ -185,7 +206,10 @@ pub fn bind_infra_to_symbols(
             }
         }
 
-        if best_confidence >= 0.7 {
+        if b1_confidence >= 0.7 && b1_confidence >= best_confidence {
+            node.bound_symbol_uid = None;
+            node.binding_confidence = None;
+        } else if best_confidence >= 0.7 {
             node.bound_symbol_uid = best_uid;
             node.binding_confidence = Some(best_confidence);
         }

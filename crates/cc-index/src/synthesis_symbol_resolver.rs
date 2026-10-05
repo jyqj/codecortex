@@ -67,13 +67,21 @@ impl SynthesisSymbolResolver {
         current_file: &str,
     ) -> Option<(String, ResolutionScope)> {
         let matches = self.by_name.get(name)?;
+        // A same-file B1 candidate is negative evidence, even when another
+        // same-name row arrived first. Never replace it with a leaf neighbor.
+        if matches
+            .iter()
+            .any(|s| s.file_path == current_file && s.cpp_qualified_owner.is_b1())
+        {
+            return None;
+        }
         if let Some(found) = matches.iter().find(|s| s.file_path == current_file) {
             return found
                 .symbol_uid
                 .clone()
                 .map(|uid| (uid, ResolutionScope::SameFile));
         }
-        if matches.len() == 1 {
+        if matches.len() == 1 && !matches[0].cpp_qualified_owner.is_b1() {
             return matches[0]
                 .symbol_uid
                 .clone()
@@ -92,15 +100,25 @@ impl SynthesisSymbolResolver {
         current_file: &str,
     ) -> Option<(String, ResolutionScope)> {
         let matches = self.by_name.get(name)?;
-        let candidates: Vec<&SymbolRow> =
-            matches.iter().filter(|s| s.symbol_uid.is_some()).collect();
+        if matches
+            .iter()
+            .any(|s| s.file_path == current_file && s.cpp_qualified_owner.is_b1())
+        {
+            return None;
+        }
+        // Keep rejected B1 rows in the ambiguity pool despite their absent
+        // UID. Dropping them could manufacture a unique unrelated target.
+        let candidates: Vec<&SymbolRow> = matches
+            .iter()
+            .filter(|s| s.symbol_uid.is_some() || s.cpp_qualified_owner.is_b1())
+            .collect();
         if let Some(found) = candidates.iter().find(|s| s.file_path == current_file) {
             return found
                 .symbol_uid
                 .clone()
                 .map(|uid| (uid, ResolutionScope::SameFile));
         }
-        if candidates.len() == 1 {
+        if candidates.len() == 1 && !candidates[0].cpp_qualified_owner.is_b1() {
             return candidates[0]
                 .symbol_uid
                 .clone()
@@ -116,6 +134,7 @@ mod tests {
 
     fn row(name: &str, file_path: &str, uid: Option<&str>) -> SymbolRow {
         SymbolRow {
+            cpp_qualified_owner: Default::default(),
             symbol_id: format!("sym:{}:{}", file_path, name),
             symbol_uid: uid.map(|u| u.to_string()),
             name: name.to_string(),
@@ -135,6 +154,55 @@ mod tests {
             by_name.entry(r.name.clone()).or_default().push(r);
         }
         SynthesisSymbolResolver { by_name }
+    }
+
+    #[test]
+    fn cpp_qualified_owner_synthesis_rejects_all_states_and_keeps_negative_neighbors() {
+        use cc_model::cpp_owner::CppQualifiedOwnerState as State;
+        for state in [
+            State::ProvenNamespace,
+            State::ProvenType,
+            State::Unproven,
+            State::Ambiguous,
+        ] {
+            for uid in [None, Some("tagged-uid")] {
+                let mut tagged = row("handle", "tagged.cpp", uid);
+                tagged.cpp_qualified_owner = state;
+                let only = resolver(vec![tagged.clone()]);
+                for file in ["tagged.cpp", "consumer.ts"] {
+                    assert_eq!(only.resolve_strict("handle", file), None);
+                    assert_eq!(only.resolve_lenient("handle", file), None);
+                }
+                for reverse in [false, true] {
+                    for neighbor_file in ["tagged.cpp", "neighbor.ts"] {
+                        let mut rows = vec![
+                            tagged.clone(),
+                            row("handle", neighbor_file, Some("valid-uid")),
+                        ];
+                        if reverse {
+                            rows.reverse();
+                        }
+                        let r = resolver(rows);
+                        for file in ["tagged.cpp", "consumer.ts"] {
+                            assert_eq!(r.resolve_strict("handle", file), None);
+                            assert_eq!(r.resolve_lenient("handle", file), None);
+                        }
+                        // An independently present ordinary same-file candidate
+                        // keeps the previous locality rule; no row was discarded.
+                        if neighbor_file == "neighbor.ts" {
+                            assert_eq!(
+                                r.resolve_strict("handle", neighbor_file),
+                                Some(("valid-uid".into(), ResolutionScope::SameFile))
+                            );
+                            assert_eq!(
+                                r.resolve_lenient("handle", neighbor_file),
+                                Some(("valid-uid".into(), ResolutionScope::SameFile))
+                            );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[test]

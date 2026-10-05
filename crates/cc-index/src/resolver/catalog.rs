@@ -77,6 +77,12 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) entries: Vec<CatalogEntry>,
     pub(in crate::resolver) by_name: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_uid: HashMap<String, usize>,
+    /// Exact source-local IDs, including UID-less rejected B1 declarations.
+    pub(in crate::resolver) cpp_qualified_by_id: HashMap<String, usize>,
+    /// B1 names are retained separately so a budget-truncated candidate list
+    /// cannot erase terminal negative evidence. Counts support delta removal.
+    pub(in crate::resolver) cpp_qualified_names: HashMap<String, usize>,
+    pub(in crate::resolver) cpp_qualified_file_names: HashMap<String, HashSet<String>>,
     pub(in crate::resolver) by_qname: HashMap<String, Vec<usize>>,
     /// leaf segment (last `.`-token, lowercase) of each qname -> indices.
     /// Suffix resolution (`try_suffix_match`) only ever matches qnames whose
@@ -128,6 +134,9 @@ impl SymbolCatalog {
             forward_routes: HashMap::new(),
             by_name: HashMap::new(),
             by_uid: HashMap::new(),
+            cpp_qualified_by_id: HashMap::new(),
+            cpp_qualified_names: HashMap::new(),
+            cpp_qualified_file_names: HashMap::new(),
             by_qname: HashMap::new(),
             by_qname_leaf: HashMap::new(),
             by_file: HashMap::new(),
@@ -255,6 +264,7 @@ impl SymbolCatalog {
             if let Some(indices) = self.by_file.remove(file) {
                 removed_indices.extend(indices);
             }
+            self.cpp_qualified_file_names.remove(file);
             self.by_file_name.remove(file);
             self.by_file_qname.remove(file);
             self.by_export.remove(file);
@@ -271,6 +281,18 @@ impl SymbolCatalog {
         for &idx in &removed_indices {
             let entry = &self.entries[idx];
             name_keys.insert(entry.name.to_lowercase());
+            self.cpp_qualified_by_id.remove(&entry.symbol_id);
+            if entry.cpp_qualified_owner.is_b1() {
+                for name in std::iter::once(&entry.name).chain(entry.qname.iter()) {
+                    let name = name.to_lowercase();
+                    if let Some(count) = self.cpp_qualified_names.get_mut(&name) {
+                        *count -= 1;
+                        if *count == 0 {
+                            self.cpp_qualified_names.remove(&name);
+                        }
+                    }
+                }
+            }
             if let Some(ref q) = entry.qname {
                 let ql = q.to_lowercase();
                 leaf_keys.insert(ql.rsplit('.').next().unwrap_or(&ql).to_string());
@@ -335,6 +357,7 @@ impl SymbolCatalog {
 
         for idx in removed_indices {
             self.entries[idx] = CatalogEntry {
+                cpp_qualified_owner: Default::default(),
                 symbol_id: String::new(),
                 symbol_uid: None,
                 name: String::new(),
@@ -405,6 +428,7 @@ impl SymbolCatalog {
             let name_lower = sym.name.to_lowercase();
             let qname_lower = sym.qname.as_ref().map(|q| q.to_lowercase());
             let entry = CatalogEntry {
+                cpp_qualified_owner: sym.cpp_qualified_owner,
                 symbol_id: sym.symbol_id.clone(),
                 symbol_uid: sym.symbol_uid.clone(),
                 name: sym.name.clone(),
@@ -418,6 +442,18 @@ impl SymbolCatalog {
                 scope_id: sym.scope_id.clone(),
             };
             self.entries.push(entry);
+            if sym.cpp_qualified_owner.is_b1() {
+                self.cpp_qualified_by_id.insert(sym.symbol_id.clone(), idx);
+                let file_names = self
+                    .cpp_qualified_file_names
+                    .entry(sym.file_path.clone())
+                    .or_default();
+                for name in std::iter::once(&sym.name).chain(sym.qname.iter()) {
+                    let name = name.to_lowercase();
+                    *self.cpp_qualified_names.entry(name.clone()).or_default() += 1;
+                    file_names.insert(name);
+                }
+            }
 
             // by_name (lowercase)
             self.by_name
@@ -773,6 +809,7 @@ mod catalog_build_bench {
                     return_type: None,
                     param_count: None,
                     base_types: None,
+                    cpp_qualified_owner: Default::default(),
                     implements: None,
                 }
             })

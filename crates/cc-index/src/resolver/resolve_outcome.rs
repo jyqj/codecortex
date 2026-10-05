@@ -6,6 +6,7 @@ use cc_model::edge::{CallEdgeRecord, ResolutionKind};
 use cc_model::parse::ParseOutcome;
 use cc_model::resolution::{
     ResolutionManifest, ResolutionOutcome, ResolutionRecord, CPP_NAMESPACE_UNPROVEN_BINDING,
+    CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
 };
 use cc_model::symbol::SymbolKind;
 
@@ -24,45 +25,48 @@ fn needs_cpp_namespace_proof(entry: &CatalogEntry) -> bool {
         && cc_parsers::detect_language(&entry.file_path) == cc_model::Language::Cpp
 }
 
-fn namespace_negative(site_kind: &str, site_id: &str, query: &str) -> ResolutionRecord {
+fn cpp_negative(site_kind: &str, site_id: &str, query: &str, reason: &str) -> ResolutionRecord {
     ResolutionRecord {
         site_kind: site_kind.into(),
         site_id: site_id.into(),
         query: query.into(),
         outcome: ResolutionOutcome::Unresolved {
-            reason: CPP_NAMESPACE_UNPROVEN_BINDING.into(),
+            reason: reason.into(),
         },
     }
 }
 
-fn block_namespace_ref(
+fn block_cpp_ref(
     sref: &mut cc_model::symbol::SymbolRefRecord,
     manifest: &mut ResolutionManifest,
+    reason: &str,
 ) {
     sref.target_symbol_id = None;
     sref.target_symbol_uid = None;
     sref.target_file_path = None;
     sref.resolution_kind = ResolutionKind::Unresolved;
     sref.resolution_confidence = 0.0;
-    sref.resolution_strategy = CPP_NAMESPACE_UNPROVEN_BINDING.into();
-    manifest.record(namespace_negative(
+    sref.resolution_strategy = reason.into();
+    manifest.record(cpp_negative(
         "symbol_ref",
         &sref.ref_id,
         &sref.symbol_name,
+        reason,
     ));
 }
 
-fn block_namespace_call(edge: &mut CallEdgeRecord, manifest: &mut ResolutionManifest) {
+fn block_cpp_call(edge: &mut CallEdgeRecord, manifest: &mut ResolutionManifest, reason: &str) {
     edge.target_symbol_id = None;
     edge.callee_symbol_uid = None;
     edge.target_file_path = None;
     edge.resolution_kind = ResolutionKind::Unresolved;
     edge.resolution_confidence = 0.0;
-    edge.resolution_strategy = CPP_NAMESPACE_UNPROVEN_BINDING.into();
-    manifest.record(namespace_negative(
+    edge.resolution_strategy = reason.into();
+    manifest.record(cpp_negative(
         "call",
         &edge.edge_id,
         &edge.callee_symbol,
+        reason,
     ));
 }
 
@@ -89,6 +93,7 @@ fn type_upgrade_gate(edge: &CallEdgeRecord) -> TypeUpgradeGate {
                     | "authoritative_unresolved"
                     | cc_model::resolution::PARSER_UNSUPPORTED_BINDING
                     | CPP_NAMESPACE_UNPROVEN_BINDING
+                    | CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
                     | cc_model::project_model::MODULE_BLOCKED_BINDING
             ) =>
         {
@@ -127,6 +132,13 @@ impl TypeCatalogCandidate {
 }
 
 impl SymbolCatalog {
+    fn is_cpp_qualified_target(&self, id: Option<&str>, uid: Option<&str>) -> bool {
+        id.is_some_and(|id| self.cpp_qualified_by_id.contains_key(id))
+            || uid
+                .and_then(|uid| self.find_by_uid(uid))
+                .is_some_and(|idx| self.entries[idx].cpp_qualified_owner.is_b1())
+    }
+
     // -----------------------------------------------------------------------
     // Resolve entire ParseOutcome
     // -----------------------------------------------------------------------
@@ -153,8 +165,24 @@ impl SymbolCatalog {
 
         // Resolve symbol refs
         for sref in &mut outcome.symbol_refs {
+            if self.is_cpp_qualified_target(
+                sref.target_symbol_id.as_deref(),
+                sref.target_symbol_uid.as_deref(),
+            ) || sref.resolution_strategy == CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
+            {
+                block_cpp_ref(
+                    sref,
+                    &mut outcome.resolution,
+                    CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                );
+                continue;
+            }
             if sref.resolution_strategy == CPP_NAMESPACE_UNPROVEN_BINDING {
-                block_namespace_ref(sref, &mut outcome.resolution);
+                block_cpp_ref(
+                    sref,
+                    &mut outcome.resolution,
+                    CPP_NAMESPACE_UNPROVEN_BINDING,
+                );
                 continue;
             }
             if matches!(
@@ -202,6 +230,17 @@ impl SymbolCatalog {
                     container: sref.container.as_deref(),
                     signals: CallSiteSignals::default(),
                 });
+                if matches!(
+                    decision,
+                    NameResolution::Unresolved(CPP_QUALIFIED_OWNER_UNPROVEN_BINDING)
+                ) {
+                    block_cpp_ref(
+                        sref,
+                        &mut outcome.resolution,
+                        CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                    );
+                    continue;
+                }
                 if matches!(decision, NameResolution::Ambiguous { .. }) {
                     sref.resolution_kind = ResolutionKind::Unresolved;
                     sref.resolution_confidence = 0.0;
@@ -217,7 +256,11 @@ impl SymbolCatalog {
                 if let NameResolution::Resolved(result) = decision {
                     let e = &self.entries[result.catalog_index];
                     if needs_cpp_namespace_proof(e) {
-                        block_namespace_ref(sref, &mut outcome.resolution);
+                        block_cpp_ref(
+                            sref,
+                            &mut outcome.resolution,
+                            CPP_NAMESPACE_UNPROVEN_BINDING,
+                        );
                         continue;
                     }
                     sref.target_symbol_id = Some(e.symbol_id.clone());
@@ -234,8 +277,24 @@ impl SymbolCatalog {
 
         // Resolve call edges
         for edge in &mut outcome.call_edges {
+            if self.is_cpp_qualified_target(
+                edge.target_symbol_id.as_deref(),
+                edge.callee_symbol_uid.as_deref(),
+            ) || edge.resolution_strategy == CPP_QUALIFIED_OWNER_UNPROVEN_BINDING
+            {
+                block_cpp_call(
+                    edge,
+                    &mut outcome.resolution,
+                    CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                );
+                continue;
+            }
             if edge.resolution_strategy == CPP_NAMESPACE_UNPROVEN_BINDING {
-                block_namespace_call(edge, &mut outcome.resolution);
+                block_cpp_call(
+                    edge,
+                    &mut outcome.resolution,
+                    CPP_NAMESPACE_UNPROVEN_BINDING,
+                );
                 continue;
             }
             if edge.resolution_strategy == cc_model::project_model::MODULE_BLOCKED_BINDING {
@@ -310,6 +369,17 @@ impl SymbolCatalog {
                     container: edge.caller_symbol.as_deref(),
                     signals,
                 });
+                if matches!(
+                    decision,
+                    NameResolution::Unresolved(CPP_QUALIFIED_OWNER_UNPROVEN_BINDING)
+                ) {
+                    block_cpp_call(
+                        edge,
+                        &mut outcome.resolution,
+                        CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                    );
+                    continue;
+                }
                 if matches!(decision, NameResolution::Ambiguous { .. }) {
                     edge.resolution_kind = ResolutionKind::Unresolved;
                     edge.resolution_confidence = 0.0;
@@ -338,7 +408,11 @@ impl SymbolCatalog {
                 if let NameResolution::Resolved(result) = decision {
                     let e = &self.entries[result.catalog_index];
                     if needs_cpp_namespace_proof(e) {
-                        block_namespace_call(edge, &mut outcome.resolution);
+                        block_cpp_call(
+                            edge,
+                            &mut outcome.resolution,
+                            CPP_NAMESPACE_UNPROVEN_BINDING,
+                        );
                         continue;
                     }
                     edge.target_symbol_id = Some(e.symbol_id.clone());
@@ -378,8 +452,23 @@ impl SymbolCatalog {
                     Some(candidate) => candidate,
                     None => continue,
                 };
+                if self.entries[candidate.catalog_index]
+                    .cpp_qualified_owner
+                    .is_b1()
+                {
+                    block_cpp_call(
+                        edge,
+                        &mut outcome.resolution,
+                        CPP_QUALIFIED_OWNER_UNPROVEN_BINDING,
+                    );
+                    continue;
+                }
                 if needs_cpp_namespace_proof(&self.entries[candidate.catalog_index]) {
-                    block_namespace_call(edge, &mut outcome.resolution);
+                    block_cpp_call(
+                        edge,
+                        &mut outcome.resolution,
+                        CPP_NAMESPACE_UNPROVEN_BINDING,
+                    );
                     continue;
                 }
                 match gate {
@@ -405,12 +494,31 @@ impl SymbolCatalog {
 
         // Resolve caller_symbol_uid on call edges
         for edge in &mut outcome.call_edges {
+            // The parser's source-span caller ID is stronger than leaf-name
+            // lookup, including its deliberate absence of a UID for rejected B1.
+            if let Some(entry) = edge
+                .caller_symbol_id
+                .as_deref()
+                .and_then(|id| self.cpp_qualified_by_id.get(id))
+                .map(|&idx| &self.entries[idx])
+                .filter(|entry| entry.file_path == file_path)
+            {
+                if !entry.cpp_qualified_owner.is_proven()
+                    || edge.caller_symbol_uid != entry.symbol_uid
+                {
+                    edge.caller_symbol_uid = None;
+                }
+                continue;
+            }
             if edge.caller_symbol_uid.is_some() {
                 continue;
             }
             if let Some(ref caller) = edge.caller_symbol {
                 if let Some(idx) = self.find_best(caller, file_path) {
                     let e = &self.entries[idx];
+                    if e.cpp_qualified_owner.is_b1() {
+                        continue;
+                    }
                     edge.caller_symbol_uid = e.symbol_uid.clone();
                     edge.caller_symbol_id = Some(e.symbol_id.clone());
                 }
@@ -435,7 +543,9 @@ impl SymbolCatalog {
                 }
                 if let Some((idx, _)) = best {
                     let e = &self.entries[idx];
-                    hce.caller_symbol_uid = e.symbol_uid.clone();
+                    if !e.cpp_qualified_owner.is_b1() {
+                        hce.caller_symbol_uid = e.symbol_uid.clone();
+                    }
                 }
             }
         }
@@ -443,6 +553,16 @@ impl SymbolCatalog {
         // Resolve route edges through the single three-tier entry point
         // (see `resolve_route_handler` for the tier order and semantics).
         for route in &mut outcome.route_edges {
+            if self.is_cpp_qualified_target(
+                route.handler_symbol_id.as_deref(),
+                route.handler_symbol_uid.as_deref(),
+            ) {
+                route.handler_symbol_id = None;
+                route.handler_symbol_uid = None;
+                route.resolution_strategy = Some(CPP_QUALIFIED_OWNER_UNPROVEN_BINDING.into());
+                route.resolution_confidence = Some(0.0);
+                continue;
+            }
             if route.handler_symbol_id.is_some() {
                 continue;
             }
@@ -454,6 +574,9 @@ impl SymbolCatalog {
                 self.resolve_route_handler(&handler, file_path, route.line, scopes, imports)
             {
                 let e = &self.entries[resolution.catalog_index];
+                if e.cpp_qualified_owner.is_b1() {
+                    continue;
+                }
                 route.handler_symbol_id = Some(e.symbol_id.clone());
                 route.handler_symbol_uid = e.symbol_uid.clone();
                 route.resolution_strategy = Some(resolution.strategy);
@@ -731,7 +854,8 @@ impl SymbolCatalog {
             return None;
         }
         if candidates.len() == 1 {
-            return Some(candidates[0]);
+            return (!self.entries[candidates[0]].cpp_qualified_owner.is_b1())
+                .then_some(candidates[0]);
         }
         if prefer_type {
             let types: Vec<_> = candidates
@@ -749,6 +873,7 @@ impl SymbolCatalog {
             }
         }
         pick_unique(&self.entries, &candidates)
+            .filter(|&idx| !self.entries[idx].cpp_qualified_owner.is_b1())
     }
 
     /// Resolve a semantic edge target name to a catalog index.
@@ -770,7 +895,7 @@ impl SymbolCatalog {
 
         // 2. Import resolution
         if let Some(idx) = self.resolve_via_imports(imports, target_name) {
-            return Some(idx);
+            return (!self.entries[idx].cpp_qualified_owner.is_b1()).then_some(idx);
         }
 
         // 3. Global unique name with type-kind preference
@@ -792,7 +917,8 @@ impl SymbolCatalog {
             }
             // Fallback: any unique candidate
             if indices.len() == 1 {
-                return Some(indices[0]);
+                return (!self.entries[indices[0]].cpp_qualified_owner.is_b1())
+                    .then_some(indices[0]);
             }
             // Multiple candidates — try import-distance tie-breaking
             let pool = if !type_candidates.is_empty() {
@@ -800,7 +926,8 @@ impl SymbolCatalog {
             } else {
                 indices
             };
-            return best_by_import_distance(&self.entries, pool, file_path);
+            return best_by_import_distance(&self.entries, pool, file_path)
+                .filter(|&idx| !self.entries[idx].cpp_qualified_owner.is_b1());
         }
 
         None

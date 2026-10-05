@@ -7,6 +7,7 @@
 pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;
+mod cpp_owner;
 mod dataflow_common;
 mod exports;
 pub mod generic;

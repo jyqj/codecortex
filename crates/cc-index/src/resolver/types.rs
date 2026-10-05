@@ -292,6 +292,7 @@ pub(in crate::resolver) struct GoPackageLookup {
 /// A single entry in the symbol catalog (extended from original).
 #[derive(Clone, Debug)]
 pub(in crate::resolver) struct CatalogEntry {
+    pub(in crate::resolver) cpp_qualified_owner: cc_model::cpp_owner::CppQualifiedOwnerState,
     pub(in crate::resolver) symbol_id: String,
     pub(in crate::resolver) symbol_uid: Option<String>,
     pub(in crate::resolver) name: String,

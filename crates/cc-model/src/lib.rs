@@ -10,6 +10,7 @@ pub mod chunk;
 pub mod chunk_policy;
 pub mod config;
 pub mod context;
+pub mod cpp_owner;
 pub mod declaration_identity;
 pub mod diagnostic;
 pub mod dispatch_site;

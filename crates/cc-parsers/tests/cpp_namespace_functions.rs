@@ -61,6 +61,29 @@ fn namespace_repair_changes_only_approved_baseline_fields() {
                 ));
             }
         }
+        // Approved B1 overlap only. The original v25 baseline stays unchanged,
+        // including every deferred/non-B1 row and the original scope-A deltas.
+        for sym in &mut expected {
+            let correction = match (label, sym["name"].as_str()) {
+                ("qualified_member", Some("member")) => Some(("method", "grove::Box::member")),
+                ("qualified_namespace", Some("leaf")) => Some(("function", "grove::leaf")),
+                _ => None,
+            };
+            if let Some((kind, qname)) = correction {
+                sym["kind"] = json!(kind);
+                sym["qname"] = json!(qname);
+                sym["symbol_uid"] = json!(StableId::symbol_uid(
+                    "taxonomy.cpp",
+                    qname,
+                    kind,
+                    sym["signature"].as_str()
+                ));
+            }
+            if label == "unknown_qualified" && sym["name"] == "leaf" {
+                sym["qname"] = Value::Null;
+                sym["symbol_uid"] = Value::Null;
+            }
+        }
         let out = parse(text);
         assert_eq!(
             out.symbols.iter().map(fields).collect::<Vec<_>>(),
@@ -77,10 +100,18 @@ fn namespace_repair_changes_only_approved_baseline_fields() {
             .filter(|b| b.name.is_some() || b.symbol_kind.is_some())
             .map(|b| json!({"name": b.name, "kind": b.symbol_kind, "span": b.span}))
             .collect();
+        let mut expected_boundaries = case["boundaries"].clone();
+        if label == "qualified_member" {
+            for boundary in expected_boundaries.as_array_mut().unwrap() {
+                if boundary["name"] == "member" {
+                    boundary["kind"] = json!("method");
+                }
+            }
+        }
         assert_eq!(
             json!(boundaries),
-            case["boundaries"],
-            "unchanged AST fields: {label}"
+            expected_boundaries,
+            "approved AST fields: {label}"
         );
     }
 }
@@ -146,8 +177,8 @@ fn qualified_specialized_and_operator_names_do_not_enter_scope_a() {
     assert_eq!(members.len(), 2);
     assert_eq!(members[0].kind, SymbolKind::Method);
     assert_eq!(members[0].qname.as_deref(), Some("n::member"));
-    assert_eq!(members[1].kind, SymbolKind::Function);
-    assert_eq!(members[1].qname.as_deref(), Some("member"));
+    assert_eq!(members[1].kind, SymbolKind::Method);
+    assert_eq!(members[1].qname.as_deref(), Some("n::Box::member"));
     assert_eq!(find(&out, "leaf<int>").kind, SymbolKind::Method);
     assert_eq!(find(&out, "operator+").kind, SymbolKind::Method);
 }

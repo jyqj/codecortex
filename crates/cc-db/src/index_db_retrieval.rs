@@ -1511,7 +1511,7 @@ impl<'a> RetrievalReadModel<'a> {
             format!("%{}%", escape_like(name))
         }];
         scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
-        let sql=format!("SELECT s.symbol_id,s.symbol_uid,s.name,s.kind,s.file_path,s.container,s.start_line,s.end_line,s.qname,s.signature FROM symbols s JOIN files f ON f.file_path=s.file_path WHERE {} ORDER BY s.file_path,s.start_line,s.symbol_id LIMIT {limit}",clauses.join(" AND "));
+        let sql=format!("SELECT s.symbol_id,s.symbol_uid,s.name,s.kind,s.file_path,s.container,s.start_line,s.end_line,s.qname,s.signature,s.cpp_qualified_owner FROM symbols s JOIN files f ON f.file_path=s.file_path WHERE {} ORDER BY s.file_path,s.start_line,s.symbol_id LIMIT {limit}",clauses.join(" AND "));
         let conn = self.db.read_conn()?;
         let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let rows = stmt
@@ -1529,7 +1529,7 @@ impl<'a> RetrievalReadModel<'a> {
         let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
-                "SELECT symbol_id, file_path, name, kind, symbol_uid \
+                "SELECT symbol_id, file_path, name, kind, symbol_uid, cpp_qualified_owner \
                  FROM symbols WHERE symbol_uid IS NOT NULL",
             )
             .map_err(db_err)?;
@@ -1563,6 +1563,7 @@ impl<'a> RetrievalReadModel<'a> {
                     param_count: None,
                     base_types: None,
                     implements: None,
+                    cpp_qualified_owner: crate::sql_util::cpp_qualified_owner(row, 5)?,
                 })
             })
             .map_err(db_err)?;

@@ -58,3 +58,6 @@ pub mod semantic_space_switch;
 pub mod snapshot_write_txn;
 pub mod sql_util;
 pub mod unit_of_work;
+
+#[cfg(test)]
+mod cpp_qualified_owner_tests;

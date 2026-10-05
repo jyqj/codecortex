@@ -31,6 +31,7 @@ impl Indexer {
         for unit in write_units {
             for s in &unit.outcome.symbols {
                 targets.push(SymbolTargetRow {
+                    cpp_qualified_owner: s.cpp_qualified_owner,
                     symbol_id: s.symbol_id.clone(),
                     symbol_uid: s.symbol_uid.clone(),
                     name: s.name.clone(),

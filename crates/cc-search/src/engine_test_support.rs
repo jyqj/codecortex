@@ -166,6 +166,7 @@ pub(crate) fn insert_graph_file(
         parser_confidence: 1.0,
     };
     let symbol = SymbolRecord {
+        cpp_qualified_owner: Default::default(),
         symbol_id: format!("sym:{file_path}:{symbol_name}"),
         file_path: file_path.to_string(),
         name: symbol_name.to_string(),

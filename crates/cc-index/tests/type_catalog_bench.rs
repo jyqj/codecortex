@@ -61,6 +61,7 @@ fn base_symbol(idx: usize, name: String, kind: SymbolKind, qname: String) -> Sym
         return_type: None,
         param_count: None,
         base_types: None,
+        cpp_qualified_owner: Default::default(),
         implements: None,
     }
 }

@@ -715,6 +715,7 @@ fn graph_lane_maps_symbol_to_smallest_containing_chunk() {
         }
     };
     let symbol = SymbolRecord {
+        cpp_qualified_owner: Default::default(),
         symbol_id: "sym:src/wide.rs:narrow_fn".to_string(),
         file_path: "src/wide.rs".to_string(),
         name: "narrow_fn".to_string(),

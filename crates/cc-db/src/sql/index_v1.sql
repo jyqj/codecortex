@@ -157,7 +157,9 @@ CREATE TABLE IF NOT EXISTS symbols (
     return_type       TEXT,
     param_count       INTEGER,
     base_types        TEXT,
-    implements        TEXT
+    implements        TEXT,
+    cpp_qualified_owner TEXT NOT NULL DEFAULT 'non_b1'
+        CHECK (cpp_qualified_owner IN ('non_b1', 'proven_namespace', 'proven_type', 'unproven', 'ambiguous'))
 );
 CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
 CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_path);

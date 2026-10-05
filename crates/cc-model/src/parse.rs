@@ -15,6 +15,9 @@ use serde::{Deserialize, Serialize};
 /// The complete output of parsing a single source file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParseOutcome {
+    /// Current-snapshot B1 declaration proof, never reconstructed from a stored enum.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cpp_qualified_owner_proofs: Vec<crate::cpp_owner::CppQualifiedOwnerProof>,
     /// Proven declaration associations prepared against the original parser snapshot.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub symbol_identities: Vec<crate::symbol_identity::ChunkSymbolIdentity>,
@@ -57,6 +60,7 @@ pub struct ParseOutcome {
 impl Default for ParseOutcome {
     fn default() -> Self {
         Self {
+            cpp_qualified_owner_proofs: Vec::new(),
             symbol_identities: Vec::new(),
             document_spec: None,
             documents: None,

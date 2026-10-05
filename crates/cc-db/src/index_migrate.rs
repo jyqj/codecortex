@@ -42,7 +42,9 @@ use rusqlite::Connection;
 // and corrected Python lexical qnames. No legacy association backfill.
 // v26 reparses unchanged C++ namespace functions with corrected kind/qname/UID
 // and source-bound caller/callee ownership. Never retain legacy Method UIDs.
-pub const CURRENT_SCHEMA_VERSION: u32 = 26;
+// v27 rebuilds B1 qualified declaration identities and persists their binding
+// eligibility. Matching v26 files must be reparsed even when source is unchanged.
+pub const CURRENT_SCHEMA_VERSION: u32 = 27;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 

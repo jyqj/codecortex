@@ -297,6 +297,76 @@ fn qualified_parts(node: Node<'_>, source: &[u8]) -> Option<Option<Vec<String>>>
     Some((parts.len() >= 2 && parts.len() <= MAX_SEGMENTS + 1).then_some(parts))
 }
 
+/// Definition-local method qualifiers from the already-selected B1 declarator.
+/// Only direct post-parameter children are inspected. Known non-identity tails
+/// stay opaque, so their return types, expressions and attributes cannot add cv/ref.
+/// None means the scan is incomplete or unsupported, never an empty suffix.
+fn method_qualifier_suffix(decl: Node<'_>, source: &[u8]) -> Option<String> {
+    if decl.kind() != "function_declarator" || decl.has_error() || decl.is_missing() {
+        return None;
+    }
+    let parameters = decl.child_by_field_name("parameters")?;
+    if parameters.kind() != "parameter_list" || parameters.has_error() || parameters.is_missing() {
+        return None;
+    }
+    let mut seen_parameters = false;
+    let mut is_const = false;
+    let mut is_volatile = false;
+    let mut reference = None;
+    let mut cursor = decl.walk();
+    for (index, child) in decl.children(&mut cursor).enumerate() {
+        if index >= 128 || child.has_error() || child.is_missing() {
+            return None;
+        }
+        if child.id() == parameters.id() {
+            if seen_parameters {
+                return None;
+            }
+            seen_parameters = true;
+            continue;
+        }
+        if !seen_parameters || child.kind() == "comment" {
+            continue;
+        }
+        match child.kind() {
+            "type_qualifier" => match child.utf8_text(source).ok()? {
+                "const" if !is_const => is_const = true,
+                "volatile" if !is_volatile => is_volatile = true,
+                _ => return None,
+            },
+            "ref_qualifier" => {
+                let text = child.utf8_text(source).ok()?;
+                if reference.is_some() || !matches!(text, "&" | "&&") {
+                    return None;
+                }
+                reference = Some(text);
+            }
+            "noexcept"
+            | "throw_specifier"
+            | "trailing_return_type"
+            | "attribute_specifier"
+            | "attribute_declaration"
+            | "gnu_asm_expression"
+            | "requires_clause" => {}
+            _ => return None,
+        }
+    }
+    if !seen_parameters {
+        return None;
+    }
+    let mut parts = Vec::with_capacity(3);
+    if is_const {
+        parts.push("const");
+    }
+    if is_volatile {
+        parts.push("volatile");
+    }
+    if let Some(reference) = reference {
+        parts.push(reference);
+    }
+    Some(parts.join(" "))
+}
+
 /// Applies only to already-extracted symbols matched at their exact definition
 /// coordinates. No new extraction/traversal is introduced for unsupported forms.
 pub(crate) fn apply(
@@ -402,6 +472,20 @@ pub(crate) fn apply(
             })
         }) {
             continue;
+        }
+        // Owner proof remains a prerequisite. A failed qualifier scan retains
+        // Unproven and cannot publish a shortened signature as positive identity.
+        if state == State::ProvenType {
+            let Some(suffix) = method_qualifier_suffix(decl, source) else {
+                continue;
+            };
+            if !suffix.is_empty() {
+                let Some(signature) = symbol.signature.as_mut() else {
+                    continue;
+                };
+                signature.push(' ');
+                signature.push_str(&suffix);
+            }
         }
         let qname = format!("{}::{}", parts.join("::"), leaf);
         let uid = StableId::symbol_uid(

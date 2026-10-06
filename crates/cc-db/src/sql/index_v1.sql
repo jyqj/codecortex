@@ -172,15 +172,50 @@ CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
     file_path UNINDEXED,
     tokenize = 'trigram'
 );
+-- Derived mirror keys retain REPLACE victims after SQLite removes the base
+-- rows. With recursive_triggers OFF, those implicit deletes skip the DELETE
+-- trigger. Keep these lookups indexed even during DirectWriter bulk loading
+-- (UNIQUE autoindexes are not dropped); this table is not symbol identity.
+CREATE TABLE IF NOT EXISTS symbols_fts_keys (
+    symbol_rowid INTEGER PRIMARY KEY,
+    symbol_id    TEXT UNIQUE,
+    symbol_uid   TEXT UNIQUE
+);
 CREATE TRIGGER IF NOT EXISTS symbols_fts_ai AFTER INSERT ON symbols BEGIN
+    -- Run only after a successful INSERT, preserving ABORT / IGNORE / FAIL.
+    -- id and UID can conflict with two different rows; remove both mirrors.
+    DELETE FROM symbols_fts WHERE rowid IN (
+        SELECT symbol_rowid FROM symbols_fts_keys
+        WHERE symbol_rowid = new.rowid OR symbol_id = new.symbol_id
+           OR symbol_uid = new.symbol_uid
+    );
+    DELETE FROM symbols_fts_keys
+    WHERE symbol_rowid = new.rowid OR symbol_id = new.symbol_id
+       OR symbol_uid = new.symbol_uid;
+    INSERT INTO symbols_fts_keys(symbol_rowid, symbol_id, symbol_uid)
+    VALUES (new.rowid, new.symbol_id, new.symbol_uid);
     INSERT INTO symbols_fts(rowid, name, symbol_id, file_path)
     VALUES (new.rowid, new.name, new.symbol_id, new.file_path);
 END;
 CREATE TRIGGER IF NOT EXISTS symbols_fts_ad AFTER DELETE ON symbols BEGIN
     DELETE FROM symbols_fts WHERE rowid = old.rowid;
+    DELETE FROM symbols_fts_keys WHERE symbol_rowid = old.rowid;
 END;
-CREATE TRIGGER IF NOT EXISTS symbols_fts_au AFTER UPDATE OF name ON symbols BEGIN
-    DELETE FROM symbols_fts WHERE rowid = old.rowid;
+CREATE TRIGGER IF NOT EXISTS symbols_fts_au
+AFTER UPDATE ON symbols
+WHEN old.rowid IS NOT new.rowid OR old.name IS NOT new.name
+  OR old.symbol_id IS NOT new.symbol_id OR old.file_path IS NOT new.file_path
+  OR old.symbol_uid IS NOT new.symbol_uid BEGIN
+    DELETE FROM symbols_fts WHERE rowid IN (
+        SELECT symbol_rowid FROM symbols_fts_keys
+        WHERE symbol_rowid = old.rowid OR symbol_rowid = new.rowid
+           OR symbol_id = new.symbol_id OR symbol_uid = new.symbol_uid
+    );
+    DELETE FROM symbols_fts_keys
+    WHERE symbol_rowid = old.rowid OR symbol_rowid = new.rowid
+       OR symbol_id = new.symbol_id OR symbol_uid = new.symbol_uid;
+    INSERT INTO symbols_fts_keys(symbol_rowid, symbol_id, symbol_uid)
+    VALUES (new.rowid, new.symbol_id, new.symbol_uid);
     INSERT INTO symbols_fts(rowid, name, symbol_id, file_path)
     VALUES (new.rowid, new.name, new.symbol_id, new.file_path);
 END;

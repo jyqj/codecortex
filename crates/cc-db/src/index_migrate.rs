@@ -44,7 +44,9 @@ use rusqlite::Connection;
 // and source-bound caller/callee ownership. Never retain legacy Method UIDs.
 // v27 rebuilds B1 qualified declaration identities and persists their binding
 // eligibility. Matching v26 files must be reparsed even when source is unchanged.
-pub const CURRENT_SCHEMA_VERSION: u32 = 27;
+// v28 reparses unchanged B1 qualified methods with definition-local cv/ref
+// signature identity. v27 UID collisions cannot be repaired by row backfill.
+pub const CURRENT_SCHEMA_VERSION: u32 = 28;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -150,7 +152,7 @@ mod tests {
     /// Semantic fixes require reparse even when table layout is unchanged.
     #[test]
     fn legacy_parse_and_resolution_versions_require_rebuild() {
-        for stored in [21, 22, 23, 24, 25] {
+        for stored in [21, 22, 23, 24, 25, 26, 27] {
             let conn = Connection::open_in_memory().unwrap();
             conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
             conn.pragma_update(None, "user_version", stored).unwrap();

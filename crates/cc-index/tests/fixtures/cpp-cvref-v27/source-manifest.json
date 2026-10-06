@@ -1,0 +1,18 @@
+[
+  {
+    "file_path": "overload.cpp",
+    "source": "struct C { int cv(); int cv() const; int ref() &; int ref() &&; };\nint C::cv(){return 1;}\nint C::cv() const{return 2;}\nint C::ref() &{return 3;}\nint C::ref() &&{return 4;}\n",
+    "mtime_seconds": 1720000000,
+    "mtime_nanos": 123456789,
+    "content_hash": "49b797e5f03aa13c24f2531196f811c25d6cb714fc73488fc244998cc3f5e628",
+    "size": 172
+  },
+  {
+    "file_path": "controls.cpp",
+    "source": "struct Other { static int cv(); };\nint run(C& c) { return C::cv()+c.cv()+C::ref()+cv()+Other::cv(); }\nint Missing::orphan() const { return 9; }\nnamespace Preserve { int keep(); }\nint Preserve::keep() { return 8; }\nstruct Legacy { int same() const { return 11; } int same() volatile { return 12; } };\nint untouched(int x) { return x; }\n",
+    "mtime_seconds": 1720000000,
+    "mtime_nanos": 123456789,
+    "content_hash": "2e764db7bfc00abeacc52af84071a251161d7e6b7d49cfa4b53c051729ca8fbf",
+    "size": 335
+  }
+]

@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 
 const CAP: usize = 16000;
 
-fn fixture() -> (tempfile::TempDir, CodeIndex, Value) {
+fn unprojected_fixture() -> (tempfile::TempDir, CodeIndex, Value) {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(
         root.path().join(".codecortex.json"),
@@ -18,13 +18,18 @@ fn fixture() -> (tempfile::TempDir, CodeIndex, Value) {
     std::fs::write(root.path().join("a.rs"), "pub fn needle() -> i32 { 7 }\n").unwrap();
     let mut index = CodeIndex::new(Some(root.path())).unwrap();
     index.build_index(true).unwrap();
-    let mut value = serde_json::to_value(
+    let value = serde_json::to_value(
         index
             .search()
             .search_in_context("needle", 1, Some(Intent::Locate))
             .unwrap(),
     )
     .unwrap();
+    (root, index, value)
+}
+
+fn fixture() -> (tempfile::TempDir, CodeIndex, Value) {
+    let (root, index, mut value) = unprojected_fixture();
     // Complete the existing metadata projection first. The retained hit is
     // genuine; only duplicate render/node views and test-only prose are inputs
     // to this stage control, so later padding cannot be hidden by those views.
@@ -154,4 +159,56 @@ fn failed_omission_preserves_whole_receipt_and_marker_value_or_absence() {
             accounted_and_verified(&packed, root.path(), CAP);
         }
     }
+}
+
+#[test]
+fn optional_work_yields_before_full_lane_and_hit_metadata_projection() {
+    let (root, _index, mut raw) = unprojected_fixture();
+    let hits = raw["machine_pack"]["hits"].clone();
+    let retrieval = raw["evidence_summary"]["retrieval"].clone();
+    assert!(hits[0]["metadata"]["stage_a_layer_scores"].is_array());
+    assert!(retrieval["lanes"].is_array());
+    assert!(retrieval.get("lane_receipts").is_none());
+
+    // The first pressure stage may remove duplicate rendering while retaining
+    // the actual complete metadata and lanes. This baseline has ample room for
+    // the producer's work receipt, which must not be discarded unnecessarily.
+    raw["rendered_prompt"] = json!("duplicate source view".repeat(CAP));
+    let mut input = pack_value(raw, CAP).unwrap();
+    assert_eq!(input["machine_pack"]["hits"], hits);
+    assert_eq!(input["evidence_summary"]["retrieval"], retrieval);
+    assert!(input["evidence_summary"]["source_freshness"]["validation_work"].is_object());
+    let before = input.clone();
+
+    // Fixed public cap and exact synthetic excess after duplicate rendering;
+    // no source text, score, candidate or original assertion is changed.
+    input["test_only_output_padding"] = json!("");
+    let size = serde_json::to_vec(&input).unwrap().len();
+    assert!(size < CAP);
+    input["test_only_output_padding"] = json!("x".repeat(CAP + 64 - size));
+    assert_eq!(serde_json::to_vec(&input).unwrap().len(), CAP + 64);
+    input["rendered_prompt"] = json!("duplicate source view".repeat(CAP));
+    let packed = pack_value(input, CAP).unwrap();
+
+    assert_eq!(packed["machine_pack"]["hits"], hits);
+    assert_eq!(packed["evidence_summary"]["retrieval"], retrieval);
+    assert_eq!(packed["evidence_summary"]["packing"]["compacted"], true);
+    assert_eq!(packed["evidence_summary"]["packing"]["omitted_hits"], 0);
+    assert_eq!(packed["evidence_summary"]["packing"]["omitted_nodes"], 0);
+    assert_eq!(
+        packed["evidence_summary"]["packing"]["partial"],
+        before["evidence_summary"]["packing"]["partial"]
+    );
+    let freshness = &packed["evidence_summary"]["source_freshness"];
+    assert!(freshness.get("validation_work").is_none());
+    assert_eq!(freshness["details_omitted"], true);
+    for (key, value) in before["evidence_summary"]["source_freshness"]
+        .as_object()
+        .unwrap()
+    {
+        if key != "validation_work" && key != "details_omitted" {
+            assert_eq!(&freshness[key], value, "changed {key}");
+        }
+    }
+    accounted_and_verified(&packed, root.path(), CAP);
 }

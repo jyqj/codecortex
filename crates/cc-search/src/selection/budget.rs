@@ -28,6 +28,36 @@ fn measure(value: &mut Value) -> CcResult<usize> {
     }
     Err(CcError::Search("budget accounting did not converge".into()))
 }
+// Optional final-validation diagnostics yield before irreversible evidence
+// projection. A failed probe restores the exact receipt and marker, including
+// an originally absent marker. Missing work never means zero or completeness.
+fn omit_validation_work_if_fits(value: &mut Value, cap: usize) -> CcResult<bool> {
+    let optional_work = value
+        .pointer_mut("/evidence_summary/source_freshness")
+        .and_then(Value::as_object_mut)
+        .and_then(|freshness| {
+            freshness.remove("validation_work").map(|work| {
+                let previous_omission = freshness.insert("details_omitted".into(), json!(true));
+                (work, previous_omission)
+            })
+        });
+    let Some((work, previous_omission)) = optional_work else {
+        return Ok(false);
+    };
+    if measure(value)? <= cap {
+        return Ok(true);
+    }
+    let freshness = value["evidence_summary"]["source_freshness"]
+        .as_object_mut()
+        .expect("existing freshness object");
+    freshness.insert("validation_work".into(), work);
+    if let Some(previous) = previous_omission {
+        freshness.insert("details_omitted".into(), previous);
+    } else {
+        freshness.remove("details_omitted");
+    }
+    Ok(false)
+}
 fn keep(object: &mut Value, keys: &[&str]) {
     if let Some(map) = object.as_object_mut() {
         map.retain(|key, _| keys.contains(&key.as_str()));
@@ -165,6 +195,12 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
         }
     }
     if measure(&mut value)? <= cap {
+        return Ok(value);
+    }
+    // Duplicate source views have already yielded. Prefer omitting optional
+    // work diagnostics before losing full lane/hit metadata that a later body
+    // check cannot reconstruct. All initial envelope validation still applies.
+    if omit_validation_work_if_fits(&mut value, cap)? {
         return Ok(value);
     }
     // Counts/status projection does not pretend omitted ranked candidates are
@@ -385,34 +421,8 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
     // Keep the full source prefix first. Optional outlines are packed only
     // into residual space and cannot displace a fitting body.
     while measure(&mut value)? > cap {
-        // Final-validation work is optional diagnostic metadata, not source
-        // proof. Omit the whole receipt only when that avoids the next body
-        // eviction, with the existing explicit details-omitted marker. If the
-        // current bodies still cannot fit, restore every original field before
-        // following the unchanged evidence priority; the receipt may fit after
-        // that eviction. Missing work never means zero or a completed attempt.
-        let optional_work = value
-            .pointer_mut("/evidence_summary/source_freshness")
-            .and_then(Value::as_object_mut)
-            .and_then(|freshness| {
-                freshness.remove("validation_work").map(|work| {
-                    let previous_omission = freshness.insert("details_omitted".into(), json!(true));
-                    (work, previous_omission)
-                })
-            });
-        if let Some((work, previous_omission)) = optional_work {
-            if measure(&mut value)? <= cap {
-                break;
-            }
-            let freshness = value["evidence_summary"]["source_freshness"]
-                .as_object_mut()
-                .expect("existing freshness object");
-            freshness.insert("validation_work".into(), work);
-            if let Some(previous) = previous_omission {
-                freshness.insert("details_omitted".into(), previous);
-            } else {
-                freshness.remove("details_omitted");
-            }
+        if omit_validation_work_if_fits(&mut value, cap)? {
+            break;
         }
         // Even a large derived graph description has lower priority than
         // the final complete primary hit. Its omission remains explicit.

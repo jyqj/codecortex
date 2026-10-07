@@ -57,9 +57,12 @@
 //! A candidate row with an unparseable/reforeign `artifact_ref`, a missing
 //! cache object (`Miss`) or a detected-corrupt object (`Corrupt`) is *skipped*;
 //! it is never an error and never quarantined here (the quarantine *move* is
-//! P6-018). A zero-magnitude document or query vector has no cosine and is
-//! skipped likewise — NaN/Inf scores can never be produced (C10: "NaN/Inf/...
-//! 拒收").
+//! P6-018). [`search_controlled_with_coverage`] also reports these gaps among
+//! the requested space's scope-passing rows, so a caller can distinguish a
+//! complete result from a scan that lost eligible artifacts. The legacy Vec
+//! APIs keep their result-only contract. A zero-magnitude document or query
+//! vector has no cosine and is skipped likewise — NaN/Inf scores can never
+//! be produced (C10: "NaN/Inf/... 拒收").
 
 use cc_db::semantic_manifest_reads::{SemanticManifestReads, SemanticManifestRow};
 use cc_model::query::QueryControl;
@@ -126,6 +129,28 @@ pub struct ScoredDoc {
     pub score: f64,
 }
 
+/// Top-k plus bounded, per-scan artifact availability diagnostics. Counts are
+/// per eligible manifest row, not distinct cache objects. Foreign-space rows
+/// and hard-scope exclusions contribute nothing; a bad reference on an
+/// eligible row is counted without opening any cache object. No row list or
+/// repair work is retained. These counters do not assert publication coverage
+/// or active-space status, which remain the caller's manifest fence.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ExactSearchResult {
+    pub scored: Vec<ScoredDoc>,
+    pub missing_artifacts: usize,
+    pub corrupt_artifacts: usize,
+    pub rejected_artifact_refs: usize,
+}
+
+impl ExactSearchResult {
+    pub fn has_unavailable_artifacts(&self) -> bool {
+        self.missing_artifacts != 0
+            || self.corrupt_artifacts != 0
+            || self.rejected_artifact_refs != 0
+    }
+}
+
 /// Parameters of one filtered exact query (brief interface draft; `space`
 /// carries the full frozen [`VectorSpace`] rather than a bare
 /// [`SpaceDigest`] because the artifact cache verifies model/dimension against
@@ -148,7 +173,7 @@ pub fn search(
     manifest: &dyn ManifestCandidates,
     q: ExactSearch<'_>,
 ) -> CcResult<Vec<ScoredDoc>> {
-    search_checked(cache, manifest, q, || Ok(()))
+    search_checked(cache, manifest, q, || Ok(())).map(|result| result.scored)
 }
 
 /// Cooperative variant of [`search`] with the same scoring and ordering.
@@ -166,6 +191,20 @@ pub fn search_controlled(
     q: ExactSearch<'_>,
     control: &QueryControl,
 ) -> CcResult<Vec<ScoredDoc>> {
+    search_controlled_with_coverage(cache, manifest, q, control).map(|result| result.scored)
+}
+
+/// Cooperative exact scan with the same top-k and checkpoints as
+/// [`search_controlled`], retaining artifact gaps even outside the winning
+/// top-k. An empty hard domain or zero limit reports no artifact gaps. An
+/// interrupted or failed scan still returns an error, never a successful
+/// partial report.
+pub fn search_controlled_with_coverage(
+    cache: &ArtifactCache,
+    manifest: &dyn ManifestCandidates,
+    q: ExactSearch<'_>,
+    control: &QueryControl,
+) -> CcResult<ExactSearchResult> {
     search_checked(cache, manifest, q, || control.check())
 }
 
@@ -174,7 +213,7 @@ fn search_checked(
     manifest: &dyn ManifestCandidates,
     q: ExactSearch<'_>,
     mut checkpoint: impl FnMut() -> CcResult<()>,
-) -> CcResult<Vec<ScoredDoc>> {
+) -> CcResult<ExactSearchResult> {
     checkpoint()?;
     q.space.validate()?;
     if q.batch_rows == 0 {
@@ -192,12 +231,13 @@ fn search_checked(
     // C09: Some(empty) is an empty set — never degrade to a full-repo scan.
     // (k == 0 is the trivial empty result.)
     if q.k == 0 || q.filter.is_empty() {
-        return Ok(Vec::new());
+        return Ok(ExactSearchResult::default());
     }
 
     let space_digest = q.space.digest()?;
     let mut cursor = String::new();
     let mut top = TopK::new(q.k);
+    let mut result = ExactSearchResult::default();
     loop {
         checkpoint()?;
         let batch = manifest.next_batch(&cursor, q.batch_rows)?;
@@ -208,23 +248,38 @@ fn search_checked(
         for row in &batch {
             checkpoint()?;
             cursor = row.doc_key.clone();
-            if let Some(score) =
-                score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)?
-            {
-                top.offer(row.doc_key.clone(), score);
+            match score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)? {
+                CandidateScore::Scored(score) => top.offer(row.doc_key.clone(), score),
+                CandidateScore::Skipped => {}
+                CandidateScore::MissingArtifact => {
+                    result.missing_artifacts = result.missing_artifacts.saturating_add(1);
+                }
+                CandidateScore::CorruptArtifact => {
+                    result.corrupt_artifacts = result.corrupt_artifacts.saturating_add(1);
+                }
+                CandidateScore::RejectedArtifactRef => {
+                    result.rejected_artifact_refs = result.rejected_artifact_refs.saturating_add(1);
+                }
             }
             checkpoint()?;
         }
     }
-    let result = top.finish();
+    result.scored = top.finish();
     checkpoint()?;
     Ok(result)
 }
 
-/// Load-layer pipeline for one row: scope gate → address validation → cache
-/// load → metric scoring. `Ok(None)` = the row is not a result (filtered,
-/// foreign, or degraded); never an error unless the manifest read path itself
-/// fails.
+enum CandidateScore {
+    Scored(f64),
+    Skipped,
+    MissingArtifact,
+    CorruptArtifact,
+    RejectedArtifactRef,
+}
+
+/// Scope gate → address validation → cache load → metric scoring. Only rows
+/// admitted by both space and scope can report an unavailable artifact.
+/// Actual I/O errors continue to propagate rather than masquerading as gaps.
 fn score_candidate(
     cache: &ArtifactCache,
     space: &VectorSpace,
@@ -232,27 +287,27 @@ fn score_candidate(
     query: &[f32],
     filter: &HardScope,
     row: &SemanticManifestRow,
-) -> CcResult<Option<f64>> {
+) -> CcResult<CandidateScore> {
     // Defense in depth: the scan already filtered by space id; a row that
     // still disagrees (stale join, wrong source) never reaches scoring.
     if row.space_id != space_digest.as_str() {
-        return Ok(None);
+        return Ok(CandidateScore::Skipped);
     }
     if !row_passes_scope(filter, row) {
-        return Ok(None);
+        return Ok(CandidateScore::Skipped);
     }
     // The cache addressing tuple must match the row before any byte is read:
     // a ref from another namespace, another space, or another input is not
     // this row's vector.
     let address = match parse_artifact_ref(&row.artifact_ref) {
         Some(address) => address,
-        None => return Ok(None), // unparseable ref: degrade, do not fail
+        None => return Ok(CandidateScore::RejectedArtifactRef),
     };
     if address.namespace != cache.namespace()
         || address.space_id != space_digest.as_str()
         || address.input_digest != row.input_digest
     {
-        return Ok(None);
+        return Ok(CandidateScore::RejectedArtifactRef);
     }
     let input = InputDigest::new(row.input_digest.clone());
     let spec = DocSpecDigest::new(address.spec_digest);
@@ -264,10 +319,11 @@ fn score_candidate(
             let score = match space.distance() {
                 crate::spec::DistanceMetric::Cosine => cosine_f64(query, &vector.data),
             };
-            Ok(score)
+            Ok(score.map_or(CandidateScore::Skipped, CandidateScore::Scored))
         }
         // Missing or detected-corrupt artifact: degrade (skip), never pollute.
-        CacheRead::Miss | CacheRead::Corrupt(_) => Ok(None),
+        CacheRead::Miss => Ok(CandidateScore::MissingArtifact),
+        CacheRead::Corrupt(_) => Ok(CandidateScore::CorruptArtifact),
     }
 }
 
@@ -639,6 +695,111 @@ mod tests {
             })
             .collect();
         (temp, cache, space, rows)
+    }
+
+    #[test]
+    fn read_coverage_counts_eligible_gaps_and_resets_for_excluded_rows() {
+        let (temp, cache, space, mut rows) = controlled_fixture("read-coverage");
+        let spec = DocumentEncodingSpec::new(space.clone(), None, 8_192, "t")
+            .unwrap()
+            .digest()
+            .unwrap();
+        assert!(cache
+            .discard(&space, &InputDigest::new("b"), &spec)
+            .unwrap());
+        let corrupt_path = temp
+            .root
+            .join(format!("namespace-{}", cache.namespace()))
+            .join(space.digest().unwrap().as_str())
+            .join("c")
+            .join(spec.as_str())
+            .join(format!("{}.bin", spec.as_str()));
+        std::fs::write(corrupt_path, [0u8; 8]).unwrap();
+        let mut foreign_row = rows[1].clone();
+        foreign_row.doc_key = "d".into();
+        foreign_row.space_id = "different-space".into();
+        let mut excluded_row = rows[1].clone();
+        excluded_row.doc_key = "e".into();
+        excluded_row.file_path = "outside/e.rs".into();
+        let mut malformed_ref = rows[1].clone();
+        malformed_ref.doc_key = "f".into();
+        malformed_ref.file_path = "src/f.rs".into();
+        malformed_ref.artifact_ref = "invalid-reference".into();
+        let mut foreign_ref = rows[0].clone();
+        foreign_ref.doc_key = "g".into();
+        foreign_ref.file_path = "src/g.rs".into();
+        foreign_ref.artifact_ref = foreign_ref
+            .artifact_ref
+            .replace(space.digest().unwrap().as_str(), "different-space");
+        rows.extend([foreign_row, excluded_row, malformed_ref, foreign_ref]);
+        let filter = HardScope {
+            path_prefix: Some("src/".into()),
+            ..scope()
+        };
+        let expected = ExactSearchResult {
+            scored: vec![ScoredDoc {
+                doc_key: "a".into(),
+                score: 1.0,
+            }],
+            missing_artifacts: 1,
+            corrupt_artifacts: 1,
+            rejected_artifact_refs: 2,
+        };
+        for batch_rows in [1, 2, 8] {
+            let result = search_controlled_with_coverage(
+                &cache,
+                &MemSource::new(rows.clone()),
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &filter,
+                    k: 1,
+                    batch_rows,
+                },
+                &QueryControl::new(std::time::Duration::from_secs(5)).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(result, expected);
+            assert!(result.has_unavailable_artifacts());
+        }
+        assert_eq!(
+            run(&cache, rows.clone(), &[1.0, 0.0], &space, &filter, 1, 2).unwrap(),
+            expected.scored,
+            "the legacy Vec API keeps identical scores and ordering"
+        );
+        // The same bad rows must not taint another request's narrower scope.
+        let healthy = HardScope {
+            file_paths: Some(vec!["src/a.rs".into()]),
+            ..scope()
+        };
+        for (filter, limit, expected_count) in [
+            (healthy, 1, 1),
+            (
+                HardScope {
+                    file_paths: Some(vec![]),
+                    ..scope()
+                },
+                1,
+                0,
+            ),
+            (scope(), 0, 0),
+        ] {
+            let result = search_controlled_with_coverage(
+                &cache,
+                &MemSource::new(rows.clone()),
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &filter,
+                    k: limit,
+                    batch_rows: 2,
+                },
+                &QueryControl::new(std::time::Duration::from_secs(5)).unwrap(),
+            )
+            .unwrap();
+            assert!(!result.has_unavailable_artifacts());
+            assert_eq!(result.scored.len(), expected_count);
+        }
     }
 
     #[test]

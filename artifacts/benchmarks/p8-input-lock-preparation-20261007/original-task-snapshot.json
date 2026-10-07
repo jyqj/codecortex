@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "source_base": "2edc8fd0433689eccc15d9fb14bbffe6345740c2",
+  "read_only_original_task": {
+    "id": "P8-001",
+    "title": "锁定release候选与证据输入",
+    "status": "todo",
+    "depends_on": [
+      "P7-020"
+    ],
+    "steps": [
+      "冻结binary/config/corpus/scoring/model/环境",
+      "停止覆盖被测源码"
+    ],
+    "acceptance": [
+      "每份报告精确回到同一候选，后续改动使对应证据失效",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V01",
+      "V02"
+    ],
+    "scope": [
+      "crates/cc-eval/src/benchmark/manifest.rs",
+      "artifacts/benchmarks/"
+    ],
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ]
+  },
+  "authority_file_sha256": {
+    "docs/roadmap/code-index-v2/tasks.json": "5745e39a174c16ca12b46a02fb2583826a0eb2a652e2c0db58e90f8b2f24f014",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+    "crates/cc-eval/src/benchmark/manifest.rs": "8a67fab83b00a05727a00db97527de72b596aed497c32aa53c5e9ebaa8742001",
+    "crates/cc-eval/src/benchmark/report.rs": "4dbb72f72183db05e676b09d9ef617ce15d6424969ad50d6ae5217510b69375d",
+    "crates/cc-eval/src/benchmark/runner.rs": "5350bb18401a288498fa1e5529485926045350f94bb9c07d25f5818e5ff02ee5"
+  },
+  "originals_modified_by_this_task": false
+}

@@ -41,6 +41,14 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Compare public local/auto/semantic policies at equal observed budgets.
+    /// Current v1 allows disabled-network or literal-loopback engineering inputs.
+    AblateStrategies {
+        #[arg(long)]
+        plan: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Export JSON Schema from the same Rust types used by the runner.
     Schema {
         #[arg(long)]
@@ -213,6 +221,9 @@ async fn execute(command: Command) -> Result<i32> {
             Ok(if result["passed"] == true { 0 } else { 1 })
         }
         Command::Ablate { plan, output } => b::ablation::run(&plan, &output).await,
+        Command::AblateStrategies { plan, output } => {
+            b::ablation::strategy::run(&plan, &output).await
+        }
         Command::Schema { output } => {
             new_output(&output)?;
             report::json(

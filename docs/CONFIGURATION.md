@@ -243,6 +243,7 @@ P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模
 | `network_opt_in` | `false` | **显式网络 opt-in**（P7-007 外发政策）。默认 `false` = 默认无网络：未开启时组合根拒绝装配任何 provider transport（`cc-semantic::policy::gate_transport_assembly` 与适配器构造器双重强制，配置错误拒启）。`enabled: true` 单独不足以放开网络——外发必须由本键独立、显式声明。 |
 | `allow_http` | `false` | 是否允许明文 `http://` 端点（P7-007）。默认 `false` = 仅 https；明文端点被外发政策拒绝（配置错误），设置 `true` 才放行。生产部署建议保持关闭。 |
 | `allow_query_network` | `false` | 独立授权发送 query/task 文本以生成查询向量；`network_opt_in` 单独不会授权此用途。生产接线要求 `semantic-http` 构建、`enabled`、`network_opt_in` 与本键全部开启；local 查询及空 hard scope 不编码。开启后在召回前生成并缓存查询向量，使用同一绝对查询预算、独立前台容量及单次尝试；关闭本键保留 cold query vector 的明确 unavailable 结果。 |
+| `gc_min_retention_secs` | `3600` | 显式 GC 的保留宽限，单位秒。启用语义时须为 `1..=9223372036854775807`；零或超出运行时有符号整数范围的值在子系统装配前按键名报配置错误，不能转换成负宽限。`enabled=false` 时语义配置节仍不执行装配。 |
 
 ### 代码外发与凭据政策（P7-007，执行机制腿）
 
@@ -341,9 +342,9 @@ namespace = `blake3("cc-semantic.cache-namespace.v1", 项目身份)` 的
   预算耗尽终态 `failed` 死信——不静默无界重费。预算值当前为进程内
   调用方参数（进程生命周期，重启清零；outbox 行计数为持久审计轨），
   尚无配置文件键。
-- GC 宽限（`min_retention_secs`，默认 3600s）同理为调用方参数
-  （`gc.rs:93`），防"刚发布产物被 GC 删除"；接线轮应将其纳入配置面并
-  保证非零下限。
+- GC 宽限通过 `semantic.gc_min_retention_secs` 配置（默认 3600s），
+  组合根将经过正数范围校验的值传给显式 GC。宽限与 manifest/任务标记
+  共同保护保留中的对象；它不提供收集、标记与删除之间的文件系统原子性。
 
 ## 仓库规模档位
 

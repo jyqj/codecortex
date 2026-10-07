@@ -1,0 +1,88 @@
+{
+  "creator_script_sha256": "050e21f0901c48d475f53a1c424d37f5be0d3cce0d0f79f9e45e0fec8b049301",
+  "default_smoke_not_reclassified_as_three_policy_report": true,
+  "elapsed_seconds": 1.045625,
+  "environment_collection": "Existing allowlisted fields only; no os.environ enumeration, external key dereference, hardware query or cost imputation",
+  "input_spec": "input-spec.json",
+  "input_spec_sha256": "b215e01339b9be3ccfcaf3201304308775d985c9b715aafb017416fa05a0b89b",
+  "lock": "019-input-lock.json",
+  "lock_execution_owner": "/root/todo_audit",
+  "lock_sha256": "2efa0e445460269cfb845267d26d02bdae92cb55eb10755008819fa39f81ef4d",
+  "new_benchmark_run_count": 0,
+  "original_dependencies_changed": false,
+  "prepare": {
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "/workspace/scratch/71bc431c4e4f/codecortex-p8-input-lock/scripts/lock_benchmark_inputs.py",
+      "prepare",
+      "--root",
+      "/workspace/scratch/71bc431c4e4f",
+      "--spec",
+      "/workspace/scratch/71bc431c4e4f/p8-001-evidence/input-spec.json",
+      "--out",
+      "/workspace/scratch/71bc431c4e4f/p8-001-evidence/019-input-lock.json"
+    ],
+    "exit_code": 0,
+    "log": "prepare-lock.log",
+    "log_sha256": "e896a1fbaa472e23d5376a674471a1f4499ecc1703aa8e7274734ad75374dfaa",
+    "result": {
+      "execution_attestation": false,
+      "input_count": 26,
+      "lock_sha256": "2efa0e445460269cfb845267d26d02bdae92cb55eb10755008819fa39f81ef4d",
+      "release_candidate": false,
+      "scope": "preparation_only",
+      "status": "prepared"
+    }
+  },
+  "prior_benchmark_evidence_commit": "4b78f683cda4b83eb750557c79072dcf8b651d17",
+  "prior_benchmark_execution_owner": "/root/pr_audit",
+  "prior_benchmark_source": "93356fc87e9534c286192bde1fc88aa95abe878b",
+  "product_binary_sha256": "588e8099bfa5b84ab0d6f5b4c349d54b8800581fd7a3d8a50f348d6d39a14e77",
+  "release_candidate": false,
+  "root": "/workspace/scratch/71bc431c4e4f",
+  "rust_or_product_executed_by_this_lock_task": false,
+  "schema_version": 1,
+  "scope": "preparation_only",
+  "script_sha256": "9b3def7e2a87a6c1d8312f19c72d11bdec4c12d33a0fcfc7ce783c37e003c75f",
+  "selected_report": "P7-019 canonical HTTP product with local/auto/semantic public policies",
+  "source_commit": "1bb5ea9c6d66e9109fdaf8766606337eedec8219",
+  "source_file_count": 772,
+  "task": "P8-001",
+  "task_status_changed": false,
+  "verify": {
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "/workspace/scratch/71bc431c4e4f/codecortex-p8-input-lock/scripts/lock_benchmark_inputs.py",
+      "verify",
+      "--root",
+      "/workspace/scratch/71bc431c4e4f",
+      "--lock",
+      "/workspace/scratch/71bc431c4e4f/p8-001-evidence/019-input-lock.json",
+      "--expected-lock-sha256",
+      "2efa0e445460269cfb845267d26d02bdae92cb55eb10755008819fa39f81ef4d"
+    ],
+    "exit_code": 0,
+    "log": "verify-lock.log",
+    "log_sha256": "8b3d776dec37524dd9eccf221eb545078f261c6fa8ae2f93db9ba6e8c8812549",
+    "result": {
+      "checked_receipt_relationships": 116,
+      "execution_attestation": false,
+      "input_count": 26,
+      "lock_sha256": "2efa0e445460269cfb845267d26d02bdae92cb55eb10755008819fa39f81ef4d",
+      "release_candidate": false,
+      "scope": "preparation_only",
+      "status": "matching_preparation_inputs",
+      "unresolved": [
+        "P7-020 remains incomplete; P8-001 stays todo/groundwork. No release candidate or P8 acceptance starts here.",
+        "P7-019 is a synthetic loopback engineering profile, not public holdout quality or a live-model benefit certificate.",
+        "The model_id and expected encoding space describe a pinned fake provider; no real model revision is certified.",
+        "Original hardware is null; physical CPU model/RAM and paid-provider costs are unknown, not zero.",
+        "This locks supplied source/build/execution relationships, not their independent authenticity or full hermetic input closure.",
+        "Native cc-eval BLAKE3 declarations are retained and related across reports; this SHA256 lock does not replace the original loader/scorer execution.",
+        "Exact retained product binary, source snapshot and canonical raw bundle are external inputs required for later verification."
+      ]
+    }
+  }
+}

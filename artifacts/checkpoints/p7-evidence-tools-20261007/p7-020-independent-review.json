@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source_commit": "319a55323211aecb603dd0398d0097f9f75024f4",
+  "source_tree": "5bac1ad760cba2f2e016845f0bf855fc8e75e5b9",
+  "reviewer": "/root/pr_audit",
+  "mode": "independent read-only source review; no Rust or Python test execution in this review",
+  "conclusion": "accepted_scoped_no_gate_approval",
+  "blockers": [],
+  "files": {
+    "scripts/p7_gate_report.py": {
+      "sha256": "d0c0297a31f1b3f46fd4007899320b26df777f9ff7867777c768991cd0d86d40",
+      "bytes": 14834
+    },
+    "tests/resource_harness/test_p7_gate_report.py": {
+      "sha256": "1176f864a3eaac5e86e280b92b4e1feb90379488ce854958ef2bad8d52cd5e08",
+      "bytes": 9190
+    }
+  },
+  "reviewed_properties": [
+    "The commit adds only the two reviewed reporter/test paths; task statuses, acceptance rules, provider config and live manifests are untouched.",
+    "P7-020 hard prerequisites are checked as the original P7-001 through P7-017 plus P7-019. P7 acceptance/validations/depends_on/conditional_dependencies/conditional/required_for are compared against the caller-selected immutable baseline.",
+    "Task authority bytes are pinned by the explicit index; task inventory/duplicate IDs and completed-task evidence plus hard dependencies are checked.",
+    "D1+D2 decision bytes must equal the selected fixed baseline; P7-018 remains blocked and any submission for it must be blocked_disposition rather than implementation/current_validation.",
+    "Artifact hashes verify current regular-file bytes only. Entries retain immutable source commit and every crate/Cargo path differing from current HEAD; a final committed-source snapshot rejects dirty or extra current inputs.",
+    "Engineering status is unconditionally not_accepted and live is unconditionally blocked. A successful CLI exit means report creation; it cannot grant G7, release, live benefit or source admission.",
+    "Progress uses distinct original task IDs and separates submitted implementation/current_validation from blocked dispositions and audits; even submitted work is explicitly not task completion.",
+    "Outputs require a new directory and include JSON/Markdown review material; the reporter never changes task authority or runs provider/API/live actions."
+  ],
+  "controls": {
+    "author": "/root",
+    "reported_passed": 8,
+    "reviewer_read_all_control_source": true,
+    "reviewer_reran_controls": false,
+    "runtime_log_independently_verified": false,
+    "scope": "synthetic stdlib controls, not product or G7 behavior certification"
+  },
+  "nonblocking_notes": [
+    {
+      "area": "index resource bound",
+      "observation": "collect reads all index bytes before checking the 256 KiB limit. A bounded read(limit+1) would make the advertised pre-parse resource limit real."
+    },
+    {
+      "area": "malformed path error",
+      "observation": "regular_path(\".\") has an empty PurePosixPath.parts tuple and reaches parts[0], so it raises IndexError rather than the unified ValueError/CLI rejection. It still does not admit a dossier."
+    },
+    {
+      "area": "scope wording",
+      "observation": "The live validation list includes V18; describe it as the live leg only so it does not erase accepted offline V18 subsets."
+    },
+    {
+      "area": "baseline trust",
+      "observation": "The baseline is an explicit caller-selected 40-hex index field, not a globally hardcoded authority. The claimed original-condition comparison is relative to that reviewed selection, and source/hash consistency is not approval."
+    }
+  ],
+  "not_claimed": [
+    "G7 completion",
+    "P7-018 implementation",
+    "all original TODOs done",
+    "actual current per-task execution inferred from hashes",
+    "live calls or quality/monetary evidence",
+    "review of any later report/index bytes"
+  ]
+}

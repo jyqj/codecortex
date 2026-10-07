@@ -1,0 +1,68 @@
+{
+  "reviewer": "/root/build_environment",
+  "rust_execution": false,
+  "product_execution": false,
+  "repository_modified": false,
+  "accepted_scope": [
+    "Explicit required input roles, canonical relative selected paths, complete tree files and directories (including empty directories), content lengths/hashes and mode bits are captured. Symlink/special-file input rejection is retained.",
+    "Two snapshots detect observed intervening membership/content changes. File reads compare descriptor identity before/after and path identity; documentation correctly disclaims atomic or continuous filesystem snapshot protection.",
+    "Each binary requires actual file SHA relationships to distinct supplied build/execution receipt inputs. JSON-pointer hash/map/equality/literal bindings compare serialized typed values and reject duplicate keys/non-finite literals.",
+    "Lock output must be outside selected files/trees and is created exclusively; verification is read-only and requires a separate expected lock SHA before parsing relationships.",
+    "Unresolved descriptions and explicitly selected environment values are retained. No process environment enumeration, hardware query, Rust/product/benchmark execution or release promotion is performed."
+  ],
+  "scope_limits": [
+    "Source-map, source-commit, build-option/profile and report relationships beyond mandatory binary receipt hashes are caller-supplied bindings. A concrete input specification must be separately reviewed for those relationships; presence of a role alone is not their validation.",
+    "Receipt authenticity, actual past execution and completeness of the selected source/build inputs are not certified by this lock. It complements the existing cc-eval manifests and does not replace their binary_source_binding warning.",
+    "P8-001 remains preparation-only with P7-020 dependency and wider release obligations unresolved. No complete P8-001 or release-candidate acceptance is claimed."
+  ],
+  "source_paths": [
+    "scripts/lock_benchmark_inputs.py",
+    "tests/evidence_lock/test_benchmark_input_lock.py",
+    "docs/BENCHMARK_INPUT_LOCK.md"
+  ],
+  "review": "accepted_scoped",
+  "source_commit": "1bb5ea9c6d66e9109fdaf8766606337eedec8219",
+  "source_tree": "128d3138ad50e973188747d9ad3cff3990351de3",
+  "source_files_sha256": {
+    "scripts/lock_benchmark_inputs.py": "9b3def7e2a87a6c1d8312f19c72d11bdec4c12d33a0fcfc7ce783c37e003c75f",
+    "tests/evidence_lock/test_benchmark_input_lock.py": "ee265237a3a03341318ca3332a18e32524b8b902138eca7213d6f1955a7bef42",
+    "docs/BENCHMARK_INPUT_LOCK.md": "c153848abcd29e2788eb7cce854bbebe68aad0d37cec79b11e736433341883f3"
+  },
+  "findings": [],
+  "prior_finding_resolution": {
+    "id": "R1",
+    "status": "resolved",
+    "production_delta": "One require(isinstance(lock, dict), ...) before lock.get. Existing object-shaped lock paths and original test definitions are unchanged.",
+    "fixture_only_commit": "ff663f6b7c835ae24766b68b8af299c7426ff352",
+    "fixed_commit": "1bb5ea9c6d66e9109fdaf8766606337eedec8219",
+    "original_review_path": "/workspace/scratch/71bc431c4e4f/p8-001-independent-initial-review.json",
+    "original_review_sha256": "b4ea5fb8c02fb5f1115135976e35abcf26a8113708b52aa62e6b29e681df5d52"
+  },
+  "independent_final_control": {
+    "path": "/workspace/scratch/71bc431c4e4f/p8-001-invalid-lock-final-control.json",
+    "sha256": "d5d9e38f0687aa0e80ab43fedb6c1234da9c63457ad4a8906d97a8b81828da72",
+    "expected_exit_code": 2,
+    "actual_exit_code": 2,
+    "traceback": false,
+    "input_unchanged": true,
+    "source_files_unchanged": true,
+    "bytecode_created": false,
+    "method": "Direct python -B CLI with PYTHONDONTWRITEBYTECODE=1 and an absent disposable PYTHONPYCACHEPREFIX. The final 15-function group was not rerun by this reviewer."
+  },
+  "author_validation_separate": {
+    "receipt": "/workspace/scratch/71bc431c4e4f/p8-001-evidence/final-controls-receipt.json",
+    "receipt_sha256": "33b60219ff3581f8e082cd1ec3cbd29ea119dba34c3da12938373db621d01c3f",
+    "source_commit": "1bb5ea9c6d66e9109fdaf8766606337eedec8219",
+    "test_functions": 15,
+    "exit_code": 0,
+    "raw_log_sha256": "603726574bca139aeb9f1db09951777da89e1fdfdfac37801e882f113ee8094f",
+    "execution_owner": "/root/todo_audit",
+    "independently_executed_by_reviewer": false
+  },
+  "historical_validation": {
+    "original_independent_14_tests": "/workspace/scratch/71bc431c4e4f/p8-001-independent-stdlib.json",
+    "original_negative_control": "/workspace/scratch/71bc431c4e4f/p8-001-invalid-lock-control.json",
+    "fixture_red_and_two_zero_test_preflights": "Retained by the author separately; preflight bytecode-directory reappearance has unknown origin and is not counted as a behavior test."
+  },
+  "concrete_019_input_lock_review": "pending separate specification/lock/input identity review; not included in this code acceptance"
+}

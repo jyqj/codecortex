@@ -1,0 +1,84 @@
+{
+  "review": "changes_requested_scoped",
+  "source_commit": "c42fda802a0dcbc3f5a708f007ca76af3f28f593",
+  "source_tree": "cc71911a24acb0f81b2837a62ff10025fccbf7d4",
+  "reviewer": "/root/build_environment",
+  "source_files_sha256": {
+    "scripts/p7_build_identity.py": "f9a9943adc14c89970ef57d865b01f9a7b02143144a28c942d31886e4d32bc73",
+    "scripts/p7_stdio_build_receipt.py": "f8d45dfeaf40f49e7080728e7f06c40dda4e1983e211eda4c6a56739cd34f103",
+    "tests/resource_harness/test_p7_build_identity.py": "5a7b20e2db501e411e7af72ec279b9866c2aeb39cf9ea3196022a7a483b71ebb"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P1",
+      "path": "scripts/p7_stdio_build_receipt.py",
+      "function": "toolchain_identity/build",
+      "problem": "PATH rustc identity is labeled as the actual Cargo compiler although inherited RUSTC or Cargo build.rustc can select another compiler. RUSTC is neither applied to the version query nor recorded/pinned for the build; wrapper selection is also inherited.",
+      "evidence": "Pure-Python control changed RUSTC while toolchain_identity remained identical and omitted the override. Cargo official documentation explicitly defines RUSTC as a replacement for the compiler executable.",
+      "reference": "https://doc.rust-lang.org/cargo/reference/environment-variables.html",
+      "requested_change": "Bind the queried compiler command to the compiler Cargo is instructed to use and explicitly account for wrappers, or narrow the receipt wording to PATH tools and leave actual compiler identity unknown. Keep the original command vector compatible with the Rust receipt consumer if using environment pinning."
+    },
+    {
+      "id": "R2",
+      "priority": "P2",
+      "path": "scripts/p7_build_identity.py",
+      "function": "source_snapshot",
+      "problem": "The crates root itself is not lstat-checked. Replacing it with a symlink to an equal-byte directory is accepted, contrary to the declared non-symlink build-input boundary.",
+      "evidence": "Independent temporary Git fixture: crates_root_is_symlink=true, source_snapshot accepted, manifest_identical=true. rglob starts inside that root while per-input lstat checks only the final files.",
+      "requested_change": "Reject a symlink/non-directory crates inventory root before traversal and add this root-directory control; preserve rejection of nested symlink ancestors and regular-file symlinks."
+    }
+  ],
+  "accepted_parts": [
+    "Committed blob bytes, exact tracked/disk input inventory including ignored extras, Unicode and source maps are checked before/after.",
+    "Artifact feature set, production target, non-test profile, root manifest/source paths, actual executable, copy comparison and binary hash are bound.",
+    "A failed or reused evidence directory cannot replace a prior valid receipt. Raw stdout/stderr are preserved.",
+    "schema_version 1 and legacy receipt keys/command vector are preserved; current Rust consumer ignores additive identity fields and current CI uses fresh output directories."
+  ],
+  "compatibility_qualification": "Existing-output-directory behavior intentionally becomes fail-closed; arbitrary callers that precreate --output-dir must use a new path. No current repository caller was found precreating those specific directories.",
+  "independent_python_validation": {
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/resource_harness",
+      "-p",
+      "test_p7_build_identity.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "tests_passed": 7,
+    "tests_failed": 0,
+    "log": "/workspace/scratch/71bc431c4e4f/p7-017-independent-python-tests.log",
+    "log_sha256": "50d0261f6f6bd0d290c03fbf2df1deb43384d1c0f803c829d7c084aeb975fcd0"
+  },
+  "independent_controls": {
+    "path": "/workspace/scratch/71bc431c4e4f/p7-017-review-controls.json",
+    "sha256": "2207e9595b6d64f525b914bfe0a0ee3f727c472ecd9fc2149dcc4ccf35204c9b",
+    "result": {
+      "root_crates_symlink_control": {
+        "accepted": true,
+        "crates_root_is_symlink": true,
+        "manifest_identical": true
+      },
+      "RUSTC_identity_control": {
+        "override_supplied": "RUSTC",
+        "identity_unchanged": true,
+        "rustc_command_recorded": [
+          "rustc",
+          "--version",
+          "--verbose"
+        ],
+        "override_present_in_record": false
+      },
+      "rust_execution": false,
+      "fixture_kind": "temporary synthetic Git source and Python tool executables, no Rust compiler or build"
+    }
+  },
+  "rust_execution": false,
+  "production_build_execution": false,
+  "repository_modified": false,
+  "boundary": "Read-only source plus disposable synthetic Python/git controls. This review does not certify an actual offline product build, behavior, hermetic compilation or whole P7-017 acceptance."
+}

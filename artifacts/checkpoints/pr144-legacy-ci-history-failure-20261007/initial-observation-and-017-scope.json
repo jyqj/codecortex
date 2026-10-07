@@ -1,0 +1,87 @@
+{
+  "ci_mutation": false,
+  "expected_head_from_parent": "149aa04f24ddcfd02c3aa5626a59343e88d74866",
+  "expected_tree_from_parent": "c19cf91f6455472806b0d08a5408016e262ab5ab",
+  "initial_jobs_api": {
+    "format": "Exact serialized connector tool result, including normalized job and step payloads; not a raw HTTP wire capture.",
+    "path": "/workspace/scratch/71bc431c4e4f/pr144-legacy-ci/initial-jobs-api.json",
+    "sha256": "60f48c90bb6b7800729e110992b4ba2e194ef49be1f443450ae27076d0a5d7f4"
+  },
+  "jobs_observed": [
+    {
+      "active_step": "Compile every default test target",
+      "completed_relevant_steps": [
+        "Format check",
+        "Clippy"
+      ],
+      "id": 112903426046,
+      "name": "check",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "id": 112903426232,
+      "name": "msrv",
+      "status": "completed"
+    },
+    {
+      "active_step": "Run rustsec/audit-check@v2.0.0",
+      "id": 112903426485,
+      "name": "security",
+      "status": "in_progress"
+    }
+  ],
+  "limits": [
+    "This plan read does not claim the pending CI steps or all jobs passed. Final API and actual job log observations will be recorded separately.",
+    "The new helper binds a private product target, selected compiler/source/profile and copied product bytes; the original CI builds test runners through their existing Cargo commands.",
+    "An absent network-denial policy in the committed workflow cannot certify zero product socket attempts or system-wide isolation.",
+    "No local Rust/product execution, CI rerun, source edit, changed assertion or changed threshold was performed."
+  ],
+  "local_isolated_failures_preserved": {
+    "checkpoint_commit": "72efd2ff65b71a7e9633e8ffc6ddf88cb1ad0a7a",
+    "failure": "Unmodified benchmark_adapters.rs:305 network_status could not read the reported child PID under /proc; original tool matrix was not completed.",
+    "gate_exit_codes": [
+      101,
+      101
+    ],
+    "profiles": [
+      "default",
+      "semantic"
+    ],
+    "source": "a213a4cfab0e0e87198bc279acacda51e4ff62cf"
+  },
+  "network_scope": {
+    "actual_case_json_read": false,
+    "classification": "The committed legacy workflow requests ordinary default/semantic local behavior, not the separately wrapped isolated gate. Successful CI steps must remain non-isolated behavior evidence.",
+    "test_restricted_policy": "P7_017_NETWORK_POLICY=process_seccomp_deny_network",
+    "unrestricted_case_output_label": "not_isolated_not_claimed",
+    "workflow_invokes_denial_wrapper": false,
+    "workflow_sets_restricted_policy": false
+  },
+  "pr_number": 144,
+  "product_execution": false,
+  "profiles": [
+    {
+      "build_helper": "scripts/p7_stdio_build_receipt.py --package-kind default",
+      "package_kind": "default",
+      "runner_command": "cargo test -p cc-eval --features eval-http --test benchmark_adapters --locked -- --ignored",
+      "step": "P0 real MCP subprocess adapter"
+    },
+    {
+      "build_helper": "scripts/p7_stdio_build_receipt.py --package-kind semantic",
+      "package_kind": "semantic",
+      "runner_command": "cargo test -p cc-eval --test benchmark_adapters --locked -- --include-ignored",
+      "step": "P7 semantic product disabled stdio contract"
+    }
+  ],
+  "repository_modified": false,
+  "requested_run_id": 37653732411,
+  "rust_execution": false,
+  "scope": "Static read of the fixed PR144 legacy CI plan and unchanged P7-017 gate; current workflow jobs were still in progress at the initial API observation.",
+  "source_files_sha256": {
+    ".github/workflows/ci.yml": "27c6747ecba381bf228d8673b8a23415502a5f5faf10754da74cc33cef8a7ffb",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "0d47366fa35cec4a48c44175e3da6cdcbbcbf5f2bda39a780bedef4c8064fcbe",
+    "scripts/p7_build_identity.py": "b89f1825876a7d4e485be1bd116186b3f75b5b7d92641fc359dae9f83b8b8e23",
+    "scripts/p7_stdio_build_receipt.py": "6b80499bccea5f5646650da127ef7c27e38d5cb36fdd8191738a2ff706d88cb9"
+  }
+}

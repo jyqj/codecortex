@@ -1,0 +1,51 @@
+{
+  "accepted_properties": [
+    "Exactly seven checkpoint paths are present in the frozen Git tree and each read disk file equals its committed bytes; all 301 raw members are excluded from Git.",
+    "The original index covers 303 byte-length and SHA256 pairs: 301 archived observations and two direct summaries. Independent read-only verification passed for every original, with zero disk mirrors.",
+    "The reused previously reviewed verifier differs only in six archive/index/count constants. It pins index and archive bytes before parsing, checks canonical safe member paths, uniqueness/order, regular non-sparse member types, normalized metadata, expected lengths and payload hashes; disk path components reject symlinks.",
+    "Archive verification uses the same already pinned byte buffer, bounded per-member and total lengths, and no filesystem extraction or payload execution.",
+    "README and direct summary preserve the canonical initial Clippy failure and label earlier shared-target observations noncanonical. Missing provider billing/hardware and quality claims remain unknown or out of scope."
+  ],
+  "checkpoint_commit": "4b78f683cda4b83eb750557c79072dcf8b651d17",
+  "checkpoint_path": "artifacts/checkpoints/p7-019-public-strategy-ablation-20261007",
+  "checkpoint_tree": "1c9505bceee62e45ef9572fd4e2099bfe58e5842",
+  "decision": "accepted_scoped_storage_only",
+  "findings": [],
+  "independent_check": {
+    "path": "/workspace/scratch/71bc431c4e4f/p7-019-storage-independent-check.json",
+    "sha256": "2474a110493b27d74feed1e25ce26c78dd0e10c5744d7239af0a06f2d2a0c119"
+  },
+  "limits": [
+    "Independent verifier execution confirms current bytes, members and metadata; the author reports constructing the archive twice identically, which the reviewer did not independently reconstruct.",
+    "Large copied binaries and source snapshots are not committed in this checkpoint. Their identities and source manifests are retained; reconstructing a source tree does not certify compiler byte reproducibility.",
+    "No Rust tests, product runs, ranking/budget/source behavior review or later combined-source execution was performed for this storage review.",
+    "Storage success does not accept the entire P7-019 task, live-provider quality leg, release candidate or remote/hermetic provenance."
+  ],
+  "product_execution": false,
+  "repository_modified": false,
+  "reviewed_files_sha256": {
+    "README.md": "6e340df8f545656987e8e5a205dd14ebb6b47c83e25d2a7962d689715f8f62ac",
+    "STORAGE.md": "0bb5af05deb8476df71c3b992445904776cf49dad64dbe5d8063a300af2406fc",
+    "checkpoint-files.json": "c01c1dc1f33d7b6c84afa5e9a9a5708a178b7b96a86ba841ca6d9fe19fe71c37",
+    "raw-observations.tar.gz": "a38c1c843bd0e472ee83454858ec0936d32f096087e307a23c70571b0b333170",
+    "source-delta.json": "e77eb071e508e75f1f2d5ad3afef3bf5f003bd3f6d7af562d49c0ee7c121a743",
+    "validation-summary.json": "858b44f57cc2137e43a43515c9887fc6222884137c0cfd37cbc2d9229b94db0a",
+    "verify_storage.py": "4037d855f61c6cdf747eebaea87823902296a0ecb24342b503c238556416769e"
+  },
+  "reviewer": "/root/build_environment",
+  "rust_execution": false,
+  "scope": "Read-only evidence packaging review of the frozen P7-019 checkpoint; no production behavior or whole-task acceptance.",
+  "verification": {
+    "archive_bytes": 1483800,
+    "archive_members_verified": 301,
+    "archive_sha256": "a38c1c843bd0e472ee83454858ec0936d32f096087e307a23c70571b0b333170",
+    "disk_files_verified": 2,
+    "filesystem_extraction": false,
+    "mirrored_files_verified": 0,
+    "original_files_verified": 303,
+    "original_manifest_sha256": "c01c1dc1f33d7b6c84afa5e9a9a5708a178b7b96a86ba841ca6d9fe19fe71c37",
+    "payload_execution": false,
+    "raw_content_bytes": 6028848,
+    "storage_verified": true
+  }
+}

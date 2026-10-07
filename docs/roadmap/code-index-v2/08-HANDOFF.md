@@ -3,23 +3,21 @@
 ## 1. 当前状态
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
+Code Index V2 共 **192 项任务：152 done / 2 in_progress / 37 todo / 1 blocked**。
 
 当前阶段：**P7｜provider与dense端到端**；计划状态：`in_progress`；更新日期：`2026-10-07`。
-下一任务：**P7-011｜dense范围与hydrate守卫**（硬依赖已完成）。
+下一任务：**P7-013｜查询总deadline和模型故障退化**（硬依赖已完成）。
 
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
-| P7-011｜dense范围与hydrate守卫 | `todo` | P6-020 (done)、P7-009 (done)、P7-010 (done) |
-| P7-012｜融合与部分覆盖语义 | `todo` | P7-011 (todo) |
-| P7-013｜查询总deadline和模型故障退化 | `todo` | P7-012 (todo) |
-| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (todo) |
+| P7-013｜查询总deadline和模型故障退化 | `in_progress` | P7-012 (done) |
+| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (in_progress) |
 
 进度入口：[重构总览](README.md) · [逐项 TODO](05-TODO.md) · [唯一任务状态源](tasks.json) · [执行交接](08-HANDOFF.md)。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc`。
+> 源文件 SHA-256：`d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b`。
 <!-- code-index-progress:end -->
 
 ## 2. 下一步与依赖

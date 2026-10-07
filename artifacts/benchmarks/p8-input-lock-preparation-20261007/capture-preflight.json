@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "attempts": [
+    {
+      "schema_version": 1,
+      "source": "ff663f6b7c835ae24766b68b8af299c7426ff352",
+      "attempt": "capture-tests-v2.py nonobject-baseline",
+      "observed_exit_code": 1,
+      "test_execution_started": false,
+      "reason": "clean-worktree assertion rejected generated scripts/__pycache__/ and tests/evidence_lock/__pycache__/ before subprocess.run",
+      "resolution": "remove only verified .pyc cache files; rerun unchanged frozen source",
+      "not_a_behavior_result": true
+    },
+    {
+      "source": "1bb5ea9c6d66e9109fdaf8766606337eedec8219",
+      "attempt": "capture-tests-v2.py final-controls",
+      "observed_exit_code": 1,
+      "test_execution_started": false,
+      "reason": "clean-worktree assertion observed two generated __pycache__ directories"
+    }
+  ],
+  "cache_reappearance_cause": "unknown; independent reviewer reports completed invocations and bytecode-write suppression, so no actor attribution is established",
+  "resolution": "verify each cache contains only .pyc, remove and run final controls in the same exec",
+  "not_behavior_results": true
+}

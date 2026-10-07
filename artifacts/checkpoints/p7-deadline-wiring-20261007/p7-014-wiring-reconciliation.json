@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "task": "P7-014",
+  "review_scope": "read-only current responsibility reconciliation, not permission to change original owners or acceptance",
+  "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+  "authority_sha256": {
+    "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613"
+  },
+  "rows": [
+    {
+      "no": 1,
+      "original_owner": [
+        "P7-010",
+        "P7-014"
+      ],
+      "current": "CodeIndex::set_project validates optional subsystem, from_config, replaces/tears down old runtime symmetrically; enabled/feature/authority gates",
+      "code": [
+        "crates/cc-server/src/engine.rs:198",
+        "crates/cc-server/src/semantic_wiring.rs:237",
+        "crates/cc-server/src/semantic_runtime.rs:435"
+      ],
+      "status": "implemented_current_tests_pending"
+    },
+    {
+      "no": 2,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "Successful indexing schedules bounded SemanticRuntime worker; reopen starts bounded desired-page reconciliation. Explicit GC/revocation helper exists. Standalone recover_scan and reconcile_after_rebuild have no cc-server call sites, and no integrated GC scheduling point was found. These public helper definitions alone do not prove all four original scheduling responsibilities.",
+      "code": [
+        "crates/cc-server/src/semantic_runtime.rs:160",
+        "crates/cc-server/src/semantic_runtime.rs:240",
+        "crates/cc-server/src/semantic_wiring.rs:699"
+      ],
+      "status": "partial_open_responsibility"
+    },
+    {
+      "no": 3,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "Production drain_worker_batch_parallel prechecks artifacts, quarantines detected corruption/requeues without paying ordinary failure attempts, and forwards degradation ledger after round.",
+      "code": [
+        "crates/cc-server/src/semantic_runtime.rs:362",
+        "crates/cc-server/src/semantic_wiring.rs:601"
+      ],
+      "status": "implemented_current_tests_pending"
+    },
+    {
+      "no": 4,
+      "original_owner": [
+        "P7-010"
+      ],
+      "current": "Wiring and drain publish immutable DegradationLedger snapshot into QueryServices semantic degradation projection.",
+      "code": [
+        "crates/cc-server/src/semantic_wiring.rs:447",
+        "crates/cc-server/src/semantic_wiring.rs:683"
+      ],
+      "status": "prior_task_ownership_retained"
+    },
+    {
+      "no": 5,
+      "original_owner": [
+        "P7-010"
+      ],
+      "current": "assemble resolves project namespace and configured cache root; disabled before lookup, artifact cache open side-effect free.",
+      "code": [
+        "crates/cc-server/src/semantic_wiring.rs:275"
+      ],
+      "status": "prior_task_ownership_retained"
+    },
+    {
+      "no": 6,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "Existing positive floor admitted u64->i64 overflow. Frozen regression 9bb and fix5af add checked range; valid1/3600/i64MAX apply to real GC boundary, zero/overflow named error, disabled inert.",
+      "code": [
+        "crates/cc-server/src/semantic_wiring.rs:250",
+        "crates/cc-server/tests/p7_gc_retention_config.rs",
+        "docs/CONFIGURATION.md"
+      ],
+      "status": "fixed_canonical_4_pass_after_rebuild"
+    },
+    {
+      "no": 7,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "run_gc_until_exhausted returns GcCounters; status does not expose/persist GC counts. Original round12 says auxiliary persistence is as-needed and implementation-order explicitly allows P7-016 evidence-only disposition if justified. Needs parent ownership disposition rather than silently declaring persistence done.",
+      "code": [
+        "crates/cc-server/src/semantic_wiring.rs:699",
+        "crates/cc-server/src/capability_status.rs"
+      ],
+      "status": "conditional_owner_disposition_open"
+    },
+    {
+      "no": 8,
+      "original_owner": [
+        "P7-005"
+      ],
+      "current": "Provider admission/fair queue uses existing shared gate; actual FIFO/physical capacity targets will be rerun as P7-013 compatibility.",
+      "code": [
+        "crates/cc-server/tests/p7_production_fairness_model_review.rs"
+      ],
+      "status": "prior_task_ownership_retained"
+    },
+    {
+      "no": 9,
+      "original_owner": [
+        "P7-016"
+      ],
+      "current": "Opportunistic reclaim narrowing stays with original fault-matrix owner. No reassignment to make014 complete.",
+      "code": [
+        "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md"
+      ],
+      "status": "original_handoff_P7_016_open"
+    },
+    {
+      "no": 10,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "Current status consumer fetches SQL count(*) scalars under one capability snapshot; it does not materialize dead-letter/failed row arrays. Generic list APIs still need individual boundedness assessment if exposed; scalar status avoids the historical explosive output path.",
+      "code": [
+        "crates/cc-db/src/capability_read.rs:79",
+        "crates/cc-server/src/capability_status.rs:228"
+      ],
+      "status": "current_status_scalar_consumer_implemented_generic_api_not_certified"
+    },
+    {
+      "no": 11,
+      "original_owner": [
+        "P7-015"
+      ],
+      "current": "Runtime uses semantic_worker_desired_page(after,64) and a finite64-round/30s job budget. Competition/lifecycle evidence remains015 ownership, not an extra014 completed task.",
+      "code": [
+        "crates/cc-server/src/semantic_runtime.rs:318"
+      ],
+      "status": "original_handoff_P7_015_open"
+    },
+    {
+      "no": 12,
+      "original_owner": [
+        "P7-011",
+        "P7-012"
+      ],
+      "current": "Active-manifest hard-scope guard and per-query artifact coverage now integrated in012; current task preserves exact blobs except the separate GC config assembly conversion.",
+      "code": [
+        "crates/cc-server/src/semantic_scope_guard.rs",
+        "crates/cc-server/src/semantic_wiring.rs:970",
+        "crates/cc-server/tests/p7_dense_artifact_coverage.rs"
+      ],
+      "status": "parent_accepted_prior_task_sources"
+    },
+    {
+      "no": 13,
+      "original_owner": [
+        "P7-014"
+      ],
+      "current": "Explicit set_project/provider install grants configured transition revision; runtime executes fenced prepare_semantic_configured_space. Switch log remains append-only JSON with no bound; original row labels limit as-needed. Trigger is implemented; optional cap must remain explicitly unimplemented pending owner decision.",
+      "code": [
+        "crates/cc-server/src/engine.rs:241",
+        "crates/cc-server/src/semantic_runtime.rs:261",
+        "crates/cc-db/src/semantic_space_switch.rs:244"
+      ],
+      "status": "trigger_implemented_conditional_log_cap_open"
+    }
+  ],
+  "full_task_recommendation": "retain_in_progress_until_parent_resolves_original_scheduling_and_conditional_item_responsibilities; do not infer done from GC fix/five-state tests",
+  "task_json_changed": false
+}

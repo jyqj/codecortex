@@ -1,0 +1,34 @@
+{
+  "review": "accepted_scoped",
+  "reviewer": "/root/build_environment",
+  "source_commit": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+  "source_tree": "63af6e2556f62cc8fe4c49c4a13cb4ae70ac6e4c",
+  "fixture_only_commit": "9bb2f4a2e9e8468432a197a652e6219f3366f69a",
+  "source_paths_sha256": {
+    "crates/cc-server/src/semantic_wiring.rs": "1a31d86c6dc20c8199c508ea483b48fbac1623e57ba02f7c81851143fc107043",
+    "crates/cc-server/tests/p7_gc_retention_config.rs": "b5883874a06dee62834c0553321b63036b876109524838d25b230c38c6cb5667",
+    "docs/CONFIGURATION.md": "192d3892f208aa19ecaae151a15485fadb6e74ef141244150d257ac41fb2015b"
+  },
+  "fixed_input_count": 770,
+  "inspection_scope": [
+    "complete production diff from fixture commit",
+    "assemble_with validation-to-publication path",
+    "run_gc_until_exhausted config propagation",
+    "entire new fixed fixture",
+    "CONFIGURATION.md delta and underlying u64 config default"
+  ],
+  "findings": [],
+  "accepted_contract": [
+    "Zero is still rejected by name; u64 values above i64::MAX return CcError::Config through checked conversion before provider/gate/cache-root assembly.",
+    "The validated i64 is the exact value placed in SemanticSubsystem and used by explicit GC; no wrapping cast remains for the retention field.",
+    "enabled=false returns before semantic validation and environment lookup, preserving inert configuration.",
+    "Unchanged fixture tests 1/3600/i64::MAX using real put, fresh cache hit, exact-age explicit GC/cache miss and stable DB generation; overflow/zero refuse before lookup.",
+    "Documentation updates the already-existing configuration and bounds, while explicitly avoiding a filesystem atomicity claim."
+  ],
+  "fixture_sha_unchanged_red_to_green": true,
+  "author_validation_status": "Author reported original and clean-rebuilt canonical baseline 3 passed/1 failed; fixed green was running at review time. Read actual final author receipts separately; this static review does not promote pending execution to pass.",
+  "known_author_environment_observation": "First fixed attempt failed compilation because shared target treated an incompatible cc-semantic artifact as fresh; the author preserved it and performed targeted package clean before canonical baseline. This is not counted as a behavior test result.",
+  "independent_rust_execution": false,
+  "repository_modified": false,
+  "boundary": "Accepted only for positive GC retention conversion and its fixture/doc contract. No full P7-014 wiring, offline/profile matrix, full GC/publication race or 013 deadline certification."
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "label": "scope-regression",
+  "source_commit": "f6c860c96f22e39bc3ced5a81891e3070ffbada5",
+  "source_tree": "50890bf1bd5adfe1b38cb12270ffad6ded7b83fd",
+  "status_after": "",
+  "command": [
+    "cargo",
+    "+1.95.0",
+    "test",
+    "--locked",
+    "--offline",
+    "-j2",
+    "--message-format=json-render-diagnostics",
+    "-p",
+    "cc-server",
+    "--features",
+    "semantic-http",
+    "--test",
+    "p7_v05_all_lane_scope",
+    "--test",
+    "p7_v05_scope_public",
+    "--test",
+    "p7_v16_exact_oracle",
+    "--test",
+    "p7_v16_oracle_independent_review",
+    "--test",
+    "p7_acceptance_matrix",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012",
+  "exit_code": 0,
+  "duration_seconds": 22.097,
+  "source_count": 769,
+  "source_manifest_sha256": "bb08eb49c0740ccf19cc54dc18fa31674a32c5c78ade4332cd6122b7e80cfeb1",
+  "source_unchanged": true,
+  "log_sha256": "ed461ea33b11f764a25fb500e566eed975a0495f5012da1bfd0994c855be5260",
+  "executables": {
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex": {
+      "sha256": "a9bbd171437f573a4ea7f7c2827d999726772fb4220c3be7c72248c88527980e",
+      "target": "codecortex",
+      "test": false
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_all_lane_scope-f58a2b8f09fc0875": {
+      "sha256": "43f8d0ec65f099bd54f4dbd9dc9484e2fa8bc27b6b5e871cc5969bcd1056bdcf",
+      "target": "p7_v05_all_lane_scope",
+      "test": true
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_acceptance_matrix-32a8f6495fdb49b6": {
+      "sha256": "c9f2ee5d3a242c03c0538f71e90d97afccfb943a512d63ca0f5b9e3ac6dcebfc",
+      "target": "p7_acceptance_matrix",
+      "test": true
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_exact_oracle-ac4053dfba08443f": {
+      "sha256": "7f20ada779be04612db3627b474d7633c0d5ca7ffd888b30d2d5b0c4a71ab648",
+      "target": "p7_v16_exact_oracle",
+      "test": true
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_oracle_independent_review-90dd5f218fa91dcc": {
+      "sha256": "2ab51458bc7423208e5cd461969eda3f42fb8472203b166bafc587d3de7a7796",
+      "target": "p7_v16_oracle_independent_review",
+      "test": true
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_scope_public-75f877fc5046afa4": {
+      "sha256": "a12b50fd3d362d17d2ab8deefc09615ba351103673496a39c780a267843ca10b",
+      "target": "p7_v05_scope_public",
+      "test": true
+    }
+  },
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0"
+  }
+}

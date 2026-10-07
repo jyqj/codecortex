@@ -1061,6 +1061,49 @@ mod artifact_budget_tests {
         artifacts.reserve(1).unwrap();
         assert_eq!(artifacts.used.load(Ordering::Acquire), 1024);
     }
+
+    #[test]
+    fn concurrent_reservations_fill_only_whole_reservations_within_the_budget() {
+        let artifacts = artifacts(0, 10_007);
+        let successes = AtomicUsize::new(0);
+        let start = std::sync::Barrier::new(16);
+        std::thread::scope(|scope| {
+            for _ in 0..16 {
+                scope.spawn(|| {
+                    start.wait();
+                    for _ in 0..2_000 {
+                        if artifacts.reserve(7).is_ok() {
+                            successes.fetch_add(1, Ordering::Relaxed);
+                        }
+                    }
+                });
+            }
+        });
+        let succeeded = successes.load(Ordering::Relaxed) as u64;
+        assert_eq!(succeeded, artifacts.limit / 7);
+        assert_eq!(artifacts.used.load(Ordering::Acquire), succeeded * 7);
+        assert!(artifacts.reserve(7).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), succeeded * 7);
+    }
+
+    #[test]
+    fn rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries() {
+        let artifacts = artifacts(63, 64);
+        assert!(artifacts.reserve(2).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 63);
+        artifacts.reserve(1).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 64);
+        artifacts.reserve(0).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 64);
+
+        let artifacts = self::artifacts(u64::MAX - 3, u64::MAX);
+        artifacts.reserve(3).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+        artifacts.reserve(0).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+    }
 }
 
 #[cfg(test)]

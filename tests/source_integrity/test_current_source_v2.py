@@ -126,9 +126,18 @@ class CaptureSourceTests(unittest.TestCase):
 
     def test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0(self):
         import verify_reviewed_source as current
-        ci = (guard.ROOT / '.github/workflows/ci.yml').read_text()
+        import verify_reviewed_source_v11 as selected
+        # Keep this historical selector's oracle bound to its fixed snapshot;
+        # the explicit selected guard separately checks the current workflow.
+        target = self.root / '.github/workflows/ci.yml'
+        target.parent.mkdir(parents=True)
+        guard.v1.ensure_refs(['ae906513886bef4501d0a1d2ecffd68ef76c3f5d'])
+        target.write_bytes(guard.v1.blob(
+            'ae906513886bef4501d0a1d2ecffd68ef76c3f5d', '.github/workflows/ci.yml'))
+        ci = target.read_text()
         self.assertIn('verify_reviewed_source.py --source-version ' + current.VERSION, ci)
-        current.verify_ci()
+        current.verify_ci(self.root)
+        selected.verify_ci()
         self.assertIn('scripts/p0_historical_corpus.py --validator target/debug/cc-eval', ci)
         self.assertNotIn('python3 scripts/verify_current_source.py\n', ci)
 

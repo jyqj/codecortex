@@ -94,8 +94,18 @@ def source_manifest(project):
     # Snapshot every authored source/configuration file except the intentionally
     # switched product config and derived .codecortex cache. New or deleted user
     # source files cannot hide behind a hard-coded expected file list.
-    return {name: value for name, value in file_manifest(project).items()
-            if not name.startswith(".codecortex/") and name != ".codecortex.json"}
+    result = {}
+    for path in sorted(Path(project).rglob("*")):
+        name = path.relative_to(project).as_posix()
+        # Exclude before opening: raw open/close of the SQLite file in a
+        # process holding POSIX locks can release that process's lock. Derived
+        # cache bytes are neither authored source nor part of this manifest.
+        if name == ".codecortex" or name.startswith(".codecortex/") or name == ".codecortex.json":
+            continue
+        require(not path.is_symlink(), "authored source symlinks are not admitted")
+        if path.is_file():
+            result[name] = digest(path)
+    return result
 
 
 def db_snapshot(path):
@@ -175,17 +185,20 @@ class Product:
         self.transport = StdioRPC(self.process, Journal(self.raw), phase=lambda: self.output.name)
         write_json(self.output / "process.json", self.record)
 
-    def rpc(self, method, params):
-        return self.transport.rpc(method, params, timeout=45)
+    def rpc(self, method, params, timeout=45):
+        return self.transport.rpc(method, params, timeout=timeout)
 
-    def tool(self, name, arguments):
-        response = self.rpc("tools/call", dict(name=name, arguments=arguments))
+    def tool(self, name, arguments, timeout=45):
+        response = self.rpc("tools/call", dict(name=name, arguments=arguments), timeout=timeout)
         require(response.get("isError") is not True, f"{name} returned a tool error: {response}")
         require(isinstance(response.get("structuredContent"), dict), f"{name} lacks structured content")
         value = response["structuredContent"]
         return value.get("result", value)
 
-    def verify_local(self, full=True):
+    def initialize(self):
+        if self.record.get("initialized"):
+            self.transport.pending.raise_if_terminal()
+            return self.record["tool_count"]
         self.rpc("initialize", dict(protocolVersion="2024-11-05", capabilities={},
                                     clientInfo=dict(name="p8-rollback", version="1")))
         with self.transport.write_lock:
@@ -195,6 +208,12 @@ class Product:
             self.process.stdin.flush()
         tools = self.rpc("tools/list", {})["tools"]
         require(len(tools) == 14, "existing 14-tool MCP surface changed")
+        self.transport.pending.raise_if_terminal()
+        self.record.update(initialized=True, tool_count=len(tools))
+        return len(tools)
+
+    def verify_local(self, full=True):
+        tool_count = self.initialize()
         indexed = self.tool("index", dict(path=str(self.project), full=full))
         if full:
             require(indexed.get("files_scanned", 0) > 0, "full rebuild did not scan source")
@@ -208,14 +227,18 @@ class Product:
         results = search.get("results", search.get("hits", [])) if isinstance(search, dict) else search
         require(isinstance(results, list) and any(MARKER in json.dumps(hit) for hit in results),
                 f"local query did not return the authored symbol: {search}")
-        result = dict(tool_count=len(tools), index=indexed, capabilities=capability, search=search)
+        result = dict(tool_count=tool_count, index=indexed, capabilities=capability, search=search)
         write_json(self.output / "local.json", result)
         return result
 
-    def close(self):
+    def close(self, *, expected_exit_code=0):
         error = None
         try:
-            self.process.stdin.close()
+            try:
+                self.process.stdin.close()
+            except BrokenPipeError:
+                if expected_exit_code == 0:
+                    raise
             try:
                 self.process.wait(timeout=10)
             except subprocess.TimeoutExpired:
@@ -233,8 +256,10 @@ class Product:
             self.transport.join()
             require(digest(self.identity["binary_path"]) == self.identity["binary_sha256"], "binary changed during run")
             self.record["exit_code"] = self.process.returncode
+            self.record["expected_exit_code"] = expected_exit_code
             self.record["cleanup"] = "completed" if error is None else "forced_after_timeout"
-            require(self.process.returncode == 0 and error is None, error or "product exited nonzero")
+            require(self.process.returncode == expected_exit_code and error is None,
+                    error or "product exit differs from the explicit expected code")
             network_path = self.output / "network.json"
             if network_path.exists():
                 network = json.loads(network_path.read_text())

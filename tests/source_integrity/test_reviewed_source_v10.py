@@ -141,10 +141,13 @@ class SequentialReviewTests(unittest.TestCase):
             target.write_bytes(raw)
 
     def test_current_workflows_have_only_the_explicit_migration(self):
-        guard.verify_ci()
+        import verify_reviewed_source_v11 as selected
+        selected.verify_ci()
         path = self.root / ".github/workflows/ci.yml"
         path.parent.mkdir(parents=True)
-        path.write_text(guard.expected_ci())
+        guard.git.ensure_refs(["48efa5a6058005fe141d7a835ea9f127db9bd28b"])
+        path.write_bytes(guard.git.blob("48efa5a6058005fe141d7a835ea9f127db9bd28b", ".github/workflows/ci.yml"))
+        self.assertEqual(path.read_text(), guard.expected_ci())
         p7 = self.root / ".github/workflows/p7-engineering.yml"
         p7.write_bytes(guard.git.blob(guard.P7_SNAPSHOT, ".github/workflows/p7-engineering.yml"))
         guard.verify_ci(self.root)

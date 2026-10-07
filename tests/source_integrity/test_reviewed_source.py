@@ -198,7 +198,9 @@ class ReviewedSourceTests(unittest.TestCase):
     def test_ci_only_allows_explicit_selector_and_local_p8_checks(self):
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True)
-        target.write_bytes(subprocess.check_output(['git', 'show', 'ae906513886bef4501d0a1d2ecffd68ef76c3f5d:.github/workflows/ci.yml'], cwd=guard.ROOT))
+        snapshot = 'ae906513886bef4501d0a1d2ecffd68ef76c3f5d'
+        guard.previous.v2.v1.ensure_refs([snapshot])
+        target.write_bytes(guard.previous.v2.v1.blob(snapshot, '.github/workflows/ci.yml'))
         guard.verify_ci(self.root)
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True, exist_ok=True)

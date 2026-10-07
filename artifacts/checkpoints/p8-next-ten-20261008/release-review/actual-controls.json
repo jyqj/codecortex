@@ -1,0 +1,63 @@
+{
+  "release_certified": false,
+  "runs": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "scripts/p8_release_review.py",
+        "--manifest",
+        "artifacts/checkpoints/p8-next-ten-20261008/release-review/current-evidence-manifest.json",
+        "--output",
+        "artifacts/checkpoints/p8-next-ten-20261008/release-review/current-evidence-01"
+      ],
+      "control": "current-evidence",
+      "model_calls": 0,
+      "network_calls": 0,
+      "process_exit_code": 1,
+      "profiles": {
+        "local": "blocked",
+        "semantic": "blocked"
+      },
+      "records": 13,
+      "remaining_not_done": 40,
+      "status": "not_accepted",
+      "task_counts": {
+        "blocked": 1,
+        "deferred": 0,
+        "done": 152,
+        "in_progress": 16,
+        "todo": 23
+      }
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "scripts/p8_release_review.py",
+        "--manifest",
+        "artifacts/checkpoints/p8-next-ten-20261008/release-review/missing-evidence-manifest.json",
+        "--output",
+        "artifacts/checkpoints/p8-next-ten-20261008/release-review/missing-evidence-01"
+      ],
+      "control": "missing-evidence",
+      "model_calls": 0,
+      "network_calls": 0,
+      "process_exit_code": 1,
+      "profiles": {
+        "local": "blocked",
+        "semantic": "blocked"
+      },
+      "records": 0,
+      "remaining_not_done": 40,
+      "status": "not_accepted",
+      "task_counts": {
+        "blocked": 1,
+        "deferred": 0,
+        "done": 152,
+        "in_progress": 16,
+        "todo": 23
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scope": "fixed_repository_metadata_and_missing_evidence_controls_only"
+}

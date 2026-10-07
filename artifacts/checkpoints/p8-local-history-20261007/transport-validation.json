@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "scope": "Transport-only restore verification; no product, release or source-admission claim",
+  "verified_at_utc": "2026-10-07T17:02:42.903466+00:00",
+  "executor": "/root/pr_audit",
+  "original_creation_commit": "03581be10fb27b3c4cdad0a7e47676659bd7b47a",
+  "encoded": {
+    "path": "p8-local-history.bundle.b64",
+    "format": "standard Base64; 76 ASCII characters per line; LF line endings; final LF",
+    "bytes": 756821,
+    "sha256": "f5d98c42207f9f68dd2213e25e3630584612f561d1aa604b0ed3483a629c90ad"
+  },
+  "decoded": {
+    "path": "p8-local-history.bundle",
+    "bytes": 560244,
+    "sha256": "0db458b30244f383c1658db83cb97728b15b340289011d2c83d328ef69694bc4"
+  },
+  "script_sha256": "d6df148c8a66711ca3eb3f17703929787b9c006b36d21c9a874e526ddf1ed4e4",
+  "default_destination_exercised": true,
+  "byte_for_byte_equal_to_retained_original": true,
+  "existing_output_refused_exit": 2,
+  "existing_output_bytes_unchanged_after_refusal": true,
+  "git_bundle_verify_exit": 0,
+  "legacy_sha256sum_entries_verified": 13,
+  "legacy_path_mapping": {
+    "README.md": "README.original.md",
+    "p8-local-history.bundle": "temporary restored original bundle"
+  },
+  "temporary_test_copies_removed": true,
+  "original_binary_retained_at": "/workspace/scratch/68a3b8c4eb43/p8-local-history-original-03581be1.bundle",
+  "prior_attempt": {
+    "status": "blocked_before_restore_execution",
+    "stage": "temporary-directory creation",
+    "error": "OSError [Errno 28] No space left on device; Git optional index refresh also reported out of disk space"
+  },
+  "space_recovery": {
+    "authorized_own_rebuildable_cache": "/workspace/scratch/68a3b8c4eb43/target-scale",
+    "removed_in_successful_attempt": true,
+    "free_bytes_before": 1518874624,
+    "free_bytes_after": 2598641664,
+    "other_targets_touched": false
+  },
+  "commands": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/restore_bundle.py"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"bytes\": 560244, \"exclusive_create\": true, \"output\": \"/workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/p8-local-history.bundle\", \"sha256\": \"0db458b30244f383c1658db83cb97728b15b340289011d2c83d328ef69694bc4\", \"source_admission\": \"not_granted\", \"status\": \"restored\"}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/restore_bundle.py"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Refusing to replace an existing output file: /workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/p8-local-history.bundle\n"
+    },
+    {
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/p8-local-history.bundle"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "The bundle contains these 6 refs:\n6a2333befefbaf8c2d615f0668f3ce80c2187001 refs/heads/work/p8-combined-evidence-20261007\nb81d786d1f5ff56ab0363822cfe7ded515164543 refs/heads/work/p8-failure-gates-20261007\n16f2685ae7a428bac5ad4be5804c84166764fe7c refs/heads/work/p8-local-ten-todos-20261007\na59dc75a5acac6be2857423465a9c652d89e4a98 refs/heads/work/p8-measurement-strata-20261007\n9e9d5cc153253ea20383333331dff7c32fcfbf62 refs/heads/work/p8-release-evidence-20261007\nc9cfe22137b31a177e162bd8279c4f371d75708d refs/heads/work/p8-scale-incremental-20261007\nThe bundle requires this ref:\n6d02d77f018a5965a6f289b0b43558ed4b9f8322 \nThe bundle uses this hash algorithm: sha1\n",
+      "stderr": "/workspace/scratch/68a3b8c4eb43/p8-bundle-transport-validation-eg_s7fkz/p8-local-history.bundle is okay\n"
+    }
+  ],
+  "archive_repacked": false,
+  "source_admission": "not_granted"
+}

@@ -1,0 +1,1031 @@
+{
+  "status": "passed",
+  "scope": "declaration/doc drift controls plus in-memory DDL",
+  "source_sha": "ed2fa642091434346be2b4eda9367106d7d48533",
+  "source_files_sha256": {
+    "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+    "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+    "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+    "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+    "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+    "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+    "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+    "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+    "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc",
+    "docs/roadmap/code-index-v2/P8-FACTS.md": "3d7d019907854390a5f59b08f9eaa9abad70d9fc4b3c47bbc55e40fbff333eb3",
+    "docs/ARCHITECTURE.md": "258713b19e82228a8edececc86eb510f86487e396914adffa83ad992671dfa76",
+    "docs/CONFIGURATION.md": "59d32991d9d0d0586d9103e3aa043e75df33fa5cf1d19c423a6c636446cf3008",
+    "docs/MCP_TOOLS.md": "118f7640a17f843d81b7f092a1f73f1f3871507ffc9ec0c0949a4f6eb115c6a4",
+    "scripts/p8_facts.py": "43d66cbc833740415d1ea24121eca2c23fac55c93ba38498a6e8c36c5535090a"
+  },
+  "source_unchanged": true,
+  "cli_cases": [
+    {
+      "case": "current_declarations_match_docs",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release",
+        "--check"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "result": {
+        "errors": [],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "passed"
+      }
+    },
+    {
+      "case": "managed_table_drift_rejected",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": {
+        "errors": [
+          "P8-FACTS.md managed table differs; run --write after reviewing declarations"
+        ],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "failed"
+      }
+    },
+    {
+      "case": "write_regenerates_only_managed_table",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--write"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "result": {
+        "errors": [],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "passed"
+      }
+    },
+    {
+      "case": "regenerated_table_passes",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "result": {
+        "errors": [],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "passed"
+      }
+    },
+    {
+      "case": "configuration_default_drift_rejected",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": {
+        "errors": [
+          "CONFIGURATION.md default differs/missing: semantic.worker_lease_secs"
+        ],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "failed"
+      }
+    },
+    {
+      "case": "write_does_not_hide_unfixed_configuration",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--write"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": {
+        "errors": [
+          "CONFIGURATION.md default differs/missing: semantic.worker_lease_secs"
+        ],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "failed"
+      }
+    },
+    {
+      "case": "schema_capability_mismatch_rejected",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "database schema/capabilities declaration mismatch",
+        "runtime_certified": false
+      }
+    },
+    {
+      "case": "new_sql_table_requires_document_review",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "result": {
+        "errors": [
+          "ARCHITECTURE.md current counts differ: 31 基表 + 5 FTS5、schema v25",
+          "P8-FACTS.md managed table differs; run --write after reviewing declarations"
+        ],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces",
+            "p8_extra"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+          "crates/cc-db/src/sql/index_v1.sql": "4e4c8fc0e810d89e7eb24b30d96220eb8f41b748f4b30b3398dc98c3e96f47b4",
+          "crates/cc-model/src/config.rs": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "failed"
+      }
+    },
+    {
+      "case": "indented_sql_declaration_cannot_be_silently_ignored",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "unsupported/duplicate SQL table declaration",
+        "runtime_certified": false
+      }
+    },
+    {
+      "case": "lowercase_sql_declaration_cannot_be_silently_ignored",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "unsupported/duplicate SQL table declaration",
+        "runtime_certified": false
+      }
+    },
+    {
+      "case": "spaced_tool_attribute_cannot_be_silently_ignored",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "unsupported/duplicate MCP tool registration",
+        "runtime_certified": false
+      }
+    },
+    {
+      "case": "bare_tool_attribute_cannot_be_silently_ignored",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "unsupported/duplicate MCP tool registration",
+        "runtime_certified": false
+      }
+    },
+    {
+      "case": "unsupported_rust_default_fails_without_guessing",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-release/scripts/p8_facts.py",
+        "--root",
+        "/tmp/p8-facts-audit-0t6t6q4w",
+        "--check"
+      ],
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "result": {
+        "status": "invalid_input",
+        "reason": "unsupported default expression: SemanticProviderConfig.worker_lease_secs",
+        "runtime_certified": false
+      }
+    }
+  ],
+  "sqlite": {
+    "version": "3.53.1",
+    "ordinary_count": 30,
+    "fts5_count": 5
+  },
+  "runtime_certified": false
+}

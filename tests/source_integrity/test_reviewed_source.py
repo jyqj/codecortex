@@ -174,8 +174,28 @@ class ReviewedSourceTests(unittest.TestCase):
         with patch.object(guard, 'APPROVED', changed):
             with self.assertRaisesRegex(AssertionError, 'immutable full commit SHAs'):
                 guard.check_identity(self.registry)
+        changed = copy.deepcopy(guard.APPROVED)
+        changed[next(iter(changed))]['base'] = 'main'
+        with patch.object(guard, 'APPROVED', changed):
+            with self.assertRaisesRegex(AssertionError, 'immutable full commit SHAs'):
+                guard.check_identity(self.registry)
 
-    def test_ci_only_allows_reviewed_selector_product_and_historical_gate_migrations(self):
+    def test_registry_cannot_choose_a_new_delta_base(self):
+        changed = copy.deepcopy(self.registry)
+        name = next(iter(guard.APPROVED))
+        changed['deltas'][name]['base'] = guard.PRODUCT
+        with self.assertRaisesRegex(AssertionError, 'unexpected delta base pin'):
+            guard.approved_union(changed)
+
+    def test_explicit_delta_base_needs_matching_registry_pin(self):
+        changed = copy.deepcopy(guard.APPROVED)
+        name = next(iter(changed))
+        changed[name]['base'] = guard.BASE
+        with patch.object(guard, 'APPROVED', changed):
+            with self.assertRaisesRegex(AssertionError, 'wrong delta pin'):
+                guard.approved_union(self.registry)
+
+    def test_ci_only_allows_reviewed_migrations_and_local_p8_checks(self):
         guard.verify_ci()
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True)

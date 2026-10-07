@@ -27,6 +27,10 @@ pub fn evaluate(
         reasons.push(e.into());
         code = 2;
     }
+    if expected == 0 {
+        reasons.push("no expected measurements".into());
+        code = 2;
+    }
     if rows.len() != expected || scores.len() != rows.len() {
         reasons.push("missing measurements".into());
         code = 2;

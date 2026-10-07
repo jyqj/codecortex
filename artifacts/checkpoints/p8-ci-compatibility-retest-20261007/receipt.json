@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "local_compatibility_fix_retest",
+  "recorded_at_utc": "2026-10-07T17:52:13.577Z",
+  "source_sha": "d911a0573e5a53ac20073f050f55503c5b2874c3",
+  "source_tree_sha": "9e7865186da6cab151fc194ec233e6c2c2a1d16a",
+  "upstream_fix_sha": "0ea1879417775ffb09c0fb5b2aae4f55c680b7ae",
+  "source_equivalence": "p8_load.rs SHA256 equals upstream fix file; only evidence commits differ in this worktree ancestry.",
+  "toolchain": {
+    "rustc": "1.95.0",
+    "rustc_commit": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+    "cargo": "1.95.0",
+    "host": "x86_64-unknown-linux-gnu",
+    "evidence": "compatibility-fix-toolchain.log"
+  },
+  "executions": [
+    {
+      "target": "cc-eval library filter artifact_budget_tests",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "compatibility-fix-budget-tests.log",
+      "exit_receipt": "compatibility-fix-budget-exit.json"
+    },
+    {
+      "target": "cc-eval integration p8_load",
+      "passed": 8,
+      "failed": 1,
+      "exit_code": 101,
+      "log": "compatibility-fix-load-tests.log",
+      "exit_receipt": "compatibility-fix-load-exit.json"
+    }
+  ],
+  "invocation_scope": "Raw outputs identify Cargo test targets and outcomes. Original shell invocation flags are not encoded in these logs; no additional command-line provenance is claimed.",
+  "result": "failed_local_retest",
+  "failure": {
+    "test": "worker_checks_its_actual_executable_digest_before_running_a_fixture",
+    "path": "crates/cc-eval/tests/p8_load.rs",
+    "line": 191,
+    "assertion": "child stderr contains binary binding mismatch",
+    "child_exit_status_assertion": "preceding assertion of exit code 2 passed",
+    "child_stderr": "not retained by the original assertion output",
+    "cause": "cause_unconfirmed",
+    "diagnostic_observation": "After test completion, CLI hash exactly equals the archived 853385b7 CLI hash, although checked-out p8_load.rs contains the later CAS fix. Worker checks compiled module identity before the deliberately wrong executable digest. Mixed build artifacts are a candidate explanation, not proven runtime attribution.",
+    "disk": "No space remained when the agent resumed and read final logs. This later observation does not establish the earlier assertion failure cause."
+  },
+  "provenance_limits": [
+    "Binary digests are post-execution observations, not a before/after binding for this invocation.",
+    "The new budget unit tests passed; integration failed and cannot certify new source or stable Rust 1.99.",
+    "No source changes, skipped tests, softened assertions, workflow reruns, or repeated whole test group concealed the failure."
+  ],
+  "cache": {
+    "target_dir": "/workspace/scratch/68a3b8c4eb43/target-load",
+    "package_clean_log": "compatibility-fix-clean-cc-eval.log",
+    "cleanup": "After recording completed exit receipts and binary digests, only this agent's target-load cache was removed. No other session cache was removed.",
+    "observed_post_cleanup_free_bytes": 0
+  },
+  "not_run": [
+    "Rust 1.99 local verification",
+    "repeat integration run after this failure",
+    "full workspace retest",
+    "scale retest",
+    "performance or release certification"
+  ]
+}

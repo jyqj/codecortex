@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "reviewer": "/root/round1_release",
+  "reviewed_at_utc": "2026-10-07T16:47:52.162150+00:00",
+  "observed_final_pin_commit": "1c288cfac90a4bff3d6cc162ca3531a1d21c6b25",
+  "previous_local_pin_commit": "9e03ed67a143dae03fa7fb2d862de29d7a254513",
+  "scope": "Independent fetched-review, complete-input, fixed-pin and exact CI byte verification; guard and pipeline execution are separate.",
+  "remote_objects": {
+    "source_r1": "18499879a8ba3197e599cfd2e9ae96bcb657d65b",
+    "review_r2": "c7766540612f1156f0a8afbdead20e934c98066c",
+    "source_ref": "refs/remotes/origin/p8-remote-source-20261007",
+    "review_ref": "refs/remotes/origin/p8-remote-review-20261007",
+    "both_refs_resolve_to_exact_objects": true,
+    "r2_only_parent_is_r1": true,
+    "r2_delta_adds_only_review_path": "artifacts/checkpoints/p8-local-engineering-review-20261007/review-remote-source.json",
+    "review_path": "artifacts/checkpoints/p8-local-engineering-review-20261007/review-remote-source.json",
+    "review_sha256": "c5e9f6811e348d075b893343eaf692e3e6425f5eb5bbb744319f638cb0605a1c",
+    "fetched_review_equals_independently_authored_and_final_pinned_bytes": true,
+    "review_accepts_exact_r1_and_base": true,
+    "r2_full_tree": "ecd70de04277a64e565e6a7f18869f97b81d5f96",
+    "fetch_executed_by": "/root",
+    "independent_review_reads_fetched_objects": true
+  },
+  "complete_source_equivalence": {
+    "input_count_each": 777,
+    "scopes": [
+      "crates",
+      "Cargo.toml",
+      "Cargo.lock"
+    ],
+    "compared_commits": [
+      "18499879a8ba3197e599cfd2e9ae96bcb657d65b",
+      "c7766540612f1156f0a8afbdead20e934c98066c",
+      "1c288cfac90a4bff3d6cc162ca3531a1d21c6b25"
+    ],
+    "exact_path_mode_type_blob_ids_equal": true,
+    "every_blob_payload_read_and_byte_equal": true,
+    "bytes_each": 9972292,
+    "sha256_per_input_matches_remote_source_manifest_and_final_registry": true,
+    "manifest_sha256": "f609895069a5ae658b8fce2516a7727b7ff36423d333e6a40a92afdca0627a12"
+  },
+  "admission_pin_verification": {
+    "version": "p8-local-engineering-20261007-v8",
+    "product_and_p8_source": "18499879a8ba3197e599cfd2e9ae96bcb657d65b",
+    "p8_explicit_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+    "p8_review": "c7766540612f1156f0a8afbdead20e934c98066c",
+    "p8_review_path": "artifacts/checkpoints/p8-local-engineering-review-20261007/review-remote-source.json",
+    "review_sha256": "c5e9f6811e348d075b893343eaf692e3e6425f5eb5bbb744319f638cb0605a1c",
+    "registry_sha256": "5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155",
+    "all_17_before_after_hashes_match_fixed_review": true,
+    "helper_exact_bytes_equal_previous_except_four_explicit_identity_replacements": true,
+    "registry_exact_json_equal_previous_except_product_and_p8_source_review_path_hash": true,
+    "all_historical_approved_pins_global_base_and_helpers_unchanged": true,
+    "source_integrity_tests_unchanged": true,
+    "original_local_review_bytes_unchanged": true
+  },
+  "ci_preservation": {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "1cf27f549d543b99ec3cdd0e5d4acfc6fa1cdf83a4a0088b0d81f42dbbd03fac",
+    "exactly_equal_to_previously_reviewed_final_ci": true,
+    "exactly_base_plus_two_new_commands_and_selector": true,
+    "all_30_old_named_steps_and_other_bytes_order_preserved": true,
+    "source_selector": "python3 scripts/verify_reviewed_source.py --source-version p8-local-engineering-20261007-v8",
+    "previous_receipt": "ci-preservation-9e03ed67.json"
+  },
+  "limitations": [
+    "The observed final pin commit is local. Later remote final-tree publication requires its own byte check; an unobserved final remote commit is not certified.",
+    "Actual remote R2 contains the review JSON alone. Its full manifest and README must accompany the final integration tree; they are not claimed present in R2.",
+    "Original tests retain their local source/binary identities; this byte and pin verification does not claim tests ran at R1 or R2.",
+    "The direct guard and complete CI are executed separately by the integrator; no passing execution status is inferred here.",
+    "No bundle is used for source authorization, no gate is reduced, and no release/P7/G8 closure is granted."
+  ]
+}

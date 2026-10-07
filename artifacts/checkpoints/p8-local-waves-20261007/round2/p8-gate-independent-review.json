@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "review_role": "independent_subagent_code_review",
+  "reviewer": "/root/round1_measurement",
+  "source_commit": "b81d786d1f5ff56ab0363822cfe7ded515164543",
+  "base_commit": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "verdict": "accepted_scoped",
+  "scope": "P8-013 local invalid-measurement and comparison failure artifact behavior; not a release performance certification",
+  "files_reviewed": [
+    "crates/cc-eval/src/benchmark/comparison.rs",
+    "crates/cc-eval/src/benchmark/gate.rs",
+    "crates/cc-eval/src/bin/cc-eval.rs",
+    "crates/cc-eval/tests/benchmark_cli.rs"
+  ],
+  "method": "Read full commit diff and complete comparison/gate implementations plus CLI execute and main error-handling context; no checkout or code edits to the reviewed source",
+  "findings": [],
+  "accepted_behaviors": [
+    "Missing or zero baseline p95 makes latency_ratio unavailable and comparison inconclusive even when the sample count meets policy",
+    "An expected measurement count of zero is invalid (exit 2); cancellation remains a separate exit 3",
+    "The CLI reserves comparison output with create_new, preventing overwrite of existing paths and dangling symlinks and eliminating exists-then-truncate race",
+    "Policy/input-lock failures emit an invalid_measurement JSON receipt and exit 2",
+    "Replaying input runs rebuilds derived summaries; raw input artifacts remain unchanged"
+  ],
+  "actual_execution": {
+    "reviewer_executed_six_benchmark_cli_tests": false,
+    "reviewer_execution_note": "Static independent review only. The six introduced CLI tests were read, not independently executed by this reviewer. Parent-reported baseline/repaired execution is distinct evidence and is not claimed as reviewer execution.",
+    "parent_logs_reported": [
+      "/workspace/scratch/68a3b8c4eb43/gate-baseline.log",
+      "/workspace/scratch/68a3b8c4eb43/gate-repaired.log"
+    ]
+  },
+  "limitations": [
+    "The existing comparison uses all recorded attempt durations for an empirical p95 ratio and query-family bootstrap for quality; it does not add lifecycle strata or a confidence interval for the latency ratio",
+    "Synthetic test fixtures with 30 timings and a single query family demonstrate gate behavior, not measured product performance or statistical release certification",
+    "This review does not establish P7 prerequisites, V20, P8-013 full release completion, or G8",
+    "No inherited validation receipt is treated as proof of the reviewed source commit"
+  ]
+}

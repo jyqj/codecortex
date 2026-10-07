@@ -49,8 +49,8 @@ jobs:
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v
           python3 scripts/code_index_plan.py
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v
-          python3 scripts/verify_reviewed_source.py --source-version p7-engineering-20261007-v8
-          python3 scripts/verify_fixed_e3_integration.py
+          python3 scripts/verify_reviewed_source.py --source-version p7-engineering-20261007-v9
+          python3 scripts/verify_historical_integrations_v2.py
 
       - name: Semantic HTTP capability snapshot and normal stdio query fence
         timeout-minutes: 30

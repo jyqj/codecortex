@@ -16,11 +16,11 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p7-engineering-20261007-v8'
+VERSION = 'p7-engineering-20261007-v9'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = 'd4085cd65fb4748d302255f6ee5ad40f27b8b4cfc79418c091e1d81f47466ffa'
+REGISTRY_SHA256 = 'cbc04f1d578b83b5c4023f10889cc37c17f0ca2aadac4b2e26cd2dc97c08fd16'
 PRODUCT = '7b1650c1f6475843d568b2649ff84ec9bdd0e613'
 APPROVED = {'gc_unlink_accounting': {'paths': ['crates/cc-semantic/src/gc.rs',
                                     'crates/cc-semantic/tests/gc_unlink_accounting.rs'],
@@ -198,14 +198,18 @@ def expected_ci():
     shared_default = 'CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex"'
     private_default = 'CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex"'
     require(original.count(shared_default) == 19, 'historical default product references differ')
+    historical_gate = 'python3 scripts/verify_fixed_e3_integration.py'
+    versioned_gate = 'python3 scripts/verify_historical_integrations_v2.py'
+    require(original.count(historical_gate) == 1, 'historical integration entry differs')
     return original.replace(old, new).replace(shared_default, private_default).replace(
+        historical_gate, versioned_gate).replace(
         'explicitly selected v3 accepted owner-context union',
         'explicitly selected reviewed source union')
 
 
 def verify_ci(root=ROOT):
     require((root / '.github/workflows/ci.yml').read_text() == expected_ci(),
-            'CI differs beyond the reviewed source selector and default product references')
+            'CI differs beyond the reviewed source selector, default product references and historical integration entry')
 
 
 def main():

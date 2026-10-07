@@ -45,5 +45,10 @@ serialized fields 不能直接构造受信声明，始终只消费成功重建�
 边界保留。收据应保存在 scope 外，避免其自身成为新 inventory 内容。
 
 未进行非 Linux、public quality、100k、远程 CI、live provider、DB/MCP 接线或新 source
-registry 独立接受。本实施仍待独立审查；P7-014 保持 in_progress，其余 parent gates
-不随本 scoped 子项自动完成。
+registry 独立接受。P7-014 保持 in_progress，其余 parent gates 不随本 scoped 子项自动完成。
+
+## 独立审查
+
+[审查绑定与结论](review.json)接受本限定子项；[原始独立意见](independent-capture-review-20261007.json)
+逐字保留。独立审查覆盖完整读码、契约/测试核对和 766 个源码输入的哈希验证；
+26 项行为测试由实施作者执行，独立审查没有重新运行，不升级为独立 runtime 认证。

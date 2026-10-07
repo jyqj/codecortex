@@ -1,0 +1,899 @@
+{
+  "count_scope": "executions; repeated commands remain repeated and are not unique tests",
+  "listed_not_executed": 3,
+  "python_suites": [
+    {
+      "count": 46,
+      "elapsed": "2.586s",
+      "line": 4960,
+      "result": "OK",
+      "step_name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "step_number": 9
+    },
+    {
+      "count": 75,
+      "elapsed": "194.846s",
+      "line": 5081,
+      "result": "OK",
+      "step_name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "step_number": 9
+    },
+    {
+      "count": 9,
+      "elapsed": "0.831s",
+      "line": 7951,
+      "result": "OK",
+      "step_name": "P4-A source fidelity and real MCP indexing",
+      "step_number": 23
+    },
+    {
+      "count": 14,
+      "elapsed": "0.864s",
+      "line": 8480,
+      "result": "OK",
+      "step_name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+      "step_number": 31
+    }
+  ],
+  "python_total_executions": 144,
+  "run_id": 37657882021,
+  "rust_execution_counts": {
+    "failed": 0,
+    "ignored": 126,
+    "measured": 0,
+    "passed": 3039
+  },
+  "rust_target_executions": 371,
+  "schema_version": 1,
+  "source_commit": "eb7cdc55aa94c8d6865bed14fa37fff08080af33",
+  "step_mapping": "Exact ordered 28 workflow command blocks and full printed commands; API timestamps alone are ambiguous within one second.",
+  "steps": [
+    {
+      "commands": [
+        "cargo fmt --all -- --check"
+      ],
+      "completed_at": "2026-10-07T17:17:57Z",
+      "conclusion": "success",
+      "log_end_line": 426,
+      "log_start_line": 417,
+      "name": "Format check",
+      "number": 5,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:17:56Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo clippy --workspace --all-targets -- -D warnings"
+      ],
+      "completed_at": "2026-10-07T17:18:11Z",
+      "conclusion": "success",
+      "log_end_line": 446,
+      "log_start_line": 427,
+      "name": "Clippy",
+      "number": 6,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:17:57Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test --workspace --all-targets --locked --no-run"
+      ],
+      "completed_at": "2026-10-07T17:20:42Z",
+      "conclusion": "success",
+      "log_end_line": 656,
+      "log_start_line": 447,
+      "name": "Compile every default test target",
+      "number": 7,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:18:11Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "cargo test -p cc-semantic --lib --locked",
+        "cargo test -p cc-semantic --locked \\",
+        "  --test artifact_cache --test attempt_lease_contract \\",
+        "  --test bounded_parallel --test manifest_exact_integration \\",
+        "  --test p7_cache_allocation_independent_review --test publish_cas \\",
+        "  --test query_cache --test queue_worker --test retry_worker_layering \\",
+        "  --test semantic_degrade --test space_switch"
+      ],
+      "completed_at": "2026-10-07T17:22:47Z",
+      "conclusion": "success",
+      "log_end_line": 4893,
+      "log_start_line": 657,
+      "name": "Default regression within authorized scope",
+      "number": 8,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 65,
+        "measured": 0,
+        "passed": 2574
+      },
+      "rust_target_executions": 183,
+      "started_at": "2026-10-07T17:20:42Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "# Read-only AST comparator object; never check out or run its driver.",
+        "git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e",
+        "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v",
+        "python3 scripts/code_index_plan.py",
+        "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v",
+        "python3 scripts/verify_reviewed_source.py --source-version p7-engineering-20261007-v9",
+        "python3 scripts/verify_historical_integrations_v2.py"
+      ],
+      "completed_at": "2026-10-07T17:26:24Z",
+      "conclusion": "success",
+      "log_end_line": 5094,
+      "log_start_line": 4894,
+      "name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "number": 9,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:22:47Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir \"$RUNNER_TEMP/semantic-http-ci-regression\""
+      ],
+      "completed_at": "2026-10-07T17:26:52Z",
+      "conclusion": "success",
+      "log_end_line": 5262,
+      "log_start_line": 5095,
+      "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+      "number": 10,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 520,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 17
+      },
+      "rust_target_executions": 3,
+      "started_at": "2026-10-07T17:26:24Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture"
+      ],
+      "completed_at": "2026-10-07T17:26:55Z",
+      "conclusion": "success",
+      "log_end_line": 6231,
+      "log_start_line": 5263,
+      "name": "Eval suite",
+      "number": 11,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 391,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 74,
+      "started_at": "2026-10-07T17:26:52Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-eval --features eval-http --locked"
+      ],
+      "completed_at": "2026-10-07T17:29:35Z",
+      "conclusion": "success",
+      "log_end_line": 7089,
+      "log_start_line": 6232,
+      "name": "P0 benchmark optional HTTP contract tests",
+      "number": 12,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 57,
+        "measured": 0,
+        "passed": 340
+      },
+      "rust_target_executions": 74,
+      "started_at": "2026-10-07T17:26:55Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 scripts/p7_stdio_build_receipt.py --package-kind default --output-dir \"$RUNNER_TEMP/p7-017-default\"",
+        "export P7_017_PACKAGE_KIND=default",
+        "export P7_017_BUILD_RECEIPT=\"$RUNNER_TEMP/p7-017-default/build-receipt.json\"",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p7-017-default-observations\" \\",
+        "  cargo test -p cc-eval --features eval-http --test benchmark_adapters --locked -- --ignored",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p1a_retrieval --locked -- --ignored",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p1b_retrieval --locked -- --ignored",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p1c_retrieval --test p1c_contract --locked -- --ignored",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p1d_cost --test p1d_docs --test p1d_concurrency --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:27Z",
+      "conclusion": "success",
+      "log_end_line": 7411,
+      "log_start_line": 7090,
+      "name": "P0 real MCP subprocess adapter",
+      "number": 13,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 45,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 11
+      },
+      "rust_target_executions": 8,
+      "started_at": "2026-10-07T17:29:35Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p2a_incremental --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:28Z",
+      "conclusion": "success",
+      "log_end_line": 7452,
+      "log_start_line": 7412,
+      "name": "P2-A public surface real MCP regression",
+      "number": 14,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 10,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:27Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p2b_incremental --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:28Z",
+      "conclusion": "success",
+      "log_end_line": 7499,
+      "log_start_line": 7453,
+      "name": "P2-B resolution dependency real MCP regression",
+      "number": 15,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 13,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:28Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "  cargo test -p cc-eval --test p2c_reconcile --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:28Z",
+      "conclusion": "success",
+      "log_end_line": 7561,
+      "log_start_line": 7500,
+      "name": "P2-C durable recovery and freshness MCP regression",
+      "number": 16,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 11,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:28Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p2d-observations\" \\",
+        "  cargo test -p cc-eval --test p2d_mutations --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:29Z",
+      "conclusion": "success",
+      "log_end_line": 7649,
+      "log_start_line": 7562,
+      "name": "P2-D multi-language public truth regression",
+      "number": 17,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 8,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:28Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3a-observations\" \\",
+        "  cargo test -p cc-eval --test p3a_project_model --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:30Z",
+      "conclusion": "success",
+      "log_end_line": 7712,
+      "log_start_line": 7650,
+      "name": "P3-A project config recovery real MCP",
+      "number": 18,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 10,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:29Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3b-observations\" \\",
+        "  cargo test -p cc-eval --test p3b_modules --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:30Z",
+      "conclusion": "success",
+      "log_end_line": 7775,
+      "log_start_line": 7713,
+      "name": "P3-B package and module recovery real MCP",
+      "number": 19,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 7,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:30Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3c-observations\" \\",
+        "  cargo test -p cc-eval --test p3c_modules --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:31Z",
+      "conclusion": "success",
+      "log_end_line": 7838,
+      "log_start_line": 7776,
+      "name": "P3-C Go package recovery real MCP",
+      "number": 20,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 4,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:30Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 -I -S scripts/module_oracles.py --output \"$RUNNER_TEMP/p3c-module-oracles\" --toolchain stable"
+      ],
+      "completed_at": "2026-10-07T17:30:31Z",
+      "conclusion": "success",
+      "log_end_line": 7877,
+      "log_start_line": 7839,
+      "name": "P3-C available independent module oracles",
+      "number": 21,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:30:31Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 scripts/check_module_architecture.py",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3d-observations\" \\",
+        "  cargo test -p cc-eval --test p3d_modules --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:31Z",
+      "conclusion": "success",
+      "log_end_line": 7935,
+      "log_start_line": 7878,
+      "name": "P3-D module boundary and architecture contracts",
+      "number": 22,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 1,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:31Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 scripts/check_source_architecture.py",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4a-observations\" \\",
+        "  cargo test -p cc-eval --test p4a_source --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:33Z",
+      "conclusion": "success",
+      "log_end_line": 8003,
+      "log_start_line": 7936,
+      "name": "P4-A source fidelity and real MCP indexing",
+      "number": 23,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 4,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:31Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4b-observations\" \\",
+        "  cargo test -p cc-eval --test p4b_chunks --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:34Z",
+      "conclusion": "success",
+      "log_end_line": 8055,
+      "log_start_line": 8004,
+      "name": "P4-B chunk budgets and live-session policy changes",
+      "number": 24,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 6,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:33Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4c-observations\" \\",
+        "  cargo test -p cc-eval --test p4c_documents --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:34Z",
+      "conclusion": "success",
+      "log_end_line": 8107,
+      "log_start_line": 8056,
+      "name": "P4-C document versions and source freshness",
+      "number": 25,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 12,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:30:34Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-eval \\",
+        "  --test document_identity \\",
+        "  --test p4d_quality \\",
+        "  --locked"
+      ],
+      "completed_at": "2026-10-07T17:30:36Z",
+      "conclusion": "success",
+      "log_end_line": 8135,
+      "log_start_line": 8108,
+      "name": "P4-D identity and chunk-quality gates",
+      "number": 26,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 2
+      },
+      "rust_target_executions": 2,
+      "started_at": "2026-10-07T17:30:34Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5a-observations\" \\",
+        "  cargo test -p cc-eval --test p5a_retrieval --test p5a_boundaries --locked",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5a-mcp-observations\" \\",
+        "  cargo test -p cc-eval --test p5a_retrieval --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:38Z",
+      "conclusion": "success",
+      "log_end_line": 8203,
+      "log_start_line": 8136,
+      "name": "P5-A versioned retrieval lanes",
+      "number": 27,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 1,
+        "ignored": 1,
+        "measured": 0,
+        "passed": 18
+      },
+      "rust_target_executions": 3,
+      "started_at": "2026-10-07T17:30:36Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-search --lib execution::tests --locked",
+        "cargo test -p cc-server --lib query_tests --locked",
+        "cargo test -p cc-eval --test p5b_execution --locked",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5b-observations\" \\",
+        "  cargo test -p cc-eval --test p5b_execution --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:54Z",
+      "conclusion": "success",
+      "log_end_line": 8284,
+      "log_start_line": 8204,
+      "name": "P5-B bounded query execution and cancellation",
+      "number": 28,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 579,
+        "ignored": 1,
+        "measured": 0,
+        "passed": 17
+      },
+      "rust_target_executions": 4,
+      "started_at": "2026-10-07T17:30:38Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-db --lib read_generation --locked",
+        "cargo test -p cc-eval --test p5c_selection --test p5c_budget --test p5c_hydration --locked",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5c-observations\" \\",
+        "  cargo test -p cc-eval --test p5c_budget --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:57Z",
+      "conclusion": "success",
+      "log_end_line": 8379,
+      "log_start_line": 8285,
+      "name": "P5-C generation, bounded assembly and final source verification",
+      "number": 29,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 192,
+        "ignored": 1,
+        "measured": 0,
+        "passed": 32
+      },
+      "rust_target_executions": 5,
+      "started_at": "2026-10-07T17:30:54Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "cargo test -p cc-eval --test p5d_runtime --test p5d_contract --locked",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5d-observations\" \\",
+        "  cargo test -p cc-eval --test p5d_contract --locked -- --ignored"
+      ],
+      "completed_at": "2026-10-07T17:30:59Z",
+      "conclusion": "success",
+      "log_end_line": 8445,
+      "log_start_line": 8380,
+      "name": "P5-D capabilities, query pins and public policies",
+      "number": 30,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 1,
+        "ignored": 1,
+        "measured": 0,
+        "passed": 12
+      },
+      "rust_target_executions": 3,
+      "started_at": "2026-10-07T17:30:57Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 scripts/code_index_plan.py",
+        "cargo build -p cc-eval --bin cc-eval --locked",
+        "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v",
+        "# Same validator and six locks; only the historical subset is materialized.",
+        "# Current product integrity uses the explicitly selected reviewed source union.",
+        "python3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval"
+      ],
+      "completed_at": "2026-10-07T17:31:00Z",
+      "conclusion": "success",
+      "log_end_line": 8489,
+      "log_start_line": 8446,
+      "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+      "number": 31,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 0
+      },
+      "rust_target_executions": 0,
+      "started_at": "2026-10-07T17:30:59Z",
+      "status": "completed"
+    },
+    {
+      "commands": [
+        "python3 scripts/p7_stdio_build_receipt.py --package-kind semantic --output-dir \"$RUNNER_TEMP/p7-017-semantic\"",
+        "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-semantic/codecortex\" \\",
+        "P7_017_PACKAGE_KIND=semantic \\",
+        "P7_017_BUILD_RECEIPT=\"$RUNNER_TEMP/p7-017-semantic/build-receipt.json\" \\",
+        "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p7-017-semantic-observations\" \\",
+        "  cargo test -p cc-eval --test benchmark_adapters --locked -- --include-ignored"
+      ],
+      "completed_at": "2026-10-07T17:31:44Z",
+      "conclusion": "success",
+      "log_end_line": 8604,
+      "log_start_line": 8490,
+      "name": "P7 semantic product disabled stdio contract",
+      "number": 32,
+      "raw_log": "check-job.log",
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 4
+      },
+      "rust_target_executions": 1,
+      "started_at": "2026-10-07T17:31:00Z",
+      "status": "completed"
+    }
+  ],
+  "structured_log_observations": [
+    {
+      "line": 4963,
+      "step_number": 9,
+      "value": {
+        "states": {
+          "blocked": 1,
+          "done": 152,
+          "in_progress": 2,
+          "todo": 37
+        },
+        "status": "passed",
+        "task_count": 192,
+        "task_sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b",
+        "views": 4
+      }
+    },
+    {
+      "line": 5084,
+      "step_number": 9,
+      "value": {
+        "base_source": "886f90a542a6174a037c79eebbb4f74848fb1f53",
+        "complete_inputs": 776,
+        "previous_registry_sha256": "8525ded2edbcbf59f8f7965ffa26c684ef6cf838576d61d634efa8408299acec",
+        "product_source": "7b1650c1f6475843d568b2649ff84ec9bdd0e613",
+        "quality_and_100k": "not_inherited",
+        "reviewed_deltas": [
+          "gc_unlink_accounting",
+          "python_capture_revalidation",
+          "semantic_coverage_retention",
+          "strategy_ablation",
+          "validation_work",
+          "worker_contention_measurements"
+        ],
+        "schema_version": 4,
+        "scope": "source_integrity_only",
+        "source_version": "p7-engineering-20261007-v9",
+        "status": "passed"
+      }
+    },
+    {
+      "line": 5093,
+      "step_number": 9,
+      "value": {
+        "states": {
+          "blocked": 1,
+          "done": 152,
+          "in_progress": 2,
+          "todo": 37
+        },
+        "status": "passed",
+        "task_count": 192,
+        "task_sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b",
+        "views": 4
+      }
+    },
+    {
+      "line": 5094,
+      "step_number": 9,
+      "value": {
+        "V19": "open",
+        "current_plan_check": "passed",
+        "current_task_sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b",
+        "e3_imported_files": 58,
+        "e3_inputs": 708,
+        "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+        "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+        "evidence_content_acceptance": "not_granted_by_this_verifier",
+        "fault_runtime_tests": "not_run",
+        "full_P7": "open",
+        "legacy_files_unchanged": 9,
+        "packing_evidence_files": 246,
+        "packing_inputs": 731,
+        "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+        "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+        "quality_and_100k": "not_inherited",
+        "schema_version": 2,
+        "scope": "historical_integrity_and_current_task_definitions_only",
+        "state_changes_since_baseline": [
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P7-013"
+          },
+          {
+            "baseline": "todo",
+            "current": "blocked",
+            "task_id": "P7-018"
+          }
+        ],
+        "status": "passed",
+        "task_count": 192,
+        "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+        "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+        "verifier_version": "historical-integrations-v2"
+      }
+    },
+    {
+      "line": 7113,
+      "step_number": 13,
+      "value": {
+        "binary": "/home/runner/work/_temp/p7-017-default/codecortex",
+        "features": [],
+        "package_kind": "default",
+        "profile": "dev",
+        "receipt": "/home/runner/work/_temp/p7-017-default/build-receipt.json",
+        "sha256": "866ac758cfbaa999384f8634aa4c07697fb6e95a800402fcc0bfd8b3a67dcc80",
+        "source_commit": "389bcf601b6c25dd3a299a94a87f1c71c2481351",
+        "source_inputs": 776
+      }
+    },
+    {
+      "line": 8461,
+      "step_number": 31,
+      "value": {
+        "states": {
+          "blocked": 1,
+          "done": 152,
+          "in_progress": 2,
+          "todo": 37
+        },
+        "status": "passed",
+        "task_count": 192,
+        "task_sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b",
+        "views": 4
+      }
+    },
+    {
+      "line": 8505,
+      "step_number": 32,
+      "value": {
+        "binary": "/home/runner/work/_temp/p7-017-semantic/codecortex",
+        "features": [
+          "semantic"
+        ],
+        "package_kind": "semantic",
+        "profile": "dev",
+        "receipt": "/home/runner/work/_temp/p7-017-semantic/build-receipt.json",
+        "sha256": "b7717ddf7af596cfc6cc11dd4a20eecf57d2994dda8d4c880a66bb6269110e33",
+        "source_commit": "389bcf601b6c25dd3a299a94a87f1c71c2481351",
+        "source_inputs": 776
+      }
+    }
+  ],
+  "target_mapping": "Cargo stderr target headers and complete libtest stdout blocks are paired FIFO within each step; intervening later Running headers never steal a previous stdout block. Explicit COMMAND --list headers are excluded from executed pairing. Each block named count equals declared count and summary."
+}

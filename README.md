@@ -10,21 +10,20 @@ MCP 服务器和安装 agent 配置）。
 ## 当前重构进度
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：152 done / 22 in_progress / 17 todo / 1 blocked**。
+Code Index V2 共 **192 项任务：153 done / 21 in_progress / 17 todo / 1 blocked**。
 
 当前阶段：**P7｜provider与dense端到端**；计划状态：`in_progress`；更新日期：`2026-10-08`。
-下一任务：**P7-013｜查询总deadline和模型故障退化**（硬依赖已完成）。
+下一任务：**P7-014｜配置/status/MCP全链贯通**（硬依赖已完成）。
 
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
-| P7-013｜查询总deadline和模型故障退化 | `in_progress` | P7-012 (done) |
-| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (in_progress) |
+| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (done) |
 | P7-015｜后台回填与前台查询竞争测试 | `todo` | P7-014 (in_progress) |
 | P7-016｜fake全故障矩阵回归 | `todo` | P6-020 (done)、P7-015 (todo) |
 | P7-017｜离线默认包和未启用测试 | `todo` | P7-016 (todo) |
 | P7-018｜受授权的真实provider小集认证 | `blocked` | P7-017 (todo) |
 | P7-019｜本地加dense的质量/成本消融 | `todo` | P7-017 (todo) |
-| P7-020｜P7语义闭环与发布范围验收 | `todo` | P7-001 (done)、P7-002 (done)、P7-003 (done)、P7-004 (done)、P7-005 (done)、P7-006 (done)、P7-007 (done)、P7-008 (done)、P7-009 (done)、P7-010 (done)、P7-011 (done)、P7-012 (done)、P7-013 (in_progress)、P7-014 (in_progress)、P7-015 (todo)、P7-016 (todo)、P7-017 (todo)、P7-019 (todo) |
+| P7-020｜P7语义闭环与发布范围验收 | `todo` | P7-001 (done)、P7-002 (done)、P7-003 (done)、P7-004 (done)、P7-005 (done)、P7-006 (done)、P7-007 (done)、P7-008 (done)、P7-009 (done)、P7-010 (done)、P7-011 (done)、P7-012 (done)、P7-013 (done)、P7-014 (in_progress)、P7-015 (todo)、P7-016 (todo)、P7-017 (todo)、P7-019 (todo) |
 | P8-001｜锁定release候选与证据输入 | `in_progress` | P7-020 (todo) |
 | P8-002｜完成真实多仓native语料认证 | `in_progress` | P8-001 (in_progress) |
 | P8-003｜运行外部兼容套件 | `in_progress` | P8-002 (in_progress) |
@@ -50,7 +49,7 @@ Code Index V2 共 **192 项任务：152 done / 22 in_progress / 17 todo / 1 bloc
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`36f1358e06388d674c5e880df6ff722250c3461a24839054fcb49dad41dcaa35`。
+> 源文件 SHA-256：`a7ebacf3903f3f405e3c5ba4d19f5590107467b55ede35c4d675516c07cf4e68`。
 <!-- code-index-progress:end -->
 
 ## 快速开始

@@ -23,7 +23,7 @@
 
 ## 第三轮复核
 
-本批已按原始 ID 累计推进 **10/10**，本批尚未推进 **0 项**。当前权威任务表为 **192 = 152 done + 22 in_progress + 17 todo + 1 blocked**，完整验收尚余 **40 项**。三轮没有凭局部证据关闭完整任务；#144 的两项正式关闭使本次会话开始时主线 42 项未验收降至 40 项。
+本批已按原始 ID 累计推进 **10/10**，本批尚未推进 **0 项**。第三轮结束时权威任务表为 **192 = 152 done + 22 in_progress + 17 todo + 1 blocked**，完整验收尚余 **40 项**。三轮没有凭局部证据关闭完整任务；#144 的两项正式关闭使当时主线 42 项未验收降至 40 项。
 
 P8-017 完成 `benchmark::statistics` 中 `distribution` / `quantile_interval` 的 nearest-rank 重复消除、12 项实际测量回归及独立源码审查；其他百分位算法、临时 branch/schema 与外部 wire 兼容清理仍开放。P8-020 新增原 G8 范围的依赖和证据缺口总账，19 项控制通过；固定仓库 13 条证据和空证据两次实际运行均为 exit 1，local / semantic 均保持 blocked。
 
@@ -32,3 +32,9 @@ P8-017 完成 `benchmark::statistics` 中 `distribution` / `quantile_interval` �
 首次 PR #146 CI 的两个失败均有原始日志：旧 selector fixture 与浅 checkout 的固定 ref 获取问题，以及 worker 并发测试在任务发布尚未结束时提前读取覆盖率的问题。修复保留旧断言、时间预算和历史源码接受链。后者单次真实 semantic 测试为 **1 passed / 0 failed / 0 ignored，384 条请求**；当前 v11 的 10 项新控制和实际 785 输入源码准入均通过。新的远端完整 CI 仍须在最终发布 head 上验证。
 
 后续 v11 固定 TEST 源码为 `65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3`，相对 `78ae91ee…` 仅 worker 测试一个文件变化。旧 P8 产品执行仍保留原候选身份，不重标为新 TEST 源码的执行。
+
+## P7 证据合流后的当前进度
+
+#147 固定 `434145f62b81dfcada0821cfc1be03a86bbf59cd` 的 P7-013 工程验收经独立审查接受，与本批证据合流后为 **192 = 153 done + 21 in_progress + 17 todo + 1 blocked，39 项未验收**；下一项 **P7-014**。此次减少的 1 项来自 P7-013，原始 P8 十项仍为 `in_progress`，不重复计算推进数。上表和机器可读逐轮记录保留各轮当时的 40 项。
+
+P7-013/020 的完整记录和 #147 的原始证据全部保留，产品输入、v12 及 CI 保持 `57cec179…` 原字节。旧 G8 回执仍对应原 40 项快照，不能宣称已在 39 项新状态上重跑；G7、live、G8 和发行范围不升级。[独立审查](../../../artifacts/checkpoints/p8-next-ten-20261008/release/pr147-doc-progress-review.json) 记录真实 PR/main 原始日志、58 项函数的两套正常调度执行、776 项原源码及接受边界。最终合流 head 的 CI 单独判断。

@@ -1,0 +1,105 @@
+{
+  "actual_judge_execution": "not_run",
+  "live_provider_execution": "not_run",
+  "model_calls": 0,
+  "network_calls": 0,
+  "release_certified": false,
+  "runs": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_judge_evidence.py",
+        "prepare",
+        "--plan",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-fixture/plan.json",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-packet"
+      ],
+      "expected_returncode": 0,
+      "model_calls": 0,
+      "name": "judge-prepare",
+      "network_calls": 0,
+      "release_certified": false,
+      "returncode": 0,
+      "status": "prepared_not_run"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_judge_evidence.py",
+        "reconcile",
+        "--packet",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-packet",
+        "--expected-packet-sha256",
+        "c133ef4f7b83022b8d4e0fe9ea157e6999c4bc8d80cb521c7f2e1544e44f99c7",
+        "--judgments",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-fixture/opinions.json",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-manual"
+      ],
+      "expected_returncode": 0,
+      "model_calls": 0,
+      "name": "judge-reconcile",
+      "network_calls": 0,
+      "release_certified": false,
+      "returncode": 0,
+      "status": "manual_review_required"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_semantic_certification.py",
+        "--manifest",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-missing-fixture/manifest.json",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-missing"
+      ],
+      "expected_returncode": 1,
+      "model_calls": 0,
+      "name": "semantic-missing",
+      "network_calls": 0,
+      "release_certified": false,
+      "returncode": 1,
+      "status": "blocked",
+      "structural_status": "incomplete"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_semantic_certification.py",
+        "--manifest",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-paper-fixture/manifest.json",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-paper"
+      ],
+      "expected_returncode": 1,
+      "model_calls": 0,
+      "name": "semantic-paper",
+      "network_calls": 0,
+      "release_certified": false,
+      "returncode": 1,
+      "status": "blocked",
+      "structural_status": "passed"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_semantic_certification.py",
+        "--manifest",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-fake-fixture/manifest.json",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/semantic-fake"
+      ],
+      "expected_returncode": 1,
+      "model_calls": 0,
+      "name": "semantic-fake",
+      "network_calls": 0,
+      "release_certified": false,
+      "returncode": 1,
+      "status": "blocked",
+      "structural_status": "failed"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "synthetic_local_contract_controls_only"
+}

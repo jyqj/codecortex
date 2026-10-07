@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root",
+  "task_id": "P7-013",
+  "decision": "accepted_current_engineering_scope_under_original_conditions",
+  "recorded_at_utc": "2026-10-07T18:06:32Z",
+  "source_commit": "b951f27d3ed50b7755bc2456c6425355f753ec17",
+  "source_tree": "25558c46010e085d13f134f6ff623e7ce285cbd3",
+  "complete_crate_cargo_inputs": 776,
+  "source_manifest_sha256": "baf2bd238706a0fd88b91c80357d1780415afd5b917ef56d4bf283f3932e8ee6",
+  "original_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "task_snapshot_before_sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b",
+  "hard_dependency": {
+    "P7-012": "done"
+  },
+  "scope": "Current supported V11/V15 engineering and fake/loopback HTTP behavior under the original P7-013 definition.",
+  "accepted_requirements": [
+    "Immutable total query deadline, clamped lane budget and cancellation/publication fences.",
+    "Auto retains valid local results and explicit semantic reports insufficient semantic coverage.",
+    "Network work does not retain the query read/write lock, read-pool connection or SQL transaction.",
+    "Failure/cancel/malformed output cannot become a complete-result or query-vector cache hit.",
+    "Finite physical-worker permits and query pins are retained until physical completion.",
+    "Current generation/configuration/cache-domain requirements and bounded retries pass.",
+    "The existing independent default-false query-network opt-in permits one bounded foreground attempt.",
+    "Original related regression commands, HTTP and actual product stdio pass at the fixed source."
+  ],
+  "ci_runs": [
+    {
+      "run": 37657882000,
+      "event": "pull_request",
+      "workflow": "P7 engineering regressions",
+      "job": 112917552850,
+      "head": "eb7cdc55aa94c8d6865bed14fa37fff08080af33",
+      "checkout": "389bcf601b6c25dd3a299a94a87f1c71c2481351",
+      "toolchain": "1.95.0",
+      "conclusion": "success",
+      "original58": {
+        "passed": 58,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "run": 37661087236,
+      "event": "push",
+      "workflow": "P7 engineering regressions",
+      "job": 112928487184,
+      "head": "b951f27d3ed50b7755bc2456c6425355f753ec17",
+      "checkout": "b951f27d3ed50b7755bc2456c6425355f753ec17",
+      "toolchain": "1.95.0",
+      "conclusion": "success",
+      "original58": {
+        "passed": 58,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "run": 37657882021,
+      "event": "pull_request",
+      "workflow": "CI",
+      "head": "eb7cdc55aa94c8d6865bed14fa37fff08080af33",
+      "checkout": "389bcf601b6c25dd3a299a94a87f1c71c2481351",
+      "check_toolchain": "1.99.0",
+      "msrv_toolchain": "1.95.0",
+      "all_three_jobs": "success"
+    },
+    {
+      "run": 37661087144,
+      "event": "push",
+      "workflow": "CI",
+      "head": "b951f27d3ed50b7755bc2456c6425355f753ec17",
+      "checkout": "b951f27d3ed50b7755bc2456c6425355f753ec17",
+      "check_toolchain": "1.99.0",
+      "msrv_toolchain": "1.95.0",
+      "all_three_jobs": "success"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/checkpoints/main-legacy-ci-37661087144-20261007/p7-013-acceptance-review.json",
+      "sha256": "4ce7ff1b88d86de0d506bf2fb495f607aa8837e00255b2828ce6d8e07827464e"
+    },
+    {
+      "path": "artifacts/checkpoints/main-legacy-ci-37661087144-20261007/independent-review.json",
+      "sha256": "588c455b5387bc79a336ed6d74dc3c90ab157f0ffbe71f1d5d00df6a6a40447f"
+    },
+    {
+      "path": "artifacts/checkpoints/main-legacy-ci-37661087144-20261007/p7-cross-binding-review.json",
+      "sha256": "4b718aba30fd5b25cef5fe5e85e68a3f347b210d87a3d0303b38deef5cdb2bfd"
+    },
+    {
+      "path": "artifacts/checkpoints/pr144-legacy-ci-passed-20261007/review.json",
+      "sha256": "cae9e3dbfb1abb200f3ec657644344e57712a1b74f6ae46b7f2c1f35fc2a5211"
+    },
+    {
+      "path": "artifacts/checkpoints/pr144-final-p7-ci-20261007/pr-independent-review.json",
+      "sha256": "e17fbcb69e44d12451c2dce2239439833c1d5b14cb249219c400eb1a0979a853"
+    },
+    {
+      "path": "artifacts/checkpoints/pr144-final-p7-ci-20261007/main-independent-review.json",
+      "sha256": "3341c58ba4bad345a9efd2d14a7d622ef24a5f43b9e55ce9b2e69d769ab232d5"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-013-acceptance-review-20261007/p7-013-acceptance-reconciliation-20261007.json",
+      "sha256": "941b8026b13928c487aef858ef1bdda3441391d0c2ae79b10afcfc02a4b1fc52"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-013-receipt.json",
+      "sha256": "7a647f66344e7e30a7018e19d0e723ee37e98b9876ccf9cc4b2e634123dbdedb"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-013-deadline-failure.json",
+      "sha256": "faba1529a4f0479c2cd92e141e416cffc92a583fef523c55d7cd6d3b6858e2aa"
+    }
+  ],
+  "preserved_limits": [
+    "Original source5af normal execution57/1 and serial diagnostic2/0 remain intact; old failure root cause is not proven.",
+    "Original legacy run37653732411 remains failure with later steps skipped; later success has distinct run IDs.",
+    "All original58 functions ran once in each P7 job with unchanged tests, budgets and normal libtest scheduling; repeated jobs are not extra unique functions.",
+    "Legacy printed binary SHA256 values are summaries only; full private build receipts, binaries and case JSON were not uploaded. The P7 jobs have no standalone binary SHA256 receipt.",
+    "Legacy stdio is not isolated P7-017 acceptance. Original local isolated failures and full P7-014/015/016/017/019/020 obligations remain open.",
+    "D1+D2 remain unchanged and P7-018 remains blocked. No live provider, paid egress, heldout quality, G7 or release acceptance is granted.",
+    "Actual future supported-version migrations retain the original conditional obligations; nonexistent successors are not invented for current acceptance."
+  ],
+  "task_transition": {
+    "before": "in_progress",
+    "after": "done"
+  },
+  "unfinished_before": 40,
+  "unfinished_after": 39,
+  "next_task": "P7-014"
+}

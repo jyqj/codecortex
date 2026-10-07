@@ -1,0 +1,233 @@
+{
+  "PR": 147,
+  "actual_checkout": "248f81a19048a36daa06cec804beaab35ec02577",
+  "actual_tree": "8b7b243b1d7ece132aa0497149535d4145882ac4",
+  "current_task_state": {
+    "blocked": 1,
+    "done": 153,
+    "in_progress": 1,
+    "source_task_sha256": "88b309f8723049ab0ee1e7e9baa59efa2c658560e19729dc9cb4240f0409afe7",
+    "state_kind": "candidate fixed Git content only; this failed CI never reached task-view/history validation",
+    "task_count": 192,
+    "todo": 37,
+    "unfinished": 39
+  },
+  "failed_step": {
+    "completed_at": "2026-10-07T18:20:28Z",
+    "conclusion": "failure",
+    "name": "Default regression within authorized scope",
+    "number": 8,
+    "started_at": "2026-10-07T18:19:52Z",
+    "status": "completed"
+  },
+  "failure": {
+    "exact_raw_microseconds": null,
+    "excerpt": "failure-excerpt.log",
+    "exit_code": 101,
+    "function": "tests::benchmark_fixture",
+    "kind": "existing_index_full_rebuild_wall_time_gate",
+    "library_summary": {
+      "duration_seconds": 8.84,
+      "failed": 1,
+      "ignored": 5,
+      "passed": 38
+    },
+    "limit": "strictly less than500ms",
+    "package": "cc-eval",
+    "raw_failure_line": 1190,
+    "reported_warm_p95": "501.93ms",
+    "source": "crates/cc-eval/src/lib.rs:915",
+    "target": "unittests src/lib.rs",
+    "task_document_or_historical_gate_failure": false
+  },
+  "head": "753b66846a96cdb3cc541fe50f94b7ccdb05fe07",
+  "job_results": [
+    {
+      "actual_checkout": "248f81a19048a36daa06cec804beaab35ec02577",
+      "bytes": 35889,
+      "checkout_source_line": 140,
+      "conclusion": "success",
+      "job_id": 112943519062,
+      "name": "msrv",
+      "raw_log": "msrv-job.log",
+      "sha256": "38e130b451feed59646d2fc2b670c87e8a06f660af38b9b0b6356e8cef5b76c9",
+      "status": "completed"
+    },
+    {
+      "actual_checkout": "248f81a19048a36daa06cec804beaab35ec02577",
+      "bytes": 61616,
+      "checkout_source_line": 139,
+      "conclusion": "success",
+      "job_id": 112943519092,
+      "name": "security",
+      "raw_log": "security-job.log",
+      "sha256": "204bb4940d9a8bd0a43129bbf249a66665c5333e6a8af8e6d0751f55cbeec9e4",
+      "status": "completed"
+    },
+    {
+      "actual_checkout": "248f81a19048a36daa06cec804beaab35ec02577",
+      "bytes": 113932,
+      "checkout_source_line": 139,
+      "conclusion": "failure",
+      "job_id": 112943519287,
+      "name": "check",
+      "raw_log": "check-job-failure.log",
+      "sha256": "7ea55c3ff06722b2c0974dd552131f694efaf6b224df56c43b3d39f07ca99946",
+      "status": "completed"
+    }
+  ],
+  "measurement": {
+    "actual_route": "real in-process MCP tool path; repeated forced full index rebuild",
+    "case": "index_build",
+    "cases_for_index": 1,
+    "cold_calls": 1,
+    "discarded_warmup_calls": 1,
+    "measured_warm_calls": 2,
+    "params": {
+      "full": true,
+      "path": "."
+    },
+    "per_case_statistic": "minimum of two measured durations",
+    "per_tool_percentile": "across per-case minima; with one index case,p50/p95/max all equal that minimum",
+    "retained_runtime_observation": "rounded aggregate table only; two individual durations and stage/CPU/IO details not recorded"
+  },
+  "merge_conclusion": "not_ready_due_to_failed_required_CI; await root independently reviewed next action",
+  "minimal_reviewable_diagnostic_change": {
+    "change": "Retain each original cold/warm elapsed and selected index report work/timing fields after the timing interval, and print them on failure. This makes existing measured work reviewable.",
+    "claim": "Diagnostic improvement only, not a proved product performance fix.",
+    "preserve": [
+      "full=true corpus input",
+      "one cold,one discarded warmup,two measured warm calls",
+      "current best-of-two aggregation",
+      "strict500ms assertion",
+      "original normal test scheduling"
+    ]
+  },
+  "no_retry_or_mutations": {
+    "Rust_or_CI_edit": false,
+    "product_execution": false,
+    "push": false,
+    "task_edit": false,
+    "workflow_rerun": false
+  },
+  "passed_before_failure": [
+    "Set up job",
+    "Run actions/checkout@v4",
+    "Run dtolnay/rust-toolchain@stable",
+    "Run Swatinem/rust-cache@v2",
+    "Format check",
+    "Clippy",
+    "Compile every default test target"
+  ],
+  "prior_main_same_source_function": "passed in main run37661087144; does not rewrite this failure or establish the failing run resource cause",
+  "reviewer": "/root/ci_history_review",
+  "root_cause": "unresolved; fixed source/inputs unchanged but a real existing strict latency gate failed",
+  "run_attempt": 1,
+  "run_id": 37665494198,
+  "run_url": "https://github.com/jyqj/codecortex/actions/runs/37665494198",
+  "schema_version": 1,
+  "skipped_steps": [
+    {
+      "name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "number": 9
+    },
+    {
+      "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+      "number": 10
+    },
+    {
+      "name": "Eval suite",
+      "number": 11
+    },
+    {
+      "name": "P0 benchmark optional HTTP contract tests",
+      "number": 12
+    },
+    {
+      "name": "P0 real MCP subprocess adapter",
+      "number": 13
+    },
+    {
+      "name": "P2-A public surface real MCP regression",
+      "number": 14
+    },
+    {
+      "name": "P2-B resolution dependency real MCP regression",
+      "number": 15
+    },
+    {
+      "name": "P2-C durable recovery and freshness MCP regression",
+      "number": 16
+    },
+    {
+      "name": "P2-D multi-language public truth regression",
+      "number": 17
+    },
+    {
+      "name": "P3-A project config recovery real MCP",
+      "number": 18
+    },
+    {
+      "name": "P3-B package and module recovery real MCP",
+      "number": 19
+    },
+    {
+      "name": "P3-C Go package recovery real MCP",
+      "number": 20
+    },
+    {
+      "name": "P3-C available independent module oracles",
+      "number": 21
+    },
+    {
+      "name": "P3-D module boundary and architecture contracts",
+      "number": 22
+    },
+    {
+      "name": "P4-A source fidelity and real MCP indexing",
+      "number": 23
+    },
+    {
+      "name": "P4-B chunk budgets and live-session policy changes",
+      "number": 24
+    },
+    {
+      "name": "P4-C document versions and source freshness",
+      "number": 25
+    },
+    {
+      "name": "P4-D identity and chunk-quality gates",
+      "number": 26
+    },
+    {
+      "name": "P5-A versioned retrieval lanes",
+      "number": 27
+    },
+    {
+      "name": "P5-B bounded query execution and cancellation",
+      "number": 28
+    },
+    {
+      "name": "P5-C generation, bounded assembly and final source verification",
+      "number": 29
+    },
+    {
+      "name": "P5-D capabilities, query pins and public policies",
+      "number": 30
+    },
+    {
+      "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+      "number": 31
+    },
+    {
+      "name": "P7 semantic product disabled stdio contract",
+      "number": 32
+    },
+    {
+      "name": "Post Run Swatinem/rust-cache@v2",
+      "number": 63
+    }
+  ],
+  "tree_matches_fixed_head": true,
+  "unchanged_product_CI_scripts_tests_from_prior_main": true
+}

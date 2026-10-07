@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-07T18:18:23.976145+00:00",
+  "task_state_commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+  "task_sha256": "d69e664aa76119272fb7ff3937dcd6e3dd6e75fc07b55c4f4093922cfc731e9d",
+  "task_counts": {
+    "done": 152,
+    "in_progress": 22,
+    "todo": 17,
+    "blocked": 1,
+    "unfinished": 40
+  },
+  "batch": {
+    "advanced": 10,
+    "remaining": 0,
+    "formal_tasks_closed": 0
+  },
+  "current_reviewed_source": "65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3",
+  "prior_p8_product_source": "78ae91eeae6edae6bea29c27f24b251773341c00",
+  "source_scope": "Current reviewed source differs from prior P8 product source in one worker TEST file only; older P8 execution receipts are not relabeled.",
+  "checks": [
+    {
+      "name": "p8_python",
+      "test_count": 197,
+      "exit_code": 0,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s scripts/tests -p test_p8_*.py -v",
+      "logs": [
+        {
+          "path": "p8-final-python-tests.log",
+          "bytes": 31994,
+          "sha256": "9c7244c6ecfa0d873ae49c8c9051f7645fd534a231fc85f6e339ad17c896cb04"
+        }
+      ]
+    },
+    {
+      "name": "v11_source_tests",
+      "test_count": 10,
+      "exit_code": 0,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests/source_integrity -p test_reviewed_source_v11.py -v",
+      "logs": [
+        {
+          "path": "source-v11-tests.log",
+          "bytes": 1728,
+          "sha256": "6e5639f9d931c544feb9a706dbccad8ad2eecf6a1b109fd093d25c2e95d2f05a"
+        }
+      ]
+    },
+    {
+      "name": "v11_source_cli",
+      "test_count": null,
+      "exit_code": 0,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/verify_reviewed_source_v11.py --source-version p8-worker-readiness-20261008-v11",
+      "logs": [
+        {
+          "path": "source-v11-cli.json",
+          "bytes": 550,
+          "sha256": "bb330b7802d2ba3121180493dd293249f6601ed48503fb5f3d325ab2f4eb05ee"
+        },
+        {
+          "path": "source-v11-cli.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "fmt",
+      "test_count": null,
+      "exit_code": 0,
+      "command": "cargo fmt --all -- --check",
+      "logs": [
+        {
+          "path": "fmt-final.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "p8_facts",
+      "test_count": null,
+      "exit_code": 0,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/p8_facts.py --check",
+      "logs": [
+        {
+          "path": "p8-facts-final.log",
+          "bytes": 2632,
+          "sha256": "faf831214ee50036d997aad3c012e1350339fc32e4adca8d98704c61ebc27e0d"
+        }
+      ]
+    },
+    {
+      "name": "historical_integrations_v2_final",
+      "test_count": null,
+      "exit_code": 0,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/verify_historical_integrations_v2.py",
+      "logs": [
+        {
+          "path": "historical-v2-final.json",
+          "bytes": 2887,
+          "sha256": "e91fcf275d23435be099d4aed172d1d9c30d0e5e7349eec2a3a8ce5f3abfa8ab"
+        },
+        {
+          "path": "historical-v2-final.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "historical_verifier_materialization": "Two failed local attempts retained: sparse checkout omitted 15 immutable historical evidence files; rematerialized original Git blobs and then ran unchanged full verifier without concurrent Git mutations. Final exit 0 checks 246 packing evidence files, 58 E3 imports, original 192 task definitions and four current views.",
+  "limits": [
+    "Final full GitHub CI must execute on the published head.",
+    "Original complete local source suite retained 92 pass/2 fail; four repaired original selector methods executed separately by independent reviewer.",
+    "No completed full local workspace Rust test; compilation was stopped at resource limit before tests.",
+    "No full G8, 100k, heldout, live semantic or platform matrix acceptance."
+  ]
+}

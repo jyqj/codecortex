@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/final_merge_audit",
+  "reviewed_at_utc": "2026-10-07T19:08:06.169498+00:00",
+  "candidate": "0e197ff3fa376e702e1a324ca33c73acb19a5893",
+  "candidate_tree": "62ad27783f738c2f708d347d25c7231a3f436ca3",
+  "previous_pr": "2a75e65d01a3722155e7a1858d7e0e9c8a5558cf",
+  "integrated_main": "d53a4972af92fd10a5cddb9f15ffdf06414b3d54",
+  "verdict": "accepted_scoped",
+  "scope": "independent_static_guard_ci_migration_and_delivery_preservation_review",
+  "blocking_findings": [],
+  "protected_source": {
+    "product": "8e12c3884edbb2743eb2aee82fafa285e8b28ef7",
+    "review": "3056a14ccc3496b4e5c9ff1e3746bf6cf33a1b95",
+    "v11_base": "65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3",
+    "joint22_base": "d77a2143cdb82e722b1d1c62851298c43e707b65",
+    "input_count": 785,
+    "candidate_modes_and_blobs_equal_product": true,
+    "manifest_format": "sha256_sorted_compact_path_sha256_json_no_newline_v1",
+    "manifest_sha256": {
+      "0e197ff3fa376e702e1a324ca33c73acb19a5893": "4c9aeb9cac2eea382d2dbce6d85220af3e10f6483b4c1f696b7874ecaff0fdb4",
+      "65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3": "099201584e44dac99026cf18cf0104e31cdfa6d8453190bd0ba656c1c7ff8528",
+      "d77a2143cdb82e722b1d1c62851298c43e707b65": "12d6499a6cad52d18c21e522c244ef99006994f4d8ebf07400b8daa7525cf7c8",
+      "8e12c3884edbb2743eb2aee82fafa285e8b28ef7": "4c9aeb9cac2eea382d2dbce6d85220af3e10f6483b4c1f696b7874ecaff0fdb4"
+    },
+    "v11_delta": [
+      "crates/cc-eval/src/benchmark/p8_load.rs"
+    ],
+    "joint22_delta": [
+      "crates/cc-eval/src/benchmark/p8_load.rs",
+      "crates/cc-eval/src/benchmark/statistics.rs",
+      "crates/cc-eval/tests/p7_worker_contention.rs",
+      "crates/cc-eval/tests/p8_measurements.rs"
+    ],
+    "added_lines_from_v11": 43,
+    "deleted_lines_from_v11": 0,
+    "outside_artifact_budget_cfg_test_module_byte_equal_to_v11": true,
+    "v11_test_bodies_verbatim": [
+      "reservation_preserves_counter_on_overflow_or_budget_exhaustion",
+      "contended_reservations_never_exceed_limit_or_lose_successes"
+    ],
+    "main_test_bodies_preserved_with_only_previously_reviewed_fixture_adaptation": [
+      "concurrent_reservations_fill_only_whole_reservations_within_the_budget",
+      "rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries"
+    ]
+  },
+  "frozen_predecessors": {
+    "snapshot": "2a75e65d01a3722155e7a1858d7e0e9c8a5558cf",
+    "six_required_files": {
+      "scripts/verify_reviewed_source.py": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "34c758fa2b2b99e760fc9dd447a6943f6bb574d3",
+        "sha256": "019ce82b6f797920e5db3f786bb27c058b14a9a7b133e99f9b5d195ca12b81a8"
+      },
+      "scripts/reviewed-source-registry.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e242fcce78208397ba84350e90be6d399df501a4",
+        "sha256": "5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155"
+      },
+      "scripts/verify_reviewed_source_v10.py": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "21b21f8140b46ec971308f1177eb13e15a7b05b5",
+        "sha256": "96ff8eb7125db80a89f9e839cea95cd6a4db6fad24159d8c71d28c91d2dbc9ab"
+      },
+      "scripts/reviewed-source-registry-v10.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "70552738b166d0f19d712c9c8c9c29eafdec97c2",
+        "sha256": "099617f589ff6d2acfeb93b58b8049ee3eac9d0c6636cf14eaa524873b838708"
+      },
+      "scripts/verify_reviewed_source_v11.py": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "004a88e4010997bf30e6b1ef21bdb7d29618c86d",
+        "sha256": "cb5d33530a4ea0462d1f6b780ea4917c1ec54aef53ce7fd14f72056fe6210ed9"
+      },
+      "scripts/reviewed-source-registry-v11.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "75be974e574b82619daca15346063179a30f6c8e",
+        "sha256": "ef0b1ed53c07e850b7a226195cb1bf4b4a48b705a9e4a9c5311b33e758d89d5e"
+      }
+    },
+    "p7_v9_guard_and_registry_also_mode_and_blob_equal": true
+  },
+  "main_original_aliases": {
+    "snapshot": "d53a4972af92fd10a5cddb9f15ffdf06414b3d54",
+    "all_modes_and_bytes_equal": true,
+    "files": {
+      "scripts/verify_reviewed_source_joint22_v10.py": {
+        "original": "scripts/verify_reviewed_source.py",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "86b51f1a95b025e7c8731dff1a39156a0ff65e98",
+        "sha256": "34a53a3151d070e64b9940279173f7810e975bc281c05534757ed18f358d2efa"
+      },
+      "scripts/reviewed-source-joint22-v10.json": {
+        "original": "scripts/reviewed-source-registry.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f7078c59380d4261dbbced7d1300e626b806c567",
+        "sha256": "195fa37b20130e53f3417f8076eb608f18e3b3a98c9206907ba0ce9ab31b3d8a"
+      },
+      "scripts/source_snapshots/joint22_v10/test_reviewed_source.py.txt": {
+        "original": "tests/source_integrity/test_reviewed_source.py",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "61182078940ee15b5f6721ab5cbde88b1c1abfc9",
+        "sha256": "5ea2e7ee8685c911bdd97264cf1815794101119fb31e697efafd4a48432691ee"
+      },
+      "scripts/source_snapshots/joint22_v10/.github/workflows/ci.yml": {
+        "original": ".github/workflows/ci.yml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c95be170246584877d6b9cfab1602076092fe141",
+        "sha256": "9a869495f3bb51b982d165ac50e76cd86445f9fed561faf151f16608e1f310c8"
+      }
+    }
+  },
+  "v12": {
+    "script_sha256": "cc7963183bdcfb9730ad379374cb709d0a77f18e8730765f061d3f403cc50238",
+    "registry_sha256": "a600301187ac43276122186732bc0e5c3dd55952dcc5e33ecc5d3e2c244e67d4",
+    "source_review_sha256": "86175ca666f165b2418746ba43fd43aced68a242e8ca1eea76f97bcccf0dc07f",
+    "pins_match_fixed_commits": true,
+    "complete_manifest_independently_recomputed": true,
+    "guard_code_review": [
+      "approved_union verifies immutable v11 and joint22 snapshots, calls the entire original v11 approved_union chain, then calls the entire original joint22 approved_union chain; errors propagate. Neither proof is replaced by a hash-only approval.",
+      "The joint guard receives its explicit fixed registry alias path. Its default path, functions and common v3 import remain unchanged. The original joint verify_ci executes against the fixed historical workflow root, and current CI is checked separately.",
+      "Reconstruction binds complete inherited inventories and bytes, exact one-file v11 and four-file joint22 deltas, fixed source/base/joint_base/verdict, both sets of review and registry before/after digests, and all 785 final product inputs.",
+      "The CLI rejects optimized Python and unknown or absent versions, reconstructs fixed proofs, and checks the current tracked/disk source inventory and bytes. The fixed review and snapshot leaf symlinks are rejected.",
+      "No task completion, quality/100k, runtime, scale or release acceptance is inherited. Previous runs keep their fixed source and binary identities."
+    ]
+  },
+  "ci_and_tests": {
+    "workflow_sha256": "4036528d196d6c65be3566cdc33d4118c48deda776424d9f06b84dff6f2f1921",
+    "whole_workflow_delta": "Exactly one v11-to-v12 selector replacement from fixed 2a75; no other bytes changed.",
+    "private_default_binary_bindings": 20,
+    "historical_v2_gate_occurrences": 1,
+    "all_p8_test_selector_occurrences": 1,
+    "p7_workflow_mode_and_blob_equal": true,
+    "original_methods_preserved": 104,
+    "new_methods": [
+      "test_both_proofs_produce_the_reviewed_785_input_merge",
+      "test_stale_registry_and_every_identity_are_rejected",
+      "test_floating_pins_and_wrong_parent_products_fail_closed",
+      "test_each_inherited_inventory_and_bytes_are_bound",
+      "test_delta_and_joint_overrides_cannot_expand_or_disappear",
+      "test_before_and_after_digests_are_checked_for_both_parents",
+      "test_fixed_review_digest_bytes_and_symlink_are_checked",
+      "test_independent_review_cannot_omit_a_parent_or_a_delta",
+      "test_independent_review_rows_cannot_disagree_with_either_parent",
+      "test_complete_manifest_cannot_omit_add_or_mutate",
+      "test_all_aliases_and_previous_snapshots_remain_byte_frozen",
+      "test_each_full_approval_chain_is_required",
+      "test_incoming_registry_uses_its_explicit_original_bytes",
+      "test_original_incoming_ci_method_runs_all_its_unchanged_controls",
+      "test_joint_ci_is_executed_in_addition_to_frozen_snapshot_checks",
+      "test_current_ci_preserves_all_old_steps_and_private_binary_binding",
+      "test_current_source_cannot_self_authorize_or_hide_a_new_input",
+      "test_optimized_python_and_unknown_selection_fail_closed"
+    ],
+    "changed_original_test_files": [
+      "tests/source_integrity/test_current_source_v2.py",
+      "tests/source_integrity/test_current_source_v3.py",
+      "tests/source_integrity/test_reviewed_source_v10.py",
+      "tests/source_integrity/test_reviewed_source_v11.py"
+    ],
+    "exact_four_file_text_migrations_verified": true,
+    "all_original_assertions_and_other_methods_preserved": true,
+    "v11_fixture_snapshot": "2a75e65d01a3722155e7a1858d7e0e9c8a5558cf",
+    "v11_fixture_detail": "Only the first expected_ci fixture write is replaced with fixed Git bytes plus an equality assertion. The later restore used by the original negative controls remains unchanged.",
+    "joint_original_ci_method": "test_ci_only_allows_reviewed_migrations_and_local_p8_checks",
+    "joint_method_review": "The byte-frozen main test file supplies the exact unchanged method AST. The test-only facade supplies a historical root for the no-argument positive check and forwards all mutated roots to the original unmodified joint guard. Original workflow drift, historical-v2 count, old E3/skip rejection, private default count and shared-product rejection assertions remain intact.",
+    "new_controls_review": "All 18 methods inspected, including real complete proof in class setup, either-chain failure propagation, source inventories, pins and identities, exact delta/override sets, both digest sets, fixed review and snapshots, source mutation/extra input, original joint CI controls, current CI/P7 drift, and optimized/unknown CLI rejection. Only immutable Git blob reads are cached in class setup.",
+    "runtime_by_this_reviewer": "not_run; corpus owns the 18 controls and real CLI; root owns the four migrated historical methods; final remote CI is separate"
+  },
+  "main_evidence_preservation": {
+    "all_main_artifact_paths": 11162,
+    "all_modes_and_blobs_equal": true,
+    "complete_main_artifact_inventory_sha256": "c5d25826255ebf4686ab19ec14b61f9b3927bfb26b802e9617101df7169f39b4",
+    "changed_main_artifacts_since_b951": 214,
+    "all_214_preserved": true,
+    "incoming_artifact_differences_from_2a75": 33,
+    "new_paths": 31,
+    "modified_paths": 2,
+    "incoming_inventory": {
+      "artifacts/checkpoints/p7-p8-integration-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "aa9429bf8da68dd8b440ca1d357f4a741f11eec1"
+      },
+      "artifacts/checkpoints/p7-p8-integration-20261007/source-guard-receipt.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9d994979aa15df9de65f19dbc6c99ee7ff45ed30"
+      },
+      "artifacts/checkpoints/p7-p8-integration-20261007/source-guard.stderr.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      "artifacts/checkpoints/p7-p8-integration-20261007/source-guard.stdout.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7e0dc9798aa61fb531df4e92cedba91d65fd94ae"
+      },
+      "artifacts/checkpoints/p7-p8-integration-review-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "01beb4f6ac97a9e6c31ec0ec4f44d854f4c22172"
+      },
+      "artifacts/checkpoints/p7-p8-integration-review-20261007/product-inputs-d77a2143.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "753d146cce060d28311156e4fd3f0ca9e07c39d7"
+      },
+      "artifacts/checkpoints/p7-p8-integration-review-20261007/review.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4eb2ee57a76218338c0afa8cb472cc6a35cfdac4"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c362d8fbf6d404370723dc81d8fa4442e52ae4bb"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/SHA256SUMS": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3ba7077681a3703cd1a8df282ae2c35458a83abf"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/check-job.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5dcead9f2d764fed139619df1bd459ef70422e7d"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/manifest.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "015c3380ad777888f279f995fe514b8fc6d5f2e4"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/receipt.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9433bb453ca51fe24daaba8b2c13fffcaa851a9a"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/root-guard-v9-receipt.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7f08fb3c986863e5a40611f348a9b645c19129c8"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/root-guard-v9.stderr.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/root-guard-v9.stdout.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d9246b3125a2e253d8b615884fc4f80ecf831306"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/workflow-jobs.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9d291c045dfa1518fc5eb9f488a5e9f8a3c3e0c3"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-20261007/workflow-runs.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0e268bf9d8edc1a6f88956c8611147557a14de1c"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5523fb62515da1ff2f501e3497a74f13f598d4f3"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/SHA256SUMS": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a03a15ea97e4f4976fdb5ec54374c055ca85216d"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-budget-exit.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "43623d1415926747ecda096c7cb1fbd13120a287"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-budget-tests.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3bcc0fe3714d18a1b86780fbff8bafcac379844b"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-clean-cc-eval.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1d885764bea61ba10b472f51039dd9265778fc1c"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-load-exit.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2d8a33df081b2a0352fa2cf481729b05ef378ad5"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-load-tests.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1d9e229543ae2256644f2cc847170a31f99f6146"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-toolchain.log": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a6f837f315ac18d73340e881d73e6da2d8239409"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/compatibility-fix-unit-binary.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "43f86eaf23cfe2408821f1b451520a5cb4cf2609"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/manifest.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "34acfa16436a5a522582343f181c82fb0808d9e3"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/receipt.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5b443b244402b0179d27f8013c2a455e22c734a9"
+      },
+      "artifacts/checkpoints/p8-ci-compatibility-retest-20261007/source-binary-binding.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a970bcb104cd713528f0473ddcab59ac7ca2db3a"
+      },
+      "artifacts/checkpoints/p8-local-engineering-review-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3f38954ec96f49cd01b8e0dd0d079fea68ac86e0"
+      },
+      "artifacts/checkpoints/p8-local-engineering-review-20261007/ci-compatibility-inputs-40d54460.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1d6acc87e5ee32218626a12f44deb725665006ff"
+      },
+      "artifacts/checkpoints/p8-local-engineering-review-20261007/review-ci-compatibility.json": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b5fd9bc9d770a4c190ed2f24bdd31755c2e340f2"
+      },
+      "artifacts/checkpoints/p8-local-waves-20261007/README.md": {
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3245e7874800f05cd67bcdc67c95e39d9f304bc2"
+      }
+    },
+    "p8_local_progress": {
+      "path": "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md",
+      "mode": "100644",
+      "type": "blob",
+      "oid": "4561c119757a1a3ca2b8fb6454ce6af8f0d985e8",
+      "sha256": "22f09920134bbdb632a044272d743317000314d056e13a60bfe42bd5975e3bf5",
+      "exactly_equal_main": true
+    }
+  },
+  "tasks": {
+    "authority": "docs/roadmap/code-index-v2/tasks.json",
+    "original_definition_snapshot": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+    "task_count": 192,
+    "original_id_order_and_every_field_except_status_evidence_implementation_notes_equal": true,
+    "definition_sha256": "7445d280ab1e71861139fb7b54abe16c7f2ae60bee360ab60ce368f27277acb7",
+    "p8_001_complete_object_equal_main": true,
+    "only_changed_task_objects_from_main": [
+      "P8-002",
+      "P8-003",
+      "P8-004",
+      "P8-011",
+      "P8-012",
+      "P8-014",
+      "P8-015",
+      "P8-016",
+      "P8-017",
+      "P8-020"
+    ],
+    "status_transitions": "Each target todo -> in_progress; all other task objects equal main.",
+    "counts": {
+      "done": 152,
+      "in_progress": 22,
+      "todo": 17,
+      "blocked": 1
+    },
+    "unfinished": 40,
+    "tasks_sha256": "36f1358e06388d674c5e880df6ff722250c3461a24839054fcb49dad41dcaa35",
+    "plan_check_counts_and_digest_match": true,
+    "round_advancement": [
+      4,
+      4,
+      2
+    ],
+    "round_remaining": [
+      6,
+      2,
+      0
+    ],
+    "formal_tasks_closed_by_batch": 0
+  },
+  "independently_executed_checks": [
+    "Read fixed Git commit blobs and recursive trees from the root repository without altering its checkout; this review is written only in the independent release worktree.",
+    "Compared all 11162 main artifact path/mode/object rows; separately reconciled the 214 main changes and the 31 new plus two modified incoming artifacts.",
+    "Read every unique protected Git blob with git cat-file --batch, verified object identifiers/types/lengths and recomputed all 785 SHA256 maps at candidate/product/v11/joint22.",
+    "Compared fixed old guard/registry and main aliases by Git mode/blob and SHA256; parsed v12 pins and checked the fixed registry, complete manifest and independent review rows.",
+    "Compared the entire workflow against the single fixed replacement. Checked every pre-existing source test file, exact four-file selector/fixture substitutions, and all original and new method names via AST.",
+    "Compared all original task definitions and order against fixed 6d02, all task objects against new main, then recomputed states, ten IDs, round remainder and PLAN-CHECK digest."
+  ],
+  "remote_observation": {
+    "observed_at_utc": "2026-10-07 19:06:58 UTC",
+    "main": "d53a4972af92fd10a5cddb9f15ffdf06414b3d54",
+    "pr_147_head": "753b66846a96cdb3cc541fe50f94b7ccdb05fe07",
+    "pr_147_state": "open",
+    "pr_147_merged": false,
+    "source": "Read-only GitHub ref and PR metadata APIs; reviewer made no remote writes."
+  },
+  "boundaries": [
+    "This is an independent static guard/CI/source/delivery review. It is not a claim that this reviewer ran Rust, the full historical suite, the 18 controls, the real CLI, or final GitHub CI. Independently owned execution receipts remain separate.",
+    "Original failures and executions keep their actual fixed source and binary identities; old-head CI does not certify this later main merge.",
+    "Ten original TODOs advanced, none formally closed by this batch, and 40 remain unfinished at this fixed candidate. No G7/G8, external/provider, heldout, scale/soak, cold-build matrix, cross-platform or release acceptance is granted."
+  ]
+}

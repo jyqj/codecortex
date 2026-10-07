@@ -1,0 +1,51 @@
+{
+  "execution_environment": "partial materialization of a complete Git index in tmpfs",
+  "commands": [
+    {
+      "name": "plan-generate",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py",
+        "--write"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-07T18:48:22.424038+00:00",
+      "completed_at": "2026-10-07T18:48:22.504794+00:00",
+      "stdout": "plan-generate.stdout.json",
+      "stdout_sha256": "aabea9cb0528fcc1e85235bd91c7e39a5a62b42eb20d8f6cfcbe7bc5dca1b8eb",
+      "stderr": "plan-generate.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "plan-check",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-07T18:48:22.505583+00:00",
+      "completed_at": "2026-10-07T18:48:22.599960+00:00",
+      "stdout": "plan-check.stdout.json",
+      "stdout_sha256": "aabea9cb0528fcc1e85235bd91c7e39a5a62b42eb20d8f6cfcbe7bc5dca1b8eb",
+      "stderr": "plan-check.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "p8-facts-check",
+      "argv": [
+        "python3",
+        "scripts/p8_facts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-07T18:48:22.600326+00:00",
+      "completed_at": "2026-10-07T18:48:22.698206+00:00",
+      "stdout": "p8-facts-check.stdout.json",
+      "stdout_sha256": "faf831214ee50036d997aad3c012e1350339fc32e4adca8d98704c61ebc27e0d",
+      "stderr": "p8-facts-check.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "Rust_and_full_workspace_tests": "not_run",
+  "historical_helpers_and_source_integrity_CLI": "not_run_in_partial_worktree; unchanged original workflow will execute in a full CI checkout"
+}

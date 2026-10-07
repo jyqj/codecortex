@@ -13,6 +13,37 @@ use cc_eval::benchmark::{
 };
 use serde_json::{json, Value};
 
+#[test]
+fn distribution_and_interval_keep_one_nearest_rank_convention() {
+    for n in [1usize, 2, 3, 19, 20, 21, 199, 200, 201] {
+        // Deliberately unsorted, with ties and zero timings. Expected ranks
+        // use integer arithmetic, independently of the implementation.
+        let samples: Vec<u64> = (0..n).rev().map(|i| (i / 3) as u64).collect();
+        let summary = statistics::distribution(&samples);
+        let expected_p50 = ((n.div_ceil(2) - 1) / 3) as u64;
+        let expected_p95 = (((n * 95).div_ceil(100) - 1) / 3) as u64;
+        assert_eq!(summary.p50_us, Some(expected_p50));
+        assert_eq!(summary.p95_us, Some(expected_p95));
+        assert_eq!(
+            statistics::quantile_interval(&samples, 0.5)
+                .unwrap()
+                .estimate_us,
+            expected_p50
+        );
+        assert_eq!(
+            statistics::quantile_interval(&samples, 0.95)
+                .unwrap()
+                .estimate_us,
+            expected_p95
+        );
+    }
+    assert_eq!(statistics::distribution(&[]).p95_us, None);
+    for quantile in [0.0, 1.0, f64::NAN, f64::INFINITY] {
+        assert!(statistics::quantile_interval(&[0, 1], quantile).is_none());
+    }
+    assert!(statistics::quantile_interval(&[], 0.5).is_none());
+}
+
 fn warm(cache: ResultCacheObservation) -> LatencyEvidence {
     LatencyEvidence {
         operation: MeasurementOperation::Query,

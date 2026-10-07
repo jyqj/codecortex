@@ -1,0 +1,29 @@
+{
+  "scope": "separate Python child lock probe; owned synthetic WAL SQLite files",
+  "stages": [
+    {
+      "stage": "before_raw_reads",
+      "probe": {
+        "blocked": true,
+        "error": "database is locked"
+      }
+    },
+    {
+      "stage": "after_index.sqlite3",
+      "probe": {
+        "blocked": true,
+        "error": "database is locked"
+      }
+    },
+    {
+      "stage": "after_index.sqlite3-shm",
+      "probe": {
+        "blocked": false
+      }
+    },
+    {
+      "stage": "open_index.sqlite3-wal",
+      "error": "[Errno 2] No such file or directory: '/tmp/p8-wal-lock-attribution-9_9p4w6r/index.sqlite3-wal'"
+    }
+  ]
+}

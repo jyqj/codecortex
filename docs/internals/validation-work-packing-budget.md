@@ -9,20 +9,26 @@ cost or a completed attempt.
 
 ## Packing order
 
-The response keeps the existing byte and token limits, metadata projection,
-source priority and explicit omission accounting. After compacting existing
-metadata and duplicate source views, the packer removes optional references
-before selecting the complete source bodies that fit.
+The response keeps the existing byte and token limits, source priority and
+explicit omission accounting. Duplicate rendered source views yield first. If
+the response still exceeds its cap, the packer checks whether omitting the
+optional work receipt alone preserves all current hit and retrieval metadata.
+This check precedes the lossy lane/hit metadata projection, so diagnostic cost
+reporting cannot displace the public score contributions when its omission is
+sufficient to fit the response.
 
-Before each additional body eviction, it checks whether removing the whole
+At that boundary and before each additional body eviction, the same reversible
+probe checks whether removing the whole
 `validation_work` object and setting `source_freshness.details_omitted: true`
 is sufficient to fit the current response, including that marker and the
 self-measured byte/token receipt. If it is sufficient, the packer keeps every
-current complete body and records the diagnostic omission. If it is not
+current complete body and metadata field and records the diagnostic omission.
+If it is not
 sufficient, it restores the exact work object and the previous value or absence
-of `details_omitted`, then follows the existing evidence eviction order. This
-preserves all original numeric and explanatory values when a smaller body set
-can accommodate them. No SQL subfield is zeroed, shortened or partially reported.
+of `details_omitted`, then follows the existing metadata, optional-reference and
+evidence eviction order. The later body probe retains the receipt whenever a
+smaller body set can accommodate it. No SQL subfield is zeroed, shortened or
+partially reported.
 
 This check does not replace the existing oversized-freshness diagnostic
 projection or the minimal-envelope fallback. It does not change the hydrator,
@@ -45,23 +51,40 @@ unchanged. It covers actual parser/index/MCP source checks, implementation,
 test/interface facets, shrinking/expanding caps, numeric-width stress, exact
 scope projections and real legacy/generation producer preservation.
 
-`packing_validation_work` adds two narrower controls over actual indexed
+The subsequent PR143 CI run `37629938552`, job `112821255708`, exposed an
+earlier packing boundary in the unchanged
+`p7_v05_v11_independent_review` public BM25 oracle. After duplicate rendering
+was compacted, the real response occupied 16,020 bytes under the same
+16,000-byte cap. Omitting the complete optional receipt reduced it to 15,578
+bytes with the omission marker included. The old metadata projection instead
+removed `stage_a_layer_scores` before reaching the body-protection probe.
+The new early probe protects the complete existing metadata without a
+score-field exception or a changed budget.
+
+`packing_validation_work` includes three narrower controls over actual indexed
 source with explicitly synthetic output pressure: a fixed cap that keeps the
 complete body by omitting the optional work object, and a failed omission probe
 that must restore the entire producer receipt and an absent, false, true or
 null pre-existing marker. The latter also checks inputs without a work object,
-graph-induced Partial status and source/body preservation. Both controls check
-actual serialized bytes, self-accounting and idempotence; expanded budgets do
-not recreate an omitted receipt.
+graph-induced Partial status and source/body preservation. The third control
+starts from unprojected hit metadata and full retrieval lanes, proves duplicate
+rendering yields first, and then verifies byte-for-byte value equality of the
+hits and retrieval metadata when the early receipt omission fits. All three
+check actual serialized bytes, self-accounting and idempotence; expanded
+budgets do not recreate an omitted receipt.
 
 Commands:
 
 ```sh
 cargo test --locked -p cc-eval --test diag_p5e_fix_review_boundary_20261003
 cargo test --locked -p cc-eval --test packing_validation_work
+cargo test --locked -p cc-server --test p7_v05_v11_independent_review
 ```
 
 Failure/reproduction logs, original hashes, stage observations and the final
 scoped validation receipt are kept in
 `artifacts/checkpoints/validation-work-packing-budget-fix-20261007/`.
+The separate early metadata regression, unchanged public oracle, source
+identity and subsequent validation results are recorded in
+`artifacts/checkpoints/validation-work-bm25-metadata-fix-20261007/`.
 Historical source admissions and review records are not modified by this fix.

@@ -354,8 +354,12 @@ async fn run(seed: u64) {
     };
     let initial_build_us = build(index.clone(), true).await;
     wait(|| {
+        let pins = index.read().unwrap().query_pins();
+        if pins != 0 {
+            return false;
+        }
         let coverage = db.reads().semantic_coverage().unwrap().coverage;
-        coverage.published > 0 && coverage.uncovered == 0 && index.read().unwrap().query_pins() == 0
+        coverage.published > 0 && coverage.uncovered == 0
     })
     .await;
     let quiet_resources = resources("quiet-before");
@@ -452,11 +456,16 @@ async fn run(seed: u64) {
     build(index.clone(), false).await;
     provider.release();
     wait(|| {
+        let active = provider.gate.0.lock().unwrap().active;
+        if active != 0 {
+            return false;
+        }
+        let pins = index.read().unwrap().query_pins();
+        if pins != 0 {
+            return false;
+        }
         let coverage = db.reads().semantic_coverage().unwrap().coverage;
-        coverage.published > 0
-            && coverage.uncovered == 0
-            && provider.gate.0.lock().unwrap().active == 0
-            && index.read().unwrap().query_pins() == 0
+        coverage.published > 0 && coverage.uncovered == 0
     })
     .await;
     let switch_and_drain_us = switch_started.elapsed().as_micros() as u64;

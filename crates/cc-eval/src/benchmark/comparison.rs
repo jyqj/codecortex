@@ -83,7 +83,10 @@ pub fn compare(base: &Path, candidate: &Path, policy: &Policy) -> Result<serde_j
     let ci = statistics::bootstrap(&values, b.suite.seed);
     let top1_delta = sb.mean_top1 - sa.mean_top1;
     let mut reasons = Vec::new();
-    let mut inconclusive = a.engine["hardware"].is_null() || b.engine["hardware"].is_null();
+    let mut inconclusive_reasons = Vec::new();
+    if a.engine["hardware"].is_null() || b.engine["hardware"].is_null() {
+        inconclusive_reasons.push("hardware provenance unavailable");
+    }
     let ga: Gate = manifest::json_file(&base.join("gate.json"))?;
     let gb: Gate = manifest::json_file(&candidate.join("gate.json"))?;
     if ga.exit_code != 0 || gb.exit_code != 0 {
@@ -95,7 +98,7 @@ pub fn compare(base: &Path, candidate: &Path, policy: &Policy) -> Result<serde_j
     match &ci {
         Some(i) if i.low >= -policy.max_ndcg_regression => {}
         Some(i) if i.high < -policy.max_ndcg_regression => reasons.push("nDCG regression".into()),
-        _ => inconclusive = true,
+        _ => inconclusive_reasons.push("nDCG interval does not establish the configured margin"),
     }
     let ra: Vec<super::schema::Row> = super::report::read_jsonl(&base.join("normalized.jsonl"))?;
     let rb: Vec<super::schema::Row> =
@@ -108,18 +111,23 @@ pub fn compare(base: &Path, candidate: &Path, policy: &Policy) -> Result<serde_j
         .filter(|(x, _)| *x > 0)
         .map(|(x, y)| y as f64 / x as f64);
     if da.samples < policy.minimum_latency_samples || db.samples < policy.minimum_latency_samples {
-        inconclusive = true;
+        inconclusive_reasons.push("insufficient latency samples");
     } else if latency_ratio.is_some_and(|r| r > policy.max_latency_ratio) {
         reasons.push("p95 regression".into());
     }
+    // A zero-duration baseline has no measurable ratio. Enough rows cannot
+    // turn a missing denominator into evidence that the performance gate passed.
+    if latency_ratio.is_none() {
+        inconclusive_reasons.push("p95 latency ratio unavailable (missing or zero baseline)");
+    }
     let status = if !reasons.is_empty() {
         "failed"
-    } else if inconclusive {
+    } else if !inconclusive_reasons.is_empty() {
         "inconclusive"
     } else {
         "passed"
     };
     Ok(
-        serde_json::json!({"status":status,"exit_code":if status=="passed"{0}else{1},"top1_delta":top1_delta,"family_ndcg_delta_ci":ci,"p95_ratio":latency_ratio,"baseline_samples":da.samples,"candidate_samples":db.samples,"reasons":reasons,"policy":policy}),
+        serde_json::json!({"status":status,"exit_code":if status=="passed"{0}else{1},"top1_delta":top1_delta,"family_ndcg_delta_ci":ci,"p95_ratio":latency_ratio,"baseline_samples":da.samples,"candidate_samples":db.samples,"reasons":reasons,"inconclusive_reasons":inconclusive_reasons,"policy":policy}),
     )
 }

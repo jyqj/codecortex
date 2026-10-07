@@ -1480,13 +1480,16 @@ impl<'a> SymbolGraphReads<'a> {
         let dispatch_sites: Vec<cc_model::DispatchSiteRecord> =
             ds_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
-        // route_edges
+        // Only parsed route edges are re-resolution inputs. The same table
+        // also stores the derived route_node:* read model, regenerated from
+        // those edges after resolution. Reloading it as another parsed edge
+        // adds spurious lookup sites to the resolution manifest.
         let mut re_stmt = conn
             .prepare(
                 "SELECT edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,\
                  handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,\
                  route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence \
-                 FROM routes WHERE file_path = ?1",
+                 FROM routes WHERE file_path = ?1 AND edge_id NOT GLOB 'route_node:*'",
             )
             .map_err(db_err)?;
         let re_rows = re_stmt

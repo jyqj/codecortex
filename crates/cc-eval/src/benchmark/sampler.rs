@@ -365,7 +365,6 @@ fn bounded_output(command: &mut Command, timeout: Duration) -> Option<String> {
 }
 
 pub fn sample(stage: &str, pid: Option<u32>) -> Resources {
-    let mut rows = BTreeMap::new();
     let disabled = std::env::var("CODECORTEX_BENCH_PROCESS_PROBE").as_deref() == Ok("0");
     let process_table = if disabled {
         None
@@ -379,24 +378,52 @@ pub fn sample(stage: &str, pid: Option<u32>) -> Resources {
                 )
             })
     };
-    if let Some(table) = &process_table {
-        for line in table.lines() {
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.len() != 3 {
-                continue;
+    let mut result = ps_resources(stage, std::process::id(), pid, process_table.as_deref());
+    result.runner_native_rss_bytes = cc_index::process_rss_bytes_opt();
+    if disabled {
+        result.method = "ps explicitly disabled by CODECORTEX_BENCH_PROCESS_PROBE=0; process-tree RSS null, not zero; native runner RSS separate".into();
+    }
+    result
+}
+
+/// Parse one complete process-table observation. Missing or overflowing child
+/// RSS invalidates its tree total instead of silently dropping that child.
+/// A malformed topology line or duplicate PID makes all tree totals partial;
+/// directly attributed, unambiguous PID observations remain usable.
+pub fn ps_resources(stage: &str, runner: u32, pid: Option<u32>, table: Option<&str>) -> Resources {
+    let mut rows: BTreeMap<u32, (u32, Option<u64>)> = BTreeMap::new();
+    let mut complete_topology = table.is_some();
+    for line in table
+        .unwrap_or_default()
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+    {
+        let parts: Vec<_> = line.split_whitespace().collect();
+        let parsed = (|| {
+            let p = parts.first()?.parse::<u32>().ok().filter(|p| *p > 0)?;
+            let parent = parts.get(1)?.parse::<u32>().ok()?;
+            if parts.len() != 3 || p == parent {
+                return None;
             }
-            if let (Ok(p), Ok(parent), Ok(kib)) = (
-                parts[0].parse::<u32>(),
-                parts[1].parse::<u32>(),
-                parts[2].parse::<u64>(),
-            ) {
-                if let Some(bytes) = kib.checked_mul(1024) {
-                    rows.insert(p, (parent, bytes));
+            let rss = parts[2]
+                .parse::<u64>()
+                .ok()
+                .and_then(|kib| kib.checked_mul(1024));
+            Some((p, parent, rss))
+        })();
+        if let Some((p, parent, rss)) = parsed {
+            if let std::collections::btree_map::Entry::Vacant(entry) = rows.entry(p) {
+                entry.insert((parent, rss));
+            } else {
+                complete_topology = false;
+                if let Some(row) = rows.get_mut(&p) {
+                    row.1 = None;
                 }
             }
+        } else {
+            complete_topology = false;
         }
     }
-    let runner = std::process::id();
     let mut members = BTreeSet::new();
     if let Some(p) = pid {
         if rows.contains_key(&p) {
@@ -414,28 +441,278 @@ pub fn sample(stage: &str, pid: Option<u32>) -> Resources {
             break;
         }
     }
+    let cyclic = pid
+        .and_then(|p| rows.get(&p))
+        .is_some_and(|(parent, _)| members.contains(parent));
+    let server_tree_rss_bytes = if complete_topology && !members.is_empty() && !cyclic {
+        members
+            .iter()
+            .try_fold(0_u64, |total, p| total.checked_add(rows.get(p)?.1?))
+    } else {
+        None
+    };
     Resources {
         stage: stage.into(),
         runner_pid: runner,
         server_pid: pid,
-        runner_rss_bytes: rows.get(&runner).map(|x| x.1),
-        runner_native_rss_bytes: cc_index::process_rss_bytes_opt(),
-        server_rss_bytes: pid.and_then(|p| rows.get(&p).map(|x| x.1)),
-        server_tree_rss_bytes: (!members.is_empty()).then(|| {
-            members
-                .iter()
-                .filter_map(|p| rows.get(p).map(|x| x.1))
-                .sum()
-        }),
+        runner_rss_bytes: rows.get(&runner).and_then(|x| x.1),
+        runner_native_rss_bytes: None,
+        server_rss_bytes: pid.and_then(|p| rows.get(&p).and_then(|x| x.1)),
+        server_tree_rss_bytes,
         external_service_rss_bytes: None,
-        method: if disabled {
-            "ps explicitly disabled by CODECORTEX_BENCH_PROCESS_PROBE=0; process-tree RSS null, not zero; native runner RSS separate"
-        } else if process_table.is_some() {
+        method: if table.is_some() && complete_topology && (pid.is_none() || server_tree_rss_bytes.is_some()) {
             "ps RSS KiB stage snapshots (250ms caller budget, one worker); native runner RSS separate; transient peaks may be missed"
+        } else if table.is_some() {
+            "ps partial/missing/ambiguous/overflowing process-tree observation; tree RSS unavailable, not partial sum; native runner RSS separate"
         } else {
             "ps unavailable/failed/timeout/busy; process-tree RSS null, not zero; native runner RSS separate"
         }.into(),
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MemoryRole {
+    pub role: &'static str,
+    /// Tree entries list observed root PIDs, not a fabricated member inventory.
+    pub root_pids: Vec<u32>,
+    pub available_samples: usize,
+    pub unavailable_samples: usize,
+    pub peak_observed_bytes: Option<u64>,
+    pub status: &'static str,
+}
+/// These peaks can occur at different stages. They are never added to each
+/// other; neither are runner ps/native alternatives or server PID/tree values.
+#[derive(Debug, Clone, Serialize)]
+pub struct MemoryLedger {
+    pub snapshots: usize,
+    pub sampling_interval_ms: Option<u64>,
+    pub measurement: &'static str,
+    pub total_rss_bytes: Option<u64>,
+    pub total_reason: &'static str,
+    pub roles: Vec<MemoryRole>,
+}
+pub fn memory_ledger(resources: &[Resources]) -> MemoryLedger {
+    let role = |name, read: fn(&Resources) -> Option<u64>, pid: fn(&Resources) -> Option<u32>| {
+        let values: Vec<_> = resources.iter().filter_map(read).collect();
+        MemoryRole {
+            role: name,
+            root_pids: resources
+                .iter()
+                .filter_map(pid)
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect(),
+            available_samples: values.len(),
+            unavailable_samples: resources.len() - values.len(),
+            peak_observed_bytes: values.iter().copied().max(),
+            status: if values.is_empty() {
+                "unavailable"
+            } else if values.len() != resources.len() {
+                "partial"
+            } else {
+                "observed"
+            },
+        }
+    };
+    MemoryLedger { snapshots: resources.len(), sampling_interval_ms: None,
+        measurement: "stage_snapshots_not_continuous_peak; no sampling interval recorded",
+        total_rss_bytes: None,
+        total_reason: "role overlap and simultaneous disjoint coverage are not proven; do not add runner ps/native or server PID/tree or per-role peaks",
+        roles: vec![
+            role("client_runner_ps", |r| r.runner_rss_bytes, |r| Some(r.runner_pid)),
+            role("client_runner_native_alternative", |r| r.runner_native_rss_bytes, |r| Some(r.runner_pid)),
+            role("server_process_included_in_tree", |r| r.server_rss_bytes, |r| r.server_pid),
+            role("server_process_tree", |r| r.server_tree_rss_bytes, |r| r.server_pid),
+            role("external_service_unspecified", |r| r.external_service_rss_bytes, |_| None),
+            // The legacy sampler never observed these services separately.
+            role("lsp_or_model_service", |_| None, |_| None),
+            role("oce_external_container", |_| None, |_| None),
+        ] }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DiskComponent {
+    Index,
+    Fts,
+    ParseCache,
+    Vector,
+    ArtifactCache,
+    Shared,
+    Other,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiskPartition {
+    /// Identity of one physical, disjoint storage object (for example an inode),
+    /// not a directory overlapping other entries. A SQLite file containing both
+    /// FTS and index tables belongs to Shared, not to two component totals.
+    pub storage_id: String,
+    pub component: DiskComponent,
+    pub bytes: Option<u64>,
+}
+#[derive(Debug, Clone, Serialize)]
+pub struct DiskLedger {
+    pub status: &'static str,
+    pub complete_layout: bool,
+    pub duplicate_observations: usize,
+    pub measured_subtotal_bytes: Option<u64>,
+    pub total_bytes: Option<u64>,
+    pub partitions: Vec<DiskPartition>,
+}
+/// This is pure accounting; it does not scan a live index during a benchmark.
+/// Exact duplicate observations count once. Conflicting identities are rejected
+/// because choosing one would invent a storage layout or silently lose bytes.
+pub fn disk_ledger(
+    partitions: &[DiskPartition],
+    complete_layout: bool,
+) -> super::Result<DiskLedger> {
+    let mut unique = BTreeMap::new();
+    for partition in partitions {
+        if partition.storage_id.trim().is_empty() {
+            return Err(super::invalid("empty disk storage identity"));
+        }
+        if let Some(previous) = unique.insert(partition.storage_id.clone(), partition.clone()) {
+            if previous != *partition {
+                return Err(super::invalid("conflicting disk storage identity"));
+            }
+        }
+    }
+    let measured: Vec<_> = unique.values().filter_map(|p| p.bytes).collect();
+    let measured_subtotal_bytes = (!measured.is_empty())
+        .then(|| {
+            measured
+                .iter()
+                .try_fold(0_u64, |total, bytes| total.checked_add(*bytes))
+        })
+        .flatten();
+    let total_bytes = (complete_layout && !unique.is_empty() && measured.len() == unique.len())
+        .then_some(measured_subtotal_bytes)
+        .flatten();
+    Ok(DiskLedger {
+        status: if partitions.is_empty() || measured.is_empty() {
+            "unavailable"
+        } else if measured_subtotal_bytes.is_none() {
+            "overflow"
+        } else if total_bytes.is_none() {
+            "partial"
+        } else {
+            "observed"
+        },
+        complete_layout,
+        duplicate_observations: partitions.len() - unique.len(),
+        measured_subtotal_bytes,
+        total_bytes,
+        partitions: unique.into_values().collect(),
+    })
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CostBasis {
+    Reported,
+    Estimated,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CostReceipt {
+    pub receipt_id: String,
+    pub basis: CostBasis,
+    pub currency: String,
+    /// Integer millionths of the declared currency; never binary-float money.
+    pub amount_microunits: Option<u64>,
+    pub requests: Option<u64>,
+    pub input_tokens: Option<u64>,
+    pub output_tokens: Option<u64>,
+    pub cache_hits: Option<u64>,
+    pub duplicate_charge_uncertain: bool,
+}
+#[derive(Debug, Clone, Serialize)]
+pub struct CostTotal {
+    pub basis: CostBasis,
+    pub currency: String,
+    pub receipts: usize,
+    pub amount_microunits: Option<u64>,
+    pub requests: Option<u64>,
+    pub input_tokens: Option<u64>,
+    pub output_tokens: Option<u64>,
+    pub cache_hits: Option<u64>,
+    pub duplicate_charge_uncertain_receipts: usize,
+    pub status: &'static str,
+}
+#[derive(Debug, Clone, Serialize)]
+pub struct CostLedger {
+    pub status: &'static str,
+    pub duplicate_observations: usize,
+    pub totals: Vec<CostTotal>,
+}
+/// No model calls, prices or bills are inferred from retrieval-work counters.
+/// Reported and estimated money stay in separate currency/basis buckets; an
+/// estimate never becomes a real charge by being added to reported usage.
+pub fn cost_ledger(receipts: &[CostReceipt]) -> super::Result<CostLedger> {
+    let mut unique = BTreeMap::new();
+    for receipt in receipts {
+        if receipt.receipt_id.trim().is_empty()
+            || receipt.currency.len() != 3
+            || !receipt.currency.bytes().all(|c| c.is_ascii_uppercase())
+        {
+            return Err(super::invalid(
+                "cost receipt requires identity and uppercase three-letter currency",
+            ));
+        }
+        if let Some(previous) = unique.insert(receipt.receipt_id.clone(), receipt.clone()) {
+            if previous != *receipt {
+                return Err(super::invalid("conflicting cost receipt identity"));
+            }
+        }
+    }
+    let duplicate_observations = receipts.len() - unique.len();
+    let mut groups: BTreeMap<_, Vec<_>> = BTreeMap::new();
+    for receipt in unique.into_values() {
+        groups
+            .entry((receipt.basis, receipt.currency.clone()))
+            .or_default()
+            .push(receipt);
+    }
+    let totals = groups
+        .into_iter()
+        .map(|((basis, currency), rows)| {
+            let sum = |read: fn(&CostReceipt) -> Option<u64>| {
+                rows.iter()
+                    .try_fold(0_u64, |total, row| total.checked_add(read(row)?))
+            };
+            let amount_microunits = sum(|r| r.amount_microunits);
+            let duplicate_charge_uncertain_receipts =
+                rows.iter().filter(|r| r.duplicate_charge_uncertain).count();
+            CostTotal {
+                basis,
+                currency,
+                receipts: rows.len(),
+                amount_microunits,
+                requests: sum(|r| r.requests),
+                input_tokens: sum(|r| r.input_tokens),
+                output_tokens: sum(|r| r.output_tokens),
+                cache_hits: sum(|r| r.cache_hits),
+                duplicate_charge_uncertain_receipts,
+                status: if amount_microunits.is_none() {
+                    "unavailable_or_overflow"
+                } else if duplicate_charge_uncertain_receipts > 0 {
+                    "duplicate_charge_uncertain"
+                } else {
+                    "recorded"
+                },
+            }
+        })
+        .collect();
+    Ok(CostLedger {
+        status: if receipts.is_empty() {
+            "unavailable"
+        } else {
+            "recorded_by_currency_and_basis_not_a_combined_bill"
+        },
+        duplicate_observations,
+        totals,
+    })
 }
 
 #[cfg(all(test, unix))]

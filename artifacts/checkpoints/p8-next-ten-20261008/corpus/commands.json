@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scope": "new_actual_local_executions",
+  "commands": [
+    {
+      "name": "corpus-audit",
+      "argv": [
+        "python",
+        "scripts/p8_corpus_audit.py",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-corpus/artifacts/checkpoints/p8-next-ten-20261008/corpus/corpus-audit.json"
+      ],
+      "cwd": "/workspace/scratch/ebaceea9b709/codecortex-corpus",
+      "started_at_utc": "2026-10-07T17:29:56.218826+00:00",
+      "duration_seconds": 15.107687,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected_exit_code": true,
+      "log_path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/corpus-audit.log",
+      "log_sha256": "b5c4c15bd23eaf26dddc44dfa3a159c9141064c655fdccf8cfe9971031be9bf2"
+    },
+    {
+      "name": "leakage-audit",
+      "argv": [
+        "python",
+        "scripts/p8_leakage_audit.py",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-corpus/artifacts/checkpoints/p8-next-ten-20261008/corpus/leakage-audit.json"
+      ],
+      "cwd": "/workspace/scratch/ebaceea9b709/codecortex-corpus",
+      "started_at_utc": "2026-10-07T17:30:11.326720+00:00",
+      "duration_seconds": 11.122636,
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "matched_expected_exit_code": true,
+      "log_path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/leakage-audit.log",
+      "log_sha256": "87a4d68213f1e8fa6ee8a88aa14446b771dbc06dadca4a2e2e0429efcbc57cda"
+    },
+    {
+      "name": "tests",
+      "argv": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_p8_*audit.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ebaceea9b709/codecortex-corpus",
+      "started_at_utc": "2026-10-07T17:30:22.449546+00:00",
+      "duration_seconds": 2.045722,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected_exit_code": true,
+      "log_path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/tests.log",
+      "log_sha256": "8cda391802f22c2b4288b66bbcad5c6bcdc7b9add8c4f86be9347a23203e7708"
+    }
+  ],
+  "release_certified": false
+}

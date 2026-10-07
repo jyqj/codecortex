@@ -1,0 +1,397 @@
+{
+  "actual_script_identical_for_successful_runs": true,
+  "actual_total_measured_requests": 774,
+  "archive_sha256": "31366e8130b97d5ee092e17b48dda60505a17dde4f5401d490daee71cb9214a4",
+  "build_witness_kind": "post_build_source_and_binary_witness_not_cold_build_or_cryptographic_attestation",
+  "comparison": {
+    "exit_code": 1,
+    "external_targets_completed": [],
+    "identity": {
+      "backend": {
+        "kind": "rg",
+        "sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849"
+      },
+      "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+      "comparison_policy_sha256": "772e80a15db0326627d2a9228263343ca52b57fb4e2fae83ff36a481495be77f",
+      "dataset": "public-dev-control",
+      "evaluator_build_receipt_sha256": "650cb67c0c4f7ebaf8fa1be3a4d2a1411514013b3d3f939b7d6f8a8b5854ef78",
+      "evaluator_sha256": "1217b6249fc5527e05d9d6ae2abd1c7db37a7ea60d8e0024a33f4dce7b2865e2",
+      "evaluator_source_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+      "measurement_profile": "smoke",
+      "platform": {
+        "architecture": "x86_64",
+        "glob_policy": "case-sensitive-slash-normalized-no-overlap-v1",
+        "os": "Linux"
+      },
+      "repository": "expressjs/express",
+      "scorer_sha256": "56631d73b2c4a479decf09cac42311c6b113d8287554913eba28cabce4631d3b",
+      "source_mode": "snapshot_control",
+      "suites": {
+        "compat": {
+          "budget": {
+            "repetitions": 3,
+            "seed": 20261003,
+            "timeout_ms": 30000,
+            "top_k": 10,
+            "warmup": 0
+          },
+          "configuration": {
+            "auto_index": {
+              "enabled": false
+            }
+          },
+          "query_sha256": "1ed8d0a828ffafae787b2c62f310804b17300407519001c27fda0e82b4ec7a51",
+          "scoring": "oce-compat-v1",
+          "source": {
+            "files": 7,
+            "sha256": "071c482752cc87d7e410a0aaf16c9d45fcc2417db0b911c698a3a65a7f1a7e8c"
+          },
+          "suite_sha256": "bba2e4213a3a64a7f290898c6d7af38953db8d1aa164c8d62da2f0b3b46c31a7"
+        },
+        "native": {
+          "budget": {
+            "repetitions": 3,
+            "seed": 20261003,
+            "timeout_ms": 30000,
+            "top_k": 10,
+            "warmup": 0
+          },
+          "configuration": {
+            "auto_index": {
+              "enabled": false
+            }
+          },
+          "query_sha256": "2665287f268b98f9ff4594af3cf9db9a5cbb1129331d6ec6249660697d3c024b",
+          "scoring": "codecortex-native-v1",
+          "source": {
+            "files": 7,
+            "sha256": "071c482752cc87d7e410a0aaf16c9d45fcc2417db0b911c698a3a65a7f1a7e8c"
+          },
+          "suite_sha256": "fc345d05d1898d64041a39876a750a411a74e9339195174ffd4a2765e78c9ce6"
+        }
+      }
+    },
+    "original_raw_mutated": false,
+    "profiles": {
+      "compat": {
+        "comparison": {
+          "baseline_samples": 177,
+          "candidate_samples": 177,
+          "exit_code": 1,
+          "family_ndcg_delta_ci": {
+            "high": 0.0,
+            "independent_units": 59,
+            "low": 0.0,
+            "mean": 0.0
+          },
+          "inconclusive_reasons": [
+            "hardware provenance unavailable",
+            "insufficient latency samples"
+          ],
+          "p95_ratio": 0.29244740082445525,
+          "policy": {
+            "max_latency_ratio": 1.2,
+            "max_ndcg_regression": 0.01,
+            "max_top1_regression": 0.01,
+            "minimum_latency_samples": 200,
+            "schema_version": 1
+          },
+          "reasons": [],
+          "status": "inconclusive",
+          "top1_delta": 0.0
+        },
+        "execution": {
+          "argv": [
+            "/dev/shm/codecortex-p8-next-products-ebacee/cc-eval",
+            "compare",
+            "--baseline",
+            "/dev/shm/p8-compat-compare-5r6lnvn_/compat-baseline",
+            "--candidate",
+            "/dev/shm/p8-compat-compare-5r6lnvn_/compat-candidate",
+            "--gate",
+            "/dev/shm/p8-compat-control-ebacee/run-b/comparison-policy.json",
+            "--output",
+            "/dev/shm/p8-compat-control-ebacee/compare-bc/compat-comparison.json"
+          ],
+          "duration_seconds": 0.067147,
+          "exit_code": 1,
+          "log_sha256": "4a1c691f0a68de75465d44c6c26b75cbddf9128bce672bd5062db385e647b4cf",
+          "log_truncated": false,
+          "process_exit_code": 1,
+          "started_at_utc": "2026-10-07T17:45:34.145662+00:00",
+          "timed_out_or_log_budget": false
+        }
+      },
+      "native": {
+        "comparison": {
+          "baseline_samples": 210,
+          "candidate_samples": 210,
+          "exit_code": 1,
+          "family_ndcg_delta_ci": {
+            "high": 0.0,
+            "independent_units": 59,
+            "low": 0.0,
+            "mean": 0.0
+          },
+          "inconclusive_reasons": [
+            "hardware provenance unavailable"
+          ],
+          "p95_ratio": 1.2127714005132988,
+          "policy": {
+            "max_latency_ratio": 1.2,
+            "max_ndcg_regression": 0.01,
+            "max_top1_regression": 0.01,
+            "minimum_latency_samples": 200,
+            "schema_version": 1
+          },
+          "reasons": [
+            "p95 regression"
+          ],
+          "status": "failed",
+          "top1_delta": 0.0
+        },
+        "execution": {
+          "argv": [
+            "/dev/shm/codecortex-p8-next-products-ebacee/cc-eval",
+            "compare",
+            "--baseline",
+            "/dev/shm/p8-compat-compare-5r6lnvn_/native-baseline",
+            "--candidate",
+            "/dev/shm/p8-compat-compare-5r6lnvn_/native-candidate",
+            "--gate",
+            "/dev/shm/p8-compat-control-ebacee/run-b/comparison-policy.json",
+            "--output",
+            "/dev/shm/p8-compat-control-ebacee/compare-bc/native-comparison.json"
+          ],
+          "duration_seconds": 0.076015,
+          "exit_code": 1,
+          "log_sha256": "e9c6c7eab63b97ace1ed584f168beaba80eb77c85e4aef9d014e7242bef77f8e",
+          "log_truncated": false,
+          "process_exit_code": 1,
+          "started_at_utc": "2026-10-07T17:45:34.753097+00:00",
+          "timed_out_or_log_budget": false
+        }
+      }
+    },
+    "release_certified": false,
+    "schema_version": 1,
+    "scope": "same_locked_input_per_profile_comparison",
+    "status": "comparison_not_passed"
+  },
+  "external_targets": {
+    "cc-switch": {
+      "commit": "40cac1a68edf8c9e7b3a89125cf40bb93a348404",
+      "reason": "original source/query/import input locks unavailable",
+      "repository": "farion1231/cc-switch",
+      "status": "not_run"
+    },
+    "flask": {
+      "commit": "22d924701a6ae2e4cd01e9a15bbaf3946094af65",
+      "reason": "original source/query/import input locks unavailable",
+      "repository": "pallets/flask",
+      "status": "not_run"
+    }
+  },
+  "holdout_body_reads": 0,
+  "identity": {
+    "backend": {
+      "kind": "rg",
+      "sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849"
+    },
+    "commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+    "comparison_policy_sha256": "772e80a15db0326627d2a9228263343ca52b57fb4e2fae83ff36a481495be77f",
+    "dataset": "public-dev-control",
+    "evaluator_build_receipt_sha256": "650cb67c0c4f7ebaf8fa1be3a4d2a1411514013b3d3f939b7d6f8a8b5854ef78",
+    "evaluator_sha256": "1217b6249fc5527e05d9d6ae2abd1c7db37a7ea60d8e0024a33f4dce7b2865e2",
+    "evaluator_source_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+    "measurement_profile": "smoke",
+    "platform": {
+      "architecture": "x86_64",
+      "glob_policy": "case-sensitive-slash-normalized-no-overlap-v1",
+      "os": "Linux"
+    },
+    "repository": "expressjs/express",
+    "scorer_sha256": "56631d73b2c4a479decf09cac42311c6b113d8287554913eba28cabce4631d3b",
+    "source_mode": "snapshot_control",
+    "suites": {
+      "compat": {
+        "budget": {
+          "repetitions": 3,
+          "seed": 20261003,
+          "timeout_ms": 30000,
+          "top_k": 10,
+          "warmup": 0
+        },
+        "configuration": {
+          "auto_index": {
+            "enabled": false
+          }
+        },
+        "query_sha256": "1ed8d0a828ffafae787b2c62f310804b17300407519001c27fda0e82b4ec7a51",
+        "scoring": "oce-compat-v1",
+        "source": {
+          "files": 7,
+          "sha256": "071c482752cc87d7e410a0aaf16c9d45fcc2417db0b911c698a3a65a7f1a7e8c"
+        },
+        "suite_sha256": "bba2e4213a3a64a7f290898c6d7af38953db8d1aa164c8d62da2f0b3b46c31a7"
+      },
+      "native": {
+        "budget": {
+          "repetitions": 3,
+          "seed": 20261003,
+          "timeout_ms": 30000,
+          "top_k": 10,
+          "warmup": 0
+        },
+        "configuration": {
+          "auto_index": {
+            "enabled": false
+          }
+        },
+        "query_sha256": "2665287f268b98f9ff4594af3cf9db9a5cbb1129331d6ec6249660697d3c024b",
+        "scoring": "codecortex-native-v1",
+        "source": {
+          "files": 7,
+          "sha256": "071c482752cc87d7e410a0aaf16c9d45fcc2417db0b911c698a3a65a7f1a7e8c"
+        },
+        "suite_sha256": "fc345d05d1898d64041a39876a750a411a74e9339195174ffd4a2765e78c9ce6"
+      }
+    }
+  },
+  "initial_failed_attempt": {
+    "commands": [
+      {
+        "argv": [
+          "/dev/shm/codecortex-p8-next-products-ebacee/cc-eval",
+          "validate",
+          "--suite",
+          "/dev/shm/p8-compat-control-ebacee/inputs/intake/dev-repair-v1/suite.native.dev.json"
+        ],
+        "duration_seconds": 0.074567,
+        "exit_code": 0,
+        "log_sha256": "7fd659c52efedc93013ff1c0dadf2b7de9edf071f6e69b6e595da34ae6ee11eb",
+        "log_truncated": false,
+        "process_exit_code": 0,
+        "started_at_utc": "2026-10-07T17:43:33.965064+00:00",
+        "timed_out_or_log_budget": false
+      },
+      {
+        "argv": [
+          "/dev/shm/codecortex-p8-next-products-ebacee/cc-eval",
+          "run",
+          "--backend",
+          "rg",
+          "--suite",
+          "/dev/shm/p8-compat-control-ebacee/inputs/intake/dev-repair-v1/suite.native.dev.json",
+          "--output",
+          "/dev/shm/p8-compat-control-ebacee/run-a/native",
+          "--profile",
+          "baseline"
+        ],
+        "duration_seconds": 0.025614,
+        "exit_code": 2,
+        "log_sha256": "23431a0f200de3cca1094b07d67ac311d57854d7537284358f9eca226d1268a2",
+        "log_truncated": false,
+        "process_exit_code": 2,
+        "started_at_utc": "2026-10-07T17:43:34.039824+00:00",
+        "timed_out_or_log_budget": false
+      }
+    ],
+    "exit_code": 2,
+    "reason": "initial --profile baseline was rejected by actual fixed CLI; changed wrapper to supported smoke before run-b/run-c",
+    "run": "run-a",
+    "status": "invalid_measurement"
+  },
+  "limits": [
+    "literal full-query rg control is not CodeCortex production ranking",
+    "external cc-switch/Flask requirements remain not_run",
+    "public snapshot remains a development control",
+    "concurrent other build/test activity and unknown hardware do not support a stable performance claim",
+    "existing scorer family unit output is not a new independent family review"
+  ],
+  "new_independent_query_reviews": 0,
+  "release_certified": false,
+  "runs": {
+    "run-b": {
+      "exit_code": 0,
+      "profiles": {
+        "compat": {
+          "gate": {
+            "exit_code": 0,
+            "reasons": [],
+            "status": "baseline_recorded_not_quality_certified"
+          },
+          "metrics": {
+            "mean_ndcg10": -0.0,
+            "mean_top1": 0.0,
+            "measured_rows": 177,
+            "queries": 59
+          },
+          "raw_bytes": 329345,
+          "raw_files": 194,
+          "replay_exit_code": 0
+        },
+        "native": {
+          "gate": {
+            "exit_code": 0,
+            "reasons": [],
+            "status": "baseline_recorded_not_quality_certified"
+          },
+          "metrics": {
+            "mean_ndcg10": -0.0,
+            "mean_top1": 0.0,
+            "measured_rows": 210,
+            "queries": 70
+          },
+          "raw_bytes": 431391,
+          "raw_files": 227,
+          "replay_exit_code": 0
+        }
+      },
+      "status": "baseline_recorded_not_quality_certified"
+    },
+    "run-c": {
+      "exit_code": 0,
+      "profiles": {
+        "compat": {
+          "gate": {
+            "exit_code": 0,
+            "reasons": [],
+            "status": "baseline_recorded_not_quality_certified"
+          },
+          "metrics": {
+            "mean_ndcg10": -0.0,
+            "mean_top1": 0.0,
+            "measured_rows": 177,
+            "queries": 59
+          },
+          "raw_bytes": 329267,
+          "raw_files": 194,
+          "replay_exit_code": 0
+        },
+        "native": {
+          "gate": {
+            "exit_code": 0,
+            "reasons": [],
+            "status": "baseline_recorded_not_quality_certified"
+          },
+          "metrics": {
+            "mean_ndcg10": -0.0,
+            "mean_top1": 0.0,
+            "measured_rows": 210,
+            "queries": 70
+          },
+          "raw_bytes": 431587,
+          "raw_files": 227,
+          "replay_exit_code": 0
+        }
+      },
+      "status": "baseline_recorded_not_quality_certified"
+    }
+  },
+  "schema_version": 1,
+  "scope": "existing_public_express_dev_control_only",
+  "script_sha256": "5de5031592061a2f01aa69b19873be62da35f3352607eb2d89c8a3c5f9d9b4a5",
+  "task": "P8-003",
+  "task_acceptance_complete": false
+}

@@ -1,0 +1,198 @@
+{
+  "archive": {
+    "bytes": 201823,
+    "files": {
+      "cold-build.log": {
+        "bytes": 152,
+        "sha256": "8777ace7c23f91d9986a93e5a4bef9190d2dd98487d331b0c2327d4738f60ddb"
+      },
+      "compiler-artifact.json": {
+        "bytes": 993,
+        "sha256": "2e37d4033576b67c076aa35bd54dcc49835507391eb9b8f09548eb09e191306d"
+      },
+      "preflight.json": {
+        "bytes": 688,
+        "sha256": "2f51f248a8f8af2df38b10aaecaba5fde305159fc4310c8a859c9188be399b01"
+      },
+      "resource-observations.jsonl": {
+        "bytes": 3122,
+        "sha256": "544cff6e6d4ae163bc38dafd964410ffd5ff97ebc9904b1e1b053d7ef04adca4"
+      },
+      "run-01/linux-1.95-default/cargo-build.jsonl": {
+        "bytes": 209715,
+        "sha256": "e16747cad83657113b91ea43137dc1b78615056f08c8146d01db55da57bc8955"
+      },
+      "run-01/linux-1.95-default/cargo-stderr.log": {
+        "bytes": 5646,
+        "sha256": "120e8a521c1b91550a97aa208291d4825d6f1cde6d92bc65f826d61ead3e0446"
+      },
+      "run-01/linux-1.95-default/receipt.json": {
+        "bytes": 5718,
+        "sha256": "c525d7ecb2beb0b7df2c11f89d697945fdf45499c821217d6d6627b1dd843932"
+      },
+      "run-01/linux-1.95-default/source-inputs.json": {
+        "bytes": 200401,
+        "sha256": "19301e929312240239d70396b41e53a6862ade4ef7498a55720a2c253b824ab0"
+      },
+      "run-01/matrix.json": {
+        "bytes": 2639,
+        "sha256": "88ef32cffc30a8adae65ef248352ef8ec958ccac8996b00194c3f8ea786e2574"
+      },
+      "run-01/source-inputs.json": {
+        "bytes": 200401,
+        "sha256": "19301e929312240239d70396b41e53a6862ade4ef7498a55720a2c253b824ab0"
+      },
+      "run-01/toolchain-1.95.json": {
+        "bytes": 3264,
+        "sha256": "af9da2e8a7e1aa1f5da1ec4f59d065ec0bb39c9e25c861b643708d73121d3ab7"
+      },
+      "run-01/toolchain-stable.json": {
+        "bytes": 1733,
+        "sha256": "6e7c8fbee55f055339cc4cb040bc02aa932010ac9eb3e16296e80b1c453142c2"
+      },
+      "source-equivalence.json": {
+        "bytes": 325998,
+        "sha256": "fc772ceb6305a97026691551d3571a102074b583cb081dace6966a4730f81d95"
+      },
+      "verify.log": {
+        "bytes": 97,
+        "sha256": "30dcf4715efb76a9feb4d597c0b6ed3d433193b948c028e61516add737e04976"
+      }
+    },
+    "path": "raw-evidence.tar.gz",
+    "sha256": "f04fffc2735bcca7695d72a4de5b95fbed28ed23694fea91ddacdbef471bb671"
+  },
+  "binary_in_git": false,
+  "binary_retained_live_path": "/dev/shm/codecortex-p8-cold-default-ebacee/run-01/linux-1.95-default/target/x86_64-unknown-linux-gnu/debug/codecortex",
+  "binary_sha256": "4d9fd5d537c8b49f33b0df88a633c1236296342ae91037f04a2eabb626710f77",
+  "caveats": [
+    "Only Linux/Rust1.95/default/dev was built. No release, semantic or macOS certification.",
+    "Dependency source cache was reused with Cargo offline; not a hermetic build claim.",
+    "Strict verify depends on live bound source/compiler/config/log/binary paths. Archive excludes large binary and target.",
+    "No cold runner implementation or tests changed for this run."
+  ],
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-platform/scripts/p8_cold_build.py",
+        "--source-root",
+        "/dev/shm/codecortex-p8-cold-default-ebacee/source",
+        "--output-dir",
+        "/dev/shm/codecortex-p8-cold-default-ebacee/run-01",
+        "--execute",
+        "--only-toolchain",
+        "1.95",
+        "--only-package",
+        "default",
+        "--profile",
+        "dev",
+        "--jobs",
+        "2",
+        "--timeout-seconds",
+        "1800",
+        "--minimum-free-bytes",
+        "3221225472"
+      ],
+      "cargo_build_exit_code": 0,
+      "environment": {
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0"
+      },
+      "environment_source": "/workspace/scratch/71bc431c4e4f/rust-env/env.sh",
+      "id": "cold-build",
+      "log": "cold-build.log",
+      "observed_exit_code": 2,
+      "scope": "matrix incomplete because seven cells are not_run"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/ebaceea9b709/codecortex-platform/scripts/p8_cold_build.py",
+        "--verify",
+        "/dev/shm/codecortex-p8-cold-default-ebacee/run-01/linux-1.95-default/receipt.json"
+      ],
+      "id": "independent-verify",
+      "log": "verify.log",
+      "observed_exit_code": 0
+    }
+  ],
+  "complete_P8_012": false,
+  "counts": {
+    "failed": 0,
+    "not_run": 7,
+    "passed": 1
+  },
+  "created_at": "2026-10-07T17:57:01.927631+00:00",
+  "direct_files": {
+    "README.md": {
+      "bytes": 3942,
+      "sha256": "976eee5ea35e982238b72d9985d1295efd8860c2f3e782b6673b1afd960aa338"
+    },
+    "cell-receipt.json": {
+      "bytes": 5718,
+      "sha256": "c525d7ecb2beb0b7df2c11f89d697945fdf45499c821217d6d6627b1dd843932"
+    },
+    "cold-build.log": {
+      "bytes": 152,
+      "sha256": "8777ace7c23f91d9986a93e5a4bef9190d2dd98487d331b0c2327d4738f60ddb"
+    },
+    "compiler-artifact.json": {
+      "bytes": 993,
+      "sha256": "2e37d4033576b67c076aa35bd54dcc49835507391eb9b8f09548eb09e191306d"
+    },
+    "matrix.json": {
+      "bytes": 2639,
+      "sha256": "88ef32cffc30a8adae65ef248352ef8ec958ccac8996b00194c3f8ea786e2574"
+    },
+    "preflight.json": {
+      "bytes": 688,
+      "sha256": "2f51f248a8f8af2df38b10aaecaba5fde305159fc4310c8a859c9188be399b01"
+    },
+    "resource-observations.jsonl": {
+      "bytes": 3122,
+      "sha256": "544cff6e6d4ae163bc38dafd964410ffd5ff97ebc9904b1e1b053d7ef04adca4"
+    },
+    "source-equivalence.json": {
+      "bytes": 325998,
+      "sha256": "fc772ceb6305a97026691551d3571a102074b583cb081dace6966a4730f81d95"
+    },
+    "source-inputs.json": {
+      "bytes": 200401,
+      "sha256": "19301e929312240239d70396b41e53a6862ade4ef7498a55720a2c253b824ab0"
+    },
+    "verify.log": {
+      "bytes": 97,
+      "sha256": "30dcf4715efb76a9feb4d597c0b6ed3d433193b948c028e61516add737e04976"
+    }
+  },
+  "new_todos_counted": 0,
+  "release_certified": false,
+  "runner_sha256": "1f2572cb8b667899994c722d97ff45e220b07008de102dc9beead7b92d2c98ad",
+  "schema_version": 1,
+  "scope": "one actual cold build cell; original matrix remains immutable",
+  "source": {
+    "input_count": 785,
+    "manifest_sha256": "19301e929312240239d70396b41e53a6862ade4ef7498a55720a2c253b824ab0",
+    "source_commit": "b69daccaf1d52899d5c963f085ede154782e9828",
+    "source_root": "/dev/shm/codecortex-p8-cold-default-ebacee/source",
+    "source_tree": "fdc2e0190fe5c4676b9fa7c8f56b44e3e1e7d52e"
+  },
+  "source_equivalence": {
+    "identical_git_blobs_and_modes": true,
+    "input_count": 785,
+    "prior_remote_source_commit": "78ae91eeae6edae6bea29c27f24b251773341c00",
+    "receipt": "source-equivalence.json"
+  },
+  "task": "P8-012",
+  "unchanged_prior_matrix": {
+    "counts": {
+      "failed": 0,
+      "not_run": 8,
+      "passed": 0
+    },
+    "path": "artifacts/checkpoints/p8-next-ten-20261008/platform/cold-matrix.json",
+    "sha256": "72dc031f96dd24e8744b5ba77144761c2edb8202e84f04641e6a9323244c8baa"
+  }
+}

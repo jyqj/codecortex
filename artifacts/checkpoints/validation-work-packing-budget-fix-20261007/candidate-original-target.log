@@ -1,0 +1,31 @@
+   Compiling cc-search v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-ci-fix/crates/cc-search)
+   Compiling cc-server v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-ci-fix/crates/cc-server)
+   Compiling cc-eval v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-ci-fix/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 33.44s
+     Running tests/diag_p5e_fix_review_boundary_20261003.rs (/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/diag_p5e_fix_review_boundary_20261003-ff4dd31a892241d0)
+
+running 3 tests
+
+thread 'independent_default_scoped_gate_repack_and_bounded_width' (153) panicked at crates/cc-eval/tests/diag_p5e_fix_review_boundary_20261003.rs:145:9:
+assertion `left == right` failed
+  left: Number(3)
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test independent_default_scoped_gate_repack_and_bounded_width ... FAILED
+
+thread 'independent_real_legacy_and_generation_producers_remain_distinct' (155) panicked at crates/cc-eval/tests/diag_p5e_fix_review_boundary_20261003.rs:384:17:
+assertion `left == right` failed
+  left: Object {"candidate_projection_sql": Object {"fullscan_steps": Number(0), "rows": Number(4), "sorts": Number(0), "statements": Number(1), "vm_steps": Number(136)}, "coverage": String("final_validation:v1"), "schema_version": Number(1), "source_records_sql": Object {"fullscan_steps": Number(0), "rows": Number(16), "sorts": Number(0), "statements": Number(14), "vm_steps": Number(454)}}
+ right: Object {"candidate_projection_sql": Object {"fullscan_steps": Number(0), "rows": Number(4), "sorts": Number(0), "statements": Number(1), "vm_steps": Number(136)}, "coverage": String("current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost"), "schema_version": Number(1), "source_records_sql": Object {"fullscan_steps": Number(0), "rows": Number(16), "sorts": Number(0), "statements": Number(14), "vm_steps": Number(454)}}
+test independent_real_legacy_and_generation_producers_remain_distinct ... FAILED
+test independent_exact_pointer_and_near_known_negatives ... ok
+
+failures:
+
+failures:
+    independent_default_scoped_gate_repack_and_bounded_width
+    independent_real_legacy_and_generation_producers_remain_distinct
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.71s
+
+error: test failed, to rerun pass `-p cc-eval --test diag_p5e_fix_review_boundary_20261003`

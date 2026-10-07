@@ -353,6 +353,7 @@
     "crates/cc-eval/tests/p7_partial_budget.rs": "910a261fe306f6f5eff5da2e12dd5a3ab4f76fbcb99df54832f2e56705bddf0c",
     "crates/cc-eval/tests/p7_validation_work.rs": "f2ac5c1bcdac5a77052c09564f6e71c4f03cc147ff761721586a58a829f830d4",
     "crates/cc-eval/tests/packing_scope_v1.rs": "0bd6b374d91c8f8d97090fc8b383337c0761daf756d06498e85f50734c58fade",
+    "crates/cc-eval/tests/packing_validation_work.rs": "856657d8a13b6cd65caab3d1c4c40cce35e30dd5567781273b9c93f96f7a661c",
     "crates/cc-eval/tests/scale_bench.rs": "c95b012dc8441d439c25e82ab6574eaff73a241498e0668aa72db933130691b7",
     "crates/cc-eval/tests/semantic_lifecycle.rs": "0d2700a82ad12e24a7b4436bdb50e5e537b234c4cbd89cea6ccc89f1aad0e8b9",
     "crates/cc-eval/tests/soak.rs": "1e4b7308ad127af85721e7e1db194814ed87ec173802bfeda6e7f663e406f6c0",
@@ -435,8 +436,9 @@
     "crates/cc-index/src/project_model/mod.rs": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923",
     "crates/cc-index/src/project_model/package.rs": "95e948c62234743cad5d9b979e565f595b5eaad800f3043af2c8734c91d1a8d8",
     "crates/cc-index/src/project_model/python.rs": "5be0519f6c052581434de0fafd199d99ca35d10020922fa2876af242daa4ce9f",
-    "crates/cc-index/src/project_model/python_inventory.rs": "f3a6f483f4a5eaa507b196900d8190574d470eca269d51eb840b03f46e829c96",
+    "crates/cc-index/src/project_model/python_inventory.rs": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
     "crates/cc-index/src/project_model/python_inventory/native.rs": "7ab82bd3c6b3c23e21fa4e4eb0d445c645c638e427ba823bc14337ebbf3c67e8",
+    "crates/cc-index/src/project_model/python_inventory/revalidation.rs": "b69bcdccb65038625d9c4303a0e3c87f0d70c3b964f027b8e3d99fce3a2f6dec",
     "crates/cc-index/src/project_model/python_inventory/tests.rs": "fe805d7b2ee2624afbe8e2142ea0072805b44f64543c429cb322ee654ea1cdbb",
     "crates/cc-index/src/project_model/python_provenance_tests.rs": "e5fabf9023a1ef5d61b03e53f8f057434e82368d8bbb823996d1dceb281e49ea",
     "crates/cc-index/src/project_model/rust.rs": "df9e944646a0019e3f530e116d4f5718762526ea811e252e5e956511d1e15587",
@@ -475,6 +477,7 @@
     "crates/cc-index/tests/python_identity_resource_integration.rs": "61060951a781e59fa1c344aac00cc6f9e254838e6389e7226dcce00fe65de918",
     "crates/cc-index/tests/python_inventory_capture.rs": "444bdc2efff82c114f6a44f0be9d78dee8a523d3ac44852b59fb6fc43f2ac514",
     "crates/cc-index/tests/python_inventory_resource_integration.rs": "250872d49612dc02137f4738fc2e296fdf8d955bd52f7a0cec439cecf5e554ab",
+    "crates/cc-index/tests/python_inventory_revalidation.rs": "861957fd48104794760c190dce289403c2633c864d9c3fb5642501b2ff9f757a",
     "crates/cc-index/tests/python_provenance_independent_review.rs": "05175e5a48763cc3203bfeb44bde3a8c72c82cd19dc93c049926f1d3e49d7004",
     "crates/cc-index/tests/qname_db_independent_review.rs": "8c5854eea614df414a154539cc05eaee6e5c8974678a65df00d167e95289216b",
     "crates/cc-index/tests/qname_identity_proof.rs": "72aefadc7ebb5212591a5141089964b373244d2cb800addc8b1795211587af0e",
@@ -634,7 +637,7 @@
     "crates/cc-search/src/rrf.rs": "ac35aa954f548f8354b5f2facd952c8bd1fb4c3c7317af5fe76746350c192be1",
     "crates/cc-search/src/scope.rs": "01b4e01f95d8328eaba08477f48bc30dd1f6019afbbdc883ae45429a1b8bf646",
     "crates/cc-search/src/score_trace.rs": "216b4a36a077c43c227f7482978290d3368bd37389ec98e22b37164987973967",
-    "crates/cc-search/src/selection/budget.rs": "719e383891cdf1f06fa0b9fac6825542ac507ef951c47190f6051469855093dc",
+    "crates/cc-search/src/selection/budget.rs": "bcf5461f94b55b8af1d6157582a95d05feb3fae7edbb49f71a6ad96bd6f2deab",
     "crates/cc-search/src/selection/coverage.rs": "722aeca72aaec51e8c171cc15b1f4230b01336bf0ad3912dfa3d65c06a8f6509",
     "crates/cc-search/src/selection/mod.rs": "95744bd1249554ce295d14d9afcffd340fdea9703f347747f9b5a4902b6b6755",
     "crates/cc-search/src/selection/overlap.rs": "895c95b86194877519df650d78af5dd1491589813fbd793c0d555992e127adcc",
@@ -769,6 +772,10 @@
   },
   "deltas": {
     "validation_work": {
+      "source": "016ee41bfde121f6502b2f6ab55b5ed331856314",
+      "review": "ee335d03e3952bb2b8513456c048b4ba1f5cda66",
+      "review_path": "artifacts/checkpoints/validation-work-packing-review-20261007/review.json",
+      "review_sha256": "ad204ed17870842bf839b7a89fa15da30efdee09992bf444f7925e74aaa3c1ba",
       "paths": {
         "crates/cc-db/src/document_store.rs": {
           "before_sha256": "468dbdce1feed943bc7d184e128b67a0f1de4cad80627bb1272346f15fadf940",
@@ -786,21 +793,45 @@
           "before_sha256": null,
           "sha256": "f2ac5c1bcdac5a77052c09564f6e71c4f03cc147ff761721586a58a829f830d4"
         },
+        "crates/cc-eval/tests/packing_validation_work.rs": {
+          "before_sha256": null,
+          "sha256": "856657d8a13b6cd65caab3d1c4c40cce35e30dd5567781273b9c93f96f7a661c"
+        },
         "crates/cc-search/src/evidence_hydrator.rs": {
           "before_sha256": "c6099f377d757aad14550be6a3e29e57c86dbd9460837c40ccd79465bab766fa",
           "sha256": "cc81b6f7be13cbbab8e339cb693c4ad16baca20b1f6b6dd49dd3e574b5997a2d"
+        },
+        "crates/cc-search/src/selection/budget.rs": {
+          "before_sha256": "719e383891cdf1f06fa0b9fac6825542ac507ef951c47190f6051469855093dc",
+          "sha256": "bcf5461f94b55b8af1d6157582a95d05feb3fae7edbb49f71a6ad96bd6f2deab"
         }
-      },
-      "review": "698410481028025d218e5c9a49a9ea93c06e3805",
-      "review_path": "artifacts/checkpoints/p7-validation-work-20261007/review.json",
-      "review_sha256": "5a87f8c9a7e6d4463085c602a4e51f47e5addd3031373e1e48693e7621c7cd62",
-      "source": "bfeafe85373504ffdd041b8da2d9a779b4faf18c"
+      }
+    },
+    "python_capture_revalidation": {
+      "source": "e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d",
+      "review": "9e96795711c072c9aa2095a1fc4527bc28ba75b0",
+      "review_path": "artifacts/checkpoints/python-inventory-revalidation-20261007/review.json",
+      "review_sha256": "87e32315b3622c000ff8e34612518f9954b9e110fb1eaf69d6e9d1d214cd8ba7",
+      "paths": {
+        "crates/cc-index/src/project_model/python_inventory.rs": {
+          "before_sha256": "f3a6f483f4a5eaa507b196900d8190574d470eca269d51eb840b03f46e829c96",
+          "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2"
+        },
+        "crates/cc-index/src/project_model/python_inventory/revalidation.rs": {
+          "before_sha256": null,
+          "sha256": "b69bcdccb65038625d9c4303a0e3c87f0d70c3b964f027b8e3d99fce3a2f6dec"
+        },
+        "crates/cc-index/tests/python_inventory_revalidation.rs": {
+          "before_sha256": null,
+          "sha256": "861957fd48104794760c190dce289403c2633c864d9c3fb5642501b2ff9f757a"
+        }
+      }
     }
   },
   "previous_registry_sha256": "8525ded2edbcbf59f8f7965ffa26c684ef6cf838576d61d634efa8408299acec",
-  "product_source": "bfeafe85373504ffdd041b8da2d9a779b4faf18c",
+  "product_source": "87a8c8a787604a03d3db6567a6fd429f057e7251",
   "quality_and_100k": "not_inherited",
   "schema_version": 4,
   "scope": "source_integrity_only",
-  "source_version": "p7-validation-work-20261007-v4"
+  "source_version": "p7-capture-revalidation-20261007-v6"
 }

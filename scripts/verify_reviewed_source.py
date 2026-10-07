@@ -16,20 +16,28 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p7-validation-work-20261007-v4'
+VERSION = 'p7-capture-revalidation-20261007-v6'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = 'dcdd6dd237a691b0fe70f5f8dd9d9ac2fd9266582d6e2dbd5a919fa955b3af8b'
-PRODUCT = 'bfeafe85373504ffdd041b8da2d9a779b4faf18c'
-APPROVED = {'validation_work': {'source': 'bfeafe85373504ffdd041b8da2d9a779b4faf18c',
-                     'review': '698410481028025d218e5c9a49a9ea93c06e3805',
-                     'review_path': 'artifacts/checkpoints/p7-validation-work-20261007/review.json',
+REGISTRY_SHA256 = 'ba2e1edf29316d0dfc387ca766d0673e54738ae962eb7a6744e85acf584935ac'
+PRODUCT = '87a8c8a787604a03d3db6567a6fd429f057e7251'
+APPROVED = {'validation_work': {'source': '016ee41bfde121f6502b2f6ab55b5ed331856314',
+                     'review': 'ee335d03e3952bb2b8513456c048b4ba1f5cda66',
+                     'review_path': 'artifacts/checkpoints/validation-work-packing-review-20261007/review.json',
                      'paths': ['crates/cc-db/src/document_store.rs',
                                'crates/cc-db/src/index_db_retrieval.rs',
                                'crates/cc-db/src/symbol_identity_store.rs',
                                'crates/cc-eval/tests/p7_validation_work.rs',
-                               'crates/cc-search/src/evidence_hydrator.rs']}}
+                               'crates/cc-eval/tests/packing_validation_work.rs',
+                               'crates/cc-search/src/evidence_hydrator.rs',
+                               'crates/cc-search/src/selection/budget.rs']},
+ 'python_capture_revalidation': {'source': 'e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d',
+                                 'review': '9e96795711c072c9aa2095a1fc4527bc28ba75b0',
+                                 'review_path': 'artifacts/checkpoints/python-inventory-revalidation-20261007/review.json',
+                                 'paths': ['crates/cc-index/src/project_model/python_inventory.rs',
+                                           'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
+                                           'crates/cc-index/tests/python_inventory_revalidation.rs']}}
 
 
 def require(condition, message):

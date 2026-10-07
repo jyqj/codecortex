@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "source_version": "p7-capture-revalidation-20261007-v5",
+  "product_source": "86da8da06538eed9e9cba6b1ec3a282e56fa76b4",
+  "scope": "source_integrity_only",
+  "complete_inputs": 767,
+  "results": [
+    {
+      "command": "python3 scripts/verify_reviewed_source.py --source-version p7-capture-revalidation-20261007-v5",
+      "exit_code": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/source_integrity -p test_reviewed_source.py -v",
+      "passed": 14,
+      "failed": 0,
+      "log": "guard-tests.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/source_integrity -p test_plan_progress.py -v",
+      "passed": 11,
+      "failed": 0,
+      "log": "plan-tests.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/source_integrity -p test_current_source*.py -v",
+      "source_version": "p7-validation-work-20261007-v4",
+      "passed": 40,
+      "failed": 0,
+      "log": "historical-v4-tests.log"
+    }
+  ],
+  "files_sha256": {
+    "guard-review.json": "19e7701e8e42a69af9ee74da86bd52afd6b35a52d7d1d1dc1359dc00a9cbdb81",
+    "guard-tests.log": "b710d8b19874704c802b2db79ea95cc88e270c2ab92f8de51648317643faccbb",
+    "source-check.log": "ed128b3307752f04703746157d7953085785f96e4db48c92a8564132e796927f",
+    "plan-tests.log": "d2574ee2063ee307bfe80188efd5a2850c00feff40dbd6409e03deb03fbe0bf8",
+    "historical-v4-tests.log": "123d4d6541e7bcd292dc080d015d008b0efbad520c5269d9db3a579a0e6a9513"
+  },
+  "known_behavior_failure": {
+    "pr": 143,
+    "head": "781f0b790389134303d74ddc41689ad9793c9b52",
+    "ci_run": 37623178087,
+    "job": 112798257508,
+    "failure": "independent_default_scoped_gate_repack_and_bounded_width: omitted_hits 3 != 2",
+    "status": "under isolated investigation at time of this v5 record"
+  },
+  "limits": [
+    "The historical 40 controls ran against v4 admission; they are not relabeled v5 tests.",
+    "The combined 27 behavior observations bind the recorded 86da product, not any subsequent changed input.",
+    "Source-only acceptance never certifies complete CI, quality or 100k."
+  ]
+}

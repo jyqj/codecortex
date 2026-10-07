@@ -91,28 +91,33 @@ class ReviewedSourceTests(unittest.TestCase):
                 guard.approved_union(changed)
 
     def test_delta_pins_paths_and_before_after_digests_rejected(self):
-        name = next(iter(guard.APPROVED))
-        for key in ['source', 'review']:
+        for name in guard.APPROVED:
+            for key in ['source', 'review']:
+                changed = copy.deepcopy(self.registry)
+                changed['deltas'][name][key] = 'HEAD'
+                with self.subTest(delta=name, key=key), self.assertRaisesRegex(
+                        AssertionError, 'wrong delta pin'):
+                    guard.approved_union(changed)
             changed = copy.deepcopy(self.registry)
-            changed['deltas'][name][key] = 'HEAD'
-            with self.assertRaisesRegex(AssertionError, 'wrong delta pin'):
+            changed['deltas'][name]['paths']['crates/unknown.rs'] = {}
+            with self.subTest(delta=name), self.assertRaisesRegex(
+                    AssertionError, 'registry delta inventory'):
                 guard.approved_union(changed)
-        changed = copy.deepcopy(self.registry)
-        changed['deltas'][name]['paths']['crates/unknown.rs'] = {}
-        with self.assertRaisesRegex(AssertionError, 'registry delta inventory'):
-            guard.approved_union(changed)
-        path = guard.APPROVED[name]['paths'][0]
-        for key in ['before_sha256', 'sha256']:
-            changed = copy.deepcopy(self.registry)
-            changed['deltas'][name]['paths'][path][key] = '0' * 64
-            with self.assertRaisesRegex(AssertionError, 'delta (base|source) SHA'):
-                guard.approved_union(changed)
+            path = guard.APPROVED[name]['paths'][0]
+            for key in ['before_sha256', 'sha256']:
+                changed = copy.deepcopy(self.registry)
+                changed['deltas'][name]['paths'][path][key] = '0' * 64
+                with self.subTest(delta=name, key=key), self.assertRaisesRegex(
+                        AssertionError, 'delta (base|source) SHA'):
+                    guard.approved_union(changed)
 
     def test_missing_delta_and_complete_manifest_rejected(self):
-        changed = copy.deepcopy(self.registry)
-        changed['deltas'].pop(next(iter(guard.APPROVED)))
-        with self.assertRaisesRegex(AssertionError, 'reviewed delta inventory'):
-            guard.approved_union(changed)
+        for name in guard.APPROVED:
+            changed = copy.deepcopy(self.registry)
+            changed['deltas'].pop(name)
+            with self.subTest(delta=name), self.assertRaisesRegex(
+                    AssertionError, 'reviewed delta inventory'):
+                guard.approved_union(changed)
         for remove in [True, False]:
             changed = copy.deepcopy(self.registry)
             if remove:
@@ -123,10 +128,20 @@ class ReviewedSourceTests(unittest.TestCase):
                 guard.approved_union(changed)
 
     def test_review_digest_rejected(self):
-        changed = copy.deepcopy(self.registry)
-        changed['deltas'][next(iter(guard.APPROVED))]['review_sha256'] = '0' * 64
-        with self.assertRaisesRegex(AssertionError, 'review digest'):
-            guard.approved_union(changed)
+        for name in guard.APPROVED:
+            changed = copy.deepcopy(self.registry)
+            changed['deltas'][name]['review_sha256'] = '0' * 64
+            with self.subTest(delta=name), self.assertRaisesRegex(AssertionError, 'review digest'):
+                guard.approved_union(changed)
+
+    def test_overlapping_reviewed_deltas_rejected(self):
+        names = list(guard.APPROVED)
+        self.assertGreaterEqual(len(names), 2)
+        changed = copy.deepcopy(guard.APPROVED)
+        changed[names[1]]['paths'].append(changed[names[0]]['paths'][0])
+        with patch.object(guard, 'APPROVED', changed):
+            with self.assertRaisesRegex(AssertionError, 'overlapping reviewed deltas'):
+                guard.approved_union(self.registry)
 
     def test_historical_helpers_cannot_be_rewritten_or_symlinked(self):
         for path in guard.HISTORICAL_HELPERS:

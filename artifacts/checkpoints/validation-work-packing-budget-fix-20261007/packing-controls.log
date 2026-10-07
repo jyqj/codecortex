@@ -1,0 +1,24 @@
+   Compiling cc-eval v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-ci-fix/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 1.85s
+     Running tests/packing_validation_work.rs (/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/packing_validation_work-8beeffe5bde917f4)
+
+running 2 tests
+
+thread 'optional_work_yields_only_to_a_fitting_complete_body_and_stays_omitted' (38) panicked at crates/cc-eval/tests/packing_validation_work.rs:39:5:
+assertion failed: packed["evidence_summary"]["source_freshness"]["validation_work"].is_object()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test optional_work_yields_only_to_a_fitting_complete_body_and_stays_omitted ... FAILED
+
+thread 'failed_omission_preserves_whole_receipt_and_marker_value_or_absence' (37) panicked at crates/cc-eval/tests/packing_validation_work.rs:39:5:
+assertion failed: packed["evidence_summary"]["source_freshness"]["validation_work"].is_object()
+test failed_omission_preserves_whole_receipt_and_marker_value_or_absence ... FAILED
+
+failures:
+
+failures:
+    failed_omission_preserves_whole_receipt_and_marker_value_or_absence
+    optional_work_yields_only_to_a_fitting_complete_body_and_stays_omitted
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+error: test failed, to rerun pass `-p cc-eval --test packing_validation_work`

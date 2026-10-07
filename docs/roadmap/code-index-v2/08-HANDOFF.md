@@ -19,12 +19,28 @@ Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`20c57492e2c7478a21aee715a5f4e3cc9b3ebcc35983dcdc33631d8a0e1af0c4`。
+> 源文件 SHA-256：`78d0c132080d293ff0bd036a305f4000f856e267f3192fba37335a02cff05490`。
 <!-- code-index-progress:end -->
 
 ## 2. 下一步与依赖
 
 按 `tasks.json` 的 `next_task` 推进；上方生成区同时列出进行中任务尚未完成的硬依赖。已有实现和历史通过记录应先与当前源码核对，再按原验收条件补齐独立复核。任务状态不因入口更新或 PR 整合自动改变。
+
+### 本轮交付（2026-10-07）
+
+[PR #142](https://github.com/jyqj/codecortex/pull/142) 将固定整合源合入 main，
+新一轮 check/MSRV/security 全部通过。原 139 项开放 PR 已逐项审计，93 项归并关闭、46 项保留独立范围；
+固定判定、操作快照及保留理由见 [PR 管理检查点](../../../artifacts/checkpoints/pr-management-20261007/README.md)。
+
+[PR #143](https://github.com/jyqj/codecortex/pull/143) 增加当前最终组装的 SQL 计量并同步四个进度入口，
+P7-011 的局部实现与 21 项定向通过证据见 [validation work](../../../artifacts/checkpoints/p7-validation-work-20261007/README.md)。
+P7-014 增加版本化 Python capture 凭据与完整重新校验入口，26 项定向通过及独立审查见
+[revalidation](../../../artifacts/checkpoints/python-inventory-revalidation-20261007/README.md)。
+早期 767 输入组合的 27 项记录保留在 [历史组合证据](../../../artifacts/checkpoints/combined-validation-20261007/README.md)。
+新增计量收据曾在原预算内挤掉正文，CI run37623178087 的失败与修复过程见 [packing 修复证据](../../../artifacts/checkpoints/validation-work-packing-budget-fix-20261007/README.md)。
+现已在原预算及精确断言不变的前提下修复；最终 768 输入组合 48 passed / 0 failed / 1 个既有显式 stdio ignored，fmt 通过，见 [最终组合证据](../../../artifacts/checkpoints/combined-validation-fix-20261007/README.md)。
+各组有重叠，不相加为唯一测试总数；当前固定源码选择为 `p7-capture-revalidation-20261007-v6`，旧 v4/v5 记录保留历史范围。
+P7-011 与 P7-014 的整项状态及正式质量/规模门保持上方权威状态，后续按原验收条件补齐。
 
 ## 3. 每次开始
 
@@ -34,7 +50,7 @@ Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
 
 ## 4. 每次结束
 
-冻结被测源码后跑本批V编号和相关旧回归；留命令、退出码、日志、run-id、diff摘要、源码SHA/dirty digest。更新tasks.json：完成必须有evidence；阻塞列出准确原因和受影响的发布范围；conditional未授权不执行，不当成功。更新JSON中的current_phase/next_task后运行 `python3 scripts/code_index_plan.py --write`，同步05-TODO与三个入口进度块；再无参运行校验source hash和视图一致性，并维护PLAN-CHECK。
+冻结被测源码后跑本批V编号和相关旧回归；留命令、退出码、日志、run-id、diff摘要、源码SHA/dirty digest。更新tasks.json：完成必须有evidence；阻塞列出准确原因和受影响的发布范围；conditional未授权不执行，不当成功。更新JSON中的current_phase/next_task后运行 `python3 scripts/code_index_plan.py --write`，同步05-TODO与三个入口进度块；再无参运行校验source hash和视图一致性，仅在退出码为0后将实际JSON stdout保存到PLAN-CHECK.json。
 
 需要提交PR时在用户授权后使用可用GitHub连接器，明确分支/基线/变更范围，不自动合main。只落本地规划不是已提交到Git。
 
@@ -64,9 +80,10 @@ Markdown派生规则：05-TODO按phase_order和任务原顺序输出；状态tod
 
 ## 7. 规划完整性检查规则
 
-校验13个必需文件存在；tasks总数/phase数/batch数；唯一ID；依赖都存在且DAG无环；phase与batch编号；引用V编号均在06登记；重要字段非空；当前状态计数、done项证据、根current_phase/next_task提示与硬依赖一致；05包含全部ID且source hash一致；相对Markdown链接可解析；新增实现、测试、文档和证据均在本批授权范围；HEAD不变。
+完整规划审查应覆盖：13个必需文件存在；tasks总数/phase数/batch数；唯一ID；依赖都存在且DAG无环；phase与batch编号；引用V编号均在06登记；重要字段非空；当前状态计数、done项证据、根current_phase/next_task提示与硬依赖一致；四个进度视图及source hash一致；相对Markdown链接可解析；新增实现、测试、文档和证据均在本批授权范围；HEAD不变。
 
-PLAN-CHECK.json记录实际检查结果、文件字节/行数/hash（不包含自身hash以避免递归）、检查范围和非目标。这不是业务代码测试；不得把PLAN-CHECK的passed用作G0–G9通过证据。
+PLAN-CHECK.json是无参生成器当前成功输出的滚动收据，实际包含任务总数、状态计数、tasks.json SHA-256和四个视图数量。生成器检查任务字段与状态、总数及阶段计数、引用V编号、依赖存在与无环、done项证据和硬依赖、导航与视图一致性；尚未实现的完整文件清单、phase/batch编号、链接解析、文件字节/行数及HEAD检查应另留真实收据，不能由该passed推定。
+这是规划检查，不是业务代码测试；不得把PLAN-CHECK的passed用作G0–G9通过证据。替换的2026-10-01原始收据保存在 [历史维护证据](../../../artifacts/checkpoints/roadmap-maintenance-20261007/README.md)。
 
 ## 8. 历史交接快照（2026-09-30 至 2026-10-02）
 

@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`20c57492e2c7478a21aee715a5f4e3cc9b3ebcc35983dcdc33631d8a0e1af0c4`。
+> 任务总数：192；源文件 SHA-256：`78d0c132080d293ff0bd036a305f4000f856e267f3192fba37335a02cff05490`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2060,6 +2060,8 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 2026-10-04 后续原线程完整阅读并接受 packing独审c0876c82a5d04d4068f0e3e3ef0a205c1a2207ce限定scoped-search范围。原独审prefix及两个target精确导入，独审39labels/真实legacy-generationproducer/Partial-noresurrection/指定widest15962余38有效；不推广全部数字/unscopedcontext/publicDEV/100k。只追加tests/docs，八crate/src及Cargo/lock保持90858；原等待状态是历史记录，现限定packing已接受。组合strictclippy检测DB独审test四处clone切片警告，原文件hash归档，当前只改std::slice::from_ref不改断言/产品/CI门槛。整体V19/P7/quality仍open。 2026-10-07：完成 final-assembly validation_work 子项。当前最终组装的 manifest/identity 与候选投影 SQL 独立计量，warm graph cache 仍重验；错误前 work 保留、cached counters 每次重置。源码 bfeafe85373504ffdd041b8da2d9a779b4faf18c（与实测 d0d54dbd 完整 Git tree 相同），父级定向代码审查及 21 passed/0 failed/1 existing ignored、strict scoped Clippy/fmt 见 artifacts/checkpoints/p7-validation-work-20261007。仅当前 assembly attempt，非请求总成本；P7-011 全项及正式门状态不升级。
 
+2026-10-07 后续：CI 37623178087 暴露新增448字节计量收据挤掉原有效16000字节预算内正文的真实回归。固定修复源码 016ee41bfde121f6502b2f6ab55b5ed331856314、独立审查 ee335d03e3952bb2b8513456c048b4ba1f5cda66：仅当整体省略可选validation_work并计入details_omitted标记后能保住全部当前正文时采用省略；失败探测原样恢复收据和旧标记。原3项boundary回归及精确omitted_hits=2断言未改，新增2项stage控制；A+B+修复的768输入组合48 passed/0 failed/1既有stdio ignored，fmt通过。证据见 artifacts/checkpoints/validation-work-packing-budget-fix-20261007 与 artifacts/checkpoints/combined-validation-fix-20261007；固定组合源码 87a8c8a787604a03d3db6567a6fd429f057e7251，显式准入版本 p7-capture-revalidation-20261007-v6。失败候选、原CI日志与旧v4/v5收据原样保留，未提高预算、未升级P7-011整项或质量/规模门。
+
 ### [ ] P7-012｜融合与部分覆盖语义
 
 状态：`todo`；批次：`P7-C`；优先级：`normal`。
@@ -2103,6 +2105,10 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 2026-10-04 AST/resource 后续 bounded 集成：固定 integration base `84d5d57978cfaa3a0dd7f63e39d7c7288b614d95`，旧 production anchor `e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696`，当前 fixed product `50a4933e48ef20b16401ac8f75c386a660aa8e5c`。只采纳 resource `08733fa`/独审 `a9050fa` 与 AST final `7d49beb`/原独审 `c2b2a22`/fixed 独审 `16d1344` 的有界 scope；新自编6项组合 tests 使用显式 DeclarationLimits、immutable borrowed inventory、实际 AST 和实际 config provenance 捕获/复用。R1旧失败 characterization 原文件逐byte保留于versioned history及 `.original`，仅一test迁移为正向精确bytes断言，manifest/patch可核验，当前不skip。source/node/depth/work/output预算与模型logical admission分开；config-only Explicit不能证明完整源码capture。AST适配及单次模型资源切片完成，完整/native-safe capture、重复/alias/absence/collision/owner政策、累计输出/缓存失效成本与版本化ingestion仍待做；之后才独立设计production optional DB/MCP identity persistence/协议。精确既有vec→array fix保留，lexical qname/UID/extraction/query weights/budgets/scorer/gold不改。新产品不继承旧100k，publicquality四仓FAIL/Gin/P7/V19仍OPEN。验证及交付见 `artifacts/checkpoints/python-resource-integration-20261004/README.md`；未运行formalDEV/100k/private42/GCWALfaults/旧post_index runtime或broad套件，无merge/deploy。
 
 2026-10-04 reviewed inventory 后续集成：从 PR138 当前 2d297de0e5c7776c358ab49ab2072659ac03c8fc 独立分支开始，保留 da896b5 source-version guard 和 2d297de 的 P0 historical anchor277f2490fad3fa30f2812b5547bad033867c9ea5。root 完整读取 capture 契约及独审 full a17f05d674e82bc54aac6a664b2b69a87b276b36 / delta1fe4dc5f44f53e215e3b6cc99c756bd9b62b0a18；原 source8d2b312c066f0514fb5cee555767955bf34708d0 的红色 partial-find report/test/log 和两review历史逐byte保留。仅接受 PR139 fixed capture e3b932ed4b1e197022c0902fd4c11af3e87ae87e 的 opt-in Linux/EntireProject/no-exclusions/含全部.git bounded capture→AST→model 声明准入；native statx/alias/前后重检政策原样，不声称原子或RSS限制，不认证 runtime publication/quality。固定组合 product780502322816e4fd1d61d8f77a98d7d6b635d9fb 新增3项独立自编真实filesystem组合fixture；原capture实现/tests逐byte不改，unchanged independent13+delta2 在新树15/0/0（原partial-find不skip）。新增显式 source registry python-inventory-20261004-v2：独立重建 approved50a493+exactcapture delta+固定新fixture，共764完整crate/Cargo/lock inputs及hash；未知添加/删除/变更负控，CI显式选择v2，v1 approved50a493 manifest完整保留，不由HEAD自授权。packing/e3/P0证据保持historical且不升级quality。当前验证/边界/交付详见 artifacts/checkpoints/python-inventory-integration-20261004/README.md。无新DB/MCP/retrieval输出或UID/qname/search/parser extraction/scorer/gold/weights/budgets变化。未跑formalDEV/100k/旧runtime/broad/private42/GCWALfaults、实际bindmount或OS设置变更；parentP7/V19/quality不闭项，无merge/deploy。
+
+2026-10-07：完成 versioned Python CaptureReceipt 与完整重校验子项。16KiB 上限先于 JSON 解析；凭据只提供内容身份，当前调用者 owner/scope/policy/limits 重新授权并执行完整 capture、Loader/provenance、AST 和最终 bytes/inventory 校验。严格版本/字段/摘要/缺失/重复检查；无持久化可信声明恢复、DB/MCP 接线或提速声明。固定源码 e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d，独立代码/766 输入摘要审查 9e96795711c072c9aa2095a1fc4527bc28ba75b0；作者定向26项、A+B组合27项均通过，fmt及作者scoped Clippy通过。精确证据见 artifacts/checkpoints/python-inventory-revalidation-20261007 与 artifacts/checkpoints/combined-validation-20261007。组合固定源码 86da8da06538eed9e9cba6b1ec3a282e56fa76b4 的767 crate/Cargo输入独立绑定；Linux/statx等原契约边界保持，P7-014全项仍in_progress，质量及规模门不升级。
+
+2026-10-07 后续组合：在receipt三路径保持原字节的前提下，与最终组装计量及packing修复共同验证，768个crate/Cargo输入绑定固定组合源码 87a8c8a787604a03d3db6567a6fd429f057e7251。最终定向48项通过、0失败、1既有stdio ignored；本组与旧26项及27项组合有重叠，不相加。详见 artifacts/checkpoints/combined-validation-fix-20261007/validation.json。显式源码版本 p7-capture-revalidation-20261007-v6；P7-014其余原验收条件和in_progress状态保持。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

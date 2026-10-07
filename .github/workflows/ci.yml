@@ -49,7 +49,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v
           python3 scripts/code_index_plan.py
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v
-          python3 scripts/verify_current_source_v3.py --source-version query-owner-context-20261004-v3
+          python3 scripts/verify_reviewed_source.py --source-version p7-capture-revalidation-20261007-v7
           python3 scripts/verify_fixed_e3_integration.py
 
       - name: Semantic HTTP capability snapshot and normal stdio query fence
@@ -192,7 +192,7 @@ jobs:
           cargo build -p cc-eval --bin cc-eval --locked
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v
           # Same validator and six locks; only the historical subset is materialized.
-          # Current product integrity uses the explicitly selected v3 accepted owner-context union.
+          # Current product integrity uses the explicitly selected reviewed source union.
           python3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval
 
       - name: P7 semantic product disabled stdio contract

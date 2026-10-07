@@ -683,6 +683,17 @@ impl<'a> RetrievalReadModel<'a> {
         &self,
         chunk_ids: &[&str],
     ) -> CcResult<Vec<crate::index_db::ChunkCandidateRow>> {
+        self.chunk_candidate_rows_by_ids_with_work(chunk_ids, &mut Default::default())
+    }
+
+    /// Measured metadata projection with the same validation and returned rows.
+    /// The caller owns the receipt, including work before a decoding/validation
+    /// failure. Does not read/decompress source text or measure other DB queries.
+    pub fn chunk_candidate_rows_by_ids_with_work(
+        &self,
+        chunk_ids: &[&str],
+        work: &mut cc_model::retrieval_cost::SqlWork,
+    ) -> CcResult<Vec<crate::index_db::ChunkCandidateRow>> {
         if chunk_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -699,70 +710,76 @@ impl<'a> RetrievalReadModel<'a> {
                 sql_in_placeholders(batch.len()),
             );
             let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
-            let rows = stmt
-                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
-                    Ok((
-                        row.get::<_, String>(0)?,
-                        row.get::<_, String>(1)?,
-                        row.get::<_, String>(2)?,
-                        row.get::<_, Option<String>>(3)?,
-                        row.get::<_, Option<String>>(4)?,
-                        row.get::<_, Option<String>>(5)?,
-                        row.get::<_, Option<String>>(6)?,
-                        row.get::<_, Option<String>>(7)?,
-                        row.get::<_, Option<String>>(8)?,
-                        row.get::<_, String>(9)?,
-                    ))
-                })
-                .map_err(db_err)?;
-            for row in rows {
-                let (
-                    chunk_id,
-                    file_path,
-                    language,
-                    source_json,
-                    reference_json,
-                    doc_key,
-                    doc_version,
-                    encoding_key,
-                    document_spec,
-                    content_hash,
-                ) = row.map_err(db_err)?;
-                let source_json = source_json.ok_or_else(|| {
-                    cc_model::CcError::Database("candidate missing source evidence".into())
-                })?;
-                let reference_json = reference_json.ok_or_else(|| {
-                    cc_model::CcError::Database("candidate missing document manifest".into())
-                })?;
-                if document_spec.is_none() {
-                    return Err(cc_model::CcError::Database(
-                        "candidate file missing document specification".into(),
-                    ));
+            crate::statement_work::reset(&stmt);
+            let mut yielded = 0;
+            let projected = (|| -> CcResult<()> {
+                let mut rows = stmt
+                    .query(rusqlite::params_from_iter(batch.iter()))
+                    .map_err(db_err)?;
+                while let Some(row) = rows.next().map_err(db_err)? {
+                    yielded += 1;
+                    let (
+                        chunk_id,
+                        file_path,
+                        language,
+                        source_json,
+                        reference_json,
+                        doc_key,
+                        doc_version,
+                        encoding_key,
+                        document_spec,
+                        content_hash,
+                    ) = (
+                        row.get::<_, String>(0).map_err(db_err)?,
+                        row.get::<_, String>(1).map_err(db_err)?,
+                        row.get::<_, String>(2).map_err(db_err)?,
+                        row.get::<_, Option<String>>(3).map_err(db_err)?,
+                        row.get::<_, Option<String>>(4).map_err(db_err)?,
+                        row.get::<_, Option<String>>(5).map_err(db_err)?,
+                        row.get::<_, Option<String>>(6).map_err(db_err)?,
+                        row.get::<_, Option<String>>(7).map_err(db_err)?,
+                        row.get::<_, Option<String>>(8).map_err(db_err)?,
+                        row.get::<_, String>(9).map_err(db_err)?,
+                    );
+                    let source_json = source_json.ok_or_else(|| {
+                        cc_model::CcError::Database("candidate missing source evidence".into())
+                    })?;
+                    let reference_json = reference_json.ok_or_else(|| {
+                        cc_model::CcError::Database("candidate missing document manifest".into())
+                    })?;
+                    if document_spec.is_none() {
+                        return Err(cc_model::CcError::Database(
+                            "candidate file missing document specification".into(),
+                        ));
+                    }
+                    let source: cc_model::source::ChunkSource = serde_json::from_str(&source_json)?;
+                    let reference: cc_model::identity::DocumentRef =
+                        serde_json::from_str(&reference_json)?;
+                    let valid_span = source.span.start < source.span.end
+                        && source.span.end <= source.source.byte_len;
+                    if !cc_model::repo_path::is_canonical_file(&file_path)
+                        || !valid_span
+                        || source.source.content_digest != content_hash
+                        || doc_key.as_deref() != Some(reference.doc_key.as_str())
+                        || doc_version.as_deref() != Some(reference.doc_version.as_str())
+                        || encoding_key != reference.encoding_key
+                    {
+                        return Err(cc_model::CcError::Database(
+                            "candidate document/source mirror mismatch".into(),
+                        ));
+                    }
+                    results.push(crate::index_db::ChunkCandidateRow {
+                        document: reference,
+                        source_evidence: source,
+                        chunk_id,
+                        file_path,
+                        language,
+                    });
                 }
-                let source: cc_model::source::ChunkSource = serde_json::from_str(&source_json)?;
-                let reference: cc_model::identity::DocumentRef =
-                    serde_json::from_str(&reference_json)?;
-                let valid_span = source.span.start < source.span.end
-                    && source.span.end <= source.source.byte_len;
-                if !cc_model::repo_path::is_canonical_file(&file_path)
-                    || !valid_span
-                    || source.source.content_digest != content_hash
-                    || doc_key.as_deref() != Some(reference.doc_key.as_str())
-                    || doc_version.as_deref() != Some(reference.doc_version.as_str())
-                    || encoding_key != reference.encoding_key
-                {
-                    return Err(cc_model::CcError::Database(
-                        "candidate document/source mirror mismatch".into(),
-                    ));
-                }
-                results.push(crate::index_db::ChunkCandidateRow {
-                    document: reference,
-                    source_evidence: source,
-                    chunk_id,
-                    file_path,
-                    language,
-                });
-            }
+                Ok(())
+            })();
+            work.merge(crate::statement_work::finish(&stmt, yielded));
+            projected?;
         }
         Ok(results)
     }

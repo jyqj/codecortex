@@ -1,0 +1,299 @@
+{
+  "source_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "source_tree": "661734886f514b31b14ae7601410079fbf58c559",
+  "source_inputs": 768,
+  "source_manifest": "full-default-source-sha256.json",
+  "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe",
+  "workflow_sha256": "ea7851fd19b925be3ffb52fd8b9cb9f1199104bdfd381f8d9107db6f8475ee50",
+  "environment": {
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost"
+  },
+  "semantic_normal_targets": [
+    "artifact_cache",
+    "attempt_lease_contract",
+    "bounded_parallel",
+    "manifest_exact_integration",
+    "p7_cache_allocation_independent_review",
+    "publish_cas",
+    "query_cache",
+    "queue_worker",
+    "retry_worker_layering",
+    "semantic_degrade",
+    "space_switch"
+  ],
+  "scope": "exact three Default regression within authorized scope commands; offline/local profile added",
+  "not_enabled": [
+    "ignored tests",
+    "semantic_runtime",
+    "historical process-fault/GC-WAL targets",
+    "feature HTTP/MCP gates",
+    "source guards"
+  ],
+  "counting": "Only this full-stage run is totaled. Earlier narrow tests are overlapping evidence, not additional distinct passed tests.",
+  "disk_free_bytes_before": 13344800768,
+  "commands": [
+    {
+      "name": "workspace-default",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--workspace",
+        "--all-targets",
+        "--exclude",
+        "cc-semantic"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 267.206,
+      "log": "full-workspace-default.log",
+      "log_sha256": "34b302c618aa19dbdfeab83b7dc9893a18794324567e83d9d8526626c54609c0",
+      "summaries": [
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_db-bf69d5cc909229d3",
+          "status": "ok",
+          "passed": 185,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/ci_schema_guard_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/ci_schema_guard_contract-b8f7c1621b1a7e3e",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/fts_identifier_expansion.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/fts_identifier_expansion-89900821511650fe",
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/incremental_write_bench.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/incremental_write_bench-0612b639e4b65905",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2b_resolution_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2b_resolution_store-b3b01d0923ee045b",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2c_freshness_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2c_freshness_store-9e6a4b7e8e7de5c7",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2d_dependency_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2d_dependency_cost-3e9fd9870449a456",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_configured_space_transition.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_configured_space_transition-943afe4dfb93e97a",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/public_surface_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/public_surface_store-b9f8d2bf071d1844",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/resolver_bind_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/resolver_bind_independent_review-452a35433526a29d",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/resolver_seed_large_exclusion.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/resolver_seed_large_exclusion-1dc36743d187b9b4",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_coverage.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_coverage-794db79102bb3317",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_lease.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_lease-d048ed0195c515ea",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_outbox.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_outbox-a0549e8a27d77076",
+          "status": "ok",
+          "passed": 20,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_publish.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_publish-5d24a2007c2fd447",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_queue.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_queue-df315d793bb4362d",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_rebuild.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_rebuild-055b79624dcdf4d3",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_recovery.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_recovery-e3c362f368e7ddaa",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_schema.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_schema-bca22aba358da938",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_space_switch.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_space_switch-346f4a66bb0d00c5",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/test_edge_empty_population.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/test_edge_empty_population-65e5e712e49d536c",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_eval-9de7fea66c53aad8",
+          "status": "FAILED",
+          "passed": 38,
+          "failed": 1,
+          "ignored": 5,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    }
+  ],
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "head_at_finish": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "disk_free_bytes_after": 9601757184,
+  "stdio_binary_at_finish": {
+    "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+    "sha256": "0b16decc7d8b60ef282e52c17a3ab6d7c3fafe449665babc969340725a7260b5"
+  },
+  "observed": {
+    "passed": 336,
+    "failed": 1,
+    "ignored": 8,
+    "measured": 0,
+    "filtered_out": 0
+  },
+  "focus_target_subset": [],
+  "passed": false
+}

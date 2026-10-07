@@ -1,0 +1,182 @@
+{
+  "scope": "combined A final validation SQL accounting + B full Python capture revalidation + reviewed packing repair",
+  "packing_fix_source_commit": "df43b7b1ddb63f2622d7336236001840cf28d2f5",
+  "pre_fix_combined_head": "bd875341bf1065b902f21209d78056b3d15e3ca6",
+  "original_failed_CI_A_head": "781f0b790389134303d74ddc41689ad9793c9b52",
+  "requested_A_head": "afba69e3665c87d174aa0cbabfc37ccd1670fb27",
+  "requested_B_commits": [
+    "4a1f4f6fbb2cd1b17e62ed9bf819bb1b9a52941e",
+    "707b6b64048b9fc119ab1c396eb082be8de2d8a5"
+  ],
+  "combined_head": "ec2b3b4015de61d1e098ab05a99e76d0291f06ca",
+  "combined_tree": "50359edd483001c03a80b90416c04179a974e01b",
+  "branch": "work/combined-validation-20261007",
+  "git_status_before": "",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never"
+  },
+  "source_inputs": 768,
+  "source_manifest": "source-sha256.json",
+  "source_manifest_sha256": "0ade96519b0c9450c1757a33714dd65e41e6d3b5d6b2e72c26b27aadfbdb3e98",
+  "log_normalization": "trailing blank lines removed only",
+  "expected_tests": 48,
+  "commands": [
+    {
+      "name": "packing-and-validation-work",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--test",
+        "diag_p5e_fix_review_boundary_20261003",
+        "--test",
+        "packing_validation_work",
+        "--test",
+        "p5c_budget",
+        "--test",
+        "packing_scope_v1",
+        "--test",
+        "p7_partial_budget",
+        "--test",
+        "p7_validation_work",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 39.672,
+      "log": "packing-and-validation-work.log",
+      "log_sha256": "a57a8bad095780d86d0abe2bc115e8321ac6294229f71373319f5ee8c2fdefb8",
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "name": "python-capture",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "python_inventory_revalidation",
+        "--test",
+        "python_inventory_capture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.119,
+      "log": "python-capture.log",
+      "log_sha256": "d56e5aab4b95f51f14f9942afe1c266240686c07353daeae6773b0365fb94614",
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "name": "format",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.052,
+      "log": "format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_summaries": []
+    }
+  ],
+  "not_run": [
+    "broad_lint",
+    "full_workspace_tests",
+    "source_guard_v4_v5_or_v6",
+    "public_quality",
+    "100k",
+    "remote_CI",
+    "live_provider",
+    "non_Linux"
+  ],
+  "boundary": "Intermediate combined tree retains v4 guard; parent owns subsequent v6 integration. No task status, CI or source guard edits.",
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "git_status_after": "",
+  "observed_tests": 48,
+  "passed": true
+}

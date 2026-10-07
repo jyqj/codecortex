@@ -1,0 +1,44 @@
+   Compiling cc-search v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-validation-cost/crates/cc-search)
+   Compiling cc-server v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-validation-cost/crates/cc-server)
+   Compiling cc-eval v1.0.0 (/workspace/scratch/71bc431c4e4f/codecortex-validation-cost/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 33.19s
+     Running tests/p1d_cost.rs (/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1d_cost-3520e336ca473779)
+
+running 6 tests
+test p1d_mcp_cost_receipts_are_preserved_on_cache_hits ... ignored, requires explicit CODECORTEX_BENCH_BINARY; actual MCP cost receipts
+test old_or_unknown_work_receipts_are_unavailable_not_zero ... ok
+test measured_hydration_reuses_text_and_resets_cached_statement_counters ... ok
+test absent_identity_probe_is_charged_without_reusing_cached_authority ... ok
+test cached_text_is_a_hint_not_authority_for_versioned_rows ... ok
+test query_local_costs_cover_empty_cap_probe_and_all_text_reads ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+     Running tests/p5c_hydration.rs (/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5c_hydration-4f41200228070296)
+
+running 11 tests
+test disk_changes_and_deletions_are_explicit_omissions_not_new_source ... ok
+test final_hits_preserve_original_utf8_crlf_proofs_and_metadata ... ok
+test no_lane_may_substitute_final_identity_coordinates_or_scope ... ok
+test graph_nodes_and_post_handler_metadata_keep_the_same_scope_and_generation ... ok
+test real_space_switch_during_recall_rejects_the_old_generation ... ok
+test dense_omission_persists_across_hydration_windows_but_generation_changes_fail ... ok
+test current_dense_basis_keeps_final_response_complete ... ok
+test stable_generation_with_skipped_dense_basis_is_partial_in_final_response ... ok
+test warmed_search_cannot_hide_deleted_manifest_or_forged_snapshot ... ok
+test swap_same_epoch_and_cancel_reject_final_publication ... ok
+test warm_context_revalidates_the_full_record_not_only_its_reference_mirror ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+
+     Running tests/p7_validation_work.rs (/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_validation_work-ff3c5e1d6ed1faff)
+
+running 5 tests
+test projection_failure_is_visible_and_multiple_batches_count_actual_yielded_rows ... ok
+test repeated_validation_resets_cached_statements_and_accumulates_only_named_work ... ok
+test current_context_validation_is_charged_again_on_a_real_graph_cache_hit ... ok
+test failed_source_record_checks_keep_the_work_performed_before_rejection ... ok
+test empty_and_prequery_refusal_are_zero_but_missing_locators_are_measured ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+

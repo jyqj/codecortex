@@ -1,0 +1,2327 @@
+{
+  "source_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "source_tree": "661734886f514b31b14ae7601410079fbf58c559",
+  "source_inputs": 768,
+  "source_manifest": "continued-validation-source-sha256.json",
+  "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe",
+  "workflow_sha256": "ea7851fd19b925be3ffb52fd8b9cb9f1199104bdfd381f8d9107db6f8475ee50",
+  "environment": {
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost"
+  },
+  "semantic_normal_targets": [
+    "artifact_cache",
+    "attempt_lease_contract",
+    "bounded_parallel",
+    "manifest_exact_integration",
+    "p7_cache_allocation_independent_review",
+    "publish_cas",
+    "query_cache",
+    "queue_worker",
+    "retry_worker_layering",
+    "semantic_degrade",
+    "space_switch"
+  ],
+  "scope": "Parent-authorized continuation: unchanged workspace default scope with --no-fail-fast to retain known local sampler failure and run every remaining target; original semantic lib/normal paths; five explicit cc-server semantic-http P7 targets. Offline/local profile added.",
+  "prior_attempt": "full-default-validation.json",
+  "feature_targets": [
+    "p7_v05_all_lane_scope",
+    "p7_v05_scope_public",
+    "p7_v16_exact_oracle",
+    "p7_v16_oracle_independent_review",
+    "p7_acceptance_matrix"
+  ],
+  "not_enabled": [
+    "ignored tests",
+    "semantic_runtime",
+    "historical process-fault/GC-WAL targets",
+    "unlisted feature HTTP/MCP gates",
+    "source guards"
+  ],
+  "counting": "Only these four commands are totaled as a continuation run. Earlier failed default attempt, isolated sampler diagnosis, and narrow tests overlap and are never added to this total. Every nonzero command remains a failure.",
+  "disk_free_bytes_before": 9598885888,
+  "commands": [
+    {
+      "name": "workspace-no-fail-fast",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--workspace",
+        "--all-targets",
+        "--exclude",
+        "cc-semantic",
+        "--no-fail-fast"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 242.285,
+      "log": "continued-workspace-no-fail-fast.log",
+      "log_sha256": "65faa8f06f447f3c9840752db13bc24a8ceda818df2cf1e3696d7499a7caf876",
+      "summaries": [
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_db-bf69d5cc909229d3",
+          "status": "ok",
+          "passed": 185,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/ci_schema_guard_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/ci_schema_guard_contract-b8f7c1621b1a7e3e",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/fts_identifier_expansion.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/fts_identifier_expansion-89900821511650fe",
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/incremental_write_bench.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/incremental_write_bench-0612b639e4b65905",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2b_resolution_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2b_resolution_store-b3b01d0923ee045b",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2c_freshness_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2c_freshness_store-9e6a4b7e8e7de5c7",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2d_dependency_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2d_dependency_cost-3e9fd9870449a456",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_configured_space_transition.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_configured_space_transition-943afe4dfb93e97a",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/public_surface_store.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/public_surface_store-b9f8d2bf071d1844",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/resolver_bind_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/resolver_bind_independent_review-452a35433526a29d",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/resolver_seed_large_exclusion.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/resolver_seed_large_exclusion-1dc36743d187b9b4",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_coverage.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_coverage-794db79102bb3317",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_lease.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_lease-d048ed0195c515ea",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_outbox.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_outbox-a0549e8a27d77076",
+          "status": "ok",
+          "passed": 20,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_publish.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_publish-5d24a2007c2fd447",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_queue.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_queue-df315d793bb4362d",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_rebuild.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_rebuild-055b79624dcdf4d3",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_recovery.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_recovery-e3c362f368e7ddaa",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_schema.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_schema-bca22aba358da938",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_space_switch.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_space_switch-346f4a66bb0d00c5",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/test_edge_empty_population.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/test_edge_empty_population-65e5e712e49d536c",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_eval-9de7fea66c53aad8",
+          "status": "FAILED",
+          "passed": 37,
+          "failed": 2,
+          "ignored": 5,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/bin/cc-eval.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_eval-55ab23ac7911255a",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/benchmark_adapters.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/benchmark_adapters-24faea798b06428f",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/benchmark_defects.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/benchmark_defects-846d2628e27a92bf",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/benchmark_lock.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/benchmark_lock-23a991b97ab3c5ec",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/benchmark_reports.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/benchmark_reports-0ee4f825724104f8",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/benchmark_scoring.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/benchmark_scoring-463ad51a3234bb41",
+          "status": "ok",
+          "passed": 21,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/ci_generation_guard_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/ci_generation_guard_contract-2749597fd3fc6b11",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/diag_p5e_fix_review_boundary_20261003.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/diag_p5e_fix_review_boundary_20261003-ff4dd31a892241d0",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/diag_p5e_fix_review_stage_20261003.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/diag_p5e_fix_review_stage_20261003-fc8d02bdbb2a4e7d",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/diag_p5e_stage_receipts_20261003.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/diag_p5e_stage_receipts_20261003-2884685050241b14",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/document_identity.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/document_identity-f96bd0a1a70ed89e",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/mcp_dispatch_seam.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/mcp_dispatch_seam-d508ae9a0d408f14",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1a_retrieval.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1a_retrieval-75daa270f5a7a612",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1b_retrieval.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1b_retrieval-b6a0459797f5218f",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1b_scan_accounting.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1b_scan_accounting-5382ea98e30594f2",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1c_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1c_contract-fe38eb6424e0f474",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1c_retrieval.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1c_retrieval-a038ced4a911fcb9",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1d_concurrency.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1d_concurrency-138fdc08757beefe",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1d_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1d_cost-3520e336ca473779",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1d_cost_probe.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1d_cost_probe-418d879cd372dc93",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p1d_docs.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p1d_docs-2166ba8b6af84c65",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2a_incremental.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2a_incremental-a825a9c430125f64",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2b_incremental.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2b_incremental-21391b9062eb94dc",
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2c_reconcile.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2c_reconcile-e66ffa878a0af5b0",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2d_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2d_cost-825549ed0442d53c",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2d_mutations.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2d_mutations-f4e7392b89223cb5",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3a_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3a_cost-6237f3b518c08fd0",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3a_project_model.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3a_project_model-5da84636596147eb",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3b_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3b_cost-8fbab3c43ccae983",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 2,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3b_modules.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3b_modules-b1d573a2c7ba078a",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3c_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3c_cost-bb997db04b6e3625",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3c_modules.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3c_modules-c55409a7c8ed56b7",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3d_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3d_cost-6f0cda64cb45bf04",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3d_modules.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3d_modules-59b5bf1e7e6ea905",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4a_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4a_cost-c7832f2742039ad3",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4a_source.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4a_source-80187282888254d8",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4b_chunks.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4b_chunks-ed7d288e40e55941",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4b_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4b_cost-67d3c9734b84367c",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4c_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4c_cost-776d794e6081036b",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4c_documents.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4c_documents-8c4aa5979117574f",
+          "status": "ok",
+          "passed": 12,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4d_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4d_cost-da9a34481a3c2fb7",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4d_quality.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4d_quality-ec695d3c02178029",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5a_boundaries.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5a_boundaries-b2dad4ddc615a319",
+          "status": "ok",
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5a_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5a_cost-304191d208e73691",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5a_retrieval.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5a_retrieval-259082c7ab4da061",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5b_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5b_cost-e774e7061075a14c",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5b_execution.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5b_execution-3f65f5bced3306e8",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5c_budget.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5c_budget-4e53eb20743fbb21",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5c_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5c_cost-e1581ce2c9153a24",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5c_hydration.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5c_hydration-4f41200228070296",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5c_selection.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5c_selection-fba0ea71d97677eb",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5d_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5d_contract-c09509b74431d9f3",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5d_cost.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5d_cost-46d715c7b71b8f1f",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5d_runtime.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5d_runtime-3e0327912e9a6898",
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_ablation.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_ablation-fc358c439e21b35a",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_context_facets.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_context_facets-9da6d8a6ec07142d",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_graph_anchor.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_graph_anchor-21cfaa7ceb06ac39",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_identifier.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_identifier-6225da05f7d5d71a",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_path_domain.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_path_domain-b4e5806b6d0655e2",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p5e_priority_pressure.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p5e_priority_pressure-261208a533756d84",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_partial_budget.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_partial_budget-e3e60ebf04e774c2",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_validation_work.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_validation_work-ff3c5e1d6ed1faff",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/packing_scope_v1.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/packing_scope_v1-8ccdee9dcc028617",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/packing_validation_work.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/packing_validation_work-8beeffe5bde917f4",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/scale_bench.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/scale_bench-a6448ae3dd1d9050",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 4,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_lifecycle.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_lifecycle-d9bb33180dca108a",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/soak.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/soak-29dc541930c80ee6",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/v16_cache_read_soak.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/v16_cache_read_soak-c787836cdd74693c",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/v16_resource_bounds.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/v16_resource_bounds-872b1a246b169dd7",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_index-b1a34be2354079ca",
+          "status": "ok",
+          "passed": 402,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/independent_qname_parser_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/independent_qname_parser_public-5164a27e42e37311",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/independent_qname_repair_guard.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/independent_qname_repair_guard-8d3cb4f9967a6886",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3a_project_model.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3a_project_model-2fb629f99b057d43",
+          "status": "ok",
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3b_modules.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3b_modules-74d09d0410b9040c",
+          "status": "ok",
+          "passed": 19,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3c_modules.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3c_modules-1ad6ed827d21f349",
+          "status": "ok",
+          "passed": 14,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p3d_boundaries.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p3d_boundaries-9c9a6f7ac19d7098",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4b_render.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4b_render-ab5cfdbaa1e4a422",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4c_identity.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4c_identity-f43ea44a5c416364",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_declaration_identity.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_declaration_identity-9a10eed93bb3455c",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_identity_resource_integration.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_identity_resource_integration-ea9067a6e38a2036",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_inventory_capture.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_inventory_capture-280f40c9ad61dac7",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_inventory_resource_integration.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_inventory_resource_integration-f48fcef27a4ee360",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_inventory_revalidation.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_inventory_revalidation-f618923f13f018db",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_provenance_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_provenance_independent_review-d284ef7eaaa6ae2a",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_db_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_db_independent_review-f90cbca32ee79924",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_identity_proof.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_identity_proof-f5ec7b09836ef744",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_identity_transaction.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_identity_transaction-df1e32f5b3ba56e3",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_owner_diagnostic.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_owner_diagnostic-12453a9d4fdbdc25",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/type_catalog_bench.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/type_catalog_bench-7ca2a32abd45ddbb",
+          "status": "ok",
+          "passed": 17,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_model-b765855f24a976a2",
+          "status": "ok",
+          "passed": 92,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/declaration_identity_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/declaration_identity_independent_review-e3d2b150f0e01126",
+          "status": "ok",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/declaration_identity_resources.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/declaration_identity_resources-f249659d1564b7a0",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/declaration_identity_v1.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/declaration_identity_v1-7b317d3091cf7c19",
+          "status": "ok",
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/declaration_resource_independent.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/declaration_resource_independent-a727e6ad45e1aee1",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2b_resolution.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2b_resolution-652babfed152fde6",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4a_source.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4a_source-956c87b6c00083e2",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/provenance_compatibility.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/provenance_compatibility-470aeac7dc871136",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/public_surface_encoding.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/public_surface_encoding-90e5bda7f3f928be",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_parsers-a33ee097e5ab8839",
+          "status": "ok",
+          "passed": 184,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/c_cpp_declarator_boundaries.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/c_cpp_declarator_boundaries-cc8e49967c04973f",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/declaration_boundary_hints.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/declaration_boundary_hints-9870d671080b8b9e",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/independent_cpp_final_declarators.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/independent_cpp_final_declarators-df1ae7f76b4040e6",
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/jsts_call_truth.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/jsts_call_truth-e12f867edffe0473",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p2b_go_surface.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p2b_go_surface-cb3e8e07af5e308b",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4a_source.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4a_source-0030e73dea2bafa4",
+          "status": "ok",
+          "passed": 14,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p4b_chunks.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p4b_chunks-c1b7d2dc844e857f",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/public_surface.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/public_surface-65167d4c3b49b6c2",
+          "status": "ok",
+          "passed": 19,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/public_surface_edges.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/public_surface_edges-575afe3c5932ea03",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_call_truth.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_call_truth-bf66934bd1a33264",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_identity_adapter.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_identity_adapter-51f15deb0d84cb0f",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_identity_independent.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_identity_independent-1cd1ab3ad8447dfd",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_identity_r1_independent_delta.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_identity_r1_independent_delta-915eb9f96227839e",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_identity_trivia_r1.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_identity_trivia_r1-83ba216b3a0a47c5",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_search-6d2540589b5e600d",
+          "status": "FAILED",
+          "passed": 318,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_server-ab7fe5bb7b37bc76",
+          "status": "FAILED",
+          "passed": 255,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "unittests src/main.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/codecortex-6bcf8c8138cdf98c",
+          "status": "ok",
+          "passed": 41,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/cache_key_review_behavior.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cache_key_review_behavior-84f1f0e4ed8679d5",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/graph_traversal_bench.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/graph_traversal_bench-b9221fdc0fb8fbad",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/independent_qname_repair_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/independent_qname_repair_public-c5e950de207375aa",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/index_fix_pinned_handle.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/index_fix_pinned_handle-b6a8a42b756c9790",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/mcp_startup.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/mcp_startup-c9e387bf9227fa99",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/mcp_stdio.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/mcp_stdio-34495fc3076f0681",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_acceptance_matrix.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_acceptance_matrix-21f979796dc2f3d7",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_production_fairness_model_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_production_fairness_model_review-01774a329096482c",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_query_deadline_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_query_deadline_public-806443389b4167c6",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_query_production.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_query_production-ac0d1412878d4f8d",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_runtime_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_runtime_independent_review-e06c900d226ad1bd",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_status_snapshot_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_status_snapshot_independent_review-dd520b8e2e320e6e",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v05_all_lane_scope.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_all_lane_scope-02d73d8c22d2cfaf",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v05_scope_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_scope_public-69cd53cbaf3dec44",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v05_v11_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_v11_independent_review-1496e2cde5b4b3d8",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v11_cache_consumption.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v11_cache_consumption-3296aa1ada0fa4b2",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v11_cache_key_matrix.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v11_cache_key_matrix-ab763fbdf9b35eb4",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v11_generation_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v11_generation_public-8d1ca377a2dada45",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v11_ready_epoch_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v11_ready_epoch_independent_review-c35f2fde21a5f58a",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v16_exact_oracle.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_exact_oracle-60fa61be079b460b",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v16_oracle_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_oracle_independent_review-901ab25982945de2",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v18_fault_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v18_fault_contract-f7b80e4e00edd5d3",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v18_parameter_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v18_parameter_contract-464fab92f2259556",
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/python_declaration_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_declaration_public-9673ff1bda1a14a3",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_db_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_db_independent_review-11a518d1888172ac",
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_identity_lifecycle.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_identity_lifecycle-6097da180597015b",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/qname_public_diagnostic.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/qname_public_diagnostic-d5a619f2418484c0",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/v11_consumption_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/v11_consumption_independent_review-aac72b8808d1594a",
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "compiler_artifacts": [],
+      "stdio_binary_after_command": {
+        "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+        "sha256": "0b16decc7d8b60ef282e52c17a3ab6d7c3fafe449665babc969340725a7260b5"
+      }
+    },
+    {
+      "name": "semantic-lib",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-semantic",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 34.884,
+      "log": "continued-semantic-lib.log",
+      "log_sha256": "3be1f214c4276f5a3d3d30aceb97f6421b643655d57cc80520e0ba2b8607d126",
+      "summaries": [
+        {
+          "target": "unittests src/lib.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_semantic-184fc083be73a52d",
+          "status": "ok",
+          "passed": 232,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "compiler_artifacts": [],
+      "stdio_binary_after_command": {
+        "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+        "sha256": "0b16decc7d8b60ef282e52c17a3ab6d7c3fafe449665babc969340725a7260b5"
+      }
+    },
+    {
+      "name": "semantic-normal-paths",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-semantic",
+        "--test",
+        "artifact_cache",
+        "--test",
+        "attempt_lease_contract",
+        "--test",
+        "bounded_parallel",
+        "--test",
+        "manifest_exact_integration",
+        "--test",
+        "p7_cache_allocation_independent_review",
+        "--test",
+        "publish_cas",
+        "--test",
+        "query_cache",
+        "--test",
+        "queue_worker",
+        "--test",
+        "retry_worker_layering",
+        "--test",
+        "semantic_degrade",
+        "--test",
+        "space_switch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 15.71,
+      "log": "continued-semantic-normal-paths.log",
+      "log_sha256": "f6d1713a7e8f1177860efc3096ce7d7378f308890308a9893f8b4b83f42a345e",
+      "summaries": [
+        {
+          "target": "tests/artifact_cache.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/artifact_cache-3636ba20ee8ac94b",
+          "status": "ok",
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/attempt_lease_contract.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/attempt_lease_contract-e033bfb3f47d3261",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/bounded_parallel.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/bounded_parallel-f5e9d97641d48fde",
+          "status": "ok",
+          "passed": 12,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/manifest_exact_integration.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/manifest_exact_integration-f815e973078eb3f5",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_cache_allocation_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_cache_allocation_independent_review-683ec1af4fd3932e",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/publish_cas.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/publish_cas-bd5a35b4368a1f35",
+          "status": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/query_cache.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/query_cache-c8edfe732ca7cccc",
+          "status": "ok",
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/queue_worker.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/queue_worker-969b26ea22376612",
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/retry_worker_layering.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/retry_worker_layering-a3bd833c334131bb",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/semantic_degrade.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_degrade-f7f2423a58691754",
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/space_switch.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/space_switch-6feaf4f0f246460e",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "compiler_artifacts": [],
+      "stdio_binary_after_command": {
+        "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+        "sha256": "0b16decc7d8b60ef282e52c17a3ab6d7c3fafe449665babc969340725a7260b5"
+      }
+    },
+    {
+      "name": "semantic-http-p7",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--test",
+        "p7_v05_all_lane_scope",
+        "--test",
+        "p7_v05_scope_public",
+        "--test",
+        "p7_v16_exact_oracle",
+        "--test",
+        "p7_v16_oracle_independent_review",
+        "--test",
+        "p7_acceptance_matrix"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 105.116,
+      "log": "continued-semantic-http-p7.log",
+      "log_sha256": "9eff3b527eb04220f2057353c9098a199cc35e725ad2f7e991ffa9cd758032c5",
+      "summaries": [
+        {
+          "target": "tests/p7_acceptance_matrix.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_acceptance_matrix-32a8f6495fdb49b6",
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v05_all_lane_scope.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_all_lane_scope-f58a2b8f09fc0875",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v05_scope_public.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_scope_public-75f877fc5046afa4",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v16_exact_oracle.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_exact_oracle-ac4053dfba08443f",
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "target": "tests/p7_v16_oracle_independent_review.rs",
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_oracle_independent_review-90dd5f218fa91dcc",
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "compiler_artifacts": [
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "test"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "p7_v16_oracle_independent_review",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/tests/p7_v16_oracle_independent_review.rs",
+              "edition": "2021",
+              "doc": false,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": true
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_oracle_independent_review-90dd5f218fa91dcc"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_oracle_independent_review-90dd5f218fa91dcc",
+            "fresh": false
+          },
+          "sha256": "b1cf06a92ed485152df27d80e4ac01cef80ca7301213ce8fde3f9d20cbf8ff7e",
+          "bytes": 62509304
+        },
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "test"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "p7_v16_exact_oracle",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/tests/p7_v16_exact_oracle.rs",
+              "edition": "2021",
+              "doc": false,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": true
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_exact_oracle-ac4053dfba08443f"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v16_exact_oracle-ac4053dfba08443f",
+            "fresh": false
+          },
+          "sha256": "4b30398144b6a2a5ee9d478119b1d5467c1826d52982a25ae25d3455eb5ac8f0",
+          "bytes": 62478112
+        },
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "test"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "p7_v05_scope_public",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/tests/p7_v05_scope_public.rs",
+              "edition": "2021",
+              "doc": false,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": true
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_scope_public-75f877fc5046afa4"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_scope_public-75f877fc5046afa4",
+            "fresh": false
+          },
+          "sha256": "d72449c441c2e4babb2a70e8a63195a4ae598d248456d6e39b6c9e5992fc2c88",
+          "bytes": 65465952
+        },
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "bin"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "codecortex",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/src/main.rs",
+              "edition": "2021",
+              "doc": true,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": false
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+            "fresh": false
+          },
+          "sha256": "f8b42077e99efa137686e7923832ff0ef92255a41fe8448b82fece04edb4ee1e",
+          "bytes": 78572224
+        },
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "test"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "p7_acceptance_matrix",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/tests/p7_acceptance_matrix.rs",
+              "edition": "2021",
+              "doc": false,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": true
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_acceptance_matrix-32a8f6495fdb49b6"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_acceptance_matrix-32a8f6495fdb49b6",
+            "fresh": false
+          },
+          "sha256": "908719c5506ac1db9332991353f1bc9e2a269fa54964d28dfbf009e029745601",
+          "bytes": 61793672
+        },
+        {
+          "cargo_artifact": {
+            "reason": "compiler-artifact",
+            "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server#1.0.0",
+            "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/Cargo.toml",
+            "target": {
+              "kind": [
+                "test"
+              ],
+              "crate_types": [
+                "bin"
+              ],
+              "name": "p7_v05_all_lane_scope",
+              "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-bm25-fix/crates/cc-server/tests/p7_v05_all_lane_scope.rs",
+              "edition": "2021",
+              "doc": false,
+              "doctest": false,
+              "test": true
+            },
+            "profile": {
+              "opt_level": "0",
+              "debuginfo": 0,
+              "debug_assertions": true,
+              "overflow_checks": true,
+              "test": true
+            },
+            "features": [
+              "semantic",
+              "semantic-http"
+            ],
+            "filenames": [
+              "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_all_lane_scope-f58a2b8f09fc0875"
+            ],
+            "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_all_lane_scope-f58a2b8f09fc0875",
+            "fresh": false
+          },
+          "sha256": "dc3593301871796632dc93aa912909ccf5434ffa8c4a5f3891f43855b92a6e7f",
+          "bytes": 59793408
+        }
+      ],
+      "stdio_binary_after_command": {
+        "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+        "sha256": "f8b42077e99efa137686e7923832ff0ef92255a41fe8448b82fece04edb4ee1e"
+      }
+    }
+  ],
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "head_at_finish": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "disk_free_bytes_after": 7659880448,
+  "stdio_binary_at_finish": {
+    "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+    "sha256": "f8b42077e99efa137686e7923832ff0ef92255a41fe8448b82fece04edb4ee1e"
+  },
+  "observed": {
+    "passed": 2575,
+    "failed": 4,
+    "ignored": 64,
+    "measured": 0,
+    "filtered_out": 0
+  },
+  "focus_target_subset": [
+    {
+      "target": "tests/diag_p5e_fix_review_boundary_20261003.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/diag_p5e_fix_review_boundary_20261003-ff4dd31a892241d0",
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    {
+      "target": "tests/p7_validation_work.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_validation_work-ff3c5e1d6ed1faff",
+      "status": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    {
+      "target": "tests/packing_validation_work.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/packing_validation_work-8beeffe5bde917f4",
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    {
+      "target": "tests/python_inventory_capture.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_inventory_capture-280f40c9ad61dac7",
+      "status": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    {
+      "target": "tests/python_inventory_revalidation.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/python_inventory_revalidation-f618923f13f018db",
+      "status": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    {
+      "target": "tests/p7_v05_v11_independent_review.rs",
+      "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_v05_v11_independent_review-1496e2cde5b4b3d8",
+      "status": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    }
+  ],
+  "passed": false
+}

@@ -351,3 +351,9 @@ mod native;
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests;
+
+mod revalidation;
+pub use revalidation::{
+    revalidate_python_declarations, CaptureReceipt, ReceiptMismatch, RevalidationRefusal,
+    CAPTURE_DERIVATION_VERSION, CAPTURE_RECEIPT_MAX_BYTES, CAPTURE_RECEIPT_VERSION,
+};

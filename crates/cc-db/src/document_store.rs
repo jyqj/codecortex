@@ -282,6 +282,17 @@ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()>
 /// warm-cache hits. This reads no compressed source blobs and delegates to the
 /// same record validator as ordinary hydration.
 pub fn verify_source_records(db: &IndexDb, hits: &[cc_model::SearchHit]) -> CcResult<()> {
+    verify_source_records_with_work(db, hits, &mut Default::default())
+}
+
+/// Current-request manifest and source-bound identity SQL, separate from the
+/// originating retrieval receipt. Accumulates executed work even when a record
+/// fails validation; empty or rejected locator windows execute no statements.
+pub fn verify_source_records_with_work(
+    db: &IndexDb,
+    hits: &[cc_model::SearchHit],
+    work: &mut cc_model::retrieval_cost::SqlWork,
+) -> CcResult<()> {
     if hits.len() > 4096 {
         return Err(CcError::InvalidParams(
             "final manifest window exceeds budget".into(),
@@ -308,44 +319,52 @@ pub fn verify_source_records(db: &IndexDb, hits: &[cc_model::SearchHit]) -> CcRe
             crate::sql_util::sql_in_placeholders(batch.len())
         );
         let mut statement = conn.prepare_cached(&sql).map_err(db_err)?;
-        let rows = statement
-            .query_map(rusqlite::params_from_iter(batch), |r| {
-                Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
-            })
-            .map_err(db_err)?;
-        for row in rows {
-            let (id, raw) = row.map_err(db_err)?;
-            let hit = by_id
-                .get(id.as_str())
-                .ok_or_else(|| CcError::Database("unrequested document record".into()))?;
-            let source: cc_model::source::ChunkSource =
-                serde_json::from_value(hit.metadata["source_evidence"].clone())?;
-            let expected: DocumentRef = serde_json::from_value(hit.metadata["document"].clone())?;
-            let actual = decode(&raw, &hit.text, &id, &hit.file_path, Some(&source))?;
-            if actual != expected {
-                return Err(CcError::Database(
-                    "final manifest reference mismatch".into(),
-                ));
+        crate::statement_work::reset(&statement);
+        let mut yielded = 0;
+        let validated = (|| -> CcResult<()> {
+            let mut rows = statement
+                .query(rusqlite::params_from_iter(batch))
+                .map_err(db_err)?;
+            while let Some(row) = rows.next().map_err(db_err)? {
+                yielded += 1;
+                let id: String = row.get(0).map_err(db_err)?;
+                let raw: String = row.get(1).map_err(db_err)?;
+                let hit = by_id
+                    .get(id.as_str())
+                    .ok_or_else(|| CcError::Database("unrequested document record".into()))?;
+                let source: cc_model::source::ChunkSource =
+                    serde_json::from_value(hit.metadata["source_evidence"].clone())?;
+                let expected: DocumentRef =
+                    serde_json::from_value(hit.metadata["document"].clone())?;
+                let actual = decode(&raw, &hit.text, &id, &hit.file_path, Some(&source))?;
+                if actual != expected {
+                    return Err(CcError::Database(
+                        "final manifest reference mismatch".into(),
+                    ));
+                }
+                let qname = crate::symbol_identity_store::load_on(
+                    conn,
+                    crate::symbol_identity_store::Projection {
+                        chunk_id: &id,
+                        path: &hit.file_path,
+                        document: Some(&actual),
+                        proof: Some(&source),
+                        name: hit.symbol_name.as_deref(),
+                        kind: hit.symbol_kind.map(|k| k.as_str()),
+                    },
+                    Some(work),
+                )?;
+                if hit.metadata.get("qname").and_then(|v| v.as_str()) != qname.as_deref()
+                    || hit.metadata.get("qname").is_some_and(|v| !v.is_string())
+                {
+                    return Err(CcError::Database("final qname association mismatch".into()));
+                }
+                found += 1;
             }
-            let qname = crate::symbol_identity_store::load_on(
-                conn,
-                crate::symbol_identity_store::Projection {
-                    chunk_id: &id,
-                    path: &hit.file_path,
-                    document: Some(&actual),
-                    proof: Some(&source),
-                    name: hit.symbol_name.as_deref(),
-                    kind: hit.symbol_kind.map(|k| k.as_str()),
-                },
-                None,
-            )?;
-            if hit.metadata.get("qname").and_then(|v| v.as_str()) != qname.as_deref()
-                || hit.metadata.get("qname").is_some_and(|v| !v.is_string())
-            {
-                return Err(CcError::Database("final qname association mismatch".into()));
-            }
-            found += 1;
-        }
+            Ok(())
+        })();
+        work.merge(crate::statement_work::finish(&statement, yielded));
+        validated?;
     }
     if found != hits.len() {
         return Err(CcError::Database("final manifest record missing".into()));

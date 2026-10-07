@@ -124,13 +124,15 @@ class OwnerSourceTests(unittest.TestCase):
             guard.approved_union(r)
 
     def test_ci_selector_only_change_and_historical_p0_preserved(self):
+        import verify_reviewed_source as current
         original = guard.v2.v1.blob(guard.BASE, '.github/workflows/ci.yml').decode()
         expected = original.replace(
             'verify_current_source_v2.py --source-version python-inventory-20261004-v2',
             'verify_current_source_v3.py --source-version ' + guard.VERSION).replace(
                 'explicitly selected v2 capture union',
                 'explicitly selected v3 accepted owner-context union')
-        self.assertEqual((guard.ROOT / '.github/workflows/ci.yml').read_text(), expected)
+        current.verify_ci()
+        self.assertEqual(guard.v2.v1.blob(current.BASE, '.github/workflows/ci.yml').decode(), expected)
         for path in ['scripts/current-source-registry-v1.json',
                      'scripts/current-source-registry-v2.json',
                      'scripts/verify_current_source.py', 'scripts/verify_current_source_v2.py',

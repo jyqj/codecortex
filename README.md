@@ -9,14 +9,25 @@ MCP 服务器和安装 agent 配置）。
 
 ## 当前重构进度
 
-Code Index V2 共 192 项任务：**118 done / 1 in_progress / 73 todo**。
-P5-016～018 已通过新冻结双工具链验证及独立审计；当前实施 P5-019 查询质量/成本/并发消融，
-本次保存的是开发进度快照，不是 G5/M2 或发行认证。
+<!-- code-index-progress:start -->
+Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
 
-进度入口：[重构总览](docs/roadmap/code-index-v2/README.md) ·
-[逐项 TODO](docs/roadmap/code-index-v2/05-TODO.md) ·
-[唯一任务状态源](docs/roadmap/code-index-v2/tasks.json) ·
-[最新验收](docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md) · [历史快照](docs/roadmap/code-index-v2/CHECKPOINT-2026-09-30.md)。
+当前阶段：**P7｜provider与dense端到端**；计划状态：`in_progress`；更新日期：`2026-10-07`。
+下一任务：**P7-011｜dense范围与hydrate守卫**（硬依赖已完成）。
+
+| 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
+|---|---|---|
+| P7-011｜dense范围与hydrate守卫 | `todo` | P6-020 (done)、P7-009 (done)、P7-010 (done) |
+| P7-012｜融合与部分覆盖语义 | `todo` | P7-011 (todo) |
+| P7-013｜查询总deadline和模型故障退化 | `todo` | P7-012 (todo) |
+| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (todo) |
+
+进度入口：[重构总览](docs/roadmap/code-index-v2/README.md) · [逐项 TODO](docs/roadmap/code-index-v2/05-TODO.md) · [唯一任务状态源](docs/roadmap/code-index-v2/tasks.json) · [执行交接](docs/roadmap/code-index-v2/08-HANDOFF.md)。
+任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
+
+> 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
+> 源文件 SHA-256：`20c57492e2c7478a21aee715a5f4e3cc9b3ebcc35983dcdc33631d8a0e1af0c4`。
+<!-- code-index-progress:end -->
 
 ## 快速开始
 
@@ -93,6 +104,19 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
   共变分析。
 - **增量索引**——mtime+size 快路径 + 哈希确认、脏传播、自动索引的文件
   watcher。见 [docs/internals/INDEXING.md](docs/internals/INDEXING.md)。
+
+## 历史进度快照（2026-09-30）
+
+以下为当时记录；当前任务状态见本页顶部生成区。
+
+Code Index V2 共 192 项任务：**118 done / 1 in_progress / 73 todo**。
+P5-016～018 已通过新冻结双工具链验证及独立审计；当前实施 P5-019 查询质量/成本/并发消融，
+本次保存的是开发进度快照，不是 G5/M2 或发行认证。
+
+进度入口：[重构总览](docs/roadmap/code-index-v2/README.md) ·
+[逐项 TODO](docs/roadmap/code-index-v2/05-TODO.md) ·
+[唯一任务状态源](docs/roadmap/code-index-v2/tasks.json) ·
+[最新验收](docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md) · [历史快照](docs/roadmap/code-index-v2/CHECKPOINT-2026-09-30.md)。
 
 ## 许可证
 

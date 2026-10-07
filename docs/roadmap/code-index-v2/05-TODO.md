@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`c3c7e89acf84fee0968c7bb5536e43319f8bb04803dc45e044e164667138a513`。
+> 任务总数：192；源文件 SHA-256：`20c57492e2c7478a21aee715a5f4e3cc9b3ebcc35983dcdc33631d8a0e1af0c4`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2058,7 +2058,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 2026-10-03 独立集中整合：从 packing docs156e3ac/source90858af 起步，合并 PR135591c246、PR134最终29a29ed 与 DB独审2d5aec；保留所有原失败及有限P1/P2关闭报告，当前严格positiveproof替代历史decorated-class absentqname断言。SQL成本只含originating hydration；最终manifest/load_on(None)及warm当前请求未计，validation-work/AST authority待办保持open。精确导入PYGO974ccf5及固定candidate97c478c/独审4770690，仅explicit opt-in registration，无评分/新样本，JS及历史default/gold/scorer不变。packing独审在原线程01a1040d待回读，本次整合通过不替代独审；V19/P7/quality父项状态不变。
 
-2026-10-04 后续原线程完整阅读并接受 packing独审c0876c82a5d04d4068f0e3e3ef0a205c1a2207ce限定scoped-search范围。原独审prefix及两个target精确导入，独审39labels/真实legacy-generationproducer/Partial-noresurrection/指定widest15962余38有效；不推广全部数字/unscopedcontext/publicDEV/100k。只追加tests/docs，八crate/src及Cargo/lock保持90858；原等待状态是历史记录，现限定packing已接受。组合strictclippy检测DB独审test四处clone切片警告，原文件hash归档，当前只改std::slice::from_ref不改断言/产品/CI门槛。整体V19/P7/quality仍open。
+2026-10-04 后续原线程完整阅读并接受 packing独审c0876c82a5d04d4068f0e3e3ef0a205c1a2207ce限定scoped-search范围。原独审prefix及两个target精确导入，独审39labels/真实legacy-generationproducer/Partial-noresurrection/指定widest15962余38有效；不推广全部数字/unscopedcontext/publicDEV/100k。只追加tests/docs，八crate/src及Cargo/lock保持90858；原等待状态是历史记录，现限定packing已接受。组合strictclippy检测DB独审test四处clone切片警告，原文件hash归档，当前只改std::slice::from_ref不改断言/产品/CI门槛。整体V19/P7/quality仍open。 2026-10-07：完成 final-assembly validation_work 子项。当前最终组装的 manifest/identity 与候选投影 SQL 独立计量，warm graph cache 仍重验；错误前 work 保留、cached counters 每次重置。源码 bfeafe85373504ffdd041b8da2d9a779b4faf18c（与实测 d0d54dbd 完整 Git tree 相同），父级定向代码审查及 21 passed/0 failed/1 existing ignored、strict scoped Clippy/fmt 见 artifacts/checkpoints/p7-validation-work-20261007。仅当前 assembly attempt，非请求总成本；P7-011 全项及正式门状态不升级。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 

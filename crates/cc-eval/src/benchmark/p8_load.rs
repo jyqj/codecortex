@@ -388,13 +388,22 @@ struct Artifacts {
 }
 impl Artifacts {
     fn reserve(&self, bytes: usize) -> Result<()> {
-        self.used
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |used| {
-                used.checked_add(bytes as u64)
-                    .filter(|next| *next <= self.limit)
-            })
-            .map(|_| ())
-            .map_err(|_| invalid("p8 load artifact byte budget exhausted; prefix retained"))
+        let mut used = self.used.load(Ordering::Acquire);
+        loop {
+            let next = used
+                .checked_add(bytes as u64)
+                .filter(|next| *next <= self.limit)
+                .ok_or_else(|| {
+                    invalid("p8 load artifact byte budget exhausted; prefix retained")
+                })?;
+            match self
+                .used
+                .compare_exchange_weak(used, next, Ordering::AcqRel, Ordering::Acquire)
+            {
+                Ok(_) => return Ok(()),
+                Err(observed) => used = observed,
+            }
+        }
     }
     fn event(&self, value: Value) -> Result<()> {
         let bytes = serde_json::to_vec(&value)?;
@@ -1002,6 +1011,56 @@ pub fn worker(out: &Path) -> Result<i32> {
         "not_run":["long_steady_state_rss","backfill","real_git_branch_switch","catalog_compaction","100k","release_performance_certificate"]});
     shared.artifacts.json("worker-summary.json", &summary)?;
     Ok(exit_code)
+}
+
+#[cfg(test)]
+mod artifact_budget_tests {
+    use super::*;
+
+    fn artifacts(used: u64, limit: u64) -> Artifacts {
+        Artifacts {
+            out: PathBuf::new(),
+            events: Mutex::new(tempfile::tempfile().unwrap()),
+            used: AtomicU64::new(used),
+            limit,
+        }
+    }
+
+    #[test]
+    fn reservation_preserves_counter_on_overflow_or_budget_exhaustion() {
+        let artifacts = artifacts(u64::MAX - 2, u64::MAX);
+        assert!(artifacts.reserve(3).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX - 2);
+        artifacts.reserve(2).unwrap();
+        artifacts.reserve(0).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+    }
+
+    #[test]
+    fn contended_reservations_never_exceed_limit_or_lose_successes() {
+        let artifacts = Arc::new(artifacts(0, 1024));
+        let barrier = Arc::new(std::sync::Barrier::new(8));
+        let workers: Vec<_> = (0..8)
+            .map(|_| {
+                let artifacts = Arc::clone(&artifacts);
+                let barrier = Arc::clone(&barrier);
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    (0..100).filter(|_| artifacts.reserve(3).is_ok()).count()
+                })
+            })
+            .collect();
+        let successes: usize = workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .sum();
+        assert_eq!(successes, 341);
+        assert_eq!(artifacts.used.load(Ordering::Acquire), successes as u64 * 3);
+        assert!(artifacts.reserve(2).is_err());
+        artifacts.reserve(1).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 1024);
+    }
 }
 
 #[cfg(test)]

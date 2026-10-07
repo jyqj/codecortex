@@ -20,13 +20,17 @@ desired outbox 与 claim/lease 队列（`semantic_outbox`）、active space
 键与降级语义见本文[语义持久化](#语义持久化p6schema-v22)一节与
 [CONFIGURATION.md](../CONFIGURATION.md#语义缓存与降级p6可选)。
 
-当前 schema **22**：在 v21 基础上追加 P6 语义持久化三表
+当前 schema **25**，以 `crates/cc-db/src/index_migrate.rs` 的
+`CURRENT_SCHEMA_VERSION` 与 `MODULE_CAPABILITIES.json` 为准。v25 的
+`chunk_symbol_identity` 保存源码绑定的 parser 身份，旧关联不能由空表补建替代重解析。
+v22 在 v21 基础上追加 P6 语义持久化三表
 （`semantic_manifest` / `semantic_outbox` / `semantic_spaces`，见下文）
-及 7 个索引；历史沿革（P2-C resolution_frontier、P3 模块证据与 Go 包集合、
+及 7 个索引，这是历史沿革；其他历史变化（P2-C resolution_frontier、P3 模块证据与 Go 包集合、
 P4 chunk policy/document manifest、P4-D 质量成本口径）见
 [DOCUMENTS.md](DOCUMENTS.md) 与 [SOURCE_CHUNKS.md](SOURCE_CHUNKS.md)。
 数据库不持久化 tree-sitter tree 或通用 AST，边界只以 chunk/source proof
-和派生事实存在。v21 及更早缓存须隔离重建。欠账及其确认与文件/关系批次在
+和派生事实存在。所有非零且不等于当前 schema 的缓存都须按版本守卫隔离重建，
+包括 v21～v24；历史 v21→v22 原位加法迁移不适用于当前版本。欠账及其确认与文件/关系批次在
 同一 IMMEDIATE 事务发布，并由 index epoch 围栏保护。不存在独立的
 frontier setter。升级/回滚路径见本文 [Schema 版本策略](#schema-版本策略)
 与 [INCREMENTAL_RECOVERY.md](INCREMENTAL_RECOVERY.md)。

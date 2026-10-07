@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "scope": "Original local source and review history preservation; not source-integrity or CI admission",
+  "created_at_utc": "2026-10-07T16:52:18.413955+00:00",
+  "created_by": "/root/pr_audit",
+  "artifact": "p8-local-history.bundle",
+  "bundle_bytes": 560244,
+  "bundle_sha256": "0db458b30244f383c1658db83cb97728b15b340289011d2c83d328ef69694bc4",
+  "excluded_revision": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "excluded_revision_argument": "^6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "advertised_heads": {
+    "refs/heads/work/p8-combined-evidence-20261007": "6a2333befefbaf8c2d615f0668f3ce80c2187001",
+    "refs/heads/work/p8-failure-gates-20261007": "b81d786d1f5ff56ab0363822cfe7ded515164543",
+    "refs/heads/work/p8-local-ten-todos-20261007": "16f2685ae7a428bac5ad4be5804c84166764fe7c",
+    "refs/heads/work/p8-measurement-strata-20261007": "a59dc75a5acac6be2857423465a9c652d89e4a98",
+    "refs/heads/work/p8-release-evidence-20261007": "9e9d5cc153253ea20383333331dff7c32fcfbf62",
+    "refs/heads/work/p8-scale-incremental-20261007": "c9cfe22137b31a177e162bd8279c4f371d75708d"
+  },
+  "actual_prerequisites": [
+    "6d02d77f018a5965a6f289b0b43558ed4b9f8322"
+  ],
+  "every_prerequisite_is_ancestor_of_excluded_baseline": true,
+  "included_commit_count": 47,
+  "included_commit_list_sha256": "a1a373952f4a45cb6a0b2250cde31113cb6f6c909da912f1085fcf4e653e1e50",
+  "commands": [
+    {
+      "name": "create",
+      "argv": [
+        "git",
+        "bundle",
+        "create",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-scale/artifacts/checkpoints/p8-local-history-20261007/p8-local-history.bundle",
+        "refs/heads/work/p8-combined-evidence-20261007",
+        "refs/heads/work/p8-failure-gates-20261007",
+        "refs/heads/work/p8-local-ten-todos-20261007",
+        "refs/heads/work/p8-measurement-strata-20261007",
+        "refs/heads/work/p8-release-evidence-20261007",
+        "refs/heads/work/p8-scale-incremental-20261007",
+        "^6d02d77f018a5965a6f289b0b43558ed4b9f8322"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 0,
+      "stdout": "create.stdout.txt",
+      "stderr": "create.stderr.txt"
+    },
+    {
+      "name": "verify",
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-scale/artifacts/checkpoints/p8-local-history-20261007/p8-local-history.bundle"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 0,
+      "stdout": "verify.stdout.txt",
+      "stderr": "verify.stderr.txt"
+    },
+    {
+      "name": "list-heads",
+      "argv": [
+        "git",
+        "bundle",
+        "list-heads",
+        "/workspace/scratch/68a3b8c4eb43/codecortex-scale/artifacts/checkpoints/p8-local-history-20261007/p8-local-history.bundle"
+      ],
+      "cwd": "/workspace/scratch/68a3b8c4eb43/codecortex-scale",
+      "exit_code": 0,
+      "stdout": "list-heads.stdout.txt",
+      "stderr": "list-heads.stderr.txt"
+    }
+  ],
+  "verify_exit_code": 0,
+  "list_heads_matches_exact_requested_six_refs": true,
+  "all_six_refs_stable_during_creation": true,
+  "root_worktree_files_modified": false,
+  "source_branches_rewritten_or_forced": false,
+  "product_tests_rerun": false,
+  "creation_parent_commit": "c9cfe22137b31a177e162bd8279c4f371d75708d",
+  "self_containment": {
+    "includes_own_later_artifact_commit": false,
+    "reason": "The immutable six-head snapshot predates the evidence commit containing this bundle; a Git object cannot recursively contain its own later commit."
+  },
+  "usage_boundary": [
+    "Use an existing repository containing the excluded baseline and its ancestors. This is not a standalone clone bundle.",
+    "Import to new archive refs to preserve original commit SHA, authors, committers, dates, messages and graph. Avoid forcing current work branches.",
+    "This bundle preserves original local history when remote GitData publication re-materializes files under different commit identities.",
+    "CI and reviewed-source admission continue to require their actual fixed source/review pins. The presence of this bundle does not grant admission."
+  ],
+  "logs_sha256": {
+    "bundle-header.txt": "9e3f1e4048f1e0c8e01c7bd14483df80df7ae9b96a58d8230da88349e17469d9",
+    "create.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "create.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "heads-after.txt": "675d46149c6b637b5e606d0f4eeaaa65ba06f884a614669f616f2cd528af1639",
+    "heads-before.txt": "675d46149c6b637b5e606d0f4eeaaa65ba06f884a614669f616f2cd528af1639",
+    "included-commits.txt": "a1a373952f4a45cb6a0b2250cde31113cb6f6c909da912f1085fcf4e653e1e50",
+    "list-heads.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "list-heads.stdout.txt": "675d46149c6b637b5e606d0f4eeaaa65ba06f884a614669f616f2cd528af1639",
+    "verify.stderr.txt": "a0eaa51a8e38878d00083faf8a9ed3112b58ab0af13a1f7c82fc8ade777b15dd",
+    "verify.stdout.txt": "659fc35891370ffdab88dc8b9e7f4730b6230cef039d3a97981c5e30edeabb05"
+  }
+}

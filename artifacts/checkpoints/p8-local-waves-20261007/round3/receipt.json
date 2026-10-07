@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "scope": "local_engineering_advancement_not_full_p8_acceptance",
+  "round": 3,
+  "base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "rust_source": "853385b7ccb2780818f9f8e8a83791f1c197efcf",
+  "tasks_advanced": [
+    "P8-007",
+    "P8-010",
+    "P8-018"
+  ],
+  "cumulative_tasks_advanced": 10,
+  "batch_remaining": 0,
+  "roadmap_counts": {
+    "total": 192,
+    "done": 150,
+    "in_progress": 11,
+    "todo": 31,
+    "unfinished": 42
+  },
+  "load_validation": {
+    "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+    "load_integration_tests": 9,
+    "route_regression_tests": 1,
+    "stderr_unit_tests": 2,
+    "cli_concurrency": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "operations_per_run": 36,
+    "files_per_run": 12,
+    "completed_mutations_per_run": 12,
+    "terminal_success_total": 144,
+    "completed_mutations_total": 48,
+    "all_four_full_canonical_and_query_reconciliations_equal": true,
+    "backend_call_peaks": [
+      1,
+      3,
+      6,
+      8
+    ],
+    "read_build_overlap_observed": [
+      false,
+      true,
+      true,
+      true
+    ],
+    "queue_peaks": [
+      29,
+      23,
+      11,
+      3
+    ],
+    "queue_capacity": 64,
+    "raw_receipts": "artifacts/checkpoints/p8-load-20261007"
+  },
+  "facts_validation": {
+    "cli_positive_negative_cases": 13,
+    "actual_sqlite_ddl_match": true,
+    "crate_count": 8,
+    "schema_version": 25,
+    "base_tables": 30,
+    "fts_tables": 5,
+    "mcp_tools": 14,
+    "raw_receipts": "artifacts/benchmarks/p8-facts-review-20261007"
+  },
+  "limits": [
+    "Short local observation only; no long-soak memory/queue growth certification",
+    "No semantic backfill, actual branch switching, catalog compaction, live provider or cross-platform install certification",
+    "Independent source admission and final combined tests recorded separately",
+    "Native process-tree attribution remains unavailable in this execution environment"
+  ]
+}

@@ -1,5 +1,18 @@
 # 基准测试
 
+## P8 本地工程入口
+
+当前可运行的候选内容锁和不可覆盖归档见
+[P8-RELEASE-EVIDENCE](roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md)，
+冷热分层与资源账目见 [P8-MEASUREMENTS](roadmap/code-index-v2/P8-MEASUREMENTS.md)，
+比较失败状态、退出码和保留原始产物见 [P8-GATES](roadmap/code-index-v2/P8-GATES.md)。
+文档的 schema/表数/工具数/关键默认值由
+[P8-FACTS](roadmap/code-index-v2/P8-FACTS.md) 生成并检查。
+
+这些是本地工程能力和验证入口；完整 release profile、holdout、100k、受控尾延迟、
+真实 provider 收益及 G8 需各自当前候选证据。普通 baseline 或 comparison 的退出码 0
+不能自动提升为发行认证。下方 legacy 观测、目标值和历史性能结论保持各自原测量范围。
+
 ## P2-D：连续变更、独立真值与成本
 
 `cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。

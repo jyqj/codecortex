@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "scope": "local_gates_and_derived_route_reload_fix_not_full_p8_certification",
+  "gate_source": "b81d786d1f5ff56ab0363822cfe7ded515164543",
+  "gate_validation": {
+    "before": "2 passed / 4 failed",
+    "after": "6 passed",
+    "legacy_reports": "11 passed"
+  },
+  "route_source": "462f74800670e5a9e29fdcd0eb52954c2aea2c62",
+  "route_validation": {
+    "before": "1 failed: parity:resolution_manifests; two independent truth assertions passed",
+    "after": "1 passed: all 15 existing oracle tables equal, same two independent truth assertions passed",
+    "legacy_db_routes": "7 passed"
+  },
+  "route_root_cause": "load_file_edges_for_reresolve loaded derived route_node:* rows as parsed routes, adding an extra resolution lookup after incremental updates",
+  "unchanged": "Full oracle columns/rows, normalized route persistence and public graph query paths are unchanged",
+  "binary_build_scope": "Local debug/locked/offline builds; raw command logs retained; code bytes after route patch match route_source, commit recorded after execution. No release or performance claim.",
+  "files": {
+    "gate-baseline.log": {
+      "sha256": "5421c87662cfc457b4abfbfe854d00dde86d67b73abe46108e687091015801c2",
+      "bytes": 8330
+    },
+    "gate-repaired.log": {
+      "sha256": "6e682f32eebc076ebadbda72f6ae74631d22476dc9ba8c1eef408dc3d7429573",
+      "bytes": 1850
+    },
+    "p8-gate-independent-review.json": {
+      "sha256": "8e8ae0ca72a7ca1a90900728f5be63f2932de91016c84253476e141a2312f96f",
+      "bytes": 2514
+    },
+    "route-reload-baseline.log": {
+      "sha256": "d424dcfcee5c7c776cf1b586124a649187cab582031136cbc122d216e7e1ac0c",
+      "bytes": 83242
+    },
+    "route-reload-baseline.json": {
+      "sha256": "4e4240e45d2c525d9a590e13ba486f56fe5a917af8b0aac8160c021949c5b4e1",
+      "bytes": 107142
+    },
+    "route-reload-repaired.log": {
+      "sha256": "ed88e0ec25a8137f658fbdac5ad3eeb0b554daa9dc73514fe218fbec376722a2",
+      "bytes": 825
+    },
+    "route-reload-repaired.json": {
+      "sha256": "86e4fffd5816ee360cb56145a2a3a8f52e9774cc6e8aa4b621992f0bae1e1c21",
+      "bytes": 106726
+    },
+    "route-db-regression.log": {
+      "sha256": "3e3dc849d6bde33fe7b96c7ac04eafd7de509734deeea1610f17d58b07406164",
+      "bytes": 1669
+    }
+  }
+}

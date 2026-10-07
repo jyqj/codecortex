@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "source_commit": "853385b7ccb2780818f9f8e8a83791f1c197efcf",
+  "source_tree": "acc76d93d3a01c1ef4e57c6b1d75d10aa6e9dce7",
+  "executor": "/root/round1_measurement",
+  "collected_utc": "2026-10-07T16:48:11.683056+00:00",
+  "verdict": "scoped_contracts_passed",
+  "scope": "cc-eval selected integration targets and package all-targets clippy on fixed local combined source",
+  "test_command": "cargo test --offline --locked -p cc-eval --test benchmark_cli --test p8_measurements --test p8_load --test p8_route_reload --test p8_scale -j 1 -- --test-threads=1",
+  "test_session_exit_code": 0,
+  "test_results": [
+    {
+      "target": "benchmark_cli",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "target": "p8_load",
+      "passed": 9,
+      "failed": 0
+    },
+    {
+      "target": "p8_measurements",
+      "passed": 11,
+      "failed": 0
+    },
+    {
+      "target": "p8_route_reload",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "target": "p8_scale",
+      "passed": 6,
+      "failed": 0
+    }
+  ],
+  "test_total_passed": 33,
+  "test_total_failed": 0,
+  "clippy_command": "cargo clippy --offline --locked -p cc-eval --all-targets --no-deps -j 1 -- -D warnings",
+  "clippy_session_exit_code": 0,
+  "hash_algorithm": "sha256",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3471,
+      "sha256": "a3670513343f1c76f8252f2756e1581dc7ea2ef0eb4cf3dba9f01e1b062bb4c7"
+    },
+    {
+      "path": "cargo/final-combined-clean-cc-eval.log",
+      "bytes": 38,
+      "sha256": "16be1715241691b84aff2319ebe26adb1836a930fb9bfd84f0fc483157990099"
+    },
+    {
+      "path": "cargo/final-combined-clippy.log",
+      "bytes": 4214,
+      "sha256": "722dc81f73104cb9ac35b37089be8cb929b37fa345912d55e6c1fad3792963fa"
+    },
+    {
+      "path": "cargo/final-combined-tests.log",
+      "bytes": 3825,
+      "sha256": "abe69b4122dc001d68f156e447695b3f05012eb557f084217100d99e6dd376a5"
+    },
+    {
+      "path": "cargo/toolchain.txt",
+      "bytes": 232,
+      "sha256": "de208b31b8a4ed666d4c475f04f879ff1b2528542472abd0bb176f6b81a931e3"
+    },
+    {
+      "path": "source-binary-binding.json",
+      "bytes": 1612,
+      "sha256": "247ed8a14642049d10c1d26b4373ec2711e531d844423285dd2e8fe73e0d8ac6"
+    }
+  ],
+  "file_catalog_excludes": [
+    "manifest.json",
+    "SHA256SUMS"
+  ],
+  "not_run": [
+    "all_workspace_tests",
+    "native_sampler_pid_attribution_revalidation",
+    "long_steady_state",
+    "100k",
+    "P7_prerequisite_certification",
+    "V20",
+    "release_performance_certificate",
+    "execution_of_later_remote_refs"
+  ]
+}

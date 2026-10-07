@@ -11,6 +11,8 @@ pub mod mutation_case;
 pub mod mutations;
 pub mod normalizer;
 pub mod oracle;
+pub mod p8_load;
+pub mod p8_scale;
 pub mod readiness;
 pub mod report;
 pub mod runner;

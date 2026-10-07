@@ -243,7 +243,6 @@ pub fn finish(out: &Path, manifest: &RunManifest, queries: &[Query], rows: &[Row
         Ok(serde_json::json!({"case_id":r.case_id,"repetition":r.repetition,"status":r.status,"elapsed_us":r.elapsed_us,"work":super::sampler::retrieval_work(&raw)}))
     }).collect::<Result<_>>()?;
     jsonl(&out.join("costs.jsonl"), &costs)?;
-    json(&out.join("gate.json"), &gate)?;
     let latencies: Vec<u64> = rows
         .iter()
         .filter(|r| matches!(r.status, ResultStatus::Success | ResultStatus::NoMatch))
@@ -251,6 +250,50 @@ pub fn finish(out: &Path, manifest: &RunManifest, queries: &[Query], rows: &[Row
         .collect();
     let latency = statistics::distribution(&latencies);
     json(&out.join("latency-summary.json"), &latency)?;
+    // Preserve the legacy successful-request distribution and Row schema. The
+    // additive artifact includes every status and explicitly refuses to infer a
+    // cache hit or a reopened process from warmup, repetition or profile names.
+    let samples: Vec<_> = rows
+        .iter()
+        .map(|row| statistics::LatencySample {
+            evidence: statistics::LatencyEvidence::default(),
+            status: row.status,
+            elapsed_us: Some(row.elapsed_us),
+        })
+        .collect();
+    let layers = statistics::latency_layers(&samples, queries.len() * manifest.suite.repetitions);
+    json(&out.join("latency-strata.json"), &layers)?;
+    // The original run format does not lock resources in its manifest. Include
+    // the observed source digest, without upgrading it to locked release proof.
+    // Older replay fixtures can legitimately have no resource artifact at all.
+    let resource_path = out.join("resources.jsonl");
+    let (resource_samples, resource_digest) = match std::fs::read(&resource_path) {
+        Ok(bytes) => {
+            let text =
+                std::str::from_utf8(&bytes).map_err(|_| invalid("resource snapshot encoding"))?;
+            let samples = text
+                .lines()
+                .filter(|line| !line.is_empty())
+                .map(serde_json::from_str)
+                .collect::<std::result::Result<Vec<super::sampler::Resources>, _>>()?;
+            (samples, Some(digest(&bytes)))
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => (Vec::new(), None),
+        Err(e) => return Err(e.into()),
+    };
+    let ledger = serde_json::json!({
+        "schema_version": 1,
+        "source": "resources.jsonl; stage snapshots only; source digest observed, not bound by legacy manifest",
+        "resource_source_digest": resource_digest,
+        "memory": super::sampler::memory_ledger(&resource_samples),
+        "disk": super::sampler::disk_ledger(&[], false)?,
+        "cost": super::sampler::cost_ledger(&[])?,
+        "io_read_bytes": null,
+        "io_write_bytes": null,
+        "unavailable_reason": "legacy runner records no disjoint disk layout, I/O counters or model billing receipts; originating retrieval work in costs.jsonl is not current-request billing",
+    });
+    json(&out.join("resource-ledger.json"), &ledger)?;
+    json(&out.join("gate.json"), &gate)?;
     let mut md=format!("# CodeCortex benchmark baseline\n\nSuite: `{}`\nAdapter: `{}`\nScoring: `{:?}`\nMeasurement profile: `{}`\n\nStatus: **{}** (exit {})\n\nQueries: {}; measured rows: {}.\nMean Top-1: {:.6}; mean nDCG@10: {:.6}.\n\nThese are baseline observations, not a release quality certificate.\nLatency: {:?}; samples are retained, not best-of.\nSource evidence: {} invalid, {} unverified hits.\n\n| Case | Top-1 | nDCG@10 | Repetitions |\n|---|---:|---:|---:|\n",manifest.suite.name,manifest.adapter,manifest.suite.scoring,manifest.measurement_profile,gate.status,gate.exit_code,summary.queries,summary.measured_rows,summary.mean_top1,summary.mean_ndcg10,latency,summary.invalid_hits,summary.unverified_hits);
     for c in &summary.cases {
         md.push_str(&format!(
@@ -261,6 +304,7 @@ pub fn finish(out: &Path, manifest: &RunManifest, queries: &[Query], rows: &[Row
             c.repetitions
         ));
     }
+    md.push_str("\n## Measurement coverage\n\n`latency-summary.json` retains its legacy success/no-match-only semantics. `latency-strata.json` retains every measured attempt, including deadline-censored timeouts and failures, and reports missing samples against the planned denominator. This runner records no per-request lifecycle/result-cache receipt, so these queries remain `unknown`; repetition and warmup do not prove cache hits. No OS cold-cache or performance-gate pass is inferred.\n\n`resource-ledger.json` reports observed per-role RSS snapshots and missing observations. Native/ps runner alternatives, server PID/tree values and peaks from different stages are never summed. Disk layout, I/O and model billing remain unavailable until a profile supplies direct observations.\n");
     md.push_str("\n## Failures\n");
     for r in &gate.reasons {
         md.push_str(&format!("\n- {}", r.replace('\n', " ")));

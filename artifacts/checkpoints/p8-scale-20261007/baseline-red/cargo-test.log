@@ -1,0 +1,28 @@
+   Compiling cc-eval v1.0.0 (/workspace/scratch/68a3b8c4eb43/codecortex-scale/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 39.02s
+     Running tests/p8_scale.rs (/workspace/scratch/68a3b8c4eb43/target/debug/deps/p8_scale-6a22770edc3785c3)
+
+running 5 tests
+test configured_evidence_budget_stops_without_overwriting_partial_raw ... ok
+test failed_independent_fanout_truth_remains_a_failure ... ok
+test matrix_and_release_admission_are_explicit_and_bounded ... ok
+test real_scale_smoke_preserves_builds_counts_mutations_and_full_parity ... FAILED
+test subprocess_deadline_preserves_report_and_rejects_output_reuse ... ok
+
+failures:
+
+---- real_scale_smoke_preserves_builds_counts_mutations_and_full_parity stdout ----
+
+thread 'real_scale_smoke_preserves_builds_counts_mutations_and_full_parity' (843) panicked at crates/cc-eval/tests/p8_scale.rs:41:5:
+assertion `left == right` failed: {"deadline_scope":"entire child lifetime, including generation, indexing, parity and evidence; parent polling interval 10ms","exit_code":1,"fixture_cleanup":{"elapsed_ms":0,"error":null},"full_100k_certification":"not_run","max_output_bytes":16777216,"plan_digest":"55105e501d6aaa443cdfa80ffcdfde4664b5194db22d6e012b9e703eac8568a5","profile":"smoke","raw_digest":"f23804b183d762e5e5d28d1b87268f94a7d2ea28ecc566dca6e86ca237030fc9","release_certification":"not_run","release_prerequisites":"P7-020/P8-001/P8-004 and source/binary release lock are separate gates","schema_version":1,"status":"measurement_failed","stderr_complete":true,"summary":{"full_100k_certification":"not_run","groups":[{"failed_or_not_compared":0,"first_build_incomplete_samples":0,"group":"fanout-2","outer_incremental_us_including_evidence":{"max":null,"mean":null,"min":null,"n":0},"passed":1,"samples":1},{"failed_or_not_compared":0,"first_build_incomplete_samples":1,"group":"fanout-8","outer_incremental_us_including_evidence":{"max":null,"mean":null,"min":null,"n":0},"passed":1,"samples":1},{"failed_or_not_compared":1,"first_build_incomplete_samples":0,"group":"scale-60/api","outer_incremental_us_including_evidence":{"max":2572683,"mean":2572683.0,"min":2572683,"n":1},"passed":0,"samples":1},{"failed_or_not_compared":1,"first_build_incomplete_samples":0,"group":"scale-60/batch_1","outer_incremental_us_including_evidence":{"max":72389,"mean":72389.0,"min":72389,"n":1},"passed":0,"samples":1},{"failed_or_not_compared":1,"first_build_incomplete_samples":0,"group":"scale-60/batch_10","outer_incremental_us_including_evidence":{"max":249340,"mean":249340.0,"min":249340,"n":1},"passed":0,"samples":1},{"failed_or_not_compared":1,"first_build_incomplete_samples":0,"group":"scale-60/body","outer_incremental_us_including_evidence":{"max":4245442,"mean":4245442.0,"min":4245442,"n":1},"passed":0,"samples":1},{"failed_or_not_compared":0,"first_build_incomplete_samples":0,"group":"scale-60/cold","outer_incremental_us_including_evidence":{"max":null,"mean":null,"min":null,"n":0},"passed":1,"samples":1},{"failed_or_not_compared":1,"first_build_incomplete_samples":0,"group":"scale-60/config","outer_incremental_us_including_evidence":{"max":3088785,"mean":3088785.0,"min":3088785,"n":1},"passed":0,"samples":1},{"failed_or_not_compared":0,"first_build_incomplete_samples":0,"group":"scale-60/no_op","outer_incremental_us_including_evidence":{"max":34751,"mean":34751.0,"min":34751,"n":1},"passed":1,"samples":1}],"not_selected_scales":[1000,5000,10000,50000,100000],"oracle_row_limit_unchanged":100000,"passed":false,"prerequisite_gates":"not_evaluated","raw_bytes":956265,"release_certification":"not_run","sample_count":9,"schema_version":1,"stable_tail_latency":"not_established"},"wall_ms":77478,"worker_binary_digest_after":"362e45c84736b574d624c70c923489097d9d3236e204672a6f44ccf417d4a18e","worker_binary_digest_before":"362e45c84736b574d624c70c923489097d9d3236e204672a6f44ccf417d4a18e","worker_binary_unchanged":true,"worker_exit_code":1,"worker_pid":844}; raw /workspace/scratch/68a3b8c4eb43/p8-scale-validation-2/smoke
+  left: Number(1)
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    real_scale_smoke_preserves_builds_counts_mutations_and_full_parity
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 155.05s
+
+error: test failed, to rerun pass `-p cc-eval --test p8_scale`

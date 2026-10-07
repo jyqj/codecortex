@@ -1,0 +1,29 @@
+   Compiling cc-eval v1.0.0 (/workspace/scratch/68a3b8c4eb43/codecortex-measurement/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 30.37s
+     Running unittests src/lib.rs (/workspace/scratch/68a3b8c4eb43/target/debug/deps/cc_eval-9de7fea66c53aad8)
+
+running 8 tests
+test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+test benchmark::sampler::process_probe_tests::linux::invalid_units_and_rss_overflow_are_unavailable_cpu_overflow_stays_raw ... ok
+test benchmark::sampler::process_probe_tests::linux::malformed_dead_or_mismatched_process_is_unavailable ... ok
+test benchmark::sampler::process_probe_tests::linux::proc_stat_handles_parentheses_whitespace_and_documented_units ... ok
+test benchmark::sampler::process_probe_tests::linux::disabled_probe_is_unavailable_in_an_isolated_process ... ok
+test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... FAILED
+
+failures:
+
+---- benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears stdout ----
+
+thread 'benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears' (225) panicked at crates/cc-eval/src/benchmark/sampler.rs:813:17:
+live child snapshot unavailable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 3.12s
+
+error: test failed, to rerun pass `-p cc-eval --lib`

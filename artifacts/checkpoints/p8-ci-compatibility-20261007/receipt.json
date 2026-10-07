@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "github_actions_compatibility_failure",
+  "observed_at_utc": "2026-10-07T17:13:44.708Z",
+  "repository": "jyqj/codecortex",
+  "pull_request": {
+    "number": 145,
+    "url": "https://github.com/jyqj/codecortex/pull/145",
+    "head_sha": "ae906513886bef4501d0a1d2ecffd68ef76c3f5d",
+    "base_sha": "6d02d77f018a5965a6f289b0b43558ed4b9f8322"
+  },
+  "source": {
+    "actual_checkout_sha": "dc608fedae5bbb0b5869cf0acb0c88e160503559",
+    "checkout_kind": "pull_request_merge",
+    "evidence": "check-job.log: git log -1 --format=%H immediately after checkout"
+  },
+  "workflow": {
+    "id": 37656213598,
+    "name": "CI",
+    "run_number": 293,
+    "url": "https://github.com/jyqj/codecortex/actions/runs/37656213598",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "jobs": [
+    {
+      "id": 112911757240,
+      "name": "security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 112911757717,
+      "name": "check",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/jyqj/codecortex/actions/runs/37656213598/job/112911757717",
+      "failed_step": "Clippy",
+      "format_check": "success"
+    },
+    {
+      "id": 112911757967,
+      "name": "msrv",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "toolchain": {
+    "rustc_release": "1.99.0",
+    "rustc_commit_hash": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+    "rustc_commit_date": "2026-09-28",
+    "host": "x86_64-unknown-linux-gnu",
+    "llvm_version": "23.1.1",
+    "cargo_version": null,
+    "source": "check-job.log, dtolnay/rust-toolchain@stable output"
+  },
+  "failure": {
+    "command": "cargo clippy --workspace --all-targets -- -D warnings",
+    "environment": {
+      "RUSTFLAGS": "-D warnings"
+    },
+    "exit_code": 101,
+    "path": "crates/cc-eval/src/benchmark/p8_load.rs",
+    "line": 392,
+    "symbol": "Atomic::<u64>::fetch_update",
+    "diagnostic": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "classification": "new_batch_toolchain_compatibility_regression",
+    "reason": "The newly added artifact budget reservation calls an API deprecated by the CI stable compiler. -D warnings correctly rejects it. Prior local Rust 1.95 checks do not certify Rust 1.99 warning compatibility.",
+    "warning_policy_changed": false,
+    "local_infrastructure_failure": false
+  },
+  "observation": {
+    "review_role": "independent_subagent_ci_observer",
+    "actual_execution": "Read-only GitHub connector retrieval of existing run and job logs; the observer did not execute or rerun this Actions job.",
+    "retrieval_tools": [
+      "github_fetch_commit_workflow_runs",
+      "github_fetch_workflow_run_jobs",
+      "github_fetch_workflow_job_logs"
+    ],
+    "log_preservation": "Exact decoded UTF-8 string returned by github_fetch_workflow_job_logs, including timestamps, ANSI escapes, and trailing newlines.",
+    "raw_log_characters": 37083
+  },
+  "scope": {
+    "old_head_failure_only": true,
+    "compatibility_fix_tested": false,
+    "local_retest": "not_run_in_this_receipt",
+    "source_mutation": false,
+    "workflow_rerun": false,
+    "cloud_codex_triggered": false
+  }
+}

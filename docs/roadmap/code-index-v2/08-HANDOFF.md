@@ -3,7 +3,7 @@
 ## 1. 当前状态
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：153 done / 1 in_progress / 37 todo / 1 blocked**。
+Code Index V2 共 **192 项任务：153 done / 11 in_progress / 27 todo / 1 blocked**。
 
 当前阶段：**P7｜provider与dense端到端**；计划状态：`in_progress`；更新日期：`2026-10-07`。
 下一任务：**P7-014｜配置/status/MCP全链贯通**（硬依赖已完成）。
@@ -11,12 +11,34 @@ Code Index V2 共 **192 项任务：153 done / 1 in_progress / 37 todo / 1 block
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
 | P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (done) |
+| P7-015｜后台回填与前台查询竞争测试 | `todo` | P7-014 (in_progress) |
+| P7-016｜fake全故障矩阵回归 | `todo` | P6-020 (done)、P7-015 (todo) |
+| P7-017｜离线默认包和未启用测试 | `todo` | P7-016 (todo) |
+| P7-019｜本地加dense的质量/成本消融 | `todo` | P7-017 (todo) |
+| P7-020｜P7语义闭环与发布范围验收 | `todo` | P7-001 (done)、P7-002 (done)、P7-003 (done)、P7-004 (done)、P7-005 (done)、P7-006 (done)、P7-007 (done)、P7-008 (done)、P7-009 (done)、P7-010 (done)、P7-011 (done)、P7-012 (done)、P7-013 (done)、P7-014 (in_progress)、P7-015 (todo)、P7-016 (todo)、P7-017 (todo)、P7-019 (todo) |
+| P8-001｜锁定release候选与证据输入 | `in_progress` | P7-020 (todo) |
+| P8-002｜完成真实多仓native语料认证 | `todo` | P8-001 (in_progress) |
+| P8-003｜运行外部兼容套件 | `todo` | P8-002 (todo) |
+| P8-004｜封存holdout与反过拟合检查 | `todo` | P8-003 (todo) |
+| P8-005｜完整规模1k到100k | `in_progress` | P8-004 (todo) |
+| P8-006｜增量规模与fanout曲线 | `in_progress` | P7-020 (todo)、P8-001 (in_progress)、P8-005 (in_progress) |
+| P8-007｜多并发与混合负载 | `in_progress` | P8-006 (in_progress) |
+| P8-008｜冷建/重开/热查分层 | `in_progress` | P8-007 (in_progress) |
+| P8-009｜内存/磁盘/费用总账 | `in_progress` | P8-008 (in_progress) |
+| P8-010｜长时soak与连续修改 | `in_progress` | P8-009 (in_progress) |
+| P8-011｜端到端故障与恢复认证 | `todo` | P7-020 (todo)、P8-007 (in_progress)、P8-010 (in_progress) |
+| P8-012｜MSRV与平台冷构建矩阵 | `todo` | P8-011 (todo) |
+| P8-013｜指标/门槛与失败退出最终认证 | `in_progress` | P8-012 (todo) |
+| P8-016｜数据库/配置/包回滚演练 | `todo` | P7-020 (todo)、P8-012 (todo)、P8-013 (in_progress) |
+| P8-017｜删除临时兼容和重复模块 | `todo` | P8-016 (todo) |
+| P8-018｜文档事实与安装契约同步 | `in_progress` | P8-017 (todo) |
+| P8-019｜发布工件与完整报告归档 | `in_progress` | P8-018 (in_progress) |
 
 进度入口：[重构总览](README.md) · [逐项 TODO](05-TODO.md) · [唯一任务状态源](tasks.json) · [执行交接](08-HANDOFF.md)。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`88b309f8723049ab0ee1e7e9baa59efa2c658560e19729dc9cb4240f0409afe7`。
+> 源文件 SHA-256：`74a0fd3bd7fada6c55186a43b036c316cc0af410474f522714792ac2787a9be5`。
 <!-- code-index-progress:end -->
 
 ## 2. 下一步与依赖
@@ -38,10 +60,16 @@ P7-014 增加版本化 Python capture 凭据与完整重新校验入口，26 项
 第一轮修复后的 768 输入组合为 48 passed / 0 failed / 1 个既有显式 stdio ignored，fmt 通过，见 [该轮组合证据](../../../artifacts/checkpoints/combined-validation-fix-20261007/README.md)。
 后续 CI run37629938552 在更早的 metadata 投影阶段暴露公开 BM25 score receipt 丢失，现增加早期可回滚探测：先压缩重复正文，再判断整体省略可选计量是否足以保住全部 hit/retrieval metadata。
 原预算、原 oracle 及正文边界断言不变；新组合的 12 项窄测和 13 项 V05/V16 feature 测试通过。默认完整续跑仍有 4 个失败，进程归属、socket 权限、性能阈值及 generation fixture 原证据均保留；见 [metadata 修复与当前回归证据](../../../artifacts/checkpoints/validation-work-bm25-metadata-fix-20261007/README.md)。
-各组有重叠，不相加为唯一案例数；当前固定源码选择为 `p7-capture-revalidation-20261007-v7`，旧 v4/v5/v6 记录保留历史范围。完整最终 CI 另行绑定实际 head，不由本地窄测或源码准入推定通过。
+各组有重叠，不相加为唯一案例数；该历史P7收口固定源码选择为 `p7-capture-revalidation-20261007-v7`，旧 v4/v5/v6 记录保留历史范围。完整最终 CI 另行绑定实际 head，不由本地窄测或源码准入推定通过。
 P7-011 与 P7-014 的整项状态及正式质量/规模门保持上方权威状态，后续按原验收条件补齐。
 
 用户要求继续多轮 workspace multi-subagent，至少推进 P7-011～020 这 10 个原始 TODO；每轮报告已完成与剩余数量，并分别记录有实质交付、待验收和受阻状态。本轮起点为 150 done / 1 in_progress / 41 todo，42 项未完成；内部子步骤不计为多个 TODO。真实 provider 认证仍按任务原有的明确授权及预算条件执行。
+
+### 并行 P8 本地工程批（2026-10-07）
+
+本批以 main `6d02d77f018a5965a6f289b0b43558ed4b9f8322` 为基线，分3轮推进10个原始P8 TODO，避开另一会话的P7实现。逐轮计数、具体交付和剩余验收见 [P8本地推进](P8-LOCAL-PROGRESS.md)。三轮结束时192项为150 done / 11 in_progress / 31 todo，42项未完成；10项均保持in_progress，原硬依赖和验收条件不变。
+
+P8兼容修复阶段显式源码选择为 `p8-local-engineering-20261007-v9`：固定远端 Rust source `40d54460f38ed13810f9898bc7257bc2cdd7fbad`，独立 review `caca44337123579e092998084e29921f5ac4c169`。首版 P8 交付在 Rust 1.99 CI 中因新弃用的 `AtomicU64::fetch_update` 被严格 Clippy 拒绝；后续仅将 `p8_load.rs` 的预算预留改为保留 checked_add、硬上限及 AcqRel/Acquire 语义的 CAS 循环，并增加并发和溢出边界测试。独立审查重新接受原 base `6d02d77` 上同一 17 路径 delta，其余 776 个 crate/Cargo/lock 输入保持原远端 source `18499879` 的字节。原 1.95 测试与失败 CI 的来源记录保持不变；新 head 的完整 CI 单独验证。源码准入不继承质量、100k 或发布结论；历史 v1/v2/v3、原两组 review pins 和原审查文件均保留。见 `artifacts/checkpoints/p8-ci-compatibility-20261007/` 和独立审查目录。
 
 ## 3. 每次开始
 
@@ -115,3 +143,7 @@ P5-019 必须完成独立 exact/path/selector 等查询质量、成本、并发�
 冷路径登记锁属于工作线程直到缓存发布，已打开缓存走不受冷锁影响的快路径；查询 clone 共用租约，在取消后仍运行的 blocking 工作结束前不能释放。保持这些负例，不为吞吐牺牲实例一致性。监听器启动/原生析构不可强制抢占；20 秒启动看门狗不是性能指标，既有 500 毫秒 debug 索引门限未修改。
 
 P5-020/G5 需在当前实现上完成本地增强版整体验收后再判断 M2；真实 provider/vector、持久化 semantic epoch、公开 holdout、100k 和跨平台发行仍未完成。
+
+### PR #144 合入后的 P7/P8 共同交付
+
+当前状态为 192 = 152 done / 12 in_progress / 27 todo / 1 blocked，共40项未完成；下一任务 P7-013。本批10项P8均保留in_progress，主线两个新增done归P7原验收记录。当前源码选择为 `p7-p8-engineering-20261007-v10`，完整PRODUCT `d77a2143cdb82e722b1d1c62851298c43e707b65`有785个受保护输入。唯一交叉CLI并入22路径联合delta，固定source `3359647e81ea73b9ee98a56d6753f1cfa741b3d2`，独立review `468a4f7f79bc7c933b6030eb3f27c68674afb2a7`；该独立delta源有781项输入，不能与完整PRODUCT混称。其余五组主线批准pins保留，disjoint与before/after约束不变；main的历史v2门、19个私有默认binary路径和P7 workflow均保留，并加入两条本批Python检查。组合CI另按实际PR head验证，详见本批集成与独立审查目录。

@@ -1,29 +1,29 @@
 # 架构总览
 
 CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通过 MCP 暴露。
-没有 UI、没有会话/工作流/记忆系统，磁盘上只有一个数据库
-（`index.sqlite3`）。设计哲学与明确的非目标见
+没有 UI、没有会话/工作流/记忆系统；权威索引状态位于单个数据库
+`index.sqlite3`，可选语义功能另有可丢弃重建的派生 artifact cache。设计哲学与明确的非目标见
 [`DESIGN.md`](../DESIGN.md)。
 
 本文是地图。每个子系统的深入文档在 `internals/`：
 
 | 深入文档 | 内容 |
 |---|---|
-| [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、epoch 双时钟、21 张表、FTS5 双维护、重建协议 |
+| [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、三时钟与四种写效应、30 基表、5 FTS5、重建协议 |
 | [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八步管线（计时聚合为 6 项）、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交 |
 | [internals/SEARCH.md](internals/SEARCH.md) | cc-search：检索通道、文件预选、RRF/重排、缓存、Cypher fast path |
 | [internals/CONCURRENCY.md](internals/CONCURRENCY.md) | 锁清单与锁序、一致性窗口、watcher、会话生命周期、epoch 失效协议 |
 
 ## Crate 布局
 
-7 crate 的 Cargo 工作区，依赖严格单向（无环）。每个 crate 都能独立编译和
+8 crate 的 Cargo 工作区，依赖严格单向（无环）。每个 crate 都能独立编译和
 测试：
 
 ```
 cc-model      数据类型、配置、错误定义（serde、thiserror、blake3）
     |
 cc-parsers    tree-sitter AST 提取 + 框架检测（仅依赖 cc-model）
-cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、29 基表 + 5 FTS5、schema v22）
+cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、30 基表 + 5 FTS5、schema v25）
     |
 cc-index      文件扫描、增量索引、Louvain 社区检测（依赖 cc-db + cc-parsers）
 cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子集引擎（依赖 cc-model + cc-db）
@@ -31,11 +31,17 @@ cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子�
 cc-server     MCP 服务器（rmcp）、CLI（clap）、CodeIndex 引擎、ImpactAnalyzer、FileWatcher
     |
 cc-eval       检索质量与延迟的评测套件
+
+cc-semantic   可选语义持久化、provider 契约与缓存（依赖 cc-model + cc-db）
 ```
 
 第二层并列：cc-parsers 与 cc-db 都只依赖 cc-model、互不依赖。第三层
 并列：cc-index 依赖 cc-db + cc-parsers，cc-search 只依赖 cc-model 与
 cc-db（不依赖 cc-parsers/cc-index），二者互不依赖，在 cc-server 汇合。
+`cc-semantic` 是 workspace 成员，但 `cc-server` 默认 feature 集不启用该依赖；
+显式 `semantic` 接入本地子系统，`semantic-http` 再接入 provider transport。
+版本、表数、工具数和关键默认值由 [P8-FACTS](roadmap/code-index-v2/P8-FACTS.md) 的受管表校验；
+表数只计 SQL 显式普通表与 FTS5 虚表，不计 SQLite 内部表或 FTS shadow 表。
 
 各 crate 的一句话职责：
 
@@ -48,6 +54,7 @@ cc-db（不依赖 cc-parsers/cc-index），二者互不依赖，在 cc-server �
 | cc-search | 确定性本地检索与只读图查询 |
 | cc-server | 工具面（14 个 MCP 工具）、项目会话、构建编排、图读模型 |
 | cc-eval | 走真实 MCP 线路的评测与基准（见 [TEST_PLAN.md](TEST_PLAN.md)、[BENCHMARK.md](BENCHMARK.md)） |
+| cc-semantic | 可选的语义 manifest/outbox 编排、provider 契约、编码空间及派生 artifact cache |
 
 ## 数据流
 
@@ -89,8 +96,9 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
    目录停靠槽对 cc-db 类型擦除，依赖方向不变。
 3. **写隔离**：多语句写只经 `UnitOfWork`；commit 恰好推进一次
    `index_epoch`；未 commit 即回滚。
-4. **双时钟失效**：索引内容走 `index_epoch`，运行时证据走
-   `evidence_epoch`；所有缓存以 epoch 为键自失效，没有常规的手工失效
+4. **分域时钟失效**：索引内容走 `index_epoch`，运行时证据走
+   `evidence_epoch`，语义可见集合/期望集合变化走 `semantic_epoch`；
+   `Auxiliary` 队列簿记不推进这些时钟。缓存按其声明的代际域自失效，没有常规的手工失效
    钩子（唯一声明过的防御性例外：RwLock 毒锁恢复路径的
    `invalidate_search_cache_after_poison`，宁可丢缓存不放大半写状态）。
    `CodeIndex::close()` 对进程级图缓存的按 `db_identity` 清除
@@ -100,8 +108,9 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
    RwLock，持 RwLock 不等 gate。
 6. **prepare 无锁、commit 三段**：读者最多被两段短写锁打断；接受
    后处理产物的最终一致窗口（ADR-0002）。
-7. **确定性离线**：解析、FTS5、grep、预选、Louvain 全部本地；检索只用
-   词法/结构信号，无外部模型。
+7. **默认离线**：解析、FTS5、grep、预选、Louvain 及默认 local 检索全部本地。
+   可选语义检索需要相应构建 feature 和显式配置；provider 外发另需 network opt-in，
+   query 文本外发还有独立 `allow_query_network`。接线存在不等于真实模型效果已认证。
 8. **读失败可见**：图读路径的 DB 错误进 `graph_explain.read_errors`，
    不静默吞掉。
 

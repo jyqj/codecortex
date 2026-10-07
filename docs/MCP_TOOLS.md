@@ -4,6 +4,10 @@
 用途、关键参数、**响应形态**与错误路径；权威的运行时口径以
 `status(aspect="capabilities")` 为准。术语见 [GLOSSARY.md](GLOSSARY.md)。
 
+工具名来自 `crates/cc-server/src/mcp.rs` 的 `#[tool(...)]` 注册；当前数量与关键能力声明
+由 [P8-FACTS](roadmap/code-index-v2/P8-FACTS.md) 受管表核对。该检查不代替实际 binary 的
+`tools/list`/stdio 回归，也不把数据库 schema 25 当成 MCP 输入 schema 版本。
+
 ## 通用契约
 
 所有工具共享同一套参数与输出契约（实现：`crates/cc-server/src/tools.rs`、

@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`74a0fd3bd7fada6c55186a43b036c316cc0af410474f522714792ac2787a9be5`。
+> 任务总数：192；源文件 SHA-256：`a7ebacf3903f3f405e3c5ba4d19f5590107467b55ede35c4d675516c07cf4e68`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2251,7 +2251,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-002｜完成真实多仓native语料认证
 
-状态：`todo`；批次：`P8-A`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/benchmarks/native/`；`crates/cc-eval/benchmarks/manifests/`
 硬依赖：P8-001
 步骤：扩至规划语言/仓库覆盖并复核gold；公开/私有数据分离
@@ -2259,12 +2259,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：题数、类别、语言、能力缺口和实际审阅范围透明；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V02；V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/corpus/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计"}]
 实施备注：2026-10-02 用户拍板（D3）：真实多仓语料采用公开仓 + 固定 commit（延续 09-BENCHMARK 已锁定的 Flask/cc-switch 先例）；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。
+2026-10-08 第一轮：public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计。只计原始TODO推进，完整前置/验收仍开放。
 
 ### [ ] P8-003｜运行外部兼容套件
 
-状态：`todo`；批次：`P8-A`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/adapters/`；`artifacts/benchmarks/`
 硬依赖：P8-002
 步骤：同输入锁跑cc-switch/Flask；compat与native独立分报
@@ -2272,11 +2273,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：无锁/输入不同/平台glob差异不能直接对比排行榜；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V03；V04；V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/compat/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "真实固定cc-eval执行两轮公开DEV native/compat共774请求并重放；原比较非绿保留，cc-switch/Flask原外部目标not_run"}]
 
 ### [ ] P8-004｜封存holdout与反过拟合检查
 
-状态：`todo`；批次：`P8-A`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/benchmarks/manifests/`；`crates/cc-search/`
 硬依赖：P8-003
 步骤：审查生产无gold路径/题词典；一次冻结配置运行heldout
@@ -2284,7 +2285,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：translation/paraphrase不泄漏，回归后不直接改标签保分；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/corpus/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位"}]
+实施备注：
+2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。
 
 ### [ ] P8-005｜完整规模1k到100k
 
@@ -2373,7 +2376,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-011｜端到端故障与恢复认证
 
-状态：`todo`；批次：`P8-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-C`；优先级：`normal`。
 范围：`crates/cc-eval/tests/semantic_lifecycle.rs`；`crates/cc-server/tests/mcp_stdio.rs`
 硬依赖：P7-020, P8-007, P8-010
 步骤：kill进程/网络断开/缓存损坏/数据库忙/换库；保持raw故障工件
@@ -2381,11 +2384,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：没有假ready或删除复活，恢复与费用影响清楚；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V14；V17；V18
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/recovery/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "当前785输入候选的真实kill/restart、SQLite busy释放和删除不复活3个有限故障场景通过；4个未覆盖故障仍not_run"}]
 
 ### [ ] P8-012｜MSRV与平台冷构建矩阵
 
-状态：`todo`；批次：`P8-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-C`；优先级：`normal`。
 范围：`.github/workflows/ci.yml`；`CONTRIBUTING.md`
 硬依赖：P8-011
 步骤：Linux/macOS、当前声明MSRV与stable、默认/semantic features；全新target
@@ -2393,7 +2396,10 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：SDK blocker解决或发布平台范围明确，缓存测试不替冷构建；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V01；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/platform/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run"}, {"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/platform-cold-default/"], "scope": "one actual Linux default cold-build cell only; not a complete platform or MSRV matrix", "review": "platform implementation, main integration and independent evidence review; complete inputs match the fixed candidate", "rollback_status": "isolated new target and disposable fixture; preserve original cold receipt and prior matrix", "summary": "补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留"}]
+实施备注：
+2026-10-08 第一轮：八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run。只计原始TODO推进，完整前置/验收仍开放。
+2026-10-08 第三轮补充（不重复计数）：补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留。
 
 ### [ ] P8-013｜指标/门槛与失败退出最终认证
 
@@ -2411,7 +2417,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-014｜可选LLM评审旁证流程
 
-状态：`todo`；批次：`P8-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-C`；优先级：`normal`。
 范围：`crates/cc-eval/benchmarks/manifests/`；`docs/BENCHMARK.md`
 硬依赖：P8-013
 步骤：冻结judge prompt/model并盲化系统名；复核争议答案/证据充分性
@@ -2420,11 +2426,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验证：V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
 条件：可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "冻结judge prompt/model、盲化系统名、私有映射与人工意见回收流程，18项控制和实际离线CLI通过；真实LLM评审未执行"}]
 
 ### [ ] P8-015｜真实语义效果发布认证
 
-状态：`todo`；批次：`P8-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-C`；优先级：`normal`。
 范围：`crates/cc-eval/benchmarks/manifests/`；`artifacts/benchmarks/`
 硬依赖：P8-013, P7-018
 步骤：在已授权live条件复跑holdout与费用/错误分布；核对模型revision
@@ -2433,11 +2439,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验证：V15；V19；V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
 条件：仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/release/P8-015-receipt.json"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "语义发布候选/模型revision/请求/费用/预算交叉核验，24项控制通过；完整纸面材料也不能替代真实provider/独立custody/批准/评分权威，保持blocked"}]
 
 ### [ ] P8-016｜数据库/配置/包回滚演练
 
-状态：`todo`；批次：`P8-D`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-D`；优先级：`normal`。
 范围：`crates/cc-db/src/index_migrate.rs`；`crates/cc-semantic/src/cache.rs`；`docs/TROUBLESHOOTING.md`
 硬依赖：P7-020, P8-012, P8-013
 步骤：旧binary开新schema的受控重建、cache版本隔离、disable语义回退
@@ -2445,11 +2451,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：回滚不误读新向量/丢用户源码，恢复步骤实测；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V17；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/platform/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份"}]
+实施备注：
+2026-10-08 第一轮：已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份。只计原始TODO推进，完整前置/验收仍开放。
 
 ### [ ] P8-017｜删除临时兼容和重复模块
 
-状态：`todo`；批次：`P8-D`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-D`；优先级：`normal`。
 范围：`crates/cc-index/`；`crates/cc-search/`；`crates/cc-eval/`
 硬依赖：P8-016
 步骤：清临时旧branch/重复评分器/多份schema来源；保留必要外部wire兼容
@@ -2457,7 +2465,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：运行路径只有一个事实与算法所有者，删除有回归证据；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/cleanup/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放"}]
+实施备注：
+2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。
 
 ### [ ] P8-018｜文档事实与安装契约同步
 
@@ -2489,7 +2499,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-020｜P8发布评审与遗留关闭
 
-状态：`todo`；批次：`P8-D`；优先级：`blocking`。
+状态：`in_progress`；批次：`P8-D`；优先级：`blocking`。
 范围：`docs/roadmap/code-index-v2/`；`artifacts/benchmarks/`
 硬依赖：P8-001, P8-002, P8-003, P8-004, P8-005, P8-006, P8-007, P8-008, P8-009, P8-010, P8-011, P8-012, P8-013, P8-016, P8-017, P8-018, P8-019
 步骤：G8按local/semantic能力分别审核；汇总风险、回滚和后续决策
@@ -2498,7 +2508,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验证：V18；V19；V20；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
 条件依赖：[{"task": "P8-015", "when": "M4-semantic release; not required for M4-local"}]
-证据：尚无
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/release-review/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准"}]
+实施备注：
+2026-10-08 第三轮：按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准。只计原始TODO推进，完整前置/验收仍开放。
 
 ## P9｜有收益门的可选增强
 

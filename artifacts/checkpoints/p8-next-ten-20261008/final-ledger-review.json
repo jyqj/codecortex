@@ -1,0 +1,867 @@
+{
+  "all_original_definition_values_and_json_types_preserved": true,
+  "all_ten_evidence_paths_exist_in_fixed_commit": true,
+  "all_ten_status": "in_progress",
+  "allowed_plan_progress_fields": [
+    "current_phase",
+    "execution_note",
+    "last_implementation_date",
+    "next_task",
+    "status"
+  ],
+  "allowed_task_progress_fields": [
+    "evidence",
+    "implementation_notes",
+    "status"
+  ],
+  "counts": {
+    "blocked": 1,
+    "done": 152,
+    "in_progress": 22,
+    "todo": 17,
+    "unfinished": 40
+  },
+  "cross_reviewer": "/root/platform_wave",
+  "definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "definition_base_tasks_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+  "definition_projection_encoding": "UTF-8 json.dumps({tasks: ordered task objects without status/evidence/implementation_notes, plan: top-level object without tasks and allowed plan progress fields}, sort_keys=True, separators=(',', ':'), ensure_ascii=False); no newline. This is a different projection from the p8_release_review G8 definition digest, so the two hashes are not directly comparable.",
+  "definition_projection_sha256": "edf4fc0981bb70558654e2d50a63bda7006310321e438fd7c70da617852f21fe",
+  "documentation_review": {
+    "checkpoint_readme_clarification": "The first-round eight not_run cells and old fixed-source fmt wording were identified for temporal clarification. Root supplied updated wording that distinguishes the later one-cell cold run and the sole worker test delta; count and scope wording was read in the working copy, not treated as a new fixed execution record.",
+    "fixed_progress": "docs/roadmap/code-index-v2/P8-NEXT-PROGRESS.md",
+    "fixed_progress_claims_match_ledger_and_scoped_receipts": true,
+    "read_updated_working_copy": {
+      "bytes": 11312,
+      "path": "artifacts/checkpoints/p8-next-ten-20261008/README.md",
+      "scope": "Count and evidence-scope wording only; not a review of every later CI/runtime statement or final publication.",
+      "sha256": "059b87ff13f3801926fecd187dd2bf73ff43dd52cfba0dd71e56dc57c3d2f577"
+    }
+  },
+  "evidence_scope_checks": [
+    {
+      "accepted_advance": "Executable audit of the fixed public DEV input inventory, source spans, duplicate IDs, and native/compat projection consistency.",
+      "evidence": {
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/"
+      },
+      "remaining": "Formal 600-question multilingual coverage and independently clean holdout certification remain open.",
+      "status": "in_progress",
+      "task": "P8-002"
+    },
+    {
+      "accepted_advance": "Executable split/dependency/literal boundary audit, original findings and independent human localization.",
+      "evidence": {
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/"
+      },
+      "remaining": "Two original review_required findings retained; no independent holdout body read or global no-overfitting certification.",
+      "status": "in_progress",
+      "task": "P8-004"
+    },
+    {
+      "accepted_advance": "Fixed public DEV input runner and replay; two measured native/compat runs total 774 requests.",
+      "evidence": {
+        "bytes": 13469,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/compat/summary.json",
+        "sha256": "c291b5f5a546d8874eab136663b5cb144c544d505bfc0e66d0ba8c69ee374d2d"
+      },
+      "original_failure": {
+        "compare_exit_code": 1,
+        "compat": "inconclusive",
+        "first_run_exit_code": 2,
+        "native": "failed",
+        "native_p95_ratio": 1.2127714005132988,
+        "unchanged_max_latency_ratio": 1.2
+      },
+      "release_certified": false,
+      "remaining": "Original cc-switch and Flask source/query/import locks are unavailable and both targets remain not_run. Public rg/snapshot control is not product compatibility acceptance.",
+      "status": "in_progress",
+      "task": "P8-003",
+      "task_completed": false
+    },
+    {
+      "accepted_advance": "Three limited local scenarios passed on the fixed 78ae product: kill/restart, SQLite busy recovery, and deleted-source nonresurrection.",
+      "evidence": {
+        "bytes": 43921,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/recovery/recovery-receipt.json",
+        "sha256": "795c1ee8679ec33abe73ce1030303c6fb7cdfd2062772de979a70ae48a5d45b4"
+      },
+      "original_failure": {
+        "archive": "artifacts/checkpoints/p8-next-ten-20261008/recovery/raw-evidence.tar.gz",
+        "archive_sha256": "ebdc971ef6c9a23aae566817b28e5fb522b2300251760d4cea03eca2b873cf19",
+        "current_archived_receipt_equals_direct_receipt": true,
+        "first_attempt": {
+          "failed": 2,
+          "not_run": 4,
+          "passed": 1,
+          "status": "failed"
+        },
+        "members": 233,
+        "subsequent_old_and_current_attempts": {
+          "failed": 0,
+          "not_run": 4,
+          "passed": 3
+        }
+      },
+      "release_certified": false,
+      "remaining": [
+        "transaction_internal_crash_points",
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "concurrent_database_replacement"
+      ],
+      "status": "in_progress",
+      "task": "P8-011",
+      "task_completed": false
+    },
+    {
+      "accepted_advance": "Eight-cell cold-build orchestration and one later actual Linux/Rust 1.95/default/dev cold build.",
+      "cold_cell_seconds": 151.14613496799575,
+      "cold_cell_source_commit": "b69daccaf1d52899d5c963f085ede154782e9828",
+      "cold_source_inputs_equal_fixed_78ae": true,
+      "counted_again_in_round_3": false,
+      "evidence": [
+        {
+          "bytes": 5718,
+          "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+          "path": "artifacts/checkpoints/p8-next-ten-20261008/platform-cold-default/cell-receipt.json",
+          "sha256": "c525d7ecb2beb0b7df2c11f89d697945fdf45499c821217d6d6627b1dd843932"
+        },
+        {
+          "bytes": 2639,
+          "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+          "path": "artifacts/checkpoints/p8-next-ten-20261008/platform-cold-default/matrix.json",
+          "sha256": "88ef32cffc30a8adae65ef248352ef8ec958ccac8996b00194c3f8ea786e2574"
+        }
+      ],
+      "historical_initial_matrix": "8 not_run retained; not overwritten",
+      "remaining": "Seven cells not_run; no full platform/MSRV/semantic certification.",
+      "status": "in_progress",
+      "supplemental_matrix": {
+        "failed": 0,
+        "not_run": 7,
+        "passed": 1
+      },
+      "task": "P8-012"
+    },
+    {
+      "accepted_advance": "Offline judge packet, blindness contract and manual reconciliation tooling; 18 controls.",
+      "evidence": {
+        "bytes": 3582,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json",
+        "sha256": "1daaeba03640d5939842a394046bb606c8ab8be840e666cadf5f7a63a88e7927"
+      },
+      "execution_status": "prepared_not_run",
+      "model_calls": 0,
+      "network_calls": 0,
+      "release_certified": false,
+      "remaining": [
+        "actual_authorized_model_judgments",
+        "observed_model_revision_and_execution_provenance",
+        "human_dispute_resolution",
+        "unrecognized_identity_or_style_leaks"
+      ],
+      "status": "in_progress",
+      "task": "P8-014",
+      "task_completed": false
+    },
+    {
+      "accepted_advance": "Semantic evidence preflight and 24 controls; three actual offline CLI cases.",
+      "controls": [
+        {
+          "exit_code": 1,
+          "name": "semantic-missing",
+          "status": "blocked",
+          "structural_status": "incomplete"
+        },
+        {
+          "exit_code": 1,
+          "name": "semantic-paper",
+          "status": "blocked",
+          "structural_status": "passed"
+        },
+        {
+          "exit_code": 1,
+          "name": "semantic-fake",
+          "status": "blocked",
+          "structural_status": "failed"
+        }
+      ],
+      "evidence": {
+        "bytes": 4185,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/release/P8-015-receipt.json",
+        "sha256": "222dad10b982c0e6fc2ef486b325a3fc752ec5f5c19bbaa4c8c58b53dc659fad"
+      },
+      "release_certified": false,
+      "release_status": "blocked",
+      "remaining": [
+        "authenticated_provider_execution",
+        "independent_clean_custody",
+        "approval_authority",
+        "deterministic_scoring_and_original_statistical_gates"
+      ],
+      "status": "in_progress",
+      "task": "P8-015",
+      "task_completed": false
+    },
+    {
+      "accepted_advance": "Four real stdio launches with the originally identified old default/semantic binaries and bounded rollback fixtures.",
+      "evidence": {
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/platform/"
+      },
+      "remaining": "Actual adjacent-release package rollback and unknown cache-format migration are not executed; old product identities retained.",
+      "status": "in_progress",
+      "task": "P8-016"
+    },
+    {
+      "accepted_advance": "distribution and quantile_interval share nearest_rank in benchmark::statistics; independent fixed-source review and twelve original measurements test passes.",
+      "evidence": {
+        "bytes": 10221,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/cleanup/review.json",
+        "sha256": "8e56b7f10d7ef8397befda4bf70ece6c4dee8793e471fba18e6f7e690341517b"
+      },
+      "remaining": "Mean bootstrap unchanged; other percentile owners, legacy branch/schema and full external wire compatibility are not certified.",
+      "status": "in_progress",
+      "task": "P8-017"
+    },
+    {
+      "accepted_advance": "Original G8 dependency and evidence gap ledger with 19 controls and retained nonzero current/missing-evidence runs.",
+      "evidence": {
+        "bytes": 4343,
+        "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+        "path": "artifacts/checkpoints/p8-next-ten-20261008/release-review/P8-020-receipt.json",
+        "sha256": "18071c4091915342ec21c0228f3b3e7e8ac7d9a96cdcbe706ef0b620c3fd8f93"
+      },
+      "final_state_run": "artifacts/checkpoints/p8-next-ten-20261008/release-review/final-state-2d060834/run-01/receipt.json",
+      "historical_counts": {
+        "blocked": 1,
+        "deferred": 0,
+        "done": 152,
+        "in_progress": 16,
+        "todo": 23
+      },
+      "historical_state_commit": "f99b2dc2cab7c34087c7735f25f5a1147224508e",
+      "release_certified": false,
+      "remaining": "Both local and semantic release scopes remain blocked; repository declarations and paper passed statuses cannot authorize release.",
+      "status": "in_progress",
+      "task": "P8-020",
+      "task_completed": false
+    }
+  ],
+  "final_g8_run": {
+    "candidate": {
+      "input_digest": "dbb2a2233a51da0423984778da840df8f4cbd079a66d900c5a28e7ab0e1b9aac",
+      "input_digest_format": "sha256_sorted_compact_path_sha256_json_no_newline_v1",
+      "source_commit": "78ae91eeae6edae6bea29c27f24b251773341c00"
+    },
+    "changed_input_manifest_fields": [
+      "run_id",
+      "state_commit"
+    ],
+    "counts": {
+      "blocked": 1,
+      "deferred": 0,
+      "done": 152,
+      "in_progress": 22,
+      "todo": 17
+    },
+    "evidence_commit": "dd5be5a06fb539ae5b5fb53e05b2d2bf265a4d1b",
+    "exit_code": 1,
+    "file_manifest_path": "artifacts/checkpoints/p8-next-ten-20261008/release-review/final-state-2d060834/file-manifest.json",
+    "file_manifest_sha256": "a799d14c15b98eb7c580625c70a159405f0debe55c89c11126019cea48930613",
+    "manifest_files_verified": 20,
+    "new_paths_only": 21,
+    "original_13_record_bytes_and_observations_preserved": true,
+    "profiles": {
+      "local": "blocked",
+      "semantic": "blocked"
+    },
+    "receipt_bytes": 27306,
+    "receipt_path": "artifacts/checkpoints/p8-next-ten-20261008/release-review/final-state-2d060834/run-01/receipt.json",
+    "receipt_sha256": "1dd81199c3dbd1e0f2f8f1951c43acb7744661ca910145ac68b6942a1d5c4fc5",
+    "release_certified": false,
+    "remaining_not_done": 40,
+    "scope": "Read the original single execution metadata and raw receipt; no run repeated. Metadata and dependency audit only, not product replay or release acceptance.",
+    "state_commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+    "status": "not_accepted",
+    "stdout": {
+      "bytes": 19956,
+      "bytes_equal_receipt": false,
+      "difference": "stdout is compact JSON; receipt is indented JSON; both original encodings retained",
+      "json_value_equals_receipt": true,
+      "path": "artifacts/checkpoints/p8-next-ten-20261008/release-review/final-state-2d060834/stdout.json",
+      "sha256": "6d78248f95687861dbaa080fd2c0867ef06a3493a93413d5367623e8d7c58246"
+    },
+    "todo_completed": false
+  },
+  "formal_completion_change_since_original_main": {
+    "source": "Accepted PR #144 integration; not counted as part of the new ten P8 advances.",
+    "task_ids": [
+      "P7-011",
+      "P7-012"
+    ],
+    "unfinished_after": 40,
+    "unfinished_before": 42
+  },
+  "judge_semantic_manifest": {
+    "all_files_verified": 90,
+    "bytes": 15944,
+    "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+    "path": "artifacts/checkpoints/p8-next-ten-20261008/release/file-manifest.json",
+    "sha256": "69e5905853e17b0b936d97973039f92b268e9d4f48d95a861f09de86ae4ef53c"
+  },
+  "limitations": [
+    "Formal task closure still requires original acceptance and dependencies; all ten remain in_progress.",
+    "The final G8 metadata run is independent of this review and was not repeated; its source/custody/statistical authority limitations remain unchanged.",
+    "Final remote CI and PR merge status are separate and are not certified by this ledger review.",
+    "No task, derived view, gate, source, test, gold, or historical receipt was edited by this reviewer."
+  ],
+  "new_batch_formal_completions": 0,
+  "new_batch_ids": [
+    "P8-002",
+    "P8-003",
+    "P8-004",
+    "P8-011",
+    "P8-012",
+    "P8-014",
+    "P8-015",
+    "P8-016",
+    "P8-017",
+    "P8-020"
+  ],
+  "new_ids_created": 0,
+  "observed_plan_changes": [
+    "execution_note",
+    "last_implementation_date",
+    "next_task"
+  ],
+  "observed_task_changes": [
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P7-011",
+      "status": "done"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P7-012",
+      "status": "done"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P7-013",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "in_progress",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-014",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-015",
+      "status": "todo"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-016",
+      "status": "todo"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-017",
+      "status": "todo"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P7-018",
+      "status": "blocked"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-019",
+      "status": "todo"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "id": "P7-020",
+      "status": "todo"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-001",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-002",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "status"
+      ],
+      "id": "P8-003",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-004",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-005",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-006",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-007",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-008",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-009",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-010",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "status"
+      ],
+      "id": "P8-011",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-012",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-013",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "status"
+      ],
+      "id": "P8-014",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "status"
+      ],
+      "id": "P8-015",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-016",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-017",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-018",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-019",
+      "status": "in_progress"
+    },
+    {
+      "before_status": "todo",
+      "fields": [
+        "evidence",
+        "implementation_notes",
+        "status"
+      ],
+      "id": "P8-020",
+      "status": "in_progress"
+    }
+  ],
+  "original_baseline_counts": {
+    "done": 150,
+    "in_progress": 1,
+    "todo": 41,
+    "unfinished": 42
+  },
+  "original_id_membership_and_order_preserved": true,
+  "overlap": [],
+  "previous_batch_commit": "ae906513886bef4501d0a1d2ecffd68ef76c3f5d",
+  "previous_batch_ids": [
+    "P8-001",
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-013",
+    "P8-018",
+    "P8-019"
+  ],
+  "progress_json_sha256": "e79736e13743e5ee5819fdb475e29bf447f58855fd625fdee58683fd9da56947",
+  "progress_md_sha256": "2d29d62bd308783d41e8ef934af971662f4287000ce4d2dfc1475b456e1d333d",
+  "python_log": {
+    "bytes": 31994,
+    "each_test_name_matches_fixed_source": true,
+    "elapsed_seconds": 18.158,
+    "passed": 197,
+    "path": "artifacts/checkpoints/p8-next-ten-20261008/validation/p8-final-python-tests.log",
+    "sha256": "9c7244c6ecfa0d873ae49c8c9051f7645fd534a231fc85f6e339ad17c896cb04"
+  },
+  "python_test_files": [
+    {
+      "methods": 16,
+      "path": "scripts/tests/test_p8_compat.py",
+      "sha256": "ff2c1c50ca468bdaae8bbbbb65421d38cc29fb8ddb92577ea6576a769beb0193"
+    },
+    {
+      "methods": 15,
+      "path": "scripts/tests/test_p8_corpus_audit.py",
+      "sha256": "0a058f5e59b3b3c0c546632eec1fc114f93b0873343b6a5cd3f85a6eda7ffa79"
+    },
+    {
+      "methods": 18,
+      "path": "scripts/tests/test_p8_judge_evidence.py",
+      "sha256": "6ab3541fdc63d90c3c02f667cbbd79c85ff7bff190ff69a0e63ac2a74ddc6625"
+    },
+    {
+      "methods": 16,
+      "path": "scripts/tests/test_p8_leakage_audit.py",
+      "sha256": "0dcd2d94f3d4208fef08f4da640598267f0500cac90df732946d6060dcafafa7"
+    },
+    {
+      "methods": 30,
+      "path": "scripts/tests/test_p8_platform.py",
+      "sha256": "8f765cb5170be1ad3b629311087a000a4a149b48a70165b29936ae70e1c81d80"
+    },
+    {
+      "methods": 20,
+      "path": "scripts/tests/test_p8_recovery.py",
+      "sha256": "8b87f02907e084e6805d5e249637e531702e140557322f94241b65da11acbfac"
+    },
+    {
+      "methods": 39,
+      "path": "scripts/tests/test_p8_release_evidence.py",
+      "sha256": "62e8fdd449e4fb0fb4878185ebf06e9f9c790906a4f95415bf4138862977d380"
+    },
+    {
+      "methods": 19,
+      "path": "scripts/tests/test_p8_release_review.py",
+      "sha256": "c4e01032ea7f85d7cf0bdf0430b6c159112f25425d433eff8deb3bca7bd3544e"
+    },
+    {
+      "methods": 24,
+      "path": "scripts/tests/test_p8_semantic_certification.py",
+      "sha256": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8"
+    }
+  ],
+  "repository": "jyqj/codecortex",
+  "review_kind": "independent_final_task_ledger_and_evidence_scope_review",
+  "reviewed_commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+  "reviewer": "/root/corpus_wave",
+  "round_snapshots": [
+    {
+      "advanced_cumulative": 0,
+      "batch_remaining": 10,
+      "commit": "154eb4e277d6aca88f8b0135a0737d8efa7d6642",
+      "counts": {
+        "blocked": 1,
+        "done": 152,
+        "in_progress": 12,
+        "todo": 27,
+        "unfinished": 40
+      },
+      "round": 0,
+      "status_changes": [],
+      "tasks_sha256": "112064ac5a07dc50fef5a6159d2a53c3060260f8876fb7b68a346f1823d2a1c9"
+    },
+    {
+      "advanced_cumulative": 4,
+      "batch_remaining": 6,
+      "commit": "255d7e2ddfc51ea0f87c5863fdcd76504b980578",
+      "counts": {
+        "blocked": 1,
+        "done": 152,
+        "in_progress": 16,
+        "todo": 23,
+        "unfinished": 40
+      },
+      "round": 1,
+      "status_changes": [
+        "P8-002",
+        "P8-004",
+        "P8-012",
+        "P8-016"
+      ],
+      "tasks_sha256": "700c50afdb100f2f77beea94534837aa4fa5784dcfb651b46ca4ad8d95d26f40"
+    },
+    {
+      "advanced_cumulative": 8,
+      "batch_remaining": 2,
+      "commit": "8a7e5788585f3d5cdcc960a765a9b26e17e06d0d",
+      "counts": {
+        "blocked": 1,
+        "done": 152,
+        "in_progress": 20,
+        "todo": 19,
+        "unfinished": 40
+      },
+      "round": 2,
+      "status_changes": [
+        "P8-003",
+        "P8-011",
+        "P8-014",
+        "P8-015"
+      ],
+      "tasks_sha256": "ca500dfa965d38a307ba61e2f49b7f6c7f28ac916396e8d7df88d14b11a480fa"
+    },
+    {
+      "advanced_cumulative": 10,
+      "batch_remaining": 0,
+      "commit": "2d060834de39cf19db67428ec4a2a84050f72b6d",
+      "counts": {
+        "blocked": 1,
+        "done": 152,
+        "in_progress": 22,
+        "todo": 17,
+        "unfinished": 40
+      },
+      "round": 3,
+      "status_changes": [
+        "P8-017",
+        "P8-020"
+      ],
+      "tasks_sha256": "d69e664aa76119272fb7ff3937dcd6e3dd6e75fc07b55c4f4093922cfc731e9d"
+    }
+  ],
+  "runtime_review": {
+    "interpretation": "Read-only evidence review and in-memory/source metadata checks. Existing runtime outcomes retain their own fixed code, product and input identities.",
+    "model_or_provider_calls": 0,
+    "new_holdout_body_reads": 0,
+    "python_tests": {
+      "bytes": 31994,
+      "each_test_name_matches_fixed_source": true,
+      "elapsed_seconds": 18.158,
+      "exit_code": 0,
+      "exit_code_provenance": "Root agent reported completed process exit 0; all original 197 successful log names independently matched to the fixed source test methods.",
+      "passed": 197,
+      "path": "artifacts/checkpoints/p8-next-ten-20261008/validation/p8-final-python-tests.log",
+      "sha256": "9c7244c6ecfa0d873ae49c8c9051f7645fd534a231fc85f6e339ad17c896cb04"
+    },
+    "rust_builds_or_tests": 0,
+    "tests_rerun_by_this_review": 0
+  },
+  "schema_version": 1,
+  "scope": "192 original task definitions, exact round status deltas, four derived views, and bounded evidence/remaining-work claims. This record is not formal completion of the ten TODOs or a release approval.",
+  "source_identity_boundary": {
+    "independent_v11_review": {
+      "commit": "c60760fe76723d962fed14a2092d178283f924e2",
+      "path": "artifacts/checkpoints/p8-next-ten-20261008/ci/v11-guard-review.json",
+      "sha256": "9b5c7f63e1a64d31fd69a9762cbc6b4c7f2b380d77b19c6b127a59cbe1f33379"
+    },
+    "later_delta": "crates/cc-eval/tests/p7_worker_contention.rs only; other 784 source inputs unchanged",
+    "later_test_source": "65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3",
+    "older_execution_relabelled": false,
+    "original_product_source": "78ae91eeae6edae6bea29c27f24b251773341c00"
+  },
+  "task_count": 192,
+  "tasks_sha256": "d69e664aa76119272fb7ff3937dcd6e3dd6e75fc07b55c4f4093922cfc731e9d",
+  "unresolved_ledger_findings": [],
+  "verdict": "accepted_scoped",
+  "view_generator": {
+    "path": "scripts/code_index_plan.py",
+    "sha256": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c",
+    "view_count": 4
+  },
+  "views": [
+    {
+      "bytes": 563711,
+      "exact_in_memory_render_match": true,
+      "fixed_file_digest_independently_checked_by": "/root/corpus_wave",
+      "matches_fixed_task_source_sha256": true,
+      "path": "docs/roadmap/code-index-v2/05-TODO.md",
+      "render_checked_by": "/root/platform_wave",
+      "sha256": "a7b5f8480d18bc85ef966984453627e2202066d6bd77eb9ec46fecbf0fd4e57f"
+    },
+    {
+      "bytes": 8376,
+      "exact_in_memory_render_match": true,
+      "fixed_file_digest_independently_checked_by": "/root/corpus_wave",
+      "matches_fixed_task_source_sha256": true,
+      "path": "README.md",
+      "render_checked_by": "/root/platform_wave",
+      "sha256": "6ccbab30832e97e0cbae7dd89f6499d28516abcf5bdd2a9435d34e3cfe263f7c"
+    },
+    {
+      "bytes": 12979,
+      "exact_in_memory_render_match": true,
+      "fixed_file_digest_independently_checked_by": "/root/corpus_wave",
+      "matches_fixed_task_source_sha256": true,
+      "path": "docs/roadmap/code-index-v2/README.md",
+      "render_checked_by": "/root/platform_wave",
+      "sha256": "6aa326dcfc2bc0f07a431f5b88b2cab4e8741116cf4ff1936d9ec6001e4e5f45"
+    },
+    {
+      "bytes": 18145,
+      "exact_in_memory_render_match": true,
+      "fixed_file_digest_independently_checked_by": "/root/corpus_wave",
+      "matches_fixed_task_source_sha256": true,
+      "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "render_checked_by": "/root/platform_wave",
+      "sha256": "1009c11c6ef2f74776a6eae983692e58fd7a78952d74cda8a452389fc9caf528"
+    }
+  ]
+}

@@ -8,24 +8,29 @@ pub struct Distribution {
     pub max_us: Option<u64>,
     pub tail_claim: &'static str,
 }
+
+/// Canonical nearest-rank estimate for an already sorted nonempty sample.
+/// Distribution summaries and quantile intervals must use the same convention.
+fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
+    if sorted.is_empty() {
+        return None;
+    }
+    sorted
+        .get(
+            ((quantile * sorted.len() as f64).ceil() as usize)
+                .saturating_sub(1)
+                .min(sorted.len() - 1),
+        )
+        .copied()
+}
+
 pub fn distribution(values: &[u64]) -> Distribution {
     let mut v = values.to_vec();
     v.sort_unstable();
-    let at = |p: f64| {
-        if v.is_empty() {
-            None
-        } else {
-            Some(
-                v[((p * v.len() as f64).ceil() as usize)
-                    .saturating_sub(1)
-                    .min(v.len() - 1)],
-            )
-        }
-    };
     Distribution {
         samples: v.len(),
-        p50_us: at(0.5),
-        p95_us: at(0.95),
+        p50_us: nearest_rank(&v, 0.5),
+        p95_us: nearest_rank(&v, 0.95),
         max_us: v.last().copied(),
         tail_claim: if v.len() < 200 {
             "insufficient_for_tail_claim"
@@ -217,9 +222,7 @@ pub fn quantile_interval(values: &[u64], quantile: f64) -> Option<QuantileInterv
         quantile,
         confidence: 0.95,
         samples: n,
-        estimate_us: sorted[((quantile * n as f64).ceil() as usize)
-            .saturating_sub(1)
-            .min(n - 1)],
+        estimate_us: nearest_rank(&sorted, quantile)?,
         lower_us: lower_rank
             .checked_sub(1)
             .and_then(|i| sorted.get(i).copied()),

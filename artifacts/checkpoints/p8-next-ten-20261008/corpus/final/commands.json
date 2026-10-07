@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "scope": "new_actual_local_executions_with_workspace_dependencies",
+  "commands": [
+    {
+      "name": "leakage-audit",
+      "argv": [
+        "python",
+        "scripts/p8_leakage_audit.py",
+        "--output",
+        "/workspace/scratch/ebaceea9b709/codecortex-corpus/artifacts/checkpoints/p8-next-ten-20261008/corpus/final/leakage-audit.json"
+      ],
+      "cwd": "/workspace/scratch/ebaceea9b709/codecortex-corpus",
+      "started_at_utc": "2026-10-07T17:31:27.735710+00:00",
+      "duration_seconds": 15.38324,
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "matched_expected_exit_code": true,
+      "log_path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/final/leakage-audit.log",
+      "log_sha256": "77babf66ee71a0952940ac2eccc646a36e83b69001ab3641fadd2d5747f49726"
+    },
+    {
+      "name": "tests",
+      "argv": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_p8_*audit.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ebaceea9b709/codecortex-corpus",
+      "started_at_utc": "2026-10-07T17:31:43.119314+00:00",
+      "duration_seconds": 2.303151,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "matched_expected_exit_code": true,
+      "log_path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/final/tests.log",
+      "log_sha256": "247f3ef15583513b34656cccfb08aca057eb9d3c4acf621ee205b01f6581f13c"
+    }
+  ],
+  "release_certified": false
+}

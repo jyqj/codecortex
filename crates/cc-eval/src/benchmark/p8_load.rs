@@ -401,7 +401,7 @@ impl Artifacts {
                 .compare_exchange_weak(used, next, Ordering::AcqRel, Ordering::Acquire)
             {
                 Ok(_) => return Ok(()),
-                Err(current) => used = current,
+                Err(observed) => used = observed,
             }
         }
     }
@@ -1017,19 +1017,54 @@ pub fn worker(out: &Path) -> Result<i32> {
 mod artifact_budget_tests {
     use super::*;
 
-    fn artifacts(out: &Path, used: u64, limit: u64) -> Artifacts {
+    fn artifacts(used: u64, limit: u64) -> Artifacts {
         Artifacts {
-            out: out.to_path_buf(),
-            events: Mutex::new(File::create(out.join("events.jsonl")).unwrap()),
+            out: PathBuf::new(),
+            events: Mutex::new(tempfile::tempfile().unwrap()),
             used: AtomicU64::new(used),
             limit,
         }
     }
 
     #[test]
+    fn reservation_preserves_counter_on_overflow_or_budget_exhaustion() {
+        let artifacts = artifacts(u64::MAX - 2, u64::MAX);
+        assert!(artifacts.reserve(3).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX - 2);
+        artifacts.reserve(2).unwrap();
+        artifacts.reserve(0).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+    }
+
+    #[test]
+    fn contended_reservations_never_exceed_limit_or_lose_successes() {
+        let artifacts = Arc::new(artifacts(0, 1024));
+        let barrier = Arc::new(std::sync::Barrier::new(8));
+        let workers: Vec<_> = (0..8)
+            .map(|_| {
+                let artifacts = Arc::clone(&artifacts);
+                let barrier = Arc::clone(&barrier);
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    (0..100).filter(|_| artifacts.reserve(3).is_ok()).count()
+                })
+            })
+            .collect();
+        let successes: usize = workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .sum();
+        assert_eq!(successes, 341);
+        assert_eq!(artifacts.used.load(Ordering::Acquire), successes as u64 * 3);
+        assert!(artifacts.reserve(2).is_err());
+        artifacts.reserve(1).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 1024);
+    }
+
+    #[test]
     fn concurrent_reservations_fill_only_whole_reservations_within_the_budget() {
-        let directory = tempfile::tempdir().unwrap();
-        let artifacts = artifacts(directory.path(), 0, 10_007);
+        let artifacts = artifacts(0, 10_007);
         let successes = AtomicUsize::new(0);
         let start = std::sync::Barrier::new(16);
         std::thread::scope(|scope| {
@@ -1053,8 +1088,7 @@ mod artifact_budget_tests {
 
     #[test]
     fn rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries() {
-        let directory = tempfile::tempdir().unwrap();
-        let artifacts = artifacts(directory.path(), 63, 64);
+        let artifacts = artifacts(63, 64);
         assert!(artifacts.reserve(2).is_err());
         assert_eq!(artifacts.used.load(Ordering::Acquire), 63);
         artifacts.reserve(1).unwrap();
@@ -1063,8 +1097,7 @@ mod artifact_budget_tests {
         artifacts.reserve(0).unwrap();
         assert_eq!(artifacts.used.load(Ordering::Acquire), 64);
 
-        let directory = tempfile::tempdir().unwrap();
-        let artifacts = self::artifacts(directory.path(), u64::MAX - 3, u64::MAX);
+        let artifacts = self::artifacts(u64::MAX - 3, u64::MAX);
         artifacts.reserve(3).unwrap();
         assert!(artifacts.reserve(1).is_err());
         assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);

@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "source": "8e12c3884edbb2743eb2aee82fafa285e8b28ef7",
+  "base": "65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3",
+  "joint_base": "d77a2143cdb82e722b1d1c62851298c43e707b65",
+  "verdict": "accepted_scoped",
+  "reviewer": "/root/pr_audit",
+  "scope": "source_integrity_and_code_review_only",
+  "source_tree": "f32ace2093990a30d357403574f76ad40a4c00d2",
+  "source_parents": [
+    "b64746f42750422dc38aa9bb73a6f2f2b43fdc2b",
+    "d53a4972af92fd10a5cddb9f15ffdf06414b3d54"
+  ],
+  "local_source": "b8991b652dad464b14256bd867a3d7deae6846d0",
+  "full_input_count": 785,
+  "input_path_sets_equal_for_source_base_joint_base_and_local": true,
+  "source_modes_and_bytes_equal_to_local": true,
+  "input_manifest_digest_format": "sha256_sorted_compact_path_sha256_json_no_newline_v1",
+  "input_manifest_sha256": {
+    "source": "4c9aeb9cac2eea382d2dbce6d85220af3e10f6483b4c1f696b7874ecaff0fdb4",
+    "base": "099201584e44dac99026cf18cf0104e31cdfa6d8453190bd0ba656c1c7ff8528",
+    "joint_base": "12d6499a6cad52d18c21e522c244ef99006994f4d8ebf07400b8daa7525cf7c8",
+    "local": "4c9aeb9cac2eea382d2dbce6d85220af3e10f6483b4c1f696b7874ecaff0fdb4"
+  },
+  "paths": {
+    "crates/cc-eval/src/benchmark/p8_load.rs": {
+      "before_sha256": "953fd0aa6eb86aa3d7abfb04e5e5e91c17a6223f5ecf7010d641127aa38b4de5",
+      "sha256": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31"
+    }
+  },
+  "joint_paths": {
+    "crates/cc-eval/src/benchmark/p8_load.rs": {
+      "before_sha256": "efecc357a0e5d605a18807874fc9250302c3a6720f4029be3c95f7515028a09e",
+      "sha256": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31"
+    },
+    "crates/cc-eval/src/benchmark/statistics.rs": {
+      "before_sha256": "cb33bf6a464a6f8aa067667a754727caf0ebefa64ca3682c5ca692a579bee0bb",
+      "sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6"
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs": {
+      "before_sha256": "140fcbbaf4555bbd8d9115636f95bb1c02c445225aeae981fc1b36d8a9e94dde",
+      "sha256": "2e42e24fbafcce01144fa89a6ebb02e3460bd2e4d9263e00712df18d718abbc4"
+    },
+    "crates/cc-eval/tests/p8_measurements.rs": {
+      "before_sha256": "91d43c71aa795df9b90e71bd3023075916f7b4f8d2452f7e45dbae5056485455",
+      "sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7"
+    }
+  },
+  "independently_executed_checks": [
+    "Fetched the exact remote source via git fetch --no-tags origin 8e12c3884edbb2743eb2aee82fafa285e8b28ef7.",
+    "Enumerated all recursive tree entries at source, base, joint_base and local using git ls-tree -r -z; selected every crates/ path and root Cargo.toml/Cargo.lock. Required regular blob modes 100644/100755, identical 785-path sets and exact source/local mode-and-object equality.",
+    "Read every unique selected Git blob with git cat-file --batch, checked the returned object identifiers/types/lengths and computed independent SHA256 maps. Exact protected deltas are the one paths entry and four joint_paths entries above.",
+    "Read the complete p8_load delta and budget module, plus CAS context. Compared both pre-existing base test function bodies byte-for-byte, and compared both main test function bodies after only the explicit temporary-fixture construction normalization recorded below.",
+    "Removed only the complete cfg(test) artifact_budget_tests module for a whole-file comparison: remaining source bytes exactly equal base; remaining source bytes equal joint_base after the sole Err(current)/Err(observed) local-variable rename.",
+    "Confirmed source tree and ordered parents with git rev-parse and git rev-list; GitHub compare_commits independently returned only p8_load plus the predecessor worker review artifact relative to base."
+  ],
+  "code_review": {
+    "change_from_base": "Only 43 appended lines inside the existing cfg(test) artifact_budget_tests module; no deletions and no production changes.",
+    "cas": "Initial Acquire load, checked_add, fixed limit comparison, compare_exchange_weak(AcqRel, Acquire), retry on observed counter, error text, and unchanged counter on overflow/limit rejection remain intact. Relative to new main, the only production text difference in p8_load is the failure variable name.",
+    "base_tests_preserved_verbatim": [
+      "reservation_preserves_counter_on_overflow_or_budget_exhaustion",
+      "contended_reservations_never_exceed_limit_or_lose_successes"
+    ],
+    "main_tests_preserved": [
+      {
+        "name": "concurrent_reservations_fill_only_whole_reservations_within_the_budget",
+        "preserved": "16 synchronized threads, 2000 attempts per thread, 7-byte complete reservations under limit 10007; successful count, exact used bytes, and failed reservation state assertions remain unchanged."
+      },
+      {
+        "name": "rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries",
+        "preserved": "63/64 rejection and exact fill, zero reservation at the limit, u64::MAX-3 exact fill, overflow rejection and zero reservation preserve every original state assertion."
+      }
+    ],
+    "fixture_only_normalization": {
+      "removed_line": "        let directory = tempfile::tempdir().unwrap();",
+      "replacement_from": "artifacts(directory.path(), ",
+      "replacement_to": "artifacts(",
+      "reason": "Both imported tests call reserve only. Reserve reads/writes used and limit, without accessing out or events. Reusing the existing helper with an anonymous tempfile therefore keeps these tests' tested operation, thread scheduling, budgets and assertions; no test function was removed or renamed."
+    },
+    "joint_base_other_differences": [
+      {
+        "path": "crates/cc-eval/src/benchmark/statistics.rs",
+        "assessment": "Exactly the previously reviewed base bytes: distribution and quantile_interval share the same nearest-rank helper. Empty-sample and quantile validation behavior remains inherited; no new statistical change is introduced by this merge."
+      },
+      {
+        "path": "crates/cc-eval/tests/p8_measurements.rs",
+        "assessment": "Exactly the previously reviewed base bytes, retaining the independent integer-oracle regression for ties, zeros, rank boundaries and invalid inputs."
+      },
+      {
+        "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+        "assessment": "Exactly the independently reviewed v11 base bytes. Existing pin/active readiness conditions precede the same coverage check; measurement budgets and assertions remain inherited."
+      }
+    ],
+    "blocking_findings": []
+  },
+  "rust_tests": "not_run_by_reviewer",
+  "ci": "not_run_by_reviewer",
+  "full_source_admission_guard": "not_run_by_reviewer",
+  "delivery_evidence_preservation": {
+    "status": "outside_this_source_only_review",
+    "requirement": "The final integration delivery must preserve the 31 new main artifact paths, the two updated evidence README files, main P8-LOCAL-PROGRESS additions, and immutable main helper/registry/test/CI snapshots alongside the existing proof chain. Parent ancestry of this source-only snapshot is not evidence that those non-protected delivery files are all present."
+  },
+  "boundaries": [
+    "This accepts the fixed protected input delta and code review scope only. It is not execution evidence for the imported Rust tests or the final merged CI.",
+    "Prior 78ae/65dd, new-main d77, and existing local benchmark/compatibility/failure receipts retain their actual source and binary identities; no old run is relabelled as an 8e12 execution.",
+    "The new v12 dual-chain guard, alias snapshots, historical negative controls, current CI selector, and final non-source delivery preservation require their own review/verification.",
+    "GC filesystem atomicity, native process-attribution limits, incomplete external/provider/heldout/budget authority, full scale/soak/cross-platform certification and G8/release acceptance are not closed by this test-only merge.",
+    "All original task definitions and the batch's ten progressed TODOs remain separate from source integration. This review grants no task-status completion."
+  ]
+}

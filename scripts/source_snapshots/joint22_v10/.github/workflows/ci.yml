@@ -1,0 +1,228 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Compile every default test target
+        run: cargo test --workspace --all-targets --locked --no-run
+
+      # This fixed-e3 integration does not authorize the historical process-fault,
+      # GC/WAL targets or semantic_runtime recoverable-retry cases. Keep those
+      # tests byte-identical in crates; execute only the normal-path targets here.
+      - name: Default regression within authorized scope
+        run: |
+          cargo test --workspace --all-targets --exclude cc-semantic --locked
+          cargo test -p cc-semantic --lib --locked
+          cargo test -p cc-semantic --locked \
+            --test artifact_cache --test attempt_lease_contract \
+            --test bounded_parallel --test manifest_exact_integration \
+            --test p7_cache_allocation_independent_review --test publish_cas \
+            --test query_cache --test queue_worker --test retry_worker_layering \
+            --test semantic_degrade --test space_switch
+
+      - name: Fixed resource driver harmless fixtures and TODO consistency
+        run: |
+          # Read-only AST comparator object; never check out or run its driver.
+          git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v
+          python3 scripts/code_index_plan.py
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_release_evidence.py -v
+          python3 scripts/p8_facts.py --check
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v
+          python3 scripts/verify_reviewed_source.py --source-version p7-p8-engineering-20261007-v10
+          python3 scripts/verify_historical_integrations_v2.py
+
+      - name: Semantic HTTP capability snapshot and normal stdio query fence
+        timeout-minutes: 30
+        run: python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir "$RUNNER_TEMP/semantic-http-ci-regression"
+
+      - name: Eval suite
+        run: cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture
+
+      - name: P0 benchmark optional HTTP contract tests
+        run: cargo test -p cc-eval --features eval-http --locked
+
+      - name: P0 real MCP subprocess adapter
+        run: |
+          python3 scripts/p7_stdio_build_receipt.py --package-kind default --output-dir "$RUNNER_TEMP/p7-017-default"
+          export P7_017_PACKAGE_KIND=default
+          export P7_017_BUILD_RECEIPT="$RUNNER_TEMP/p7-017-default/build-receipt.json"
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p7-017-default-observations" \
+            cargo test -p cc-eval --features eval-http --test benchmark_adapters --locked -- --ignored
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p1a_retrieval --locked -- --ignored
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p1b_retrieval --locked -- --ignored
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p1c_retrieval --test p1c_contract --locked -- --ignored
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p1d_cost --test p1d_docs --test p1d_concurrency --locked -- --ignored
+
+      - name: P2-A public surface real MCP regression
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p2a_incremental --locked -- --ignored
+
+      - name: P2-B resolution dependency real MCP regression
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p2b_incremental --locked -- --ignored
+
+      - name: P2-C durable recovery and freshness MCP regression
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+            cargo test -p cc-eval --test p2c_reconcile --locked -- --ignored
+
+      - name: P2-D multi-language public truth regression
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p2d-observations" \
+            cargo test -p cc-eval --test p2d_mutations --locked -- --ignored
+
+      - name: P3-A project config recovery real MCP
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p3a-observations" \
+            cargo test -p cc-eval --test p3a_project_model --locked -- --ignored
+
+      - name: P3-B package and module recovery real MCP
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p3b-observations" \
+            cargo test -p cc-eval --test p3b_modules --locked -- --ignored
+
+      - name: P3-C Go package recovery real MCP
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p3c-observations" \
+            cargo test -p cc-eval --test p3c_modules --locked -- --ignored
+
+      - name: P3-C available independent module oracles
+        run: python3 -I -S scripts/module_oracles.py --output "$RUNNER_TEMP/p3c-module-oracles" --toolchain stable
+
+      - name: P3-D module boundary and architecture contracts
+        run: |
+          python3 scripts/check_module_architecture.py
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p3d-observations" \
+            cargo test -p cc-eval --test p3d_modules --locked -- --ignored
+
+      - name: P4-A source fidelity and real MCP indexing
+        run: |
+          python3 scripts/check_source_architecture.py
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p4a-observations" \
+            cargo test -p cc-eval --test p4a_source --locked -- --ignored
+
+      - name: P4-B chunk budgets and live-session policy changes
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p4b-observations" \
+            cargo test -p cc-eval --test p4b_chunks --locked -- --ignored
+
+      - name: P4-C document versions and source freshness
+        run: |
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p4c-observations" \
+            cargo test -p cc-eval --test p4c_documents --locked -- --ignored
+
+      - name: P4-D identity and chunk-quality gates
+        run: |
+          cargo test -p cc-eval \
+            --test document_identity \
+            --test p4d_quality \
+            --locked
+
+      - name: P5-A versioned retrieval lanes
+        run: |
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5a-observations" \
+            cargo test -p cc-eval --test p5a_retrieval --test p5a_boundaries --locked
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5a-mcp-observations" \
+            cargo test -p cc-eval --test p5a_retrieval --locked -- --ignored
+
+      - name: P5-B bounded query execution and cancellation
+        run: |
+          cargo test -p cc-search --lib execution::tests --locked
+          cargo test -p cc-server --lib query_tests --locked
+          cargo test -p cc-eval --test p5b_execution --locked
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5b-observations" \
+            cargo test -p cc-eval --test p5b_execution --locked -- --ignored
+
+      - name: P5-C generation, bounded assembly and final source verification
+        run: |
+          cargo test -p cc-db --lib read_generation --locked
+          cargo test -p cc-eval --test p5c_selection --test p5c_budget --test p5c_hydration --locked
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5c-observations" \
+            cargo test -p cc-eval --test p5c_budget --locked -- --ignored
+
+      - name: P5-D capabilities, query pins and public policies
+        run: |
+          cargo test -p cc-eval --test p5d_runtime --test p5d_contract --locked
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5d-observations" \
+            cargo test -p cc-eval --test p5d_contract --locked -- --ignored
+
+      - name: P0 plan and corpus locks (historical ten-file DEV subset)
+        run: |
+          python3 scripts/code_index_plan.py
+          cargo build -p cc-eval --bin cc-eval --locked
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v
+          # Same validator and six locks; only the historical subset is materialized.
+          # Current product integrity uses the explicitly selected reviewed source union.
+          python3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval
+
+      - name: P7 semantic product disabled stdio contract
+        run: |
+          python3 scripts/p7_stdio_build_receipt.py --package-kind semantic --output-dir "$RUNNER_TEMP/p7-017-semantic"
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-semantic/codecortex" \
+          P7_017_PACKAGE_KIND=semantic \
+          P7_017_BUILD_RECEIPT="$RUNNER_TEMP/p7-017-semantic/build-receipt.json" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p7-017-semantic-observations" \
+            cargo test -p cc-eval --test benchmark_adapters --locked -- --include-ignored
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: Swatinem/rust-cache@v2
+
+      - name: MSRV check
+        run: cargo check --workspace --all-targets --locked
+
+      - name: MSRV optional benchmark HTTP feature
+        run: cargo check -p cc-eval --all-targets --features eval-http --locked
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ github.token }}

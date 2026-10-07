@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "finding": "fixed current source requested search_controlled_with_coverage but cached cc-semantic artifact lacked the symbol during compilation",
+  "attempts": [
+    "gc-config-baseline",
+    "gc-config-fixed"
+  ],
+  "canonical": false,
+  "fixed_attempt_tests_executed": 0,
+  "resolution": "clean only cc-semantic and cc-server then rebuild frozen fixture baseline and fixed source; retain all prior attempt logs unchanged",
+  "observations": [
+    {
+      "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic#1.0.0",
+      "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic/Cargo.toml",
+      "target": {
+        "kind": [
+          "lib"
+        ],
+        "crate_types": [
+          "lib"
+        ],
+        "name": "cc_semantic",
+        "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic/src/lib.rs",
+        "edition": "2021",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      },
+      "features": [],
+      "fresh": true,
+      "filenames": [
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-a5abb11b86a765b1.rlib",
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-a5abb11b86a765b1.rmeta"
+      ]
+    },
+    {
+      "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-server#1.0.0",
+      "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-server/Cargo.toml",
+      "target": {
+        "kind": [
+          "lib"
+        ],
+        "crate_types": [
+          "lib"
+        ],
+        "name": "cc_server",
+        "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-server/src/lib.rs",
+        "edition": "2021",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      },
+      "features": [
+        "semantic"
+      ],
+      "fresh": true,
+      "filenames": [
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_server-fb5ea1c589f98c64.rlib",
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_server-fb5ea1c589f98c64.rmeta"
+      ]
+    },
+    {
+      "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic#1.0.0",
+      "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic/Cargo.toml",
+      "target": {
+        "kind": [
+          "lib"
+        ],
+        "crate_types": [
+          "lib"
+        ],
+        "name": "cc_semantic",
+        "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012/crates/cc-semantic/src/lib.rs",
+        "edition": "2021",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      },
+      "features": [],
+      "fresh": true,
+      "filenames": [
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-a5abb11b86a765b1.rlib",
+        "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-a5abb11b86a765b1.rmeta"
+      ]
+    }
+  ]
+}

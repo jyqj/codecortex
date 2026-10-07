@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "task_id": "P7-018",
+  "status": "blocked",
+  "disposition": "original_authorized_accounting_completed; live execution not performed",
+  "source_commit": "319a55323211aecb603dd0398d0097f9f75024f4",
+  "decision_id": "D1+D2",
+  "decision": {
+    "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+    "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+  },
+  "original_task_brief": {
+    "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+    "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613"
+  },
+  "original_acceptance": [
+    "live与fake分栏；无授权则blocked/deferred而不假称通过",
+    "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+  ],
+  "original_conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+  "original_fields_changed": false,
+  "live_manifest_created": false,
+  "provider_calls_performed_by_this_disposition": 0,
+  "provider_credentials_read": false,
+  "actual_live_run_id": null,
+  "input_source_authorization": null,
+  "monetary_budget_authorization": null,
+  "observed_monetary_cost": null,
+  "quality_delta": null,
+  "validations": [
+    {
+      "id": "V15",
+      "status": "blocked",
+      "run_id": null,
+      "reason": "D1+D2: no subsequent live/source-egress and budget authorization"
+    },
+    {
+      "id": "V19",
+      "status": "blocked",
+      "run_id": null,
+      "reason": "D1+D2: no subsequent live/source-egress and budget authorization"
+    },
+    {
+      "id": "V20",
+      "status": "blocked",
+      "run_id": null,
+      "reason": "D1+D2: no subsequent live/source-egress and budget authorization"
+    }
+  ],
+  "task_completed": false,
+  "gate_effect": "Only the corresponding live effect claims are blocked; engineering scope still requires its own original evidence and hard dependencies.",
+  "counting": "Administrative disposition advances the original conditional task handling; it is not a completed TODO, executed live test, or implementation claim."
+}

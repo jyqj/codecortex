@@ -1,0 +1,81 @@
+{
+  "phase": "checks",
+  "head": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "tree": "f37c71c90b0379b6a3cce8cd9399936fd22e3a82",
+  "branch": "fix/p7-016-gc-unlink-accounting-20261007",
+  "source_status_before": "",
+  "source_inputs": 769,
+  "source_manifest": "checks-source-sha256.json",
+  "source_manifest_sha256": "1ce89da601a76e94be17c7def526a08b6e803c2530afe0056d97eafcf4f7b548",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "CODECORTEX_GC_UNLINK_EVIDENCE_DIR": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/artifacts/checkpoints/gc-unlink-accounting-20261007/checks-observations"
+  },
+  "raw_logs_normalized": false,
+  "not_run": [
+    "full_workspace",
+    "provider_network",
+    "SIGKILL",
+    "GC_WAL_staging",
+    "source_guard",
+    "full_mark_unlink_race"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-semantic",
+        "--lib",
+        "--test",
+        "gc_unlink_accounting",
+        "--test",
+        "semantic_gc",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.475,
+      "log": "checks-1.log",
+      "log_bytes": 163,
+      "log_sha256": "0749b5a8dbbdde4178b1ac47401497462518349822791ffcb23d10fb4cc3defe",
+      "test_summaries": [],
+      "executable_artifacts": []
+    },
+    {
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.34,
+      "log": "checks-2.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_summaries": [],
+      "executable_artifacts": []
+    }
+  ],
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "head_after": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "source_status_after": "",
+  "command_exits_all_zero": true
+}

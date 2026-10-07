@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "base": "aee4aeacef0166b400c9268c78ec800085c97573",
+  "production_base": "f6c860c96f22e39bc3ced5a81891e3070ffbada5",
+  "task_status_authority": "parent integrator only",
+  "original_acceptance_unchanged": true,
+  "rust_slot": "wait for /root/pr_audit; release to /root/build_environment after completion",
+  "source_change": {
+    "task": "P7-014",
+    "counterexample": "u64 gc_min_retention_secs above i64::MAX passes nonzero validation and wraps to negative i64 runtime grace",
+    "fixture": "crates/cc-server/tests/p7_gc_retention_config.rs",
+    "production": "crates/cc-server/src/semantic_wiring.rs",
+    "documentation": "docs/CONFIGURATION.md",
+    "red_before_fix": true,
+    "preserve_disabled_inertness": true
+  },
+  "P7-013": {
+    "authority": [
+      "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md#P7-013",
+      "docs/roadmap/code-index-v2/02-CONTRACTS.md#C11",
+      "docs/roadmap/code-index-v2/02-CONTRACTS.md#C12"
+    ],
+    "requirement_map": [
+      {
+        "requires": "absolute parent/child deadline and fake/stub cancellation",
+        "targets": [
+          "cc-search execution::tests",
+          "cc-server semantic_query_encoding::tests",
+          "cc-server p7_acceptance_matrix"
+        ],
+        "level": "L1/L2"
+      },
+      {
+        "requires": "real HTTP stalled headers/body, protocol cancel, bounded physical lifetime, failure cache rejection and recovery",
+        "targets": [
+          "cc-server p7_query_deadline_public"
+        ],
+        "level": "L3 actual product stdio + loopback"
+      },
+      {
+        "requires": "auto local result with explicit failure receipt; semantic insufficiency never Complete success; same request failure/recovery/failure",
+        "targets": [
+          "cc-server p7_acceptance_matrix",
+          "cc-server p7_query_deadline_public"
+        ],
+        "level": "L2/L3"
+      },
+      {
+        "requires": "one DB connection/no Index DB writer/build lock or CPU permit held over network",
+        "targets": [
+          "cc-server p7_production_fairness_model_review",
+          "cc-server p7_v11_generation_public"
+        ],
+        "level": "L2/L3"
+      },
+      {
+        "requires": "current generation fence, finite retry and current admitted cache domains remain sound",
+        "targets": [
+          "cc-server p7_v05_v11_independent_review",
+          "cc-server p7_v11_ready_epoch_independent_review",
+          "cc-server p7_status_snapshot_independent_review",
+          "cc-server p7_v11_cache_key_matrix",
+          "cc-server cache_key_review_behavior",
+          "cc-server p7_v11_cache_consumption",
+          "cc-server v11_consumption_independent_review"
+        ],
+        "level": "L2/L3 current supported domains"
+      }
+    ],
+    "not_claimed": [
+      "instant preemption of blocking HTTP",
+      "global process resource/performance SLA",
+      "hypothetical unadmitted parser/spec version migration",
+      "live provider semantic quality or paid currency costs"
+    ],
+    "query_network_decision": "Default cache-only; explicit four-way semantic-http/enabled/network_opt_in/allow_query_network gate permits async-to-bounded-blocking encoding under same child deadline. Current config/docs and existing public tests supersede the original brief draft default-only risk question."
+  },
+  "P7-014": {
+    "authority": [
+      "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md#P7-014",
+      "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md#13-wiring-items",
+      "docs/roadmap/code-index-v2/02-CONTRACTS.md#C14"
+    ],
+    "requirement_map": [
+      {
+        "requires": "GC grace structural positive representability and inert disabled config",
+        "targets": [
+          "cc-server p7_gc_retention_config"
+        ],
+        "level": "L2 actual assembly and cache GC"
+      },
+      {
+        "requires": "14 tools/legacy hybrid-symbol/schema/sanitize/dispatch/strategy/status/authority",
+        "targets": [
+          "cc-server p7_v18_parameter_contract default",
+          "cc-server p7_v18_parameter_contract semantic",
+          "cc-server p7_v18_parameter_contract semantic-http",
+          "cc-server mcp_stdio default"
+        ],
+        "level": "L3 actual product stdio except config parsing unit"
+      },
+      {
+        "requires": "unconfigured, disabled, backfilling, failed, ready plus clean restart/opt-in revocation",
+        "targets": [
+          "artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py"
+        ],
+        "level": "L3 actual product stdio + loopback; original script and 13-state oracle bytes unchanged"
+      },
+      {
+        "requires": "production post-index worker/degrade/lifecycle and point-in-time status",
+        "targets": [
+          "cc-server semantic_runtime::tests",
+          "cc-server capability_status::tests"
+        ],
+        "level": "L1/L2"
+      },
+      {
+        "requires": "13 wiring items ownership reconciliation",
+        "targets": [
+          "source audit to current configuration/runtime/explicit helpers and original item owners"
+        ],
+        "level": "source audit; absent production triggers stay open"
+      }
+    ],
+    "not_claimed": [
+      "entire P7-014 completion from five states alone",
+      "SIGKILL/fault matrix P7-016",
+      "cold release packaging",
+      "live provider quality",
+      "full mark/unlink race"
+    ],
+    "overlap_policy": "Shared Rust functions rerun across feature profiles and IDs are reported as execution counts with unique target+function identity, not distinct new tests or TODOs."
+  }
+}

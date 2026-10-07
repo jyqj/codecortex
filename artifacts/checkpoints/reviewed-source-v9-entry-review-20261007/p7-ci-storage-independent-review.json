@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "source_commit": "517d28e251b19ed8223da52f48e0cc4bf64634e1",
+  "worktree_head_observed": "517d28e251b19ed8223da52f48e0cc4bf64634e1",
+  "verdict": "accepted_scoped_storage_only",
+  "files_verified_against_fixed_commit": {
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/README.md": {
+      "bytes": 4289,
+      "sha256": "e21e60af1bc8cdfe6f29f89f9b9e97f7271ff05d5c86987b4dbaf49fca093ccd"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/STORAGE.md": {
+      "bytes": 1299,
+      "sha256": "04ad81c29ce973d0c5ecf1e9463266112c3951e3be5bf9a96592e0a2297ff2c9"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/checkpoint-files.json": {
+      "bytes": 8295,
+      "sha256": "b549f183336d09c35613b142c60e3cc17f6e5c3fabadc74db1a00f06e46e9b5e"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/independent-review.json": {
+      "bytes": 7708,
+      "sha256": "6c3a2feff8c114bdcbb3d161c39eb15d57c3976926c029b26c5f537fa03f29bb"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/raw-observations.tar.gz": {
+      "bytes": 709001,
+      "sha256": "2d6d20f8f9d034da1f7dcabfa9202bb8f8103e0bae6028e859d1f7829280fec5"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/source-bindings.json": {
+      "bytes": 3322,
+      "sha256": "9c374568003032d75eaad9b887635b8b852f693af17231a1755c231fa71e36b5"
+    },
+    "artifacts/checkpoints/pr144-p7-engineering-ci-20261007/verify_storage.py": {
+      "bytes": 7806,
+      "sha256": "b2e46fc013411c233ac6fc4f33aebbe280c4a5795fe21cc65e6659f65266d21c"
+    }
+  },
+  "verify_storage_execution": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B artifacts/checkpoints/pr144-p7-engineering-ci-20261007/verify_storage.py",
+    "exit_code": 0,
+    "executed_once_by_this_reviewer": true,
+    "original_files": 47,
+    "archive_members": 45,
+    "disk_files": 2,
+    "mirrored_files": 0,
+    "raw_content_bytes": 6741150,
+    "archive_bytes": 709001,
+    "filesystem_extraction": false,
+    "payload_execution": false
+  },
+  "original_independent_review_unchanged": true,
+  "github_zip_original_sha256": "7a1d199876e6a5c24593096d5406c2195e6c03ac645c05041ad15df5ba2ad2a1",
+  "helper_review": "Full helper read; independent diff against already reviewed P7-017 storage helper contains only six fixed digest/size/count values, no algorithm/control-flow changes.",
+  "limits": [
+    "No Rust/product/workflow execution or re-review of the 58 functions performed here.",
+    "Storage fixity does not convert the separate failed legacy CI to success or accept P7-013.",
+    "At reviewed packaging 40 original tasks remain unfinished and P7-013 remains in_progress."
+  ]
+}

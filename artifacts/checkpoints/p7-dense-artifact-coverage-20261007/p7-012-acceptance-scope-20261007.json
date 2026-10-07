@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "task_id": "P7-012",
+  "reference_source": "f6c860c96f22e39bc3ced5a81891e3070ffbada5",
+  "verdict": "engineering_acceptance_satisfied_subject_to_parent_acceptance_and_P7_011_done",
+  "basis": "Direct original P7-012 task brief and G3-P7 acceptance mapping, not an analogy from earlier completed tasks.",
+  "requires_full_six_repository_V19_for_this_mechanism_task": false,
+  "full_V19_gate_status": "open; no corpus/holdout/statistics or live semantic-effect closure inferred",
+  "task_status_mutated": false,
+  "references": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "locator": "P7-012, P7-018, P7-019, P7-020",
+      "sha256": "78d0c132080d293ff0bd036a305f4000f856e267f3192fba37335a02cff05490"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "locator": "C10–C12, C16; lines 81–106, 124–126",
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+      "locator": "P7; lines 121–132",
+      "sha256": "7c799531fa9bad32b274db107f4808e0e641fe1585e9d5fbbe5fe32ddcb52fd3"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "locator": "V11/V19, G7, engineering/live split; lines 13–17, 33, 41, 57–61",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "locator": "native no-answer, dataset roadmap, ablation, CI profiles; lines 79, 130–136, 146–159, 179–189",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+      "locator": "P7-012 lines 413–454; P7-019 lines 634–661; P7-020 lines 665–687",
+      "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md",
+      "locator": "D1/D2 and G3-P7; lines 102–124, 159–174",
+      "sha256": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9"
+    },
+    {
+      "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+      "locator": "decisions[id=D1+D2]",
+      "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+    },
+    {
+      "path": "artifacts/checkpoints/todolist-completion-audit/round14/p7-batch1-closure-audit.json",
+      "locator": "dual_track_accounting; red_lines.no_gate_inference",
+      "sha256": "06e55c4ddfa6443be50daca65e1a878d6637d77a24dd0778ecfa50ba87d8cbfe"
+    },
+    {
+      "path": "artifacts/checkpoints/todolist-completion-audit/round15/p7-batch2-closure-audit.json",
+      "locator": "dual_track_accounting; red_lines.no_gate_inference",
+      "sha256": "7fc980a408d71a1e113691deaa460aefcaec7a6ef2a40e8f6de43c9dbcae3932"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P7-REMAINING-GATES.json",
+      "locator": "full_gate_status; V19/report/corpus/holdout/facet-span/statistics/ablation rows",
+      "sha256": "ab90471315a8d18e90235bf875dea091828d9930f859a55345357f578eab704b"
+    }
+  ],
+  "applicable_acceptance": [
+    {
+      "requirement": "independent dense rank RRF; do not mix raw cosine/BM25",
+      "direct_authority": "TASK-BRIEFS.md:415–420,448–449",
+      "current_evidence": "fusion-acceptance: 10/0/0; dense_votes_fuse_by_rank_only_and_never_mix_raw_scores, raw_score_scale_does_not_change_rrf_and_trace_replays, deterministic ties and invalid candidate controls"
+    },
+    {
+      "requirement": "timeout and complete zero-result remain distinct",
+      "direct_authority": "TASK-BRIEFS.md:443–445; 09-BENCHMARK.md:79",
+      "current_evidence": "fusion semantic_timeout_and_complete_zero_hits_stay_distinguishable; p7_acceptance_matrix repeated Timeout/Error/Unavailable recovery in Auto and Semantic; new corrupt-empty versus true-empty real recall/envelope"
+    },
+    {
+      "requirement": "declared full coverage refers to actual lane/SourceVerifier evidence; Partial remains visible and fusable",
+      "direct_authority": "TASK-BRIEFS.md:446–449; C10/C12",
+      "current_evidence": "new real-worker artifact fixture 4/0/0, independent baseline 2pass/2fail, full SQL publication with missing/corrupt payloads becomes noncacheable Partial, valid source survives final envelope; exact diagnostics 21/0/0; original HTTP scope/oracle targets 13/0/0"
+    },
+    {
+      "requirement": "current target source, positive/negative and relevant old regressions, bounded costs, recovery/rollback and review",
+      "direct_authority": "C16; tasks.json P7-012 acceptance[1]",
+      "current_evidence": "59 scoped behavior tests 0fail/0ignored; two strict clippy scopes and workspace fmt passed; immutable baseline fixture, all 769 input maps unchanged per run; actual cache allocation bounds and legacy score comparisons; same-epoch file restoration tested; independent static review pin f6c860c9"
+    }
+  ],
+  "status_change_conditions": [
+    "Parent accepts and integrates the exact reviewed production/fixture bytes and associates current receipts/review.",
+    "P7-011 must first be marked done with its own accepted evidence; no dependency change or waiver.",
+    "Keep V11/V19 in validations and explicitly name their applicable mechanism assertions; do not change acceptance text.",
+    "Keep V19 full quality, heldout, P7-018 live, P7-019 quality/cost mechanism work, and P7-020 stage conclusions separately unresolved until their own evidence exists."
+  ],
+  "prior_done_decision_applicability": "Round14/15 explicitly accepted their own mock legs while retaining formal gate not_run. This corroborates task/stage accounting but is not authority to waive P7-012; its own TASK-BRIEFS and G3-P7 mapping supply that authority.",
+  "supersedes_earlier_audit_inference": "The earlier quick audit statement that P7-012 cannot close solely because complete V19 corpus/holdout is open was overbroad. Direct original task-specific acceptance now resolves responsibility without changing any requirement or historical gate record.",
+  "evidence": "p7-012-evidence/validation.json"
+}

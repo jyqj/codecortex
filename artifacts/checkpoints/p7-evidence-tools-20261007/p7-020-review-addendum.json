@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "mode": "independent read-only fixed-commit diff/source review; no test execution",
+  "prior_review": {
+    "path": "/workspace/scratch/71bc431c4e4f/p7-020-dossier-independent-review.json",
+    "sha256": "3493980e9793eb2d5ede40789e146390a7f8df3c1d71fbad82ee0f5b061bccdb",
+    "unchanged": true
+  },
+  "dossier_addendum": {
+    "source_commit": "9f61e0cef6c841baef02f952f6a1e2176e182255",
+    "conclusion": "accepted_scoped_no_gate_approval",
+    "files": {
+      "scripts/p7_gate_report.py": "3cc129c8ac30ac0987491cbac5143093fc4fe35f7268839ccc2b3aea0df7ec20",
+      "tests/resource_harness/test_p7_gate_report.py": "a4d0d9abf3c33c294de11d11f79112271291dd749b2e5ceb75d789e892ebfec2"
+    },
+    "changes_verified": [
+      "Index intake reads at most 256 KiB plus one byte before checking the limit.",
+      "Empty PurePosixPath.parts is explicitly rejected, including dot.",
+      "Live validation disposition is explicitly limited to the live provider leg; offline V18 remains separately assessable.",
+      "The same eight synthetic control methods now also exercise dot-path and oversize-input rejection."
+    ],
+    "controls": {
+      "reported_by": "/root",
+      "reported_passed": 8,
+      "reviewer_execution": false
+    },
+    "earlier_nonblocking_baseline_scope_note": "The explicit 40-hex baseline remains caller-selected and must be independently reviewed; hashes do not grant G7 approval."
+  },
+  "workflow_review": {
+    "source_commit": "a0b19025c854e1791b455fd2957524086d2b6d32",
+    "path": ".github/workflows/p7-engineering.yml",
+    "sha256": "c4509a145e844b85da7d15f1128647ef95936e062cdeaac007f9e4e1d0a6e0c5",
+    "conclusion": "accepted_scoped_static_only",
+    "old_ci_yml_changed_in_commit": false,
+    "properties": [
+      "Triggered by pull_request and pushes to main; contents permission is read-only. No provider credentials, live calls, publication or task mutation is configured.",
+      "Fixed Rust 1.95.0, two Cargo jobs, debug info disabled; normal test concurrency and original targets/assertions are preserved.",
+      "Each cargo-to-tee pipeline enables pipefail; source-after and artifact upload run even following a failure. Later test steps may be skipped after an earlier failure and must retain that not-run interpretation.",
+      "Records complete committed crate/Cargo inventory before and after; artifact integrity and workflow execution do not automatically certify task or release acceptance.",
+      "New engineering matrix is separate from unchanged ci.yml and does not execute the historical ignored SIGKILL/GC-WAL gates."
+    ],
+    "recommendation": "Explicitly bind both CARGO_TARGET_DIR and CARGO_BUILD_BUILD_DIR to the same new job-private RUNNER_TEMP path to enforce the stated private-target property rather than relying on fresh-runner defaults.",
+    "execution_preconditions": [
+      "Final integrated source must actually contain p7_dense_artifact_coverage, p7_gc_retention_config, gc_unlink_accounting, p7_worker_contention and p7_strategy_ablation test targets with the requested features.",
+      "CI execution outcomes are pending and cannot be inferred from this static workflow review."
+    ]
+  },
+  "blockers": [],
+  "not_claimed": [
+    "Python controls independently rerun",
+    "Rust commands executed",
+    "new CI green",
+    "complete G7 acceptance",
+    "live semantic benefit"
+  ]
+}

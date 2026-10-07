@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "review_kind": "read-only source review of a narrowly specified CI path substitution",
+  "source_before": "c3a4fb22e439945325d86a5c8a99c8ead56104b9",
+  "ci_before_sha256": "73d670414530c8f0fc4e5353acf53999631c8edf925fdc8958a2a55f5f4493e5",
+  "old_literal": "CODECORTEX_BENCH_BINARY=\"$PWD/target/debug/codecortex\"",
+  "new_literal": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\"",
+  "old_occurrences": 19,
+  "default_literal_occurrences_after_path_only_substitution": 20,
+  "path_only_expected_ci_sha256": "6649dc2307fca02b5f8de0e04b582633d8508455fb6a09379a5ed62e787ef0b8",
+  "conclusion": "accepted_scoped_proposed_path_substitution",
+  "reason": "The prior builder overwrote shared target/debug/codecortex with the default package. The isolated builder no longer does so, allowing later old-tool tests to inherit an earlier semantic-http shared product. The explicit copied default artifact restores the intended package identity and remains stable across subsequent Cargo work.",
+  "reviewed_consumers": [
+    "p1a_retrieval",
+    "p1b_retrieval",
+    "p1c_retrieval/p1c_contract",
+    "p1d_cost/p1d_docs/p1d_concurrency",
+    "p2a_incremental",
+    "p2b_incremental",
+    "p2c_reconcile",
+    "p2d_mutations",
+    "p3a_project_model",
+    "p3b_modules",
+    "p3c_modules",
+    "p3d_modules",
+    "p4a_source",
+    "p4b_chunks",
+    "p4c_documents",
+    "p5a_retrieval ignored MCP",
+    "p5b_execution ignored MCP",
+    "p5c_budget ignored MCP",
+    "p5d_contract ignored MCP"
+  ],
+  "required_invariants": [
+    "Exactly all 19 old default-product literals are replaced; the initial default P0 reference remains, so default snapshot references total 20.",
+    "The explicit semantic product snapshot reference remains separate and unchanged.",
+    "All original cargo targets, feature flags, filters, limits, observations paths and tests remain unchanged.",
+    "The v8 guard must admit only this fixed path transformation in addition to its precise selector update; historical BASE/registries/checkpoint evidence remain immutable."
+  ],
+  "execution": "No Rust/CI executed by reviewer. Later source guard controls and Actions outcomes are separate.",
+  "not_reviewed": [
+    "The not-yet-frozen v8 guard implementation and selector mutation",
+    "Final assembled source behavior inferred from old source receipts"
+  ]
+}

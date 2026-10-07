@@ -1,0 +1,34 @@
+{
+  "base_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "task": "P7-016",
+  "worktree": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016",
+  "scope": "GC unlink error accounting and public collect/sweep recovery subset",
+  "authority_inputs": {
+    "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9",
+    "crates/cc-semantic/tests/semantic_gc.rs": "86b26a5e3096720238cc62338fb42b86fb182048e6cd9e4c69882d281c79411d",
+    "crates/cc-semantic/src/gc.rs": "272829c189264a11658252b57cb0b09eb77e2dc478f5369b26d3d35dce183d8a"
+  },
+  "case_seeds": {
+    "17": "first object unlink fails; second half preserved",
+    "29": "second object unlink fails after first succeeds; retry classifies surviving half",
+    "43": "half-file unlink error and recollection recovery",
+    "59": "temporary-file unlink error and recollection recovery",
+    "61": "both paths already absent",
+    "67": "first path already absent; remove counterpart",
+    "71": "second path already absent; remove remaining payload",
+    "73": "both paths present; count one retired object"
+  },
+  "fixture_contract": "Real ArtifactCache put and DB mark; after public collection replace an owned file with a directory to obtain a deterministic filesystem unlink error; restore only that fixture file and collect/mark anew. No private fault hook is introduced.",
+  "expected_baseline": "Five original-API test functions should fail on hidden I/O errors or false deletion count, before production repair. Baseline is not run yet.",
+  "original_regression_target": "cc-semantic --test semantic_gc (8 tests)",
+  "production_plan": "Return whether unlink performed work; NotFound false; all other IO errors propagate unchanged; only actual unlinks contribute deleted counters. Errors may leave earlier unlinks completed and return no new pass cursor.",
+  "not_claimed": [
+    "Atomic rollback or complete failed-batch counters on an error.",
+    "Full mark-to-unlink or concurrent publication safety.",
+    "Full P7-016 representative retry/close/restart/rebuild/delete/lease/GC combination closure or formal process-SIGKILL coverage.",
+    "Real-provider semantic quality."
+  ],
+  "cargo_or_schema_change": false,
+  "rust_execution": "Queued after pr_audit P7-019, no Rust run in this worktree yet."
+}

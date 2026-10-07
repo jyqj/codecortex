@@ -1,0 +1,1365 @@
+{
+  "bindings": [
+    {
+      "artifact": "product",
+      "kind": "sha256",
+      "receipt": {
+        "input": "build",
+        "pointer": "/binary_sha256"
+      }
+    },
+    {
+      "artifact": "product",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/product_binary_before"
+      }
+    },
+    {
+      "artifact": "product",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/product_binary_after"
+      }
+    },
+    {
+      "artifact": "product",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/environment/P7_STRATEGY_BINARY_SHA256"
+      }
+    },
+    {
+      "artifact": "product",
+      "kind": "sha256",
+      "receipt": {
+        "input": "product_record",
+        "pointer": "/binary_sha256"
+      }
+    },
+    {
+      "artifact": "build",
+      "kind": "sha256",
+      "receipt": {
+        "input": "product_record",
+        "pointer": "/build_receipt_sha256"
+      }
+    },
+    {
+      "artifact": "source_manifest",
+      "kind": "sha256",
+      "receipt": {
+        "input": "build",
+        "pointer": "/build_options/binding/source_manifest_sha256"
+      }
+    },
+    {
+      "artifact": "source_manifest",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/source_manifest_sha256"
+      }
+    },
+    {
+      "artifact": "source_manifest",
+      "kind": "sha256",
+      "receipt": {
+        "input": "source_freeze",
+        "pointer": "/manifest_sha256"
+      }
+    },
+    {
+      "artifact": "source",
+      "kind": "tree_sha256",
+      "receipt": {
+        "input": "source_manifest",
+        "pointer": ""
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "build",
+        "pointer": "/source_files"
+      },
+      "right": {
+        "input": "source_manifest",
+        "pointer": ""
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "build",
+        "pointer": "/build_options/binding/source_commit"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "execution",
+        "pointer": "/source_commit_before"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "build_capture",
+        "pointer": "/source_commit_before"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "workspace_clean",
+        "pointer": "/source_commit_before"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "execution",
+        "pointer": "/environment/CODECORTEX_BENCH_BINARY"
+      },
+      "right": {
+        "input": "product_record",
+        "pointer": "/binary"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "plan",
+        "pointer": "/binary"
+      },
+      "right": {
+        "input": "product_record",
+        "pointer": "/binary"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "plan",
+        "pointer": "/build_receipt"
+      },
+      "right": {
+        "input": "execution",
+        "pointer": "/environment/P7_STRATEGY_BUILD_RECEIPT"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "plan",
+        "pointer": "/source_snapshot"
+      },
+      "right": {
+        "input": "execution",
+        "pointer": "/environment/P7_STRATEGY_SOURCE_SNAPSHOT"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "source_freeze",
+        "pointer": "/snapshot_path"
+      },
+      "right": {
+        "input": "plan",
+        "pointer": "/source_snapshot"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "build_capture",
+        "pointer": "/command"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/command"
+      }
+    },
+    {
+      "artifact": "build_log",
+      "kind": "sha256",
+      "receipt": {
+        "input": "build_capture",
+        "pointer": "/log_sha256"
+      }
+    },
+    {
+      "artifact": "execution_log",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/log_sha256"
+      }
+    },
+    {
+      "artifact": "workspace_clean_log",
+      "kind": "sha256",
+      "receipt": {
+        "input": "workspace_clean",
+        "pointer": "/log_sha256"
+      }
+    },
+    {
+      "artifact": "source_helper",
+      "kind": "sha256",
+      "receipt": {
+        "input": "source_freeze",
+        "pointer": "/helper_sha256"
+      }
+    },
+    {
+      "artifact": "executor_helper",
+      "kind": "sha256",
+      "receipt": {
+        "input": "build_capture",
+        "pointer": "/executor_script_sha256"
+      }
+    },
+    {
+      "artifact": "executor_helper",
+      "kind": "sha256",
+      "receipt": {
+        "input": "execution",
+        "pointer": "/executor_script_sha256"
+      }
+    },
+    {
+      "artifact": "product_helper",
+      "kind": "sha256",
+      "receipt": {
+        "input": "build",
+        "pointer": "/build_options/binding/capture_executor_sha256"
+      }
+    },
+    {
+      "at": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      },
+      "expected": "93356fc87e9534c286192bde1fc88aa95abe878b",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "source_freeze",
+        "pointer": "/input_count"
+      },
+      "expected": 772,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build",
+        "pointer": "/build_options/features"
+      },
+      "expected": [
+        "semantic-http"
+      ],
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build",
+        "pointer": "/build_options/profile"
+      },
+      "expected": "dev debug=0, incremental=false",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "product_record",
+        "pointer": "/features_requested"
+      },
+      "expected": [
+        "semantic-http"
+      ],
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "plan",
+        "pointer": "/strategies"
+      },
+      "expected": [
+        "local",
+        "auto",
+        "semantic"
+      ],
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "plan",
+        "pointer": "/network"
+      },
+      "expected": "loopback_only",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "suite",
+        "pointer": "/scoring"
+      },
+      "expected": "codecortex-native-v1",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "suite",
+        "pointer": "/engine_config/semantic/model_id"
+      },
+      "expected": "p7-019-fake-constant-vector",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build",
+        "pointer": "/exit_code"
+      },
+      "expected": 0,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build_capture",
+        "pointer": "/exit_code"
+      },
+      "expected": 0,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "execution",
+        "pointer": "/exit_code"
+      },
+      "expected": 0,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "workspace_clean",
+        "pointer": "/exit_code"
+      },
+      "expected": 0,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build_capture",
+        "pointer": "/source_inputs_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "build_capture",
+        "pointer": "/executor_script_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "execution",
+        "pointer": "/source_inputs_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "execution",
+        "pointer": "/executor_script_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "workspace_clean",
+        "pointer": "/source_inputs_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "workspace_clean",
+        "pointer": "/executor_script_unchanged"
+      },
+      "expected": true,
+      "kind": "value"
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/engine/strategy_ablation/product_build_receipt"
+      },
+      "right": {
+        "input": "build",
+        "pointer": ""
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/suite/engine_config"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/engine_config"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/suite/scoring"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/scoring"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/suite/source"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/suite/queries_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/input/source_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source/digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/input/query_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "local_manifest",
+        "pointer": "/engine/engine_head_observed"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "at": {
+        "input": "local_manifest",
+        "pointer": "/measurement_profile"
+      },
+      "expected": "fake",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "local_manifest",
+        "pointer": "/engine/strategy_ablation/requested"
+      },
+      "expected": "local",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "local_manifest",
+        "pointer": "/infrastructure_failure"
+      },
+      "expected": null,
+      "kind": "value"
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/os"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/os"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/arch"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/arch"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/cpu_parallelism"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/cpu_parallelism"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/hardware"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/hardware"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustc"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/rustc"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustflags"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/rustflags"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/sdkroot"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/sdkroot"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_version"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/eval_version"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_debug_assertions"
+      },
+      "right": {
+        "input": "local_manifest",
+        "pointer": "/engine/eval_debug_assertions"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/engine/strategy_ablation/product_build_receipt"
+      },
+      "right": {
+        "input": "build",
+        "pointer": ""
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/suite/engine_config"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/engine_config"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/suite/scoring"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/scoring"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/suite/source"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/suite/queries_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/input/source_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source/digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/input/query_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "auto_manifest",
+        "pointer": "/engine/engine_head_observed"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "at": {
+        "input": "auto_manifest",
+        "pointer": "/measurement_profile"
+      },
+      "expected": "fake",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "auto_manifest",
+        "pointer": "/engine/strategy_ablation/requested"
+      },
+      "expected": "auto",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "auto_manifest",
+        "pointer": "/infrastructure_failure"
+      },
+      "expected": null,
+      "kind": "value"
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/os"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/os"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/arch"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/arch"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/cpu_parallelism"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/cpu_parallelism"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/hardware"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/hardware"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustc"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/rustc"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustflags"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/rustflags"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/sdkroot"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/sdkroot"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_version"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/eval_version"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_debug_assertions"
+      },
+      "right": {
+        "input": "auto_manifest",
+        "pointer": "/engine/eval_debug_assertions"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/strategy_ablation/product_build_receipt"
+      },
+      "right": {
+        "input": "build",
+        "pointer": ""
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/suite/engine_config"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/engine_config"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/suite/scoring"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/scoring"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/suite/source"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/suite/queries_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/input/source_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/source/digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/input/query_digest"
+      },
+      "right": {
+        "input": "suite",
+        "pointer": "/queries_digest"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/engine_head_observed"
+      },
+      "right": {
+        "input": "source_freeze",
+        "pointer": "/source_commit"
+      }
+    },
+    {
+      "at": {
+        "input": "semantic_manifest",
+        "pointer": "/measurement_profile"
+      },
+      "expected": "fake",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/strategy_ablation/requested"
+      },
+      "expected": "semantic",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "semantic_manifest",
+        "pointer": "/infrastructure_failure"
+      },
+      "expected": null,
+      "kind": "value"
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/os"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/os"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/arch"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/arch"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/cpu_parallelism"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/cpu_parallelism"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/hardware"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/hardware"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustc"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/rustc"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/rustflags"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/rustflags"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/sdkroot"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/sdkroot"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_version"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/eval_version"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/fields/eval_debug_assertions"
+      },
+      "right": {
+        "input": "semantic_manifest",
+        "pointer": "/engine/eval_debug_assertions"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/build_profile/features"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/features"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/build_profile/profile"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/profile"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/build_profile/jobs"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/jobs"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/build_profile/cargo"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/cargo"
+      }
+    },
+    {
+      "kind": "equal",
+      "left": {
+        "input": "environment",
+        "pointer": "/build_profile/rustc"
+      },
+      "right": {
+        "input": "build",
+        "pointer": "/build_options/rustc"
+      }
+    },
+    {
+      "at": {
+        "input": "comparison",
+        "pointer": "/exit_code"
+      },
+      "expected": 0,
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "comparison",
+        "pointer": "/profile"
+      },
+      "expected": "fake",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "comparison",
+        "pointer": "/status"
+      },
+      "expected": "engineering_strategy_observations_not_quality_certification",
+      "kind": "value"
+    },
+    {
+      "at": {
+        "input": "comparison",
+        "pointer": "/effect_interpretation"
+      },
+      "expected": "none; engineering mechanism only",
+      "kind": "value"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "product",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-codecortex-semantic-http",
+      "roles": [
+        "binary"
+      ]
+    },
+    {
+      "id": "source",
+      "kind": "tree",
+      "path": "p7-019-validation/canonical-source-snapshot",
+      "roles": [
+        "source"
+      ]
+    },
+    {
+      "id": "source_manifest",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-source-inputs.json",
+      "roles": [
+        "source_receipt"
+      ]
+    },
+    {
+      "id": "source_freeze",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-source-freeze.json",
+      "roles": [
+        "source_receipt"
+      ]
+    },
+    {
+      "id": "source_helper",
+      "kind": "file",
+      "path": "codecortex-p7-tooling/scripts/p7_build_identity.py",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "build",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-http-product-build-receipt.json",
+      "roles": [
+        "build_receipt"
+      ]
+    },
+    {
+      "id": "product_record",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-http-product.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "build_capture",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-http-product-build.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "build_log",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-http-product-build.log",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "workspace_clean",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-workspace-clean.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "workspace_clean_log",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-workspace-clean.log",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "executor_helper",
+      "kind": "file",
+      "path": "p7-019-validation/run_checked.py",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "product_helper",
+      "kind": "file",
+      "path": "p7-019-validation/capture_canonical_product.py",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "execution",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy-stdio.json",
+      "roles": [
+        "execution_receipt"
+      ]
+    },
+    {
+      "id": "execution_log",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy-stdio.log",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "suite",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/suite.json",
+      "roles": [
+        "config",
+        "scoring",
+        "model"
+      ]
+    },
+    {
+      "id": "plan",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/plan.json",
+      "roles": [
+        "model",
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "corpus",
+      "kind": "tree",
+      "path": "p7-019-validation/canonical-three-policy/input",
+      "roles": [
+        "corpus"
+      ]
+    },
+    {
+      "id": "queries",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/queries.jsonl",
+      "roles": [
+        "queries"
+      ]
+    },
+    {
+      "id": "reports",
+      "kind": "tree",
+      "path": "p7-019-validation/canonical-three-policy/run",
+      "roles": [
+        "report"
+      ]
+    },
+    {
+      "id": "provider_observations",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/fake-provider-observations.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "environment",
+      "kind": "file",
+      "path": "p8-001-evidence/environment-allowlist.json",
+      "roles": [
+        "environment"
+      ]
+    },
+    {
+      "id": "local_manifest",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/run/local/manifest.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "auto_manifest",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/run/auto/manifest.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "semantic_manifest",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/run/semantic/manifest.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    },
+    {
+      "id": "comparison",
+      "kind": "file",
+      "path": "p7-019-validation/canonical-three-policy/run/comparison.json",
+      "roles": [
+        "supporting_evidence"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "scope": "preparation_only",
+  "unresolved": [
+    "P7-020 remains incomplete; P8-001 stays todo/groundwork. No release candidate or P8 acceptance starts here.",
+    "P7-019 is a synthetic loopback engineering profile, not public holdout quality or a live-model benefit certificate.",
+    "The model_id and expected encoding space describe a pinned fake provider; no real model revision is certified.",
+    "Original hardware is null; physical CPU model/RAM and paid-provider costs are unknown, not zero.",
+    "This locks supplied source/build/execution relationships, not their independent authenticity or full hermetic input closure.",
+    "Native cc-eval BLAKE3 declarations are retained and related across reports; this SHA256 lock does not replace the original loader/scorer execution.",
+    "Exact retained product binary, source snapshot and canonical raw bundle are external inputs required for later verification."
+  ]
+}

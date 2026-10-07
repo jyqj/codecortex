@@ -1,0 +1,477 @@
+{
+  "P7_012_dependency_at_pr_head": "done",
+  "acceptance_hold_reasons": [
+    {
+      "failed_step": "Fixed resource driver harmless fixtures and TODO consistency",
+      "failure_does_not_erase_new58_success": true,
+      "reported_assertion": "verify_fixed_e3_integration.py:23 -> verify_packing_integration.py:62: preserved_task_states equality",
+      "run_id": 37653732411,
+      "skipped_related_steps": [
+        "semantic-http capability/status/real ready product17",
+        "explicit default/semantic product stdio",
+        "later P5-B/P5-C/P5-D command steps"
+      ],
+      "status": "blocking_pending_repaired_legacy_execution_and_independent_review"
+    }
+  ],
+  "applicable_obligations": [
+    {
+      "authority": [
+        "TASK-BRIEFS:458-496",
+        "02-CONTRACTS:C11",
+        "06-VALIDATION:V11"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "L1/L2 plus real built-product stdio/loopback HTTP; keep original 150/2000 ms child, 8000 ms parent and 1500/3000 ms observation bounds",
+      "expected_current_tests": [
+        "cc-search::execution::tests::semantic_lane_share_never_extends_the_total_deadline",
+        "cc-search::execution::tests::async_timeout_keeps_parent_usable",
+        "semantic_query_encoding::tests::transport_clamps_each_request_to_absolute_budget_and_redacts_errors",
+        "semantic_query_encoding::tests::publication_barrier_drop_cancel_deadline_and_retirement_are_atomic",
+        "p7_query_deadline_public"
+      ],
+      "requirement": "Immutable total query deadline; lane child is clamped to parent; cancellation propagates without late publication."
+    },
+    {
+      "authority": [
+        "TASK-BRIEFS:491-501",
+        "02-CONTRACTS:C11",
+        "06-VALIDATION:V11/V15"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Finite permits/pins and no late writes; no global OS-thread, instant socket-abort or RSS certification",
+      "expected_current_tests": [
+        "p7_acceptance_matrix::transport::slow_offline_transport_cancellation_keeps_worker_capacity_until_physical_exit",
+        "semantic_query_encoding::tests::timeout_cancel_and_future_drop_refuse_late_writes_and_hold_capacity_until_exit",
+        "semantic_query_encoding::tests::exact_root_drop_and_project_cancel_hold_pin_capacity_and_cancel_only_child_transport",
+        "p7_production_fairness_model_review::aborted_production_queries_retain_physical_slots_pins_and_provider_gate",
+        "p7_query_deadline_public::protocol_cancel_keeps_http_deadline_bounded_and_later_auto_request_can_fallback"
+      ],
+      "requirement": "Fake/stub slow calls and real HTTP stall/cancel obey bounded physical-work ownership; future drop is not thread exit."
+    },
+    {
+      "authority": [
+        "TASK-BRIEFS:479-489",
+        "02-CONTRACTS:C10/C11",
+        "06-VALIDATION:V11/V15"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Both Auto and Semantic fault/complete/fault triplets assert lane status/reason/coverage and unchanged local hits. Public semantic is not dense-only; explicit diagnostic insufficiency meets the original contract.",
+      "expected_current_tests": [
+        "p7_acceptance_matrix::same_request_fault_recovery_and_repeated_failure_never_reuses_complete_success",
+        "p7_query_deadline_public::real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context",
+        "legacy p5b_execution real_mcp_preserves_tool_schema_and_exposes_offline_query_policy",
+        "legacy p5d_contract real_stdio_policy_override_and_capability_state"
+      ],
+      "requirement": "Auto retains local retrieval with visible failure; explicit semantic reports insufficiency and cannot present failed semantic work as complete."
+    },
+    {
+      "authority": [
+        "TASK-BRIEFS:491-495",
+        "02-CONTRACTS:C11",
+        "06-VALIDATION:V11"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Actual held-provider interval asserts one-connection/local progress, try_write/CPU availability and independent SQLite BEGIN IMMEDIATE/ROLLBACK. Static production handle capture agrees.",
+      "expected_current_tests": [
+        "p7_production_fairness_model_review::fifo_background_load_does_not_starve_search_context_or_release_slots_early",
+        "p7_production_fairness_model_review::fifo_foreground_load_does_not_starve_background_or_hold_db_cpu",
+        "p7_acceptance_matrix::transport::slow_offline_transport_cancellation_keeps_worker_capacity_until_physical_exit",
+        "legacy p5b_execution and cc-server::query_tests"
+      ],
+      "requirement": "Network execution holds no query RwLock, build gate, read-pool connection or SQL transaction; the single-read-connection and bounded CPU paths remain usable."
+    },
+    {
+      "authority": [
+        "TASK-BRIEFS:491-503",
+        "02-CONTRACTS:C10/C12",
+        "06-VALIDATION:V11/V15"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Distinct current lane receipt for each failed/successful/repeated-failed query; actual 429/500/auth/timeout/cancel/index/dimension/zero/non-numeric cases plus NaN path. Existing full provider library regression remains independently attributable.",
+      "expected_current_tests": [
+        "p7_acceptance_matrix::same_request_fault_recovery_and_repeated_failure_never_reuses_complete_success",
+        "p7_acceptance_matrix::transport::rejected_transport_batch_never_poison_caches_and_recovery_is_reused_without_another_call",
+        "semantic_query_encoding::tests::typed_provider_timeout_and_cancel_survive_redaction_other_failures_do_not_leak",
+        "semantic_query_encoding::tests::malformed_real_encoder_output_is_rejected_before_shared_cache_publication",
+        "p7_query_deadline_public recovery call-count and warm-cache assertions"
+      ],
+      "requirement": "Failed/degraded results never enter the ordinary complete-result cache; timeout/cancel/malformed batches never prime the query-vector cache."
+    },
+    {
+      "authority": [
+        "02-CONTRACTS:C12",
+        "06-VALIDATION:V11",
+        "P7-REMAINING-GATES.json:minimum_gate_decisions.V11 and current_vs_future_V11"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Actual 3-attempt fences, bounded nested retry, publication/generation/consumer cache histories; existing current-vs-future V11 decision is retained, not replaced by a new waiver.",
+      "expected_current_tests": [
+        "p7_v05_v11_independent_review",
+        "p7_v11_generation_public",
+        "p7_v11_ready_epoch_independent_review",
+        "p7_v11_cache_key_matrix",
+        "p7_v11_cache_consumption",
+        "cache_key_review_behavior",
+        "v11_consumption_independent_review",
+        "p7_status_snapshot_independent_review"
+      ],
+      "requirement": "Mixed generations are rejected with finite retries; current admitted cache dependencies and immutable configuration/space domains remain complete."
+    },
+    {
+      "authority": [
+        "TASK-BRIEFS:498-503",
+        "OPEN-QUESTIONS:Q4",
+        "docs/CONFIGURATION.md:243-245",
+        "semantic_runtime.rs:447-592",
+        "cc-model config.rs:157-161 and 264-265"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "The decision is already documented and implemented, rather than still an unresolved planning default. Current positive path and preserved gate code are checked; prior parameter-matrix executions retain source 5af and are not called new 149 tests. Live data/paid calls remain unauthorized.",
+      "expected_current_tests": [
+        "semantic_query_encoding 13 existing controls",
+        "p7_query_deadline_public actual product single-attempt recovery",
+        "p7_acceptance_matrix::explicit_empty_hard_scopes_never_invoke_optional_port",
+        "legacy cc-model config default/independent-opt-in tests",
+        "legacy capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder",
+        "prior separately recorded p7_v18_parameter_contract on unchanged relevant production code"
+      ],
+      "requirement": "Resolve query-inline encoding authority: default no query network; an explicit independent opt-in permits one bounded foreground attempt only in enabled semantic-http/network-opt-in construction."
+    },
+    {
+      "authority": [
+        "tasks.json:P7-013.acceptance[1]",
+        "06-VALIDATION:current-run-id rule and hard failures"
+      ],
+      "current_execution_acceptance": "new58 independently reviewed; final acceptance held for legacy regression failure/skips",
+      "evidence_kind": "Must inspect actual executed steps/results, not merely queued, skipped, no-run or a green umbrella from a different source.",
+      "expected_current_tests": [
+        "legacy fmt/clippy/default compile/default regression",
+        "legacy cc-semantic library/normal selected targets",
+        "legacy semantic-http exact 6 DB + 10 status + 1 real-product-ready target",
+        "legacy query/cache/generation/P5-B/P5-C/P5-D and real MCP steps"
+      ],
+      "requirement": "Related old functionality passes at the tested source; unknown/ignored results remain explicit."
+    }
+  ],
+  "authority_files": {
+    "config_defaults": {
+      "path": "crates/cc-model/src/config.rs",
+      "sha256": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20"
+    },
+    "contracts": {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    "current_future_v11": {
+      "path": "docs/roadmap/code-index-v2/P7-REMAINING-GATES.json",
+      "sha256": "ab90471315a8d18e90235bf875dea091828d9930f859a55345357f578eab704b"
+    },
+    "engineering_workflow": {
+      "path": ".github/workflows/p7-engineering.yml",
+      "sha256": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3"
+    },
+    "fairness": {
+      "path": "crates/cc-server/tests/p7_production_fairness_model_review.rs",
+      "sha256": "e912aacf1b69f6ecf18dae4151924736da5f0fe2d1f45a38fbcd4f130a2baac1"
+    },
+    "fault_matrix": {
+      "path": "crates/cc-server/tests/p7_acceptance_matrix.rs",
+      "sha256": "60b12f03513bc1a847ceafa8c7591fa8028ec959275a6db8245d8ae248a96830"
+    },
+    "implementation_order": {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md",
+      "sha256": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9"
+    },
+    "legacy_workflow": {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "27c6747ecba381bf228d8673b8a23415502a5f5faf10754da74cc33cef8a7ffb"
+    },
+    "open_questions": {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/OPEN-QUESTIONS.md",
+      "sha256": "c17891c5f8adf69062d4aa1bc9dcb7eb3ad2cc77f86e5b2832ac49dca18bfb0b"
+    },
+    "original_014_receipt": {
+      "path": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-014-receipt.json",
+      "sha256": "c4e83508d2ec0202e1354283da3ab2ae7e62b0ca435372a338692b5bcd869757"
+    },
+    "original_failure": {
+      "path": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-013-deadline-failure.json",
+      "sha256": "faba1529a4f0479c2cd92e141e416cffc92a583fef523c55d7cd6d3b6858e2aa"
+    },
+    "original_live_decision": {
+      "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+      "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+    },
+    "original_primary_receipt": {
+      "path": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-013-receipt.json",
+      "sha256": "7a647f66344e7e30a7018e19d0e723ee37e98b9876ccf9cc4b2e634123dbdedb"
+    },
+    "original_test_cache_key_review_behavior": {
+      "path": "crates/cc-server/tests/cache_key_review_behavior.rs",
+      "sha256": "b8a2f73a24ded3d278d1bf95cdd26a54f24560ac80a0ed19a7405ba0942d5846"
+    },
+    "original_test_p7_acceptance_matrix": {
+      "path": "crates/cc-server/tests/p7_acceptance_matrix.rs",
+      "sha256": "60b12f03513bc1a847ceafa8c7591fa8028ec959275a6db8245d8ae248a96830"
+    },
+    "original_test_p7_production_fairness_model_review": {
+      "path": "crates/cc-server/tests/p7_production_fairness_model_review.rs",
+      "sha256": "e912aacf1b69f6ecf18dae4151924736da5f0fe2d1f45a38fbcd4f130a2baac1"
+    },
+    "original_test_p7_query_deadline_public": {
+      "path": "crates/cc-server/tests/p7_query_deadline_public.rs",
+      "sha256": "a040a860c5992d9b2ce09f978efc3c3ec2d1198b39b5f08ecdabb9f28bcc8c62"
+    },
+    "original_test_p7_status_snapshot_independent_review": {
+      "path": "crates/cc-server/tests/p7_status_snapshot_independent_review.rs",
+      "sha256": "08d8928328f9fc469de448d5b4571899b36a44f70c451e5f37b22609e7489f43"
+    },
+    "original_test_p7_v05_v11_independent_review": {
+      "path": "crates/cc-server/tests/p7_v05_v11_independent_review.rs",
+      "sha256": "5408b09c0723181a4f3d325376a2410f4acbcdb5a65085f83a457a995bf7df9e"
+    },
+    "original_test_p7_v11_cache_consumption": {
+      "path": "crates/cc-server/tests/p7_v11_cache_consumption.rs",
+      "sha256": "f5a8afc1eccb52ff0f1b08dc314134da022403af988744659068dd30da63eaf8"
+    },
+    "original_test_p7_v11_cache_key_matrix": {
+      "path": "crates/cc-server/tests/p7_v11_cache_key_matrix.rs",
+      "sha256": "fd9abd1034ceb1dc11548145a8a31468b79105f9958e16a30328463c5a9eba98"
+    },
+    "original_test_p7_v11_generation_public": {
+      "path": "crates/cc-server/tests/p7_v11_generation_public.rs",
+      "sha256": "8d27f02d770e7e5573317cf1ece2e4da92616d56150de871327dc2bdc61bd8ef"
+    },
+    "original_test_p7_v11_ready_epoch_independent_review": {
+      "path": "crates/cc-server/tests/p7_v11_ready_epoch_independent_review.rs",
+      "sha256": "15a70b5b5522533a532d85b77ce6b6066fa034676741543e848b49d49b1423df"
+    },
+    "original_test_v11_consumption_independent_review": {
+      "path": "crates/cc-server/tests/v11_consumption_independent_review.rs",
+      "sha256": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
+    },
+    "public_deadline": {
+      "path": "crates/cc-server/tests/p7_query_deadline_public.rs",
+      "sha256": "a040a860c5992d9b2ce09f978efc3c3ec2d1198b39b5f08ecdabb9f28bcc8c62"
+    },
+    "published_config": {
+      "path": "docs/CONFIGURATION.md",
+      "sha256": "192d3892f208aa19ecaae151a15485fadb6e74ef141244150d257ac41fb2015b"
+    },
+    "query_encoding": {
+      "path": "crates/cc-server/src/semantic_query_encoding.rs",
+      "sha256": "e038f59ebf2794dfc74f552ffca158a29ba7066f6d2bf1f96e3cd9bf3adb416e"
+    },
+    "query_execution_contract": {
+      "path": "docs/internals/QUERY_EXECUTION.md",
+      "sha256": "60e37b82c69ec337b10c85930237cef5d38b874cdf13c90e02ace80c7f3a4ea5"
+    },
+    "runtime_query_gate": {
+      "path": "crates/cc-server/src/semantic_runtime.rs",
+      "sha256": "c2bb49e091367ef10c6f63db70f51f6db86e8f5ee18fd0b87b1b84d9f8832996"
+    },
+    "task_authority": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "d108e217c1d9d732178ee0816370fb392633bf7e36e7af877870d9c2bb35382b"
+    },
+    "task_briefs": {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+      "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613"
+    },
+    "validation": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    }
+  },
+  "ci_run_ids": {
+    "engineering": 37653732468,
+    "legacy": 37653732411
+  },
+  "conditional_task_count_update": {
+    "no_update_performed": true,
+    "unfinished_if_only 013_accepted": 39,
+    "unfinished_now": 40
+  },
+  "crate_input_count": 776,
+  "crate_input_manifest_sha256": "baf2bd238706a0fd88b91c80357d1780415afd5b917ef56d4bf283f3932e8ee6",
+  "decision": "eligible_for_engineering_acceptance_if_all_listed_current_evidence_conditions_are_satisfied",
+  "engineering_independent_report_read": {
+    "decision": "accepted_scoped_ci_execution_evidence",
+    "job_id": 112903425598,
+    "original58": {
+      "actual_case_index": "actual-rust-test-index.json",
+      "coverage_layer": "Mixed unit/service/public-product-stdio cases; not all 58 are stdio or live provider tests.",
+      "encoding_unit_functions": 13,
+      "execution_unit_functions": 5,
+      "expected_identity_source": "artifacts/checkpoints/p7-deadline-wiring-20261007/p7-013-receipt.json",
+      "failed": 0,
+      "ignored": 0,
+      "integration_functions": 40,
+      "integration_targets": 11,
+      "passed": 58,
+      "previous_failure_now_passed": "cc-server/tests/p7_query_deadline_public.rs::real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context",
+      "prior_evidence_policy": "Historical source 5af normal-schedule 57/1 and same-source serial diagnostic 2/0 remain original evidence. This is a distinct fresh-job combined-source run; no claim that the old failure root cause was proven.",
+      "public_deadline_observation_index": "public-deadline-observation-index.json",
+      "public_deadline_raw_scenarios": 6
+    },
+    "path": "/workspace/scratch/71bc431c4e4f/ci-pr144-p7-run37653732468/independent-review.json",
+    "reviewer": "/root/pr_audit",
+    "sha256": "6c3a2feff8c114bdcbb3d161c39eb15d57c3976926c029b26c5f537fa03f29bb",
+    "source": {
+      "actual_checkout_commit": "1d73d87a602c214ca227ed896fa9abc9ba83c5b3",
+      "actual_checkout_is_pr_merge": true,
+      "actual_tree": "c19cf91f6455472806b0d08a5408016e262ab5ab",
+      "complete_inputs_match_fixed_pr_head": true,
+      "full_tree_equal": true,
+      "independent_method": "Direct git ls-tree and cat-file --batch at immutable PR head, SHA256 each complete crate/Cargo blob, compare every uploaded path/hash and canonical manifest.",
+      "input_count": 776,
+      "manifest_sha256": "baf2bd238706a0fd88b91c80357d1780415afd5b917ef56d4bf283f3932e8ee6",
+      "original58_test_source_files": 13,
+      "original58_test_sources_byte_identical_to_5af": true,
+      "pr_head": "149aa04f24ddcfd02c3aa5626a59343e88d74866",
+      "pr_head_tree": "c19cf91f6455472806b0d08a5408016e262ab5ab",
+      "source_after_sha256": "765c22acc49fb125ea3c75be550f8cf77968d2b438cf2e9f39af050b21316a4a",
+      "source_before_after_byte_identical": true,
+      "source_before_sha256": "765c22acc49fb125ea3c75be550f8cf77968d2b438cf2e9f39af050b21316a4a"
+    },
+    "this_reader_reran_tests": false
+  },
+  "executions_by_this_review": {
+    "benchmark": 0,
+    "product": 0,
+    "readonly_git_and_source_checks": true,
+    "rust": 0,
+    "source_guard": 0,
+    "unittest": 0
+  },
+  "expected_primary_functions": {
+    "executor": 5,
+    "http_targets": {
+      "cache_key_review_behavior": 2,
+      "p7_acceptance_matrix": 7,
+      "p7_production_fairness_model_review": 6,
+      "p7_query_deadline_public": 2,
+      "p7_status_snapshot_independent_review": 6,
+      "p7_v05_v11_independent_review": 6,
+      "p7_v11_cache_consumption": 3,
+      "p7_v11_cache_key_matrix": 3,
+      "p7_v11_generation_public": 2,
+      "p7_v11_ready_epoch_independent_review": 1,
+      "v11_consumption_independent_review": 2
+    },
+    "http_total": 40,
+    "query_encoding": 13,
+    "required_failed": 0,
+    "required_ignored": 0,
+    "unique_total": 58
+  },
+  "fixed_crate_and_workflow_inputs_equal_v8_review": true,
+  "formal_acceptance_conditions": [
+    "Run/job terminal results and raw output are independently reviewed for the exact PR head and actual checkout/merge commit. Record both identities rather than assuming they are identical.",
+    "Actual source-before/source-after full maps agree, and the tested crate/Cargo map equals the 776-input PR/source product. Confirm initial private Cargo target/build directory, Rust1.95 and original commands; do not invent an unrecorded binary hash.",
+    "Exactly the original eleven HTTP targets (40 functions), thirteen encoding units and five execution units execute successfully with zero ignored/failures in the normal schedule; the original public target succeeds and is not replaced by a serial diagnostic/retry/best-of.",
+    "Applicable related legacy regression steps finish successfully with explicit actual counts and ignored attribution. No no-run/compile-only or skipped step becomes a behavior pass. The two entire workflows passing plus complete raw review meets this condition without adding a separate unrelated task gate.",
+    "The old 57/1 primary failure and2/0 isolated diagnostic remain immutable and linked; record a new current success as its own observation. Do not claim the old failure never happened or that its root cause was proved.",
+    "Root records a new current-run acceptance receipt mapping these original clauses, source/build provenance and the two independent CI reviews, then may update only P7-013 status/notes/evidence. Preserve original acceptance, dependency and validation arrays."
+  ],
+  "full_task_accepted_now": false,
+  "historical_observations": {
+    "diagnostic_new_function_credit": 0,
+    "diagnostic_passed": 2,
+    "diagnostic_replaces_primary": false,
+    "old_recovery_failure_cause": "unresolved; full failing response and its timing were not retained by the original post-assert trace",
+    "primary": {
+      "distinct_functions": 58,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 57
+    },
+    "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2"
+  },
+  "limits": [
+    "This is a conditional scope judgment, not a CI pass or task-status mutation.",
+    "The 58 functions mix L1/L2/L3; public deadline/ready tests really spawn CARGO_BIN_EXE_codecortex via TokioChildProcess.",
+    "Current per-query execution budget retains its published lifecycle boundary; cold project initialization is not newly claimed inside that budget.",
+    "A future green mandatory run does not establish flake probability or explain the prior failure; the unchanged target remains blocking in CI."
+  ],
+  "no_uncovered_original_obligation_identified_outside_this_current_engineering_scope": true,
+  "not_required_to_complete_P7_013": [
+    {
+      "reason": "Explicit downstream task with dependency on P7-013; no reversed dependency or automatic closure.",
+      "scope": "P7-014 full configuration/status/five-state/scheduling and thirteen-row wiring closure"
+    },
+    {
+      "reason": "Owned by their original tasks. Relevant existing regression failures still block this acceptance, but their unfinished whole-task gates are not newly imposed on013.",
+      "scope": "P7-015 performance/resource/scale/tail statistics and remaining reconcile projection; P7-016 full seeded crash/GC-WAL/recovery matrix; P7-017 complete offline-package/release gate"
+    },
+    {
+      "reason": "D1+D2 and06 validation explicitly separate engineering/fake acceptance and live effect certification.",
+      "scope": "P7-018 live provider authorization and paid usage, P7-019 corpus/holdout/dense-only quality/cost, full G7/P7-020/P8 release"
+    },
+    {
+      "reason": "Existing current_vs_future_V11 explicitly preserves unconditional current-domain cache requirements while recording not_run_cross_build for an actual future admitted successor.",
+      "scope": "Invented future parser/rule/metric/tokenizer/spec successor builds and global OS thread/RSS proof"
+    }
+  ],
+  "observed_progress_at_preparation": {
+    "engineering": "Independent pr_audit final report read: accepted scoped execution, original58 passed,0failed,0ignored; six public deadline raw scenarios; exact PR/merge/source binding.",
+    "legacy": "Terminated failure at historical preserved task-state equality. build_environment reports fmt/clippy/default compile/default regression success, subsequent semantic-http17 and explicit product stdio/P5 steps skipped. Final legacy review/repair pending."
+  },
+  "original_base": "886f90a542a6174a037c79eebbb4f74848fb1f53",
+  "original_conditions_equal_base": true,
+  "original_task_conditions": {
+    "acceptance": [
+      "网络不占读写锁，故障结果不缓存成完整成功",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "conditional": null,
+    "conditional_dependencies": [],
+    "deliverables": [
+      "查询总deadline和模型故障退化的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V11, V15 验证证据（实施时生成）"
+    ],
+    "depends_on": [
+      "P7-012"
+    ],
+    "id": "P7-013",
+    "required_for": [
+      "M3-engineering",
+      "M4-semantic"
+    ],
+    "scope": [
+      "crates/cc-search/src/execution.rs",
+      "crates/cc-server/src/handlers/context.rs"
+    ],
+    "steps": [
+      "fake/HTTP慢请求测取消",
+      "auto回本地、explicit semantic明确不足"
+    ],
+    "title": "查询总deadline和模型故障退化",
+    "validations": [
+      "V11",
+      "V15"
+    ]
+  },
+  "pr_head": "149aa04f24ddcfd02c3aa5626a59343e88d74866",
+  "receipt_fields_required": [
+    "original_task_conditions_digest",
+    "PR_head_sha",
+    "actual_checkout_or_merge_sha",
+    "two_workflow_run_ids_and_attempts",
+    "job_ids_and_terminal_steps",
+    "source_before_after_maps_and_sha",
+    "toolchain_and_private_target_identity",
+    "actualcommands_and_logsha",
+    "target_to_function_counts_and_ignored",
+    "public_product_stdio_classification",
+    "independent_reviewers_and_scope",
+    "old_failure_and_diagnostic_pointers",
+    "accepted_engineering_scope_and_unaccepted_live/other_task_scope"
+  ],
+  "review_type": "original_acceptance_scope_reconciliation_only",
+  "reviewer": "/root/todo_audit",
+  "schema_version": 1,
+  "status_now": "in_progress",
+  "task": "P7-013"
+}

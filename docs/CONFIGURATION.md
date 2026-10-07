@@ -255,6 +255,8 @@ P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模
 | `worker_lease_secs` | `600` | worker claim 的租约秒数；语义子系统启用时必须至少为 1，过期后的 reclaim 是崩溃恢复路径之一。 |
 | `gc_min_retention_secs` | `3600` | 新 artifact 的 GC 宽限秒数；语义子系统启用时必须至少为 1，零宽限会按配置键报错拒绝组装。 |
 
+| `gc_min_retention_secs` | `3600` | 显式 GC 的保留宽限，单位秒。启用语义时须为 `1..=9223372036854775807`；零或超出运行时有符号整数范围的值在子系统装配前按键名报配置错误，不能转换成负宽限。`enabled=false` 时语义配置节仍不执行装配。 |
+
 ### 代码外发与凭据政策（P7-007，执行机制腿）
 
 口径：**默认无网络 + 显式 opt-in**。本节声明政策的机制保证与数据流向；
@@ -353,6 +355,13 @@ namespace = `blake3("cc-semantic.cache-namespace.v1", 项目身份)` 的
   `semantic.reembed_budget_max`（进程生命周期，重启清零；outbox 行计数为持久审计轨）。
 - GC 宽限由 `semantic.gc_min_retention_secs` 传入，默认 3600s，组装时强制非零下限；
   worker 租约由 `semantic.worker_lease_secs` 传入，默认 600s。
+
+  预算耗尽终态 `failed` 死信——不静默无界重费。预算值当前为进程内
+  调用方参数（进程生命周期，重启清零；outbox 行计数为持久审计轨），
+  尚无配置文件键。
+- GC 宽限通过 `semantic.gc_min_retention_secs` 配置（默认 3600s），
+  组合根将经过正数范围校验的值传给显式 GC。宽限与 manifest/任务标记
+  共同保护保留中的对象；它不提供收集、标记与删除之间的文件系统原子性。
 
 ## 仓库规模档位
 

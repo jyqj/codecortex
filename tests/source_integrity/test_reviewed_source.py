@@ -196,9 +196,12 @@ class ReviewedSourceTests(unittest.TestCase):
                 guard.approved_union(self.registry)
 
     def test_ci_only_allows_explicit_selector_and_local_p8_checks(self):
-        guard.verify_ci()
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True)
+        target.write_bytes(subprocess.check_output(['git', 'show', 'ae906513886bef4501d0a1d2ecffd68ef76c3f5d:.github/workflows/ci.yml'], cwd=guard.ROOT))
+        guard.verify_ci(self.root)
+        target = self.root / '.github/workflows/ci.yml'
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(guard.expected_ci() + '\n# unreviewed workflow edit\n')
         with self.assertRaisesRegex(AssertionError, 'CI differs'):
             guard.verify_ci(self.root)

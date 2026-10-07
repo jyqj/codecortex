@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "archive": "raw-evidence.tar.gz",
+  "archive_sha256": "1bda43aa06b265e9e730a96d32d364bd82664b846b917b21bce84c3f595b137d",
+  "archive_bytes": 1486496,
+  "members_root": [
+    "cold-inventory-01",
+    "cold-inventory-02",
+    "cold-final",
+    "rollback-real-01",
+    "rollback-real-02",
+    "rollback-final"
+  ],
+  "final_runs": {
+    "cold": "cold-final/matrix.json",
+    "rollback": "rollback-final/rollback.json"
+  },
+  "source_baseline": "ae906513886bef4501d0a1d2ecffd68ef76c3f5d",
+  "runner_files_sha256": {
+    "scripts/p8_cold_build.py": "1f2572cb8b667899994c722d97ff45e220b07008de102dc9beead7b92d2c98ad",
+    "scripts/p8_rollback.py": "5ef2a7dbbfc3ace0dcb20b4d3a964fbd9cb19ebed48fce7d2dcd84dc82e7884a",
+    "scripts/tests/test_p8_platform.py": "8f765cb5170be1ad3b629311087a000a4a149b48a70165b29936ae70e1c81d80",
+    "scripts/resource_harness/runtime.py": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_p8_platform.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "contracts-final.log",
+      "scope": "30 synthetic contract controls; not product cold builds",
+      "log_sha256": "f9e7fd43d4c5e797810c0d21853571a756e05385fdd3460e5cdf8906e86060de"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/p8_cold_build.py",
+        "--output-dir",
+        "artifacts/checkpoints/p8-next-ten-20261008/platform/cold-final"
+      ],
+      "environment_setup": "source /workspace/scratch/71bc431c4e4f/rust-env/env.sh",
+      "exit_code": 2,
+      "log": "cold-final.log",
+      "scope": "inventory only; 8 not_run",
+      "log_sha256": "4c588cfccbbc4875e13fdeacc4691205aa88fdcae367be2a8fcc5d62fb5d8afb"
+    },
+    {
+      "argv": [
+        "python3",
+        "scripts/p8_rollback.py",
+        "--default-binary",
+        "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-product/codecortex",
+        "--default-receipt",
+        "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-product/build-receipt.json",
+        "--semantic-binary",
+        "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-product/codecortex",
+        "--semantic-receipt",
+        "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-product/build-receipt.json",
+        "--output-dir",
+        "artifacts/checkpoints/p8-next-ten-20261008/platform/rollback-final",
+        "--deny-network-wrapper",
+        "/workspace/scratch/71bc431c4e4f/p7-017-validation/deny_network_exec.py"
+      ],
+      "exit_code": 0,
+      "log": "rollback-final.log",
+      "scope": "existing historical products; limited local rollback",
+      "log_sha256": "4e64b686761423797f61162da1fd68b3caeb3f5fa15c7c1bacb67f9d8778313a"
+    }
+  ]
+}

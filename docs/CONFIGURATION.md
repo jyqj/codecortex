@@ -5,7 +5,9 @@
 
 `.codecortex.json` 仅按普通文件读取，上限为 **1 MiB**；符号链接、管道、目录、无效 UTF-8 和超限内容被拒绝并记录告警，沿用默认值再应用已有环境变量覆盖。配置读取失败不是配置成功生效。TS/package/Cargo/Python/Go 模块配置有独立预算和捕获/提交前复核，见 [模块输入防护](internals/MODULE_INPUT_SAFETY.md)。这些路径不执行配置代码、构建脚本或抓取远程依赖。
 
-未知键只在日志告警、不会导致加载失败；历史版本已移除的键（如
+普通配置对象的未知键会在日志告警并忽略；`query` 对象另外使用
+`deny_unknown_fields`，其中未知键会使配置反序列化失败，沿用默认配置再应用环境覆盖。
+历史版本已移除的键（如
 `indexing.parallelism`）会提示删除，迁移对照见
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md#配置迁移)。
 
@@ -120,9 +122,15 @@
 
 ## query
 
-查询执行策略与期限，省略保持 local，不发送网络请求。`auto` 未配置端口时等价 local；`semantic` 未配置则明确报不可用。P5-B 只提供宿主可注入接口及 fake 测试，没有真实 provider/embedding 配置。
+查询执行策略与期限，省略保持 local，不发送网络请求。`auto` 未配置端口时等价 local；
+`semantic` 未配置则明确报不可用。当前已有可选语义子系统和 `semantic-http` provider 接线，
+实际生效取决于构建 feature、下文的语义配置与独立外发授权；默认仍不启用。
 
-P5-D 支持通过 `search`/`context` 的可选 `retrieval_strategy` 覆盖本次请求的策略；它不会修改项目配置。`search.mode` 仍仅为 hybrid/symbol，symbol 模式不接受 auto/semantic 覆盖。真实 dense 尚未实现，状态始终明确显示 disabled。
+P5-D 支持通过 `search`/`context` 的可选 `retrieval_strategy` 覆盖本次请求的策略；它不会修改项目配置。
+`search.mode` 仍仅为 hybrid/symbol，symbol 模式不接受 auto/semantic 覆盖。
+未接线时 dense 为 disabled；已接线状态由 active space、待回填任务与发布覆盖决定，可报告
+backfilling/failed/ready/partial。它反映当前数据库覆盖，不证明真实 provider 可用或语义质量收益，
+具体诊断见 [MCP 工具参考](MCP_TOOLS.md#检索能力与显式策略p5-d)。
 
 | 字段 | 默认 | 含义 |
 |---|---|---|
@@ -203,11 +211,11 @@ chunk 级检索前的文件预选阶段使用的逐文件分值。四个上下�
 
 ## 语义缓存与降级（P6，可选）
 
-语义持久化是可选功能（`semantic` feature + 组合根接线），默认构建不含
-`cc-semantic`、不读配置、不创建任何文件。以下事实来自已交付的库层实现
-（`crates/cc-semantic/src/cache.rs`、`degrade.rs`；存储侧总记录见
-[STORAGE.md](internals/STORAGE.md#语义持久化p6schema-v22)）；预算/租约参数
-由调用方按库层 API 传入，组合根接线归接线轮。
+语义持久化是可选功能，`cc-server` 默认 feature 集不接入 `cc-semantic`。
+普通项目配置和本地索引仍按既有流程加载；`semantic.enabled=false` 时不组装可选子系统，
+不为语义缓存创建目录。当前 `semantic_wiring.rs` 已接入 cache、预算、租约与 GC 参数；
+`semantic-http` 进一步提供显式 opt-in 的网络执行路径。存储边界见
+[STORAGE.md](internals/STORAGE.md#语义持久化p6schema-v22)。完整 P7/G8 认证以任务证据为准。
 
 ### `semantic` 配置节（P7-002，声明面）
 
@@ -243,6 +251,9 @@ P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模
 | `network_opt_in` | `false` | **显式网络 opt-in**（P7-007 外发政策）。默认 `false` = 默认无网络：未开启时组合根拒绝装配任何 provider transport（`cc-semantic::policy::gate_transport_assembly` 与适配器构造器双重强制，配置错误拒启）。`enabled: true` 单独不足以放开网络——外发必须由本键独立、显式声明。 |
 | `allow_http` | `false` | 是否允许明文 `http://` 端点（P7-007）。默认 `false` = 仅 https；明文端点被外发政策拒绝（配置错误），设置 `true` 才放行。生产部署建议保持关闭。 |
 | `allow_query_network` | `false` | 独立授权发送 query/task 文本以生成查询向量；`network_opt_in` 单独不会授权此用途。生产接线要求 `semantic-http` 构建、`enabled`、`network_opt_in` 与本键全部开启；local 查询及空 hard scope 不编码。开启后在召回前生成并缓存查询向量，使用同一绝对查询预算、独立前台容量及单次尝试；关闭本键保留 cold query vector 的明确 unavailable 结果。 |
+| `reembed_budget_max` | `null` | 进程生命周期内对损坏缓存付费补嵌的数量预算；null 不另设上限，首次嵌入不计入此预算。进程重启会重置该 ledger，outbox 仍保留持久重试状态。 |
+| `worker_lease_secs` | `600` | worker claim 的租约秒数；语义子系统启用时必须至少为 1，过期后的 reclaim 是崩溃恢复路径之一。 |
+| `gc_min_retention_secs` | `3600` | 新 artifact 的 GC 宽限秒数；语义子系统启用时必须至少为 1，零宽限会按配置键报错拒绝组装。 |
 
 ### 代码外发与凭据政策（P7-007，执行机制腿）
 
@@ -323,8 +334,8 @@ namespace = `blake3("cc-semantic.cache-namespace.v1", 项目身份)` 的
 `<root>/namespace-<ns>/<space>/<input>/<spec>.bin`。跨项目默认隔离、
 跨克隆（同项目身份）共享；**不绑 incarnation**——索引重建换库后解析
 同一 namespace，付费向量经 `(space, input, spec)` 全链校验直接复用。
-项目身份字符串由组合根提供（当前来源与项目索引缓存 `CODECORTEX_CACHE_DIR`
-的规范路径同源；接线轮接线）。
+项目身份字符串由当前组合根的规范项目路径提供；语义 cache root 与 namespace 的解析、
+挂接由 `semantic_wiring::assemble` 完成。
 
 ### 降级语义与 re-embed 预算
 
@@ -333,17 +344,15 @@ namespace = `blake3("cc-semantic.cache-namespace.v1", 项目身份)` 的
 - 损坏（Corrupt）：检索跳过候选不报错；显式检测点将坏对象双半隔离进
   `<root>/quarantine/` 并留诊断 sidecar（`degrade.rs:119`），可见性
   判据 `corrupt_events > 0 || 预算耗尽` → capability status
-  `semantic_state: "degraded"` + `degraded_reason`（透出槽已交付
-  `capability_status.rs:100`，组合根转写归接线轮）。
+  `semantic_state: "degraded"` + `degraded_reason`；当前组合根负责投影，
+  旧端口实例的迟到状态不能覆盖重开后的新实例。
 - **re-embed 预算**：只对"已付费产物损坏后的补嵌"计费准入（首嵌不入
   预算）；`BudgetedProvider`（`degrade.rs:347`）整批裁决，超限拒绝发生
   在调用内层 provider 之前，原因持久化进 outbox `last_error`，attempt
-  预算耗尽终态 `failed` 死信——不静默无界重费。预算值当前为进程内
-  调用方参数（进程生命周期，重启清零；outbox 行计数为持久审计轨），
-  尚无配置文件键。
-- GC 宽限（`min_retention_secs`，默认 3600s）同理为调用方参数
-  （`gc.rs:93`），防"刚发布产物被 GC 删除"；接线轮应将其纳入配置面并
-  保证非零下限。
+  预算耗尽终态 `failed` 死信——不静默无界重费。预算来自
+  `semantic.reembed_budget_max`（进程生命周期，重启清零；outbox 行计数为持久审计轨）。
+- GC 宽限由 `semantic.gc_min_retention_secs` 传入，默认 3600s，组装时强制非零下限；
+  worker 租约由 `semantic.worker_lease_secs` 传入，默认 600s。
 
 ## 仓库规模档位
 
@@ -400,7 +409,7 @@ CodeCortex 检测项目规模并自动调整输出预算：
 
 | 变量 | 默认 | 作用 |
 |------|------|------|
-| `CODECORTEX_SEMANTIC_CACHE_ROOT` | 未设（平台默认） | 派生 artifact cache 根目录覆盖，优先于平台默认（macOS `~/Library/Caches/codecortex/semantic`、Linux `$XDG_CACHE_HOME\|~/.cache/codecortex/semantic`）；空白值视为未设。cache 机制已交付库层，组合根接线归接线轮，详见上文[语义缓存与降级](#语义缓存与降级p6可选) |
+| `CODECORTEX_SEMANTIC_CACHE_ROOT` | 未设（平台默认） | 派生 artifact cache 根目录覆盖，优先于平台默认（macOS `~/Library/Caches/codecortex/semantic`、Linux `$XDG_CACHE_HOME\|~/.cache/codecortex/semantic`）；空白值视为未设。语义子系统启用时由组合根解析，关闭时不创建该 cache，详见上文[语义缓存与降级](#语义缓存与降级p6可选) |
 
 ### 评测 / 基准（仅 cc-eval）
 

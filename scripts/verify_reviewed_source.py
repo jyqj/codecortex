@@ -16,12 +16,12 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p7-capture-revalidation-20261007-v7'
+VERSION = 'p8-local-engineering-20261007-v8'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = '3503b15ddf72020d36a0f87a92e2a3fedd46979a70538aaa72214d7d6625268a'
-PRODUCT = '3f613818b2ba5ab08b97009777b8bc4164afb330'
+REGISTRY_SHA256 = '5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155'
+PRODUCT = '18499879a8ba3197e599cfd2e9ae96bcb657d65b'
 APPROVED = {'validation_work': {'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410',
                      'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
                      'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
@@ -39,6 +39,29 @@ APPROVED = {'validation_work': {'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd
                                            'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
                                            'crates/cc-index/tests/python_inventory_revalidation.rs']}}
 
+
+# Accepted only after the independent fixed-source review above was committed.
+APPROVED['p8_local_engineering'] = {'base': '6d02d77f018a5965a6f289b0b43558ed4b9f8322',
+ 'source': '18499879a8ba3197e599cfd2e9ae96bcb657d65b',
+ 'review': 'c7766540612f1156f0a8afbdead20e934c98066c',
+ 'review_path': 'artifacts/checkpoints/p8-local-engineering-review-20261007/review-remote-source.json',
+ 'paths': ['crates/cc-db/src/index_db_graph.rs',
+           'crates/cc-eval/src/benchmark/comparison.rs',
+           'crates/cc-eval/src/benchmark/gate.rs',
+           'crates/cc-eval/src/benchmark/mod.rs',
+           'crates/cc-eval/src/benchmark/p8_load.rs',
+           'crates/cc-eval/src/benchmark/p8_scale.rs',
+           'crates/cc-eval/src/benchmark/report.rs',
+           'crates/cc-eval/src/benchmark/sampler.rs',
+           'crates/cc-eval/src/benchmark/statistics.rs',
+           'crates/cc-eval/src/bin/cc-eval-p8-load.rs',
+           'crates/cc-eval/src/bin/cc-eval.rs',
+           'crates/cc-eval/src/bin/p8-scale.rs',
+           'crates/cc-eval/tests/benchmark_cli.rs',
+           'crates/cc-eval/tests/p8_load.rs',
+           'crates/cc-eval/tests/p8_measurements.rs',
+           'crates/cc-eval/tests/p8_route_reload.rs',
+           'crates/cc-eval/tests/p8_scale.rs']}
 
 def require(condition, message):
     if not condition:
@@ -62,6 +85,8 @@ def verify_pins():
     refs = [BASE, PRODUCT]
     for pin in APPROVED.values():
         refs.extend([pin['source'], pin['review']])
+        if 'base' in pin:
+            refs.append(pin['base'])
     require(all(re.fullmatch(r'[0-9a-f]{40}', ref) for ref in refs),
             'source pins must be immutable full commit SHAs')
     require(bool(APPROVED), 'at least one reviewed delta is required')
@@ -121,7 +146,8 @@ def approved_union(registry, root=ROOT):
     verify_historical_helpers(root)
     git = previous.v2.v1
     git.ensure_refs([BASE, PRODUCT] + [p['source'] for p in APPROVED.values()]
-                    + [p['review'] for p in APPROVED.values()])
+                    + [p['review'] for p in APPROVED.values()]
+                    + [p['base'] for p in APPROVED.values() if 'base' in p])
     expected = previous.approved_union(previous.load_registry(), root=root)
     require(set(expected) == git.inputs(BASE), 'v3 base inventory differs')
     require(all(raw == git.blob(BASE, path) for path, raw in expected.items()),
@@ -131,10 +157,19 @@ def approved_union(registry, root=ROOT):
         delta = registry['deltas'][name]
         for key in ['source', 'review', 'review_path']:
             require(delta.get(key) == pin[key], 'wrong delta pin: ' + name)
+        # A later independent change may be authored on an already accepted
+        # main instead of recreating a patch on the historical v3 baseline.
+        # Its base is an explicit immutable pin, never a current checkout/ref.
+        # All changed paths still need a disjoint, reviewed before/after delta.
+        source_base = pin.get('base', BASE)
+        if 'base' in pin:
+            require(delta.get('base') == source_base, 'wrong delta pin: ' + name)
+        else:
+            require('base' not in delta, 'unexpected delta base pin: ' + name)
         paths = set(pin['paths'])
         require(not changed.intersection(paths), 'overlapping reviewed deltas')
         changed.update(paths)
-        require(previous.v2.changed_paths(BASE, pin['source']) == paths,
+        require(previous.v2.changed_paths(source_base, pin['source']) == paths,
                 'source delta inventory differs: ' + name)
         require(set(delta.get('paths', {})) == paths,
                 'registry delta inventory differs: ' + name)
@@ -145,12 +180,17 @@ def approved_union(registry, root=ROOT):
         require(not review_path.is_symlink() and review_path.read_bytes() == review_raw,
                 'review record changed: ' + name)
         review = json.loads(review_raw)
-        require(review['source'] == pin['source'] and review['base'] == BASE
+        require(review['source'] == pin['source'] and review['base'] == source_base
                 and review['verdict'] == 'accepted_scoped',
                 'review does not accept fixed delta: ' + name)
         for path in sorted(paths):
             row = delta['paths'][path]
             before = expected.get(path)
+            if 'base' in pin:
+                base_before = (git.blob(source_base, path)
+                               if path in git.inputs(source_base) else None)
+                require(base_before == before,
+                        'delta pinned base differs from accepted bytes: ' + path)
             require((git.sha(before) if before is not None else None)
                     == row['before_sha256'], 'delta base SHA differs: ' + path)
             raw = git.blob(pin['source'], path)
@@ -170,14 +210,23 @@ def expected_ci():
     old = 'verify_current_source_v3.py --source-version ' + previous.VERSION
     new = 'verify_reviewed_source.py --source-version ' + VERSION
     require(original.count(old) == 1, 'historical CI selector differs')
-    return original.replace(old, new).replace(
+    migrated = original.replace(old, new).replace(
         'explicitly selected v3 accepted owner-context union',
         'explicitly selected reviewed source union')
+    plan_check = '          python3 scripts/code_index_plan.py\n'
+    source_tests = '          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v\n'
+    anchor = plan_check + source_tests
+    require(migrated.count(anchor) == 1, 'historical TODO/source check anchor differs')
+    local_checks = (plan_check
+                    + '          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_release_evidence.py -v\n'
+                    + '          python3 scripts/p8_facts.py --check\n'
+                    + source_tests)
+    return migrated.replace(anchor, local_checks)
 
 
 def verify_ci(root=ROOT):
     require((root / '.github/workflows/ci.yml').read_text() == expected_ci(),
-            'CI differs beyond the explicit source selector')
+            'CI differs beyond the explicit source selector and local P8 checks')
 
 
 def main():

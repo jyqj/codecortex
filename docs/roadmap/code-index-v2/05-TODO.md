@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc`。
+> 任务总数：192；源文件 SHA-256：`5d0b41e3ad43d9aead060ec03555f76ccb2b38aeb8b9c32906d7c2651cf445e0`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2209,7 +2209,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-001｜锁定release候选与证据输入
 
-状态：`todo`；批次：`P8-A`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/manifest.rs`；`artifacts/benchmarks/`
 硬依赖：P7-020
 步骤：冻结binary/config/corpus/scoring/model/环境；停止覆盖被测源码
@@ -2217,8 +2217,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：每份报告精确回到同一候选，后续改动使对应证据失效；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V01；V02
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"status": "bounded_groundwork_only_not_release_candidate", "product_sha": "e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696", "artifacts": ["artifacts/checkpoints/bounded-integration-20261004/README.md", "artifacts/checkpoints/bounded-integration-20261004/source-guard.json"], "limitations": "all-target lint FAIL; parentquality/P7/V19 OPEN; no new formal eval/100k"}, {"status": "authorized_test_only_lint_fix_not_release_candidate", "production_anchor": "e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696", "test_only_sha": "d62215f6ab075aadb4da0f99d52a29ce22c027c5", "artifacts": ["artifacts/checkpoints/bounded-integration-20261004/test-only-lint-fix", "artifacts/checkpoints/bounded-integration-20261004/lint-fix-source-guard.json"], "limitations": "parentquality/P7/V19 OPEN; no new formal eval/100k"}]
+证据：[{"status": "bounded_groundwork_only_not_release_candidate", "product_sha": "e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696", "artifacts": ["artifacts/checkpoints/bounded-integration-20261004/README.md", "artifacts/checkpoints/bounded-integration-20261004/source-guard.json"], "limitations": "all-target lint FAIL; parentquality/P7/V19 OPEN; no new formal eval/100k"}, {"status": "authorized_test_only_lint_fix_not_release_candidate", "production_anchor": "e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696", "test_only_sha": "d62215f6ab075aadb4da0f99d52a29ce22c027c5", "artifacts": ["artifacts/checkpoints/bounded-integration-20261004/test-only-lint-fix", "artifacts/checkpoints/bounded-integration-20261004/lint-fix-source-guard.json"], "limitations": "parentquality/P7/V19 OPEN; no new formal eval/100k"}, {"status": "local_engineering_advanced_not_full_acceptance", "round": 1, "source": "d1bf4b799e52d6367fe4959d08c5a79e63b3bafe", "artifacts": ["artifacts/benchmarks/p8-release-local-20261007", "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"], "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"}]
 实施备注： 2026-10-04 bounded groundwork 集成：固定 base 37dd042，产品 e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696；仅纯未接线声明身份模型、Python 显式 root provenance、fixed query-target gate。49 scoped tests、70 engine/in-process MCP controls（683 fresh source-verified hits）、build/fmt/production strict lint 通过；all-target strict lint 因原样保留的 engine_lane_tests.rs:1235 useless_vec 失败。四仓 public quality FAIL、Gin broad-prose 回归、完整 P7/V19 保持 OPEN；既有 90858 的100k通过不认证新组合，未跑新100k或formal eval。证据 artifacts/checkpoints/bounded-integration-20261004；下一步 AST同源完整 ancestry/kind/range、完整capture/native alias/absence/collision、资源与失效策略、独立版本化 ingestion 后再设计可选DB/MCP identity。 2026-10-04 后续授权仅修复原作者test-only clippy::useless_vec：vec![member, exact]→[member, exact]；精确原bytes及minimal transformation/source guard exception已保留。test-only source d62215f6ab075aadb4da0f99d52a29ce22c027c5 上6 affected scoped tests、workspace all-target strict lint、fmt/source guard通过；生产8路径仍逐byte等于e4a8df4。初始lint失败与唯一Forbidden draft回执保留；本次只正常origin push并核远端SHA，不重试PR/API、不重复formal eval/100k。parentquality/P7/V19、四仓quality FAIL与Gin broad-prose仍OPEN。 2026-10-04 bounded owner-context 集成：固定 PR140 base3c8c204216cb54c41850c6da826a68fec3586430，accepted delivery026b566f18525568ae16e505eca13ea5e258dff5/source d32924f0b1b08f55956659df2cb253d0aba8146f，独立接受9c28792137b89a69d6c0696fa112b7fe54f4c053。完整作者/拒绝/修正/独审历史原样保留，三个cc-search文件逐byte相同；显式query-owner-context-20261004-v3从原v2独立重建764完整crate/Cargo/lock inputs并叠加精确delta，不由HEAD/latest刷新自授权。v1/v2批准manifest及packing/e3/P0 historical anchors保持原样；source integrity不继承旧quality/100k。当前实际scoped检查和交付见 artifacts/checkpoints/query-owner-context-integration-20261004/README.md；独审21/166/3840/21500/96属于固定接受source的证据，不声称新formalDEV或全NL/public quality。stronger API inversion Top1=0/MRR=.5、parent P7/V19/quality仍OPEN；192task状态不变，无parent closure，未跑excluded semantic_runtime/broad/private42/DBGC/WAL/kill/EROFS/production targets或formalDEV/100k，无merge/deploy/force；由parent复审后建draftPR。
+2026-10-07 P8本地推进第一轮：新增本地候选 freeze/verify：锁定 Git HEAD/index/显式源码、binary/config/corpus/scoring/model及环境；--corpus-root锁定实际语料正文，漂移使验证失败。39项有界夹具测试通过；不构成Rust构建来源或完整release认证。
 
 ### [ ] P8-002｜完成真实多仓native语料认证
 
@@ -2259,7 +2260,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-005｜完整规模1k到100k
 
-状态：`todo`；批次：`P8-A`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/sampler.rs`；`crates/cc-eval/tests/index_v2_scale.rs`
 硬依赖：P8-004
 步骤：固定seed与release构建测1k/5k/10k/50k/100k；同时报chunk/edge/vector
@@ -2267,13 +2268,14 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：不存在只报文件数或把不同工作量直接算倍数；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"status": "accepted_fixed_e3_declared_local_100k_subgate_only", "artifacts": ["docs/checkpoints/2026-10-03-fixed-e3-integration/README.md", "docs/reviews/20261003-independent-e3", "artifacts/checkpoints/candidate-independent-100k-gate-20261003", "artifacts/checkpoints/candidate-independent-100k-recovery-20261003", "artifacts/checkpoints/baseline-cloud-20261003-build-blocked", "artifacts/checkpoints/baseline-cloud-20261003-resumed-once"], "limitations": "2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。"}]
+证据：[{"status": "accepted_fixed_e3_declared_local_100k_subgate_only", "artifacts": ["docs/checkpoints/2026-10-03-fixed-e3-integration/README.md", "docs/reviews/20261003-independent-e3", "artifacts/checkpoints/candidate-independent-100k-gate-20261003", "artifacts/checkpoints/candidate-independent-100k-recovery-20261003", "artifacts/checkpoints/baseline-cloud-20261003-build-blocked", "artifacts/checkpoints/baseline-cloud-20261003-resumed-once"], "limitations": "2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。"}, {"status": "local_engineering_advanced_not_full_acceptance", "round": 2, "source": "4917a43c04f72022240537761eeb785a745f3153", "artifacts": ["artifacts/checkpoints/p8-scale-20261007", "artifacts/checkpoints/p8-local-waves-20261007/round2", "docs/roadmap/code-index-v2/P8-SCALE.md"], "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"}]
 实施备注：
 2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。
+2026-10-07 P8本地推进第二轮：新增有界真实规模驱动、固定1k/5k/10k/50k/100k计划、实际files/symbols/chunks/各edge表计数和原始阶段报告。60文件N=1 smoke的9个样本通过；大矩阵、release性能和向量工作量未认证。原oracle每表100000行保护保持，超预算明确not_run。
 
 ### [ ] P8-006｜增量规模与fanout曲线
 
-状态：`todo`；批次：`P8-B`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-B`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/mutations.rs`；`crates/cc-index/`
 硬依赖：P7-020, P8-001, P8-005
 步骤：测no-op/body/API/config/batch和超预算闭包；输出各phase计数
@@ -2281,11 +2283,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：时间可归因且闭包完成后full parity，未完成有显式status；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V07；V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 2, "source": "4917a43c04f72022240537761eeb785a745f3153", "artifacts": ["artifacts/checkpoints/p8-scale-20261007", "artifacts/checkpoints/p8-local-waves-20261007/round2", "docs/roadmap/code-index-v2/P8-SCALE.md"], "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"}]
+实施备注：
+2026-10-07 P8本地推进第二轮：新增真实no-op/body/API/config/batch增量及fanout预算恢复，与重新全量构建完整15表对账并保留手写call-edge断言。新驱动发现并修复派生route_node误作解析输入的问题；2文件回归红转绿，60文件9样本通过。原120秒timeout与失败raw保留；300秒测试工作预算不是性能阈值。
 
 ### [ ] P8-007｜多并发与混合负载
 
-状态：`todo`；批次：`P8-B`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-B`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/runner.rs`；`crates/cc-server/`
 硬依赖：P8-006
 步骤：C1/4/8/16 mixed read/build/backfill；记录offered load和排队
@@ -2293,11 +2297,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：无死锁饥饿，吞吐不能隐藏timeout与尾部；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 3, "source": "25399fc51bb004885c18e8ba13fd1aae9614be17", "artifacts": ["artifacts/checkpoints/p8-load-20261007", "docs/roadmap/code-index-v2/P8-LOAD.md", "artifacts/checkpoints/p8-local-waves-20261007/round3"], "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"}]
+实施备注：
+2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。
 
 ### [ ] P8-008｜冷建/重开/热查分层
 
-状态：`todo`；批次：`P8-B`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-B`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/runner.rs`；`crates/cc-eval/src/benchmark/statistics.rs`
 硬依赖：P8-007
 步骤：分离OS cache、process cold、result-cache hit与uncached warm；采全部样本
@@ -2305,11 +2311,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：无best-of，sample N/分布/CI齐全；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 1, "source": "1fb1b5ccc556206a8cb4597963ee959d7f66ff11", "artifacts": ["artifacts/checkpoints/p8-local-waves-20261007/round1", "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"], "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"}]
+实施备注：
+2026-10-07 P8本地推进第一轮：新增全部attempt的延迟分层及次序统计量CI；缺少lifecycle/cache观测保持unknown，reopen要求明确预存索引凭据。新测量11项及旧report11项通过；未执行完整V20/性能认证。
 
 ### [ ] P8-009｜内存/磁盘/费用总账
 
-状态：`todo`；批次：`P8-B`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-B`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/sampler.rs`；`crates/cc-semantic/`
 硬依赖：P8-008
 步骤：分别client/server/process-tree和artifact/FTS大小；成本reported/estimated分栏
@@ -2317,11 +2325,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：单位和归属正确，不把unavailable填0或把runner当server；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 1, "source": "1fb1b5ccc556206a8cb4597963ee959d7f66ff11", "artifacts": ["artifacts/checkpoints/p8-local-waves-20261007/round1", "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"], "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"}]
+实施备注：
+2026-10-07 P8本地推进第一轮：修复ps进程树不完整/溢出误报并新增内存角色、磁盘及费用账本；unknown不补零、重叠不相加、reported/estimated分开。新测量11项及旧report11项通过；既有native live-child测试unavailable仍OPEN。
 
 ### [ ] P8-010｜长时soak与连续修改
 
-状态：`todo`；批次：`P8-B`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-B`；优先级：`normal`。
 范围：`crates/cc-eval/tests/soak.rs`；`crates/cc-eval/src/benchmark/mutations.rs`
 硬依赖：P8-009
 步骤：持续编辑、删除、切分支、catalog压实、cache/worker复用；终点完整对账
@@ -2329,7 +2339,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：内存/队列不无界增长，长期索引和全量一致；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V07；V17；V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 3, "source": "25399fc51bb004885c18e8ba13fd1aae9614be17", "artifacts": ["artifacts/checkpoints/p8-load-20261007", "docs/roadmap/code-index-v2/P8-LOAD.md", "artifacts/checkpoints/p8-local-waves-20261007/round3"], "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"}]
+实施备注：
+2026-10-07 P8本地推进第三轮：新增有界长生命周期worker、body/add/rename/delete/API/restore循环、停止投递后排空和终点原15表+3公开探针对账；比较前不修复增量侧。四组每组12次修改，144操作/48修改均完成且终点一致。取消/deadline/raw预算有实测非零收据；仅短时smoke，未认证长时资源增长、真实切分支或catalog压实。
 
 ### [ ] P8-011｜端到端故障与恢复认证
 
@@ -2357,7 +2369,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-013｜指标/门槛与失败退出最终认证
 
-状态：`todo`；批次：`P8-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-C`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/gate.rs`；`crates/cc-eval/tests/benchmark_cli.rs`
 硬依赖：P8-012
 步骤：故意注入quality/perf/lock失败；验证退出和raw报告仍保留
@@ -2365,7 +2377,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：红线失败必非零，inconclusive不被自动passed；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V03；V04；V20
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 2, "source": "b81d786d1f5ff56ab0363822cfe7ded515164543", "artifacts": ["artifacts/checkpoints/p8-local-waves-20261007/round2", "docs/roadmap/code-index-v2/P8-GATES.md"], "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"}]
+实施备注：
+2026-10-07 P8本地推进第二轮：修复零计划样本被误放行、零基线p95被当作无回归、非法门槛/锁漂移没有持久失败收据的问题。6个CLI故障合同从2通过/4失败到6通过，原11个report回归通过；raw不覆盖。完整质量/性能V20与原硬依赖未验收。
 
 ### [ ] P8-014｜可选LLM评审旁证流程
 
@@ -2419,7 +2433,7 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 ### [ ] P8-018｜文档事实与安装契约同步
 
-状态：`todo`；批次：`P8-D`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-D`；优先级：`normal`。
 范围：`docs/ARCHITECTURE.md`；`docs/BENCHMARK.md`；`docs/MCP_TOOLS.md`；`docs/CONFIGURATION.md`
 硬依赖：P8-017
 步骤：从schema/capabilities生成可核查事实；更新安装/故障/默认离线说明
@@ -2427,11 +2441,13 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：文档表数/schema/工具数不再漂移，设计与已实现标识分开；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 3, "source": "ed2fa642091434346be2b4eda9367106d7d48533", "artifacts": ["artifacts/benchmarks/p8-facts-review-20261007", "docs/roadmap/code-index-v2/P8-FACTS.md", "artifacts/checkpoints/p8-local-waves-20261007/round3"], "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"}]
+实施备注：
+2026-10-07 P8本地推进第三轮：新增stdlib事实生成/漂移检查，直接解析Cargo/schema/capabilities/tool/config源；同步当前8crate、schema25、30基础表+5FTS、14工具和semantic默认关闭/实际默认值。13个CLI正负例和实际SQLite DDL核对通过，CI新增事实检查；跨平台安装/真实运行认证未完成。
 
 ### [ ] P8-019｜发布工件与完整报告归档
 
-状态：`todo`；批次：`P8-D`；优先级：`normal`。
+状态：`in_progress`；批次：`P8-D`；优先级：`normal`。
 范围：`.github/workflows/ci.yml`；`artifacts/benchmarks/`；`docs/benchmarks/`
 硬依赖：P8-018
 步骤：归档精确binary/checksum/manifest/raw/gates；latest只指向run
@@ -2439,7 +2455,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：报告可重算，历史原始run不被下一轮覆盖；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V01；V04；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 1, "source": "d1bf4b799e52d6367fe4959d08c5a79e63b3bafe", "artifacts": ["artifacts/benchmarks/p8-release-local-20261007", "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"], "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"}]
+实施备注：
+2026-10-07 P8本地推进第一轮：新增不可覆盖归档、候选绑定、完整清单/checksum、失败raw保留及仅passed_local且实语料锁才可提升的latest指针。39项有界夹具测试通过；完整G8、指标复算、发行批准保持OPEN。
 
 ### [ ] P8-020｜P8发布评审与遗留关闭
 

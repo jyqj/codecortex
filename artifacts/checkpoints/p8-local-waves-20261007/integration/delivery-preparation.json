@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "scope": "local_integration_validation_and_remote_source_admission_not_release_certification",
+  "base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "local_runtime_source": "853385b7ccb2780818f9f8e8a83791f1c197efcf",
+  "remote_source": "18499879a8ba3197e599cfd2e9ae96bcb657d65b",
+  "remote_review": "c7766540612f1156f0a8afbdead20e934c98066c",
+  "source_version": "p8-local-engineering-20261007-v8",
+  "registry_sha256": "5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155",
+  "source_guard_script_sha256": "019ce82b6f797920e5db3f786bb27c058b14a9a7b133e99f9b5d195ca12b81a8",
+  "ci_file_sha256": "1cf27f549d543b99ec3cdd0e5d4acfc6fa1cdf83a4a0088b0d81f42dbbd03fac",
+  "complete_inputs": 777,
+  "new_reviewed_rust_paths": 17,
+  "checks": {
+    "combined_rust_tests": {
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 33,
+      "source": "853385b7ccb2780818f9f8e8a83791f1c197efcf",
+      "receipt": "artifacts/checkpoints/p8-combined-validation-20261007/manifest.json"
+    },
+    "combined_scoped_clippy": {
+      "status": "passed",
+      "exit_code": 0,
+      "scope": "cc-eval --all-targets --no-deps -D warnings",
+      "receipt": "artifacts/checkpoints/p8-combined-validation-20261007/manifest.json"
+    },
+    "cargo_fmt_all": {
+      "status": "passed",
+      "exit_code": 0,
+      "source": "853385b7ccb2780818f9f8e8a83791f1c197efcf",
+      "log": "final-format.log"
+    },
+    "source_admission_extension_full_suite": {
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 67,
+      "log": "source-admission-base-tests.log",
+      "scope": "before new P8 registration; not counted as re-executed on final remote pins"
+    },
+    "final_local_reviewed_source_tests": {
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 21,
+      "log": "final-reviewed-source-tests.log",
+      "pins_commit": "9e03ed67a143dae03fa7fb2d862de29d7a254513"
+    },
+    "final_local_source_guard": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": "final-source-guard.log"
+    },
+    "actual_remote_pins_source_guard": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": "remote-source-guard.log",
+      "pins_commit": "1c288cfac90a4bff3d6cc162ca3531a1d21c6b25"
+    },
+    "release_evidence_cli_tests": {
+      "status": "passed",
+      "exit_code": 0,
+      "passed": 39,
+      "log": "p8-release-integration-tests.log"
+    },
+    "documentation_facts": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": "final-facts-check.json"
+    },
+    "todo_generated_views": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": "final-plan-check.json"
+    }
+  },
+  "todo_counts": {
+    "total": 192,
+    "done": 150,
+    "in_progress": 11,
+    "todo": 31,
+    "unfinished": 42,
+    "batch_original_ids_advanced": 10,
+    "batch_remaining": 0
+  },
+  "log_files": {
+    "final-facts-check.json": {
+      "bytes": 2632,
+      "sha256": "faf831214ee50036d997aad3c012e1350339fc32e4adca8d98704c61ebc27e0d"
+    },
+    "final-format.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-plan-check.json": {
+      "bytes": 191,
+      "sha256": "750a9b0ade80142cff6469feaccc15882f34d13d65e1b061209df469c5ee12ac"
+    },
+    "final-reviewed-source-tests.log": {
+      "bytes": 3215,
+      "sha256": "716f449cd47eec056b8bbd09071f469294b0bdd72957247735cf9b78a579623d"
+    },
+    "final-source-guard.log": {
+      "bytes": 503,
+      "sha256": "7798e8f372c2d083aa97422ab99e6a7455b224cd6cff53a62999dac167a92d51"
+    },
+    "p8-facts-integration-check.json": {
+      "bytes": 2632,
+      "sha256": "faf831214ee50036d997aad3c012e1350339fc32e4adca8d98704c61ebc27e0d"
+    },
+    "p8-release-integration-tests.log": {
+      "bytes": 6425,
+      "sha256": "e14685bf0244ea240a22b882e356ed35457ebbd7cacbeb5b87c8fd9540a78d89"
+    },
+    "preparation-receipt.json": {
+      "bytes": 850,
+      "sha256": "6520dda95f32fc81e8af1000244e20dd992fb9344aa68deb69d7ccf2162ac5d4"
+    },
+    "remote-source-guard.log": {
+      "bytes": 503,
+      "sha256": "d4ab37af16c7a37f57c597eeca14d4b8b242617daeac212e4e734d39af28e879"
+    },
+    "source-admission-base-tests.log": {
+      "bytes": 9038,
+      "sha256": "262bd06803ce98804c56ecbca46c357dbaeaeb5fb0afdab30d982ce7712d8774"
+    }
+  },
+  "publication": {
+    "method": "authenticated GitHub Git Data connector; local HTTPS push lacked credentials",
+    "remote_source_tree_matches_independently_computed_local_tree": true,
+    "remote_review_tree_matches_independently_computed_local_tree": true,
+    "fetch_executor": "root",
+    "independent_git_object_reviewer": "round1_release",
+    "metadata_correction": "R2 commit message says reviewer fetched; root performed the fetch, then the independent reviewer read and checked the fetched Git objects. The review JSON records this division accurately.",
+    "local_history_bundle": "preserves original author and review commit objects; never imported by CI to grant approval"
+  },
+  "limits": [
+    "GitHub full CI is a separate check at the actual PR head, not part of this local receipt",
+    "Native live-child resource attribution remains failed/unavailable in this environment; test and original logs unchanged",
+    "No full 1k-to-100k matrix, long soak, live provider, heldout, installation-platform or release certification",
+    "All ten original P8 tasks remain in_progress with unchanged hard dependencies and acceptance conditions"
+  ]
+}

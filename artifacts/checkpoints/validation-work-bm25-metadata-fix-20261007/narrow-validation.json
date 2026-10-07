@@ -1,0 +1,97 @@
+{
+  "source_inputs": 768,
+  "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe",
+  "source_inputs_unchanged": true,
+  "commands": [
+    {
+      "name": "repaired-oracle",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-server",
+        "--test",
+        "p7_v05_v11_independent_review",
+        "--message-format=json-render-diagnostics",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 29.982,
+      "summaries": [
+        [
+          "ok",
+          "6",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "log": "repaired-oracle.log",
+      "log_sha256": "ecf4ecd30deae240152d1f266e4361d7e43b1a5c9e4c9e8c7d08f733a8e8c73e",
+      "binary_sha256": "0b16decc7d8b60ef282e52c17a3ab6d7c3fafe449665babc969340725a7260b5"
+    },
+    {
+      "name": "repaired-packing",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-eval",
+        "--test",
+        "diag_p5e_fix_review_boundary_20261003",
+        "--test",
+        "packing_validation_work",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 21.371,
+      "summaries": [
+        [
+          "ok",
+          "3",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "3",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "log": "repaired-packing.log",
+      "log_sha256": "80bcd687ffa169afc4969e0eec7d2fc41101b855bf5617706b9d40cd472b811c"
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.3,
+      "summaries": [],
+      "log": "format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "passed": true
+}

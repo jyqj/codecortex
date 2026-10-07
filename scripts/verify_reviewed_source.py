@@ -16,15 +16,15 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p7-capture-revalidation-20261007-v6'
+VERSION = 'p7-capture-revalidation-20261007-v7'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = 'ba2e1edf29316d0dfc387ca766d0673e54738ae962eb7a6744e85acf584935ac'
-PRODUCT = '87a8c8a787604a03d3db6567a6fd429f057e7251'
-APPROVED = {'validation_work': {'source': '016ee41bfde121f6502b2f6ab55b5ed331856314',
-                     'review': 'ee335d03e3952bb2b8513456c048b4ba1f5cda66',
-                     'review_path': 'artifacts/checkpoints/validation-work-packing-review-20261007/review.json',
+REGISTRY_SHA256 = '3503b15ddf72020d36a0f87a92e2a3fedd46979a70538aaa72214d7d6625268a'
+PRODUCT = '3f613818b2ba5ab08b97009777b8bc4164afb330'
+APPROVED = {'validation_work': {'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410',
+                     'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
+                     'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
                      'paths': ['crates/cc-db/src/document_store.rs',
                                'crates/cc-db/src/index_db_retrieval.rs',
                                'crates/cc-db/src/symbol_identity_store.rs',

@@ -1,0 +1,55 @@
+{
+  "purpose": "Read-only same READY child branch /proc capability diagnosis; no Rust source or test assertion modified.",
+  "source_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_eval-9de7fea66c53aad8",
+  "executable_sha256": "6a4a84d1d95eca14c8e056d16a1ff8144d81163d92bd26e44c9e5e15839c9ccc",
+  "command": [
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/cc_eval-9de7fea66c53aad8",
+    "--exact",
+    "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+    "--test-threads=1"
+  ],
+  "observations": [
+    {
+      "proc_path": "/proc/6/stat",
+      "stat": "6 (caas-prefix-tra) S 1 6 0 1025 0 4194560 1856 30707 0 0 1 24 79 201 20 0 1 0 148 1011712 71 18446744073709551615 1 1 0 0 0 0 0 16781312 1088 0 0 0 17 1 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+      "reported_pid": "6",
+      "expected_pid": 6,
+      "state": "S",
+      "utime": "1",
+      "stime": "24",
+      "threads": "1",
+      "rss": "71",
+      "child_poll": null
+    },
+    {
+      "proc_path": "/proc/6/stat",
+      "stat": "6 (caas-prefix-tra) S 1 6 0 1025 0 4194560 1856 30707 0 0 1 24 79 201 20 0 1 0 148 1011712 71 18446744073709551615 1 1 0 0 0 0 0 16781312 1088 0 0 0 17 1 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+      "reported_pid": "6",
+      "expected_pid": 6,
+      "state": "S",
+      "utime": "1",
+      "stime": "24",
+      "threads": "1",
+      "rss": "71",
+      "child_poll": null
+    }
+  ],
+  "pid": 6,
+  "kernel_release": "6.18.44\n",
+  "page_size": 4096,
+  "clock_ticks": 100,
+  "exit_code_after_cleanup": -9,
+  "classification": "Local process-observation environment mismatch; not a proven product regression. The unchanged original live-child test also fails in an isolated run.",
+  "limits": "The READY child runs via the execution wrapper; the returned child PID resolves to caas-prefix-tra in /proc. This is enough to reject trustworthy local PID-attributed verification, but does not identify every unavailable path inside the uninstrumented Rust snapshot. No sandbox/network/process controls were altered.",
+  "original_source_unchanged": {
+    "crates/cc-eval/src/benchmark/sampler.rs": {
+      "unchanged": true,
+      "sha256": "f9112d47c1efc3cc7b421459206106a38485ea8ebc45b060633595f831a5c06d"
+    },
+    "crates/cc-eval/src/lib.rs": {
+      "unchanged": true,
+      "sha256": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b"
+    }
+  }
+}

@@ -19,7 +19,7 @@ Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`78d0c132080d293ff0bd036a305f4000f856e267f3192fba37335a02cff05490`。
+> 源文件 SHA-256：`cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc`。
 <!-- code-index-progress:end -->
 
 ## 2. 下一步与依赖
@@ -38,9 +38,13 @@ P7-014 增加版本化 Python capture 凭据与完整重新校验入口，26 项
 [revalidation](../../../artifacts/checkpoints/python-inventory-revalidation-20261007/README.md)。
 早期 767 输入组合的 27 项记录保留在 [历史组合证据](../../../artifacts/checkpoints/combined-validation-20261007/README.md)。
 新增计量收据曾在原预算内挤掉正文，CI run37623178087 的失败与修复过程见 [packing 修复证据](../../../artifacts/checkpoints/validation-work-packing-budget-fix-20261007/README.md)。
-现已在原预算及精确断言不变的前提下修复；最终 768 输入组合 48 passed / 0 failed / 1 个既有显式 stdio ignored，fmt 通过，见 [最终组合证据](../../../artifacts/checkpoints/combined-validation-fix-20261007/README.md)。
-各组有重叠，不相加为唯一测试总数；当前固定源码选择为 `p7-capture-revalidation-20261007-v6`，旧 v4/v5 记录保留历史范围。
+第一轮修复后的 768 输入组合为 48 passed / 0 failed / 1 个既有显式 stdio ignored，fmt 通过，见 [该轮组合证据](../../../artifacts/checkpoints/combined-validation-fix-20261007/README.md)。
+后续 CI run37629938552 在更早的 metadata 投影阶段暴露公开 BM25 score receipt 丢失，现增加早期可回滚探测：先压缩重复正文，再判断整体省略可选计量是否足以保住全部 hit/retrieval metadata。
+原预算、原 oracle 及正文边界断言不变；新组合的 12 项窄测和 13 项 V05/V16 feature 测试通过。默认完整续跑仍有 4 个失败，进程归属、socket 权限、性能阈值及 generation fixture 原证据均保留；见 [metadata 修复与当前回归证据](../../../artifacts/checkpoints/validation-work-bm25-metadata-fix-20261007/README.md)。
+各组有重叠，不相加为唯一案例数；当前固定源码选择为 `p7-capture-revalidation-20261007-v7`，旧 v4/v5/v6 记录保留历史范围。完整最终 CI 另行绑定实际 head，不由本地窄测或源码准入推定通过。
 P7-011 与 P7-014 的整项状态及正式质量/规模门保持上方权威状态，后续按原验收条件补齐。
+
+用户要求继续多轮 workspace multi-subagent，至少推进 P7-011～020 这 10 个原始 TODO；每轮报告已完成与剩余数量，并分别记录有实质交付、待验收和受阻状态。本轮起点为 150 done / 1 in_progress / 41 todo，42 项未完成；内部子步骤不计为多个 TODO。真实 provider 认证仍按任务原有的明确授权及预算条件执行。
 
 ## 3. 每次开始
 

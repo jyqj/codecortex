@@ -26,7 +26,7 @@ Code Index V2 共 **192 项任务：150 done / 1 in_progress / 41 todo**。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`78d0c132080d293ff0bd036a305f4000f856e267f3192fba37335a02cff05490`。
+> 源文件 SHA-256：`cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc`。
 <!-- code-index-progress:end -->
 
 ## 快速开始

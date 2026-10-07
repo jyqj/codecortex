@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "source_version": "p7-capture-revalidation-20261007-v7",
+  "scope": "source_integrity_only",
+  "base": "886f90a542a6174a037c79eebbb4f74848fb1f53",
+  "product": "3f613818b2ba5ab08b97009777b8bc4164afb330",
+  "product_tree": "07a1e5333ee40bb24619202d9ccd6b9c9386bdfa",
+  "validation_source": "a4090fe0b801a54a85231d5486ce3ad75c9cd410",
+  "validation_review": "d0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467",
+  "capture_source": "e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d",
+  "capture_review": "9e96795711c072c9aa2095a1fc4527bc28ba75b0",
+  "complete_inputs": 768,
+  "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe",
+  "registry_sha256": "3503b15ddf72020d36a0f87a92e2a3fedd46979a70538aaa72214d7d6625268a",
+  "commands": [
+    {
+      "name": "source-check",
+      "argv": [
+        "python3",
+        "scripts/verify_reviewed_source.py",
+        "--source-version",
+        "p7-capture-revalidation-20261007-v7"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 86.924,
+      "log": "source-check.log",
+      "log_sha256": "98d098a4e64ca06fa6ea7cd09a8c077a1fddcd86ecc050cc3875111d188fcb1f"
+    },
+    {
+      "name": "guard-tests",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/source_integrity",
+        "-p",
+        "test_reviewed_source.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 116.092,
+      "log": "guard-tests.log",
+      "log_sha256": "96c8ae4762163adc9d2b4285c99120d227b244e651a28a24d40fcc17818b0a02"
+    },
+    {
+      "name": "plan-check",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.085,
+      "log": "plan-check.log",
+      "log_sha256": "c740b1a1ed14ed2723d0435e0b22f2bfaef0f8017ed1d213a00044435d092f1b"
+    }
+  ],
+  "independent_review": "guard-review.json",
+  "independent_review_sha256": "3697fe1f63e4caf13b0dc6613077c413f8ff159abe780f114212f443d110d843",
+  "negative_controls_passed": 14,
+  "historical_controls": "Unchanged historical helper/registry bytes; no additional 40-control rerun in v7.",
+  "author_validation": "artifacts/checkpoints/validation-work-bm25-metadata-fix-20261007/validation-summary.json",
+  "author_narrow_tests": {
+    "passed": 12,
+    "failed": 0,
+    "format_exit_code": 0
+  },
+  "author_five_semantic_http_targets": {
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0
+  },
+  "author_full_default_all_passed": false,
+  "author_default_failures_retained": 4,
+  "final_head_ci": "pending_separate_exact_head_verification",
+  "task_counts": {
+    "done": 150,
+    "todo": 41,
+    "in_progress": 1
+  },
+  "unfinished_tasks": 42,
+  "limits": [
+    "Source identity does not turn failed or ignored behavior tests into passes.",
+    "The A-only derived tree has 766 inputs and no independent behavior run; the actual combined author source and this product have the same 768 crate/Cargo inputs.",
+    "Historical A/B/v4/v5/v6 and both earlier CI failures remain unchanged; no quality, scale, live-provider or full P7 acceptance is inherited."
+  ]
+}

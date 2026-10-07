@@ -174,8 +174,21 @@ ReadGeneration 已在 P5-C 中加入持久化 incarnation 和可选 semantic_epo
 `RetrievalCost.hydration` 计入 originating row hydration 的 chunk/document 与身份读取；
 小型两行真实 fixture 测得 9 statements / 10 yielded rows，显式单行验证测得 5 / 5。
 这些数值是命名语句的实际计数，不是所有请求或 SQLite 全局成本上限。
-最终 `verify_source_records` 的 manifest 读取及 `load_on(None)` 身份验证在 cold/warm
-公开组装都执行，却不计入该 hydration 收据；warm graph-window cache 复用原查询收据。
+最终 manifest 与身份验证在 cold/warm 公开组装都执行，不计入该 originating hydration
+收据；warm graph-window cache 复用原查询收据。
 因此 warm 收据不代表当前请求总 SQL，批量 UID 的旧说明也不能推广为关联验证无逐 hit 查询。
 DB 独审原失败与限制见 `docs/reviews/qname-db-20261003/README.md`，原文保留。
-额外 validation-work 收据及 AST taxonomy 全面审计仍为开放 authority TODO，不在本包改产品。
+
+2026-10-07 新增 `evidence_summary.source_freshness.validation_work`，与原查询成本分开：
+`source_records_sql` 计入本次组装的 manifest batch 和 source-bound identity 校验，
+`candidate_projection_sql` 计入最终 chunk/document projection。两行真实 Python 声明
+分别为 9 statements / 10 rows 与 1 / 2；暖 graph cache 命中仍重新执行并报告这两组。
+每个 SQLite cached statement 执行前重置 VM/fullscan/sort 计数；同一 hydrator 的多次
+窗口校验累加，新的组装尝试从零开始；代际重试丢弃的前次尝试不聚合。
+空窗口和查询前拒绝为零，错误前执行的语句和已返回的行仍保存在本次诊断。
+公开错误形态不变；不能把错误当完整成功收据。
+
+该收据不含事务控制、generation、dense publication fence、graph、磁盘校验或 originating retrieval，
+不声明请求总成本、I/O 或硬资源上限。现有 output packing 可以省略详细 freshness metadata，
+并标记 `details_omitted`；缺失收据不等于零成本。AST taxonomy 的全面审计仍开放。
+回归入口：`cargo test -p cc-eval --test p7_validation_work --locked`。

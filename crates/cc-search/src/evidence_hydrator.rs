@@ -10,6 +10,7 @@ use cc_model::{
     identity::DocumentRef,
     query::QueryControl,
     retrieval::HardScope,
+    retrieval_cost::SqlWork,
     search::SearchHit,
     source::{ChunkSource, SourceIdentity, SourceSnapshot},
     CcError, CcResult, ContextNode, Language,
@@ -53,6 +54,8 @@ pub struct EvidenceHydrator<'a> {
     verified_identities: BTreeMap<String, VerifiedLayout>,
     verified_hits: usize,
     dense_basis_omitted: bool,
+    source_records_sql: SqlWork,
+    candidate_projection_sql: SqlWork,
 }
 impl<'a> EvidenceHydrator<'a> {
     pub fn new(
@@ -72,6 +75,8 @@ impl<'a> EvidenceHydrator<'a> {
             verified_identities: BTreeMap::new(),
             verified_hits: 0,
             dense_basis_omitted: false,
+            source_records_sql: SqlWork::default(),
+            candidate_projection_sql: SqlWork::default(),
         };
         result.finish()?;
         Ok(result)
@@ -85,9 +90,16 @@ impl<'a> EvidenceHydrator<'a> {
                 "final evidence candidate budget exceeded".into(),
             ));
         }
-        cc_db::document_store::verify_source_records(self.db, hits)?;
+        cc_db::document_store::verify_source_records_with_work(
+            self.db,
+            hits,
+            &mut self.source_records_sql,
+        )?;
         let ids: Vec<_> = hits.iter().map(|h| h.chunk_id.as_str()).collect();
-        let rows = self.db.retrieval().chunk_candidate_rows_by_ids(&ids)?;
+        let rows = self
+            .db
+            .retrieval()
+            .chunk_candidate_rows_by_ids_with_work(&ids, &mut self.candidate_projection_sql)?;
         let rows: BTreeMap<_, _> = rows.into_iter().map(|r| (r.chunk_id.clone(), r)).collect();
         let mut result = Vec::new();
         for hit in hits {
@@ -227,6 +239,12 @@ impl<'a> EvidenceHydrator<'a> {
         result["verified_hits"] = serde_json::json!(self.verified_hits);
         result["generation"] = serde_json::json!(self.generation);
         result["scope"] = serde_json::json!(SOURCE_FRESHNESS_SCOPE);
+        result["validation_work"] = serde_json::json!({
+            "schema_version": 1,
+            "coverage": "current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost",
+            "source_records_sql": self.source_records_sql,
+            "candidate_projection_sql": self.candidate_projection_sql,
+        });
         result[crate::semantic_hydrate_guard::FENCE_DIAGNOSTICS_KEY] =
             self.dense_fence.diagnostics();
         result

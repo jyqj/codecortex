@@ -388,13 +388,22 @@ struct Artifacts {
 }
 impl Artifacts {
     fn reserve(&self, bytes: usize) -> Result<()> {
-        self.used
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |used| {
-                used.checked_add(bytes as u64)
-                    .filter(|next| *next <= self.limit)
-            })
-            .map(|_| ())
-            .map_err(|_| invalid("p8 load artifact byte budget exhausted; prefix retained"))
+        let mut used = self.used.load(Ordering::Acquire);
+        loop {
+            let next = used
+                .checked_add(bytes as u64)
+                .filter(|next| *next <= self.limit)
+                .ok_or_else(|| {
+                    invalid("p8 load artifact byte budget exhausted; prefix retained")
+                })?;
+            match self
+                .used
+                .compare_exchange_weak(used, next, Ordering::AcqRel, Ordering::Acquire)
+            {
+                Ok(_) => return Ok(()),
+                Err(current) => used = current,
+            }
+        }
     }
     fn event(&self, value: Value) -> Result<()> {
         let bytes = serde_json::to_vec(&value)?;
@@ -1002,6 +1011,66 @@ pub fn worker(out: &Path) -> Result<i32> {
         "not_run":["long_steady_state_rss","backfill","real_git_branch_switch","catalog_compaction","100k","release_performance_certificate"]});
     shared.artifacts.json("worker-summary.json", &summary)?;
     Ok(exit_code)
+}
+
+#[cfg(test)]
+mod artifact_budget_tests {
+    use super::*;
+
+    fn artifacts(out: &Path, used: u64, limit: u64) -> Artifacts {
+        Artifacts {
+            out: out.to_path_buf(),
+            events: Mutex::new(File::create(out.join("events.jsonl")).unwrap()),
+            used: AtomicU64::new(used),
+            limit,
+        }
+    }
+
+    #[test]
+    fn concurrent_reservations_fill_only_whole_reservations_within_the_budget() {
+        let directory = tempfile::tempdir().unwrap();
+        let artifacts = artifacts(directory.path(), 0, 10_007);
+        let successes = AtomicUsize::new(0);
+        let start = std::sync::Barrier::new(16);
+        std::thread::scope(|scope| {
+            for _ in 0..16 {
+                scope.spawn(|| {
+                    start.wait();
+                    for _ in 0..2_000 {
+                        if artifacts.reserve(7).is_ok() {
+                            successes.fetch_add(1, Ordering::Relaxed);
+                        }
+                    }
+                });
+            }
+        });
+        let succeeded = successes.load(Ordering::Relaxed) as u64;
+        assert_eq!(succeeded, artifacts.limit / 7);
+        assert_eq!(artifacts.used.load(Ordering::Acquire), succeeded * 7);
+        assert!(artifacts.reserve(7).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), succeeded * 7);
+    }
+
+    #[test]
+    fn rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries() {
+        let directory = tempfile::tempdir().unwrap();
+        let artifacts = artifacts(directory.path(), 63, 64);
+        assert!(artifacts.reserve(2).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 63);
+        artifacts.reserve(1).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 64);
+        artifacts.reserve(0).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), 64);
+
+        let directory = tempfile::tempdir().unwrap();
+        let artifacts = self::artifacts(directory.path(), u64::MAX - 3, u64::MAX);
+        artifacts.reserve(3).unwrap();
+        assert!(artifacts.reserve(1).is_err());
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+        artifacts.reserve(0).unwrap();
+        assert_eq!(artifacts.used.load(Ordering::Acquire), u64::MAX);
+    }
 }
 
 #[cfg(test)]

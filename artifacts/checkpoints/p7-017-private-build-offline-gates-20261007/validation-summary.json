@@ -1,0 +1,325 @@
+{
+  "cleanup_reappearance_observation": {
+    "cleanup_record_sha256": "66e1cc8173ff99b988d1ce5ee7ddbf1c392f94950ce4122820416be209c76314",
+    "copied_product_sha256": "08a651297e39ee066ca9c016e80781deaed5f866e3aedc7846795d378cd3a695",
+    "owned_target_path": "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-product/cargo-target",
+    "regular_files_now": 2631,
+    "restored_compiler_product_sha256": "08a651297e39ee066ca9c016e80781deaed5f866e3aedc7846795d378cd3a695",
+    "retained_artifacts_still_match_cleanup": true,
+    "scope": "Later read-only filesystem observation, separate from and not a rewrite of the earlier in-process cleanup result. Cause of reappearance is not established. No later gate execution is inferred.",
+    "sum_file_lengths_now": 1357360458,
+    "target_exists_in_later_tool_invocation": true
+  },
+  "isolated_original_gate_executions": 2,
+  "isolated_original_gates_failed": 2,
+  "isolated_original_gates_passed": 0,
+  "limits": [
+    "The original gate, its budgets and assertions were not edited; neither isolated failure was replaced by an unrestricted success or a retry.",
+    "The process visibility probe observes inner getpid values while /proc/self/status reports the outer PID and both NSpid values. It is a separate environment observation, not evidence that the original tool matrix passed.",
+    "The wrapper proves inherited per-process IPv4/IPv6 EPERM and no inherited socket descriptors immediately before the original runner exec. It does not count the product's socket/connect attempts, certify system-wide policy or imply a complete offline gate.",
+    "The original gate aborted before writing its case observations. No fourteen-tool, source, cache absence, error contract or persisted-reopen success is claimed from this checkpoint.",
+    "Builder and compiler artifacts identify the fixed inputs, actual selected invocation, feature profile and copied executables. They do not certify every transitive tool as hermetic or promise byte-reproducible rebuilding.",
+    "Other CI executions, especially network_scope=not_isolated_not_claimed local behavior gates, are separate receipts and are not combined with these failed isolated runs.",
+    "Private intermediates were removed only after the recorded terminal gate result and retained-file hash checks. A later default-target reappearance is preserved separately; persistent deletion is not claimed.",
+    "Large executable bodies and disposable Cargo intermediates are excluded from Git; their identities and raw build/execution records are retained. Original copied products and runners remain in the authorized scratch run directory."
+  ],
+  "process_visibility_probe": {
+    "child_returncode": 0,
+    "child_stderr": "",
+    "child_stdout": {
+      "getpid": 6,
+      "getpid_status_exists": true,
+      "proc_self_status": "Name:\tpython\nPid:\t775029\nPPid:\t775017\nNSpid:\t775029\t6\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t1"
+    },
+    "parent": {
+      "getpid": 5,
+      "getpid_status_exists": true,
+      "proc_self_status": "Name:\tpython\nPid:\t775017\nPPid:\t775009\nNSpid:\t775017\t5\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t1"
+    },
+    "popen_reported_child_pid": 6,
+    "scope": "Independent Python parent/exec-child proc visibility probe; not an execution or acceptance of the original stdio gate."
+  },
+  "product_builds_passed": 2,
+  "profiles": [
+    {
+      "cleanup_record": "default-private-target-cleanup.json",
+      "commands": [
+        {
+          "command": [
+            "python",
+            "scripts/p7_stdio_build_receipt.py",
+            "--package-kind",
+            "default",
+            "--output-dir",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-product",
+            "--offline"
+          ],
+          "elapsed_seconds": 222.137,
+          "exit_code": 0,
+          "log_sha256": "9e4a39f24bae656163a8350af84f9496a2dc78bf035f5c0a9fa5cd1de58f3c03",
+          "name": "default-product-build"
+        },
+        {
+          "command": [
+            "cargo",
+            "test",
+            "-p",
+            "cc-eval",
+            "--features",
+            "eval-http",
+            "--test",
+            "benchmark_adapters",
+            "--no-run",
+            "--locked",
+            "--offline",
+            "--message-format=json-render-diagnostics"
+          ],
+          "elapsed_seconds": 118.584,
+          "exit_code": 0,
+          "log_sha256": "172dae2c27779dc1f71451dad6a17f90064a5a869ba674e1996df42f39205bd7",
+          "name": "default-test-runner-build"
+        },
+        {
+          "command": [
+            "python",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/deny_network_exec.py",
+            "--receipt",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-network-exec.json",
+            "--",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-benchmark-adapters",
+            "p7_offline::real_stdio_default_disabled_semantic_contract",
+            "--ignored",
+            "--exact",
+            "--nocapture"
+          ],
+          "elapsed_seconds": 3.693,
+          "exit_code": 101,
+          "log_sha256": "4b37915330999263f8cf4d033bd9deeb43939cff5913cafadf7395e8f243049d",
+          "name": "default-offline-gate"
+        }
+      ],
+      "isolated_original_gate": {
+        "complete_case_observations_written": false,
+        "failed": 1,
+        "failure": "Original network_status(pid) at benchmark_adapters.rs:305 could not read /proc/<reported child PID>/status (ENOENT), after the product initialized MCP and before the tool assertions.",
+        "fourteen_tool_matrix_accepted": false,
+        "passed": 0,
+        "status": "failed"
+      },
+      "network_pre_exec_observations": {
+        "after": {
+          "NoNewPrivs": "1",
+          "Seccomp": "2",
+          "Seccomp_filters": "2"
+        },
+        "before": {
+          "NoNewPrivs": "1",
+          "Seccomp": "2",
+          "Seccomp_filters": "1"
+        },
+        "closed_socket_fds": [],
+        "denied_syscalls": [
+          "socket",
+          "connect",
+          "io_uring_setup",
+          "io_uring_enter",
+          "io_uring_register"
+        ],
+        "exec_child_ipv4_ipv6": {
+          "10": {
+            "blocked": true,
+            "errno": 1
+          },
+          "2": {
+            "blocked": true,
+            "errno": 1
+          }
+        },
+        "exec_command": [
+          "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-benchmark-adapters",
+          "p7_offline::real_stdio_default_disabled_semantic_contract",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "final_gate_exit": "recorded_by_parent_executor_not_this_receipt",
+        "ipv4": {
+          "blocked": true,
+          "errno": 1
+        },
+        "ipv6": {
+          "blocked": true,
+          "errno": 1
+        },
+        "local_unix_pair": "allowed",
+        "namespace_attempted": false,
+        "result": "filter_loaded_and_probes_passed_before_exec",
+        "schema_version": 1,
+        "scope": "inherited per-process seccomp denial; not a network namespace",
+        "socket_fds_before_exec": [],
+        "system_settings_changed": false,
+        "unavailable_syscalls": [
+          "socketcall"
+        ],
+        "wrapper_sha256": "eb8f69525b83ebbb0a620e37807fb248ccf2e2855a1f3565bb6e3caca1af6008"
+      },
+      "new_private_product_target": "/workspace/scratch/71bc431c4e4f/p7-017-validation/default-product/cargo-target",
+      "package_kind": "default",
+      "product_artifact_fresh": false,
+      "product_build_receipt_sha256": "c342cdaa70b97a97a1baf7938e541911992c384a48f20e43c055cc49247e6579",
+      "product_bytes": 67084424,
+      "product_sha256": "08a651297e39ee066ca9c016e80781deaed5f866e3aedc7846795d378cd3a695",
+      "requested_and_resolved_product_features": [],
+      "test_runner_artifact_fresh": false,
+      "test_runner_bytes": 23905608,
+      "test_runner_features": [
+        "default",
+        "eval-http"
+      ],
+      "test_runner_sha256": "c026853802f612cf2962001277fd6986030f7b3f31a9675cabfd085c79e2d6b2"
+    },
+    {
+      "cleanup_record": "semantic-private-target-cleanup.json",
+      "commands": [
+        {
+          "command": [
+            "python",
+            "scripts/p7_stdio_build_receipt.py",
+            "--package-kind",
+            "semantic",
+            "--output-dir",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-product",
+            "--offline"
+          ],
+          "elapsed_seconds": 198.868,
+          "exit_code": 0,
+          "log_sha256": "76723fa8e22e6f7f4e6da60d410b9ecbc460bd1766e27cacca1b821c447ae5ee",
+          "name": "semantic-product-build"
+        },
+        {
+          "command": [
+            "cargo",
+            "test",
+            "-p",
+            "cc-eval",
+            "--test",
+            "benchmark_adapters",
+            "--no-run",
+            "--locked",
+            "--offline",
+            "--message-format=json-render-diagnostics"
+          ],
+          "elapsed_seconds": 82.59,
+          "exit_code": 0,
+          "log_sha256": "e77d98e0ce653c2e8cb7c35a63b70f6d00c71cf515cdb76f0b461e1691fa550b",
+          "name": "semantic-test-runner-build"
+        },
+        {
+          "command": [
+            "python",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/deny_network_exec.py",
+            "--receipt",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-network-exec.json",
+            "--",
+            "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-benchmark-adapters",
+            "p7_offline::real_stdio_default_disabled_semantic_contract",
+            "--ignored",
+            "--exact",
+            "--nocapture"
+          ],
+          "elapsed_seconds": 6.1,
+          "exit_code": 101,
+          "log_sha256": "99c71b37e0af37c65930dd5544a03ec6b7fd7607bc6ff259816e40bd7897e6c5",
+          "name": "semantic-offline-gate"
+        }
+      ],
+      "isolated_original_gate": {
+        "complete_case_observations_written": false,
+        "failed": 1,
+        "failure": "Original network_status(pid) at benchmark_adapters.rs:305 could not read /proc/<reported child PID>/status (ENOENT), after the product initialized MCP and before the tool assertions.",
+        "fourteen_tool_matrix_accepted": false,
+        "passed": 0,
+        "status": "failed"
+      },
+      "network_pre_exec_observations": {
+        "after": {
+          "NoNewPrivs": "1",
+          "Seccomp": "2",
+          "Seccomp_filters": "2"
+        },
+        "before": {
+          "NoNewPrivs": "1",
+          "Seccomp": "2",
+          "Seccomp_filters": "1"
+        },
+        "closed_socket_fds": [],
+        "denied_syscalls": [
+          "socket",
+          "connect",
+          "io_uring_setup",
+          "io_uring_enter",
+          "io_uring_register"
+        ],
+        "exec_child_ipv4_ipv6": {
+          "10": {
+            "blocked": true,
+            "errno": 1
+          },
+          "2": {
+            "blocked": true,
+            "errno": 1
+          }
+        },
+        "exec_command": [
+          "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-benchmark-adapters",
+          "p7_offline::real_stdio_default_disabled_semantic_contract",
+          "--ignored",
+          "--exact",
+          "--nocapture"
+        ],
+        "final_gate_exit": "recorded_by_parent_executor_not_this_receipt",
+        "ipv4": {
+          "blocked": true,
+          "errno": 1
+        },
+        "ipv6": {
+          "blocked": true,
+          "errno": 1
+        },
+        "local_unix_pair": "allowed",
+        "namespace_attempted": false,
+        "result": "filter_loaded_and_probes_passed_before_exec",
+        "schema_version": 1,
+        "scope": "inherited per-process seccomp denial; not a network namespace",
+        "socket_fds_before_exec": [],
+        "system_settings_changed": false,
+        "unavailable_syscalls": [
+          "socketcall"
+        ],
+        "wrapper_sha256": "eb8f69525b83ebbb0a620e37807fb248ccf2e2855a1f3565bb6e3caca1af6008"
+      },
+      "new_private_product_target": "/workspace/scratch/71bc431c4e4f/p7-017-validation/semantic-product/cargo-target",
+      "package_kind": "semantic",
+      "product_artifact_fresh": false,
+      "product_build_receipt_sha256": "c8522847fdbac5ccd506717cf92c5935a76532b82f7a8c31cd1c00defd8f4596",
+      "product_bytes": 68934672,
+      "product_sha256": "84122fdb41ca247e8eb05046915c04b2a794327b562e8f4975d24a6c11f065ed",
+      "requested_and_resolved_product_features": [
+        "semantic"
+      ],
+      "test_runner_artifact_fresh": false,
+      "test_runner_bytes": 14625360,
+      "test_runner_features": [
+        "default"
+      ],
+      "test_runner_sha256": "a5079bac1d91294736de9e32f320cb8af30b0d1995860b977bfd3e2d0ae2a864"
+    }
+  ],
+  "source_commit": "a213a4cfab0e0e87198bc279acacda51e4ff62cf",
+  "source_inputs": 768,
+  "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe",
+  "task_id": "P7-017",
+  "tasks_json_changed": false,
+  "test_runner_builds_passed": 2,
+  "whole_task_accepted": false
+}

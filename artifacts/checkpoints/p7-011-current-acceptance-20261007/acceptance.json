@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "task_id": "P7-011",
+  "verdict": "accepted_original_engineering_scope",
+  "original_acceptance": [
+    "semantic找回结果也不会被softscope误删或越过hard范围",
+    "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+  ],
+  "validations": [
+    "V05",
+    "V16"
+  ],
+  "original_conditions_changed": false,
+  "accepted_head": "144b0aeb64d6f0486e6b042d5389f8809dcfcae5",
+  "merged_main": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "accepted_tree": "cfa170ebd2b402e42399992f5098c4fb1d84612e",
+  "local_execution_source": {
+    "source_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+    "source_tree": "661734886f514b31b14ae7601410079fbf58c559",
+    "source_inputs": 768,
+    "source_manifest_sha256": "487c8d0ec38378c8974725c43fd3f30946ba5bf4ed335aec947990df1125a9fe"
+  },
+  "complete_crate_cargo_inputs_equal_between_local_execution_and_ci_head": true,
+  "final_ci": {
+    "run": 37637613975,
+    "url": "https://github.com/jyqj/codecortex/actions/runs/37637613975",
+    "status": "completed",
+    "conclusion": "success",
+    "completed_at": "2026-10-07T14:46:43Z",
+    "all_jobs": "merge.json preserves the full fetched job/step results"
+  },
+  "additional_feature_gate": {
+    "name": "semantic-http-p7",
+    "command": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--offline",
+      "--locked",
+      "-j2",
+      "--message-format=json-render-diagnostics",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--test",
+      "p7_v05_all_lane_scope",
+      "--test",
+      "p7_v05_scope_public",
+      "--test",
+      "p7_v16_exact_oracle",
+      "--test",
+      "p7_v16_oracle_independent_review",
+      "--test",
+      "p7_acceptance_matrix"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 105.116,
+    "target_summaries": 5,
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0,
+    "log": "continued-semantic-http-p7.log",
+    "log_sha256": "9eff3b527eb04220f2057353c9098a199cc35e725ad2f7e991ffa9cd758032c5",
+    "raw_log_bytes": 271490
+  },
+  "feature_binary": {
+    "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/codecortex",
+    "sha256": "f8b42077e99efa137686e7923832ff0ef92255a41fe8448b82fece04edb4ee1e"
+  },
+  "applicable_requirements": [
+    {
+      "validation": "V05",
+      "requirement_id": "bm25",
+      "original_requirement": "BM25 单调",
+      "current_test_mapping": "p7_v05_v11_independent_review::public_bm25_contribution_matches_independent_sql_order_and_is_nonzero; p1a_retrieval unit scope/SQL controls",
+      "historical_evidence": "p7-v05-v11-independent-20261003 + p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "soft",
+      "original_requirement": "soft 预选外命中",
+      "current_test_mapping": "p7_acceptance_matrix::scope::dense_recall_outside_soft_preselection_survives_final_source_hydration; p7_v05_all_lane_scope::actual_graph_dense_and_hydrate_share_literal_hard_domain_and_symbol_filters",
+      "historical_evidence": "p7-acceptance-20261002/combined-v2 + p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "empty",
+      "original_requirement": "Some(empty)",
+      "current_test_mapping": "p7_acceptance_matrix::explicit_empty_hard_scopes_never_invoke_optional_port; p7_v05_all_lane_scope; p7_v05_scope_public::local_lane_candidates_obey_literal_scope_and_explicit_empty_sets; exact::tests::some_empty_scope_short_circuits_without_loading_candidates",
+      "historical_evidence": "p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "intersection",
+      "original_requirement": "语言/path/file/DSL 交集",
+      "current_test_mapping": "p1a_retrieval; p7_v05_scope_public::actual_stdio_dsl_scope_and_hydration_intersect_across_query_policies; p7_acceptance_matrix hard_scope filter test",
+      "historical_evidence": "p7-v05-v11-independent-20261003 + p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "dsl",
+      "original_requirement": "DSL 重复/冲突，支持的 kind/name",
+      "current_test_mapping": "p7_v05_v11_independent_review::public_local_dsl_returns_complete_literal_domain_and_warm_cache_stays_scoped; p7_v05_all_lane_scope; p7_v05_scope_public",
+      "historical_evidence": "p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "all-lanes",
+      "original_requirement": "exact/path/lexical/grep/graph/dense 所有 lane 不越界",
+      "current_test_mapping": "p7_v05_all_lane_scope::actual_graph_dense_and_hydrate_share_literal_hard_domain_and_symbol_filters; all six raw lanes with non-vacuous positive case",
+      "historical_evidence": "p7-gate-lifecycle-independent-20261003: 110 cases/660 lane receipts were historical executions",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "path-normalization",
+      "original_requirement": "C09 component/case/separator/traversal/root 语义",
+      "current_test_mapping": "p1b_retrieval::p1b_component_scope_and_separator_normalization; p1b_invalid_hard_paths_are_not_silently_empty; V16 independent component-sibling case",
+      "historical_evidence": "p7-gate-lifecycle-independent-20261003",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V05",
+      "requirement_id": "hydrate",
+      "original_requirement": "最终 manifest/source/span/hard-scope 二次守卫",
+      "current_test_mapping": "p5c_hydration (11 tests, including forged metadata/deleted manifest/disk mutation/dense skipped basis/space change); p7_validation_work (5 tests); p7_v05_all_lane_scope and public stdio scope",
+      "historical_evidence": "p7-gate-lifecycle-independent-20261003 + p7-validation-work-20261007",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "cosine",
+      "original_requirement": "手算 cosine/top-k",
+      "current_test_mapping": "p7_v16_exact_oracle::independent_hand_cosine_topk_ties_scope_delete_and_space_rejection; p7_v16_oracle_independent_review::nonunit_literal_gold_real_insertion_orders_prefix_topk_delete_and_new_model; original_unit_gold_cannot_distinguish_inner_product_but_nonunit_variant_can",
+      "historical_evidence": "p7-v16-independent-review-20261002",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "tie",
+      "original_requirement": "稳定 tie，实际插入顺序",
+      "current_test_mapping": "same independent nonunit test: three observed SQLite rowid insertion orders and doc-key ties",
+      "historical_evidence": "p7-v16-independent-review-20261002",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "filter",
+      "original_requirement": "scope 在 top-k 前过滤",
+      "current_test_mapping": "p7_acceptance_matrix stronger outsider top1 case; nonunit independent oracle; exact prefix/file/language tests",
+      "historical_evidence": "p7-v16-independent-review-20261002",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "delete",
+      "original_requirement": "删除不返回",
+      "current_test_mapping": "p7_acceptance_matrix::scope::uncovered_language_is_partial_and_deleted_document_never_returns_on_second_query; both V16 oracle targets; p5c_hydration disk/manifest negatives",
+      "historical_evidence": "p7-v16-independent-review-20261002",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "space",
+      "original_requirement": "不同空间拒混",
+      "current_test_mapping": "independent nonunit configured model transition; p7_configured_space_transition (3 DB tests); p5c_hydration::real_space_switch_during_recall_rejects_the_old_generation; exact foreign space/ref tests",
+      "historical_evidence": "p7-v16-independent-review-20261002",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    },
+    {
+      "validation": "V16",
+      "requirement_id": "memory",
+      "original_requirement": "bounded exact scan / cache reads",
+      "current_test_mapping": "cc-semantic --lib vector::exact (bounded batch and TopK); p7_cache_allocation_independent_review (7 tests); manifest_exact_integration; source proof of bounded dimension/read buffers",
+      "historical_evidence": "p7-cache-independent-review-20261003 + p7-gate-lifecycle-independent-20261003/exact-batch-receipt.json",
+      "current_verdict": "passed_applicable_engineering_requirement",
+      "current_evidence": [
+        "validation-summary.json and continued-validation.json in the immutable BM25 checkpoint",
+        "same crate/Cargo input map at final CI head; check job 112847847366 completed success"
+      ]
+    }
+  ],
+  "hard_dependencies": {
+    "ids": [
+      "P6-020",
+      "P7-009",
+      "P7-010"
+    ],
+    "all_done": true,
+    "assessment": "Reasonable and satisfied: vector substrate, query encoder and dense recall port must exist before scope/hydration integration acceptance."
+  },
+  "independent_review": [
+    "Original independent V05/V16 oracle and bounded allocation targets executed unchanged on the current source.",
+    "artifacts/checkpoints/validation-work-metadata-review-20261007/independent-review.json",
+    "artifacts/checkpoints/source-evolution-20261007/v7/guard-review.json"
+  ],
+  "root_acceptance": "Read the original task acceptance, all 14 mapped requirements, scoped independent reviews, exact source map, actual feature results, final CI jobs and complete check log. The unchanged applicable engineering conditions are satisfied on the accepted source.",
+  "retained_local_failures": [
+    {
+      "package": "cc-eval",
+      "test": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+      "source": "crates/cc-eval/src/benchmark/sampler.rs",
+      "line": 536,
+      "observed": "live child snapshot unavailable",
+      "classification": "Unchanged original test also fails in isolation. Direct observation of its READY child resolves the returned PID to caas-prefix-tra, not the intended allocation/CPU child. Local PID attribution cannot be certified. The exact internal None-return path was not instrumented.",
+      "evidence": [
+        "sampler-isolated.json",
+        "sampler-proc-observation.json",
+        "sampler-environment-diagnosis.json"
+      ],
+      "source_unchanged_from_base": true,
+      "source_sha256": "f9112d47c1efc3cc7b421459206106a38485ea8ebc45b060633595f831a5c06d"
+    },
+    {
+      "package": "cc-eval",
+      "test": "tests::benchmark_fixture",
+      "source": "crates/cc-eval/src/lib.rs",
+      "line": 915,
+      "observed": "tool 'index' warm p95 = 818.34ms, fixed limit 500ms",
+      "classification": "Timing gate failed in the continuation run. The identical source passed this test in the earlier full-default attempt. No threshold, fixture, or performance claim was changed.",
+      "same_source_prior_attempt_passed": true,
+      "source_unchanged_from_base": true,
+      "source_sha256": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b"
+    },
+    {
+      "package": "cc-search",
+      "test": "engine_cache::tests::fence_backoff_rides_out_a_back_to_back_commit_storm",
+      "source": "crates/cc-search/src/engine_cache.rs",
+      "line": 564,
+      "observed": "accepted generation index_epoch=0; generation after writer join index_epoch=1",
+      "classification": "Inference from unchanged fixture and output: its 60ms work sleep does not acknowledge completion of commit 1, so delayed writer scheduling can miss the intended first overlap. A result accepted before the write then differs after join. No thread trace was collected; this remains a recorded failure, not a demonstrated product-fence defect or a green gate.",
+      "source_unchanged_from_base": true,
+      "source_sha256": "e72b75eb04936f8abe8f4dae65e4b4c5531ac614c5dfa47d2e6d033ec9a2a103"
+    },
+    {
+      "package": "cc-server",
+      "test": "path_guard::tests::rejects_unix_socket_before_any_reader_opens_it",
+      "source": "crates/cc-server/src/path_guard.rs",
+      "line": 29,
+      "observed": "UnixListener::bind: PermissionDenied / EPERM / Operation not permitted",
+      "classification": "The fixture cannot create its Unix socket in this execution environment; failure precedes the reader-under-test assertion. No runtime access controls were changed.",
+      "source_unchanged_from_base": true,
+      "source_sha256": "880abe15db5e11f8f4660802162889ab43bb336b531a8bf2659fe530038afc4f"
+    }
+  ],
+  "local_full_default_passed": false,
+  "limits": [
+    "The four recorded local failures remain failures. Successful same-input GitHub CI supplies the related default regression gate; it does not rewrite local observations.",
+    "Historical case counts are not new executions, and overlapping default/feature executions are not counted as unique cases.",
+    "This accepts P7-011 V05/V16 task conditions only. Whole V19/V20, 100k/concurrency resource certification, real provider quality/cost and full P7 acceptance remain separate.",
+    "Merged main has the same tree as the green PR head. Its separate push-triggered run was still in progress at this receipt and is not claimed passed here."
+  ],
+  "rollback": "Revert the relevant product changes or disable remote semantic retrieval and use local. Preserve prior immutable evidence."
+}

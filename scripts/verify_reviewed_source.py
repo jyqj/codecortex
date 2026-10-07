@@ -16,28 +16,53 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p7-capture-revalidation-20261007-v7'
+VERSION = 'p7-engineering-20261007-v8'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = '3503b15ddf72020d36a0f87a92e2a3fedd46979a70538aaa72214d7d6625268a'
-PRODUCT = '3f613818b2ba5ab08b97009777b8bc4164afb330'
-APPROVED = {'validation_work': {'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410',
-                     'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
-                     'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
-                     'paths': ['crates/cc-db/src/document_store.rs',
+REGISTRY_SHA256 = 'd4085cd65fb4748d302255f6ee5ad40f27b8b4cfc79418c091e1d81f47466ffa'
+PRODUCT = '7b1650c1f6475843d568b2649ff84ec9bdd0e613'
+APPROVED = {'gc_unlink_accounting': {'paths': ['crates/cc-semantic/src/gc.rs',
+                                    'crates/cc-semantic/tests/gc_unlink_accounting.rs'],
+                          'review': '1831ba6f64a52aae88ac1454bc518d318eb02a13',
+                          'review_path': 'artifacts/checkpoints/gc-unlink-review-20261007/review.json',
+                          'source': '304dd775278f2af1fee4aa791560f086f1460eff'},
+ 'python_capture_revalidation': {'paths': ['crates/cc-index/src/project_model/python_inventory.rs',
+                                           'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
+                                           'crates/cc-index/tests/python_inventory_revalidation.rs'],
+                                 'review': '9e96795711c072c9aa2095a1fc4527bc28ba75b0',
+                                 'review_path': 'artifacts/checkpoints/python-inventory-revalidation-20261007/review.json',
+                                 'source': 'e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d'},
+ 'semantic_coverage_retention': {'paths': ['crates/cc-semantic/src/vector/exact.rs',
+                                           'crates/cc-server/src/semantic_wiring.rs',
+                                           'crates/cc-server/tests/p7_dense_artifact_coverage.rs',
+                                           'crates/cc-server/tests/p7_gc_retention_config.rs'],
+                                 'review': '523c531a57bfb02d5601e6d698e48601d2bfac98',
+                                 'review_path': 'artifacts/checkpoints/semantic-coverage-retention-review-20261007/review.json',
+                                 'source': 'e22d5d47b5e0153ef3fa6849f4cf2e3c843344e4'},
+ 'strategy_ablation': {'paths': ['crates/cc-eval/src/benchmark/ablation.rs',
+                                 'crates/cc-eval/src/benchmark/ablation/strategy.rs',
+                                 'crates/cc-eval/src/benchmark/ablation/strategy/reporting.rs',
+                                 'crates/cc-eval/src/bin/cc-eval.rs',
+                                 'crates/cc-eval/tests/p7_strategy_ablation.rs',
+                                 'crates/cc-eval/tests/p7_strategy_stdio.rs'],
+                       'review': '0a1a1e5bdd612932920a78dad5d7e7579517c923',
+                       'review_path': 'artifacts/checkpoints/strategy-ablation-review-20261007/review.json',
+                       'source': '3e11c75fc1413fae3535bacdb93c1aa924d91a12'},
+ 'validation_work': {'paths': ['crates/cc-db/src/document_store.rs',
                                'crates/cc-db/src/index_db_retrieval.rs',
                                'crates/cc-db/src/symbol_identity_store.rs',
                                'crates/cc-eval/tests/p7_validation_work.rs',
                                'crates/cc-eval/tests/packing_validation_work.rs',
                                'crates/cc-search/src/evidence_hydrator.rs',
-                               'crates/cc-search/src/selection/budget.rs']},
- 'python_capture_revalidation': {'source': 'e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d',
-                                 'review': '9e96795711c072c9aa2095a1fc4527bc28ba75b0',
-                                 'review_path': 'artifacts/checkpoints/python-inventory-revalidation-20261007/review.json',
-                                 'paths': ['crates/cc-index/src/project_model/python_inventory.rs',
-                                           'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
-                                           'crates/cc-index/tests/python_inventory_revalidation.rs']}}
+                               'crates/cc-search/src/selection/budget.rs'],
+                     'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
+                     'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
+                     'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410'},
+ 'worker_contention_measurements': {'paths': ['crates/cc-eval/tests/p7_worker_contention.rs'],
+                                    'review': '87f4bf9700f300df83653b0577b4238fd1744635',
+                                    'review_path': 'artifacts/checkpoints/worker-contention-review-20261007/review.json',
+                                    'source': '0a93b533a1f9f30702ac80427a65eb5de355357f'}}
 
 
 def require(condition, message):
@@ -170,14 +195,17 @@ def expected_ci():
     old = 'verify_current_source_v3.py --source-version ' + previous.VERSION
     new = 'verify_reviewed_source.py --source-version ' + VERSION
     require(original.count(old) == 1, 'historical CI selector differs')
-    return original.replace(old, new).replace(
+    shared_default = 'CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex"'
+    private_default = 'CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex"'
+    require(original.count(shared_default) == 19, 'historical default product references differ')
+    return original.replace(old, new).replace(shared_default, private_default).replace(
         'explicitly selected v3 accepted owner-context union',
         'explicitly selected reviewed source union')
 
 
 def verify_ci(root=ROOT):
     require((root / '.github/workflows/ci.yml').read_text() == expected_ci(),
-            'CI differs beyond the explicit source selector')
+            'CI differs beyond the reviewed source selector and default product references')
 
 
 def main():

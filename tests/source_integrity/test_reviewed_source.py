@@ -175,11 +175,18 @@ class ReviewedSourceTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, 'immutable full commit SHAs'):
                 guard.check_identity(self.registry)
 
-    def test_ci_only_allows_the_explicit_selector_migration(self):
+    def test_ci_only_allows_reviewed_selector_and_default_product_migrations(self):
         guard.verify_ci()
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True)
         target.write_text(guard.expected_ci() + '\n# unreviewed workflow edit\n')
+        with self.assertRaisesRegex(AssertionError, 'CI differs'):
+            guard.verify_ci(self.root)
+        fixed = guard.expected_ci()
+        private_default = 'CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex"'
+        self.assertEqual(fixed.count(private_default), 20)
+        target.write_text(fixed.replace(private_default,
+                          'CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex"', 1))
         with self.assertRaisesRegex(AssertionError, 'CI differs'):
             guard.verify_ci(self.root)
 

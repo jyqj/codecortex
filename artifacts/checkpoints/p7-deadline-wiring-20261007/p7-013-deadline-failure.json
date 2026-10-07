@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "task": "P7-013",
+  "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+  "result": "open_current_regression_failure",
+  "failure": {
+    "target": "p7_query_deadline_public",
+    "test": "real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context",
+    "assertion": "semantic_source requires Complete; actual Timeout during recovery query",
+    "source_location": "crates/cc-server/tests/p7_query_deadline_public.rs:261",
+    "semantic_child_deadline_ms": 150,
+    "assertions_and_timeouts_unchanged": true,
+    "test_result": {
+      "passed": 1,
+      "failed": 1,
+      "ignored": 0
+    }
+  },
+  "observed_completed_raw_cases": [
+    {
+      "artifact": "raw/deadline-current-http/P7_PUBLIC_EVIDENCE_DIR/1289-.tmp0N7bCc-cancel-search.json",
+      "sha256": "5fd0d93c9682b4384146045d36ed89fc9904960c81298a449418dc586a9e3325",
+      "test": "cancel-search",
+      "query_calls": 3,
+      "peer_closed": 2
+    },
+    {
+      "artifact": "raw/deadline-current-http/P7_PUBLIC_EVIDENCE_DIR/1289-.tmp9gMkFC-deadline-search-body-false.json",
+      "sha256": "68d9e0b17c1d996ff5f4e18bd51db6e23a9fbfe92f4d970922cc268271c46b1a",
+      "test": "deadline-search-body-false",
+      "query_calls": 2,
+      "peer_closed": 1
+    },
+    {
+      "artifact": "raw/deadline-current-http/P7_PUBLIC_EVIDENCE_DIR/1289-.tmpA5L3uV-cancel-context.json",
+      "sha256": "8a1133fa58c3965ccfd34d35d9cc30b9e7451a5c76bf6e9dc014a52b8702e252",
+      "test": "cancel-context",
+      "query_calls": 3,
+      "peer_closed": 2
+    }
+  ],
+  "measured_scope": "Elapsed values inside retained query lane receipts describe semantic lane work. The original test writes full session traces only after all scenario assertions, so the failing recovery response/end-to-end duration was not retained by that trace call. Do not reconstruct a missing measurement.",
+  "diagnostic_plan": "Exactly one unchanged-target isolated replay with test-threads=1, preserve initial failure regardless of result, then execute remaining seven targets. No retry-until-green.",
+  "cause": "unresolved; environment scheduling or resource contention is only a hypothesis, not a proved cause",
+  "source_inputs": {
+    "crate_Cargo_count": 770,
+    "extra_literal_repository_inputs": 10,
+    "unchanged": true
+  },
+  "original_log_sha256": "439baeb5829d7289fa0c4701f25e71a85bb22ac66749a208b45dcdcc8a34a862",
+  "full_task_done": false,
+  "isolated_diagnostic": {
+    "receipt": "deadline-isolated-diagnostic-receipt.json",
+    "receipt_sha256": "fa7982b2e0d56cab6fcfe19d7499dc6c82ab3111ae4bb9832091fa728272b0de",
+    "test_summaries": [
+      {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "extra_harness_argument": "--test-threads=1",
+    "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+    "interpretation": "One isolated success does not erase the original default-schedule failure or prove its cause."
+  },
+  "parent_ci_plan": "Parent confirmed original CI does not run p7_query_deadline_public. An independent P7 workflow will run the unchanged normal-schedule targets at the final integrated source; current failure remains open until actual evidence is reviewed."
+}

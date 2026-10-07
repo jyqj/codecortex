@@ -10,10 +10,9 @@
 //!
 //! 1. **older than the shortest retention period** (`GcConfig::
 //!    min_retention_secs` against the object's `created_at` — refreshed by
-//!    every `Publisher` re-put, P6-008 `put`) — this is the fresh-timestamp
-//!    grace that closes the artifact-before-manifest race window: an object
-//!    that a publish is *about to* reference was just re-put, so it reads as
-//!    fresh and is exempt ("`published_at/last_used > 最短保留期` 之外豁免");
+//!    every `Publisher` re-put, P6-008 `put`). This freshness grace protects
+//!    newly observed objects, but a timestamp captured during collection is
+//!    not an atomic freshness check at the later unlink;
 //! 2. **not referenced by any manifest row** — exact `artifact_ref` match when
 //!    the checksum is reconstructable from the sidecar, conservative
 //!    `(space_id, input_digest)` match otherwise (all spaces count, including
@@ -26,12 +25,11 @@
 //!
 //! Synchronization point (brief: "GC 候选收集与删除决定之间，取一次 DB 短事务
 //! 快照"): [`sweep_batch`] marks the whole batch inside ONE short read
-//! snapshot on the cc-db side (`IndexDb::semantic_gc_mark`), so a publish that
-//! committed before the snapshot is visible to the mark and its object is
-//! kept; a publish that commits after the snapshot is covered by the
-//! freshness grace above because `publish_embedding` re-puts (fresh
-//! `created_at`) before its CAS. The two mechanisms together make "manifest
-//! 引用刚被 GC 删除产物" unreachable.
+//! snapshot on the cc-db side (`IndexDb::semantic_gc_mark`). That snapshot
+//! checks the addresses captured by collection. No shared filesystem lock
+//! spans collection, mark, and unlink: replacement/re-put of those paths can
+//! race with the captured metadata or mark. The deletion-error accounting
+//! below does not establish atomicity with publication or close that race.
 //!
 //! Module placement deviation (documented per the batch red line): the brief
 //! assigns the sweep to `cache.rs` and the sync point to `publish.rs`, but
@@ -163,8 +161,13 @@ pub struct CollectedBatch {
     pub exhausted: bool,
 }
 
-/// Counters of one sweep. `kept_*` are protection outcomes; `deleted_*` are
-/// performed unlinks; `pruned_dirs` counts removed empty directories.
+/// Counters returned by one successful sweep. `kept_*` are protection
+/// outcomes; `deleted_*` count entries for which at least one path was
+/// actually unlinked. Already absent paths do not count as deletions. An
+/// object counts once after both unlink attempts succeed (including an
+/// already absent half). `pruned_dirs` counts removed empty directories.
+/// An error returns no counters and may follow earlier successful unlinks;
+/// it must not be interpreted as zero work or a rolled-back filesystem.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct GcCounters {
     pub kept_fresh: usize,
@@ -430,8 +433,7 @@ pub fn sweep_batch(
         if let GcEntryKind::Temp { path } = &entry.kind {
             if *fresh {
                 counters.kept_fresh += 1;
-            } else {
-                remove_quiet(path);
+            } else if unlink_if_present(path)? {
                 counters.deleted_temps += 1;
             }
             continue;
@@ -447,14 +449,17 @@ pub fn sweep_batch(
             Some(GcMark::LiveTask) => counters.kept_live_task += 1,
             Some(GcMark::Unreferenced) | None => match &entry.kind {
                 GcEntryKind::Object { bin, meta, .. } => {
-                    remove_quiet(bin);
-                    remove_quiet(meta);
-                    counters.deleted_objects += 1;
+                    let removed_bin = unlink_if_present(bin)?;
+                    let removed_meta = unlink_if_present(meta)?;
+                    if removed_bin || removed_meta {
+                        counters.deleted_objects += 1;
+                    }
                     prunable.push(entry_dir(entry));
                 }
                 GcEntryKind::Half { path } => {
-                    remove_quiet(path);
-                    counters.deleted_halves += 1;
+                    if unlink_if_present(path)? {
+                        counters.deleted_halves += 1;
+                    }
                     prunable.push(entry_dir(entry));
                 }
                 GcEntryKind::Temp { .. } => unreachable!("temps handled above"),
@@ -520,14 +525,21 @@ fn entry_dir(entry: &GcEntry) -> PathBuf {
     }
 }
 
-fn remove_quiet(path: &Path) {
-    let _ = std::fs::remove_file(path);
+fn unlink_if_present(path: &Path) -> CcResult<bool> {
+    match std::fs::remove_file(path) {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
 }
 
 /// One explicit GC pass = collect (bounded) + sweep (one snapshot). Returns
 /// the counters, the resume position (`None` once exhausted), and the
 /// exhausted flag. The caller loops with the returned position to converge a
 /// backlog larger than the batch — "有界批次推进……超上限存量分轮收敛".
+/// An I/O error may follow successful unlinks and returns no new cursor.
+/// After clearing its cause, retry from the previous `after` position so
+/// collection and the DB mark are renewed for any surviving files.
 pub fn run_gc_pass(
     db: &IndexDb,
     cache: &ArtifactCache,

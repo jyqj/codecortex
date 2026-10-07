@@ -1,0 +1,141 @@
+{
+  "phase": "repaired",
+  "head": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "tree": "f37c71c90b0379b6a3cce8cd9399936fd22e3a82",
+  "branch": "fix/p7-016-gc-unlink-accounting-20261007",
+  "source_status_before": "",
+  "source_inputs": 769,
+  "source_manifest": "repaired-source-sha256.json",
+  "source_manifest_sha256": "1ce89da601a76e94be17c7def526a08b6e803c2530afe0056d97eafcf4f7b548",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "CODECORTEX_GC_UNLINK_EVIDENCE_DIR": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/artifacts/checkpoints/gc-unlink-accounting-20261007/repaired-observations"
+  },
+  "raw_logs_normalized": false,
+  "not_run": [
+    "full_workspace",
+    "provider_network",
+    "SIGKILL",
+    "GC_WAL_staging",
+    "source_guard",
+    "full_mark_unlink_race"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-semantic",
+        "--test",
+        "gc_unlink_accounting",
+        "--test",
+        "semantic_gc",
+        "--message-format=json-render-diagnostics",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.916,
+      "log": "repaired-1.log",
+      "log_bytes": 81187,
+      "log_sha256": "478a53de1e3e040a5e21c58f07c21c50befd4d29f0e1aa10931c8b3d777b383c",
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "executable_artifacts": [
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic/Cargo.toml",
+          "target": {
+            "kind": [
+              "test"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "gc_unlink_accounting",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic/tests/gc_unlink_accounting.rs",
+            "edition": "2021",
+            "doc": false,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": true
+          },
+          "features": [],
+          "fresh": false,
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/gc_unlink_accounting-7ec5b5c3add72fc1",
+          "executable_bytes": 10462296,
+          "executable_sha256": "2122d3e185a9d09109efc1c14559b7f3fcad688af65e40cab6d93788298ba36e"
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic/Cargo.toml",
+          "target": {
+            "kind": [
+              "test"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "semantic_gc",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-016/crates/cc-semantic/tests/semantic_gc.rs",
+            "edition": "2021",
+            "doc": false,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": true
+          },
+          "features": [],
+          "fresh": false,
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_gc-e529953cffa8d96d",
+          "executable_bytes": 10744176,
+          "executable_sha256": "612ddc02ede62bf086d5ce8e7bb6ba247d617cdbf0cf93ed6ec05178bfe3a34d"
+        }
+      ]
+    }
+  ],
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "head_after": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "source_status_after": "",
+  "command_exits_all_zero": true
+}

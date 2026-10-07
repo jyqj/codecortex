@@ -1,0 +1,61 @@
+{
+  "scope": "P7-015 actual worker contention, fixed raw local-request measurements and original fairness controls",
+  "source_commit": "f95bb87c20e67b8f42c86c6a025f3cc8157ebd60",
+  "base_commit": "65eb87d70bd7bfd10d251b5d1cbb25850958196b",
+  "new_contention_test_functions_passed": 1,
+  "original_semantic_lifecycle_test_functions_passed": 2,
+  "original_http_fairness_test_functions_passed": 6,
+  "test_functions_passed": 9,
+  "failed": 0,
+  "ignored": 0,
+  "original_http_count_correction": "The pre-run plan mistakenly counted this unchanged complete target as five tests. Actual frozen source/test output contains six, including closed_background_owner_retains_slot_and_pin_until_real_http_exit. Target selection was unchanged; no test was added, skipped or filtered to obtain this count.",
+  "request_samples": 384,
+  "fixed_cells": 12,
+  "samples_per_cell": 32,
+  "strict_scoped_clippy_exit": 0,
+  "workspace_format_exit": 0,
+  "behavior_receipts": [
+    "contention-validation.json",
+    "fairness-validation.json"
+  ],
+  "checks_receipt": "checks-validation.json",
+  "scoped_all_passed": true,
+  "full_p7_015_complete": false,
+  "tail_events_preserved": [
+    {
+      "seed": 19,
+      "phase": "held",
+      "concurrency": 1,
+      "ordinal": 31,
+      "offered_to_api_return_us": 1119096,
+      "retrieval_us": 1082528
+    },
+    {
+      "seed": 43,
+      "phase": "quiet",
+      "concurrency": 1,
+      "ordinal": 17,
+      "offered_to_api_return_us": 1351478,
+      "retrieval_us": 1350277
+    }
+  ],
+  "no_retry_or_observation_discard": true,
+  "performance_delta_gate": "not evaluated; 32-point descriptive quantiles do not establish the original P99 degradation threshold/baseline",
+  "resource_attribution_gate": "unknown; raw probes are retained separately from runner/server/tree CPU/RSS attribution",
+  "remaining_original_task_obligations": [
+    "bounded desired projection into reconcile_after_rebuild (wiring item 11)",
+    "original P99 degradation acceptance with a declared baseline/threshold and defensible resource attribution"
+  ],
+  "task_authority": [
+    "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md#P7-015",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md#G3-P7"
+  ],
+  "not_claimed": [
+    "independent source-body validation per returned hit",
+    "MCP timing for the new fixture",
+    "OS CPU occupation from executor-slot counters",
+    "full workload/scale or whole workspace pass",
+    "semantic quality from synthetic vectors",
+    "P7-019 final combined source validation"
+  ]
+}

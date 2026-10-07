@@ -1,5 +1,6 @@
 //! Locked full-factorial experiments over separately built local MCP binaries.
 //! Counterfactual source lives in isolated snapshots, never production feature flags.
+pub mod strategy;
 use super::{
     adapters::{mcp_stdio::McpStdio, Backend},
     invalid, manifest,

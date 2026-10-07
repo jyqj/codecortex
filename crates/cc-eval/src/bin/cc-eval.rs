@@ -3,6 +3,7 @@ use cc_eval::benchmark::{self as b, invalid, manifest, report, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use serde_json::json;
 use std::{
+    io::Write,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -36,6 +37,14 @@ enum Command {
     },
     /// Run a source-verified, isolated factorial matrix of existing local binaries.
     Ablate {
+        #[arg(long)]
+        plan: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare public local/auto/semantic policies at equal observed budgets.
+    /// Current v1 allows disabled-network or literal-loopback engineering inputs.
+    AblateStrategies {
         #[arg(long)]
         plan: PathBuf,
         #[arg(long)]
@@ -213,6 +222,9 @@ async fn execute(command: Command) -> Result<i32> {
             Ok(if result["passed"] == true { 0 } else { 1 })
         }
         Command::Ablate { plan, output } => b::ablation::run(&plan, &output).await,
+        Command::AblateStrategies { plan, output } => {
+            b::ablation::strategy::run(&plan, &output).await
+        }
         Command::Schema { output } => {
             new_output(&output)?;
             report::json(
@@ -323,12 +335,30 @@ async fn execute(command: Command) -> Result<i32> {
             gate,
             output,
         } => {
-            if output.exists() {
-                return Err(invalid("comparison output already exists"));
-            }
-            let policy = manifest::json_file(&gate)?;
-            let value = b::comparison::compare(&baseline, &candidate, &policy)?;
-            report::json(&output, &value)?;
+            // Reserve the destination before reading/replaying inputs. This
+            // also rejects dangling symlinks and concurrent writers without
+            // the old exists-then-truncate race. Failed comparisons retain
+            // an explicit receipt while original raw input remains untouched.
+            let mut destination = std::fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&output)?;
+            let result = manifest::json_file(&gate)
+                .and_then(|policy| b::comparison::compare(&baseline, &candidate, &policy));
+            let value = match result {
+                Ok(value) => value,
+                Err(error) => json!({
+                    "schema_version": 1,
+                    "status": "invalid_measurement",
+                    "exit_code": 2,
+                    "reasons": [error.to_string()],
+                    "baseline": baseline,
+                    "candidate": candidate,
+                    "policy_path": gate,
+                }),
+            };
+            serde_json::to_writer_pretty(&mut destination, &value)?;
+            destination.flush()?;
             println!("{}", value["status"]);
             Ok(value["exit_code"].as_i64().unwrap_or(2) as i32)
         }

@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/build_environment",
+  "review_mode": "independent read-only code review; no Rust commands or repository edits",
+  "source_commit": "f6c860c96f22e39bc3ced5a81891e3070ffbada5",
+  "source_tree": "50890bf1bd5adfe1b38cb12270ffad6ded7b83fd",
+  "source_files": {
+    "crates/cc-server/tests/p7_dense_artifact_coverage.rs": "5715687b55fefecadd6f6be2d5644ef5c38dccfb9687323a5c7a53aa997b5056",
+    "crates/cc-semantic/src/vector/exact.rs": "521e5860410d799212f3c6bec226c51221998666ad596718cd00c58ef051ec5d",
+    "crates/cc-server/src/semantic_wiring.rs": "56c920fd909c91f6787e71254f3730085347ed0ffafae4381ff24e6b458b2dda"
+  },
+  "decision": "accepted for the limited current-scan artifact-gap coverage change; no blocking finding",
+  "scope": [
+    "Complete production diff in exact.rs and semantic_wiring.rs plus the complete frozen original-API fixture.",
+    "Read surrounding exact scan, manifest scope and semantic recall paths and SemanticRuntime close/query-pin lifecycle."
+  ],
+  "checked": [
+    "Foreign-space and hard-scope exclusions occur before cache reads or unavailable-artifact counts.",
+    "Counters are local to each completed scan, bounded state, and include eligible rows outside winning top-k; old Vec APIs retain scores/order and error semantics.",
+    "Missing/corrupt/rejected references remain skipped candidates; actual I/O and query control failures still propagate as errors.",
+    "Inactive-space/unavailable outcomes and existing publication Partial reasons take precedence; only Complete is downgraded for a new scan gap and is then uncacheable.",
+    "Fixture uses three actual worker publications, waits for publication coverage and zero query pins, closes the worker, and then damages exact published cache payloads.",
+    "Warm query-vector and complete envelope paths are exercised before repeated file loss/restoration without generation change, alongside empty/zero/hard-scope/inactive-space controls."
+  ],
+  "runtime_validation": "Not independently rerun. Author-owned baseline/green receipts and complete source manifest must remain separately attributable; this review does not certify unobserved test commands.",
+  "limits": [
+    "Not a full P7-012/P7-011 task-completion claim or live-provider quality evaluation.",
+    "Per-scan artifact availability does not prove atomic filesystem availability after the scan."
+  ]
+}

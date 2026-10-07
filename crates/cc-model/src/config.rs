@@ -155,6 +155,10 @@ pub struct SemanticProviderConfig {
     /// constructor both enforce it). `enabled` alone does NOT opt in.
     #[serde(default)]
     pub network_opt_in: bool,
+    /// Separate authorization to send query/task text for query embeddings.
+    /// `network_opt_in` alone never authorizes this path. Default false.
+    #[serde(default)]
+    pub allow_query_network: bool,
     /// Explicit opt-in for plaintext `http://` endpoints (P7-007). Default
     /// `false` = https only; a plaintext endpoint is rejected by the egress
     /// policy unless this flag is set.
@@ -258,6 +262,7 @@ impl Default for SemanticProviderConfig {
             breaker_failure_threshold: default_semantic_breaker_threshold(),
             breaker_open_ms: default_semantic_breaker_open_ms(),
             network_opt_in: false,
+            allow_query_network: false,
             allow_http: false,
             reembed_budget_max: None,
             worker_lease_secs: default_semantic_worker_lease_secs(),
@@ -1536,7 +1541,7 @@ mod tests {
         assert_eq!(partial.semantic.model_id, "text-embedding-x");
         assert_eq!(partial.semantic.dimensions, Some(1536));
         assert_eq!(partial.semantic.metric, "cosine");
-        assert!(partial.semantic.supports_instruction == false);
+        assert!(!partial.semantic.supports_instruction);
         // P7-005: concurrency keys default to off/conservative — unlimited
         // (`0`) concurrency, explicit 30s admission-wait budget.
         assert_eq!(without.semantic.max_concurrent, 0);
@@ -1608,6 +1613,7 @@ mod tests {
             serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
                 .expect("config without semantic section");
         assert!(!without.semantic.network_opt_in);
+        assert!(!without.semantic.allow_query_network);
         assert!(!without.semantic.allow_http);
 
         let explicit: ProjectConfig = serde_json::from_str(
@@ -1616,7 +1622,20 @@ mod tests {
         )
         .expect("semantic egress keys");
         assert!(explicit.semantic.network_opt_in);
+        assert!(
+            !explicit.semantic.allow_query_network,
+            "transport opt-in does not authorize query text"
+        );
         assert!(explicit.semantic.allow_http);
+        let query_only: ProjectConfig =
+            serde_json::from_str(r#"{"semantic":{"allow_query_network":true}}"#).unwrap();
+        assert!(query_only.semantic.allow_query_network);
+        assert!(!query_only.semantic.network_opt_in);
+        assert!(!query_only.semantic.enabled);
+        assert!(serde_json::from_str::<ProjectConfig>(
+            r#"{"semantic":{"allow_query_network":"true"}}"#
+        )
+        .is_err());
     }
 
     #[test]
@@ -1659,11 +1678,10 @@ mod tests {
         assert!(collect_unknown_config_keys(&full).is_empty());
         // P7-014 wiring keys: budget defaults unbounded, lease/grace carry
         // their conservative defaults.
-        let parsed: ProjectConfig =
-            serde_json::from_value(serde_json::json!({ "semantic": {
+        let parsed: ProjectConfig = serde_json::from_value(serde_json::json!({ "semantic": {
                 "reembed_budget_max": 64, "worker_lease_secs": 300,
                 "gc_min_retention_secs": 1800 } }))
-            .unwrap();
+        .unwrap();
         assert_eq!(parsed.semantic.reembed_budget_max, Some(64));
         assert_eq!(parsed.semantic.worker_lease_secs, 300);
         assert_eq!(parsed.semantic.gc_min_retention_secs, 1800);
@@ -1674,7 +1692,8 @@ mod tests {
     }
 
     #[test]
-    fn collect_unknown_config_keys_empty_for_fully_valid_config() {        let raw = serde_json::json!({
+    fn collect_unknown_config_keys_empty_for_fully_valid_config() {
+        let raw = serde_json::json!({
             "indexing": { "max_file_bytes": 1024, "max_concurrent_parse": 4 },
             "search": { "lexical_top_k": 8 },
             "ranking": { "overlap_weight": 0.5 },
@@ -1732,15 +1751,30 @@ mod tests {
 
     #[test]
     fn find_project_root_with_marker_returns_none_without_marker() {
+        // Exercise the end of the ancestor walk directly. A temp directory
+        // can inherit a host marker (for example /tmp/.git in cloud runners).
+        let temp_root = std::env::temp_dir().canonicalize().unwrap();
+        let filesystem_root = temp_root.ancestors().last().unwrap();
+        assert!(!filesystem_root.join(".git").exists());
+        assert!(!filesystem_root.join(CONFIG_FILE_NAME).exists());
+        assert!(find_project_root_with_marker(Some(filesystem_root)).is_none());
+    }
+
+    #[test]
+    fn find_project_root_unmarked_child_preserves_parent_discovery() {
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
         let project_dir = std::env::temp_dir().join(format!("codecortex-no-root-test-{}", unique));
         std::fs::create_dir_all(&project_dir).unwrap();
-
-        assert!(find_project_root_with_marker(Some(&project_dir)).is_none());
-
+        assert!(!project_dir.join(".git").exists());
+        assert!(!project_dir.join(CONFIG_FILE_NAME).exists());
+        assert_eq!(
+            find_project_root_with_marker(Some(&project_dir)),
+            find_project_root_with_marker(project_dir.parent()),
+            "an unmarked child must inherit the parent's nearest marker, if any"
+        );
         let _ = std::fs::remove_dir_all(&project_dir);
     }
 }

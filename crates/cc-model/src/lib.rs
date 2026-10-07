@@ -10,6 +10,7 @@ pub mod chunk;
 pub mod chunk_policy;
 pub mod config;
 pub mod context;
+pub mod declaration_identity;
 pub mod diagnostic;
 pub mod dispatch_site;
 pub mod edge;
@@ -42,6 +43,7 @@ pub mod search;
 pub mod semantic;
 pub mod source;
 pub mod symbol;
+pub mod symbol_identity;
 pub mod type_assign;
 
 // Re-export top-level types for convenience

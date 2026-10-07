@@ -1,0 +1,110 @@
+[
+  {
+    "name": "format",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "format.log"
+  },
+  {
+    "name": "source-architecture",
+    "argv": [
+      "python3",
+      "scripts/check_source_architecture.py"
+    ],
+    "exit": 0,
+    "log": "source-architecture.log"
+  },
+  {
+    "name": "module-architecture",
+    "argv": [
+      "python3",
+      "scripts/check_module_architecture.py"
+    ],
+    "exit": 0,
+    "log": "module-architecture.log"
+  },
+  {
+    "name": "plan",
+    "argv": [
+      "python3",
+      "scripts/code_index_plan.py"
+    ],
+    "exit": 0,
+    "log": "plan.log"
+  },
+  {
+    "name": "current-source-v3",
+    "argv": [
+      "python3",
+      "scripts/verify_current_source_v3.py",
+      "--source-version",
+      "query-owner-context-20261004-v3"
+    ],
+    "exit": 0,
+    "log": "current-source-v3.log"
+  },
+  {
+    "name": "historical-frozen",
+    "argv": [
+      "python3",
+      "scripts/verify_fixed_e3_integration.py"
+    ],
+    "exit": 0,
+    "log": "historical-frozen.log"
+  },
+  {
+    "name": "resource-neutral",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/resource_harness",
+      "-v"
+    ],
+    "exit": 1,
+    "log": "resource-neutral.log"
+  },
+  {
+    "name": "historical-corpus-neutral",
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/historical_corpus",
+      "-v"
+    ],
+    "exit": 5,
+    "log": "historical-corpus-neutral.log"
+  },
+  {
+    "name": "toolchain",
+    "argv": [
+      "rustc",
+      "+1.95.0",
+      "-Vv"
+    ],
+    "exit": 0,
+    "log": "toolchain.log"
+  },
+  {
+    "name": "cargo-version",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "-V"
+    ],
+    "exit": 0,
+    "log": "cargo-version.log"
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "run_id": "cloud-p7-integration-20261002",
+  "baseline_sha": "ff458bc591b4e7e444af4464d6eef2513cdb335c",
+  "target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118",
+  "tested_tree": "dbf3939146b6ca532972e999de3e94f16438b608",
+  "integrated_branch_sha": "b738a6a3aff23dbda1ceec0b5180a9a016b03b09",
+  "source_commits": {
+    "P7-011": "46d6e5b71b57910f73f8644c8630cb3d97f8953f",
+    "P7-013": [
+      "057e283",
+      "4c3dfe1422103f04a3ebb3ff965037ad48e9363d"
+    ],
+    "P7-014-recovery": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa",
+    "P7-014-lifecycle": "ca5326a627e52bd1ec75ce84a73d95e1f8ac6970"
+  },
+  "commands": [
+    {
+      "command": "cargo test -p cc-db -p cc-semantic -p cc-search -p cc-server --features cc-server/semantic --lib --locked --no-fail-fast",
+      "exit_code": 0,
+      "passed": 975,
+      "failed": 0,
+      "ignored": 1,
+      "log": "integrated-formatted.log"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 1,
+      "log": "integrated-format-summary.json"
+    },
+    {
+      "command": "cargo build -p cc-server --bin codecortex --locked",
+      "exit_code": 0,
+      "log": "integrated-build.log"
+    },
+    {
+      "command": "CODECORTEX_BENCH_BINARY=/workspace/codecortex/target/debug/codecortex cargo test -p cc-eval --test p5d_contract --locked -- --ignored",
+      "exit_code": 0,
+      "passed": 1,
+      "log": "integrated-stdio.log"
+    }
+  ],
+  "boundaries": [
+    "V05/V16 full formal matrix not run; P7-011 remains todo",
+    "fake HTTP/deadline/model-failure/cache formal obligations not complete; P7-013 remains todo",
+    "worker scheduling and wired-state stdio remain pending; P7-014 remains in_progress",
+    "P7-013 isolated PR absent after executor rejection; not replaced",
+    "single synchronous IO cannot be force-preempted",
+    "model marker test fails in all attempted temp roots; no weakened assertion or marker removal",
+    "hydrator top-level partial path remains separately investigated, not assumed production bug"
+  ],
+  "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending",
+  "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged",
+  "product_binary_sha256": "caa96f0047ca10edd963e7409aa368760cb683bc7ebe51ec5e37e3df8436ed4a"
+}

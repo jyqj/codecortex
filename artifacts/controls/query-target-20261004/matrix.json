@@ -1,0 +1,142 @@
+[
+  {
+    "id": "literal-type",
+    "query": "Lantern",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "direct-class",
+    "query": "class Lantern",
+    "expected_model": "named:Lantern:class"
+  },
+  {
+    "id": "direct-interface",
+    "query": "interface Listener",
+    "expected_model": "named:Listener:interface"
+  },
+  {
+    "id": "direct-type",
+    "query": "type SignalLabel",
+    "expected_model": "named:SignalLabel:type_alias"
+  },
+  {
+    "id": "literal-callable",
+    "query": "Ignite",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "direct-callable",
+    "query": "method Ignite",
+    "expected_model": "named:Ignite:method"
+  },
+  {
+    "id": "qualified-dot",
+    "query": "Lantern.Ignite",
+    "expected_model": "named:Ignite:any"
+  },
+  {
+    "id": "qualified-colon",
+    "query": "Store::refresh",
+    "expected_model": "named:refresh:any"
+  },
+  {
+    "id": "pointer-receiver",
+    "query": "(*Lantern).Ignite",
+    "expected_model": "named:Ignite:any"
+  },
+  {
+    "id": "named-method-on",
+    "query": "method Ignite on Lantern",
+    "expected_model": "named:Ignite:method"
+  },
+  {
+    "id": "methods-on-container",
+    "query": "methods on Lantern",
+    "expected_model": "no-name-boost"
+  },
+  {
+    "id": "ambiguous-pair",
+    "query": "Lantern Ignite",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "ambiguous-prose",
+    "query": "Which Lantern API changes the lighting state with Ignite?",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "same-name-type",
+    "query": "class Ignite",
+    "expected_model": "named:Ignite:class"
+  },
+  {
+    "id": "split-type",
+    "query": "class Reservoir",
+    "expected_model": "named:Reservoir:class"
+  },
+  {
+    "id": "split-context",
+    "query": "method Drain on Reservoir",
+    "expected_model": "named:Drain:method"
+  },
+  {
+    "id": "python-class",
+    "query": "class Shelf",
+    "expected_model": "named:Shelf:class"
+  },
+  {
+    "id": "python-method",
+    "query": "method arrange on Shelf",
+    "expected_model": "named:arrange:method"
+  },
+  {
+    "id": "python-function",
+    "query": "function arrange",
+    "expected_model": "named:arrange:function"
+  },
+  {
+    "id": "rust-interface",
+    "query": "interface Observer",
+    "expected_model": "named:Observer:interface"
+  },
+  {
+    "id": "rust-type",
+    "query": "type Label",
+    "expected_model": "named:Label:type_alias"
+  },
+  {
+    "id": "rust-callable",
+    "query": "function refresh",
+    "expected_model": "named:refresh:function"
+  },
+  {
+    "id": "dsl-name",
+    "query": "name:Ignite",
+    "expected_model": "named:Ignite:any"
+  },
+  {
+    "id": "dsl-kind",
+    "query": "name:Ignite kind:method",
+    "expected_model": "named:Ignite:any"
+  },
+  {
+    "id": "dsl-over-prose",
+    "query": "name:Ignite Lantern",
+    "expected_model": "named:Ignite:any"
+  },
+  {
+    "id": "fallback-sentence",
+    "query": "explain class Lantern initialization",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "ambiguous-qualified-prose",
+    "query": "compare Lantern.Ignite and Store.refresh",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "qualified-field",
+    "query": "Lantern.Ready",
+    "expected_model": "named:Ready:any"
+  }
+]

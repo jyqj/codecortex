@@ -112,6 +112,8 @@
 
 ## 查询资源与能力观测
 
+`retrieval-capabilities-v2` 明确采用 `consistency=point_in_time`：完整 `generation` 由 `generation_scope=observed_database_snapshot` 标识为观察 generation。indexed_files/symbols、freshness、semantic_active_space 与覆盖/待处理计数来自同一短只读事务；普通并发发布可以返回完整旧或新观察，不能旧 root 配新 coverage。ready 仅表示该观察时点的覆盖，下一条 query 仍执行自己的严格代际 fence。`identity_validation` 为 `checked_at_observation_boundary` 或 `not_observed`，检测到替库/身份不确定时保守不可用；`service_state_scope=process_observed_separately` 区分运行态，worker failed/degraded 仍优先覆盖 semantic ready。当前 Linux 的 SQLite VFS 身份检查已进入本次验证；其他平台未测，不支持 HAS_MOVED 的 VFS 上 capability 诊断受限，但不据此判定普通 query 不可用。v1 到 v2 没有长期兼容分支，工具名称与输入 schema 不变。详见 [ADR-0004](adr/0004-capability-status-point-in-time.md)。
+
 `status(aspect="capabilities").retrieval` 报告索引可用性、解析欠账、完整 ReadGeneration 和可选端口配置状态；不把局部 ready 当成全局覆盖。`query_pins` 是仍持有资源的查询视图数量，同一视图的工作线程副本共用一次计数，不是请求计数。执行器统计仍为进程共享，不是本项目独占。
 
 空闲清理采用非等待写锁与构建门检查；忙实例留给下一次清理。缓存只强持有 16 个项目，非拥有的弱引用登记使被 LRU 淘汰但仍有在途查询的实例可复用。监听与空闲循环随会话关闭或最后所有者释放而停止；已经运行的同步工作不能被强杀。冷项目初始化不持查询锁，但同会话的首次初始化串行化，不代表所有冷启动都包含在查询 deadline 内。
@@ -240,6 +242,7 @@ P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模
 | `breaker_open_ms` | `30000` | 断路器开路窗长（毫秒）：开路期间快速失败、不触 provider；窗口流逝后惰性进入半开、每次只放行一个探测调用（成功闭合、失败重开）。`AuthError` 立即开路且窗长 ×10。断路器是组合根单例（与 `ProviderGate` 同点装配），无线程/定时器，时钟注入。 |
 | `network_opt_in` | `false` | **显式网络 opt-in**（P7-007 外发政策）。默认 `false` = 默认无网络：未开启时组合根拒绝装配任何 provider transport（`cc-semantic::policy::gate_transport_assembly` 与适配器构造器双重强制，配置错误拒启）。`enabled: true` 单独不足以放开网络——外发必须由本键独立、显式声明。 |
 | `allow_http` | `false` | 是否允许明文 `http://` 端点（P7-007）。默认 `false` = 仅 https；明文端点被外发政策拒绝（配置错误），设置 `true` 才放行。生产部署建议保持关闭。 |
+| `allow_query_network` | `false` | 独立授权发送 query/task 文本以生成查询向量；`network_opt_in` 单独不会授权此用途。生产接线要求 `semantic-http` 构建、`enabled`、`network_opt_in` 与本键全部开启；local 查询及空 hard scope 不编码。开启后在召回前生成并缓存查询向量，使用同一绝对查询预算、独立前台容量及单次尝试；关闭本键保留 cold query vector 的明确 unavailable 结果。 |
 
 ### 代码外发与凭据政策（P7-007，执行机制腿）
 

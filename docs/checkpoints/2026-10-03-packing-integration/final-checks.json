@@ -1,0 +1,141 @@
+[
+  {
+    "name": "db-index-after-clippy",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "-j",
+      "2",
+      "-p",
+      "cc-index",
+      "--test",
+      "qname_db_independent_review",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "seconds": 1.327,
+    "rust_counts": [
+      [
+        7,
+        0,
+        0
+      ]
+    ]
+  },
+  {
+    "name": "independent-packing-boundary",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "-j",
+      "2",
+      "-p",
+      "cc-eval",
+      "--test",
+      "diag_p5e_fix_review_boundary_20261003",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "seconds": 2.665,
+    "rust_counts": [
+      [
+        3,
+        0,
+        0
+      ]
+    ]
+  },
+  {
+    "name": "independent-packing-stage",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "-j",
+      "2",
+      "-p",
+      "cc-eval",
+      "--test",
+      "diag_p5e_fix_review_stage_20261003",
+      "diag_p5e_stage_receipts_same_microfixture",
+      "--",
+      "--exact",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "seconds": 2.694,
+    "rust_counts": [
+      [
+        1,
+        0,
+        0
+      ]
+    ]
+  },
+  {
+    "name": "fmt",
+    "argv": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 2.426,
+    "rust_counts": []
+  },
+  {
+    "name": "clippy",
+    "argv": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-j",
+      "2",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 17.305,
+    "rust_counts": []
+  },
+  {
+    "name": "identity",
+    "argv": [
+      "python3",
+      "scripts/verify_fixed_e3_integration.py"
+    ],
+    "exit_code": 0,
+    "seconds": 3.291,
+    "rust_counts": []
+  },
+  {
+    "name": "plan",
+    "argv": [
+      "python3",
+      "scripts/code_index_plan.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.04,
+    "rust_counts": []
+  },
+  {
+    "name": "diff",
+    "argv": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.02,
+    "rust_counts": []
+  }
+]

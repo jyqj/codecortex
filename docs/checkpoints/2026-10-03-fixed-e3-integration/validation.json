@@ -1,0 +1,144 @@
+{
+  "status": "passed_authorized_scope_only",
+  "production_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14); cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "official_fetch_original_lock": true,
+  "platform_proxy_environment": "retained; no values recorded",
+  "checks": [
+    {
+      "command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+      "exit_code": 0,
+      "passed": 2047,
+      "failed": 0,
+      "ignored": 61,
+      "log": "logs/tests-default-excluding-semantic.log"
+    },
+    {
+      "command": "cargo test -p cc-semantic --lib --locked",
+      "exit_code": 0,
+      "passed": 232,
+      "failed": 0,
+      "ignored": 0,
+      "log": "logs/tests-semantic-lib.log"
+    },
+    {
+      "command": "cargo test -p cc-semantic --locked --test artifact_cache --test attempt_lease_contract --test bounded_parallel --test manifest_exact_integration --test p7_cache_allocation_independent_review --test publish_cas --test query_cache --test queue_worker --test retry_worker_layering --test semantic_degrade --test space_switch",
+      "exit_code": 0,
+      "passed": 83,
+      "failed": 0,
+      "ignored": 1,
+      "log": "logs/tests-semantic-normal.log"
+    },
+    {
+      "command": "cargo fetch --locked",
+      "exit_code": 0,
+      "log": "logs/fetch.log"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "log": "logs/fmt.log"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+      "exit_code": 0,
+      "log": "logs/clippy-default.log"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --features semantic-http --locked -- -D warnings",
+      "exit_code": 0,
+      "log": "logs/clippy-semantic-http.log"
+    },
+    {
+      "command": "cargo test --workspace --all-targets --locked --no-run",
+      "exit_code": 0,
+      "log": "logs/no-run-default.log"
+    },
+    {
+      "command": "cargo check -p cc-eval --all-targets --features eval-http --locked",
+      "exit_code": 0,
+      "log": "logs/check-eval-http.log"
+    },
+    {
+      "command": "python3 scripts/check_module_architecture.py",
+      "exit_code": 0,
+      "log": "logs/module-architecture.log"
+    },
+    {
+      "command": "python3 scripts/check_source_architecture.py",
+      "exit_code": 0,
+      "log": "logs/source-architecture.log"
+    },
+    {
+      "command": "python3 scripts/code_index_plan.py",
+      "exit_code": 0,
+      "log": "logs/plan-check.json"
+    },
+    {
+      "command": "python3 scripts/verify_fixed_e3_integration.py",
+      "exit_code": 0,
+      "log": "logs/identity.log"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v",
+      "passed": 26,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "logs/driver26.log"
+    },
+    {
+      "command": "python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir /workspace/integration-checks/semantic-http-ci",
+      "passed": 17,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "logs/semantic-http-ci.log",
+      "receipt": "logs/semantic-http-ci-commands.json"
+    },
+    {
+      "command": "two exact PR125 fixture leaves, isolated e3 source and dedicated owned target",
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0,
+      "source_identity": "logs/smoke-source-identity.json",
+      "binary_identity": "logs/smoke-binary-identity.json",
+      "logs": [
+        "logs/smoke-queue.log",
+        "logs/smoke-http-cache.log"
+      ]
+    },
+    {
+      "command": "git diff --cached --check -- . ':(exclude)docs/checkpoints/2026-10-03-fixed-e3-integration/logs/*.log'",
+      "exit_code": 0,
+      "scope": "code/docs/imports; untouched raw command logs retain original blank lines at EOF, which ordinary --check flags"
+    }
+  ],
+  "initial_nonpassing_attempts": [
+    {
+      "action": "cargo fmt/clippy tool entry",
+      "result": "error: could not create home directory: /home/agent/.rustup: Read-only file system (os error 30)",
+      "tests_executed": 0,
+      "resolution": "selected existing installed /workspace/.rustup and 1.95.0 toolchain; no filesystem/security/credential configuration changes"
+    },
+    {
+      "action": "two exact fixture selections sharing integration-target",
+      "result": "0 passed / 350 filtered out each; rejected as empty discovery",
+      "tests_executed": 0,
+      "logs": [
+        "logs/smoke-queue-empty-discovery.log",
+        "logs/smoke-http-empty-discovery.log"
+      ],
+      "resolution": "dedicated smoke-target compiled from isolated source; explicit discovery and executable/compiler-artifact hash verified; each leaf then ran 1/0"
+    }
+  ],
+  "cleanup": "only this task owned incremental compiler output removed to free space; no product/evidence/cache/OS configuration changed",
+  "not_run": [
+    "old semantic_runtime recoverable_retry EROFS cases and broad semantic_runtime suite",
+    "historical process-kill/staging/GC/WAL integration execution",
+    "100k rerun",
+    "realprovider",
+    "heldout",
+    "full historical ignored-MCP CI matrix locally",
+    "remote CI result before draft publication"
+  ],
+  "limitations": "Complete product bytes fixed; normal-scope tests cannot close full P7/P8-005, whole-tree memory, quality or causal performance acceptance. Remote CI follow-up belongs to parent."
+}

@@ -32,12 +32,6 @@ impl ProjectServices {
         })
     }
 
-    fn empty() -> Self {
-        Self {
-            index: Arc::new(RwLock::new(CodeIndex::empty())),
-        }
-    }
-
     fn index(&self) -> SharedCodeIndex {
         self.index.clone()
     }
@@ -67,14 +61,11 @@ pub struct ProjectSession {
 }
 
 impl ProjectSession {
-    pub fn new(project_path: Option<&Path>) -> Self {
-        let services = ProjectServices::new(project_path).unwrap_or_else(|e| {
-            tracing::warn!("failed to initialize project: {}", e);
-            ProjectServices::new(None).unwrap_or_else(|e2| {
-                tracing::error!("fatal: cannot create empty CodeIndex either: {}", e2);
-                ProjectServices::empty()
-            })
-        });
+    /// Initialize before publishing any project identity or session task owner.
+    /// An explicit project error must reach the caller; `None` is a separate,
+    /// valid session choice rather than a fallback for rejected projects.
+    pub fn new(project_path: Option<&Path>) -> CcResult<Self> {
+        let services = ProjectServices::new(project_path)?;
 
         let mut initial_cache = LruCache::new(NonZeroUsize::new(PROJECT_CACHE_CAPACITY).unwrap());
         if let Some(path) = project_path {
@@ -85,14 +76,14 @@ impl ProjectSession {
         if let Some(path) = project_path {
             live_projects.insert(normalize_path(path), Arc::downgrade(&services.index));
         }
-        Self {
+        Ok(Self {
             active: Arc::new(tokio::sync::RwLock::new(services)),
             project_cache: Arc::new(tokio::sync::Mutex::new(initial_cache)),
             live_projects: Arc::new(tokio::sync::Mutex::new(live_projects)),
             last_activity: Arc::new(Mutex::new(Instant::now())),
             auto_indexing: Arc::new(AtomicBool::new(false)),
             tasks: Arc::default(),
-        }
+        })
     }
 
     pub async fn active_index(&self) -> SharedCodeIndex {
@@ -594,7 +585,7 @@ mod tests {
     #[tokio::test]
     async fn p5d_hot_cache_does_not_wait_behind_cold_registry() {
         let dir = TempDir::new().unwrap();
-        let session = ProjectSession::new(Some(dir.path()));
+        let session = ProjectSession::new(Some(dir.path())).unwrap();
         let original = session.active_index().await;
         let _cold = session.live_projects.lock().await;
         let routed = tokio::time::timeout(
@@ -611,7 +602,7 @@ mod tests {
     async fn p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication() {
         let dir = TempDir::new().unwrap();
         let path = normalize_path(dir.path());
-        let session = ProjectSession::new(None);
+        let session = ProjectSession::new(None).unwrap();
         // Block the initializer's cache lookup without stalling the scheduler.
         let cache = session.project_cache.clone().lock_owned().await;
         let caller = session.clone();
@@ -656,7 +647,7 @@ mod tests {
     #[tokio::test(flavor = "current_thread")]
     async fn p5d_active_reopen_lock_wait_does_not_block_async_scheduler() {
         let dir = TempDir::new().unwrap();
-        let session = ProjectSession::new(Some(dir.path()));
+        let session = ProjectSession::new(Some(dir.path())).unwrap();
         let index = session.active_index().await;
         let (start_tx, start_rx) = tokio::sync::oneshot::channel();
         let (release_tx, release_rx) = std::sync::mpsc::channel();
@@ -714,7 +705,7 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
 
-        let session = ProjectSession::new(Some(dir.path()));
+        let session = ProjectSession::new(Some(dir.path())).unwrap();
         session.maybe_auto_index();
         assert!(
             wait_for_auto_index(&session, Duration::from_secs(30)).await,
@@ -764,7 +755,7 @@ mod tests {
         std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
 
         // A is created first, then B becomes active; A stays cached non-active.
-        let session = ProjectSession::new(Some(dir_a.path()));
+        let session = ProjectSession::new(Some(dir_a.path())).unwrap();
         let index_a = session.active_index().await;
         session
             .set_active_project(dir_b.path().to_path_buf())
@@ -822,7 +813,7 @@ mod tests {
     async fn idle_sweep_skips_reader_then_reclaims_every_cached_instance() {
         let a = TempDir::new().unwrap();
         let b = TempDir::new().unwrap();
-        let session = ProjectSession::new(Some(a.path()));
+        let session = ProjectSession::new(Some(a.path())).unwrap();
         let index_a = session.active_index().await;
         // Route B without starting an unrelated native watcher: the reader
         // below deterministically supplies the actual contention boundary.
@@ -868,7 +859,7 @@ mod tests {
         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
         let raw_path = dir.path().to_str().unwrap().to_string();
 
-        let session = ProjectSession::new(Some(dir.path()));
+        let session = ProjectSession::new(Some(dir.path())).unwrap();
         let index = session
             .index_for_project_path(Some(&raw_path))
             .await
@@ -909,7 +900,7 @@ mod tests {
         let dir_b = TempDir::new().unwrap();
         std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
 
-        let session = ProjectSession::new(Some(dir_a.path()));
+        let session = ProjectSession::new(Some(dir_a.path())).unwrap();
         let index_a = session.active_index().await;
 
         // Simulate idle eviction on A, then switch the active project away.
@@ -1118,7 +1109,7 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
 
-        let session = ProjectSession::new(Some(dir.path()));
+        let session = ProjectSession::new(Some(dir.path())).unwrap();
         session.maybe_auto_index();
         assert!(
             wait_for_auto_index(&session, Duration::from_secs(30)).await,
@@ -1190,3 +1181,7 @@ mod tests {
         session.shutdown().await;
     }
 }
+
+#[cfg(all(test, feature = "semantic"))]
+#[path = "project_startup_tests.rs"]
+mod startup_tests;

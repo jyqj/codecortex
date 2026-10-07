@@ -885,6 +885,8 @@ impl IndexDb {
             )?;
         }
 
+        crate::symbol_identity_store::insert_on(conn, file)?;
+
         // imports
         for i in &outcome.imports {
             Self::execute_cached(conn, "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport,context_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",

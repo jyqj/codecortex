@@ -77,6 +77,8 @@ frontier setter。升级/回滚路径见本文 [Schema 版本策略](#schema-版
 
 ### 按能力切分的方法面
 
+`retrieval-capabilities-v2` 明确采用 `consistency=point_in_time`：完整 `generation` 由 `generation_scope=observed_database_snapshot` 标识为观察 generation。indexed_files/symbols、freshness、semantic_active_space 与覆盖/待处理计数来自同一短只读事务；普通并发发布可以返回完整旧或新观察，不能旧 root 配新 coverage。ready 仅表示该观察时点的覆盖，下一条 query 仍执行自己的严格代际 fence。`identity_validation` 为 `checked_at_observation_boundary` 或 `not_observed`，检测到替库/身份不确定时保守不可用；`service_state_scope=process_observed_separately` 区分运行态，worker failed/degraded 仍优先覆盖 semantic ready。当前 Linux 的 SQLite VFS 身份检查已进入本次验证；其他平台未测，不支持 HAS_MOVED 的 VFS 上 capability 诊断受限，但不据此判定普通 query 不可用。v1 到 v2 没有长期兼容分支，工具名称与输入 schema 不变。详见 [ADR-0004](../adr/0004-capability-status-point-in-time.md)。
+
 公开方法面按能力切成三个零成本借用视图（与 cc-server `CodeIndex` 同一模式）；
 生命周期（`open` / `open_with_read_pool_size`）留在 `IndexDb` 本体上：
 
@@ -390,8 +392,16 @@ worker 是唯一付费方）→ 死信只清点**绝不复活**。`converged` �
 
 ## Schema 版本策略
 
-`user_version` pragma 记录 schema 版本（当前 **v22**，
+`user_version` pragma 记录 schema 版本（当前 **v25**，
 `CURRENT_SCHEMA_VERSION` 在 `index_migrate.rs:35`）。打开库时按存储版本分派：
+
+当前 v25 守卫优先于以下历史 v21→v22 迁移记录：所有非零旧版本（包括
+v24）走既有 rebuild-on-mismatch，没有新增原位迁移。v25 的
+`chunk_symbol_identity` 关联原始来源、文档版本与真实 parser 符号，并与
+文件事实同事务写入/删除、推进 `index_epoch`；旧索引无法通过空表补建
+获得身份，必须重解析。模块模型保持 v3。cold/warm 读取同时验证关联与
+符号存活，详见 [SOURCE_CHUNKS.md](SOURCE_CHUNKS.md)。升级测试只使用
+自有临时缓存，真实 v24 合成夹具的重建收据见本批 implementation 目录。
 
 - **相邻加法迁移（v21 → v22）**：v22 相对 v21 的 delta 全部是
   `CREATE TABLE/INDEX ... IF NOT EXISTS`（P6 语义三表 + 7 索引），因此 v21

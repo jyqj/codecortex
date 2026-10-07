@@ -106,7 +106,10 @@ fn space_transition_table_admits_exactly_the_three_edges() {
     use SpaceState::*;
     let legal = [(Backfilling, Active), (Active, Revoked), (Revoked, Active)];
     for (from, to) in legal {
-        assert!(from.can_transition_to(to), "{from:?} -> {to:?} must be legal");
+        assert!(
+            from.can_transition_to(to),
+            "{from:?} -> {to:?} must be legal"
+        );
     }
     for from in [Backfilling, Active, Revoked] {
         for to in [Backfilling, Active, Revoked] {
@@ -169,10 +172,16 @@ fn switch_requires_known_space_and_legal_target_state() {
 fn first_activation_has_no_previous_active_and_no_epoch_bump() {
     let conn = v22_conn();
     register_space_on(&conn, "sp-1", "{}", 1.0).unwrap();
-    let stats = in_tx(&conn, |c| switch_active_space_on(c, "sp-1", "rev-init", 2.0)).unwrap();
+    let stats = in_tx(&conn, |c| {
+        switch_active_space_on(c, "sp-1", "rev-init", 2.0)
+    })
+    .unwrap();
     assert_eq!(stats.previous_active, None);
     assert!(stats.activated && !stats.old_revoked);
-    assert!(!stats.visible_set_switched, "首次激活不可见集合为空→空，非切换");
+    assert!(
+        !stats.visible_set_switched,
+        "首次激活不可见集合为空→空，非切换"
+    );
     assert_eq!(
         space_state_on(&conn, "sp-1").unwrap(),
         Some((SpaceState::Active, Some("1970-01-01T00:00:02+00:00".into())))
@@ -199,11 +208,23 @@ fn switch_revokes_old_activates_new_and_produces_revoke_tasks() {
     assert_eq!(stats.previous_active.as_deref(), Some("sp-old"));
     assert!(stats.activated && stats.old_revoked);
     assert!(stats.visible_set_switched);
-    assert_eq!(stats.superseded_live_tasks, 2, "旧空间 live embed 全部 supersede");
-    assert_eq!(stats.revoke_tasks_enqueued, 2, "每个旧空间 manifest 行一个 revoke 任务");
+    assert_eq!(
+        stats.superseded_live_tasks, 2,
+        "旧空间 live embed 全部 supersede"
+    );
+    assert_eq!(
+        stats.revoke_tasks_enqueued, 2,
+        "每个旧空间 manifest 行一个 revoke 任务"
+    );
 
-    assert_eq!(space_state_on(&conn, "sp-old").unwrap().unwrap().0, SpaceState::Revoked);
-    assert_eq!(space_state_on(&conn, "sp-new").unwrap().unwrap().0, SpaceState::Active);
+    assert_eq!(
+        space_state_on(&conn, "sp-old").unwrap().unwrap().0,
+        SpaceState::Revoked
+    );
+    assert_eq!(
+        space_state_on(&conn, "sp-new").unwrap().unwrap().0,
+        SpaceState::Active
+    );
 
     // revoke 生产者：op/state/space 全对，且每个 doc_key 一条。
     let revokes: Vec<(String, String)> = conn
@@ -217,8 +238,20 @@ fn switch_revokes_old_activates_new_and_produces_revoke_tasks() {
     assert!(revokes.contains(&("d1".into(), "pending".into())));
     assert!(revokes.contains(&("d2".into(), "pending".into())));
     // 旧空间 live embed 已 supersede；新空间 live 任务不受影响。
-    assert_eq!(count(&conn, "SELECT COUNT(*) FROM semantic_outbox WHERE space_id='sp-old' AND state='superseded'"), 2);
-    assert_eq!(count(&conn, "SELECT COUNT(*) FROM semantic_outbox WHERE space_id='sp-new' AND state='pending'"), 1);
+    assert_eq!(
+        count(
+            &conn,
+            "SELECT COUNT(*) FROM semantic_outbox WHERE space_id='sp-old' AND state='superseded'"
+        ),
+        2
+    );
+    assert_eq!(
+        count(
+            &conn,
+            "SELECT COUNT(*) FROM semantic_outbox WHERE space_id='sp-new' AND state='pending'"
+        ),
+        1
+    );
     // 可见集合切换：Semantic 效应由 facade 在 stats 上声明；裸 *_on 不动钟。
     assert_eq!(semantic_epoch(&conn), None);
 }
@@ -228,7 +261,10 @@ fn switch_appends_pinned_false_audit_event_to_metadata_log() {
     let conn = v22_conn();
     seed_active_space(&conn, "sp-old");
     register_space_on(&conn, "sp-new", "{}", 1.0).unwrap();
-    in_tx(&conn, |c| switch_active_space_on(c, "sp-new", "user-rev-7", 2.0)).unwrap();
+    in_tx(&conn, |c| {
+        switch_active_space_on(c, "sp-new", "user-rev-7", 2.0)
+    })
+    .unwrap();
     let log: String = conn
         .query_row(
             "SELECT value FROM metadata WHERE key='semantic_space_switch_log'",
@@ -255,12 +291,21 @@ fn re_switch_of_a_revoked_space_supersedes_stale_live_revokes_before_reenqueue()
     register_space_on(&conn, "sp-b", "{}", 1.0).unwrap();
     seed_manifest_row(&conn, "d1", "sp-a");
     in_tx(&conn, |c| switch_active_space_on(c, "sp-b", "rev-1", 2.0)).unwrap();
-    assert_eq!(count(&conn, "SELECT COUNT(*) FROM semantic_outbox WHERE op='revoke' AND state='pending'"), 1);
+    assert_eq!(
+        count(
+            &conn,
+            "SELECT COUNT(*) FROM semantic_outbox WHERE op='revoke' AND state='pending'"
+        ),
+        1
+    );
     // 回滚：b → a（revoked → active 边）。
     in_tx(&conn, |c| switch_active_space_on(c, "sp-a", "rev-2", 3.0)).unwrap();
     // 再切走：a → b。d1 的旧 revoke 任务仍是 pending，必须被 supersede 后重产。
     let stats = in_tx(&conn, |c| switch_active_space_on(c, "sp-b", "rev-3", 4.0)).unwrap();
-    assert_eq!(stats.superseded_live_tasks, 1, "stale live revoke 被 supersede");
+    assert_eq!(
+        stats.superseded_live_tasks, 1,
+        "stale live revoke 被 supersede"
+    );
     assert_eq!(stats.revoke_tasks_enqueued, 1);
     assert_eq!(
         count(&conn, "SELECT COUNT(*) FROM semantic_outbox WHERE op='revoke' AND state IN ('pending','claimed')"),
@@ -315,26 +360,38 @@ impl RevokeWorld {
     fn new() -> Self {
         let (dir, db) = facade_db();
         let conn = rusqlite::Connection::open(db.admin().db_path()).unwrap();
-        conn.busy_timeout(std::time::Duration::from_secs(5)).unwrap();
+        conn.busy_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
         conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
         seed_manifest_row(&conn, "d1", "sp-old");
         seed_manifest_row(&conn, "d2", "sp-old");
-        Self { _dir: dir, db, conn }
+        Self {
+            _dir: dir,
+            db,
+            conn,
+        }
     }
 }
 
 #[test]
 fn consume_revoke_deletes_own_space_row_and_bumps_exactly_on_change() {
     let world = RevokeWorld::new();
-    world
-        .db
-        .register_semantic_space("sp-old", "{}")
-        .unwrap();
+    world.db.register_semantic_space("sp-old", "{}").unwrap();
     // register 拒绝已存在行 → 直接用 SQL 置 active（facade 只提供切换）。
-    world.conn.execute("UPDATE semantic_spaces SET state='active' WHERE space_id='sp-old'", []).unwrap();
+    world
+        .conn
+        .execute(
+            "UPDATE semantic_spaces SET state='active' WHERE space_id='sp-old'",
+            [],
+        )
+        .unwrap();
     // 造一条 revoke 任务（切换生产者的等价行）并 claim。
     seed_outbox_task(&world.conn, "d1", "sp-old", "pending", "revoke");
-    let task = world.db.claim_semantic_space("sp-old", "w", 60.0).unwrap().unwrap();
+    let task = world
+        .db
+        .claim_semantic_space("sp-old", "w", 60.0)
+        .unwrap()
+        .unwrap();
     assert_eq!(task.op, OutboxOp::Revoke);
 
     let outcome = world
@@ -343,37 +400,67 @@ fn consume_revoke_deletes_own_space_row_and_bumps_exactly_on_change() {
         .unwrap();
     assert!(outcome.acked && outcome.visible_set_changed);
     // 行被删 + 任务 done + epoch 精确 +1（可见集合变化 → Semantic 效应）。
-    assert_eq!(count(&world.conn, "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"), 0);
-    assert_eq!(count(&world.conn, "SELECT COUNT(*) FROM semantic_outbox WHERE task_id=1 AND state='done'"), 1);
+    assert_eq!(
+        count(
+            &world.conn,
+            "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"
+        ),
+        0
+    );
+    assert_eq!(
+        count(
+            &world.conn,
+            "SELECT COUNT(*) FROM semantic_outbox WHERE task_id=1 AND state='done'"
+        ),
+        1
+    );
     let epoch_after_first = semantic_epoch(&world.conn);
     assert_eq!(epoch_after_first, Some(1));
 
     // 幂等方向：对已无行的 doc 再消费一次 → ack 成功但可见集合未变，不 bump。
     seed_outbox_task(&world.conn, "d1", "sp-old", "pending", "revoke");
-    let task2 = world.db.claim_semantic_space("sp-old", "w", 60.0).unwrap().unwrap();
+    let task2 = world
+        .db
+        .claim_semantic_space("sp-old", "w", 60.0)
+        .unwrap()
+        .unwrap();
     let outcome2 = world
         .db
         .consume_semantic_revoke(task2.task_id, &task2.token, &task2.doc_key, "sp-old")
         .unwrap();
     assert!(outcome2.acked && !outcome2.visible_set_changed);
-    assert_eq!(semantic_epoch(&world.conn), epoch_after_first, "Q4：无变化不 bump");
+    assert_eq!(
+        semantic_epoch(&world.conn),
+        epoch_after_first,
+        "Q4：无变化不 bump"
+    );
 }
 
 #[test]
 fn consume_revoke_never_touches_another_space_row_and_loses_to_stale_token() {
     let world = RevokeWorld::new();
+    world.db.register_semantic_space("sp-old", "{}").unwrap();
     world
-        .db
-        .register_semantic_space("sp-old", "{}")
+        .conn
+        .execute(
+            "UPDATE semantic_spaces SET state='active' WHERE space_id='sp-old'",
+            [],
+        )
         .unwrap();
-    world.conn.execute("UPDATE semantic_spaces SET state='active' WHERE space_id='sp-old'", []).unwrap();
     // 文档已被新空间重新发布：revoke 任务必须只删自己空间的行（删不到）。
     world
         .conn
-        .execute("UPDATE semantic_manifest SET space_id='sp-new' WHERE doc_key='d1'", [])
+        .execute(
+            "UPDATE semantic_manifest SET space_id='sp-new' WHERE doc_key='d1'",
+            [],
+        )
         .unwrap();
     seed_outbox_task(&world.conn, "d1", "sp-old", "pending", "revoke");
-    let task = world.db.claim_semantic_space("sp-old", "w", 60.0).unwrap().unwrap();
+    let task = world
+        .db
+        .claim_semantic_space("sp-old", "w", 60.0)
+        .unwrap()
+        .unwrap();
 
     // 1) 陈旧 token：零写入（行仍在，任务仍 claimed）。
     let outcome = world
@@ -381,9 +468,18 @@ fn consume_revoke_never_touches_another_space_row_and_loses_to_stale_token() {
         .consume_semantic_revoke(task.task_id, "forged-token", &task.doc_key, "sp-old")
         .unwrap();
     assert!(!outcome.acked && !outcome.visible_set_changed);
-    assert_eq!(count(&world.conn, "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"), 1);
     assert_eq!(
-        count(&world.conn, "SELECT COUNT(*) FROM semantic_outbox WHERE task_id=1 AND state='claimed'"),
+        count(
+            &world.conn,
+            "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"
+        ),
+        1
+    );
+    assert_eq!(
+        count(
+            &world.conn,
+            "SELECT COUNT(*) FROM semantic_outbox WHERE task_id=1 AND state='claimed'"
+        ),
         1,
         "lost lease 必须零写入"
     );
@@ -395,7 +491,13 @@ fn consume_revoke_never_touches_another_space_row_and_loses_to_stale_token() {
         .consume_semantic_revoke(task.task_id, &task.token, &task.doc_key, "sp-old")
         .unwrap();
     assert!(outcome2.acked && !outcome2.visible_set_changed);
-    assert_eq!(count(&world.conn, "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"), 1);
+    assert_eq!(
+        count(
+            &world.conn,
+            "SELECT COUNT(*) FROM semantic_manifest WHERE doc_key='d1'"
+        ),
+        1
+    );
     assert_eq!(semantic_epoch(&world.conn), None, "Q4：未删行不 bump");
 }
 
@@ -404,7 +506,8 @@ fn space_switch_facades_end_to_end_epoch_and_states() {
     let dir = tempdir::TempDirGuard::new("facade");
     let (db, _) = IndexDb::open(&dir.path().join("index.sqlite3")).expect("open index");
     let conn = rusqlite::Connection::open(db.admin().db_path()).unwrap();
-    conn.busy_timeout(std::time::Duration::from_secs(5)).unwrap();
+    conn.busy_timeout(std::time::Duration::from_secs(5))
+        .unwrap();
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     db.register_semantic_space("sp-a", "{}").unwrap();
     db.register_semantic_space("sp-b", "{}").unwrap();
@@ -415,7 +518,11 @@ fn space_switch_facades_end_to_end_epoch_and_states() {
     seed_manifest_row(&conn, "d1", "sp-a");
     db.switch_semantic_active_space("sp-b", "rev-2").unwrap();
     assert_eq!(db.semantic_active_space().unwrap().as_deref(), Some("sp-b"));
-    assert_eq!(semantic_epoch(&conn), Some(1), "可见集合切换 → Semantic 效应 bump");
+    assert_eq!(
+        semantic_epoch(&conn),
+        Some(1),
+        "可见集合切换 → Semantic 效应 bump"
+    );
     assert_eq!(
         db.semantic_space_state("sp-a").unwrap().map(|(s, _)| s),
         Some(SpaceState::Revoked)
@@ -428,6 +535,8 @@ fn space_switch_facades_end_to_end_epoch_and_states() {
     assert_eq!(semantic_epoch(&conn), Some(2));
 
     // 非法目标：未知空间拒绝（facade 同样走状态机守卫）。
-    let err = db.switch_semantic_active_space("ghost", "rev-4").unwrap_err();
+    let err = db
+        .switch_semantic_active_space("ghost", "rev-4")
+        .unwrap_err();
     assert!(matches!(err, CcError::InvalidParams(_)));
 }

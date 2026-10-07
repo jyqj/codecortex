@@ -104,6 +104,21 @@ CREATE TABLE IF NOT EXISTS chunks (
 CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_path, chunk_index);
 CREATE INDEX IF NOT EXISTS idx_chunks_symbol ON chunks(symbol_name);
 
+-- Original parser declaration authority, published in the file transaction.
+CREATE TABLE IF NOT EXISTS chunk_symbol_identity (
+    chunk_id TEXT PRIMARY KEY REFERENCES chunks(chunk_id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    doc_key TEXT NOT NULL REFERENCES document_manifest(doc_key) ON DELETE CASCADE,
+    doc_version TEXT NOT NULL,
+    symbol_id TEXT NOT NULL,
+    format_version INTEGER NOT NULL CHECK(format_version=1),
+    record_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS chunk_symbol_identity_path ON chunk_symbol_identity(file_path);
+CREATE TRIGGER IF NOT EXISTS chunk_symbol_identity_delete AFTER DELETE ON chunks BEGIN
+    DELETE FROM chunk_symbol_identity WHERE chunk_id=OLD.chunk_id;
+END;
+
 -- rowid aligned with chunks.rowid (application-maintained).
 -- Explicit cleanup also works on rebuild connections with FK checks disabled.
 CREATE TRIGGER IF NOT EXISTS chunk_document_delete AFTER DELETE ON chunks BEGIN
@@ -538,6 +553,8 @@ CREATE TABLE IF NOT EXISTS semantic_outbox (
     updated_at     TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS semantic_outbox_ready ON semantic_outbox(state, available_at, space_id);
+-- Physical FIFO access path only: no uniqueness or semantic/schema-version change.
+CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending';
 CREATE INDEX IF NOT EXISTS semantic_outbox_doc   ON semantic_outbox(doc_key, space_id, state);
 -- 合并 pending：同 doc 同空间至多一个活跃任务（P6-013 合并语义的 DB 层保证）
 CREATE UNIQUE INDEX IF NOT EXISTS semantic_outbox_live_per_doc

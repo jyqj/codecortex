@@ -1,0 +1,793 @@
+{
+  "features": "default only",
+  "local_search_calls": 4,
+  "new_binary_sha256": "d378dbe5887331ff3f52d82a1540be0cf3cd5905c3f7d4d32e32cebc5e36e11a",
+  "new_source_sha": "9ebdb155c64e094b3d774be41dbe7ab8c4e222c1",
+  "provider_calls": 0,
+  "readers": [
+    {
+      "after": {
+        "generation": "ReadGeneration { incarnation: [229, 171, 26, 192, 21, 243, 131, 214, 88, 233, 52, 242, 130, 249, 81, 168], index_epoch: 17, evidence_epoch: 3, semantic_epoch: None }",
+        "manifest_error": "database error: invalid resolution manifest: unsupported version",
+        "phase": "old_handle_after_upgrade",
+        "pins": 1,
+        "query": "ContextEnvelope { task: \"corrected_marker\", intent: Locate, query: \"corrected_marker\", token_budget: 4000, token_estimate: 3352, summary: \"Found 1 indexed code result(s) across 1 file(s) for `corrected_marker`.\", rendered_prompt: \"Task: code-index search\\nIntent: locate\\nQuery: corrected_marker\\n\\n## 1. main.py:1-3\\n\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\", revision: 0, nodes: [ContextNode { node_id: \"search:chunk:main.py:1\", node_type: SearchHit, role: Primary, title: \"main.py corrected_marker:1-3\", text: \"\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), score: 0.7365882752940777, confidence: 0.8, freshness: None, token_estimate: 17, source: \"index\", reasons: [\"exact-target\", \"exact_symbol@1\", \"lexical@1\", \"grep@1\", \"symbol-exact\", \"fts-summary\", \"symbol:corrected_marker\", \"preselect:fts-summary:+1.40\", \"preselect:token-search:+2.00\"], invalidation_keys: [\"main.py\"], rank_explanation: None, relation: None, depends_on: [], metadata: Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(77), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(68), \"start\": Number(14)}, \"slice_digest\": String(\"9b7734eb500814be7846b522174b7ddd6e2c8847c299ca23cce72b0072d8236e\"), \"source\": Object {\"byte_len\": Number(78), \"content_digest\": String(\"4b1b092a4d8e74b55eea0724a848f5eff7154b8e8922ad33f3fc46359fc5942c\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"b94ad439c5560b03a5dc441a9d9269114a78025b55be446f35785981f2b8f9ea\")}, \"span\": Object {\"end\": Number(78), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:corrected_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, span_kind: Some(\"indexed_chunk\"), backing_file_path: Some(\"main.py\"), backing_source: None, source_start_line: Some(1), source_end_line: Some(3) }], spans: [ContextSpan { node_id: \"search:chunk:main.py:1\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), label: \"corrected_marker\" }], reasons: [\"hybrid search over code index\", \"graph-enriched\"], invalidations: [], machine_pack: Object {\"hits\": Array [Object {\"breadcrumb\": String(\"corrected_marker\"), \"chunk_id\": String(\"chunk:main.py:1\"), \"end_line\": Number(3), \"file_path\": String(\"main.py\"), \"fused_score\": Number(0.07058823529411765), \"graph_score\": Number(0.0), \"grep_score\": Number(1.0), \"lane\": Null, \"language\": String(\"python\"), \"lexical_score\": Number(1.0), \"metadata\": Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(77), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(68), \"start\": Number(14)}, \"slice_digest\": String(\"9b7734eb500814be7846b522174b7ddd6e2c8847c299ca23cce72b0072d8236e\"), \"source\": Object {\"byte_len\": Number(78), \"content_digest\": String(\"4b1b092a4d8e74b55eea0724a848f5eff7154b8e8922ad33f3fc46359fc5942c\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"b94ad439c5560b03a5dc441a9d9269114a78025b55be446f35785981f2b8f9ea\")}, \"span\": Object {\"end\": Number(78), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:corrected_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, \"reasons\": Array [String(\"exact-target\"), String(\"exact_symbol@1\"), String(\"lexical@1\"), String(\"grep@1\"), String(\"symbol-exact\"), String(\"fts-summary\"), String(\"symbol:corrected_marker\"), String(\"preselect:fts-summary:+1.40\"), String(\"preselect:token-search:+2.00\")], \"rerank_score\": Number(0.7365882752940777), \"score_trace\": Array [Array [String(\"rrf:exact_symbol\"), Number(0.021568627450980395)], Array [String(\"rrf:lexical\"), Number(0.021568627450980395)], Array [String(\"rrf:grep\"), Number(0.01568627450980392)], Array [String(\"rrf:graph\"), Number(0.011764705882352941)], Array [String(\"overlap\"), Number(0.35)], Array [String(\"boost:symbol-exact\"), Number(0.18)], Array [String(\"boost:stage-a\"), Number(0.13600003999996)]], \"source\": String(\"index\"), \"start_line\": Number(1), \"symbol_kind\": String(\"function\"), \"symbol_name\": String(\"corrected_marker\"), \"text\": String(\"\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\")}], \"kind\": String(\"code_index_context\"), \"query\": String(\"corrected_marker\"), \"repo_size_tier\": String(\"Tiny\"), \"token_budget\": Number(4000), \"top_k\": Number(5)}, evidence_summary: Object {\"files\": Array [String(\"main.py\")], \"graph_enrichment\": Object {\"callees_added\": Number(0), \"callers_added\": Number(0), \"symbols_resolved\": Number(1), \"tests_found\": Number(0)}, \"packing\": Object {\"compacted\": Bool(false), \"configured_max_bytes\": Number(18000), \"continuation\": String(\"Use files region/expand on retained references; recheck source version.\"), \"limit_bytes\": Number(16000), \"omitted_hits\": Number(0), \"omitted_nodes\": Number(0), \"original_hits\": Number(1), \"original_nodes\": Number(1), \"partial\": Bool(false), \"spec\": String(\"whole-json-intent-facets-source-support-before-incidental-v5\"), \"token_estimate_method\": String(\"ceil(serialized_utf8_bytes/4); not a tokenizer\"), \"used_bytes\": Number(13406)}, \"retrieval\": Object {\"cost\": Object {\"coverage\": String(\"originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit\"), \"fused_candidates\": Number(1), \"hydrate_requested\": Number(1), \"hydration\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(63)}, \"text\": Object {\"cache_hits\": Number(1), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(65), \"zstd_decodes\": Number(0)}}, \"lane_candidates\": Object {\"exact_symbol\": Number(1), \"graph\": Number(1), \"grep\": Number(1), \"lexical\": Number(1), \"path\": Number(0)}, \"lexical_sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(38)}, \"schema_version\": Number(1)}, \"grep\": Object {\"fallback_scanned\": Number(0), \"prefilter_failed\": Bool(false), \"prefilter_scanned\": Number(0), \"reason\": Null, \"scan_cap\": Number(20000), \"scanned\": Number(2), \"skipped_duplicates\": Number(3), \"soft_scanned\": Number(2), \"stages\": Array [Object {\"stage\": String(\"soft\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(29)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(2), \"utf8_bytes\": Number(78), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"prefilter\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(36)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"fallback\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(1), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(23)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}], \"status\": String(\"complete\")}, \"lanes\": Array [Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(true), \"lane_id\": String(\"exact_symbol\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"exact-symbol-name-qname-signature-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(422), \"lane_id\": String(\"exact_symbol\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(0), \"candidates\": Array [], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(0)}, \"elapsed_us\": Number(16059), \"lane_id\": String(\"path\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.0)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"lexical\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(-4.533685601056804e-6), \"schema_version\": Number(1), \"scoring_spec\": String(\"fts5-bm25-order-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(24214), \"lane_id\": String(\"lexical\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"grep\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"bounded-case-insensitive-literal-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Number(2), \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(13255), \"lane_id\": String(\"grep\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.8)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"graph\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"call-graph-one-hop-uid-byte-anchor-v2\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(14225), \"lane_id\": String(\"graph\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.6)}], \"policy\": Object {\"completeness\": String(\"all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial\"), \"deadline_ms\": Number(30000), \"effective\": String(\"local\"), \"graph_source_mapping\": String(\"uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage\"), \"intent\": String(\"locate\"), \"lane_timeout_ms\": Number(20000), \"no_answer\": String(\"empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank\"), \"obligations\": Array [Object {\"lane_id\": String(\"exact_symbol\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"path\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"lexical\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"grep\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"graph\"), \"role\": String(\"supporting\"), \"timeout_ms\": Number(20000)}], \"path_source_domain\": String(\"canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage\"), \"requested\": String(\"local\"), \"semantic_state\": String(\"disabled\"), \"semantic_timeout_ms\": Number(5000), \"semantic_top_k\": Number(24), \"version\": String(\"query-policy-local-semantic-canonical-path-domain-v4\")}, \"scope\": Object {\"budget\": Object {\"exact_symbol_candidates\": Number(24), \"grep_candidates\": Number(12), \"grep_enabled\": Bool(true), \"grep_scan_cap\": Number(20000), \"lexical_candidates\": Number(24), \"path_candidates\": Number(24), \"rerank_window\": Number(40), \"top_k\": Number(5), \"units\": String(\"candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit\")}, \"hard\": Object {\"empty\": Bool(false), \"explicit_file_count\": Null, \"languages\": Null, \"path_prefix\": Null, \"path_prefix_truncated\": Bool(false), \"semantics\": String(\"conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count\")}, \"ordering\": Array [String(\"exact-target first (identity tier, not an additive score)\"), String(\"rerank_score descending = sum(score_trace)\"), String(\"chunk_id ascending\")], \"policy\": String(\"canonical-scoped-exact-path-domain-compact-context-budget-v22\"), \"schema_version\": Number(1), \"soft\": Object {\"contributions\": String(\"per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted\"), \"hint_entries\": Object {\"overlay\": Number(0), \"pinned\": Number(0), \"recent\": Number(0), \"working\": Number(0)}, \"preselected_count\": Number(1), \"role\": String(\"ranking_and_scan_priority_only\")}}}, \"search_hits\": Number(1), \"selection\": Object {\"facets\": Object {\"implementation\": Number(1)}, \"input_candidates\": Number(1), \"intent\": String(\"locate\"), \"intent_facet_anchors\": Object {}, \"limit_omitted\": Number(0), \"original_ranks\": Array [Number(1)], \"overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(65), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(65)}, \"requested_limit\": Number(5), \"selected\": Number(1), \"selected_overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(65), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(65)}, \"source_covered_omissions\": Number(0), \"source_support_anchors\": Array [String(\"chunk:main.py:1\")], \"source_support_scope\": String(\"literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity\"), \"spec\": String(\"anchored-facets-distinctive-source-union-v2\"), \"unmet_facets\": Array []}, \"source_freshness\": Object {\"budget_exhausted\": Bool(false), \"checked_files\": Number(1), \"dense_manifest_fence\": Object {\"checked\": Number(0), \"skip_disposition\": String(\"stale_publication_skipped\"), \"skipped\": Number(0)}, \"generation\": Object {\"evidence_epoch\": Number(3), \"incarnation\": Array [Number(229), Number(171), Number(26), Number(192), Number(21), Number(243), Number(131), Number(214), Number(88), Number(233), Number(52), Number(242), Number(130), Number(249), Number(81), Number(168)], \"index_epoch\": Number(17), \"semantic_epoch\": Null}, \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"omitted_files\": Object {}, \"partial\": Bool(false), \"read_budget_charged\": Number(78), \"scope\": String(\"bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot\"), \"verified_hits\": Number(1)}} }",
+        "query_error": null
+      },
+      "before": {
+        "generation": "ReadGeneration { incarnation: [194, 41, 100, 143, 181, 137, 84, 51, 137, 228, 86, 83, 59, 63, 63, 128], index_epoch: 10, evidence_epoch: 2, semantic_epoch: None }",
+        "phase": "pinned_v22",
+        "pins": 1,
+        "schema": 22,
+        "warm": "ContextEnvelope { task: \"previous_marker\", intent: Locate, query: \"previous_marker\", token_budget: 4000, token_estimate: 3328, summary: \"Found 1 indexed code result(s) across 1 file(s) for `previous_marker`.\", rendered_prompt: \"Task: code-index search\\nIntent: locate\\nQuery: previous_marker\\n\\n## 1. main.py:1-3\\n\\ndef previous_marker(item: _):\\n    pass\\n\", revision: 0, nodes: [ContextNode { node_id: \"search:chunk:main.py:1\", node_type: SearchHit, role: Primary, title: \"main.py previous_marker:1-3\", text: \"\\ndef previous_marker(item: _):\\n    pass\\n\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), score: 0.7365882752940777, confidence: 0.8, freshness: None, token_estimate: 10, source: \"index\", reasons: [\"exact-target\", \"exact_symbol@1\", \"lexical@1\", \"grep@1\", \"symbol-exact\", \"fts-summary\", \"symbol:previous_marker\", \"preselect:fts-summary:+1.40\", \"preselect:token-search:+2.00\"], invalidation_keys: [\"main.py\"], rank_explanation: None, relation: None, depends_on: [], metadata: Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(52), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(48), \"start\": Number(14)}, \"slice_digest\": String(\"885e1c5c5f5d5207dc31e7c737d0528a9c745c6d8a2b188e2cb222b7d19c5aac\"), \"source\": Object {\"byte_len\": Number(53), \"content_digest\": String(\"3387c163348e8ab8fd369cdcfda41264ec9dd2c17042b7033940a0b81d028677\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"aa5b48dff3fc6e2062567acfc2cbd7373a6fec9c1ee16fbb6392cd48bca1a850\")}, \"span\": Object {\"end\": Number(53), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:previous_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, span_kind: Some(\"indexed_chunk\"), backing_file_path: Some(\"main.py\"), backing_source: None, source_start_line: Some(1), source_end_line: Some(3) }], spans: [ContextSpan { node_id: \"search:chunk:main.py:1\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), label: \"previous_marker\" }], reasons: [\"hybrid search over code index\", \"graph-enriched\"], invalidations: [], machine_pack: Object {\"hits\": Array [Object {\"breadcrumb\": String(\"previous_marker\"), \"chunk_id\": String(\"chunk:main.py:1\"), \"end_line\": Number(3), \"file_path\": String(\"main.py\"), \"fused_score\": Number(0.07058823529411765), \"graph_score\": Number(0.0), \"grep_score\": Number(1.0), \"lane\": Null, \"language\": String(\"python\"), \"lexical_score\": Number(1.0), \"metadata\": Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(52), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(48), \"start\": Number(14)}, \"slice_digest\": String(\"885e1c5c5f5d5207dc31e7c737d0528a9c745c6d8a2b188e2cb222b7d19c5aac\"), \"source\": Object {\"byte_len\": Number(53), \"content_digest\": String(\"3387c163348e8ab8fd369cdcfda41264ec9dd2c17042b7033940a0b81d028677\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"aa5b48dff3fc6e2062567acfc2cbd7373a6fec9c1ee16fbb6392cd48bca1a850\")}, \"span\": Object {\"end\": Number(53), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:previous_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, \"reasons\": Array [String(\"exact-target\"), String(\"exact_symbol@1\"), String(\"lexical@1\"), String(\"grep@1\"), String(\"symbol-exact\"), String(\"fts-summary\"), String(\"symbol:previous_marker\"), String(\"preselect:fts-summary:+1.40\"), String(\"preselect:token-search:+2.00\")], \"rerank_score\": Number(0.7365882752940777), \"score_trace\": Array [Array [String(\"rrf:exact_symbol\"), Number(0.021568627450980395)], Array [String(\"rrf:lexical\"), Number(0.021568627450980395)], Array [String(\"rrf:grep\"), Number(0.01568627450980392)], Array [String(\"rrf:graph\"), Number(0.011764705882352941)], Array [String(\"overlap\"), Number(0.35)], Array [String(\"boost:symbol-exact\"), Number(0.18)], Array [String(\"boost:stage-a\"), Number(0.13600003999996)]], \"source\": String(\"index\"), \"start_line\": Number(1), \"symbol_kind\": String(\"function\"), \"symbol_name\": String(\"previous_marker\"), \"text\": String(\"\\ndef previous_marker(item: _):\\n    pass\\n\")}], \"kind\": String(\"code_index_context\"), \"query\": String(\"previous_marker\"), \"repo_size_tier\": String(\"Tiny\"), \"token_budget\": Number(4000), \"top_k\": Number(5)}, evidence_summary: Object {\"files\": Array [String(\"main.py\")], \"graph_enrichment\": Object {\"callees_added\": Number(0), \"callers_added\": Number(0), \"symbols_resolved\": Number(1), \"tests_found\": Number(0)}, \"packing\": Object {\"compacted\": Bool(false), \"configured_max_bytes\": Number(18000), \"continuation\": String(\"Use files region/expand on retained references; recheck source version.\"), \"limit_bytes\": Number(16000), \"omitted_hits\": Number(0), \"omitted_nodes\": Number(0), \"original_hits\": Number(1), \"original_nodes\": Number(1), \"partial\": Bool(false), \"spec\": String(\"whole-json-intent-facets-source-support-before-incidental-v5\"), \"token_estimate_method\": String(\"ceil(serialized_utf8_bytes/4); not a tokenizer\"), \"used_bytes\": Number(13311)}, \"retrieval\": Object {\"cost\": Object {\"coverage\": String(\"originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit\"), \"fused_candidates\": Number(1), \"hydrate_requested\": Number(1), \"hydration\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(61)}, \"text\": Object {\"cache_hits\": Number(1), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(40), \"zstd_decodes\": Number(0)}}, \"lane_candidates\": Object {\"exact_symbol\": Number(1), \"graph\": Number(1), \"grep\": Number(1), \"lexical\": Number(1), \"path\": Number(0)}, \"lexical_sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(38)}, \"schema_version\": Number(1)}, \"grep\": Object {\"fallback_scanned\": Number(0), \"prefilter_failed\": Bool(false), \"prefilter_scanned\": Number(0), \"reason\": Null, \"scan_cap\": Number(20000), \"scanned\": Number(2), \"skipped_duplicates\": Number(3), \"soft_scanned\": Number(2), \"stages\": Array [Object {\"stage\": String(\"soft\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(29)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(2), \"utf8_bytes\": Number(53), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"prefilter\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(36)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"fallback\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(1), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(23)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}], \"status\": String(\"complete\")}, \"lanes\": Array [Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(true), \"lane_id\": String(\"exact_symbol\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"exact-symbol-name-qname-signature-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(1200), \"lane_id\": String(\"exact_symbol\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(0), \"candidates\": Array [], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(0)}, \"elapsed_us\": Number(527), \"lane_id\": String(\"path\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.0)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"lexical\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(-4.573228346456693e-6), \"schema_version\": Number(1), \"scoring_spec\": String(\"fts5-bm25-order-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(4722), \"lane_id\": String(\"lexical\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"grep\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"bounded-case-insensitive-literal-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Number(2), \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(8436), \"lane_id\": String(\"grep\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.8)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"graph\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"call-graph-one-hop-uid-byte-anchor-v2\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(2354), \"lane_id\": String(\"graph\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.6)}], \"policy\": Object {\"completeness\": String(\"all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial\"), \"deadline_ms\": Number(30000), \"effective\": String(\"local\"), \"graph_source_mapping\": String(\"uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage\"), \"intent\": String(\"locate\"), \"lane_timeout_ms\": Number(20000), \"no_answer\": String(\"empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank\"), \"obligations\": Array [Object {\"lane_id\": String(\"exact_symbol\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"path\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"lexical\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"grep\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"graph\"), \"role\": String(\"supporting\"), \"timeout_ms\": Number(20000)}], \"path_source_domain\": String(\"canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage\"), \"requested\": String(\"local\"), \"semantic_state\": String(\"disabled\"), \"semantic_timeout_ms\": Number(5000), \"semantic_top_k\": Number(24), \"version\": String(\"query-policy-local-semantic-canonical-path-domain-v4\")}, \"scope\": Object {\"budget\": Object {\"exact_symbol_candidates\": Number(24), \"grep_candidates\": Number(12), \"grep_enabled\": Bool(true), \"grep_scan_cap\": Number(20000), \"lexical_candidates\": Number(24), \"path_candidates\": Number(24), \"rerank_window\": Number(40), \"top_k\": Number(5), \"units\": String(\"candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit\")}, \"hard\": Object {\"empty\": Bool(false), \"explicit_file_count\": Null, \"languages\": Null, \"path_prefix\": Null, \"path_prefix_truncated\": Bool(false), \"semantics\": String(\"conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count\")}, \"ordering\": Array [String(\"exact-target first (identity tier, not an additive score)\"), String(\"rerank_score descending = sum(score_trace)\"), String(\"chunk_id ascending\")], \"policy\": String(\"canonical-scoped-exact-path-domain-compact-context-budget-v22\"), \"schema_version\": Number(1), \"soft\": Object {\"contributions\": String(\"per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted\"), \"hint_entries\": Object {\"overlay\": Number(0), \"pinned\": Number(0), \"recent\": Number(0), \"working\": Number(0)}, \"preselected_count\": Number(1), \"role\": String(\"ranking_and_scan_priority_only\")}}}, \"search_hits\": Number(1), \"selection\": Object {\"facets\": Object {\"implementation\": Number(1)}, \"input_candidates\": Number(1), \"intent\": String(\"locate\"), \"intent_facet_anchors\": Object {}, \"limit_omitted\": Number(0), \"original_ranks\": Array [Number(1)], \"overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(40), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(40)}, \"requested_limit\": Number(5), \"selected\": Number(1), \"selected_overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(40), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(40)}, \"source_covered_omissions\": Number(0), \"source_support_anchors\": Array [String(\"chunk:main.py:1\")], \"source_support_scope\": String(\"literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity\"), \"spec\": String(\"anchored-facets-distinctive-source-union-v2\"), \"unmet_facets\": Array []}, \"source_freshness\": Object {\"budget_exhausted\": Bool(false), \"checked_files\": Number(1), \"dense_manifest_fence\": Object {\"checked\": Number(0), \"skip_disposition\": String(\"stale_publication_skipped\"), \"skipped\": Number(0)}, \"generation\": Object {\"evidence_epoch\": Number(2), \"incarnation\": Array [Number(194), Number(41), Number(100), Number(143), Number(181), Number(137), Number(84), Number(51), Number(137), Number(228), Number(86), Number(83), Number(59), Number(63), Number(63), Number(128)], \"index_epoch\": Number(10), \"semantic_epoch\": Null}, \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"omitted_files\": Object {}, \"partial\": Bool(false), \"read_budget_charged\": Number(53), \"scope\": String(\"bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot\"), \"verified_hits\": Number(1)}} }"
+      },
+      "old": {
+        "after": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 1,
+          "generation": {
+            "evidence_epoch": "1",
+            "index_epoch": "5",
+            "index_incarnation": "be336f87d85173b3b24b4a0a7a2117bd"
+          },
+          "manifests": 1,
+          "punctuation_types": 0,
+          "schema": 22,
+          "versions": [
+            1
+          ]
+        },
+        "opened": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 0,
+          "generation": {
+            "index_incarnation": "cd79243beb7be89db6b24d0124481c40"
+          },
+          "manifests": 0,
+          "punctuation_types": 0,
+          "schema": 22,
+          "versions": []
+        },
+        "response": {
+          "id": 2,
+          "jsonrpc": "2.0",
+          "result": {
+            "content": [
+              {
+                "text": "{\"result\":{\"build_explain\":{\"gate_decisions\":[{\"pass\":\"synthesis_round\",\"reason\":\"both signatures changed\",\"run\":true},{\"pass\":\"community\",\"reason\":\"full rebuild\",\"run\":true},{\"pass\":\"git_cochange\",\"reason\":\"cache key unavailable\",\"run\":true},{\"pass\":\"infra\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"adr\",\"reason\":\"no recorded signature\",\"run\":true}]},\"chunk_policy\":{\"bytes\":16384,\"chars\":16384,\"estimated_tokens\":4096,\"lines\":80,\"merge_min_bytes\":256},\"chunks_total\":2,\"dirty_plan\":{\"dependency_sql\":{\"fullscan_steps\":0,\"rows\":0,\"sorts\":0,\"statements\":0,\"vm_steps\":0},\"file_budget\":0,\"parsed_files\":1,\"reasons\":[],\"rebased\":false,\"resumed\":false,\"selected_dependents\":0},\"document_changes\":{\"files_projected\":1,\"removed\":0,\"render_failed\":0,\"reusable_inputs\":0,\"unchanged\":0,\"upserted\":2},\"elapsed_ms\":593,\"files_added\":1,\"files_parsed\":1,\"files_removed\":0,\"files_scanned\":1,\"files_skipped\":0,\"files_updated\":0,\"parse_errors\":[],\"phase_timing\":{\"analysis_ms\":20,\"parse_ms\":78,\"postprocess_ms\":4,\"resolve_ms\":1,\"scan_diff_ms\":85,\"write_ms\":18},\"project_model\":{\"catalog_files\":1,\"changed_configs\":[],\"config_inputs\":0,\"config_parse_cache_hits\":0,\"config_reads\":0,\"config_root_probes\":5,\"config_roots\":0,\"diagnostics\":[],\"go_fact_cache_hits\":0,\"go_source_reads\":0,\"input_digest\":\"6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c\",\"inventory_source\":\"shared_walk\",\"modes\":[],\"rust_fact_cache_hits\":0,\"rust_source_reads\":0,\"version\":3},\"public_surface_coverage\":{\"known\":1,\"known_empty\":0,\"parsed_files\":1,\"unknown\":0,\"unknown_reasons\":{}},\"resolution_coverage\":{\"ambiguous\":0,\"incomplete_files\":0,\"modules_ambiguous\":0,\"modules_external\":0,\"modules_resolved\":0,\"modules_unknown\":0,\"modules_unresolved\":0,\"modules_unsupported\":0,\"omitted_records\":0,\"packages_resolved\":0,\"processed_files\":1,\"resolved\":1,\"unresolved\":0,\"unsupported\":0},\"resolution_freshness\":{\"basis_epoch\":null,\"complete\":true,\"completed_files\":0,\"index_epoch\":5,\"reason\":null,\"retry\":null,\"root_count\":0,\"scope\":\"observed_resolution_invalidations\",\"status\":\"ready\"},\"symbols_total\":2,\"used_parallel_parse\":false}}",
+                "type": "text"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "result": {
+                "build_explain": {
+                  "gate_decisions": [
+                    {
+                      "pass": "synthesis_round",
+                      "reason": "both signatures changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "community",
+                      "reason": "full rebuild",
+                      "run": true
+                    },
+                    {
+                      "pass": "git_cochange",
+                      "reason": "cache key unavailable",
+                      "run": true
+                    },
+                    {
+                      "pass": "infra",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "adr",
+                      "reason": "no recorded signature",
+                      "run": true
+                    }
+                  ]
+                },
+                "chunk_policy": {
+                  "bytes": 16384,
+                  "chars": 16384,
+                  "estimated_tokens": 4096,
+                  "lines": 80,
+                  "merge_min_bytes": 256
+                },
+                "chunks_total": 2,
+                "dirty_plan": {
+                  "dependency_sql": {
+                    "fullscan_steps": 0,
+                    "rows": 0,
+                    "sorts": 0,
+                    "statements": 0,
+                    "vm_steps": 0
+                  },
+                  "file_budget": 0,
+                  "parsed_files": 1,
+                  "reasons": [],
+                  "rebased": false,
+                  "resumed": false,
+                  "selected_dependents": 0
+                },
+                "document_changes": {
+                  "files_projected": 1,
+                  "removed": 0,
+                  "render_failed": 0,
+                  "reusable_inputs": 0,
+                  "unchanged": 0,
+                  "upserted": 2
+                },
+                "elapsed_ms": 593,
+                "files_added": 1,
+                "files_parsed": 1,
+                "files_removed": 0,
+                "files_scanned": 1,
+                "files_skipped": 0,
+                "files_updated": 0,
+                "parse_errors": [],
+                "phase_timing": {
+                  "analysis_ms": 20,
+                  "parse_ms": 78,
+                  "postprocess_ms": 4,
+                  "resolve_ms": 1,
+                  "scan_diff_ms": 85,
+                  "write_ms": 18
+                },
+                "project_model": {
+                  "catalog_files": 1,
+                  "changed_configs": [],
+                  "config_inputs": 0,
+                  "config_parse_cache_hits": 0,
+                  "config_reads": 0,
+                  "config_root_probes": 5,
+                  "config_roots": 0,
+                  "diagnostics": [],
+                  "go_fact_cache_hits": 0,
+                  "go_source_reads": 0,
+                  "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+                  "inventory_source": "shared_walk",
+                  "modes": [],
+                  "rust_fact_cache_hits": 0,
+                  "rust_source_reads": 0,
+                  "version": 3
+                },
+                "public_surface_coverage": {
+                  "known": 1,
+                  "known_empty": 0,
+                  "parsed_files": 1,
+                  "unknown": 0,
+                  "unknown_reasons": {}
+                },
+                "resolution_coverage": {
+                  "ambiguous": 0,
+                  "incomplete_files": 0,
+                  "modules_ambiguous": 0,
+                  "modules_external": 0,
+                  "modules_resolved": 0,
+                  "modules_unknown": 0,
+                  "modules_unresolved": 0,
+                  "modules_unsupported": 0,
+                  "omitted_records": 0,
+                  "packages_resolved": 0,
+                  "processed_files": 1,
+                  "resolved": 1,
+                  "unresolved": 0,
+                  "unsupported": 0
+                },
+                "resolution_freshness": {
+                  "basis_epoch": null,
+                  "complete": true,
+                  "completed_files": 0,
+                  "index_epoch": 5,
+                  "reason": null,
+                  "retry": null,
+                  "root_count": 0,
+                  "scope": "observed_resolution_invalidations",
+                  "status": "ready"
+                },
+                "symbols_total": 2,
+                "used_parallel_parse": false
+              }
+            }
+          }
+        }
+      },
+      "old_schema": 22,
+      "old_source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+      "reader_binary_sha256": "8f3855a1f20282bda1e0faf759edd1c9c5aeeae4199f1570688edfbfe2253013",
+      "reader_source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+      "upgrade": {
+        "after": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 1,
+          "generation": {
+            "evidence_epoch": "3",
+            "index_epoch": "17",
+            "index_incarnation": "e5ab1ac015f383d658e934f282f951a8"
+          },
+          "manifests": 1,
+          "punctuation_types": 0,
+          "schema": 24,
+          "versions": [
+            3
+          ]
+        },
+        "opened": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 0,
+          "generation": {
+            "evidence_epoch": "3",
+            "index_epoch": "11",
+            "index_incarnation": "e5ab1ac015f383d658e934f282f951a8"
+          },
+          "manifests": 0,
+          "punctuation_types": 0,
+          "schema": 24,
+          "versions": []
+        },
+        "response": {
+          "id": 2,
+          "jsonrpc": "2.0",
+          "result": {
+            "content": [
+              {
+                "text": "{\"result\":{\"build_explain\":{\"gate_decisions\":[{\"pass\":\"config_link\",\"reason\":\"signature changed, rescanned\",\"run\":true},{\"pass\":\"synthesis_round\",\"reason\":\"both signatures changed\",\"run\":true},{\"pass\":\"community\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"git_cochange\",\"reason\":\"cache key unavailable\",\"run\":true},{\"pass\":\"infra\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"adr\",\"reason\":\"no recorded signature\",\"run\":true}]},\"chunk_policy\":{\"bytes\":16384,\"chars\":16384,\"estimated_tokens\":4096,\"lines\":80,\"merge_min_bytes\":256},\"chunks_total\":2,\"dirty_plan\":{\"dependency_sql\":{\"fullscan_steps\":0,\"rows\":0,\"sorts\":4,\"statements\":16,\"vm_steps\":410},\"file_budget\":200,\"parsed_files\":1,\"reasons\":[\"body\",\"public_surface\",\"inventory\",\"candidate_set\"],\"rebased\":false,\"resumed\":false,\"selected_dependents\":0},\"dirty_propagation\":\"normal\",\"document_changes\":{\"files_projected\":1,\"removed\":0,\"render_failed\":0,\"reusable_inputs\":0,\"unchanged\":0,\"upserted\":2},\"elapsed_ms\":51,\"files_added\":1,\"files_parsed\":1,\"files_removed\":0,\"files_scanned\":1,\"files_skipped\":0,\"files_updated\":0,\"parse_errors\":[],\"phase_timing\":{\"analysis_ms\":7,\"parse_ms\":28,\"postprocess_ms\":0,\"resolve_ms\":0,\"scan_diff_ms\":5,\"write_ms\":5},\"project_model\":{\"catalog_files\":1,\"changed_configs\":[],\"config_inputs\":0,\"config_parse_cache_hits\":0,\"config_reads\":0,\"config_root_probes\":5,\"config_roots\":0,\"diagnostics\":[],\"go_fact_cache_hits\":0,\"go_source_reads\":0,\"input_digest\":\"6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c\",\"inventory_source\":\"shared_walk\",\"modes\":[],\"rust_fact_cache_hits\":0,\"rust_source_reads\":0,\"version\":3},\"public_surface_coverage\":{\"known\":1,\"known_empty\":0,\"parsed_files\":1,\"unknown\":0,\"unknown_reasons\":{}},\"resolution_coverage\":{\"ambiguous\":0,\"incomplete_files\":0,\"modules_ambiguous\":0,\"modules_external\":0,\"modules_resolved\":0,\"modules_unknown\":0,\"modules_unresolved\":0,\"modules_unsupported\":0,\"omitted_records\":0,\"packages_resolved\":0,\"processed_files\":1,\"resolved\":1,\"unresolved\":1,\"unsupported\":0},\"resolution_freshness\":{\"basis_epoch\":null,\"complete\":true,\"completed_files\":0,\"index_epoch\":17,\"reason\":null,\"retry\":null,\"root_count\":0,\"scope\":\"observed_resolution_invalidations\",\"status\":\"ready\"},\"symbols_total\":2,\"used_parallel_parse\":false}}",
+                "type": "text"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "result": {
+                "build_explain": {
+                  "gate_decisions": [
+                    {
+                      "pass": "config_link",
+                      "reason": "signature changed, rescanned",
+                      "run": true
+                    },
+                    {
+                      "pass": "synthesis_round",
+                      "reason": "both signatures changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "community",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "git_cochange",
+                      "reason": "cache key unavailable",
+                      "run": true
+                    },
+                    {
+                      "pass": "infra",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "adr",
+                      "reason": "no recorded signature",
+                      "run": true
+                    }
+                  ]
+                },
+                "chunk_policy": {
+                  "bytes": 16384,
+                  "chars": 16384,
+                  "estimated_tokens": 4096,
+                  "lines": 80,
+                  "merge_min_bytes": 256
+                },
+                "chunks_total": 2,
+                "dirty_plan": {
+                  "dependency_sql": {
+                    "fullscan_steps": 0,
+                    "rows": 0,
+                    "sorts": 4,
+                    "statements": 16,
+                    "vm_steps": 410
+                  },
+                  "file_budget": 200,
+                  "parsed_files": 1,
+                  "reasons": [
+                    "body",
+                    "public_surface",
+                    "inventory",
+                    "candidate_set"
+                  ],
+                  "rebased": false,
+                  "resumed": false,
+                  "selected_dependents": 0
+                },
+                "dirty_propagation": "normal",
+                "document_changes": {
+                  "files_projected": 1,
+                  "removed": 0,
+                  "render_failed": 0,
+                  "reusable_inputs": 0,
+                  "unchanged": 0,
+                  "upserted": 2
+                },
+                "elapsed_ms": 51,
+                "files_added": 1,
+                "files_parsed": 1,
+                "files_removed": 0,
+                "files_scanned": 1,
+                "files_skipped": 0,
+                "files_updated": 0,
+                "parse_errors": [],
+                "phase_timing": {
+                  "analysis_ms": 7,
+                  "parse_ms": 28,
+                  "postprocess_ms": 0,
+                  "resolve_ms": 0,
+                  "scan_diff_ms": 5,
+                  "write_ms": 5
+                },
+                "project_model": {
+                  "catalog_files": 1,
+                  "changed_configs": [],
+                  "config_inputs": 0,
+                  "config_parse_cache_hits": 0,
+                  "config_reads": 0,
+                  "config_root_probes": 5,
+                  "config_roots": 0,
+                  "diagnostics": [],
+                  "go_fact_cache_hits": 0,
+                  "go_source_reads": 0,
+                  "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+                  "inventory_source": "shared_walk",
+                  "modes": [],
+                  "rust_fact_cache_hits": 0,
+                  "rust_source_reads": 0,
+                  "version": 3
+                },
+                "public_surface_coverage": {
+                  "known": 1,
+                  "known_empty": 0,
+                  "parsed_files": 1,
+                  "unknown": 0,
+                  "unknown_reasons": {}
+                },
+                "resolution_coverage": {
+                  "ambiguous": 0,
+                  "incomplete_files": 0,
+                  "modules_ambiguous": 0,
+                  "modules_external": 0,
+                  "modules_resolved": 0,
+                  "modules_unknown": 0,
+                  "modules_unresolved": 0,
+                  "modules_unsupported": 0,
+                  "omitted_records": 0,
+                  "packages_resolved": 0,
+                  "processed_files": 1,
+                  "resolved": 1,
+                  "unresolved": 1,
+                  "unsupported": 0
+                },
+                "resolution_freshness": {
+                  "basis_epoch": null,
+                  "complete": true,
+                  "completed_files": 0,
+                  "index_epoch": 17,
+                  "reason": null,
+                  "retry": null,
+                  "root_count": 0,
+                  "scope": "observed_resolution_invalidations",
+                  "status": "ready"
+                },
+                "symbols_total": 2,
+                "used_parallel_parse": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "after": {
+        "generation": "ReadGeneration { incarnation: [24, 138, 188, 175, 53, 90, 0, 188, 28, 194, 56, 212, 76, 193, 23, 112], index_epoch: 12, evidence_epoch: 2, semantic_epoch: None }",
+        "manifest_error": "database error: invalid resolution manifest: unsupported version",
+        "phase": "old_handle_after_upgrade",
+        "pins": 1,
+        "query": "ContextEnvelope { task: \"corrected_marker\", intent: Locate, query: \"corrected_marker\", token_budget: 4000, token_estimate: 3349, summary: \"Found 1 indexed code result(s) across 1 file(s) for `corrected_marker`.\", rendered_prompt: \"Task: code-index search\\nIntent: locate\\nQuery: corrected_marker\\n\\n## 1. main.py:1-3\\n\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\", revision: 0, nodes: [ContextNode { node_id: \"search:chunk:main.py:1\", node_type: SearchHit, role: Primary, title: \"main.py corrected_marker:1-3\", text: \"\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), score: 0.7365882752940777, confidence: 0.8, freshness: None, token_estimate: 17, source: \"index\", reasons: [\"exact-target\", \"exact_symbol@1\", \"lexical@1\", \"grep@1\", \"symbol-exact\", \"fts-summary\", \"symbol:corrected_marker\", \"preselect:fts-summary:+1.40\", \"preselect:token-search:+2.00\"], invalidation_keys: [\"main.py\"], rank_explanation: None, relation: None, depends_on: [], metadata: Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(77), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(68), \"start\": Number(14)}, \"slice_digest\": String(\"9b7734eb500814be7846b522174b7ddd6e2c8847c299ca23cce72b0072d8236e\"), \"source\": Object {\"byte_len\": Number(78), \"content_digest\": String(\"4b1b092a4d8e74b55eea0724a848f5eff7154b8e8922ad33f3fc46359fc5942c\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"b94ad439c5560b03a5dc441a9d9269114a78025b55be446f35785981f2b8f9ea\")}, \"span\": Object {\"end\": Number(78), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:corrected_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, span_kind: Some(\"indexed_chunk\"), backing_file_path: Some(\"main.py\"), backing_source: None, source_start_line: Some(1), source_end_line: Some(3) }], spans: [ContextSpan { node_id: \"search:chunk:main.py:1\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), label: \"corrected_marker\" }], reasons: [\"hybrid search over code index\", \"graph-enriched\"], invalidations: [], machine_pack: Object {\"hits\": Array [Object {\"breadcrumb\": String(\"corrected_marker\"), \"chunk_id\": String(\"chunk:main.py:1\"), \"end_line\": Number(3), \"file_path\": String(\"main.py\"), \"fused_score\": Number(0.07058823529411765), \"graph_score\": Number(0.0), \"grep_score\": Number(1.0), \"lane\": Null, \"language\": String(\"python\"), \"lexical_score\": Number(1.0), \"metadata\": Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(77), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(68), \"start\": Number(14)}, \"slice_digest\": String(\"9b7734eb500814be7846b522174b7ddd6e2c8847c299ca23cce72b0072d8236e\"), \"source\": Object {\"byte_len\": Number(78), \"content_digest\": String(\"4b1b092a4d8e74b55eea0724a848f5eff7154b8e8922ad33f3fc46359fc5942c\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"b94ad439c5560b03a5dc441a9d9269114a78025b55be446f35785981f2b8f9ea\")}, \"span\": Object {\"end\": Number(78), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:corrected_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, \"reasons\": Array [String(\"exact-target\"), String(\"exact_symbol@1\"), String(\"lexical@1\"), String(\"grep@1\"), String(\"symbol-exact\"), String(\"fts-summary\"), String(\"symbol:corrected_marker\"), String(\"preselect:fts-summary:+1.40\"), String(\"preselect:token-search:+2.00\")], \"rerank_score\": Number(0.7365882752940777), \"score_trace\": Array [Array [String(\"rrf:exact_symbol\"), Number(0.021568627450980395)], Array [String(\"rrf:lexical\"), Number(0.021568627450980395)], Array [String(\"rrf:grep\"), Number(0.01568627450980392)], Array [String(\"rrf:graph\"), Number(0.011764705882352941)], Array [String(\"overlap\"), Number(0.35)], Array [String(\"boost:symbol-exact\"), Number(0.18)], Array [String(\"boost:stage-a\"), Number(0.13600003999996)]], \"source\": String(\"index\"), \"start_line\": Number(1), \"symbol_kind\": String(\"function\"), \"symbol_name\": String(\"corrected_marker\"), \"text\": String(\"\\ndef corrected_marker(item: _) -> tuple[int, ...]:\\n    return ()\\n\")}], \"kind\": String(\"code_index_context\"), \"query\": String(\"corrected_marker\"), \"repo_size_tier\": String(\"Tiny\"), \"token_budget\": Number(4000), \"top_k\": Number(5)}, evidence_summary: Object {\"files\": Array [String(\"main.py\")], \"graph_enrichment\": Object {\"callees_added\": Number(0), \"callers_added\": Number(0), \"symbols_resolved\": Number(1), \"tests_found\": Number(0)}, \"packing\": Object {\"compacted\": Bool(false), \"configured_max_bytes\": Number(18000), \"continuation\": String(\"Use files region/expand on retained references; recheck source version.\"), \"limit_bytes\": Number(16000), \"omitted_hits\": Number(0), \"omitted_nodes\": Number(0), \"original_hits\": Number(1), \"original_nodes\": Number(1), \"partial\": Bool(false), \"spec\": String(\"whole-json-intent-facets-source-support-before-incidental-v5\"), \"token_estimate_method\": String(\"ceil(serialized_utf8_bytes/4); not a tokenizer\"), \"used_bytes\": Number(13396)}, \"retrieval\": Object {\"cost\": Object {\"coverage\": String(\"originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit\"), \"fused_candidates\": Number(1), \"hydrate_requested\": Number(1), \"hydration\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(63)}, \"text\": Object {\"cache_hits\": Number(1), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(65), \"zstd_decodes\": Number(0)}}, \"lane_candidates\": Object {\"exact_symbol\": Number(1), \"graph\": Number(1), \"grep\": Number(1), \"lexical\": Number(1), \"path\": Number(0)}, \"lexical_sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(38)}, \"schema_version\": Number(1)}, \"grep\": Object {\"fallback_scanned\": Number(0), \"prefilter_failed\": Bool(false), \"prefilter_scanned\": Number(0), \"reason\": Null, \"scan_cap\": Number(20000), \"scanned\": Number(2), \"skipped_duplicates\": Number(3), \"soft_scanned\": Number(2), \"stages\": Array [Object {\"stage\": String(\"soft\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(29)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(2), \"utf8_bytes\": Number(78), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"prefilter\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(36)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"fallback\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(1), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(23)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}], \"status\": String(\"complete\")}, \"lanes\": Array [Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(true), \"lane_id\": String(\"exact_symbol\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"exact-symbol-name-qname-signature-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(539), \"lane_id\": String(\"exact_symbol\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(0), \"candidates\": Array [], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(0)}, \"elapsed_us\": Number(250), \"lane_id\": String(\"path\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.0)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"lexical\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(-4.533685601056804e-6), \"schema_version\": Number(1), \"scoring_spec\": String(\"fts5-bm25-order-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(364), \"lane_id\": String(\"lexical\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"grep\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"bounded-case-insensitive-literal-v1\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Number(2), \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(9811), \"lane_id\": String(\"grep\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.8)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"8311c64947b3166bfdb2cb1a2b8b7d1100ef91927e7dcaa227a3e6bfb8a96b98\"), \"doc_version\": String(\"2caf5577f6faaf4f781ccb184cbf0e194c2448d3bf52542b03e50559ba4edfea\"), \"encoding_key\": String(\"a28d676d22cf3d471906751a7248eafd5de6e9cd89436dfdd964fe72a4919062\"), \"entity_key\": String(\"1d818cd0a8cd2ee720e82d98217f5b1e284ca6f1668675d76577004bb93c6193\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"graph\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"call-graph-one-hop-uid-byte-anchor-v2\"), \"source_span\": Object {\"end\": Number(78), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(2066), \"lane_id\": String(\"graph\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.6)}], \"policy\": Object {\"completeness\": String(\"all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial\"), \"deadline_ms\": Number(30000), \"effective\": String(\"local\"), \"graph_source_mapping\": String(\"uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage\"), \"intent\": String(\"locate\"), \"lane_timeout_ms\": Number(20000), \"no_answer\": String(\"empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank\"), \"obligations\": Array [Object {\"lane_id\": String(\"exact_symbol\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"path\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"lexical\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"grep\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"graph\"), \"role\": String(\"supporting\"), \"timeout_ms\": Number(20000)}], \"path_source_domain\": String(\"canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage\"), \"requested\": String(\"local\"), \"semantic_state\": String(\"disabled\"), \"semantic_timeout_ms\": Number(5000), \"semantic_top_k\": Number(24), \"version\": String(\"query-policy-local-semantic-canonical-path-domain-v4\")}, \"scope\": Object {\"budget\": Object {\"exact_symbol_candidates\": Number(24), \"grep_candidates\": Number(12), \"grep_enabled\": Bool(true), \"grep_scan_cap\": Number(20000), \"lexical_candidates\": Number(24), \"path_candidates\": Number(24), \"rerank_window\": Number(40), \"top_k\": Number(5), \"units\": String(\"candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit\")}, \"hard\": Object {\"empty\": Bool(false), \"explicit_file_count\": Null, \"languages\": Null, \"path_prefix\": Null, \"path_prefix_truncated\": Bool(false), \"semantics\": String(\"conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count\")}, \"ordering\": Array [String(\"exact-target first (identity tier, not an additive score)\"), String(\"rerank_score descending = sum(score_trace)\"), String(\"chunk_id ascending\")], \"policy\": String(\"canonical-scoped-exact-path-domain-compact-context-budget-v22\"), \"schema_version\": Number(1), \"soft\": Object {\"contributions\": String(\"per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted\"), \"hint_entries\": Object {\"overlay\": Number(0), \"pinned\": Number(0), \"recent\": Number(0), \"working\": Number(0)}, \"preselected_count\": Number(1), \"role\": String(\"ranking_and_scan_priority_only\")}}}, \"search_hits\": Number(1), \"selection\": Object {\"facets\": Object {\"implementation\": Number(1)}, \"input_candidates\": Number(1), \"intent\": String(\"locate\"), \"intent_facet_anchors\": Object {}, \"limit_omitted\": Number(0), \"original_ranks\": Array [Number(1)], \"overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(65), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(65)}, \"requested_limit\": Number(5), \"selected\": Number(1), \"selected_overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(65), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(65)}, \"source_covered_omissions\": Number(0), \"source_support_anchors\": Array [String(\"chunk:main.py:1\")], \"source_support_scope\": String(\"literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity\"), \"spec\": String(\"anchored-facets-distinctive-source-union-v2\"), \"unmet_facets\": Array []}, \"source_freshness\": Object {\"budget_exhausted\": Bool(false), \"checked_files\": Number(1), \"dense_manifest_fence\": Object {\"checked\": Number(0), \"skip_disposition\": String(\"stale_publication_skipped\"), \"skipped\": Number(0)}, \"generation\": Object {\"evidence_epoch\": Number(2), \"incarnation\": Array [Number(24), Number(138), Number(188), Number(175), Number(53), Number(90), Number(0), Number(188), Number(28), Number(194), Number(56), Number(212), Number(76), Number(193), Number(23), Number(112)], \"index_epoch\": Number(12), \"semantic_epoch\": Null}, \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"omitted_files\": Object {}, \"partial\": Bool(false), \"read_budget_charged\": Number(78), \"scope\": String(\"bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot\"), \"verified_hits\": Number(1)}} }",
+        "query_error": null
+      },
+      "before": {
+        "generation": "ReadGeneration { incarnation: [132, 58, 216, 103, 101, 149, 228, 76, 91, 214, 206, 2, 150, 254, 93, 185], index_epoch: 5, evidence_epoch: 1, semantic_epoch: None }",
+        "phase": "pinned_v22",
+        "pins": 1,
+        "schema": 23,
+        "warm": "ContextEnvelope { task: \"previous_marker\", intent: Locate, query: \"previous_marker\", token_budget: 4000, token_estimate: 3328, summary: \"Found 1 indexed code result(s) across 1 file(s) for `previous_marker`.\", rendered_prompt: \"Task: code-index search\\nIntent: locate\\nQuery: previous_marker\\n\\n## 1. main.py:1-3\\n\\ndef previous_marker(item: _):\\n    pass\\n\", revision: 0, nodes: [ContextNode { node_id: \"search:chunk:main.py:1\", node_type: SearchHit, role: Primary, title: \"main.py previous_marker:1-3\", text: \"\\ndef previous_marker(item: _):\\n    pass\\n\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), score: 0.7365882752940777, confidence: 0.8, freshness: None, token_estimate: 10, source: \"index\", reasons: [\"exact-target\", \"exact_symbol@1\", \"lexical@1\", \"grep@1\", \"symbol-exact\", \"fts-summary\", \"symbol:previous_marker\", \"preselect:fts-summary:+1.40\", \"preselect:token-search:+2.00\"], invalidation_keys: [\"main.py\"], rank_explanation: None, relation: None, depends_on: [], metadata: Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(52), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(48), \"start\": Number(14)}, \"slice_digest\": String(\"885e1c5c5f5d5207dc31e7c737d0528a9c745c6d8a2b188e2cb222b7d19c5aac\"), \"source\": Object {\"byte_len\": Number(53), \"content_digest\": String(\"3387c163348e8ab8fd369cdcfda41264ec9dd2c17042b7033940a0b81d028677\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"aa5b48dff3fc6e2062567acfc2cbd7373a6fec9c1ee16fbb6392cd48bca1a850\")}, \"span\": Object {\"end\": Number(53), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:previous_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, span_kind: Some(\"indexed_chunk\"), backing_file_path: Some(\"main.py\"), backing_source: None, source_start_line: Some(1), source_end_line: Some(3) }], spans: [ContextSpan { node_id: \"search:chunk:main.py:1\", file_path: Some(\"main.py\"), start_line: Some(1), end_line: Some(3), label: \"previous_marker\" }], reasons: [\"hybrid search over code index\", \"graph-enriched\"], invalidations: [], machine_pack: Object {\"hits\": Array [Object {\"breadcrumb\": String(\"previous_marker\"), \"chunk_id\": String(\"chunk:main.py:1\"), \"end_line\": Number(3), \"file_path\": String(\"main.py\"), \"fused_score\": Number(0.07058823529411765), \"graph_score\": Number(0.0), \"grep_score\": Number(1.0), \"lane\": Null, \"language\": String(\"python\"), \"lexical_score\": Number(1.0), \"metadata\": Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"evidence_priority\": String(\"distinctive_source_support\"), \"source_evidence\": Object {\"boundary\": String(\"symbol\"), \"owner\": Object {\"end\": Number(52), \"start\": Number(14)}, \"signature\": Object {\"end\": Number(48), \"start\": Number(14)}, \"slice_digest\": String(\"885e1c5c5f5d5207dc31e7c737d0528a9c745c6d8a2b188e2cb222b7d19c5aac\"), \"source\": Object {\"byte_len\": Number(53), \"content_digest\": String(\"3387c163348e8ab8fd369cdcfda41264ec9dd2c17042b7033940a0b81d028677\"), \"encoding\": String(\"utf8\"), \"snapshot_id\": String(\"aa5b48dff3fc6e2062567acfc2cbd7373a6fec9c1ee16fbb6392cd48bca1a850\")}, \"span\": Object {\"end\": Number(53), \"start\": Number(13)}}, \"source_freshness\": Object {\"disk_checked\": Bool(true), \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"status\": String(\"current_verified\")}, \"stage_a_file_reasons\": Array [String(\"fts-summary\"), String(\"symbol:previous_marker\")], \"stage_a_file_score\": Number(3.400000999999), \"stage_a_files_considered\": Number(1), \"stage_a_layer_scores\": Array [Array [String(\"fts-summary\"), Number(1.400000999999)], Array [String(\"token-search\"), Number(2.0)]]}, \"reasons\": Array [String(\"exact-target\"), String(\"exact_symbol@1\"), String(\"lexical@1\"), String(\"grep@1\"), String(\"symbol-exact\"), String(\"fts-summary\"), String(\"symbol:previous_marker\"), String(\"preselect:fts-summary:+1.40\"), String(\"preselect:token-search:+2.00\")], \"rerank_score\": Number(0.7365882752940777), \"score_trace\": Array [Array [String(\"rrf:exact_symbol\"), Number(0.021568627450980395)], Array [String(\"rrf:lexical\"), Number(0.021568627450980395)], Array [String(\"rrf:grep\"), Number(0.01568627450980392)], Array [String(\"rrf:graph\"), Number(0.011764705882352941)], Array [String(\"overlap\"), Number(0.35)], Array [String(\"boost:symbol-exact\"), Number(0.18)], Array [String(\"boost:stage-a\"), Number(0.13600003999996)]], \"source\": String(\"index\"), \"start_line\": Number(1), \"symbol_kind\": String(\"function\"), \"symbol_name\": String(\"previous_marker\"), \"text\": String(\"\\ndef previous_marker(item: _):\\n    pass\\n\")}], \"kind\": String(\"code_index_context\"), \"query\": String(\"previous_marker\"), \"repo_size_tier\": String(\"Tiny\"), \"token_budget\": Number(4000), \"top_k\": Number(5)}, evidence_summary: Object {\"files\": Array [String(\"main.py\")], \"graph_enrichment\": Object {\"callees_added\": Number(0), \"callers_added\": Number(0), \"symbols_resolved\": Number(1), \"tests_found\": Number(0)}, \"packing\": Object {\"compacted\": Bool(false), \"configured_max_bytes\": Number(18000), \"continuation\": String(\"Use files region/expand on retained references; recheck source version.\"), \"limit_bytes\": Number(16000), \"omitted_hits\": Number(0), \"omitted_nodes\": Number(0), \"original_hits\": Number(1), \"original_nodes\": Number(1), \"partial\": Bool(false), \"spec\": String(\"whole-json-intent-facets-source-support-before-incidental-v5\"), \"token_estimate_method\": String(\"ceil(serialized_utf8_bytes/4); not a tokenizer\"), \"used_bytes\": Number(13311)}, \"retrieval\": Object {\"cost\": Object {\"coverage\": String(\"originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit\"), \"fused_candidates\": Number(1), \"hydrate_requested\": Number(1), \"hydration\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(61)}, \"text\": Object {\"cache_hits\": Number(1), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(40), \"zstd_decodes\": Number(0)}}, \"lane_candidates\": Object {\"exact_symbol\": Number(1), \"graph\": Number(1), \"grep\": Number(1), \"lexical\": Number(1), \"path\": Number(0)}, \"lexical_sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(38)}, \"schema_version\": Number(1)}, \"grep\": Object {\"fallback_scanned\": Number(0), \"prefilter_failed\": Bool(false), \"prefilter_scanned\": Number(0), \"reason\": Null, \"scan_cap\": Number(20000), \"scanned\": Number(2), \"skipped_duplicates\": Number(3), \"soft_scanned\": Number(2), \"stages\": Array [Object {\"stage\": String(\"soft\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(29)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(2), \"utf8_bytes\": Number(53), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"prefilter\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(0), \"rows\": Number(1), \"sorts\": Number(1), \"statements\": Number(1), \"vm_steps\": Number(36)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}, Object {\"stage\": String(\"fallback\"), \"work\": Object {\"sql\": Object {\"fullscan_steps\": Number(1), \"rows\": Number(2), \"sorts\": Number(0), \"statements\": Number(1), \"vm_steps\": Number(23)}, \"text\": Object {\"cache_hits\": Number(0), \"legacy_auto_reads\": Number(0), \"storage_reads\": Number(0), \"utf8_bytes\": Number(0), \"zstd_decodes\": Number(0)}}}], \"status\": String(\"complete\")}, \"lanes\": Array [Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(true), \"lane_id\": String(\"exact_symbol\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"exact-symbol-name-qname-signature-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(1158), \"lane_id\": String(\"exact_symbol\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(0), \"candidates\": Array [], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(0)}, \"elapsed_us\": Number(435), \"lane_id\": String(\"path\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.0)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"lexical\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(-4.573228346456693e-6), \"schema_version\": Number(1), \"scoring_spec\": String(\"fts5-bm25-order-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(732), \"lane_id\": String(\"lexical\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(1.1)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"grep\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"bounded-case-insensitive-literal-v1\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Number(2), \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(6909), \"lane_id\": String(\"grep\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.8)}, Object {\"candidate_count\": Number(1), \"candidates\": Array [Object {\"document\": Object {\"doc_key\": String(\"09bf4302e394ac21842b5c2ef46cac961dbe9e837a6851a5c832cdf1e0a91326\"), \"doc_version\": String(\"08c52edbd989d6ac19df8abd13c5105ae5d92ed2483ffc61fa933e9650ac3584\"), \"encoding_key\": String(\"039e00211a514ec128bd7069acd62f9a527f909e58e9ddf29a2a06f38ea05137\"), \"entity_key\": String(\"300c962843531e85b91f6ad7bc25fcb94481e5c3fb44dbe3ff96e42340355148\")}, \"exact_identity\": Bool(false), \"lane_id\": String(\"graph\"), \"lane_rank\": Number(1), \"legacy_chunk_id\": String(\"chunk:main.py:1\"), \"raw_score\": Number(1.0), \"schema_version\": Number(1), \"scoring_spec\": String(\"call-graph-one-hop-uid-byte-anchor-v2\"), \"source_span\": Object {\"end\": Number(53), \"start\": Number(13)}}], \"coverage\": Object {\"complete\": Bool(true), \"examined\": Null, \"scope\": String(\"hard_scope\"), \"total_lower_bound\": Number(1)}, \"elapsed_us\": Number(2789), \"lane_id\": String(\"graph\"), \"schema_version\": Number(1), \"status\": String(\"complete\"), \"truncation_reason\": Null, \"weight\": Number(0.6)}], \"policy\": Object {\"completeness\": String(\"all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial\"), \"deadline_ms\": Number(30000), \"effective\": String(\"local\"), \"graph_source_mapping\": String(\"uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage\"), \"intent\": String(\"locate\"), \"lane_timeout_ms\": Number(20000), \"no_answer\": String(\"empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank\"), \"obligations\": Array [Object {\"lane_id\": String(\"exact_symbol\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"path\"), \"role\": String(\"identity\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"lexical\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"grep\"), \"role\": String(\"source\"), \"timeout_ms\": Number(20000)}, Object {\"lane_id\": String(\"graph\"), \"role\": String(\"supporting\"), \"timeout_ms\": Number(20000)}], \"path_source_domain\": String(\"canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage\"), \"requested\": String(\"local\"), \"semantic_state\": String(\"disabled\"), \"semantic_timeout_ms\": Number(5000), \"semantic_top_k\": Number(24), \"version\": String(\"query-policy-local-semantic-canonical-path-domain-v4\")}, \"scope\": Object {\"budget\": Object {\"exact_symbol_candidates\": Number(24), \"grep_candidates\": Number(12), \"grep_enabled\": Bool(true), \"grep_scan_cap\": Number(20000), \"lexical_candidates\": Number(24), \"path_candidates\": Number(24), \"rerank_window\": Number(40), \"top_k\": Number(5), \"units\": String(\"candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit\")}, \"hard\": Object {\"empty\": Bool(false), \"explicit_file_count\": Null, \"languages\": Null, \"path_prefix\": Null, \"path_prefix_truncated\": Bool(false), \"semantics\": String(\"conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count\")}, \"ordering\": Array [String(\"exact-target first (identity tier, not an additive score)\"), String(\"rerank_score descending = sum(score_trace)\"), String(\"chunk_id ascending\")], \"policy\": String(\"canonical-scoped-exact-path-domain-compact-context-budget-v22\"), \"schema_version\": Number(1), \"soft\": Object {\"contributions\": String(\"per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted\"), \"hint_entries\": Object {\"overlay\": Number(0), \"pinned\": Number(0), \"recent\": Number(0), \"working\": Number(0)}, \"preselected_count\": Number(1), \"role\": String(\"ranking_and_scan_priority_only\")}}}, \"search_hits\": Number(1), \"selection\": Object {\"facets\": Object {\"implementation\": Number(1)}, \"input_candidates\": Number(1), \"intent\": String(\"locate\"), \"intent_facet_anchors\": Object {}, \"limit_omitted\": Number(0), \"original_ranks\": Array [Number(1)], \"overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(40), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(40)}, \"requested_limit\": Number(5), \"selected\": Number(1), \"selected_overlap\": Object {\"fully_covered_candidates\": Number(0), \"input_bytes\": Number(40), \"redundant_bytes\": Number(0), \"unique_bytes\": Number(40)}, \"source_covered_omissions\": Number(0), \"source_support_anchors\": Array [String(\"chunk:main.py:1\")], \"source_support_scope\": String(\"literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity\"), \"spec\": String(\"anchored-facets-distinctive-source-union-v2\"), \"unmet_facets\": Array []}, \"source_freshness\": Object {\"budget_exhausted\": Bool(false), \"checked_files\": Number(1), \"dense_manifest_fence\": Object {\"checked\": Number(0), \"skip_disposition\": String(\"stale_publication_skipped\"), \"skipped\": Number(0)}, \"generation\": Object {\"evidence_epoch\": Number(1), \"incarnation\": Array [Number(132), Number(58), Number(216), Number(103), Number(101), Number(149), Number(228), Number(76), Number(91), Number(214), Number(206), Number(2), Number(150), Number(254), Number(93), Number(185)], \"index_epoch\": Number(5), \"semantic_epoch\": Null}, \"hydrator\": String(\"current-document-scope-source-generation-v1\"), \"omitted_files\": Object {}, \"partial\": Bool(false), \"read_budget_charged\": Number(53), \"scope\": String(\"bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot\"), \"verified_hits\": Number(1)}} }"
+      },
+      "old": {
+        "after": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 1,
+          "generation": {
+            "evidence_epoch": "1",
+            "index_epoch": "5",
+            "index_incarnation": "843ad8676595e44c5bd6ce0296fe5db9"
+          },
+          "manifests": 1,
+          "punctuation_types": 0,
+          "schema": 23,
+          "versions": [
+            2
+          ]
+        },
+        "opened": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 0,
+          "generation": {
+            "index_incarnation": "7459ba0059c843d2a01d2f66d28fa0f9"
+          },
+          "manifests": 0,
+          "punctuation_types": 0,
+          "schema": 23,
+          "versions": []
+        },
+        "response": {
+          "id": 2,
+          "jsonrpc": "2.0",
+          "result": {
+            "content": [
+              {
+                "text": "{\"result\":{\"build_explain\":{\"gate_decisions\":[{\"pass\":\"synthesis_round\",\"reason\":\"both signatures changed\",\"run\":true},{\"pass\":\"community\",\"reason\":\"full rebuild\",\"run\":true},{\"pass\":\"git_cochange\",\"reason\":\"cache key unavailable\",\"run\":true},{\"pass\":\"infra\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"adr\",\"reason\":\"no recorded signature\",\"run\":true}]},\"chunk_policy\":{\"bytes\":16384,\"chars\":16384,\"estimated_tokens\":4096,\"lines\":80,\"merge_min_bytes\":256},\"chunks_total\":2,\"dirty_plan\":{\"dependency_sql\":{\"fullscan_steps\":0,\"rows\":0,\"sorts\":0,\"statements\":0,\"vm_steps\":0},\"file_budget\":0,\"parsed_files\":1,\"reasons\":[],\"rebased\":false,\"resumed\":false,\"selected_dependents\":0},\"document_changes\":{\"files_projected\":1,\"removed\":0,\"render_failed\":0,\"reusable_inputs\":0,\"unchanged\":0,\"upserted\":2},\"elapsed_ms\":331,\"files_added\":1,\"files_parsed\":1,\"files_removed\":0,\"files_scanned\":1,\"files_skipped\":0,\"files_updated\":0,\"parse_errors\":[],\"phase_timing\":{\"analysis_ms\":18,\"parse_ms\":69,\"postprocess_ms\":9,\"resolve_ms\":5,\"scan_diff_ms\":25,\"write_ms\":35},\"project_model\":{\"catalog_files\":1,\"changed_configs\":[],\"config_inputs\":0,\"config_parse_cache_hits\":0,\"config_reads\":0,\"config_root_probes\":5,\"config_roots\":0,\"diagnostics\":[],\"go_fact_cache_hits\":0,\"go_source_reads\":0,\"input_digest\":\"6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c\",\"inventory_source\":\"shared_walk\",\"modes\":[],\"rust_fact_cache_hits\":0,\"rust_source_reads\":0,\"version\":3},\"public_surface_coverage\":{\"known\":1,\"known_empty\":0,\"parsed_files\":1,\"unknown\":0,\"unknown_reasons\":{}},\"resolution_coverage\":{\"ambiguous\":0,\"incomplete_files\":0,\"modules_ambiguous\":0,\"modules_external\":0,\"modules_resolved\":0,\"modules_unknown\":0,\"modules_unresolved\":0,\"modules_unsupported\":0,\"omitted_records\":0,\"packages_resolved\":0,\"processed_files\":1,\"resolved\":0,\"unresolved\":0,\"unsupported\":0},\"resolution_freshness\":{\"basis_epoch\":null,\"complete\":true,\"completed_files\":0,\"index_epoch\":5,\"reason\":null,\"retry\":null,\"root_count\":0,\"scope\":\"observed_resolution_invalidations\",\"status\":\"ready\"},\"symbols_total\":2,\"used_parallel_parse\":false}}",
+                "type": "text"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "result": {
+                "build_explain": {
+                  "gate_decisions": [
+                    {
+                      "pass": "synthesis_round",
+                      "reason": "both signatures changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "community",
+                      "reason": "full rebuild",
+                      "run": true
+                    },
+                    {
+                      "pass": "git_cochange",
+                      "reason": "cache key unavailable",
+                      "run": true
+                    },
+                    {
+                      "pass": "infra",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "adr",
+                      "reason": "no recorded signature",
+                      "run": true
+                    }
+                  ]
+                },
+                "chunk_policy": {
+                  "bytes": 16384,
+                  "chars": 16384,
+                  "estimated_tokens": 4096,
+                  "lines": 80,
+                  "merge_min_bytes": 256
+                },
+                "chunks_total": 2,
+                "dirty_plan": {
+                  "dependency_sql": {
+                    "fullscan_steps": 0,
+                    "rows": 0,
+                    "sorts": 0,
+                    "statements": 0,
+                    "vm_steps": 0
+                  },
+                  "file_budget": 0,
+                  "parsed_files": 1,
+                  "reasons": [],
+                  "rebased": false,
+                  "resumed": false,
+                  "selected_dependents": 0
+                },
+                "document_changes": {
+                  "files_projected": 1,
+                  "removed": 0,
+                  "render_failed": 0,
+                  "reusable_inputs": 0,
+                  "unchanged": 0,
+                  "upserted": 2
+                },
+                "elapsed_ms": 331,
+                "files_added": 1,
+                "files_parsed": 1,
+                "files_removed": 0,
+                "files_scanned": 1,
+                "files_skipped": 0,
+                "files_updated": 0,
+                "parse_errors": [],
+                "phase_timing": {
+                  "analysis_ms": 18,
+                  "parse_ms": 69,
+                  "postprocess_ms": 9,
+                  "resolve_ms": 5,
+                  "scan_diff_ms": 25,
+                  "write_ms": 35
+                },
+                "project_model": {
+                  "catalog_files": 1,
+                  "changed_configs": [],
+                  "config_inputs": 0,
+                  "config_parse_cache_hits": 0,
+                  "config_reads": 0,
+                  "config_root_probes": 5,
+                  "config_roots": 0,
+                  "diagnostics": [],
+                  "go_fact_cache_hits": 0,
+                  "go_source_reads": 0,
+                  "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+                  "inventory_source": "shared_walk",
+                  "modes": [],
+                  "rust_fact_cache_hits": 0,
+                  "rust_source_reads": 0,
+                  "version": 3
+                },
+                "public_surface_coverage": {
+                  "known": 1,
+                  "known_empty": 0,
+                  "parsed_files": 1,
+                  "unknown": 0,
+                  "unknown_reasons": {}
+                },
+                "resolution_coverage": {
+                  "ambiguous": 0,
+                  "incomplete_files": 0,
+                  "modules_ambiguous": 0,
+                  "modules_external": 0,
+                  "modules_resolved": 0,
+                  "modules_unknown": 0,
+                  "modules_unresolved": 0,
+                  "modules_unsupported": 0,
+                  "omitted_records": 0,
+                  "packages_resolved": 0,
+                  "processed_files": 1,
+                  "resolved": 0,
+                  "unresolved": 0,
+                  "unsupported": 0
+                },
+                "resolution_freshness": {
+                  "basis_epoch": null,
+                  "complete": true,
+                  "completed_files": 0,
+                  "index_epoch": 5,
+                  "reason": null,
+                  "retry": null,
+                  "root_count": 0,
+                  "scope": "observed_resolution_invalidations",
+                  "status": "ready"
+                },
+                "symbols_total": 2,
+                "used_parallel_parse": false
+              }
+            }
+          }
+        }
+      },
+      "old_schema": 23,
+      "old_source_sha": "57bedbaf193e28be34271a290d28c90dc662b613",
+      "reader_binary_sha256": "dde9eeb207188b98eadf7479d8a621e78df3ed5995dd051f99e266c02493feb4",
+      "reader_source_sha": "bf10b6477612f32d991bbfea3ed7791f468acc78",
+      "upgrade": {
+        "after": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 1,
+          "generation": {
+            "evidence_epoch": "2",
+            "index_epoch": "12",
+            "index_incarnation": "188abcaf355a00bc1cc238d44cc11770"
+          },
+          "manifests": 1,
+          "punctuation_types": 0,
+          "schema": 24,
+          "versions": [
+            3
+          ]
+        },
+        "opened": {
+          "calls": 0,
+          "duplicate_sites": 0,
+          "empty_keys": 0,
+          "files": 0,
+          "generation": {
+            "evidence_epoch": "2",
+            "index_epoch": "6",
+            "index_incarnation": "188abcaf355a00bc1cc238d44cc11770"
+          },
+          "manifests": 0,
+          "punctuation_types": 0,
+          "schema": 24,
+          "versions": []
+        },
+        "response": {
+          "id": 2,
+          "jsonrpc": "2.0",
+          "result": {
+            "content": [
+              {
+                "text": "{\"result\":{\"build_explain\":{\"gate_decisions\":[{\"pass\":\"config_link\",\"reason\":\"signature changed, rescanned\",\"run\":true},{\"pass\":\"synthesis_round\",\"reason\":\"both signatures changed\",\"run\":true},{\"pass\":\"community\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"git_cochange\",\"reason\":\"cache key unavailable\",\"run\":true},{\"pass\":\"infra\",\"reason\":\"signature algorithm changed\",\"run\":true},{\"pass\":\"adr\",\"reason\":\"no recorded signature\",\"run\":true}]},\"chunk_policy\":{\"bytes\":16384,\"chars\":16384,\"estimated_tokens\":4096,\"lines\":80,\"merge_min_bytes\":256},\"chunks_total\":2,\"dirty_plan\":{\"dependency_sql\":{\"fullscan_steps\":0,\"rows\":0,\"sorts\":4,\"statements\":16,\"vm_steps\":410},\"file_budget\":200,\"parsed_files\":1,\"reasons\":[\"body\",\"public_surface\",\"inventory\",\"candidate_set\"],\"rebased\":false,\"resumed\":false,\"selected_dependents\":0},\"dirty_propagation\":\"normal\",\"document_changes\":{\"files_projected\":1,\"removed\":0,\"render_failed\":0,\"reusable_inputs\":0,\"unchanged\":0,\"upserted\":2},\"elapsed_ms\":94,\"files_added\":1,\"files_parsed\":1,\"files_removed\":0,\"files_scanned\":1,\"files_skipped\":0,\"files_updated\":0,\"parse_errors\":[],\"phase_timing\":{\"analysis_ms\":8,\"parse_ms\":44,\"postprocess_ms\":6,\"resolve_ms\":1,\"scan_diff_ms\":6,\"write_ms\":24},\"project_model\":{\"catalog_files\":1,\"changed_configs\":[],\"config_inputs\":0,\"config_parse_cache_hits\":0,\"config_reads\":0,\"config_root_probes\":5,\"config_roots\":0,\"diagnostics\":[],\"go_fact_cache_hits\":0,\"go_source_reads\":0,\"input_digest\":\"6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c\",\"inventory_source\":\"shared_walk\",\"modes\":[],\"rust_fact_cache_hits\":0,\"rust_source_reads\":0,\"version\":3},\"public_surface_coverage\":{\"known\":1,\"known_empty\":0,\"parsed_files\":1,\"unknown\":0,\"unknown_reasons\":{}},\"resolution_coverage\":{\"ambiguous\":0,\"incomplete_files\":0,\"modules_ambiguous\":0,\"modules_external\":0,\"modules_resolved\":0,\"modules_unknown\":0,\"modules_unresolved\":0,\"modules_unsupported\":0,\"omitted_records\":0,\"packages_resolved\":0,\"processed_files\":1,\"resolved\":1,\"unresolved\":1,\"unsupported\":0},\"resolution_freshness\":{\"basis_epoch\":null,\"complete\":true,\"completed_files\":0,\"index_epoch\":12,\"reason\":null,\"retry\":null,\"root_count\":0,\"scope\":\"observed_resolution_invalidations\",\"status\":\"ready\"},\"symbols_total\":2,\"used_parallel_parse\":false}}",
+                "type": "text"
+              }
+            ],
+            "isError": false,
+            "structuredContent": {
+              "result": {
+                "build_explain": {
+                  "gate_decisions": [
+                    {
+                      "pass": "config_link",
+                      "reason": "signature changed, rescanned",
+                      "run": true
+                    },
+                    {
+                      "pass": "synthesis_round",
+                      "reason": "both signatures changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "community",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "git_cochange",
+                      "reason": "cache key unavailable",
+                      "run": true
+                    },
+                    {
+                      "pass": "infra",
+                      "reason": "signature algorithm changed",
+                      "run": true
+                    },
+                    {
+                      "pass": "adr",
+                      "reason": "no recorded signature",
+                      "run": true
+                    }
+                  ]
+                },
+                "chunk_policy": {
+                  "bytes": 16384,
+                  "chars": 16384,
+                  "estimated_tokens": 4096,
+                  "lines": 80,
+                  "merge_min_bytes": 256
+                },
+                "chunks_total": 2,
+                "dirty_plan": {
+                  "dependency_sql": {
+                    "fullscan_steps": 0,
+                    "rows": 0,
+                    "sorts": 4,
+                    "statements": 16,
+                    "vm_steps": 410
+                  },
+                  "file_budget": 200,
+                  "parsed_files": 1,
+                  "reasons": [
+                    "body",
+                    "public_surface",
+                    "inventory",
+                    "candidate_set"
+                  ],
+                  "rebased": false,
+                  "resumed": false,
+                  "selected_dependents": 0
+                },
+                "dirty_propagation": "normal",
+                "document_changes": {
+                  "files_projected": 1,
+                  "removed": 0,
+                  "render_failed": 0,
+                  "reusable_inputs": 0,
+                  "unchanged": 0,
+                  "upserted": 2
+                },
+                "elapsed_ms": 94,
+                "files_added": 1,
+                "files_parsed": 1,
+                "files_removed": 0,
+                "files_scanned": 1,
+                "files_skipped": 0,
+                "files_updated": 0,
+                "parse_errors": [],
+                "phase_timing": {
+                  "analysis_ms": 8,
+                  "parse_ms": 44,
+                  "postprocess_ms": 6,
+                  "resolve_ms": 1,
+                  "scan_diff_ms": 6,
+                  "write_ms": 24
+                },
+                "project_model": {
+                  "catalog_files": 1,
+                  "changed_configs": [],
+                  "config_inputs": 0,
+                  "config_parse_cache_hits": 0,
+                  "config_reads": 0,
+                  "config_root_probes": 5,
+                  "config_roots": 0,
+                  "diagnostics": [],
+                  "go_fact_cache_hits": 0,
+                  "go_source_reads": 0,
+                  "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+                  "inventory_source": "shared_walk",
+                  "modes": [],
+                  "rust_fact_cache_hits": 0,
+                  "rust_source_reads": 0,
+                  "version": 3
+                },
+                "public_surface_coverage": {
+                  "known": 1,
+                  "known_empty": 0,
+                  "parsed_files": 1,
+                  "unknown": 0,
+                  "unknown_reasons": {}
+                },
+                "resolution_coverage": {
+                  "ambiguous": 0,
+                  "incomplete_files": 0,
+                  "modules_ambiguous": 0,
+                  "modules_external": 0,
+                  "modules_resolved": 0,
+                  "modules_unknown": 0,
+                  "modules_unresolved": 0,
+                  "modules_unsupported": 0,
+                  "omitted_records": 0,
+                  "packages_resolved": 0,
+                  "processed_files": 1,
+                  "resolved": 1,
+                  "unresolved": 1,
+                  "unsupported": 0
+                },
+                "resolution_freshness": {
+                  "basis_epoch": null,
+                  "complete": true,
+                  "completed_files": 0,
+                  "index_epoch": 12,
+                  "reason": null,
+                  "retry": null,
+                  "root_count": 0,
+                  "scope": "observed_resolution_invalidations",
+                  "status": "ready"
+                },
+                "symbols_total": 2,
+                "used_parallel_parse": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -36,7 +36,7 @@ impl DirectWriter {
     /// Create a high-speed SQLite database.
     ///
     /// 1. Opens a new database file with aggressive PRAGMAs
-    /// 2. Creates tables (and virtual tables) from `schema_sql`, deferring indexes
+    /// 2. Executes the complete schema, then drops explicit indexes for bulk loading
     /// 3. Calls `write_fn` inside a single transaction for bulk INSERT
     /// 4. Creates indexes after all data is written
     /// 5. Restores normal PRAGMAs (WAL mode, synchronous=NORMAL)
@@ -46,6 +46,12 @@ impl DirectWriter {
         schema_sql: &str,
         write_fn: impl FnOnce(&rusqlite::Transaction) -> CcResult<()>,
     ) -> CcResult<()> {
+        // SQLite's C API stops at NUL; do not silently discard a schema suffix.
+        if schema_sql.as_bytes().contains(&0) {
+            return Err(CcError::Database(
+                "schema tables: embedded NUL in schema".into(),
+            ));
+        }
         let conn = Connection::open(path).map_err(stage_err("open"))?;
         // The per-file insert helpers rotate ~20 distinct prepare_cached
         // statements; the default capacity of 16 would re-prepare each one
@@ -63,9 +69,30 @@ impl DirectWriter {
         )
         .map_err(stage_err("pragmas"))?;
 
-        let table_sql = extract_table_statements(schema_sql);
-        conn.execute_batch(&table_sql)
+        // SQLite executes the original schema in order: triggers, views and
+        // seed statements must have exactly the same initialization semantics
+        // as the normal temp-db path (including seed-time unique constraints).
+        conn.execute_batch(schema_sql)
             .map_err(stage_err("schema tables"))?;
+
+        // Read names and SQL from SQLite rather than parsing CREATE INDEX.
+        // sql IS NOT NULL excludes automatic constraint indexes, which must
+        // remain active. This also handles quoted names and partial indexes.
+        let indexes: Vec<(String, String)> = {
+            let mut stmt = conn
+                .prepare("SELECT name, sql FROM sqlite_schema WHERE type = 'index' AND sql IS NOT NULL ORDER BY name")
+                .map_err(stage_err("schema indexes"))?;
+            let rows = stmt
+                .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+                .map_err(stage_err("schema indexes"))?;
+            rows.collect::<rusqlite::Result<_>>()
+                .map_err(stage_err("schema indexes"))?
+        };
+        for (name, _) in &indexes {
+            let quoted = name.replace('"', "\"\"");
+            conn.execute_batch(&format!("DROP INDEX \"{quoted}\";"))
+                .map_err(stage_err("drop indexes"))?;
+        }
 
         {
             let tx = conn
@@ -75,10 +102,8 @@ impl DirectWriter {
             tx.commit().map_err(stage_err("commit"))?;
         }
 
-        let index_sql = extract_index_statements(schema_sql);
-        if !index_sql.trim().is_empty() && index_sql.trim() != ";" {
-            conn.execute_batch(&index_sql)
-                .map_err(stage_err("indexes"))?;
+        for (_, sql) in &indexes {
+            conn.execute_batch(sql).map_err(stage_err("indexes"))?;
         }
 
         conn.execute_batch(
@@ -115,21 +140,6 @@ impl Default for DirectWriter {
     fn default() -> Self {
         Self::new()
     }
-}
-
-fn extract_table_statements(sql: &str) -> String {
-    let mut result = String::new();
-    for stmt in split_sql_statements(sql) {
-        let kind = classify_statement(stmt);
-        if matches!(
-            kind,
-            StmtKind::CreateTable | StmtKind::CreateVirtualTable | StmtKind::Insert
-        ) {
-            result.push_str(stmt);
-            result.push_str(";\n");
-        }
-    }
-    result
 }
 
 pub(crate) fn extract_index_statements(sql: &str) -> String {
@@ -219,56 +229,33 @@ fn classify_statement(stmt: &str) -> StmtKind {
     }
 }
 
+/// Helpers operate on a schema already validated by execute_batch. Preserve
+/// the final tail (including unterminated input) for SQLite to diagnose when
+/// executed; sqlite3_complete detects boundaries, not SQL syntax validity.
 fn split_sql_statements(sql: &str) -> Vec<&str> {
     let mut statements = Vec::new();
     let mut start = 0;
-    let bytes = sql.as_bytes();
-    let len = bytes.len();
-    let mut i = 0;
-
-    while i < len {
-        match bytes[i] {
-            b'\'' => {
-                i += 1;
-                while i < len {
-                    if bytes[i] == b'\'' {
-                        i += 1;
-                        if i < len && bytes[i] == b'\'' {
-                            i += 1;
-                        } else {
-                            break;
-                        }
-                    } else {
-                        i += 1;
-                    }
-                }
-            }
-            b'-' if i + 1 < len && bytes[i + 1] == b'-' => {
-                i += 2;
-                while i < len && bytes[i] != b'\n' {
-                    i += 1;
-                }
-            }
-            b';' => {
-                let stmt = &sql[start..i];
-                let trimmed = stmt.trim();
-                if !trimmed.is_empty() {
-                    statements.push(trimmed);
-                }
-                start = i + 1;
-                i += 1;
-            }
-            _ => {
-                i += 1;
-            }
+    for (i, byte) in sql.bytes().enumerate() {
+        if byte != b';' {
+            continue;
+        }
+        let candidate = &sql[start..=i];
+        let Ok(c_sql) = std::ffi::CString::new(candidate) else {
+            // Validated canonical schemas cannot contain NUL. Preserve the
+            // tail rather than inventing a boundary for invalid helper input.
+            break;
+        };
+        // SAFETY: CString provides a NUL-terminated UTF-8 input alive for the
+        // call. SQLite handles quotes, comments and complete trigger bodies.
+        if unsafe { rusqlite::ffi::sqlite3_complete(c_sql.as_ptr()) } == 1 {
+            statements.push(candidate[..candidate.len() - 1].trim());
+            start = i + 1;
         }
     }
-
     let tail = sql[start..].trim();
     if !tail.is_empty() {
         statements.push(tail);
     }
-
     statements
 }
 
@@ -276,17 +263,149 @@ fn split_sql_statements(sql: &str) -> Vec<&str> {
 mod tests {
     use super::*;
 
+    const COMPLEX_SCHEMA: &str = r#"
+        /* schema ; comment */
+        CREATE TABLE "source;table"(id INTEGER PRIMARY KEY, "value;name" TEXT UNIQUE);
+        CREATE TABLE `audit;table`([event;name] TEXT);
+        CREATE VIEW "view;name" AS SELECT "value;name" FROM "source;table";
+        CREATE TRIGGER "trigger;name" AFTER INSERT ON "source;table" BEGIN
+            INSERT INTO `audit;table` VALUES(CASE WHEN new.id > 0 THEN 'first;it''s' ELSE 'zero' END);
+            -- body ; comment
+            INSERT INTO `audit;table` VALUES('second;event'); /* body ; block */
+        END;
+        INSERT INTO "source;table" VALUES(1, 'seed;value');
+        CREATE UNIQUE INDEX "unique;"" name" ON "source;table"("value;name");
+        CREATE INDEX `index;name` ON `audit;table`([event;name]);
+        INSERT INTO "source;table" VALUES(2, 'seed;two');
+        -- trailing ; comment
+    "#;
+
     #[test]
-    fn extract_table_stmts() {
-        let sql = "CREATE TABLE t1 (id INTEGER PRIMARY KEY);\n\
-                   CREATE INDEX idx_t1 ON t1(id);\n\
-                   CREATE VIRTUAL TABLE t1_fts USING fts5(text);\n\
-                   INSERT INTO t1 VALUES(1);";
-        let result = extract_table_statements(sql);
-        assert!(result.contains("CREATE TABLE t1"));
-        assert!(result.contains("CREATE VIRTUAL TABLE t1_fts"));
-        assert!(result.contains("INSERT INTO t1"));
-        assert!(!result.contains("CREATE INDEX"));
+    fn sqlite_boundaries_preserve_triggers_quotes_comments_and_tail() {
+        let statements = split_sql_statements(COMPLEX_SCHEMA);
+        assert_eq!(statements.len(), 9); // eight SQL statements + trailing comment
+        let conn = Connection::open_in_memory().unwrap();
+        for statement in statements {
+            conn.execute_batch(statement).unwrap();
+        }
+        let events: i64 = conn
+            .query_row("SELECT count(*) FROM `audit;table`", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(events, 4);
+        let tail = "CREATE TABLE tail(id); INSERT INTO tail VALUES(1)";
+        assert_eq!(split_sql_statements(tail).len(), 2);
+        let indexes = extract_index_statements(COMPLEX_SCHEMA);
+        assert!(indexes.contains("unique;"));
+        assert!(indexes.contains("index;name"));
+        assert!(!indexes.contains("second;event"));
+    }
+
+    #[test]
+    fn full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("complex.sqlite3");
+        DirectWriter::write_db(&path, COMPLEX_SCHEMA, |tx| {
+            let events: i64 = tx
+                .query_row("SELECT count(*) FROM `audit;table`", [], |r| r.get(0))
+                .map_err(stage_err("seed"))?;
+            assert_eq!(events, 4);
+            let explicit: i64 = tx
+                .query_row(
+                    "SELECT count(*) FROM sqlite_schema WHERE type='index' AND sql IS NOT NULL",
+                    [],
+                    |r| r.get(0),
+                )
+                .map_err(stage_err("indexes"))?;
+            assert_eq!(explicit, 0);
+            // Automatic UNIQUE constraint indexes remain active during loading.
+            assert!(tx
+                .execute_batch(r#"INSERT INTO "source;table" VALUES(3, 'seed;value');"#)
+                .is_err());
+            tx.execute_batch(r#"INSERT INTO "source;table" VALUES(3, 'loaded;value');"#)
+                .map_err(stage_err("load"))
+        })
+        .unwrap();
+        let actual = Connection::open(&path).unwrap();
+        let expected = Connection::open_in_memory().unwrap();
+        expected.execute_batch(COMPLEX_SCHEMA).unwrap();
+        expected
+            .execute_batch(r#"INSERT INTO "source;table" VALUES(3, 'loaded;value');"#)
+            .unwrap();
+        for conn in [&actual, &expected] {
+            assert_eq!(
+                conn.query_row("SELECT count(*) FROM `audit;table`", [], |r| r
+                    .get::<_, i64>(0))
+                    .unwrap(),
+                6
+            );
+            assert_eq!(
+                conn.query_row(r#"SELECT count(*) FROM "view;name""#, [], |r| r
+                    .get::<_, i64>(0))
+                    .unwrap(),
+                3
+            );
+        }
+        let objects = |conn: &Connection| -> Vec<(String, String, Option<String>)> {
+            conn.prepare("SELECT type,name,sql FROM sqlite_schema ORDER BY type,name")
+                .unwrap()
+                .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+                .unwrap()
+                .collect::<rusqlite::Result<_>>()
+                .unwrap()
+        };
+        assert_eq!(objects(&actual), objects(&expected));
+    }
+
+    #[test]
+    fn schema_and_deferred_unique_errors_propagate_without_dropping_input() {
+        use std::cell::Cell;
+        let dir = tempfile::tempdir().unwrap();
+        for (i, schema) in [
+            "CREATE TABLE t(id); CREATE TRIGGER tr AFTER INSERT ON t BEGIN INSERT INTO t VALUES(2);",
+            "CREATE TABLE t(id); INSERT INTO t VALUES('unterminated);",
+            "CREATE TABLE t(id); this is invalid;",
+            "CREATE TABLE t(id); CREATE VIEW v AS SELECT FROM t;",
+            "CREATE TABLE t(id); /* unterminated",
+            "CREATE TABLE t(id);\0CREATE TABLE discarded(id);",
+            "CREATE TABLE t(id); CREATE UNIQUE INDEX u ON t(id); INSERT INTO t VALUES(1),(1);",
+        ].iter().enumerate() {
+            let called = Cell::new(false);
+            let result = DirectWriter::write_db(&dir.path().join(format!("bad-{i}.db")), schema, |_| {
+                called.set(true);
+                Ok(())
+            });
+            // SQLite accepts an unterminated block comment as a comment tail.
+            if i == 4 {
+                assert!(result.is_ok());
+                assert!(called.get());
+            } else {
+                assert!(result.unwrap_err().to_string().contains("schema tables"), "{schema}");
+                assert!(!called.get());
+            }
+        }
+        let path = dir.path().join("unique.db");
+        let err = DirectWriter::write_db(
+            &path,
+            "CREATE TABLE t(id); CREATE UNIQUE INDEX u ON t(id);",
+            |tx| {
+                tx.execute_batch("INSERT INTO t VALUES(1),(1);")
+                    .map_err(stage_err("load"))
+            },
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("indexes:"));
+        let path = dir.path().join("tail.db");
+        DirectWriter::write_db(&path, "CREATE TABLE t(id); INSERT INTO t VALUES(1)", |_| {
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(
+            Connection::open(path)
+                .unwrap()
+                .query_row("SELECT count(*) FROM t", [], |r| r.get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
     }
 
     #[test]

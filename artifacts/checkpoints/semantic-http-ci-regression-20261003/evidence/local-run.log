@@ -1,0 +1,151 @@
+COMMAND ["cargo", "test", "-p", "cc-db", "--lib", "capability_read::tests::", "--locked", "--", "--list"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/cc_db-ee898ddf720dbb7d)
+capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication: test
+capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn: test
+capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot: test
+capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal: test
+capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved: test
+capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write: test
+
+6 tests, 0 benchmarks
+COMMAND ["cargo", "test", "-p", "cc-db", "--lib", "capability_read::tests::", "--locked", "--", "--show-output", "--test-threads=1"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/debug/deps/cc_db-ee898ddf720dbb7d)
+
+running 6 tests
+test capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication ... ok
+test capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn ... ok
+test capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot ... ok
+test capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal ... ok
+test capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved ... ok
+test capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write ... ok
+
+successes:
+
+successes:
+    capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication
+    capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn
+    capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot
+    capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal
+    capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved
+    capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 176 filtered out; finished in 0.07s
+
+COMMAND ["cargo", "test", "-p", "cc-server", "--features", "semantic-http", "--lib", "capability_status::tests::", "--locked", "--", "--list"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running unittests src/lib.rs (target/debug/deps/cc_server-398f8eaed910ff13)
+capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons: test
+capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation: test
+capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready: test
+capability_status::tests::old_active_space_cannot_report_configured_new_model_ready: test
+capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll: test
+capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder: test
+capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs: test
+capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready: test
+capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded: test
+capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps: test
+
+10 tests, 0 benchmarks
+COMMAND ["cargo", "test", "-p", "cc-server", "--features", "semantic-http", "--lib", "capability_status::tests::", "--locked", "--", "--show-output", "--test-threads=1"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running unittests src/lib.rs (target/debug/deps/cc_server-398f8eaed910ff13)
+
+running 10 tests
+test capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons ... ok
+test capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation ... ok
+test capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready ... ok
+test capability_status::tests::old_active_space_cannot_report_configured_new_model_ready ... ok
+test capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll ... ok
+test capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder ... ok
+test capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs ... ok
+test capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready ... ok
+test capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded ... ok
+test capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps ... ok
+
+successes:
+
+---- capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs stdout ----
+STATUS_INTERLEAVE {"after":{"evidence_epoch":0,"incarnation":[72,151,91,245,73,150,99,243,185,41,180,96,211,148,189,18],"index_epoch":6,"semantic_epoch":2},"before":{"evidence_epoch":0,"incarnation":[72,151,91,245,73,150,99,243,185,41,180,96,211,148,189,18],"index_epoch":6,"semantic_epoch":1},"dense_state":"partial","returned":{"evidence_epoch":0,"incarnation":[72,151,91,245,73,150,99,243,185,41,180,96,211,148,189,18],"index_epoch":6,"semantic_epoch":1},"root_attempts":1}
+
+
+successes:
+    capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons
+    capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation
+    capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready
+    capability_status::tests::old_active_space_cannot_report_configured_new_model_ready
+    capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll
+    capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder
+    capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs
+    capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready
+    capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded
+    capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 321 filtered out; finished in 0.40s
+
+COMMAND ["cargo", "test", "-p", "cc-server", "--features", "semantic-http", "--test", "p7_v11_ready_epoch_independent_review", "--locked", "--", "--list"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running tests/p7_v11_ready_epoch_independent_review.rs (target/debug/deps/p7_v11_ready_epoch_independent_review-6c4e32fa0a61b428)
+ready_snapshot_bounds_query_generation_without_claiming_quiescence: test
+
+1 test, 0 benchmarks
+COMMAND ["cargo", "test", "-p", "cc-server", "--features", "semantic-http", "--test", "p7_v11_ready_epoch_independent_review", "--locked", "--", "--show-output", "--test-threads=1"]
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running tests/p7_v11_ready_epoch_independent_review.rs (target/debug/deps/p7_v11_ready_epoch_independent_review-6c4e32fa0a61b428)
+
+running 1 test
+test ready_snapshot_bounds_query_generation_without_claiming_quiescence ... 2026-10-03T11:47:53.325140Z  INFO cc_db::index_migrate: initializing index schema version=24
+2026-10-03T11:47:53.342928Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-03T11:47:53.343037Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T11:47:53.343451Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T11:47:53.344277Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T11:47:53.344815Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.380779Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpmCOEhW/project/.codecortex/index.sqlite3.tmp
+2026-10-03T11:47:53.403369Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T11:47:53.405409Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-03T11:47:53.412954Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-03T11:47:53.413127Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.422352Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.429209Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.521353Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.534941Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.541219Z  INFO cc_index::indexer_phases::write: generated hierarchy edges count=2
+2026-10-03T11:47:53.542274Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.547056Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.579279Z  WARN serve_inner: rmcp::service: response error id=6 error=ErrorData { code: ErrorCode(-32603), message: "index changed during retrieval after 1 attempts; retry the query", data: Some(Object {"retryable": Bool(true)}) }
+2026-10-03T11:47:53.666258Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-03T11:47:53.666408Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-03T11:47:53.666802Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-03T11:47:53.690576Z  INFO cc_db::index_migrate: initializing index schema version=24
+2026-10-03T11:47:53.720863Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-03T11:47:53.721130Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T11:47:53.722572Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T11:47:53.722726Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T11:47:53.725228Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.761398Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpZf2XW4/project/.codecortex/index.sqlite3.tmp
+2026-10-03T11:47:53.782013Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T11:47:53.783987Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-03T11:47:53.792598Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-03T11:47:53.792783Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.801170Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.809012Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.878595Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.886277Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.891485Z  INFO cc_index::indexer_phases::write: generated hierarchy edges count=2
+2026-10-03T11:47:53.892435Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.905964Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T11:47:53.935353Z  WARN serve_inner: rmcp::service: response error id=6 error=ErrorData { code: ErrorCode(-32603), message: "index changed during retrieval after 1 attempts; retry the query", data: Some(Object {"retryable": Bool(true)}) }
+2026-10-03T11:47:54.025224Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-03T11:47:54.025439Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-03T11:47:54.026310Z  INFO cc_server::mcp: MCP server shut down gracefully
+ok
+
+successes:
+
+successes:
+    ready_snapshot_bounds_query_generation_without_claiming_quiescence
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+VERIFIED 17 existing tests (6 DB + 10 semantic-http status + 1 stdio)

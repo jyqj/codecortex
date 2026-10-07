@@ -77,6 +77,555 @@ async fn exited_child_is_protocol_error_not_empty_search() {
     .is_err());
 }
 
+mod p7_offline {
+    use super::*;
+    use rmcp::{
+        model::{CallToolRequestParams, ErrorCode},
+        service::{RunningService, ServiceError},
+        transport::{ConfigureCommandExt, TokioChildProcess},
+        RoleClient, ServiceExt,
+    };
+    use serde_json::Value;
+    use std::{collections::BTreeSet, path::Path, process::Stdio};
+
+    type Client = RunningService<RoleClient, ()>;
+    fn verify_build_receipt(binary: &Path, package: &str, receipt: &Value) -> Result<(), String> {
+        use sha2::{Digest, Sha256};
+        let reject = || Err("product build receipt does not match binary/package/features".into());
+        let expected_features = match package {
+            "default" => json!([]),
+            "semantic" => json!(["semantic"]),
+            _ => return reject(),
+        };
+        let artifact = &receipt["cargo_artifact"];
+        let mut expected_command = vec![
+            "cargo",
+            "build",
+            "-p",
+            "cc-server",
+            "--bin",
+            "codecortex",
+            "--no-default-features",
+            "--locked",
+            "--message-format=json-render-diagnostics",
+        ];
+        if package == "semantic" {
+            expected_command.extend(["--features", "semantic"]);
+        }
+        let actual_command = &receipt["build_command"];
+        if actual_command != &json!(expected_command) {
+            expected_command.push("--offline");
+            if actual_command != &json!(expected_command) {
+                return reject();
+            }
+        }
+        if receipt["schema_version"] != 1
+            || receipt["build_exit_code"] != 0
+            || receipt["package_kind"] != package
+            || artifact["reason"] != "compiler-artifact"
+            || artifact["target"]["name"] != "codecortex"
+            || artifact["target"]["kind"] != json!(["bin"])
+            || artifact["features"] != expected_features
+            || artifact["executable"].as_str().is_none_or(str::is_empty)
+            || !artifact["package_id"].as_str().is_some_and(|id| {
+                id.rsplit_once('#').is_some_and(|(source, version)| {
+                    source.ends_with("/cc-server") && !version.is_empty()
+                })
+            })
+        {
+            return reject();
+        }
+        let path = receipt["binary_path"]
+            .as_str()
+            .ok_or_else(|| "missing receipt binary path".to_string())?;
+        if Path::new(path).canonicalize().map_err(|e| e.to_string())?
+            != binary.canonicalize().map_err(|e| e.to_string())?
+        {
+            return reject();
+        }
+        let digest = format!(
+            "{:x}",
+            Sha256::digest(std::fs::read(binary).map_err(|e| e.to_string())?)
+        );
+        if receipt["binary_sha256"] != digest {
+            return reject();
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn build_receipt_rejects_identity_feature_and_binary_mismatch() {
+        use sha2::{Digest, Sha256};
+        let dir = tempfile::tempdir().unwrap();
+        let binary = dir.path().join("codecortex");
+        std::fs::write(&binary, b"synthetic receipt-validator bytes, not a product").unwrap();
+        let digest = format!("{:x}", Sha256::digest(std::fs::read(&binary).unwrap()));
+        let receipt = json!({"schema_version":1,"build_exit_code":0,"package_kind":"default","build_command":["cargo","build","-p","cc-server","--bin","codecortex","--no-default-features","--locked","--message-format=json-render-diagnostics"],"binary_path":binary,"binary_sha256":digest,"cargo_artifact":{"reason":"compiler-artifact","package_id":"path+file:///synthetic/cc-server#cc-server@1.0.0","target":{"name":"codecortex","kind":["bin"]},"features":[],"executable":"/synthetic/target/codecortex"}});
+        verify_build_receipt(&binary, "default", &receipt).unwrap();
+        assert!(verify_build_receipt(&binary, "semantic", &receipt).is_err());
+        assert!(verify_build_receipt(&binary, "default", &json!({})).is_err());
+        for (pointer, replacement) in [
+            ("/package_kind", json!("semantic")),
+            ("/cargo_artifact/features", json!(["semantic"])),
+            (
+                "/cargo_artifact/package_id",
+                json!("path+file:///synthetic/other#other@1.0.0"),
+            ),
+            ("/cargo_artifact/target/kind", json!(["lib"])),
+            ("/cargo_artifact/target/name", json!("other")),
+            ("/build_exit_code", json!(101)),
+            (
+                "/build_command",
+                json!(["cargo", "build", "--features", "semantic"]),
+            ),
+            ("/binary_sha256", json!("wrong")),
+        ] {
+            let mut bad = receipt.clone();
+            *bad.pointer_mut(pointer).unwrap() = replacement;
+            assert!(
+                verify_build_receipt(&binary, "default", &bad).is_err(),
+                "accepted mismatch: {pointer}"
+            );
+        }
+        let other = dir.path().join("other");
+        std::fs::write(&other, b"synthetic other binary").unwrap();
+        assert!(verify_build_receipt(&other, "default", &receipt).is_err());
+        std::fs::write(&binary, b"mutated after receipt").unwrap();
+        assert!(verify_build_receipt(&binary, "default", &receipt).is_err());
+    }
+    const SOURCE: &str = "pub fn parse_field(raw: &str) -> i32 {\n    raw.trim().parse().unwrap_or(0)\n}\n\npub fn validate_payload(raw: &str) -> bool {\n    parse_field(raw) > 0\n}\n\npub fn renew_session(raw: &str) -> bool {\n    validate_payload(raw)\n}\n";
+    const TOOLS: [&str; 14] = [
+        "status",
+        "index",
+        "search",
+        "context",
+        "node",
+        "explore",
+        "trace",
+        "relations",
+        "impact",
+        "architecture",
+        "files",
+        "graph_query",
+        "ingest_traces",
+        "adr",
+    ];
+
+    async fn spawn(binary: &Path, root: &Path) -> (Client, u32) {
+        let transport =
+            TokioChildProcess::new(tokio::process::Command::new(binary).configure(|cmd| {
+                // Exact child boundary: no credentials or developer CODECORTEX
+                // overrides survive. HOME/cache/config are local to the fixture.
+                cmd.env_clear()
+                    .env("PATH", std::env::var_os("PATH").unwrap())
+                    .env("HOME", root)
+                    .env("XDG_CONFIG_HOME", root.join(".config"))
+                    .env("XDG_CACHE_HOME", root.join(".cache"))
+                    .env("CODECORTEX_PPID_POLL_MS", "0")
+                    .arg("mcp")
+                    .arg("--project-path")
+                    .arg(root)
+                    .current_dir(root)
+                    .stdin(Stdio::piped())
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::null());
+            }))
+            .unwrap();
+        let pid = transport.id().expect("actual product subprocess PID");
+        let client = tokio::time::timeout(Duration::from_secs(20), ().serve(transport))
+            .await
+            .unwrap()
+            .unwrap();
+        (client, pid)
+    }
+
+    async fn raw(
+        client: &Client,
+        tool: &str,
+        args: Value,
+    ) -> Result<rmcp::model::CallToolResult, ServiceError> {
+        tokio::time::timeout(
+            Duration::from_secs(20),
+            client.call_tool(
+                CallToolRequestParams::new(tool.to_owned())
+                    .with_arguments(args.as_object().unwrap().clone()),
+            ),
+        )
+        .await
+        .expect("stdio tool deadline")
+    }
+
+    async fn call(
+        client: &Client,
+        tool: &str,
+        args: Value,
+        called: &mut BTreeSet<String>,
+    ) -> Value {
+        let result = raw(client, tool, args).await.unwrap();
+        assert_ne!(result.is_error, Some(true), "{tool}: {result:?}");
+        called.insert(tool.into());
+        result
+            .structured_content
+            .expect("complete structured MCP result")["result"]
+            .clone()
+    }
+
+    fn files(root: &Path) -> Vec<String> {
+        fn walk(root: &Path, path: &Path, out: &mut Vec<String>) {
+            for entry in std::fs::read_dir(path).unwrap() {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                if entry.file_type().unwrap().is_dir() {
+                    walk(root, &path, out);
+                } else {
+                    out.push(
+                        path.strip_prefix(root)
+                            .unwrap()
+                            .to_string_lossy()
+                            .replace('\\', "/"),
+                    );
+                }
+            }
+        }
+        let mut out = Vec::new();
+        walk(root, root, &mut out);
+        out.sort();
+        assert!(!root.join(".cache/codecortex/semantic").exists());
+        assert!(!root.join("Library/Caches/codecortex/semantic").exists());
+        assert!(out
+            .iter()
+            .all(|path| !path.contains("semantic-cache.sqlite")
+                && !path.split('/').any(|part| part.starts_with("namespace-"))));
+        out
+    }
+
+    fn network_status(pid: u32) -> Value {
+        #[cfg(target_os = "linux")]
+        {
+            let text = std::fs::read_to_string(format!("/proc/{pid}/status")).unwrap();
+            let rows: serde_json::Map<String, Value> = text
+                .lines()
+                .filter(|line| {
+                    line.starts_with("NoNewPrivs:")
+                        || line.starts_with("Seccomp:")
+                        || line.starts_with("Seccomp_filters:")
+                })
+                .map(|line| {
+                    let (key, value) = line.split_once(':').unwrap();
+                    (key.into(), json!(value.trim()))
+                })
+                .collect();
+            json!(rows)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = pid;
+            json!({"status":"not_observed_non_linux"})
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "explicit default/semantic product binary; run with --include-ignored, optionally under verified per-process network denial"]
+    async fn real_stdio_default_disabled_semantic_contract() {
+        let binary = PathBuf::from(
+            std::env::var("CODECORTEX_BENCH_BINARY")
+                .expect("explicit built product binary required"),
+        )
+        .canonicalize()
+        .unwrap();
+        let package = std::env::var("P7_017_PACKAGE_KIND")
+            .expect("default or semantic build receipt required");
+        assert!(matches!(package.as_str(), "default" | "semantic"));
+        let receipt_path = std::env::var("P7_017_BUILD_RECEIPT")
+            .expect("explicit Cargo product build receipt required");
+        let receipt: Value =
+            serde_json::from_slice(&std::fs::read(&receipt_path).unwrap()).unwrap();
+        verify_build_receipt(&binary, &package, &receipt).expect("verified product build identity");
+        let restricted =
+            std::env::var("P7_017_NETWORK_POLICY").as_deref() == Ok("process_seccomp_deny_network");
+        if restricted {
+            for address in ["127.0.0.1:0", "[::1]:0"] {
+                assert_eq!(
+                    std::net::TcpListener::bind(address)
+                        .unwrap_err()
+                        .raw_os_error(),
+                    Some(1),
+                    "actual IPv4/IPv6 socket probe must fail before claiming network denial"
+                );
+            }
+        }
+        let expected: BTreeSet<String> = TOOLS.iter().map(|name| (*name).into()).collect();
+        let mut observations = Vec::new();
+        for explicitly_disabled in [false, true] {
+            let dir = tempfile::tempdir().unwrap();
+            let root = dir.path();
+            std::fs::create_dir(root.join("src")).unwrap();
+            std::fs::write(root.join("src/lib.rs"), SOURCE).unwrap();
+            std::fs::write(
+                root.join("Cargo.toml"),
+                "[package]\nname=\"offline-probe\"\nversion=\"0.0.0\"\nedition=\"2021\"\n",
+            )
+            .unwrap();
+            let mut config = json!({"auto_index":{"enabled":false}});
+            if explicitly_disabled {
+                config["semantic"] = json!({"enabled":false,"endpoint":"https://provider.invalid/v1","api_key_ref":"env:P7_017_ABSENT_KEY","model_id":"must-not-contact"});
+            }
+            std::fs::write(
+                root.join(".codecortex.json"),
+                serde_json::to_vec(&config).unwrap(),
+            )
+            .unwrap();
+            let (client, pid) = spawn(&binary, root).await;
+            let child_network = network_status(pid);
+            if restricted {
+                assert_eq!(child_network["NoNewPrivs"], "1");
+                assert_eq!(child_network["Seccomp"], "2");
+                assert!(
+                    child_network["Seccomp_filters"]
+                        .as_str()
+                        .unwrap()
+                        .parse::<usize>()
+                        .unwrap()
+                        >= 2
+                );
+            }
+            let listed = tokio::time::timeout(Duration::from_secs(20), client.list_tools(None))
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(listed.next_cursor.is_none());
+            let names: BTreeSet<String> = listed
+                .tools
+                .iter()
+                .map(|tool| tool.name.to_string())
+                .collect();
+            assert_eq!(names, expected);
+            let mut called = BTreeSet::new();
+            let index = call(
+                &client,
+                "index",
+                json!({"path":root,"full":true}),
+                &mut called,
+            )
+            .await;
+            assert!(index["symbols_total"].as_u64().unwrap() >= 3);
+            assert!(index["parse_errors"].as_array().unwrap().is_empty());
+            let caps = call(
+                &client,
+                "status",
+                json!({"aspect":"capabilities"}),
+                &mut called,
+            )
+            .await;
+            assert_eq!(caps["retrieval"]["semantic_state"], "not_configured");
+            assert_eq!(caps["retrieval"]["dense_state"], "disabled");
+            assert_eq!(caps["retrieval"]["local_state"], "available");
+            let search = call(
+                &client,
+                "search",
+                json!({"query":"renew_session","mode":"hybrid"}),
+                &mut called,
+            )
+            .await;
+            let (mut hits, _) = normalizer::mcp(&search).unwrap();
+            assert!(hits.iter().any(|hit| hit.path == "src/lib.rs"));
+            for hit in &mut hits {
+                normalizer::verify_source(hit, root).unwrap();
+                assert_eq!(hit.evidence_valid, Some(true));
+            }
+            let symbols = call(
+                &client,
+                "search",
+                json!({"query":"renew_session","mode":"symbol"}),
+                &mut called,
+            )
+            .await;
+            assert!(symbols
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|symbol| symbol["name"] == "renew_session"));
+            let context = call(
+                &client,
+                "context",
+                json!({"task":"renew_session","retrieval_strategy":"auto"}),
+                &mut called,
+            )
+            .await;
+            assert!(!context["machine_pack"]["hits"]
+                .as_array()
+                .unwrap()
+                .is_empty());
+            assert_eq!(
+                context["evidence_summary"]["retrieval"]["policy"]["effective"],
+                "local"
+            );
+            let node = call(
+                &client,
+                "node",
+                json!({"symbol":"renew_session","include":"source"}),
+                &mut called,
+            )
+            .await;
+            assert!(node["source"]
+                .as_str()
+                .unwrap()
+                .contains("validate_payload"));
+            let explore = call(
+                &client,
+                "explore",
+                json!({"symbols":["renew_session","validate_payload"],"include_source":true}),
+                &mut called,
+            )
+            .await;
+            assert!(explore.to_string().contains("parse_field"));
+            let trace = call(
+                &client,
+                "trace",
+                json!({"from":"renew_session","to":"parse_field","source_mode":"body"}),
+                &mut called,
+            )
+            .await;
+            assert!(trace["path_count"].as_u64().unwrap() >= 1);
+            let relations = call(
+                &client,
+                "relations",
+                json!({"symbol":"validate_payload","kind":"callers"}),
+                &mut called,
+            )
+            .await;
+            assert!(relations.to_string().contains("renew_session"));
+            let impact = call(&client, "impact", json!({"scope":"dead_code"}), &mut called).await;
+            assert!(impact["dead_code"].is_array());
+            let architecture = call(
+                &client,
+                "architecture",
+                json!({"aspect":"overview"}),
+                &mut called,
+            )
+            .await;
+            assert!(architecture["languages"].is_array() || architecture["languages"].is_object());
+            let region = call(
+                &client,
+                "files",
+                json!({"action":"region","path":"src/lib.rs","start_line":1,"end_line":3}),
+                &mut called,
+            )
+            .await;
+            assert!(region["content"].as_str().unwrap().contains("parse_field"));
+            let graph = call(
+                &client,
+                "graph_query",
+                json!({"query":"MATCH (f:Function) RETURN f.name LIMIT 20"}),
+                &mut called,
+            )
+            .await;
+            assert!(graph["row_count"].as_u64().unwrap() >= 3);
+            let ingest = call(&client, "ingest_traces", json!({"traces":[]}), &mut called).await;
+            assert_eq!(ingest["accepted"], 0);
+            let stored = call(&client, "adr", json!({"action":"store","adr_id":"P7-017-probe","title":"Local fixture only","status":"accepted","decision":"Remain offline"}), &mut called).await;
+            assert_eq!(stored["stored"], "P7-017-probe");
+            let adrs = call(&client, "adr", json!({"action":"list"}), &mut called).await;
+            assert!(adrs["adrs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|adr| adr["adr_id"] == "P7-017-probe"));
+            assert_eq!(
+                called, expected,
+                "all 14 legacy tools must execute, not only list"
+            );
+            let typo = raw(&client, "search", json!({"qurey":"bad"}))
+                .await
+                .unwrap();
+            assert_eq!(typo.is_error, Some(true));
+            assert!(serde_json::to_string(&typo.content)
+                .unwrap()
+                .contains("unknown field"));
+            for (tool, args, code) in [
+                (
+                    "search",
+                    json!({"query":"renew_session","mode":"invalid"}),
+                    ErrorCode::INVALID_PARAMS,
+                ),
+                (
+                    "search",
+                    json!({"query":"renew_session","retrieval_strategy":"semantic"}),
+                    ErrorCode::INTERNAL_ERROR,
+                ),
+                (
+                    "context",
+                    json!({"task":"renew_session","retrieval_strategy":"semantic"}),
+                    ErrorCode::INTERNAL_ERROR,
+                ),
+            ] {
+                let error = raw(&client, tool, args).await.unwrap_err();
+                assert!(
+                    matches!(&error, ServiceError::McpError(data) if data.code == code),
+                    "wrong {tool} error contract: {error}"
+                );
+            }
+            let missing = raw(&client, "node", json!({"symbol":"no_such_fixture_symbol"}))
+                .await
+                .unwrap_err();
+            assert!(matches!(&missing, ServiceError::McpError(data)
+                if data.code == ErrorCode::INTERNAL_ERROR && data.message.contains("symbol not found")));
+            let before_close = files(root);
+            tokio::time::timeout(Duration::from_secs(5), client.cancel())
+                .await
+                .unwrap()
+                .unwrap();
+            let (reopened, reopen_pid) = spawn(&binary, root).await;
+            let after = call(&reopened, "status", json!({"aspect":"index"}), &mut called).await;
+            assert!(after["indexed_files"].as_u64().unwrap() >= 1);
+            let reopened_search = call(
+                &reopened,
+                "search",
+                json!({"query":"renew_session","mode":"hybrid"}),
+                &mut called,
+            )
+            .await;
+            assert!(normalizer::mcp(&reopened_search)
+                .unwrap()
+                .0
+                .iter()
+                .any(|hit| hit.path == "src/lib.rs"));
+            let reopened_adrs = call(&reopened, "adr", json!({"action":"list"}), &mut called).await;
+            assert!(reopened_adrs["adrs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|adr| adr["adr_id"] == "P7-017-probe"));
+            let removed = call(
+                &reopened,
+                "adr",
+                json!({"action":"delete","adr_id":"P7-017-probe"}),
+                &mut called,
+            )
+            .await;
+            assert!(removed["deleted"].as_bool().unwrap());
+            let reopened_network = network_status(reopen_pid);
+            tokio::time::timeout(Duration::from_secs(5), reopened.cancel())
+                .await
+                .unwrap()
+                .unwrap();
+            let final_files = files(root);
+            observations.push(json!({"package":package,"explicitly_disabled":explicitly_disabled,"child_environment":"env_clear; fixture HOME/XDG paths; PATH only; no key","network_scope":if restricted {"verified_process_seccomp"} else {"not_isolated_not_claimed"},"child_security":child_network,"reopened_child_security":reopened_network,"tools_listed":names,"tools_executed":called,"local_source_verified":true,"error_contracts_verified":true,"reopen_and_persisted_adr_verified":true,"files_before_close":before_close,"files_after_reopen_close":final_files,"semantic_cache_absent":true}));
+        }
+        if let Ok(output) = std::env::var("CODECORTEX_BENCH_OBSERVATIONS") {
+            std::fs::create_dir_all(&output).unwrap();
+            std::fs::write(
+                Path::new(&output).join(format!("p7-017-{package}.json")),
+                serde_json::to_vec_pretty(
+                    &json!({"binary":binary,"build_receipt":receipt,"cases":observations}),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+        }
+    }
+}
+
 #[cfg(feature = "eval-http")]
 mod http {
     use super::*;

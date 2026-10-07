@@ -1,0 +1,64 @@
+[
+  {
+    "command": [
+      "cargo",
+      "run",
+      "-p",
+      "cc-eval",
+      "--bin",
+      "cc-eval",
+      "--locked",
+      "--",
+      "validate",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p0-smoke.json",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p1c-bm25.json",
+      "--suite",
+      "crates/cc-eval/benchmarks/manifests/p1c-softscope.json"
+    ],
+    "exit_code": 0,
+    "seconds": 73.15,
+    "log": "rerun-00.log"
+  },
+  {
+    "command": [
+      "python3",
+      "artifacts/checkpoints/dev-corpus-lock-reconcile-20261003/verify_reconcile.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.11,
+    "log": "rerun-01.log"
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--lib",
+      "benchmark_lock",
+      "--locked"
+    ],
+    "exit_code": 0,
+    "seconds": 10.18,
+    "log": "rerun-02.log"
+  },
+  {
+    "command": [
+      "python3",
+      "artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py",
+      "--output-dir",
+      "artifacts/checkpoints/ci-contract-integration-20261003/evidence/semantic-http"
+    ],
+    "exit_code": 0,
+    "seconds": 96.25,
+    "log": "rerun-03.log"
+  }
+]

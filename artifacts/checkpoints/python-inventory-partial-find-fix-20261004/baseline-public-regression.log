@@ -1,0 +1,25 @@
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.21s
+     Running tests/python_inventory_capture.rs (target/debug/deps/python_inventory_capture-5cddc17964d06911)
+
+running 1 test
+test explicit_find_cannot_borrow_completeness_from_package_dir ... FAILED
+
+failures:
+
+---- explicit_find_cannot_borrow_completeness_from_package_dir stdout ----
+
+thread 'explicit_find_cannot_borrow_completeness_from_package_dir' (12944) panicked at crates/cc-index/tests/python_inventory_capture.rs:445:13:
+[tool.setuptools.package-dir]
+""='src'
+[tool.setuptools.packages.find]
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    explicit_find_cannot_borrow_completeness_from_package_dir
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p cc-index --test python_inventory_capture`

@@ -1,0 +1,267 @@
+{
+  "fixed_product": "780502322816e4fd1d61d8f77a98d7d6b635d9fb",
+  "rustflags": "-D warnings",
+  "records": [
+    {
+      "name": "toolchain",
+      "argv": [
+        "rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit": 0,
+      "seconds": 0.094,
+      "log_sha256": "4fdff2578428e9c5c08ddd7a0d3079c1a106b1cdaa46e73e46f7cd32b0fb9cad"
+    },
+    {
+      "name": "fmt",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 3.302,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lint",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 78.091,
+      "log_sha256": "6b51b1fb635bfbd97c4d9ac3b041da5f34e34091059df0ff291c501e44c5994e"
+    },
+    {
+      "name": "build",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "build",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "exit": 0,
+      "seconds": 223.207,
+      "log_sha256": "0b8cf47e116b2901009917d7fe743fe713c51722cd309b0ede846fe59ad992a8"
+    },
+    {
+      "name": "index",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "python_inventory_capture",
+        "--test",
+        "python_inventory_resource_integration",
+        "--test",
+        "python_identity_resource_integration"
+      ],
+      "exit": 0,
+      "seconds": 23.273,
+      "log_sha256": "d20dbbf0eed582772164f9a8299ad3ab1fe193abe9544eec4b9c848a61a3db34"
+    },
+    {
+      "name": "drift",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "python_inventory_observed_midcapture_mutations_refuse"
+      ],
+      "exit": 0,
+      "seconds": 15.901,
+      "log_sha256": "7c39be5322b275b74c820917e312b95cb1d3f069077b60892a76825d819c1885"
+    },
+    {
+      "name": "provenance",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "python_provenance"
+      ],
+      "exit": 0,
+      "seconds": 0.147,
+      "log_sha256": "29f0a22201e4a2c1c0a1ba34db5d87fee8f58c2b3f93fab19ef68019b7a612bc"
+    },
+    {
+      "name": "model",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-model",
+        "--test",
+        "declaration_identity_v1",
+        "--test",
+        "declaration_identity_independent_review",
+        "--test",
+        "declaration_identity_resources",
+        "--test",
+        "declaration_resource_independent",
+        "--test",
+        "provenance_compatibility"
+      ],
+      "exit": 0,
+      "seconds": 11.242,
+      "log_sha256": "e3f5950859d26e0b52dea7e7b8959ffb92b235de3302f37e8d48531758a5117f"
+    },
+    {
+      "name": "parser",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-parsers",
+        "--test",
+        "python_identity_adapter",
+        "--test",
+        "python_identity_independent",
+        "--test",
+        "python_identity_r1_independent_delta",
+        "--test",
+        "python_identity_trivia_r1"
+      ],
+      "exit": 0,
+      "seconds": 9.135,
+      "log_sha256": "6b3c15775d80a6adefe186a008563a96a62ad5296869ced1744f85e6ecfd57a0"
+    },
+    {
+      "name": "architecture",
+      "argv": [
+        "python3",
+        "scripts/check_source_architecture.py"
+      ],
+      "exit": 0,
+      "seconds": 2.515,
+      "log_sha256": "515322c3e1e48ab6b67144c5e6cd6300ef9353f250e6c325703d51708bc7b527"
+    },
+    {
+      "name": "module-architecture",
+      "argv": [
+        "python3",
+        "scripts/check_module_architecture.py"
+      ],
+      "exit": 0,
+      "seconds": 0.044,
+      "log_sha256": "12f6bb985f4fb64870bb586d497961121f074222c721b518b5d6b8d66fd8a446"
+    },
+    {
+      "name": "source-controls",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/source_integrity",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 129.976,
+      "log_sha256": "9a8161a03f6a65c235e10156466713d5e57867b48a496c3a3ad1fa6394e29cfb"
+    },
+    {
+      "name": "source-v2",
+      "argv": [
+        "python3",
+        "scripts/verify_current_source_v2.py",
+        "--source-version",
+        "python-inventory-20261004-v2"
+      ],
+      "exit": 0,
+      "seconds": 15.628,
+      "log_sha256": "7b05ea5e2ac48c52ee09f26d48ae85d4128727b4c9eb81ab6cb0a51a5cf7672d"
+    },
+    {
+      "name": "historical-guards",
+      "argv": [
+        "python3",
+        "scripts/verify_fixed_e3_integration.py"
+      ],
+      "exit": 0,
+      "seconds": 7.995,
+      "log_sha256": "a764d8a48fc35ecfe34dc6d577eb30a4a8cee4ab2a5332f8620d63c57a7f3182"
+    },
+    {
+      "name": "historical-p0-controls",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/historical_corpus",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 1.61,
+      "log_sha256": "2c70c18dce4040bedbe53e88c1ef4fa868098aa684ff4977e46fd87f65dc69ac"
+    },
+    {
+      "name": "historical-p0",
+      "argv": [
+        "python3",
+        "scripts/p0_historical_corpus.py",
+        "--validator",
+        "target/debug/cc-eval"
+      ],
+      "exit": 0,
+      "seconds": 0.142,
+      "log_sha256": "4adc949a91d4ec865db2a442493f15f8933e426a047e54a292d532215e340bef"
+    },
+    {
+      "name": "plan",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py"
+      ],
+      "exit": 0,
+      "seconds": 0.059,
+      "log_sha256": "46c5534a15a4cdc830181d925be5c23169b618457f2c6d9f3c45c8dc649d32e4"
+    },
+    {
+      "name": "diff",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.027,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "bounded_capture_admission_and_source_integrity",
+  "formal_DEV_100k_runtime_private42_GCWALfaults": "not_run"
+}

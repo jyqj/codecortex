@@ -1,0 +1,68 @@
+{
+  "baseline_sha": "c38f07803a9d262b2ee83ff72e19b0a1409ae730",
+  "baseline_includes": "PR26 lint fixes and PR29 verified stdio receipt wiring",
+  "production_checkpoint": "993a64ecd7a454b41bcab816c81d58cbc987bae2",
+  "migration_committed_checkpoint": "ff458bc591b4e7e444af4464d6eef2513cdb335c",
+  "v21_schema_source": {
+    "sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+    "path": "crates/cc-db/src/sql/index_v1.sql",
+    "fixture": "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql",
+    "sha256": "00a7d1fc249c562160fc0cdc7978ba2198b4ee063f8c6cf77cc564dd3f27407f",
+    "byte_identical": true
+  },
+  "generation_intent": "reject mixed generations inside assembly; preserve accepted-generation freshness annotation after fence acceptance, not old post-serialization single-shot error behavior",
+  "runs": {
+    "schema": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "async_generation": {
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "guard_negative_unit_tests": {
+      "passed": 5,
+      "mutations_reject": "removed fence/finish, reversed generation predicates, wrong dispatch hook/path, comment/test-module decoys, wrong schema/predecessor"
+    },
+    "engine_fence": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "accepted_serialization_window": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "ci_stdio": {
+    "steps": 17,
+    "passed": 17,
+    "blocked": 0,
+    "not_run": 0,
+    "command_receipts": "ci-stdio-replay.json",
+    "path_adaptation": "CARGO_TARGET_DIR=/tmp/p7-017-build; old target/debug/codecortex mapped to actual build output",
+    "network": "only synthetic local/loopback fixtures; not a network namespace claim"
+  },
+  "changed_sha256": {
+    "docs/internals/MODULE_CAPABILITIES.json": "43de97e40767300716557c52919ca8d41c354b1122325c0a079c9d294742bac1",
+    "docs/internals/MODULE_INPUT_SAFETY.md": "6c70dc4b5d09e47dbc390994e09f7d173887aead2d4e9372110e056d697bcd17",
+    "docs/internals/SOURCE_CHUNKS.md": "d213546dcb0b49d077be58f6a45f49401af4199e9a9f3c664d8e2b3f2bec4ce6",
+    "scripts/check_module_architecture.py": "758ae341080810c60cc3b7286cbb44d4083c801194346af04bab6aef67ed20ed",
+    "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
+    "scripts/tests/test_p7_ci_architecture_guards.py": "d18bc2a8f0622eaa16e47043962d6dd50bd0c91292a2d0a3305711a4cd2df22a",
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": "2233df51b46ba0e1f715c918f4417051c21ce457552ea0b15b1c2300d639ba48",
+    "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql": "00a7d1fc249c562160fc0cdc7978ba2198b4ee063f8c6cf77cc564dd3f27407f",
+    "crates/cc-eval/tests/ci_generation_guard_contract.rs": "b10723d514d227747d036bdf0f4ea7a533af0ac7d829fa1c7ed789ac494dd40d"
+  },
+  "production_changed": false,
+  "Cargo_permissions_secrets_changed": false,
+  "not_run": [
+    "entire GitHub Actions job on a remote runner",
+    "full workspace test/clippy",
+    "full formal V18/V21 acceptance"
+  ],
+  "checklist": "two known architecture blockers repaired; broader tasks remain open"
+}

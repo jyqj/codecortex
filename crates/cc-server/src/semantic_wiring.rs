@@ -62,29 +62,27 @@ use cc_db::index_db::IndexDb;
 use cc_db::semantic_manifest_reads::SemanticManifestReads;
 use cc_db::semantic_outbox::ClaimedTask;
 use cc_model::config::ProjectConfig;
+use cc_model::query::QueryControl;
 use cc_model::retrieval::{
-    CandidateRef, LaneCoverage, LaneOutcome, LaneStatus, LANE_OUTCOME_SCHEMA_VERSION,
-    CANDIDATE_REF_SCHEMA_VERSION,
+    CandidateRef, LaneCoverage, LaneOutcome, LaneStatus, CANDIDATE_REF_SCHEMA_VERSION,
+    LANE_OUTCOME_SCHEMA_VERSION,
 };
 use cc_model::semantic::{SemanticRecall, SemanticRequest};
-use cc_model::query::QueryControl;
 use cc_model::{CcError, CcResult};
 use cc_semantic::cache::{
     namespace_key, resolve_cache_root_with, ArtifactCache, CacheRead, QueryCacheKey,
     QueryVectorCache, CACHE_ROOT_ENV,
 };
 use cc_semantic::capability::resolve_provider;
-use cc_semantic::degrade::{
-    quarantine_detected, requeue_after_degrade, DegradationLedger,
-};
+use cc_semantic::degrade::{quarantine_detected, requeue_after_degrade, DegradationLedger};
 use cc_semantic::gc::{run_gc_pass, GcConfig, GcCounters, GcPosition};
 use cc_semantic::ports::{DocumentInput, EmbeddingProvider, QueryInput};
 use cc_semantic::publish::Publisher;
-use cc_semantic::queue::{drain_pending, BatchReport, EmbedHandler, LeaseGuard, TaskExit};
+use cc_semantic::queue::{BatchReport, EmbedHandler, LeaseGuard, TaskExit};
 use cc_semantic::space_switch::{drain_space_revocations, RevocationDrainReport};
 use cc_semantic::spec::{QueryEncodingSpec, VectorSpace};
-use cc_semantic::types::{DocSpecDigest, InputDigest};
-use cc_semantic::vector::exact::{search, space_manifest_reads, ExactSearch};
+use cc_semantic::types::DocSpecDigest;
+use cc_semantic::vector::exact::{search_controlled, space_manifest_reads, ExactSearch};
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -157,10 +155,7 @@ pub fn provider_unhealthy_reason(
     ledger_degraded: bool,
 ) -> Option<&'static str> {
     use cc_semantic::providers::openai_compatible::{CircuitState, SystemRetryClock};
-    if !matches!(
-        breaker.state(&SystemRetryClock),
-        CircuitState::Closed
-    ) {
+    if !matches!(breaker.state(&SystemRetryClock), CircuitState::Closed) {
         return Some(BREAKER_OPEN_REASON);
     }
     if gate.snapshot().suspended_for.is_some() {
@@ -197,6 +192,8 @@ pub struct SemanticSubsystem {
     pub doc_spec: DocSpecDigest,
     /// Worker drain lease seconds (`semantic.worker_lease_secs`).
     pub lease_secs: f64,
+    /// Internal attempt width from existing explicit per-project admission config.
+    pub(crate) max_concurrent_per_project: usize,
     /// GC fresh-timestamp grace seconds (`semantic.gc_min_retention_secs`,
     /// validated ≥ 1 at assembly).
     pub gc_min_retention_secs: i64,
@@ -263,24 +260,10 @@ pub fn assemble_with(
     // P7-002: config → (frozen space, capability sheet). Missing keys and
     // capability mismatches are config errors that name the key.
     let (space, capability) = resolve_provider(&config.semantic)?;
-    // Shared provider gate / circuit breaker (P7-005/P7-006): the SAME
-    // composition-root singletons the worker side uses. First-wins: if the
-    // permissive/breaker defaults were already claimed by a lazy getter, the
-    // explicit limits do not replace them (documented pre-existing caveat).
-    // `from_provider_config` validates the `semantic.max_concurrent*` keys
-    // with key-naming config errors; the limits are then re-derived for the
-    // OnceLock init (same mapping, cannot fail after that validation).
-    if cc_semantic::admission::ProviderGate::from_provider_config(&config.semantic)?.is_some() {
-        let per_project = match config.semantic.max_concurrent_per_project {
-            0 => None,
-            cap => Some(cap as usize),
-        };
-        let limits = cc_semantic::admission::GateLimits::validated(
-            config.semantic.max_concurrent as usize,
-            per_project,
-        )?;
-        crate::service_factory::init_semantic_provider_gate(limits);
-    }
+    // Adopt caps on the SAME shared gate, before publishing subsystem state.
+    // Busy adoption and conflicting explicit policies are configuration errors.
+    // The circuit breaker still has its separate pre-existing first-wins policy.
+    crate::service_factory::configured_semantic_provider_gate(&config.semantic)?;
     crate::service_factory::init_semantic_circuit_breaker(
         cc_semantic::providers::openai_compatible::BreakerLimits::from_provider_config(
             &config.semantic,
@@ -332,6 +315,7 @@ pub fn assemble_with(
             namespace: namespace.clone(),
             space: space.clone(),
             query_spec: query_spec.clone(),
+            query_encoder: Arc::default(),
             // P7-013: the SAME process-wide failure picture the workers use
             // (gate + breaker singletons) plus this project's ledger. Read
             // per query, never mutated here; no permit/lease is taken.
@@ -352,6 +336,7 @@ pub fn assemble_with(
         query_spec,
         doc_spec,
         lease_secs: config.semantic.worker_lease_secs as f64,
+        max_concurrent_per_project: config.semantic.max_concurrent_per_project as usize,
         gc_min_retention_secs: config.semantic.gc_min_retention_secs as i64,
     }))
 }
@@ -409,15 +394,13 @@ pub fn wire_with(
 /// the P7-014 wiring-evidence stamp): recall port, degradation snapshot,
 /// and the `SemanticWiredInfo` marker that upgrades the capability state
 /// machine from `port_attached_unverified` to the real states.
-fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
+pub(crate) fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
     services.set_semantic(Some(subsystem.recall.clone()));
     services.set_semantic_wired(Some(SemanticWiredInfo {
         model_id: subsystem.space.model_id().to_owned(),
         dimensions: subsystem.space.dimension(),
     }));
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
 }
 
 /// Detach the semantic subsystem from the query services: every slot is
@@ -427,6 +410,8 @@ fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
 /// side-effect free: no cache content is touched, no worker state is lost
 /// (the outbox and the artifact cache outlive the process).
 pub fn teardown(services: &QueryServices) {
+    services.set_query_encoding_lifecycle(None);
+    services.set_semantic_worker(None);
     services.set_semantic(None);
     services.set_semantic_wired(None);
     services.set_semantic_degradation(None);
@@ -509,16 +494,28 @@ pub struct DrainOutcome {
 ///
 /// The record-schema read (rendered embedding input for a task) stays the
 /// caller's closure — the same decoupling `EmbedHandler` prescribes.
+#[derive(Debug, Clone, Copy)]
+pub struct WorkerDrainOptions<'a> {
+    pub owner: &'a str,
+    pub max_batch: usize,
+    pub now_unix: i64,
+    pub lifecycle: Option<&'a cc_db::semantic_publish::LifecycleFence>,
+}
+
 pub fn drain_worker_batch(
     db: &Arc<IndexDb>,
     subsystem: &SemanticSubsystem,
     services: &QueryServices,
     provider: &dyn EmbeddingProvider,
     resolve_input: &dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>>,
-    owner: &str,
-    max_batch: usize,
-    now_unix: i64,
+    options: WorkerDrainOptions<'_>,
 ) -> CcResult<DrainOutcome> {
+    let WorkerDrainOptions {
+        owner,
+        max_batch,
+        now_unix,
+        lifecycle,
+    } = options;
     let limits = cc_semantic::queue::WorkerLimits::validated(
         max_batch,
         subsystem.lease_secs,
@@ -534,52 +531,154 @@ pub fn drain_worker_batch(
         &subsystem.space,
         &subsystem.doc_spec,
         incarnation,
-    )?;
+    )?
+    .with_lifecycle(lifecycle);
     let handler = EmbedHandler::new(publisher, provider, resolve_input);
     let mut quarantined = 0usize;
     let mut requeued_after_degrade = 0usize;
-    let report = drain_pending(db, owner, &limits, &mut |guard: &LeaseGuard<'_>| {
-        // Degrade pre-check: a corrupt artifact must never reach the
-        // provider. Quarantine + requeue WITHOUT consuming the attempt
-        // budget; the task was disposed by the degrade path itself, so the
-        // loop must not touch it again.
-        let task = guard.task();
-        let input = cc_semantic::degrade::task_input(task);
-        if let CacheRead::Corrupt(report) =
-            subsystem
-                .cache
-                .get(&subsystem.space, &input, &subsystem.doc_spec)?
-        {
-            let record = quarantine_detected(
-                &subsystem.cache,
-                &subsystem.ledger,
-                &subsystem.space,
-                &input,
-                &subsystem.doc_spec,
-                &report,
-                now_unix,
-            )?;
-            quarantined += usize::from(record.is_some());
-            if requeue_after_degrade(
-                db,
-                task,
-                "semantic degrade: corrupt cache artifact quarantined, task requeued",
-            )? {
-                requeued_after_degrade += 1;
+    let report = cc_semantic::queue::drain_pending_with_lifecycle(
+        db,
+        owner,
+        &limits,
+        lifecycle,
+        &mut |guard: &LeaseGuard<'_>| {
+            // Degrade pre-check: a corrupt artifact must never reach the
+            // provider. Quarantine + requeue WITHOUT consuming the attempt
+            // budget; the task was disposed by the degrade path itself, so the
+            // loop must not touch it again.
+            let task = guard.task();
+            let input = cc_semantic::degrade::task_input(task);
+            if let CacheRead::Corrupt(report) =
+                subsystem
+                    .cache
+                    .get(&subsystem.space, &input, &subsystem.doc_spec)?
+            {
+                let record = quarantine_detected(
+                    &subsystem.cache,
+                    &subsystem.ledger,
+                    &subsystem.space,
+                    &input,
+                    &subsystem.doc_spec,
+                    &report,
+                    now_unix,
+                )?;
+                quarantined += usize::from(record.is_some());
+                if requeue_after_degrade(
+                    db,
+                    task,
+                    "semantic degrade: corrupt cache artifact quarantined, task requeued",
+                )? {
+                    requeued_after_degrade += 1;
+                }
+                return Ok(TaskExit::Disposed);
             }
-            return Ok(TaskExit::Disposed);
-        }
-        handler.handle(guard)
-    })?;
+            handler.handle(guard)
+        },
+    )?;
     // 状态轮询转写: the probe's degradation view follows the worker, not
     // the assembly instant.
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    let owner: Arc<dyn cc_model::semantic::SemanticRecall> = subsystem.recall.clone();
+    services.set_semantic_degradation_for(
+        &owner,
+        SemanticDegradation::from(subsystem.ledger.snapshot()),
+    );
     Ok(DrainOutcome {
         batch: report,
         quarantined,
         requeued_after_degrade,
+    })
+}
+
+pub(crate) fn drain_worker_batch_parallel(
+    db: &Arc<IndexDb>,
+    subsystem: &SemanticSubsystem,
+    services: &QueryServices,
+    provider: &dyn EmbeddingProvider,
+    resolve_input: &(dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>> + Sync),
+    options: WorkerDrainOptions<'_>,
+) -> CcResult<DrainOutcome> {
+    let WorkerDrainOptions {
+        owner,
+        max_batch,
+        now_unix,
+        lifecycle,
+    } = options;
+    let limits = cc_semantic::queue::WorkerLimits::validated(
+        max_batch,
+        subsystem.lease_secs,
+        WORKER_BACKOFF_SECS,
+        WORKER_MAX_ATTEMPTS,
+    )?;
+    // The publish CAS fence compares against the incarnation on the spot
+    // (a ghost process is refused with zero writes, P6-014 fence).
+    let incarnation = db.reads().read_generation()?.incarnation;
+    let quarantined = std::sync::atomic::AtomicUsize::new(0);
+    let requeued_after_degrade = std::sync::atomic::AtomicUsize::new(0);
+    let report = cc_semantic::queue::drain_pending_parallel_with_lifecycle(
+        db,
+        owner,
+        &limits,
+        lifecycle,
+        subsystem.max_concurrent_per_project,
+        &|guard: &LeaseGuard<'_>| {
+            // Degrade pre-check: a corrupt artifact must never reach the
+            // provider. Quarantine + requeue WITHOUT consuming the attempt
+            // budget; the task was disposed by the degrade path itself, so the
+            // loop must not touch it again.
+            if db.semantic_active_space()?.as_deref() != Some(subsystem.space.digest()?.as_str()) {
+                return Ok(TaskExit::Cancelled { started: false });
+            }
+            let task = guard.task();
+            let input = cc_semantic::degrade::task_input(task);
+            if let CacheRead::Corrupt(report) =
+                subsystem
+                    .cache
+                    .get(&subsystem.space, &input, &subsystem.doc_spec)?
+            {
+                let record = quarantine_detected(
+                    &subsystem.cache,
+                    &subsystem.ledger,
+                    &subsystem.space,
+                    &input,
+                    &subsystem.doc_spec,
+                    &report,
+                    now_unix,
+                )?;
+                quarantined.fetch_add(
+                    usize::from(record.is_some()),
+                    std::sync::atomic::Ordering::Relaxed,
+                );
+                if requeue_after_degrade(
+                    db,
+                    task,
+                    "semantic degrade: corrupt cache artifact quarantined, task requeued",
+                )? {
+                    requeued_after_degrade.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }
+                return Ok(TaskExit::Disposed);
+            }
+            let publisher = Publisher::new(
+                db,
+                &subsystem.cache,
+                &subsystem.space,
+                &subsystem.doc_spec,
+                incarnation,
+            )?
+            .with_lifecycle(lifecycle);
+            EmbedHandler::new(publisher, provider, resolve_input).handle(guard)
+        },
+    );
+    // 状态轮询转写: the probe's degradation view follows the worker, not
+    // the assembly instant.
+    let owner: Arc<dyn cc_model::semantic::SemanticRecall> = subsystem.recall.clone();
+    services.set_semantic_degradation_for(
+        &owner,
+        SemanticDegradation::from(subsystem.ledger.snapshot()),
+    );
+    Ok(DrainOutcome {
+        batch: report?,
+        quarantined: quarantined.load(std::sync::atomic::Ordering::Relaxed),
+        requeued_after_degrade: requeued_after_degrade.load(std::sync::atomic::Ordering::Relaxed),
     })
 }
 
@@ -601,7 +700,8 @@ pub fn run_gc_until_exhausted(
     let mut total = GcCounters::default();
     let mut after: Option<GcPosition> = None;
     for _ in 0..GC_MAX_ROUNDS {
-        let (counters, resume, exhausted) = run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
+        let (counters, resume, _exhausted) =
+            run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
         total.kept_fresh += counters.kept_fresh;
         total.kept_referenced += counters.kept_referenced;
         total.kept_live_task += counters.kept_live_task;
@@ -644,7 +744,7 @@ pub fn drain_revocations_with_reclaim(
     max_batch: usize,
     now_unix: i64,
 ) -> CcResult<RevocationReclaimReport> {
-    if db.reads().semantic_active_space()?.as_deref() == Some(space_id) {
+    if db.semantic_active_space()?.as_deref() == Some(space_id) {
         return Err(CcError::InvalidParams(format!(
             "revocation drain refuses the ACTIVE space {space_id}: only revoked or \
              diagnostic spaces are drainable (use drain_worker_batch for the active space)"
@@ -662,9 +762,7 @@ pub fn drain_revocations_with_reclaim(
     let gc = run_gc_until_exhausted(db, subsystem, now_unix)?;
     // The reclaim can move the visible set only inside the drain's own
     // consume transactions; the snapshot refresh keeps the probe current.
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
     Ok(RevocationReclaimReport { revocations, gc })
 }
 
@@ -674,6 +772,7 @@ pub fn drain_revocations_with_reclaim(
 /// receipts (doc version / source span / coverage). Contains no provider and
 /// no transport type; the caller (lane adapter + `append_semantic_outcome`)
 /// re-verifies generation and identity against its own DB.
+#[derive(Clone)]
 pub struct ExactRecallService {
     db: Arc<IndexDb>,
     cache: Arc<ArtifactCache>,
@@ -684,10 +783,22 @@ pub struct ExactRecallService {
     /// P7-013 degradation seam: consulted before any scan; `Some(reason)`
     /// short-circuits the lane into an `Unavailable(reason)` receipt.
     health: ProviderHealth,
+    query_encoder:
+        Arc<std::sync::RwLock<Option<std::sync::Weak<crate::semantic_runtime::SemanticRuntime>>>>,
 }
 
 impl ExactRecallService {
-    /// Cache-miss outcome: the query path never encodes inline. This is a
+    #[cfg(feature = "semantic-http")]
+    pub(crate) fn install_query_encoder(
+        &self,
+        runtime: std::sync::Weak<crate::semantic_runtime::SemanticRuntime>,
+    ) {
+        *self
+            .query_encoder
+            .write()
+            .unwrap_or_else(|p| p.into_inner()) = Some(runtime);
+    }
+    /// Cache-miss outcome when the independently opted-in encoder is absent. This is a
     /// per-query `Unavailable` (C10: "no result" ≠ "did not run"), cacheable
     /// no, retried no — P7-012/P7-013 own the inline-encoding ruling.
     fn unavailable(&self, reason: &str, started: std::time::Instant) -> LaneOutcome {
@@ -705,146 +816,277 @@ impl ExactRecallService {
     }
 }
 
+impl ExactRecallService {
+    async fn recall_on(
+        &self,
+        request: SemanticRequest,
+        control: QueryControl,
+        pool: cc_search::execution::ExecutionPool,
+    ) -> CcResult<LaneOutcome> {
+        control.check()?;
+        if !request.scope.is_empty() {
+            let runtime = self
+                .query_encoder
+                .read()
+                .unwrap_or_else(|p| p.into_inner())
+                .as_ref()
+                .and_then(std::sync::Weak::upgrade);
+            if let Some(runtime) = runtime {
+                // Resolve an empty persisted domain before query text egress.
+                // The CPU job releases its read connection before network work.
+                let probe = self.clone();
+                let scope = request.scope.clone();
+                let inside = control.clone();
+                let admission = QueryControl::new(control.remaining())?;
+                let has_documents = cc_search::execution::until(
+                    &control,
+                    pool.run_cpu(admission, move || {
+                        let health = (probe.health)();
+                        inside.check()?;
+                        let exists = probe.scope_has_documents(&scope, &inside)?;
+                        Ok((exists, health))
+                    }),
+                )
+                .await??;
+                let (has_documents, health) = has_documents;
+                if let Some(reason) = health {
+                    return Ok(self.unavailable(reason, std::time::Instant::now()));
+                }
+                if !has_documents {
+                    return Ok(LaneOutcome {
+                        schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+                        lane_id: LANE_ID.into(),
+                        weight: 1.0,
+                        status: LaneStatus::Complete,
+                        elapsed_us: 0,
+                        candidate_count: 0,
+                        coverage: LaneCoverage::complete(None, 0),
+                        truncation_reason: None,
+                        candidates: Vec::new(),
+                    });
+                }
+                match runtime
+                    .encode_query(request.query.clone(), control.clone())
+                    .await
+                {
+                    Ok(()) => {}
+                    Err(
+                        error @ (cc_model::CcError::QueryTimedOut
+                        | cc_model::CcError::QueryCancelled
+                        | cc_model::CcError::QueryBusy),
+                    ) => return Err(error),
+                    Err(_) => {
+                        return Ok(self.unavailable(
+                            "semantic_query_encoding_failed",
+                            std::time::Instant::now(),
+                        ))
+                    }
+                }
+            }
+        }
+        control.check()?;
+        let service = self.clone();
+        // run_cpu cancels its own control when the waiting future is
+        // dropped. Give admission an independent token so a lane timeout
+        // cannot cancel the parent's local fallback. The worker still
+        // checks the original child deadline and parent cancellation.
+        let admission = QueryControl::new(control.remaining())?;
+        let inside = control.clone();
+        cc_search::execution::until(
+            &control,
+            pool.run_cpu(admission, move || service.recall_blocking(request, inside)),
+        )
+        .await?
+    }
+
+    fn scope_has_documents(
+        &self,
+        scope: &cc_model::retrieval::HardScope,
+        control: &QueryControl,
+    ) -> CcResult<bool> {
+        control.check()?;
+        let conn = self.db.read_conn()?;
+        let mut statement = conn.prepare(
+            "SELECT d.file_path,f.language FROM document_manifest d JOIN files f ON f.file_path=d.file_path WHERE ?1 IS NULL OR instr(d.file_path,?1)=1",
+        ).map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        let mut rows = statement
+            .query([scope.path_prefix.as_deref()])
+            .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        while let Some(row) = rows
+            .next()
+            .map_err(|e| cc_model::CcError::Database(e.to_string()))?
+        {
+            control.check()?;
+            let path: String = row
+                .get(0)
+                .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+            let language: String = row
+                .get(1)
+                .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+            if scope.passes(&path, cc_model::Language::from_name(&language)) {
+                return Ok(true);
+            }
+        }
+        control.check()?;
+        Ok(false)
+    }
+
+    /// Entire synchronous scan/receipt assembly lives on the bounded worker.
+    fn recall_blocking(
+        &self,
+        request: SemanticRequest,
+        control: QueryControl,
+    ) -> CcResult<LaneOutcome> {
+        control.check()?;
+        let started = std::time::Instant::now();
+        // 0. P7-013 degradation gate: a provider-side failure (breaker
+        //    open/half-open, 429 gate pause, ledger degraded) silently
+        //    degrades THIS query's dense lane to an explicit
+        //    `Unavailable` receipt — before any scan, before any lock,
+        //    before the query vector cache is even read. The query
+        //    keeps its local lanes; the reason stays on the receipt.
+        let unhealthy = (self.health)();
+        control.check()?;
+        if let Some(reason) = unhealthy {
+            return Ok(self.unavailable(reason, started));
+        }
+        // 1. Query vector from the P7-009 cache ONLY — no provider, no
+        //    transport, nothing HTTP-shaped on this path.
+        let input = QueryInput::from_bytes(request.query.as_bytes())?;
+        let key = QueryCacheKey::new(&self.namespace, &self.query_spec, &input)?;
+        let Some(vector) = self.query_cache.get(&key) else {
+            return Ok(self.unavailable("query_vector_not_encoded", started));
+        };
+        control.check()?;
+        // 2. Filtered exact top-k (C09: hard scope before top-k) over the
+        //    published manifest × artifact cache, under one short DB read
+        //    connection. Freshness stays with the caller: the lane
+        //    adapter re-verifies `request.generation` against the live
+        //    generation after this returns. The scope declaration (P7-011,
+        //    wiring todo 12) runs on its own checkout AFTER the scan
+        //    released its connection (never a nested checkout); the
+        //    adapter's generation re-verification covers the interleave.
+        let space_digest = self.space.digest()?;
+        let scored = {
+            let conn = self.db.read_conn()?;
+            let manifest = SemanticManifestReads::on(&conn);
+            let scoped = space_manifest_reads(&manifest, &space_digest);
+            search_controlled(
+                &self.cache,
+                &scoped,
+                ExactSearch {
+                    space: &self.space,
+                    query: &vector.data,
+                    filter: &request.scope,
+                    k: request.limit,
+                    batch_rows: EXACT_BATCH_ROWS,
+                },
+                &control,
+            )?
+        };
+        // P7-013 recall checkpoint: the total deadline owns the whole
+        // lane (encoding → recall → fusion contribution); expiry here
+        // propagates as `QueryTimedOut`, which the lane adapter turns
+        // into a Timeout receipt instead of blocking the query.
+        control.check()?;
+        let declaration = crate::semantic_scope_guard::declare(
+            &self.db,
+            space_digest.as_str(),
+            &request.scope,
+            scored.len(),
+        )?;
+        // P7-011 scope fence: a recall whose space is not the active
+        // publishing space returns nothing (P6-017 混排拒绝), never a
+        // Complete-over-nothing receipt.
+        if !declaration.status.is_fusable() {
+            return Ok(LaneOutcome {
+                schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+                lane_id: LANE_ID.into(),
+                weight: 1.0,
+                status: declaration.status,
+                elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
+                candidate_count: 0,
+                coverage: declaration.coverage,
+                truncation_reason: declaration.truncation_reason,
+                candidates: Vec::new(),
+            });
+        }
+        // 3. Versioned identity for the receipts (doc version / source
+        //    span). The exact backend speaks doc_keys; the sanctioned
+        //    candidate reader speaks chunk_ids, so the doc_key →
+        //    chunk_id mapping comes from the document manifest first
+        //    (a manifest row without a current document is an integrity
+        //    error — the caller re-verifies every reference against its
+        //    own DB regardless).
+        let doc_keys: Vec<&str> = scored.iter().map(|doc| doc.doc_key.as_str()).collect();
+        control.check()?;
+        let chunk_ids = self.db.retrieval().chunk_ids_by_doc_keys(&doc_keys)?;
+        let mut missing: std::collections::HashSet<&str> = doc_keys.iter().copied().collect();
+        for (doc_key, _) in &chunk_ids {
+            missing.remove(doc_key.as_str());
+        }
+        if !missing.is_empty() {
+            return Err(CcError::Search(
+                "semantic candidate is not a current document".into(),
+            ));
+        }
+        let chunk_id_refs: Vec<&str> = chunk_ids.iter().map(|(_, id)| id.as_str()).collect();
+        let rows = self
+            .db
+            .retrieval()
+            .chunk_candidate_rows_by_ids(&chunk_id_refs)?;
+        let mut rows_by_doc_key: HashMap<&str, &_> = rows
+            .iter()
+            .map(|row| (row.document.doc_key.as_str(), row))
+            .collect();
+        let mut candidates = Vec::with_capacity(scored.len());
+        for (rank, doc) in scored.iter().enumerate() {
+            control.check()?;
+            let row = rows_by_doc_key
+                .remove(doc.doc_key.as_str())
+                .ok_or_else(|| {
+                    CcError::Search("semantic candidate is not a current document".into())
+                })?;
+            candidates.push(CandidateRef {
+                schema_version: CANDIDATE_REF_SCHEMA_VERSION,
+                document: row.document.clone(),
+                source_span: row.source_evidence.span,
+                legacy_chunk_id: row.chunk_id.clone(),
+                lane_id: LANE_ID.into(),
+                lane_rank: rank + 1,
+                raw_score: doc.score,
+                scoring_spec: SCORING_SPEC.into(),
+                exact_identity: false,
+            });
+        }
+        // The scope declaration owns the receipt's honesty: an exact scan
+        // over a fully published hard scope stays Complete (top-k is the
+        // requested limit, not a truncation); partial publication
+        // coverage of the scope surfaces as Partial +
+        // `semantic_coverage_uncovered` — never a Complete receipt over
+        // missing vectors (P6-018 口径, recall layer).
+        control.check()?;
+        Ok(LaneOutcome {
+            schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+            lane_id: LANE_ID.into(),
+            weight: 1.0,
+            status: declaration.status,
+            elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
+            candidate_count: candidates.len(),
+            coverage: declaration.coverage,
+            truncation_reason: declaration.truncation_reason,
+            candidates,
+        })
+    }
+}
+
 impl SemanticRecall for ExactRecallService {
     fn recall(
         &self,
         request: SemanticRequest,
         control: QueryControl,
     ) -> Pin<Box<dyn Future<Output = CcResult<LaneOutcome>> + Send + '_>> {
-        Box::pin(async move {
-            let started = std::time::Instant::now();
-            // 0. P7-013 degradation gate: a provider-side failure (breaker
-            //    open/half-open, 429 gate pause, ledger degraded) silently
-            //    degrades THIS query's dense lane to an explicit
-            //    `Unavailable` receipt — before any scan, before any lock,
-            //    before the query vector cache is even read. The query
-            //    keeps its local lanes; the reason stays on the receipt.
-            if let Some(reason) = (self.health)() {
-                return Ok(self.unavailable(reason, started));
-            }
-            // 1. Query vector from the P7-009 cache ONLY — no provider, no
-            //    transport, nothing HTTP-shaped on this path.
-            let input = QueryInput::from_bytes(request.query.as_bytes())?;
-            let key = QueryCacheKey::new(&self.namespace, &self.query_spec, &input)?;
-            let Some(vector) = self.query_cache.get(&key) else {
-                return Ok(self.unavailable("query_vector_not_encoded", started));
-            };
-            control.check()?;
-            // 2. Filtered exact top-k (C09: hard scope before top-k) over the
-            //    published manifest × artifact cache, under one short DB read
-            //    connection. Freshness stays with the caller: the lane
-            //    adapter re-verifies `request.generation` against the live
-            //    generation after this returns. The scope declaration (P7-011,
-            //    wiring todo 12) runs on its own checkout AFTER the scan
-            //    released its connection (never a nested checkout); the
-            //    adapter's generation re-verification covers the interleave.
-            let space_digest = self.space.digest()?;
-            let scored = {
-                let conn = self.db.read_conn()?;
-                let manifest = SemanticManifestReads::on(&conn);
-                let scoped = space_manifest_reads(&manifest, &space_digest);
-                search(
-                    &self.cache,
-                    &scoped,
-                    ExactSearch {
-                        space: &self.space,
-                        query: &vector.data,
-                        filter: &request.scope,
-                        k: request.limit,
-                        batch_rows: EXACT_BATCH_ROWS,
-                    },
-                )?
-            };
-            // P7-013 recall checkpoint: the total deadline owns the whole
-            // lane (encoding → recall → fusion contribution); expiry here
-            // propagates as `QueryTimedOut`, which the lane adapter turns
-            // into a Timeout receipt instead of blocking the query.
-            control.check()?;
-            let declaration = crate::semantic_scope_guard::declare(
-                &self.db,
-                space_digest.as_str(),
-                &request.scope,
-                scored.len(),
-            )?;
-            // P7-011 scope fence: a recall whose space is not the active
-            // publishing space returns nothing (P6-017 混排拒绝), never a
-            // Complete-over-nothing receipt.
-            if !declaration.status.is_fusable() {
-                return Ok(LaneOutcome {
-                    schema_version: LANE_OUTCOME_SCHEMA_VERSION,
-                    lane_id: LANE_ID.into(),
-                    weight: 1.0,
-                    status: declaration.status,
-                    elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
-                    candidate_count: 0,
-                    coverage: declaration.coverage,
-                    truncation_reason: declaration.truncation_reason,
-                    candidates: Vec::new(),
-                });
-            }
-            // 3. Versioned identity for the receipts (doc version / source
-            //    span). The exact backend speaks doc_keys; the sanctioned
-            //    candidate reader speaks chunk_ids, so the doc_key →
-            //    chunk_id mapping comes from the document manifest first
-            //    (a manifest row without a current document is an integrity
-            //    error — the caller re-verifies every reference against its
-            //    own DB regardless).
-            let doc_keys: Vec<&str> = scored.iter().map(|doc| doc.doc_key.as_str()).collect();
-            let chunk_ids = self.db.retrieval().chunk_ids_by_doc_keys(&doc_keys)?;
-            let mut missing: std::collections::HashSet<&str> =
-                doc_keys.iter().copied().collect();
-            for (doc_key, _) in &chunk_ids {
-                missing.remove(doc_key.as_str());
-            }
-            if !missing.is_empty() {
-                return Err(CcError::Search(
-                    "semantic candidate is not a current document".into(),
-                ));
-            }
-            let chunk_id_refs: Vec<&str> = chunk_ids.iter().map(|(_, id)| id.as_str()).collect();
-            let rows = self
-                .db
-                .retrieval()
-                .chunk_candidate_rows_by_ids(&chunk_id_refs)?;
-            let mut rows_by_doc_key: HashMap<&str, &_> = rows
-                .iter()
-                .map(|row| (row.document.doc_key.as_str(), row))
-                .collect();
-            let mut candidates = Vec::with_capacity(scored.len());
-            for (rank, doc) in scored.iter().enumerate() {
-                let row = rows_by_doc_key.remove(doc.doc_key.as_str()).ok_or_else(|| {
-                    CcError::Search("semantic candidate is not a current document".into())
-                })?;
-                candidates.push(CandidateRef {
-                    schema_version: CANDIDATE_REF_SCHEMA_VERSION,
-                    document: row.document.clone(),
-                    source_span: row.source_evidence.span,
-                    legacy_chunk_id: row.chunk_id.clone(),
-                    lane_id: LANE_ID.into(),
-                    lane_rank: rank + 1,
-                    raw_score: doc.score,
-                    scoring_spec: SCORING_SPEC.into(),
-                    exact_identity: false,
-                });
-            }
-            // The scope declaration owns the receipt's honesty: an exact scan
-            // over a fully published hard scope stays Complete (top-k is the
-            // requested limit, not a truncation); partial publication
-            // coverage of the scope surfaces as Partial +
-            // `semantic_coverage_uncovered` — never a Complete receipt over
-            // missing vectors (P6-018 口径, recall layer).
-            Ok(LaneOutcome {
-                schema_version: LANE_OUTCOME_SCHEMA_VERSION,
-                lane_id: LANE_ID.into(),
-                weight: 1.0,
-                status: declaration.status,
-                elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
-                candidate_count: candidates.len(),
-                coverage: declaration.coverage,
-                truncation_reason: declaration.truncation_reason,
-                candidates,
-            })
-        })
+        Box::pin(self.recall_on(request, control, crate::service_factory::query_pool()))
     }
 }
 
@@ -956,7 +1198,10 @@ mod tests {
         )
         .expect_err("missing model_id must refuse");
         assert!(error.to_string().contains("semantic.model_id"));
-        assert!(!services_attached(&services), "a refused config never wires");
+        assert!(
+            !services_attached(&services),
+            "a refused config never wires"
+        );
 
         let mut config = enabled_config();
         config.semantic.dimensions = None;
@@ -1082,14 +1327,13 @@ mod tests {
             .ledger
             .note_corrupt(&InputDigest::of_input(b"corrupt-input").expect("digest"));
         // The composition root re-forwards the snapshot (one-line bridge).
-        services.set_semantic_degradation(Some(
-            SemanticDegradation::from(subsystem.ledger.snapshot()),
-        ));
+        services
+            .set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
         let degradation = services.semantic_degradation().expect("bridged");
         assert!(degradation.degraded);
         let retrieval = &probe(&services, Some(&config))["retrieval"];
         assert_eq!(retrieval["semantic_state"], "degraded");
-        assert!(retrieval["degraded_reason"].as_array().unwrap().len() >= 1);
+        assert!(!retrieval["degraded_reason"].as_array().unwrap().is_empty());
     }
 
     #[tokio::test]
@@ -1117,11 +1361,7 @@ mod tests {
         );
 
         // 2. dense recall through the production port + lane receipt gate.
-        let generation = world
-            .db
-            .reads()
-            .read_generation()
-            .expect("read generation");
+        let generation = world.db.reads().read_generation().expect("read generation");
         let control = QueryControl::new(std::time::Duration::from_millis(5_000)).unwrap();
         let raw = subsystem
             .recall
@@ -1299,7 +1539,10 @@ mod tests {
             outcome.truncation_reason.as_deref(),
             Some(crate::semantic_scope_guard::PARTIAL_COVERAGE_REASON)
         );
-        assert!(!outcome.coverage.complete, "partial must never read complete");
+        assert!(
+            !outcome.coverage.complete,
+            "partial must never read complete"
+        );
         assert_eq!(outcome.candidate_count, 1);
         assert_eq!(outcome.candidates[0].document.doc_key, world.doc_key);
         outcome.validate().expect("partial receipt validates");
@@ -1392,12 +1635,112 @@ mod tests {
             namespace: subsystem.namespace.clone(),
             space: subsystem.space.clone(),
             query_spec: subsystem.query_spec.clone(),
+            query_encoder: Arc::default(),
             health,
         }
     }
 
     fn unhealthy(reason: &'static str) -> ProviderHealth {
         Arc::new(move || Some(reason))
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn recall_worker_timeout_and_cancellation_keep_capacity_until_exit() {
+        use std::sync::{
+            atomic::{AtomicBool, Ordering},
+            Mutex,
+        };
+        use std::time::Duration;
+
+        for cancel_parent in [false, true] {
+            let (world, subsystem, _services) = seeded_world("recall-cancel-worker").await;
+            warm_query_cache(&subsystem).await;
+            let pool = cc_search::execution::ExecutionPool::new(1, 0, 1).unwrap();
+            let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+            let started_tx = Mutex::new(Some(started_tx));
+            let (release_tx, release_rx) = std::sync::mpsc::channel();
+            let release_rx = Mutex::new(release_rx);
+            let exited = Arc::new(AtomicBool::new(false));
+            let health: ProviderHealth = {
+                let exited = exited.clone();
+                Arc::new(move || {
+                    started_tx.lock().unwrap().take().unwrap().send(()).unwrap();
+                    // Synthetic blocking I/O at the worker boundary. The safety
+                    // timeout prevents a failed test from leaking a stuck thread.
+                    let _ = release_rx
+                        .lock()
+                        .unwrap()
+                        .recv_timeout(Duration::from_secs(3));
+                    exited.store(true, Ordering::Release);
+                    None
+                })
+            };
+            let service = service_with_health(&world, &subsystem, health);
+            let parent = QueryControl::new(Duration::from_secs(5)).unwrap();
+            let child = parent.child(Duration::from_millis(200));
+            let request = SemanticRequest {
+                query: QUERY_TEXT.into(),
+                scope: HardScope::default(),
+                limit: 8,
+                policy_fingerprint: "worker-cancel-test".into(),
+                generation: world.db.reads().read_generation().unwrap(),
+            };
+            let worker_pool = pool.clone();
+            let query =
+                tokio::spawn(async move { service.recall_on(request, child, worker_pool).await });
+            tokio::time::timeout(Duration::from_secs(1), started_rx)
+                .await
+                .unwrap()
+                .unwrap();
+            // This current-thread runtime remains schedulable while synchronous
+            // work is blocked. Parent cancellation uses the original token.
+            if cancel_parent {
+                parent.cancel();
+            }
+            let result = tokio::time::timeout(Duration::from_secs(1), query)
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(if cancel_parent {
+                matches!(result, Err(CcError::QueryCancelled))
+            } else {
+                matches!(result, Err(CcError::QueryTimedOut))
+            });
+            assert!(
+                !exited.load(Ordering::Acquire),
+                "caller returned before blocking I/O exited"
+            );
+            assert_eq!(pool.stats().cpu_in_flight, 1);
+            assert_eq!(pool.stats().cpu_admitted, 1);
+            let local = QueryControl::new(Duration::from_secs(1)).unwrap();
+            assert!(matches!(
+                pool.run_cpu(local, || Ok(())).await,
+                Err(CcError::QueryBusy)
+            ));
+            if !cancel_parent {
+                parent
+                    .check()
+                    .expect("lane timeout must leave the local fallback usable");
+            }
+            release_tx.send(()).unwrap();
+            tokio::time::timeout(Duration::from_secs(1), async {
+                while {
+                    let stats = pool.stats();
+                    stats.cpu_in_flight != 0 || stats.cpu_admitted != 0
+                } {
+                    tokio::task::yield_now().await;
+                }
+            })
+            .await
+            .unwrap();
+            assert!(exited.load(Ordering::Acquire));
+            let local = if cancel_parent {
+                QueryControl::new(Duration::from_secs(1)).unwrap()
+            } else {
+                parent.clone()
+            };
+            assert_eq!(pool.run_cpu(local, || Ok(42)).await.unwrap(), 42);
+        }
     }
 
     async fn warm_query_cache(subsystem: &SemanticSubsystem) {
@@ -1428,9 +1771,8 @@ mod tests {
         use cc_semantic::types::InputDigest;
         use std::time::Duration;
 
-        let healthy_breaker = CircuitBreaker::new(
-            BreakerLimits::validated(2, Duration::from_secs(1)).unwrap(),
-        );
+        let healthy_breaker =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_secs(1)).unwrap());
         let healthy_gate = ProviderGate::new(GateLimits::permissive());
         let healthy_ledger = DegradationLedger::new(None);
         assert_eq!(
@@ -1443,9 +1785,8 @@ mod tests {
             "closed breaker + live gate + clean ledger is healthy"
         );
 
-        let tripped = CircuitBreaker::new(
-            BreakerLimits::validated(2, Duration::from_secs(60)).unwrap(),
-        );
+        let tripped =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_secs(60)).unwrap());
         let clock = MockRetryClock::new(1_000);
         tripped.record_failure(&clock);
         tripped.record_failure(&clock);
@@ -1661,7 +2002,13 @@ mod tests {
         conn.execute(
             "INSERT INTO document_manifest(doc_key,doc_version,file_path,chunk_id,encoding_key,\
              reference_json,record_json) VALUES(?1,?2,'src/d1.rs','c-d1',?3,?4,?5)",
-            rusqlite::params![doc_key, doc_version, input_digest, reference_json, record_json],
+            rusqlite::params![
+                doc_key,
+                doc_version,
+                input_digest,
+                reference_json,
+                record_json
+            ],
         )
         .unwrap();
         cc_db::semantic_outbox::supersede_and_enqueue_on(

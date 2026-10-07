@@ -1,0 +1,84 @@
+{
+  "fixed_product": "780502322816e4fd1d61d8f77a98d7d6b635d9fb",
+  "rustflags": "-D warnings",
+  "records": [
+    {
+      "name": "toolchain",
+      "argv": [
+        "rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit": 0,
+      "seconds": 0.094,
+      "log_sha256": "4fdff2578428e9c5c08ddd7a0d3079c1a106b1cdaa46e73e46f7cd32b0fb9cad"
+    },
+    {
+      "name": "fmt",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 3.302,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lint",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 78.091,
+      "log_sha256": "6b51b1fb635bfbd97c4d9ac3b041da5f34e34091059df0ff291c501e44c5994e"
+    },
+    {
+      "name": "build",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "build",
+        "--locked",
+        "--workspace",
+        "--all-targets"
+      ],
+      "exit": 0,
+      "seconds": 223.207,
+      "log_sha256": "0b8cf47e116b2901009917d7fe743fe713c51722cd309b0ede846fe59ad992a8"
+    },
+    {
+      "name": "index",
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "python_inventory_capture",
+        "--test",
+        "python_inventory_resource_integration",
+        "--test",
+        "python_identity_resource_integration"
+      ],
+      "exit": 101,
+      "seconds": 25.914,
+      "log_sha256": "abc184159bc2b373737fcd81e2c4448a9fa6934fc3e0abe7c9d5c6e893f3bd39"
+    }
+  ],
+  "scope": "bounded_capture_admission_and_source_integrity",
+  "formal_DEV_100k_runtime_private42_GCWALfaults": "not_run"
+}

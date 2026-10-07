@@ -1,0 +1,67 @@
+   Compiling libc v0.2.183
+   Compiling serde_core v1.0.228
+   Compiling smallvec v1.15.1
+   Compiling memchr v2.8.0
+   Compiling serde v1.0.228
+   Compiling hashbrown v0.17.1
+   Compiling serde_json v1.0.149
+   Compiling jobserver v0.1.34
+   Compiling parking_lot_core v0.9.12
+   Compiling getrandom v0.4.2
+   Compiling cc v1.2.58
+   Compiling parking_lot v0.12.5
+   Compiling tracing-core v0.1.36
+   Compiling scheduled-thread-pool v0.2.7
+   Compiling rand v0.10.3
+   Compiling hashlink v0.12.1
+   Compiling aho-corasick v1.1.4
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling libsqlite3-sys v0.38.1
+   Compiling blake3 v1.8.4
+   Compiling log v0.4.29
+   Compiling bitflags v2.11.0
+   Compiling tracing v0.1.44
+   Compiling regex-automata v0.4.14
+   Compiling r2d2 v0.8.10
+   Compiling uuid v1.23.0
+   Compiling chrono v0.4.44
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling regex v1.12.3
+   Compiling rusqlite v0.40.1
+   Compiling r2d2_sqlite v0.35.0
+   Compiling zstd-safe v7.2.4
+   Compiling zstd v0.13.3
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.69s
+     Running tests/bounded_parallel.rs (target/candidate-integration/debug/deps/bounded_parallel-76fe7340d767772b)
+
+running 10 tests
+test closed_lifecycle_during_handled_retry_still_stops_claims ... ok
+test normal_enqueue_during_one_inflight_attempt_is_drained_despite_peer_empty_claim ... ok
+test both_parallel_errors_propagate_after_join_and_retry_each_independent_token ... ok
+test close_joins_two_started_attempts_and_restores_pending_with_spent_attempts ... ok
+test ordinary_document_edit_fences_old_attempt_while_neighbor_publishes ... ok
+test ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space ... ok
+test ordinary_provider_failure_retries_within_the_shared_finite_budget ... ok
+test unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls ... ok
+test handled_retry_keeps_shared_budget_and_independent_tokens ... ok
+test width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+     Running tests/queue_worker.rs (target/candidate-integration/debug/deps/queue_worker-31cf8d5dd14bb52a)
+
+running 9 tests
+test drop_of_undisposed_lease_leaves_the_claim_recoverable ... ok
+test drain_publishes_end_to_end_through_the_fake_provider ... ok
+test drain_claim_order_defaults_to_fifo_and_rotation_is_opt_in ... ok
+test one_drain_claims_at_most_max_batch ... ok
+test superseded_mid_flight_claim_never_publishes_the_old_version ... ok
+test worker_limits_reject_structurally_meaningless_bounds ... ok
+test three_rapid_edits_coalesce_into_one_task_and_one_embed ... ok
+test retry_budget_exhaustion_dead_letters_without_further_claims ... ok
+test expired_and_reclaimed_lease_cannot_renew_but_the_successor_publishes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+

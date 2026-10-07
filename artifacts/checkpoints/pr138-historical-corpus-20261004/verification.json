@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "classification": "historical_DEV_corpus_input_validation_only",
+  "base_head": "da896b59540658db327cfbc4cd1d7d364684d76e",
+  "historical_anchor": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+  "provenance": "git log -- crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json identified the commit recording these exact locks; Git blobs at that commit match unchanged manifest/query bytes and existing BLAKE3 locks",
+  "source_digest_blake3": "53ba52cff1e2834d963df4060823cc3ae7b394f5040fc5a9cff82f1aecd44f06",
+  "query_digest_blake3": "0e8d23b84798094470fec6672989b48a4ed34c2958b830d669b951cf70bedb30",
+  "source_files": 10,
+  "queries": 14,
+  "manifest_bytes_unchanged": true,
+  "query_bytes_unchanged": true,
+  "tracked_crate_Cargo_inputs_changed": false,
+  "validator": "current unchanged cc-eval manifest::load; no freeze or relock",
+  "validator_binary_sha256": "c821ba10460e53ae10f282e7ff7ccbbe22dd8cdf6368eb958057247c9afbdc55",
+  "build_command": "PATH=/tmp/pr138-cargo/bin:$PATH RUSTUP_HOME=/tmp/pr138-rustup CARGO_HOME=/tmp/pr138-cargo CARGO_BUILD_JOBS=4 RUSTFLAGS=\"-D warnings\" cargo build -p cc-eval --bin cc-eval --locked",
+  "toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "verification": {
+    "historical_tests": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v",
+      "exit_code": 0,
+      "passed": 14
+    },
+    "all_six_locks": {
+      "command": "python3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval",
+      "exit_code": 0,
+      "suites": 6
+    },
+    "live_original_lock_negative": {
+      "command": "target/debug/cc-eval validate --suite crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json",
+      "exit_code": 2,
+      "reason": "source or query content lock drift"
+    },
+    "current_product_integrity": {
+      "command": "python3 scripts/verify_current_source.py",
+      "exit_code": 0,
+      "product": "50a4933e48ef20b16401ac8f75c386a660aa8e5c",
+      "inputs": 759
+    },
+    "current_source_negative_tests": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v",
+      "exit_code": 0,
+      "passed": 16
+    },
+    "plan_consistency": {
+      "command": "python3 scripts/code_index_plan.py --write && python3 scripts/code_index_plan.py",
+      "exit_code": 0,
+      "states_unchanged": {
+        "done": 150,
+        "todo": 41,
+        "in_progress": 1
+      }
+    }
+  },
+  "logs_sha256": {
+    "validator-build.log": "36eaa4c3959ad99d89bfe490e0f341ce39268f9025f38cf91d2fbf0efa41ea88",
+    "historical-tests.log": "d2ecdf9ddaedc3dfbc00daf19ea76aa3630bc1fed269c3d98314918c2f9358ee",
+    "corpus-locks.log": "4adc949a91d4ec865db2a442493f15f8933e426a047e54a292d532215e340bef",
+    "live-lock-negative.log": "5e1df310656b188a504ef84f51d657dc64908cccf5b5751430fc0e20e3a31645",
+    "current-source.log": "15e610fac8a4d55c5f2f39412c0e547ebd75b1ff088afb231c48d141d016dc75",
+    "current-source-tests.log": "345b77ecdded8932e07e65bd1cf251422e998289ac3e5baa47ec3f5f55cf9094"
+  },
+  "limitations": [
+    "No retrieval or quality evaluation; no release certification",
+    "No private42 or holdout access",
+    "No formal retrieval, 100k, excluded runtime, GC/WAL fault execution",
+    "Remote CI verification belongs to parent; not claimed here"
+  ]
+}

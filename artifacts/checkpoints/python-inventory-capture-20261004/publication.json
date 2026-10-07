@@ -1,0 +1,62 @@
+{
+  "request": {
+    "repository_full_name": "jyqj/codecortex",
+    "base": "integration/python-resource-contract-20261004",
+    "head": "opt/python-inventory-capture",
+    "draft": true,
+    "title": "feat(index): opt-in bounded Python inventory capture and admission",
+    "body": "现有 config-only capture 无法证明完整 source inventory。新增 opt-in `cc_index::project_model::python_inventory::capture_python_declarations`：单一显式 owner/EntireProject、空 exclusions，Linux descriptor-relative 有界完整 regular-file 枚举/bytes capture，复用实际 Loader/provenance、同源 AST 和 borrowed DeclarationSnapshot 显式 limits。默认/partial/unsupported scope/config、symlink/nonregular/native/portable alias/hardlink、观察到的 drift 都 typed refusal；保存全部 raw config/evidence，绑定 marker absence/collision 和 full content，限制 aggregate output，返回前重检。\n\nFixed product: `8d2b312c066f0514fb5cee555767955bf34708d0`。基线 PR138 delivery `ba6197771da5425166fb0386d46c74f4a05e8273` / reviewed product `50a4933e48ef20b16401ac8f75c386a660aa8e5c`；无冲突原样 cherry-pick docs-only `bf1e47ee1a355ef2634761a980546492fe877f7b`，只在权威 tasks.json 添加新 notes 并生成 TODO，192 tasks 与 parent states 不变。\n\n验证：官方 Rust1.95、原 Cargo.lock、--locked，91 passed / 0 failed / 0 ignored（新9 integration + 1 deterministic drift，原focused81）；strict scoped Clippy、fmt、committed-range diff 和 generator no-argument check 通过。新 fixtures 均自编真实临时文件系统，测试 exact/one-over count/bytes/depth/path/aggregate output。完整命令、logs 和源码 SHA256：`artifacts/checkpoints/python-inventory-capture-20261004/validation.json`；契约：`docs/internals/python-inventory-capture-v1.md`。\n\nLinux-only，要求 statx mount ID；未实际执行 bind-mount fixture，不声称 OS-atomic/hostile mutation+restore、hardRSS、release/规模认证。仅内存 API，仍待独审；persistence/cache/versioned ingestion/publication guard/DB/MCP/retrieval 协议未接线。旧 qname/UID/extraction/search 和 model/parser implementation 不变。未运行 publicDEV/100k/holdout/第三方项目代码或 excluded post_index/broad/private42/GCWALfaults。无 merge/deploy。"
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "url": "https://github.com/jyqj/codecortex/pull/139",
+      "number": 139,
+      "state": "open",
+      "merged": false,
+      "mergeable": false,
+      "draft": true,
+      "body": "现有 config-only capture 无法证明完整 source inventory。新增 opt-in `cc_index::project_model::python_inventory::capture_python_declarations`：单一显式 owner/EntireProject、空 exclusions，Linux descriptor-relative 有界完整 regular-file 枚举/bytes capture，复用实际 Loader/provenance、同源 AST 和 borrowed DeclarationSnapshot 显式 limits。默认/partial/unsupported scope/config、symlink/nonregular/native/portable alias/hardlink、观察到的 drift 都 typed refusal；保存全部 raw config/evidence，绑定 marker absence/collision 和 full content，限制 aggregate output，返回前重检。\n\nFixed product: `8d2b312c066f0514fb5cee555767955bf34708d0`。基线 PR138 delivery `ba6197771da5425166fb0386d46c74f4a05e8273` / reviewed product `50a4933e48ef20b16401ac8f75c386a660aa8e5c`；无冲突原样 cherry-pick docs-only `bf1e47ee1a355ef2634761a980546492fe877f7b`，只在权威 tasks.json 添加新 notes 并生成 TODO，192 tasks 与 parent states 不变。\n\n验证：官方 Rust1.95、原 Cargo.lock、--locked，91 passed / 0 failed / 0 ignored（新9 integration + 1 deterministic drift，原focused81）；strict scoped Clippy、fmt、committed-range diff 和 generator no-argument check 通过。新 fixtures 均自编真实临时文件系统，测试 exact/one-over count/bytes/depth/path/aggregate output。完整命令、logs 和源码 SHA256：`artifacts/checkpoints/python-inventory-capture-20261004/validation.json`；契约：`docs/internals/python-inventory-capture-v1.md`。\n\nLinux-only，要求 statx mount ID；未实际执行 bind-mount fixture，不声称 OS-atomic/hostile mutation+restore、hardRSS、release/规模认证。仅内存 API，仍待独审；persistence/cache/versioned ingestion/publication guard/DB/MCP/retrieval 协议未接线。旧 qname/UID/extraction/search 和 model/parser implementation 不变。未运行 publicDEV/100k/holdout/第三方项目代码或 excluded post_index/broad/private42/GCWALfaults。无 merge/deploy。",
+      "title": "feat(index): opt-in bounded Python inventory capture and admission",
+      "base": "integration/python-resource-contract-20261004",
+      "base_sha": "bf1e47ee1a355ef2634761a980546492fe877f7b",
+      "head": "opt/python-inventory-capture",
+      "head_sha": "063adeada4720b0fdab07493494bca0ebdcd47e2",
+      "head_repo_id": 1249213794,
+      "head_repo_full_name": "jyqj/codecortex",
+      "merge_commit_sha": null,
+      "user": {
+        "login": "jyqj",
+        "name": "jyqj",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+        "id": 174292474
+      },
+      "requested_reviewers": null,
+      "requested_team_reviewers": null,
+      "diff": null,
+      "comments": null,
+      "created_at": "2026-10-04T02:55:17Z",
+      "updated_at": "2026-10-04T02:55:17Z",
+      "closed_at": null,
+      "merged_at": null,
+      "commits": 3,
+      "changed_files": 19,
+      "additions": 1631,
+      "deletions": 4,
+      "display_url": "https://github.com/jyqj/codecortex/pull/139",
+      "display_title": "feat(index): opt-in bounded Python inventory capture and admission"
+    },
+    "isError": false
+  },
+  "attempts": 1,
+  "source": "8d2b312c066f0514fb5cee555767955bf34708d0",
+  "head_at_creation": "063adeada4720b0fdab07493494bca0ebdcd47e2",
+  "metadata_upstream": "bf1e47ee1a355ef2634761a980546492fe877f7b",
+  "metadata_cherry_pick": "f2744e6"
+}

@@ -286,7 +286,10 @@ mod tests {
         let baseline = fused_with_raw(0.97);
         let disturbed = fused_with_raw(-1e200);
         for key in ["src/a.rs", "src/b.rs", "src/c.rs"] {
-            assert_eq!(baseline[key].total.to_bits(), disturbed[key].total.to_bits());
+            assert_eq!(
+                baseline[key].total.to_bits(),
+                disturbed[key].total.to_bits()
+            );
             assert_eq!(baseline[key].by_lane, disturbed[key].by_lane);
         }
         // The semantic vote is the plain weighted rank term, billed per lane.
@@ -361,7 +364,11 @@ mod tests {
             (LaneStatus::NotConfigured, None),
         ] {
             let fused = fused_with_semantic(status, reason, vec![]);
-            assert_eq!(fused.len(), locals.len(), "{status:?} must add no candidate");
+            assert_eq!(
+                fused.len(),
+                locals.len(),
+                "{status:?} must add no candidate"
+            );
             for (id, score) in &locals {
                 assert_eq!(score.total.to_bits(), fused[id].total.to_bits());
                 assert_eq!(score.by_lane, fused[id].by_lane);
@@ -379,7 +386,10 @@ mod tests {
         let timed_out = explain(&timed_out);
         let ran_empty = explain(&ran_empty);
         assert_eq!(timed_out.status, LaneStatus::Timeout);
-        assert_eq!(timed_out.truncation_reason.as_deref(), Some("semantic_deadline"));
+        assert_eq!(
+            timed_out.truncation_reason.as_deref(),
+            Some("semantic_deadline")
+        );
         assert_eq!(timed_out.candidate_count, 0);
         assert!(!timed_out.coverage.complete);
         assert_eq!(ran_empty.status, LaneStatus::Complete);
@@ -404,7 +414,10 @@ mod tests {
         assert_eq!(projected.status, LaneStatus::Complete);
         assert!(projected.coverage.complete);
         assert_eq!(projected.candidate_count, public.candidates.len());
-        assert_eq!(projected.coverage.total_lower_bound, projected.candidate_count);
+        assert_eq!(
+            projected.coverage.total_lower_bound,
+            projected.candidate_count
+        );
         for candidate in &public.candidates {
             candidate.validate().unwrap();
             validate_hydrated_candidate(
@@ -435,7 +448,10 @@ mod tests {
         entries.reverse();
         let reversed = ids(entries);
         assert_eq!(forward, reversed);
-        assert_eq!(forward, vec!["src/a.rs".to_string(), "src/z.rs".to_string()]);
+        assert_eq!(
+            forward,
+            vec!["src/a.rs".to_string(), "src/z.rs".to_string()]
+        );
 
         // The exact-identity tier outranks any fused total.
         let mut plain = test_lane_outcome("lane-a", 1.0, vec![("src/z.rs".into(), 1.0)]);

@@ -1,0 +1,39 @@
+{
+  "review_sha": "e010c9e010147f47abaa2b7278e2aabe5d687ddd",
+  "reviewed_source": "8d2b312c066f0514fb5cee555767955bf34708d0",
+  "reviewed_delivery": "892fd103f543424323e1d4e6691eca5774ede1a6",
+  "push": {
+    "argv": [
+      "git",
+      "push",
+      "origin",
+      "HEAD:refs/heads/review/python-inventory-independent-20261004"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "remote: \nremote: Create a pull request for 'review/python-inventory-independent-20261004' on GitHub by visiting:        \nremote:      https://github.com/jyqj/codecortex/pull/new/review/python-inventory-independent-20261004        \nremote: \nTo https://github.com/jyqj/codecortex.git\n * [new branch]      HEAD -> review/python-inventory-independent-20261004\n"
+  },
+  "draft_attempts": 1,
+  "draft": {
+    "argv": [
+      "gh",
+      "pr",
+      "create",
+      "--repo",
+      "jyqj/codecortex",
+      "--base",
+      "opt/python-inventory-capture",
+      "--head",
+      "review/python-inventory-independent-20261004",
+      "--draft",
+      "--title",
+      "review: independent Python inventory admission audit",
+      "--body-file",
+      "/tmp/inventory-independent-draft-body.txt"
+    ],
+    "body": "Independent review of PR139 source 8d2b312c066f0514fb5cee555767955bf34708d0 / delivery 892fd103f543424323e1d4e6691eca5774ede1a6.\n\nRequest changes: P2 partial/default packages.find configuration is admitted when package-dir provides an explicit root (missing where and empty where array). Both cases reproduced with the public API.\n\nOwn fresh filesystem fixtures on official Rust 1.95 and original locked dependencies: 13 tests, 12 passed and one intentional failing contract test. Includes all capture exact/one-over limits, AST/model boundaries, output JSON accounting, aliases, twelve deterministic mutations and mixed metadata. No product changes.\n\nReport and executable fixtures: artifacts/checkpoints/python-inventory-independent-20261004/. Linux mount refusal branch was not exercised with a real bind mount. No hostile-writer atomicity, hard RSS/deadline, stable .git identity, release or scale claim. No excluded suites, third-party project execution, merge or deploy.\n",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Post \"https://api.github.com/graphql\": Forbidden\n"
+  }
+}

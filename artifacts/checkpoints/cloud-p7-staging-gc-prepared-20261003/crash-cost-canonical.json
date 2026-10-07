@@ -1,0 +1,33 @@
+{
+  "status": "bounded_cost_errata_and_negative_case_no_production_change",
+  "authority": [
+    "crates/cc-semantic/src/admission.rs: receipt and budget process-lifetime, cross-restart outbox attempt_count, unknown billing never zero",
+    "PR85 independent review 84613f7a3c6e319fb7c847a6ea64f0192a2cc43b"
+  ],
+  "old_PR81_scope": "Nine task cases (claim-before-provider / durable cache / committed publish) each one total FakeProvider call, only these completed boundaries. Uncommitted fixture transaction manually seeded, not inside production manifest CAS. Do not interpret as exactly-once calls or billing for arbitrary crash. Original artifacts remain byte-identical.",
+  "negative_window": {
+    "point": "FakeProvider response returned before cache.put starts",
+    "independent_sigkill_cases": 3,
+    "per_case_actual_fake_calls": 2,
+    "first_attempt_observable_in_fixture": "returned successful fake response, no durable artifact",
+    "restart_view": "cache absent; claimed outbox persists, lease naturally expires; recovery requeues and worker retries",
+    "first_attempt_real_billable_tokens": null,
+    "first_attempt_billing_status": "unknown_after_process_crash",
+    "retry_cost_status": "new_attempt_with_possible_duplicate_cost",
+    "exactly_once_provider_or_billing": "not_guaranteed"
+  },
+  "cost_domains": {
+    "operation_boundary_domain": "PR81 nine known tasks one call each; current staging cache reuse zero new calls; do not generalize",
+    "crash_before_durable_cache": "unknown original provider/billing outcome at restart; retry can repeat work, preserve cumulative outbox claims",
+    "attempt_count": "claim/admission count, not exact completed provider call count or paid token cost",
+    "ReceiptLedger_and_CostBudget": "bounded in-memory, reset on process restart explicitly by current contract, no persistent monetary ledger",
+    "known_capability_limit": "no process-kill durable UsageReceipt archive demonstrated. Cannot count absent post-restart receipt as zero. No independently proved violation of existing in-memory contract or exactly-once guarantee to patch."
+  },
+  "import": {
+    "source_sha": "84613f7a3c6e319fb7c847a6ea64f0192a2cc43b",
+    "local_sha": "0406095d2224b416b9837f849833f243a8713593",
+    "files_byte_identical": 74,
+    "owner_verifier": "passed15SIGKILL/36noop/3negativecases2calls",
+    "owner_artifacts_mutated": false
+  }
+}

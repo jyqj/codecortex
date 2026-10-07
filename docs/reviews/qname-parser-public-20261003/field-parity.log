@@ -1,0 +1,13 @@
+PASS engine: all 5 hits preserve all old fields/metadata, scores/traces/source/document
+PASS mcp: all 5 hits preserve all old fields/metadata, scores/traces/source/document
+PASS baseline: real engine/MCP native micro scores
+PASS current: real engine/MCP native micro scores
+baseline Inner engine [('Inner', 'class', None), ('Outer', 'class', None), ('pulse', 'method', None)]
+baseline Inner mcp [('Inner', 'class', None), ('Outer', 'class', None), ('pulse', 'method', None)]
+baseline Outer engine [('Outer', 'class', None), ('Inner', 'class', None), ('pulse', 'method', None)]
+baseline Outer mcp [('Outer', 'class', None), ('Inner', 'class', None), ('pulse', 'method', None)]
+current Inner engine [('Outer', 'function', 'Outer')]
+current Inner mcp [('Outer', 'function', 'Outer')]
+current Outer engine [('Outer', 'function', 'Outer')]
+current Outer mcp [('Outer', 'function', 'Outer')]
+REJECT product: decorated classes become public Function identity, losing nested class/member results

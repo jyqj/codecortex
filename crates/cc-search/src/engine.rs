@@ -29,7 +29,7 @@ use crate::engine_cache::{
     GRAPH_RESULT_CACHE_CAPACITY, RESULT_CACHE_CAPACITY,
 };
 use crate::lanes::{
-    default_lanes, fused_candidate_ordering, fuse_outcomes, materialize_lane_outcomes, run_lanes,
+    default_lanes, fuse_outcomes, fused_candidate_ordering, materialize_lane_outcomes, run_lanes,
     LaneContext,
 };
 pub use crate::plan::is_project_doc;
@@ -1502,6 +1502,7 @@ mod tests {
 
     fn fake_candidate_chunk() -> CandidateChunk {
         CandidateChunk {
+            qname: None,
             document: None,
             source_evidence: None,
             chunk_id: "chunk:src/x.rs".to_string(),

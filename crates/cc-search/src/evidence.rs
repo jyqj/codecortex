@@ -1,4 +1,8 @@
 //! Bounded disk verification for indexed coordinates. Never slice new bytes with an old basis.
+/// Exact production explanation; compact wire labels are defined in QUERY_EXECUTION.md.
+pub const SOURCE_FRESHNESS_SCOPE: &str =
+    "bounded per-file disk verification; not an atomic filesystem or whole-query snapshot";
+
 use cc_db::index_db::IndexDb;
 use cc_model::{search::SearchHit, CcError, CcResult};
 use serde::Serialize;
@@ -181,6 +185,6 @@ impl<'a> SourceVerifier<'a> {
             .and_then(|e| e.text.as_deref())
     }
     pub fn diagnostics(&self) -> serde_json::Value {
-        serde_json::json!({"partial":!self.omitted.is_empty(),"checked_files":self.files.len(),"omitted_files":self.omitted,"budget_exhausted":self.budget_exhausted,"read_budget_charged":QUERY_LIMIT-self.remaining,"scope":"bounded per-file disk verification; not an atomic filesystem or whole-query snapshot"})
+        serde_json::json!({"partial":!self.omitted.is_empty(),"checked_files":self.files.len(),"omitted_files":self.omitted,"budget_exhausted":self.budget_exhausted,"read_budget_charged":QUERY_LIMIT-self.remaining,"scope":SOURCE_FRESHNESS_SCOPE})
     }
 }

@@ -92,10 +92,7 @@ impl InputBudget {
     /// item and token bounds come straight from the capability sheet; the
     /// bytes bound stays an operator decision (capabilities declare tokens,
     /// not bytes).
-    pub fn from_capability(
-        capability: &ModelCapability,
-        max_batch_bytes: usize,
-    ) -> CcResult<Self> {
+    pub fn from_capability(capability: &ModelCapability, max_batch_bytes: usize) -> CcResult<Self> {
         Self::validated(
             capability.max_batch_items as usize,
             max_batch_bytes,
@@ -122,10 +119,7 @@ pub enum OversizeReason {
     EmptyInput,
     /// The input alone exceeds the byte bound (`budget.max_bytes`, or the
     /// frozen [`MAX_INPUT_BYTES`] backstop reported as `max_bytes`).
-    BytesTooLarge {
-        bytes: usize,
-        max_bytes: usize,
-    },
+    BytesTooLarge { bytes: usize, max_bytes: usize },
     /// The input's estimated token count exceeds `budget.max_tokens` under
     /// the declared estimator. An estimate — see the module docs.
     TokensTooLarge {
@@ -190,10 +184,7 @@ pub enum PlannedInput<K> {
     /// A legal batch: feed `items` to `embed_documents` unsplit.
     Batch(BatchPlan<K>),
     /// The input can never fit any batch; explicit, never silent.
-    Skipped {
-        key: K,
-        reason: OversizeReason,
-    },
+    Skipped { key: K, reason: OversizeReason },
 }
 
 /// One planned query batch (query-path dual of [`BatchPlan`]).
@@ -216,10 +207,7 @@ impl<K> QueryBatchPlan<K> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlannedQueryInput<K> {
     Batch(QueryBatchPlan<K>),
-    Skipped {
-        key: K,
-        reason: OversizeReason,
-    },
+    Skipped { key: K, reason: OversizeReason },
 }
 
 /// Declared token estimate for one input: `utf8-bytes-div-ceil-4-v1`
@@ -282,14 +270,13 @@ fn plan_order<K>(
     rendered: &[(K, Vec<u8>)],
     budget: &InputBudget,
 ) -> (Vec<Vec<usize>>, Vec<(usize, OversizeReason)>) {
-    let len = rendered.len();
     let mut batches: Vec<Vec<usize>> = Vec::new();
     let mut skips: Vec<(usize, OversizeReason)> = Vec::new();
     let mut current: Vec<usize> = Vec::new();
     let mut current_bytes = 0usize;
     let mut current_tokens = 0usize;
-    for index in 0..len {
-        match admit_item(rendered[index].1.as_slice(), budget) {
+    for (index, (_, bytes)) in rendered.iter().enumerate() {
+        match admit_item(bytes.as_slice(), budget) {
             Err(reason) => skips.push((index, reason)),
             Ok((item_bytes, item_tokens)) => {
                 let must_close = current.len() == budget.max_items
@@ -331,7 +318,8 @@ pub fn plan_document_batches<K: Clone>(
     let (batches, skips) = plan_order(rendered, budget);
     // Interleave batches (positioned at their first input) and skips by
     // input position so the plan reads in input order.
-    let mut entries: Vec<(usize, PlannedInput<K>)> = Vec::with_capacity(batches.len() + skips.len());
+    let mut entries: Vec<(usize, PlannedInput<K>)> =
+        Vec::with_capacity(batches.len() + skips.len());
     for batch in batches {
         let position = batch[0];
         let mut items = Vec::with_capacity(batch.len());
@@ -439,6 +427,12 @@ pub struct GateLimits {
     pub max_concurrent_per_project: Option<usize>,
 }
 
+impl Default for GateLimits {
+    fn default() -> Self {
+        Self::permissive()
+    }
+}
+
 impl GateLimits {
     /// Default-off limits: unlimited concurrency, no per-project split.
     pub fn permissive() -> Self {
@@ -519,6 +513,9 @@ struct Waiter {
 
 #[derive(Debug, Default)]
 struct GateState {
+    // Policy and admission share one synchronization boundary.
+    limits: GateLimits,
+    explicitly_configured: bool,
     in_flight: usize,
     per_project: HashMap<String, usize>,
     /// FIFO of waiting callers; a freshly arriving caller joins the BACK
@@ -534,7 +531,6 @@ struct GateState {
 
 #[derive(Debug)]
 struct GateCore {
-    limits: GateLimits,
     state: Mutex<GateState>,
     released: Condvar,
 }
@@ -570,11 +566,49 @@ impl ProviderGate {
     pub fn new(limits: GateLimits) -> Self {
         Self {
             core: std::sync::Arc::new(GateCore {
-                limits,
-                state: Mutex::new(GateState::default()),
+                state: Mutex::new(GateState {
+                    limits,
+                    explicitly_configured: limits != GateLimits::permissive(),
+                    ..GateState::default()
+                }),
                 released: Condvar::new(),
             }),
         }
+    }
+
+    /// Adopt the first explicit caps in place, preserving all captured handles.
+    /// A permissive/default request inherits the existing policy and cannot relax it.
+    /// Admission, release and policy adoption use the same mutex. Outstanding
+    /// calls or tickets refuse adoption; no permit is revoked or state reset.
+    pub fn configure_limits(&self, limits: GateLimits) -> CcResult<()> {
+        GateLimits::validated(limits.max_concurrent, limits.max_concurrent_per_project)
+            .map_err(|error| CcError::Config(format!("semantic.max_concurrent*: {error}")))?;
+        let mut st = self.core.state.lock().unwrap_or_else(|p| p.into_inner());
+        if limits == GateLimits::permissive() {
+            return Ok(());
+        }
+        if st.explicitly_configured {
+            return if st.limits == limits {
+                Ok(())
+            } else {
+                Err(CcError::Config(format!(
+                    "semantic.max_concurrent/max_concurrent_per_project conflict: existing {:?}, requested {:?}",
+                    st.limits, limits
+                )))
+            };
+        }
+        if st.in_flight != 0
+            || !st.per_project.is_empty()
+            || !st.queue.is_empty()
+            || !st.granted_tickets.is_empty()
+        {
+            return Err(CcError::Config(
+                "semantic.max_concurrent/max_concurrent_per_project cannot adopt explicit caps while the shared provider gate is busy".into(),
+            ));
+        }
+        st.limits = limits;
+        st.explicitly_configured = true;
+        Ok(())
     }
 
     /// Fallible constructor shorthand over [`GateLimits::validated`].
@@ -591,8 +625,9 @@ impl ProviderGate {
     /// Map the `semantic.*` configuration keys (P7-002 section, P7-005
     /// keys) onto a gate. `Ok(None)` = 限流关闭: the provider is not enabled
     /// or `max_concurrent` is left at the default `0` (unlimited) — callers
-    /// then run without a gate at all. Any invalid combination is a config
-    /// error that names the key, never a silent fallback.
+    /// may leave a standalone gate unconfigured. Production callers must still
+    /// share the process gate so subsequent explicit caps apply. Invalid
+    /// combinations name the key rather than falling back silently.
     pub fn from_provider_config(config: &SemanticProviderConfig) -> CcResult<Option<Self>> {
         if !config.enabled || config.max_concurrent == 0 {
             return Ok(None);
@@ -632,7 +667,7 @@ impl ProviderGate {
         // barge ahead of the fair queue.
         if Self::suspended_for(&mut st).is_none()
             && st.queue.is_empty()
-            && Self::admits(&core.limits, &st, project)
+            && Self::admits(&st.limits, &st, project)
         {
             Self::consume(&mut st, project);
             return Ok(ProviderPermit {
@@ -658,7 +693,9 @@ impl ProviderGate {
             if let Some(remaining) = Self::suspended_for(&mut st) {
                 withdraw(&mut st, ticket);
                 wake(core, &st);
-                return Err(GateAcquireError::Suspended { cooldown_remaining: remaining });
+                return Err(GateAcquireError::Suspended {
+                    cooldown_remaining: remaining,
+                });
             }
             if let Some(deadline) = deadline {
                 let now = Instant::now();
@@ -747,11 +784,15 @@ impl ProviderGate {
         let mut st = core.state.lock().unwrap_or_else(|p| p.into_inner());
         let suspended_for = Self::suspended_for(&mut st);
         GateSnapshot {
-            max_concurrent: core.limits.max_concurrent,
-            max_concurrent_per_project: core.limits.max_concurrent_per_project,
+            max_concurrent: st.limits.max_concurrent,
+            max_concurrent_per_project: st.limits.max_concurrent_per_project,
             in_flight: st.in_flight,
             waiting: st.queue.len(),
-            per_project_in_flight: st.per_project.iter().map(|(k, v)| (k.clone(), *v)).collect(),
+            per_project_in_flight: st
+                .per_project
+                .iter()
+                .map(|(k, v)| (k.clone(), *v))
+                .collect(),
             suspended_for,
         }
     }
@@ -788,16 +829,20 @@ impl ProviderGate {
 /// capacity lasts, SKIPPING a head whose project share is full (no
 /// head-of-line starvation). Grants are recorded by ticket; the waiter
 /// removes its own ticket on wake. No grants during a 429 pause.
-fn core_scan(core: &GateCore, st: &mut GateState) {
+fn core_scan(_core: &GateCore, st: &mut GateState) {
     if st.cooldown_until.is_some() {
         return;
     }
     let mut index = 0;
-    while index < st.queue.len() && st.in_flight < core.limits.max_concurrent {
-        let project_ok = match core.limits.max_concurrent_per_project {
+    while index < st.queue.len() && st.in_flight < st.limits.max_concurrent {
+        let project_ok = match st.limits.max_concurrent_per_project {
             None => true,
             Some(cap) => {
-                st.per_project.get(&st.queue[index].project).copied().unwrap_or(0) < cap
+                st.per_project
+                    .get(&st.queue[index].project)
+                    .copied()
+                    .unwrap_or(0)
+                    < cap
             }
         };
         if project_ok {
@@ -1110,10 +1155,7 @@ impl ReceiptLedger {
     }
 
     pub fn retained_count(&self) -> usize {
-        self.inner
-            .lock()
-            .unwrap_or_else(|p| p.into_inner())
-            .len()
+        self.inner.lock().unwrap_or_else(|p| p.into_inner()).len()
     }
 
     /// Snapshot of the retained receipts, oldest first (the raw read
@@ -1180,10 +1222,7 @@ fn fold_receipt(acc: &mut ReceiptAggregate, receipt: &ProviderCallReceipt) {
         }
         None => acc.attempts_with_unknown_reported += 1,
     }
-    if receipt
-        .usage
-        .unknown_duplicate_risk(receipt.attempt)
-    {
+    if receipt.usage.unknown_duplicate_risk(receipt.attempt) {
         acc.unknown_duplicate_risk += 1;
     }
     if receipt.usage.cache_reuse {
@@ -1195,12 +1234,12 @@ fn fold_receipt(acc: &mut ReceiptAggregate, receipt: &ProviderCallReceipt) {
 mod tests {
     use super::*;
     use crate::capability::{DimensionsMode, EncodingFormat};
+    use crate::ports::EmbeddingProvider;
     use crate::providers::fake::{FakeProvider, FakeProviderConfig};
     use crate::providers::openai_compatible::{
-        EmbeddingApiKey, EmbeddingHttpTransport, HttpRequest, HttpResponse,
-        OpenAiCompatibleConfig, OpenAiCompatibleProvider, TransportError,
+        EmbeddingApiKey, EmbeddingHttpTransport, HttpRequest, HttpResponse, OpenAiCompatibleConfig,
+        OpenAiCompatibleProvider, TransportError,
     };
-    use crate::ports::EmbeddingProvider;
     use crate::spec::{DistanceMetric, MAX_INPUT_BYTES};
     use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
     use std::sync::Mutex;
@@ -1224,7 +1263,7 @@ mod tests {
         }
     }
 
-    fn rendered<'a>(keys: &[&'a str], sizes: &[usize]) -> Vec<(String, Vec<u8>)> {
+    fn rendered(keys: &[&str], sizes: &[usize]) -> Vec<(String, Vec<u8>)> {
         keys.iter()
             .zip(sizes)
             .map(|(key, size)| (key.to_string(), vec![b'a'; *size]))
@@ -1305,7 +1344,10 @@ mod tests {
     fn empty_input_is_skipped_explicitly() {
         let b = budget(4, 100, 100);
         let plan = plan_document_batches(
-            &[("empty".to_string(), Vec::new()), ("ok".to_string(), b"x".to_vec())],
+            &[
+                ("empty".to_string(), Vec::new()),
+                ("ok".to_string(), b"x".to_vec()),
+            ],
             &b,
             TOKENIZER,
         )
@@ -1346,11 +1388,9 @@ mod tests {
     #[test]
     fn empty_set_yields_nothing_and_single_item_yields_one_batch() {
         let b = budget(4, 100, 100);
-        assert!(
-            plan_document_batches::<String>(&[], &b, TOKENIZER)
-                .expect("plan")
-                .is_empty()
-        );
+        assert!(plan_document_batches::<String>(&[], &b, TOKENIZER)
+            .expect("plan")
+            .is_empty());
 
         let single = vec![("only".to_string(), b"payload".to_vec())];
         let plan = plan_document_batches(&single, &b, TOKENIZER).expect("plan");
@@ -1404,7 +1444,12 @@ mod tests {
         // 4+3+4 = 11 bytes / 3 tokens fits; 4 more bytes would breach both
         // byte (15 > 12) and token (4 > 5? no: 3+1=4 ≤ 5 — byte bound closes
         // the batch) — either way every emitted batch is legal.
-        assert_eq!(plan.iter().filter(|e| matches!(e, PlannedInput::Batch(_))).count(), 2);
+        assert_eq!(
+            plan.iter()
+                .filter(|e| matches!(e, PlannedInput::Batch(_)))
+                .count(),
+            2
+        );
     }
 
     #[test]
@@ -1454,11 +1499,14 @@ mod tests {
                     input.verify().expect("digest binding");
                     assert_eq!(
                         input.input_digest.as_str(),
-                        crate::spec::input_bytes_digest(&input.bytes).expect("digest").as_str()
+                        crate::spec::input_bytes_digest(&input.bytes)
+                            .expect("digest")
+                            .as_str()
                     );
-                    let expected =
-                        DocumentInput::from_bytes(&inputs.iter().find(|(k, _)| k == key).unwrap().1)
-                            .expect("direct construction");
+                    let expected = DocumentInput::from_bytes(
+                        &inputs.iter().find(|(k, _)| k == key).unwrap().1,
+                    )
+                    .expect("direct construction");
                     assert_eq!(input, &expected);
                 }
             }
@@ -1501,26 +1549,21 @@ mod tests {
                 let input_count = serde_json::from_str::<serde_json::Value>(&body_text)
                     .ok()
                     .and_then(|value| {
-                        value.get("input").and_then(|input| input.as_array()).map(Vec::len)
+                        value
+                            .get("input")
+                            .and_then(|input| input.as_array())
+                            .map(Vec::len)
                     })
                     .unwrap_or(0);
                 let data: Vec<String> = (0..input_count)
-                    .map(|index| {
-                        format!(r#"{{"index":{index},"embedding":[0.5]}}"#)
-                    })
+                    .map(|index| format!(r#"{{"index":{index},"embedding":[0.5]}}"#))
                     .collect();
                 self.bodies.lock().unwrap().push(body_text);
                 Ok(HttpResponse {
                     status: 200,
-                    headers: vec![(
-                        "Content-Type".to_owned(),
-                        "application/json".to_owned(),
-                    )],
-                    body: format!(
-                        r#"{{"model":"fake/model-a","data":[{}]}}"#,
-                        data.join(",")
-                    )
-                    .into_bytes(),
+                    headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
+                    body: format!(r#"{{"model":"fake/model-a","data":[{}]}}"#, data.join(","))
+                        .into_bytes(),
                 })
             }
         }
@@ -1611,8 +1654,14 @@ mod tests {
         let inputs = rendered(&["a"], &[4]);
         let err = plan_document_batches(&inputs, &b, "cl100k_base").expect_err("refused");
         let message = format!("{err}");
-        assert!(message.contains(TOKENIZER), "names the supported estimator: {message}");
-        assert!(message.contains("cl100k_base"), "names the request: {message}");
+        assert!(
+            message.contains(TOKENIZER),
+            "names the supported estimator: {message}"
+        );
+        assert!(
+            message.contains("cl100k_base"),
+            "names the request: {message}"
+        );
         assert!(plan_query_batches(&inputs, &b, "tiktoken").is_err());
     }
 
@@ -1843,7 +1892,8 @@ mod tests {
         }
         // After the permit is released the same caller admits.
         drop(holder.join().expect("holder"));
-        gate.try_acquire_permit("p-b", GENEROUS_WAIT).expect("admitted after release");
+        gate.try_acquire_permit("p-b", GENEROUS_WAIT)
+            .expect("admitted after release");
     }
 
     #[test]
@@ -2009,11 +2059,15 @@ mod tests {
     fn from_provider_config_maps_the_semantic_keys() {
         // Default (disabled / max_concurrent = 0): no gate at all — 限流默认关闭.
         let mut config = SemanticProviderConfig::default();
-        assert!(ProviderGate::from_provider_config(&config).unwrap().is_none());
+        assert!(ProviderGate::from_provider_config(&config)
+            .unwrap()
+            .is_none());
 
         config.enabled = true;
         assert!(
-            ProviderGate::from_provider_config(&config).unwrap().is_none(),
+            ProviderGate::from_provider_config(&config)
+                .unwrap()
+                .is_none(),
             "enabled but max_concurrent=0 still means unlimited"
         );
 
@@ -2172,27 +2226,31 @@ mod tests {
 
     // ── P7-008 receipts ───────────────────────────────────────────────────
 
+    struct AttemptFixture {
+        attempt: u64,
+        outcome: AttemptOutcome,
+        duration_ms: u64,
+        cost_units: u64,
+        uncertain: Option<UncertainReason>,
+    }
+
     fn receipt(
         space_model: &str,
         path: ReceiptPath,
         items: usize,
         usage: UsageReceipt,
-        attempt: u64,
-        outcome: AttemptOutcome,
-        duration_ms: u64,
-        cost: u64,
-        uncertain: Option<UncertainReason>,
+        attempt: AttemptFixture,
     ) -> ProviderCallReceipt {
         ProviderCallReceipt {
             space_model: space_model.to_owned(),
             path,
             batch_items: items,
             usage,
-            attempt,
-            outcome,
-            duration_ms,
-            cost_units: cost,
-            uncertain,
+            attempt: attempt.attempt,
+            outcome: attempt.outcome,
+            duration_ms: attempt.duration_ms,
+            cost_units: attempt.cost_units,
+            uncertain: attempt.uncertain,
         }
     }
 
@@ -2230,13 +2288,15 @@ mod tests {
                 UsageReceipt {
                     reported: None,
                     estimated: Some(7),
-                    cache_reuse: false
+                    cache_reuse: false,
                 },
-                1,
-                AttemptOutcome::Succeeded,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2273,11 +2333,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 unknown(Some(4)),
-                1,
-                AttemptOutcome::Failed,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2287,11 +2349,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 unknown(None),
-                2,
-                AttemptOutcome::Failed,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                Some(UncertainReason::TimeoutIndeterminate),
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: Some(UncertainReason::TimeoutIndeterminate),
+                },
             ),
             110,
         );
@@ -2315,11 +2379,13 @@ mod tests {
                 ReceiptPath::Documents,
                 2,
                 est(10),
-                1,
-                AttemptOutcome::Succeeded,
-                12,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 12,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2329,11 +2395,13 @@ mod tests {
                 ReceiptPath::Documents,
                 2,
                 est(10),
-                2,
-                AttemptOutcome::Failed,
-                30,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                Some(UncertainReason::TimeoutIndeterminate),
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 30,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: Some(UncertainReason::TimeoutIndeterminate),
+                },
             ),
             200,
         );
@@ -2343,11 +2411,13 @@ mod tests {
                 ReceiptPath::Queries,
                 1,
                 est(3),
-                1,
-                AttemptOutcome::RejectedByBreaker,
-                0,
-                0,
-                Some(UncertainReason::BreakerOpen),
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBreaker,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: Some(UncertainReason::BreakerOpen),
+                },
             ),
             300,
         );
@@ -2357,11 +2427,13 @@ mod tests {
                 ReceiptPath::Queries,
                 1,
                 est(3),
-                1,
-                AttemptOutcome::RejectedByBudget,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBudget,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             400,
         );
@@ -2385,7 +2457,10 @@ mod tests {
         assert_eq!(agg.cache_reuse_hits, 0);
         assert_eq!(agg.per_space.len(), 2);
         assert_eq!(agg.per_space["a"].attempts, 2);
-        assert_eq!(agg.per_space["a"].cost_units, 2 * PROVIDER_ATTEMPT_COST_UNITS);
+        assert_eq!(
+            agg.per_space["a"].cost_units,
+            2 * PROVIDER_ATTEMPT_COST_UNITS
+        );
         assert_eq!(agg.per_space["b"].rejected_by_breaker, 1);
         assert_eq!(agg.per_space["b"].rejected_by_budget, 1);
         assert!(agg.per_space["a"].per_space.is_empty(), "no nested maps");
@@ -2410,11 +2485,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est(10),
-                1,
-                AttemptOutcome::Succeeded,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2425,11 +2502,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est(20),
-                1,
-                AttemptOutcome::Succeeded,
-                7,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 7,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             500,
         );
@@ -2444,7 +2523,7 @@ mod tests {
         assert_eq!(late.estimated_tokens, 20);
         assert_eq!(late.per_space.len(), 1);
         assert_eq!(late.per_space["b"].attempts, 1);
-        assert!(late.per_space.get("a").is_none());
+        assert!(!late.per_space.contains_key("a"));
 
         // Inclusive lower bound: `since=100` keeps the t=100 receipt.
         let late_a = ledger.aggregate(Some(100));
@@ -2466,21 +2545,20 @@ mod tests {
                     estimated: Some(5),
                     cache_reuse: true,
                 },
-                1,
-                AttemptOutcome::Succeeded,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             100,
         );
         let agg = ledger.aggregate(None);
         assert_eq!(agg.cache_reuse_hits, 1);
         assert_eq!(agg.attempts, 1);
-        assert_eq!(
-            agg.cost_units, 0,
-            "a cache hit must add no cost units"
-        );
+        assert_eq!(agg.cost_units, 0, "a cache hit must add no cost units");
         assert_eq!(ledger.total_cost_units(), 0);
     }
 
@@ -2522,7 +2600,10 @@ mod tests {
 
     #[test]
     fn ledger_is_bounded_evicts_oldest_but_keeps_lifetime_totals() {
-        assert!(ReceiptLedger::new(0).is_err(), "0 capacity is a config error");
+        assert!(
+            ReceiptLedger::new(0).is_err(),
+            "0 capacity is a config error"
+        );
         let ledger = ReceiptLedger::new(2).expect("ledger");
         let est = UsageReceipt {
             reported: None,
@@ -2535,11 +2616,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                1,
-                AttemptOutcome::Succeeded,
-                1,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 1,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2549,11 +2632,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                2,
-                AttemptOutcome::Failed,
-                1,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 1,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             200,
         );
@@ -2563,11 +2648,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                1,
-                AttemptOutcome::RejectedByBudget,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBudget,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             300,
         );
@@ -2581,5 +2668,141 @@ mod tests {
         // Lifetime counters survive eviction: 2 charged attempts total.
         assert_eq!(ledger.total_cost_units(), 2 * PROVIDER_ATTEMPT_COST_UNITS);
         assert_eq!(ledger.budget_refusals(), 1);
+    }
+}
+
+#[cfg(test)]
+mod policy_adoption_tests {
+    use super::*;
+    use std::sync::{Arc, Barrier};
+
+    fn caps() -> GateLimits {
+        GateLimits::validated(4, Some(2)).unwrap()
+    }
+
+    #[test]
+    fn idle_adoption_keeps_core_cooldown_and_policy_is_once_only() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        let captured = gate.clone();
+        gate.note_rate_limited(Duration::from_secs(10));
+        let until = gate.core.state.lock().unwrap().cooldown_until;
+        gate.configure_limits(caps()).unwrap();
+        assert!(Arc::ptr_eq(&gate.core, &captured.core));
+        assert_eq!(captured.snapshot().max_concurrent, 4);
+        assert_eq!(gate.core.state.lock().unwrap().cooldown_until, until);
+        gate.resume();
+        let permit = captured.try_acquire_permit("a", Duration::ZERO).unwrap();
+        gate.configure_limits(caps()).unwrap(); // also idempotent while busy
+        assert!(matches!(
+            gate.configure_limits(GateLimits::validated(5, Some(2)).unwrap()),
+            Err(CcError::Config(_))
+        ));
+        gate.configure_limits(GateLimits::permissive()).unwrap();
+        assert_eq!(gate.snapshot().max_concurrent, 4);
+        drop(permit);
+        assert_eq!(gate.snapshot().in_flight, 0);
+    }
+
+    #[test]
+    fn busy_adoption_refuses_and_old_permit_releases_before_retry() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        let permit = gate.try_acquire_permit("old", Duration::ZERO).unwrap();
+        assert!(matches!(
+            gate.configure_limits(caps()),
+            Err(CcError::Config(_))
+        ));
+        assert_eq!(gate.snapshot().max_concurrent, usize::MAX);
+        assert_eq!(gate.snapshot().per_project_in_flight["old"], 1);
+        drop(permit);
+        gate.configure_limits(caps()).unwrap();
+        assert_eq!(gate.snapshot().in_flight, 0);
+        assert!(gate.snapshot().per_project_in_flight.is_empty());
+    }
+
+    #[test]
+    fn residual_waiters_grants_and_project_counts_each_prevent_adoption() {
+        // Local gate white-box safety guard test. Never modifies a process registry.
+        for kind in 0..3 {
+            let gate = ProviderGate::new(GateLimits::permissive());
+            {
+                let mut state = gate.core.state.lock().unwrap();
+                match kind {
+                    0 => state.queue.push_back(Waiter {
+                        ticket: 7,
+                        project: "a".into(),
+                    }),
+                    1 => {
+                        state.granted_tickets.insert(7);
+                    }
+                    _ => {
+                        state.per_project.insert("a".into(), 1);
+                    }
+                }
+            }
+            assert!(matches!(
+                gate.configure_limits(caps()),
+                Err(CcError::Config(_))
+            ));
+            assert_eq!(gate.snapshot().max_concurrent, usize::MAX);
+        }
+    }
+
+    #[test]
+    fn concurrent_adoption_and_acquire_have_one_linearization_boundary() {
+        for _ in 0..64 {
+            let gate = ProviderGate::new(GateLimits::permissive());
+            let start = Arc::new(Barrier::new(2));
+            let finish = Arc::new(Barrier::new(2));
+            std::thread::scope(|scope| {
+                let g = gate.clone();
+                let a = start.clone();
+                let b = finish.clone();
+                let acquire = scope.spawn(move || {
+                    a.wait();
+                    let permit = g.try_acquire_permit("old", Duration::ZERO).unwrap();
+                    b.wait();
+                    drop(permit);
+                });
+                start.wait();
+                let result = gate.configure_limits(caps());
+                let snapshot = gate.snapshot();
+                match result {
+                    Ok(()) => assert_eq!(snapshot.max_concurrent, 4),
+                    Err(CcError::Config(_)) => {
+                        assert_eq!(snapshot.max_concurrent, usize::MAX);
+                        assert_eq!(snapshot.in_flight, 1);
+                    }
+                    Err(error) => panic!("unexpected error {error}"),
+                }
+                finish.wait();
+                acquire.join().unwrap();
+            });
+            assert_eq!(gate.snapshot().in_flight, 0);
+            gate.configure_limits(caps()).unwrap();
+        }
+    }
+
+    #[test]
+    fn concurrent_explicit_init_equal_caps_succeed_and_different_caps_conflict() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        std::thread::scope(|scope| {
+            let a = scope.spawn(|| gate.configure_limits(caps()));
+            let b = scope.spawn(|| gate.configure_limits(caps()));
+            a.join().unwrap().unwrap();
+            b.join().unwrap().unwrap();
+        });
+        let other = GateLimits::validated(6, Some(3)).unwrap();
+        assert!(matches!(
+            gate.configure_limits(other),
+            Err(CcError::Config(_))
+        ));
+        assert!(matches!(
+            gate.configure_limits(GateLimits {
+                max_concurrent: 0,
+                max_concurrent_per_project: None
+            }),
+            Err(CcError::Config(_))
+        ));
+        assert_eq!(gate.snapshot().max_concurrent, 4);
     }
 }

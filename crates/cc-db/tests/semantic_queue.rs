@@ -243,12 +243,30 @@ fn claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first() {
     // order and touch order is exactly the signal rotation uses.
     let first = world.db.claim_semantic("worker", 60.0).unwrap().unwrap();
     assert_eq!(first.doc_key, "doc-a");
-    assert!(retry_on(&world.conn, first.task_id, &first.token, "flaky", 900.0, 0.0, 3).unwrap());
+    assert!(retry_on(
+        &world.conn,
+        first.task_id,
+        &first.token,
+        "flaky",
+        900.0,
+        0.0,
+        3
+    )
+    .unwrap());
 
     // FIFO ignores the fresh retry timestamp: doc-a again (task_id order).
     let fifo = world.db.claim_semantic("worker", 60.0).unwrap().unwrap();
     assert_eq!(fifo.doc_key, "doc-a");
-    assert!(retry_on(&world.conn, fifo.task_id, &fifo.token, "flaky", 950.0, 0.0, 3).unwrap());
+    assert!(retry_on(
+        &world.conn,
+        fifo.task_id,
+        &fifo.token,
+        "flaky",
+        950.0,
+        0.0,
+        3
+    )
+    .unwrap());
 
     // Rotation serves the least recently touched doc: doc-b (updated_at
     // 500) before doc-a (950), despite doc-a's strictly older task_id.
@@ -278,5 +296,8 @@ fn claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first() {
         .claim_semantic_ordered("worker", 60.0, ClaimFairness::Fifo)
         .unwrap()
         .unwrap();
-    assert_eq!(fifo.doc_key, "doc-a", "explicit Fifo == default claim order");
+    assert_eq!(
+        fifo.doc_key, "doc-a",
+        "explicit Fifo == default claim order"
+    );
 }

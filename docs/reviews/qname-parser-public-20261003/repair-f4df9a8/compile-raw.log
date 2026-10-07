@@ -1,0 +1,16 @@
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+error: format argument must be a string literal
+  --> crates/cc-index/tests/independent_qname_repair_guard.rs:57:36
+   |
+57 |         assert_eq!(found.len(), 1, q);
+   |                                    ^
+   |
+help: you might be missing a string literal to format with
+   |
+57 |         assert_eq!(found.len(), 1, "{}", q);
+   |                                    +++++
+
+error: could not compile `cc-index` (test "independent_qname_repair_guard") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

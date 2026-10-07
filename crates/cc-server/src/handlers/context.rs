@@ -377,7 +377,11 @@ mod tests {
     use std::sync::{Arc, RwLock};
 
     /// Build an indexed project and return its shared handle plus db.
-    fn indexed_db() -> (tempfile::TempDir, Arc<RwLock<crate::engine::CodeIndex>>, Arc<cc_db::index_db::IndexDb>) {
+    fn indexed_db() -> (
+        tempfile::TempDir,
+        Arc<RwLock<crate::engine::CodeIndex>>,
+        Arc<cc_db::index_db::IndexDb>,
+    ) {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("a.rs"), "pub fn a() {}\n").unwrap();
         let index = Arc::new(RwLock::new(

@@ -1,0 +1,3100 @@
+{
+  "T": {
+    "engine": {
+      "evidence_summary": {
+        "files": [
+          "micro.cpp"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": true,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 2,
+          "original_nodes": 2,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13717
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 2,
+            "hydrate_requested": 2,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 10,
+                "sorts": 0,
+                "statements": 9,
+                "vm_steps": 386
+              },
+              "text": {
+                "cache_hits": 2,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 45,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 0,
+              "graph": 0,
+              "grep": 2,
+              "lexical": 2,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 2,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 59
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 4,
+            "skipped_duplicates": 4,
+            "soft_scanned": 4,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 49
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 4,
+                    "utf8_bytes": 64,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 3,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 39
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 195,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 480,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 2,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                    "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                    "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                    "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:micro.cpp:2",
+                  "raw_score": -1.2407809110629067e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 61,
+                    "start": 36
+                  }
+                },
+                {
+                  "document": {
+                    "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                    "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                    "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                    "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 2,
+                  "legacy_chunk_id": "chunk:micro.cpp:1",
+                  "raw_score": -9.69491525423729e-7,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 36,
+                    "start": 16
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 505,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 2,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                    "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                    "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                    "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:micro.cpp:2",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 61,
+                    "start": 36
+                  }
+                },
+                {
+                  "document": {
+                    "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                    "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                    "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                    "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 2,
+                  "legacy_chunk_id": "chunk:micro.cpp:1",
+                  "raw_score": 0.5,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 36,
+                    "start": 16
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 4,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 564,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 174,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 2,
+        "selection": {
+          "facets": {
+            "implementation": 2
+          },
+          "input_candidates": 2,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 45,
+            "redundant_bytes": 0,
+            "unique_bytes": 45
+          },
+          "requested_limit": 20,
+          "selected": 2,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 45,
+            "redundant_bytes": 0,
+            "unique_bytes": 45
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              132,
+              104,
+              77,
+              57,
+              11,
+              115,
+              1,
+              50,
+              209,
+              65,
+              7,
+              72,
+              250,
+              223,
+              115,
+              95
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 64,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 2
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "grove > leaf",
+            "chunk_id": "chunk:micro.cpp:2",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.03725490196078432,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+              },
+              "qname": "grove::leaf",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 61,
+                  "start": 36
+                },
+                "signature": {
+                  "end": 48,
+                  "start": 36
+                },
+                "slice_digest": "be28cbd0b4c602819206eb3b51ecd01d330069e92a93f2b805505bd4ebf80eb6",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 61,
+                  "start": 36
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary"
+              ],
+              "stage_a_file_score": 1.400001571426102,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400001571426102
+                ]
+              ]
+            },
+            "reasons": [
+              "lexical@1",
+              "grep@1",
+              "fts-summary",
+              "preselect:fts-summary:+1.40"
+            ],
+            "rerank_score": 0.44325496481782833,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.056000062857044085
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "method",
+            "symbol_name": "leaf",
+            "text": "T leaf(T x) { return x; }"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:1",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.03653846153846154,
+            "graph_score": 0.0,
+            "grep_score": 0.5,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.5,
+            "metadata": {
+              "document": {
+                "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "1976f6b12b88e2da3b2615ff7f4efb84edd978689e59edb050e58d83240175e0",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 36,
+                  "start": 16
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary"
+              ],
+              "stage_a_file_score": 1.400001571426102,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400001571426102
+                ]
+              ]
+            },
+            "reasons": [
+              "lexical@2",
+              "grep@2",
+              "fts-summary",
+              "preselect:fts-summary:+1.40"
+            ],
+            "rerank_score": 0.44253852439550556,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021153846153846155
+              ],
+              [
+                "rrf:grep",
+                0.015384615384615385
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.056000062857044085
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "{ template<class T> "
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "T",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:2",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.44325496481782833,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove > leaf:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:1",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.44253852439550556,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        }
+      ],
+      "query": "T",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove > leaf",
+          "node_id": "search:chunk:micro.cpp:2",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:1",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 2 indexed code result(s) across 1 file(s) for `T`.",
+      "task": "T",
+      "token_budget": 4000,
+      "token_estimate": 3430
+    },
+    "mcp": {
+      "evidence_summary": {
+        "files": [
+          "micro.cpp"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": true,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 2,
+          "original_nodes": 2,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13916
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 2,
+            "hydrate_requested": 2,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 10,
+                "sorts": 0,
+                "statements": 9,
+                "vm_steps": 386
+              },
+              "text": {
+                "cache_hits": 2,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 45,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 0,
+              "graph": 0,
+              "grep": 2,
+              "lexical": 2,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 2,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 59
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 4,
+            "skipped_duplicates": 4,
+            "soft_scanned": 4,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 49
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 4,
+                    "utf8_bytes": 64,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 3,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 39
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 128,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 638,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 2,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                    "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                    "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                    "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:micro.cpp:2",
+                  "raw_score": -1.2407809110629067e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 61,
+                    "start": 36
+                  }
+                },
+                {
+                  "document": {
+                    "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                    "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                    "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                    "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 2,
+                  "legacy_chunk_id": "chunk:micro.cpp:1",
+                  "raw_score": -9.69491525423729e-7,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 36,
+                    "start": 16
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 355,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 2,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                    "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                    "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                    "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:micro.cpp:2",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 61,
+                    "start": 36
+                  }
+                },
+                {
+                  "document": {
+                    "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                    "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                    "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                    "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 2,
+                  "legacy_chunk_id": "chunk:micro.cpp:1",
+                  "raw_score": 0.5,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 36,
+                    "start": 16
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 4,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 385,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 195,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 2,
+        "selection": {
+          "facets": {
+            "implementation": 2
+          },
+          "input_candidates": 2,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 45,
+            "redundant_bytes": 0,
+            "unique_bytes": 45
+          },
+          "requested_limit": 20,
+          "selected": 2,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 45,
+            "redundant_bytes": 0,
+            "unique_bytes": 45
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              132,
+              104,
+              77,
+              57,
+              11,
+              115,
+              1,
+              50,
+              209,
+              65,
+              7,
+              72,
+              250,
+              223,
+              115,
+              95
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 64,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 2
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "grove > leaf",
+            "chunk_id": "chunk:micro.cpp:2",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.03725490196078432,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+              },
+              "qname": "grove::leaf",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 61,
+                  "start": 36
+                },
+                "signature": {
+                  "end": 48,
+                  "start": 36
+                },
+                "slice_digest": "be28cbd0b4c602819206eb3b51ecd01d330069e92a93f2b805505bd4ebf80eb6",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 61,
+                  "start": 36
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary"
+              ],
+              "stage_a_file_score": 1.400001571426102,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400001571426102
+                ]
+              ]
+            },
+            "reasons": [
+              "lexical@1",
+              "grep@1",
+              "fts-summary",
+              "preselect:fts-summary:+1.40"
+            ],
+            "rerank_score": 0.44325496481782833,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.056000062857044085
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "method",
+            "symbol_name": "leaf",
+            "text": "T leaf(T x) { return x; }"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:1",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.03653846153846154,
+            "graph_score": 0.0,
+            "grep_score": 0.5,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.5,
+            "metadata": {
+              "document": {
+                "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "1976f6b12b88e2da3b2615ff7f4efb84edd978689e59edb050e58d83240175e0",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 36,
+                  "start": 16
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary"
+              ],
+              "stage_a_file_score": 1.400001571426102,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400001571426102
+                ]
+              ]
+            },
+            "reasons": [
+              "lexical@2",
+              "grep@2",
+              "fts-summary",
+              "preselect:fts-summary:+1.40"
+            ],
+            "rerank_score": 0.44253852439550556,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021153846153846155
+              ],
+              [
+                "rrf:grep",
+                0.015384615384615385
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.056000062857044085
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "{ template<class T> "
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "T",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:2",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.44325496481782833,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove > leaf:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:1",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.44253852439550556,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        }
+      ],
+      "query": "T",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 5,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove > leaf",
+          "node_id": "search:chunk:micro.cpp:2",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:1",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 2 indexed code result(s) across 1 file(s) for `T`.",
+      "task": "T",
+      "token_budget": 4000,
+      "token_estimate": 3479
+    }
+  },
+  "leaf": {
+    "engine": {
+      "evidence_summary": {
+        "files": [
+          "micro.cpp"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": true,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 4,
+          "original_nodes": 4,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 15119
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating_work; full scope: retrieval-cost schema v1",
+            "fused_candidates": 4,
+            "hydrate_requested": 4,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 20,
+                "sorts": 0,
+                "statements": 17,
+                "vm_steps": 760
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 3,
+                "utf8_bytes": 64,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 4,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 4,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 101
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 4,
+            "skipped_duplicates": 8,
+            "soft_scanned": 4,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 49
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 4,
+                    "utf8_bytes": 64,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 102
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 3,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 39
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lane_receipts": [
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 427,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 1771,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 4,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 4
+              },
+              "elapsed_us": 377,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": 4,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 973,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1135,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "deadline_ms": 30000,
+            "details_omitted": true,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+            },
+            "details_omitted": true,
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+            },
+            "ordering": [
+              "exact_identity_first",
+              "rerank_score_desc",
+              "chunk_id_asc"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 4,
+        "selection": {
+          "facets": {
+            "implementation": 4
+          },
+          "input_candidates": 4,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 64,
+            "redundant_bytes": 0,
+            "unique_bytes": 64
+          },
+          "requested_limit": 20,
+          "selected": 4,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 64,
+            "redundant_bytes": 0,
+            "unique_bytes": 64
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              132,
+              104,
+              77,
+              57,
+              11,
+              115,
+              1,
+              50,
+              209,
+              65,
+              7,
+              72,
+              250,
+              223,
+              115,
+              95
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 64,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 4
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "grove > leaf",
+            "chunk_id": "chunk:micro.cpp:2",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 1.0,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+              },
+              "qname": "grove::leaf",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 61,
+                  "start": 36
+                },
+                "signature": {
+                  "end": 48,
+                  "start": 36
+                },
+                "slice_digest": "be28cbd0b4c602819206eb3b51ecd01d330069e92a93f2b805505bd4ebf80eb6",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 61,
+                  "start": 36
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "symbol-exact",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.7365882752940777,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:symbol-exact",
+                0.18
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "method",
+            "symbol_name": "leaf",
+            "text": "T leaf(T x) { return x; }"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:3",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.021153846153846155,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.5,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "7aafee9adec36402108e9b979b2bbcc2f8d005e52457a59586b91ecd7f0968bf",
+                "doc_version": "af6cc0db7b6828bce40d322489aee28d6f0aeccc543ab14aa8150e6bb9b4958f",
+                "encoding_key": "4c382264bf60856aefac21d44427239650702c6e19923827c794ac2f4db3f9df",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "337fb3a6e35eb7c3a85dba20b41e39be4fccbe639f63f87c36e17c3e3d971805",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 64,
+                  "start": 61
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@2",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5071538861538061,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021153846153846155
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": " }\n"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:0",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.020754716981132078,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.3333333333333333,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "f6ac4cb5030da3634b10738bcb3cc0db1cec291fbce8c5fb9be46ae2d44121b4",
+                "doc_version": "014e4cc86d9961c4e7090b10ba26b7a08762fc7435f09f6fb6d67e5a1a733373",
+                "encoding_key": "5b6c532c4dcfd95db299106a47e64940242103a2bda3d894b06e6e9d08c122c3",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "216e73ffe69b3165f08f7a3621447eb83fea9cc9f499e74f20d903f6f23fd7d8",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 16,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@3",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5067547569810921,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.020754716981132078
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "namespace grove "
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:1",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.020370370370370372,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.25,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "1976f6b12b88e2da3b2615ff7f4efb84edd978689e59edb050e58d83240175e0",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 36,
+                  "start": 16
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@4",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5063704103703304,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.020370370370370372
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "{ template<class T> "
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "leaf",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:2",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.7365882752940777,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove > leaf:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:3",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5071538861538061,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5067547569810921,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:1",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5063704103703304,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        }
+      ],
+      "query": "leaf",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove > leaf",
+          "node_id": "search:chunk:micro.cpp:2",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:3",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:0",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:1",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 4 indexed code result(s) across 1 file(s) for `leaf`.",
+      "task": "leaf",
+      "token_budget": 4000,
+      "token_estimate": 3780
+    },
+    "mcp": {
+      "evidence_summary": {
+        "files": [
+          "micro.cpp"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": true,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 4,
+          "original_nodes": 4,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 15317
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating_work; full scope: retrieval-cost schema v1",
+            "fused_candidates": 4,
+            "hydrate_requested": 4,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 20,
+                "sorts": 0,
+                "statements": 17,
+                "vm_steps": 760
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 3,
+                "utf8_bytes": 64,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 4,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 4,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 101
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 4,
+            "skipped_duplicates": 8,
+            "soft_scanned": 4,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 49
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 4,
+                    "utf8_bytes": 64,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 4,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 102
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 3,
+                    "rows": 4,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 39
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lane_receipts": [
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 376,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 598,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 4,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 4
+              },
+              "elapsed_us": 304,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": 4,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 961,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1683,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "deadline_ms": 30000,
+            "details_omitted": true,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+            },
+            "details_omitted": true,
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+            },
+            "ordering": [
+              "exact_identity_first",
+              "rerank_score_desc",
+              "chunk_id_asc"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 4,
+        "selection": {
+          "facets": {
+            "implementation": 4
+          },
+          "input_candidates": 4,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 64,
+            "redundant_bytes": 0,
+            "unique_bytes": 64
+          },
+          "requested_limit": 20,
+          "selected": 4,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 64,
+            "redundant_bytes": 0,
+            "unique_bytes": 64
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              132,
+              104,
+              77,
+              57,
+              11,
+              115,
+              1,
+              50,
+              209,
+              65,
+              7,
+              72,
+              250,
+              223,
+              115,
+              95
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 64,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 4
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "grove > leaf",
+            "chunk_id": "chunk:micro.cpp:2",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 1.0,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "1c20e643ba2ac8e4efcc0442c89242f1ff69d3bd7c737a514de4ad4e03def862",
+                "doc_version": "c5a3ebdc78da8c3aca33005e209f6e8628809e13b6a1a1374052676357b32372",
+                "encoding_key": "80a33fd40b66d590c380430764fcc3a1820b69ef66605e0a7e69b6b8199e00bd",
+                "entity_key": "1969509ac5aeff76dc9b6a0e23e0e09ce7f5d62b06edaeff2e3d13b0fdafae40"
+              },
+              "qname": "grove::leaf",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 61,
+                  "start": 36
+                },
+                "signature": {
+                  "end": 48,
+                  "start": 36
+                },
+                "slice_digest": "be28cbd0b4c602819206eb3b51ecd01d330069e92a93f2b805505bd4ebf80eb6",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 61,
+                  "start": 36
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "symbol-exact",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.7365882752940777,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:symbol-exact",
+                0.18
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "method",
+            "symbol_name": "leaf",
+            "text": "T leaf(T x) { return x; }"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:3",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.021153846153846155,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.5,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "7aafee9adec36402108e9b979b2bbcc2f8d005e52457a59586b91ecd7f0968bf",
+                "doc_version": "af6cc0db7b6828bce40d322489aee28d6f0aeccc543ab14aa8150e6bb9b4958f",
+                "encoding_key": "4c382264bf60856aefac21d44427239650702c6e19923827c794ac2f4db3f9df",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "337fb3a6e35eb7c3a85dba20b41e39be4fccbe639f63f87c36e17c3e3d971805",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 64,
+                  "start": 61
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@2",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5071538861538061,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021153846153846155
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": " }\n"
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:0",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.020754716981132078,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.3333333333333333,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "f6ac4cb5030da3634b10738bcb3cc0db1cec291fbce8c5fb9be46ae2d44121b4",
+                "doc_version": "014e4cc86d9961c4e7090b10ba26b7a08762fc7435f09f6fb6d67e5a1a733373",
+                "encoding_key": "5b6c532c4dcfd95db299106a47e64940242103a2bda3d894b06e6e9d08c122c3",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "216e73ffe69b3165f08f7a3621447eb83fea9cc9f499e74f20d903f6f23fd7d8",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 16,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@3",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5067547569810921,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.020754716981132078
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "namespace grove "
+          },
+          {
+            "breadcrumb": "grove [members: leaf]",
+            "chunk_id": "chunk:micro.cpp:1",
+            "end_line": 1,
+            "file_path": "micro.cpp",
+            "fused_score": 0.020370370370370372,
+            "graph_score": 0.0,
+            "grep_score": 0.0,
+            "lane": null,
+            "language": "cpp",
+            "lexical_score": 0.25,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "795162024a0395c2663206c75de3767857bee4ec3901747078e682409b00fff1",
+                "doc_version": "bd1c997488d7d3a3ed6961a416182b8a2f15ffc7f4837c604d292ff30c0c9a6f",
+                "encoding_key": "25fd03c44408fdafd9bec29f05815274230b396d6727ced196fa98c55b362baa",
+                "entity_key": "dfa5936bfeaa4fa8d69e2491248e8b013080e9c5ce787a2b9ba1efc4a7690100"
+              },
+              "qname": "grove",
+              "source_evidence": {
+                "boundary": "bounded_fallback",
+                "owner": {
+                  "end": 63,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 16,
+                  "start": 0
+                },
+                "slice_digest": "1976f6b12b88e2da3b2615ff7f4efb84edd978689e59edb050e58d83240175e0",
+                "source": {
+                  "byte_len": 64,
+                  "content_digest": "bc61e217c75dceae02970dc46a885882353e9c40f036c1816ff0620d3f28fcbf",
+                  "encoding": "utf8",
+                  "snapshot_id": "2a655e5c1e9920c1ff82823eea58a5ad509bd5bcffd6b42826182375fba71151"
+                },
+                "span": {
+                  "end": 36,
+                  "start": 16
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@4",
+              "fts-summary",
+              "symbol:leaf",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5063704103703304,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.020370370370370372
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "namespace",
+            "symbol_name": "grove",
+            "text": "{ template<class T> "
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "leaf",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:2",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.7365882752940777,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove > leaf:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:3",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5071538861538061,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5067547569810921,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "micro.cpp",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:micro.cpp:1",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5063704103703304,
+          "source": "index",
+          "source_end_line": 1,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "micro.cpp grove [members: leaf]:1-1",
+          "token_estimate": 0
+        }
+      ],
+      "query": "leaf",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 5,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove > leaf",
+          "node_id": "search:chunk:micro.cpp:2",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:3",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:0",
+          "start_line": 1
+        },
+        {
+          "end_line": 1,
+          "file_path": "micro.cpp",
+          "label": "grove [members: leaf]",
+          "node_id": "search:chunk:micro.cpp:1",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 4 indexed code result(s) across 1 file(s) for `leaf`.",
+      "task": "leaf",
+      "token_budget": 4000,
+      "token_estimate": 3830
+    }
+  }
+}

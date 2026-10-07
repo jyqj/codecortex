@@ -222,11 +222,12 @@ pub trait EmbeddingHttpTransport: Send + Sync {
 /// Semantic-level L2 norm policy applied by the strong response gate
 /// (P7-004; the planning brief's "norm 策略可配"). The frozen zero-vector
 /// rejection always applies regardless of this policy.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum NormPolicy {
     /// No range admission: only the always-on structural checks (finite,
     /// non-zero, dimension) constrain vectors. The default, preserving the
     /// P7-001 gate semantics.
+    #[default]
     Accept,
     /// Reject any vector whose L2 norm falls outside the **inclusive** range
     /// `[min, max]`. Intended for unit-normalized spaces (e.g.
@@ -234,12 +235,6 @@ pub enum NormPolicy {
     /// f64 so a legitimate vector of finite f32 components can never overflow
     /// the accumulation.
     RejectOutside { min: f32, max: f32 },
-}
-
-impl Default for NormPolicy {
-    fn default() -> Self {
-        Self::Accept
-    }
 }
 
 impl NormPolicy {
@@ -264,9 +259,7 @@ impl NormPolicy {
     fn admits(&self, norm: f64) -> bool {
         match self {
             Self::Accept => true,
-            Self::RejectOutside { min, max } => {
-                norm >= f64::from(*min) && norm <= f64::from(*max)
-            }
+            Self::RejectOutside { min, max } => norm >= f64::from(*min) && norm <= f64::from(*max),
         }
     }
 }
@@ -355,21 +348,22 @@ impl OpenAiCompatibleProvider {
             .space
             .validate()
             .expect("OpenAiCompatibleConfig space must be a valid frozen VectorSpace");
-        config
-            .norm_policy
-            .validate()
-            .expect("OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range");
+        config.norm_policy.validate().expect(
+            "OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range",
+        );
         let endpoint = config.endpoint.trim_end_matches('/');
-        assert!(!endpoint.is_empty(), "OpenAiCompatibleConfig endpoint must be non-empty");
+        assert!(
+            !endpoint.is_empty(),
+            "OpenAiCompatibleConfig endpoint must be non-empty"
+        );
         assert!(
             endpoint.starts_with("http://") || endpoint.starts_with("https://"),
             "OpenAiCompatibleConfig endpoint must be an http(s) URL"
         );
-        config
-            .egress
-            .validate_endpoint(endpoint)
-            .expect("OpenAiCompatibleConfig endpoint must pass the egress policy (https default; \
-                     semantic.allow_http opts into plaintext)");
+        config.egress.validate_endpoint(endpoint).expect(
+            "OpenAiCompatibleConfig endpoint must pass the egress policy (https default; \
+                     semantic.allow_http opts into plaintext)",
+        );
         let mut config = config;
         if let Some(transport) = config.transport.take() {
             assert!(
@@ -377,8 +371,10 @@ impl OpenAiCompatibleProvider {
                 "OpenAiCompatibleConfig: a transport may not be assembled without the explicit \
                  network opt-in (semantic.network_opt_in, P7-007 default no-network)"
             );
-            config.transport = Some(Arc::new(GuardedTransport::new(transport, config.egress.clone()))
-                as Arc<dyn EmbeddingHttpTransport>);
+            config.transport = Some(Arc::new(GuardedTransport::new(
+                transport,
+                config.egress.clone(),
+            )) as Arc<dyn EmbeddingHttpTransport>);
         }
         Self { config }
     }
@@ -606,8 +602,7 @@ pub(crate) fn parse_embeddings_response(
     // ── Protocol level: 2xx must declare a JSON body ──────────────────────
     if !content_type_is_json(response) {
         return Err(ProviderError::InvalidInput(
-            "openai-compatible success response does not declare a JSON content type"
-                .into(),
+            "openai-compatible success response does not declare a JSON content type".into(),
         ));
     }
 
@@ -627,9 +622,7 @@ pub(crate) fn parse_embeddings_response(
     // here: a deeply nested bomb fails parsing exactly like any malformed
     // body (pinned by a dedicated test).
     let parsed: serde_json::Value = serde_json::from_slice(&response.body).map_err(|_| {
-        ProviderError::InvalidInput(
-            "openai-compatible response body is not valid JSON".into(),
-        )
+        ProviderError::InvalidInput("openai-compatible response body is not valid JSON".into())
     })?;
     // ── Schema level: strict envelope shape ───────────────────────────────
     let obj = parsed.as_object().ok_or_else(|| {
@@ -642,9 +635,7 @@ pub(crate) fn parse_embeddings_response(
     // contradicts the declaration (foreign-space vectors must never reach
     // the cache).
     let model = obj.get("model").ok_or_else(|| {
-        ProviderError::InvalidInput(
-            "openai-compatible response carries no `model` echo".into(),
-        )
+        ProviderError::InvalidInput("openai-compatible response carries no `model` echo".into())
     })?;
     let model = model.as_str().ok_or_else(|| {
         ProviderError::InvalidInput(
@@ -704,11 +695,14 @@ pub(crate) fn parse_embeddings_response(
         })? as usize;
         // Strict field type: an embedding must be a numeric array;
         // base64-string and object embeddings are rejected.
-        let raw = entry.get("embedding").and_then(|v| v.as_array()).ok_or_else(|| {
-            ProviderError::InvalidInput(format!(
-                "openai-compatible data entry {position} has no embedding array"
-            ))
-        })?;
+        let raw = entry
+            .get("embedding")
+            .and_then(|v| v.as_array())
+            .ok_or_else(|| {
+                ProviderError::InvalidInput(format!(
+                    "openai-compatible data entry {position} has no embedding array"
+                ))
+            })?;
         let mut vector = Vec::with_capacity(raw.len());
         for (component_index, component) in raw.iter().enumerate() {
             let value = component.as_f64().ok_or_else(|| {
@@ -901,10 +895,8 @@ impl MockRetryClock {
     }
 
     pub fn advance(&self, by: Duration) {
-        self.now_ms.fetch_add(
-            by.as_millis() as u64,
-            AtomicOrdering::SeqCst,
-        );
+        self.now_ms
+            .fetch_add(by.as_millis() as u64, AtomicOrdering::SeqCst);
     }
 
     pub fn now(&self) -> u64 {
@@ -914,7 +906,10 @@ impl MockRetryClock {
     /// Every sleep the retry loop performed, in order (backoff-sequence
     /// assertions).
     pub fn recorded_sleeps(&self) -> Vec<Duration> {
-        self.sleeps.lock().unwrap_or_else(|p| p.into_inner()).clone()
+        self.sleeps
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .clone()
     }
 }
 
@@ -1325,7 +1320,9 @@ impl CircuitBreaker {
             .saturating_mul(AUTH_OPEN_WINDOW_MULTIPLIER);
         let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
         inner.phase = BreakerPhase::OpenUntil(
-            clock.now_millis().saturating_add(long_window.as_millis() as u64),
+            clock
+                .now_millis()
+                .saturating_add(long_window.as_millis() as u64),
         );
         inner.probe_in_flight = false;
     }
@@ -1420,13 +1417,7 @@ impl RetryingProvider {
         breaker: Arc<CircuitBreaker>,
         gate: Option<Arc<ProviderGate>>,
     ) -> Self {
-        Self::with_clock(
-            inner,
-            policy,
-            breaker,
-            gate,
-            Arc::new(SystemRetryClock),
-        )
+        Self::with_clock(inner, policy, breaker, gate, Arc::new(SystemRetryClock))
     }
 
     /// Same decoration with an injected clock (deterministic tests).
@@ -1576,9 +1567,10 @@ impl RetryingProvider {
             // processed, and billed the request is undecidable from here.
             let (outcome, uncertain) = match &result {
                 Ok(_) => (AttemptOutcome::Succeeded, None),
-                Err(ProviderError::Timeout) => {
-                    (AttemptOutcome::Failed, Some(UncertainReason::TimeoutIndeterminate))
-                }
+                Err(ProviderError::Timeout) => (
+                    AttemptOutcome::Failed,
+                    Some(UncertainReason::TimeoutIndeterminate),
+                ),
                 Err(_) => (AttemptOutcome::Failed, None),
             };
             self.record_receipt(
@@ -1702,10 +1694,7 @@ impl EmbeddingProvider for RetryingProvider {
             batch_items: batch.len(),
             // P7-003 estimator口径: per-item `utf8-bytes-div-ceil-4-v1`,
             // summed — the same figure the batch planner reports.
-            estimated_tokens: batch
-                .iter()
-                .map(|d| estimate_tokens(&d.bytes) as u64)
-                .sum(),
+            estimated_tokens: batch.iter().map(|d| estimate_tokens(&d.bytes) as u64).sum(),
         };
         self.run(meta, || self.inner.embed_documents(batch))
     }
@@ -1718,10 +1707,7 @@ impl EmbeddingProvider for RetryingProvider {
             space_model: self.inner.space().model_id().to_owned(),
             path: ReceiptPath::Queries,
             batch_items: batch.len(),
-            estimated_tokens: batch
-                .iter()
-                .map(|q| estimate_tokens(&q.bytes) as u64)
-                .sum(),
+            estimated_tokens: batch.iter().map(|q| estimate_tokens(&q.bytes) as u64).sum(),
         };
         self.run(meta, || self.inner.embed_queries(batch))
     }
@@ -1771,10 +1757,7 @@ mod tests {
                 .collect();
             HttpResponse {
                 status,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: serde_json::to_vec(&serde_json::json!({
                     "object": "list",
                     "model": model,
@@ -1841,10 +1824,7 @@ mod tests {
     fn raw_json_response(body: serde_json::Value) -> HttpResponse {
         HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: serde_json::to_vec(&body).unwrap(),
         }
     }
@@ -1857,7 +1837,10 @@ mod tests {
         let err = p.embed_documents(&[doc("x")]).unwrap_err();
         match err {
             ProviderError::InvalidInput(message) => {
-                assert!(message.contains("disabled"), "must name the disabled state: {message}");
+                assert!(
+                    message.contains("disabled"),
+                    "must name the disabled state: {message}"
+                );
             }
             other => panic!("expected InvalidInput for disabled provider, got {other:?}"),
         }
@@ -1902,12 +1885,10 @@ mod tests {
                     && v == "Bearer sk-test-secret"),
             "must send the configured bearer credential"
         );
-        assert!(
-            request
-                .headers
-                .iter()
-                .any(|(k, v)| k.eq_ignore_ascii_case("content-type") && v == "application/json"),
-        );
+        assert!(request
+            .headers
+            .iter()
+            .any(|(k, v)| k.eq_ignore_ascii_case("content-type") && v == "application/json"),);
         let body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
         assert_eq!(body["model"], MODEL);
         assert_eq!(body["input"], serde_json::json!(["alpha", "beta"]));
@@ -1953,9 +1934,7 @@ mod tests {
             (0, vec![0.1, 0.2, 0.3, 0.4]),
         ])));
         let p = provider(Some(transport));
-        let out = p
-            .embed_documents(&[doc("first"), doc("second")])
-            .unwrap();
+        let out = p.embed_documents(&[doc("first"), doc("second")]).unwrap();
         assert_eq!(out[0], vec![0.1, 0.2, 0.3, 0.4], "index 0 first");
         assert_eq!(out[1], vec![0.4, 0.3, 0.2, 0.1], "index 1 second");
     }
@@ -1976,8 +1955,10 @@ mod tests {
 
     #[test]
     fn dimension_mismatch_is_rejected() {
-        let transport =
-            Arc::new(MockTransport::with_response(ok_response(vec![(0, vec![1.0, 2.0])])));
+        let transport = Arc::new(MockTransport::with_response(ok_response(vec![(
+            0,
+            vec![1.0, 2.0],
+        )])));
         let p = provider(Some(transport));
         assert!(matches!(
             p.embed_documents(&[doc("x")]),
@@ -2055,10 +2036,7 @@ mod tests {
 
         let malformed = HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: b"{not json".to_vec(),
         };
         let p = provider(Some(Arc::new(MockTransport::with_response(malformed))));
@@ -2072,7 +2050,14 @@ mod tests {
 
     #[test]
     fn http_429_maps_to_rate_limited_with_retry_after() {
-        let mut response = ok_response(vec![(0, vec![1.0; 0]); 0]);
+        // A zero-repeat initializer evaluates and drops its entry once.
+        // Preserve that empty-vector construction explicitly (the original
+        // repeated 1.0 literal has no side effects), then build the empty data.
+        let discarded_entry = (0_usize, Vec::<f32>::new());
+        drop(discarded_entry);
+        let mut response = ok_response(Vec::new());
+        let body: serde_json::Value = serde_json::from_slice(&response.body).unwrap();
+        assert_eq!(body["data"], serde_json::json!([]));
         response.status = 429;
         response.headers = vec![("Retry-After".to_owned(), "7".to_owned())];
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));
@@ -2106,7 +2091,10 @@ mod tests {
                 body: Vec::new(),
             };
             let p = provider(Some(Arc::new(MockTransport::with_response(response))));
-            assert_eq!(p.embed_documents(&[doc("x")]).unwrap_err(), ProviderError::AuthError);
+            assert_eq!(
+                p.embed_documents(&[doc("x")]).unwrap_err(),
+                ProviderError::AuthError
+            );
         }
     }
 
@@ -2118,7 +2106,10 @@ mod tests {
             body: Vec::new(),
         };
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));
-        assert_eq!(p.embed_documents(&[doc("x")]).unwrap_err(), ProviderError::ServerError);
+        assert_eq!(
+            p.embed_documents(&[doc("x")]).unwrap_err(),
+            ProviderError::ServerError
+        );
     }
 
     #[test]
@@ -2132,7 +2123,10 @@ mod tests {
         match p.embed_documents(&[doc("x")]).unwrap_err() {
             ProviderError::InvalidInput(message) => {
                 assert!(message.contains("http 400"));
-                assert!(!message.contains("secret-ish"), "response body must not leak into errors");
+                assert!(
+                    !message.contains("secret-ish"),
+                    "response body must not leak into errors"
+                );
             }
             other => panic!("expected InvalidInput, got {other:?}"),
         }
@@ -2172,7 +2166,10 @@ mod tests {
             p.embed_documents(&[hostile]),
             Err(ProviderError::InvalidInput(message)) if message.contains("UTF-8")
         ));
-        assert!(transport.requests.lock().unwrap().is_empty(), "nothing may reach the transport");
+        assert!(
+            transport.requests.lock().unwrap().is_empty(),
+            "nothing may reach the transport"
+        );
     }
 
     // ── Credential hygiene ────────────────────────────────────────────────
@@ -2194,7 +2191,10 @@ mod tests {
         // Every rendered error path must be free of the configured key.
         let err = p.embed_documents(&[doc("x")]).unwrap_err();
         let err_debug = format!("{err:?}");
-        assert!(!err_debug.contains("sk-test-secret"), "leaked key in: {err_debug}");
+        assert!(
+            !err_debug.contains("sk-test-secret"),
+            "leaked key in: {err_debug}"
+        );
         let cfg_debug = format!("{:?}", config(None));
         assert!(!cfg_debug.contains("sk-test-secret"));
     }
@@ -2213,10 +2213,7 @@ mod tests {
         // post-parse finiteness gate must catch exactly that.
         let overflowing = HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: format!(
                 r#"{{"model":"{MODEL}","data":[{{"index":0,"embedding":[0.1,1e39,0.3,0.4]}}]}}"#
             )
@@ -2285,10 +2282,9 @@ mod tests {
         // Same port, same cache loop, two interchangeable implementations.
         let fake_space = Space::new("fake/model-a", 8).expect("valid space");
         let fake = FakeProvider::new(FakeProviderConfig::new(fake_space.clone()));
-        let adapter = provider(Some(Arc::new(MockTransport::with_response(ok_response(vec![(
-            0,
-            vec![0.25, -0.5, 0.75, 0.125],
-        )])))));
+        let adapter = provider(Some(Arc::new(MockTransport::with_response(ok_response(
+            vec![(0, vec![0.25, -0.5, 0.75, 0.125])],
+        )))));
 
         // Adapter's frozen space identity matches what it reports on the port.
         assert_eq!(adapter.space().model_id(), MODEL);
@@ -2318,10 +2314,7 @@ mod tests {
             );
             let response = HttpResponse {
                 status: 200,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: body.into_bytes(),
             };
             let p = provider(Some(Arc::new(MockTransport::with_response(response))));
@@ -2343,10 +2336,7 @@ mod tests {
             );
             let response = HttpResponse {
                 status: 200,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: body.into_bytes(),
             };
             let p = provider(Some(Arc::new(MockTransport::with_response(response))));
@@ -2428,10 +2418,7 @@ mod tests {
             0,
             vec![0.6, 0.6, 0.6, 0.6],
         )]))));
-        cfg.norm_policy = NormPolicy::RejectOutside {
-            min: 1.0,
-            max: 1.0,
-        };
+        cfg.norm_policy = NormPolicy::RejectOutside { min: 1.0, max: 1.0 };
         let p = OpenAiCompatibleProvider::new(cfg);
         assert!(matches!(
             p.embed_documents(&[doc("x")]),
@@ -2445,10 +2432,7 @@ mod tests {
             0,
             vec![0.5, 0.5, 0.5, 0.5],
         )]))));
-        cfg.norm_policy = NormPolicy::RejectOutside {
-            min: 1.0,
-            max: 1.0,
-        };
+        cfg.norm_policy = NormPolicy::RejectOutside { min: 1.0, max: 1.0 };
         let p = OpenAiCompatibleProvider::new(cfg);
         assert_eq!(p.embed_documents(&[doc("x")]).unwrap(), vec![vec![0.5; 4]]);
     }
@@ -2469,10 +2453,7 @@ mod tests {
     #[test]
     fn norm_policy_is_validated_eagerly() {
         for bad in [
-            NormPolicy::RejectOutside {
-                min: 1.0,
-                max: 0.5,
-            },
+            NormPolicy::RejectOutside { min: 1.0, max: 0.5 },
             NormPolicy::RejectOutside {
                 min: -1.0,
                 max: 1.0,
@@ -2593,10 +2574,7 @@ mod tests {
     fn provider_error_envelope_diagnostics_exclude_the_free_form_message() {
         let response = HttpResponse {
             status: 400,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: serde_json::to_vec(&serde_json::json!({
                 "error": {
                     "message": "your input CONFIDENTIAL-TEXT was too long",
@@ -2632,16 +2610,16 @@ mod tests {
         // error would say so — instead the size bound fires first.
         let response = HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: vec![b'x'; 2_048],
         };
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));
         match p.embed_documents(&[doc("x")]).unwrap_err() {
             ProviderError::InvalidInput(message) => {
-                assert!(message.contains("exceeds the derived bound"), "got: {message}");
+                assert!(
+                    message.contains("exceeds the derived bound"),
+                    "got: {message}"
+                );
                 assert!(message.contains("2048"));
                 assert!(message.contains("1536"));
             }
@@ -2649,10 +2627,9 @@ mod tests {
         }
 
         // A legitimate body under the bound passes untouched.
-        let p = provider(Some(Arc::new(MockTransport::with_response(ok_response(vec![(
-            0,
-            vec![1.0, 0.0, 0.0, 0.0],
-        )])))));
+        let p = provider(Some(Arc::new(MockTransport::with_response(ok_response(
+            vec![(0, vec![1.0, 0.0, 0.0, 0.0])],
+        )))));
         assert!(p.embed_documents(&[doc("x")]).is_ok());
     }
 
@@ -2660,10 +2637,7 @@ mod tests {
     fn deeply_nested_json_is_rejected_by_the_depth_limit() {
         let response = HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: "[".repeat(300).into_bytes(),
         };
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));
@@ -2686,10 +2660,7 @@ mod tests {
         );
         let response = HttpResponse {
             status: 200,
-            headers: vec![(
-                "Content-Type".to_owned(),
-                "application/json".to_owned(),
-            )],
+            headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
             body: bomb.into_bytes(),
         };
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));
@@ -2712,10 +2683,7 @@ mod tests {
             // 400 error envelope whose message echoes the input.
             HttpResponse {
                 status: 400,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: serde_json::to_vec(&serde_json::json!({
                     "error": {"message": format!("bad input {INPUT_MARKER} {RESPONSE_MARKER}"),
                               "type": "invalid_request_error"}
@@ -2731,10 +2699,7 @@ mod tests {
             // Malformed body that itself contains the marker.
             HttpResponse {
                 status: 200,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: format!("{{broken {RESPONSE_MARKER}").into_bytes(),
             },
         ];
@@ -2884,7 +2849,10 @@ mod tests {
             &self.space
         }
 
-        fn embed_documents(&self, _batch: &[DocumentInput]) -> Result<Vec<Vec<f32>>, ProviderError> {
+        fn embed_documents(
+            &self,
+            _batch: &[DocumentInput],
+        ) -> Result<Vec<Vec<f32>>, ProviderError> {
             self.calls.fetch_add(1, Ordering::SeqCst);
             self.outcomes
                 .lock()
@@ -2965,7 +2933,12 @@ mod tests {
                 Err(terminal.clone()),
                 Ok(vec![vec![1.0_f32]]),
             ]));
-            let p = retrying(inner.clone(), policy(5), None, Arc::new(MockRetryClock::new(0)));
+            let p = retrying(
+                inner.clone(),
+                policy(5),
+                None,
+                Arc::new(MockRetryClock::new(0)),
+            );
             let err = p.embed_documents(&one_doc()).unwrap_err();
             assert_eq!(err, terminal);
             assert_eq!(inner.calls.load(Ordering::SeqCst), 1, "{terminal:?}");
@@ -2980,9 +2953,9 @@ mod tests {
             Ok(vec![vec![1.0_f32]]),
         ]));
         let clock = Arc::new(MockRetryClock::new(0));
-        let breaker = Arc::new(
-            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap()),
-        );
+        let breaker = Arc::new(CircuitBreaker::new(
+            BreakerLimits::validated(2, Duration::from_millis(100)).unwrap(),
+        ));
         let p = RetryingProvider::with_clock(
             inner.clone(),
             policy(5),
@@ -2994,11 +2967,18 @@ mod tests {
             p.embed_documents(&one_doc()),
             Err(ProviderError::AuthError)
         ));
-        assert_eq!(inner.calls.load(Ordering::SeqCst), 1, "auth is never retried");
+        assert_eq!(
+            inner.calls.load(Ordering::SeqCst),
+            1,
+            "auth is never retried"
+        );
         // The long window: 10 × the configured one.
         match breaker.state(&*clock) {
             CircuitState::Open { remaining } => {
-                assert!(remaining > Duration::from_millis(500), "long window, got {remaining:?}");
+                assert!(
+                    remaining > Duration::from_millis(500),
+                    "long window, got {remaining:?}"
+                );
                 assert!(remaining <= Duration::from_secs(1));
             }
             other => panic!("expected open, got {other:?}"),
@@ -3025,7 +3005,11 @@ mod tests {
             p.embed_documents(&one_doc()),
             Err(ProviderError::ServerError)
         ));
-        assert_eq!(inner.calls.load(Ordering::SeqCst), 3, "bounded at max_attempts");
+        assert_eq!(
+            inner.calls.load(Ordering::SeqCst),
+            3,
+            "bounded at max_attempts"
+        );
     }
 
     #[test]
@@ -3076,7 +3060,11 @@ mod tests {
         .unwrap();
         let p = retrying(inner.clone(), capped, None, clock);
         assert!(p.embed_documents(&one_doc()).is_err());
-        assert_eq!(inner.calls.load(Ordering::SeqCst), 2, "cost cap = 2 units, 1 per attempt");
+        assert_eq!(
+            inner.calls.load(Ordering::SeqCst),
+            2,
+            "cost cap = 2 units, 1 per attempt"
+        );
     }
 
     #[test]
@@ -3099,8 +3087,15 @@ mod tests {
             Arc::new(SystemRetryClock),
         );
         assert!(p.embed_documents(&one_doc()).is_ok());
-        assert_eq!(inner.calls.load(Ordering::SeqCst), 2, "resumed after the cooldown");
-        assert!(gate.snapshot().suspended_for.is_none(), "cooldown expired by itself");
+        assert_eq!(
+            inner.calls.load(Ordering::SeqCst),
+            2,
+            "resumed after the cooldown"
+        );
+        assert!(
+            gate.snapshot().suspended_for.is_none(),
+            "cooldown expired by itself"
+        );
     }
 
     #[test]
@@ -3164,11 +3159,19 @@ mod tests {
         let no_jitter: Vec<u128> = (0..5u32)
             .map(|a| policy.backoff_delay(a, 0.0).as_millis())
             .collect();
-        assert_eq!(no_jitter, vec![100, 200, 400, 800, 800], "pure exponential, capped");
+        assert_eq!(
+            no_jitter,
+            vec![100, 200, 400, 800, 800],
+            "pure exponential, capped"
+        );
         let full_jitter: Vec<u128> = (0..5u32)
             .map(|a| policy.backoff_delay(a, 1.0).as_millis())
             .collect();
-        assert_eq!(full_jitter, vec![75, 150, 300, 600, 600], "jitter shaves ≤ 25%, never adds");
+        assert_eq!(
+            full_jitter,
+            vec![75, 150, 300, 600, 600],
+            "jitter shaves ≤ 25%, never adds"
+        );
         // Rolls outside [0,1] clamp, they do not explode.
         assert_eq!(policy.backoff_delay(0, 42.0), Duration::from_millis(75));
         assert_eq!(policy.backoff_delay(0, -3.0), Duration::from_millis(100));
@@ -3214,35 +3217,81 @@ mod tests {
     fn empty_batch_is_a_no_op_without_attempts_or_breaker_contact() {
         let inner = Arc::new(ScriptedProvider::ok());
         let clock = Arc::new(MockRetryClock::new(0));
-        let breaker = Arc::new(
-            CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(10)).unwrap()),
-        );
+        let breaker = Arc::new(CircuitBreaker::new(
+            BreakerLimits::validated(1, Duration::from_millis(10)).unwrap(),
+        ));
         // A pre-tripped breaker would reject any real attempt.
         breaker.record_failure(&*clock);
-        let p = RetryingProvider::with_clock(
-            inner.clone(),
-            policy(3),
-            breaker,
-            None,
-            clock,
+        let p = RetryingProvider::with_clock(inner.clone(), policy(3), breaker, None, clock);
+        assert_eq!(
+            p.embed_documents(&[]).expect("empty is ok"),
+            Vec::<Vec<f32>>::new()
         );
-        assert_eq!(p.embed_documents(&[]).expect("empty is ok"), Vec::<Vec<f32>>::new());
-        assert_eq!(p.embed_queries(&[]).expect("empty is ok"), Vec::<Vec<f32>>::new());
+        assert_eq!(
+            p.embed_queries(&[]).expect("empty is ok"),
+            Vec::<Vec<f32>>::new()
+        );
         assert_eq!(inner.calls.load(Ordering::SeqCst), 0);
     }
 
     #[test]
     fn invalid_policy_combinations_are_rejected_with_named_reasons() {
-        assert!(RetryPolicy::validated(0, Duration::from_millis(1), Duration::from_millis(1), true, Duration::from_millis(1), None).is_err());
-        assert!(RetryPolicy::validated(1, Duration::ZERO, Duration::from_millis(1), true, Duration::from_millis(1), None).is_err());
-        assert!(RetryPolicy::validated(1, Duration::from_millis(10), Duration::from_millis(5), true, Duration::from_millis(1), None).is_err());
-        assert!(RetryPolicy::validated(1, Duration::from_millis(1), Duration::from_millis(1), true, Duration::ZERO, None).is_err());
-        assert!(RetryPolicy::validated(1, Duration::from_millis(1), Duration::from_millis(1), true, Duration::from_millis(1), Some(0)).is_err());
+        assert!(RetryPolicy::validated(
+            0,
+            Duration::from_millis(1),
+            Duration::from_millis(1),
+            true,
+            Duration::from_millis(1),
+            None
+        )
+        .is_err());
+        assert!(RetryPolicy::validated(
+            1,
+            Duration::ZERO,
+            Duration::from_millis(1),
+            true,
+            Duration::from_millis(1),
+            None
+        )
+        .is_err());
+        assert!(RetryPolicy::validated(
+            1,
+            Duration::from_millis(10),
+            Duration::from_millis(5),
+            true,
+            Duration::from_millis(1),
+            None
+        )
+        .is_err());
+        assert!(RetryPolicy::validated(
+            1,
+            Duration::from_millis(1),
+            Duration::from_millis(1),
+            true,
+            Duration::ZERO,
+            None
+        )
+        .is_err());
+        assert!(RetryPolicy::validated(
+            1,
+            Duration::from_millis(1),
+            Duration::from_millis(1),
+            true,
+            Duration::from_millis(1),
+            Some(0)
+        )
+        .is_err());
         assert!(BreakerLimits::validated(1, Duration::ZERO).is_err());
-        assert!(BreakerLimits::validated(0, Duration::ZERO).is_ok(), "0 threshold = disabled");
+        assert!(
+            BreakerLimits::validated(0, Duration::ZERO).is_ok(),
+            "0 threshold = disabled"
+        );
         // Config mapping: 0 attempts = disabled, timing keys validated.
         let mut cfg = cc_model::config::SemanticProviderConfig::default();
-        assert_eq!(RetryPolicy::from_provider_config(&cfg).unwrap(), RetryPolicy::disabled());
+        assert_eq!(
+            RetryPolicy::from_provider_config(&cfg).unwrap(),
+            RetryPolicy::disabled()
+        );
         cfg.retry_max_attempts = 3;
         cfg.retry_base_backoff_ms = 10_000;
         cfg.retry_max_backoff_ms = 100;
@@ -3251,12 +3300,17 @@ mod tests {
 
     #[test]
     fn consecutive_failures_open_the_circuit_which_fails_fast_without_provider_contact() {
-        let breaker = CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap());
+        let breaker =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap());
         let clock = MockRetryClock::new(0);
         assert_eq!(breaker.state(&clock), CircuitState::Closed);
         breaker.record_failure(&clock);
         assert_eq!(breaker.consecutive_failures(), 1);
-        assert_eq!(breaker.state(&clock), CircuitState::Closed, "below threshold");
+        assert_eq!(
+            breaker.state(&clock),
+            CircuitState::Closed,
+            "below threshold"
+        );
         breaker.record_failure(&clock);
         match breaker.state(&clock) {
             CircuitState::Open { remaining } => assert!(remaining <= Duration::from_millis(100)),
@@ -3270,7 +3324,8 @@ mod tests {
 
     #[test]
     fn success_resets_the_consecutive_failure_count() {
-        let breaker = CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap());
+        let breaker =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap());
         let clock = MockRetryClock::new(0);
         breaker.record_failure(&clock);
         breaker.record_success();
@@ -3281,12 +3336,17 @@ mod tests {
 
     #[test]
     fn open_window_elapsed_lazily_becomes_half_open_with_a_single_probe_slot() {
-        let breaker = CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(50)).unwrap());
+        let breaker =
+            CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(50)).unwrap());
         let clock = MockRetryClock::new(0);
         breaker.record_failure(&clock);
         assert!(matches!(breaker.state(&clock), CircuitState::Open { .. }));
         clock.advance(Duration::from_millis(50));
-        assert_eq!(breaker.state(&clock), CircuitState::HalfOpen, "lazy transition, no timer");
+        assert_eq!(
+            breaker.state(&clock),
+            CircuitState::HalfOpen,
+            "lazy transition, no timer"
+        );
         // Exactly ONE probe at a time.
         assert_eq!(breaker.admit(&clock), BreakerAdmission::Admitted);
         assert!(matches!(
@@ -3301,7 +3361,8 @@ mod tests {
 
     #[test]
     fn half_open_probe_failure_reopens_for_a_fresh_window() {
-        let breaker = CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(50)).unwrap());
+        let breaker =
+            CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(50)).unwrap());
         let clock = MockRetryClock::new(0);
         breaker.record_failure(&clock);
         clock.advance(Duration::from_millis(50));
@@ -3310,7 +3371,10 @@ mod tests {
         breaker.record_failure(&clock);
         match breaker.state(&clock) {
             CircuitState::Open { remaining } => {
-                assert!(remaining <= Duration::from_millis(50), "fresh window, got {remaining:?}");
+                assert!(
+                    remaining <= Duration::from_millis(50),
+                    "fresh window, got {remaining:?}"
+                );
             }
             other => panic!("expected reopened, got {other:?}"),
         }
@@ -3326,7 +3390,8 @@ mod tests {
         assert_eq!(breaker.state(&clock), CircuitState::Closed);
         assert_eq!(breaker.admit(&clock), BreakerAdmission::Admitted);
         // Neutral outcomes (429 / invalid input / cancelled) never trip.
-        let breaker = CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(10)).unwrap());
+        let breaker =
+            CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_millis(10)).unwrap());
         breaker.record_neutral();
         breaker.record_neutral();
         assert_eq!(breaker.state(&clock), CircuitState::Closed);
@@ -3349,9 +3414,9 @@ mod tests {
             Err(ProviderError::ServerError),
         ]));
         let clock = Arc::new(MockRetryClock::new(0));
-        let breaker = Arc::new(
-            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_millis(100)).unwrap()),
-        );
+        let breaker = Arc::new(CircuitBreaker::new(
+            BreakerLimits::validated(2, Duration::from_millis(100)).unwrap(),
+        ));
         let ledger = Arc::new(ReceiptLedger::new(32).expect("ledger"));
         // Cost cap 2 = exactly the two tripping attempts; everything after
         // is refused before the call.
@@ -3393,7 +3458,11 @@ mod tests {
             "a budget-refused probe must not strand the half-open slot"
         );
         // The refusal left its receipt (2 failed attempts + 1 budget refusal).
-        assert_eq!(ledger.retained_count(), 3, "one receipt per attempt or refusal");
+        assert_eq!(
+            ledger.retained_count(),
+            3,
+            "one receipt per attempt or refusal"
+        );
         assert_eq!(
             ledger.retained_receipts()[2].outcome,
             AttemptOutcome::RejectedByBudget,
@@ -3480,13 +3549,21 @@ mod tests {
         assert_eq!(inner.calls.load(Ordering::SeqCst), 3);
 
         let receipts = ledger.retained_receipts();
-        assert_eq!(receipts.len(), 3, "one receipt per attempt, retries included");
+        assert_eq!(
+            receipts.len(),
+            3,
+            "one receipt per attempt, retries included"
+        );
         let attempts: Vec<u64> = receipts.iter().map(|r| r.attempt).collect();
         assert_eq!(attempts, vec![1, 2, 3]);
         let outcomes: Vec<AttemptOutcome> = receipts.iter().map(|r| r.outcome).collect();
         assert_eq!(
             outcomes,
-            vec![AttemptOutcome::Failed, AttemptOutcome::Failed, AttemptOutcome::Succeeded]
+            vec![
+                AttemptOutcome::Failed,
+                AttemptOutcome::Failed,
+                AttemptOutcome::Succeeded
+            ]
         );
         for r in &receipts {
             assert_eq!(r.space_model, MODEL);
@@ -3496,7 +3573,14 @@ mod tests {
             // 7 UTF-8 bytes ⇒ ceil(7/4) = 2 estimated tokens. Reported
             // usage is None (the frozen port does not surface usage):
             // unknown, never zero-filled.
-            assert_eq!(r.usage, UsageReceipt { reported: None, estimated: Some(2), cache_reuse: false });
+            assert_eq!(
+                r.usage,
+                UsageReceipt {
+                    reported: None,
+                    estimated: Some(2),
+                    cache_reuse: false
+                }
+            );
             assert_eq!(r.cost_units, PROVIDER_ATTEMPT_COST_UNITS);
             assert_eq!(r.uncertain, None, "ServerError is not an uncertain outcome");
         }
@@ -3544,14 +3628,8 @@ mod tests {
         ]));
         let clock = Arc::new(MockRetryClock::new(0));
         let ledger = Arc::new(ReceiptLedger::new(8).expect("ledger"));
-        let p = RetryingProvider::with_clock(
-            inner.clone(),
-            policy(1),
-            breaker,
-            None,
-            clock,
-        )
-        .with_receipts(ledger.clone(), CostBudget::new(None));
+        let p = RetryingProvider::with_clock(inner.clone(), policy(1), breaker, None, clock)
+            .with_receipts(ledger.clone(), CostBudget::new(None));
 
         let first = p.embed_documents(&one_doc());
         assert!(first.is_err(), "first sequence fails and trips the breaker");
@@ -3627,7 +3705,11 @@ mod tests {
         );
         let err = p.embed_documents(&one_doc()).unwrap_err();
         assert_eq!(err, ProviderError::ServerError);
-        assert_eq!(inner.calls.load(Ordering::SeqCst), 2, "refused before the call");
+        assert_eq!(
+            inner.calls.load(Ordering::SeqCst),
+            2,
+            "refused before the call"
+        );
 
         let receipts = ledger.retained_receipts();
         assert_eq!(receipts.len(), 3);
@@ -3689,7 +3771,11 @@ mod tests {
             CostBudget::new(None),
         );
         assert!(p.embed_documents(&[]).unwrap().is_empty());
-        assert_eq!(ledger.retained_receipts().len(), 0, "no attempt, no receipt");
+        assert_eq!(
+            ledger.retained_receipts().len(),
+            0,
+            "no attempt, no receipt"
+        );
         assert_eq!(ledger.total_cost_units(), 0);
     }
 
@@ -3715,9 +3801,6 @@ mod tests {
         );
         assert_eq!(ledger.budget_refusals(), 1);
         // The admission primitive itself stays a pure check.
-        assert_eq!(
-            CostBudget::new(Some(1)).admit(0),
-            BudgetAdmission::Allowed
-        );
+        assert_eq!(CostBudget::new(Some(1)).admit(0), BudgetAdmission::Allowed);
     }
 }

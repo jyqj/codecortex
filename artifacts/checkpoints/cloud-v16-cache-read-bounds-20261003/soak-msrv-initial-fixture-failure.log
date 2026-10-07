@@ -1,0 +1,34 @@
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.23s
+     Running tests/v16_cache_read_soak.rs (target/debug/deps/v16_cache_read_soak-2c38fefa056e74a3)
+
+running 1 test
+
+thread 'measured_bounded_cache_read_soak' (105065) panicked at crates/cc-eval/tests/v16_cache_read_soak.rs:160:9:
+
+running 1 test
+
+thread 'soak_worker' (105067) panicked at crates/cc-eval/tests/v16_cache_read_soak.rs:74:14:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test soak_worker ... FAILED
+
+failures:
+
+failures:
+    soak_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test measured_bounded_cache_read_soak ... FAILED
+
+failures:
+
+failures:
+    measured_bounded_cache_read_soak
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p cc-eval --test v16_cache_read_soak`

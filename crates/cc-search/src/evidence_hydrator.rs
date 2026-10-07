@@ -1,5 +1,8 @@
 //! Final source validation of ranked hits. Retrieval scores are immutable;
 //! untrusted locators never become source facts without current DB + disk proof.
+/// Exact production explanation; compact wire labels are defined in QUERY_EXECUTION.md.
+pub const SOURCE_FRESHNESS_SCOPE: &str = "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot";
+
 use crate::evidence::SourceVerifier;
 use cc_db::index_db::IndexDb;
 use cc_model::{
@@ -49,6 +52,7 @@ pub struct EvidenceHydrator<'a> {
     control: QueryControl,
     verified_identities: BTreeMap<String, VerifiedLayout>,
     verified_hits: usize,
+    dense_basis_omitted: bool,
 }
 impl<'a> EvidenceHydrator<'a> {
     pub fn new(
@@ -67,6 +71,7 @@ impl<'a> EvidenceHydrator<'a> {
             control,
             verified_identities: BTreeMap::new(),
             verified_hits: 0,
+            dense_basis_omitted: false,
         };
         result.finish()?;
         Ok(result)
@@ -117,6 +122,7 @@ impl<'a> EvidenceHydrator<'a> {
             if crate::semantic_hydrate_guard::is_dense_hit(hit)
                 && !self.dense_fence.manifest_current(&reference)?
             {
+                self.dense_basis_omitted = true;
                 continue;
             }
             if !self.verifier.path_current(&hit.file_path)? {
@@ -211,10 +217,16 @@ impl<'a> EvidenceHydrator<'a> {
     }
     pub fn diagnostics(&self) -> serde_json::Value {
         let mut result = self.verifier.diagnostics();
+        // A stable generation does not make an omitted publication current.
+        // Preserve disk omissions and retain dense omissions across windows,
+        // even when the fence's per-document verdict came from its memo.
+        result["partial"] = serde_json::json!(
+            self.dense_basis_omitted || result["partial"].as_bool().unwrap_or(false)
+        );
         result["hydrator"] = serde_json::json!(HYDRATOR_SPEC);
         result["verified_hits"] = serde_json::json!(self.verified_hits);
         result["generation"] = serde_json::json!(self.generation);
-        result["scope"] = serde_json::json!("bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot");
+        result["scope"] = serde_json::json!(SOURCE_FRESHNESS_SCOPE);
         result[crate::semantic_hydrate_guard::FENCE_DIAGNOSTICS_KEY] =
             self.dense_fence.diagnostics();
         result

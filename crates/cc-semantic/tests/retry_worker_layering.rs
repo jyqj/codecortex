@@ -17,22 +17,21 @@
 //!    held — an independent connection commits writes DURING the wait
 //!    window, and the post-provider fenced write still lands.
 
+use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
-use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use cc_db::index_db::IndexDb;
+use cc_db::semantic_outbox::ClaimedTask;
 use cc_db::semantic_outbox::{supersede_and_enqueue_on, OutboxPlan, OutboxUpsert};
+use cc_model::CcResult;
 use cc_semantic::admission::{GateLimits, ProviderGate};
 use cc_semantic::cache::ArtifactCache;
-use cc_model::CcResult;
-use cc_db::semantic_outbox::ClaimedTask;
 use cc_semantic::ports::{DocumentInput, EmbeddingProvider, ProviderError, QueryInput};
 use cc_semantic::providers::openai_compatible::{
-    BreakerLimits, CircuitBreaker, MockRetryClock, RetryPolicy, RetryingProvider,
-    SystemRetryClock,
+    BreakerLimits, CircuitBreaker, MockRetryClock, RetryPolicy, RetryingProvider, SystemRetryClock,
 };
 use cc_semantic::publish::Publisher;
 use cc_semantic::queue::{drain_pending, EmbedHandler, WorkerLimits};
@@ -179,8 +178,14 @@ impl World {
         provider: &'a dyn EmbeddingProvider,
         resolve: &'a dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>>,
     ) -> EmbedHandler<'a> {
-        let publisher = Publisher::new(&self.db, &self.cache, &self.space, &self.spec, self.incarnation)
-            .expect("publisher");
+        let publisher = Publisher::new(
+            &self.db,
+            &self.cache,
+            &self.space,
+            &self.spec,
+            self.incarnation,
+        )
+        .expect("publisher");
         EmbedHandler::new(publisher, provider, resolve)
     }
 }
@@ -327,11 +332,18 @@ fn call_layer_exhaustion_hands_back_and_the_db_budget_dead_letters() {
 
     let report = handler(&world, &provider);
     assert_eq!(report.retried, 1, "handed back through the fenced retry");
-    assert_eq!(inner.calls.load(Ordering::SeqCst), 3, "fresh sequence, fully spent");
+    assert_eq!(
+        inner.calls.load(Ordering::SeqCst),
+        3,
+        "fresh sequence, fully spent"
+    );
     let (state, attempts, last_error) = world.row("d1");
     assert_eq!(state, "pending");
     assert_eq!(attempts, 1, "one provider-call sequence == one db attempt");
-    assert!(last_error.as_deref().unwrap().contains("provider server error"));
+    assert!(last_error
+        .as_deref()
+        .unwrap()
+        .contains("provider server error"));
 
     // Second drain: same story, but the DB budget (max_attempts = 2) is
     // now exhausted → dead-letter, no further claims afterwards.
@@ -352,9 +364,8 @@ fn call_layer_exhaustion_hands_back_and_the_db_budget_dead_letters() {
 #[test]
 fn planned_batches_keep_fresh_retry_budgets_and_the_gate_wired() {
     let budget = cc_semantic::admission::InputBudget::validated(2, 1_000, 10_000).expect("budget");
-    let rendered: Vec<(String, Vec<u8>)> = (0..4)
-        .map(|i| (format!("k{i}"), vec![b'a'; 8]))
-        .collect();
+    let rendered: Vec<(String, Vec<u8>)> =
+        (0..4).map(|i| (format!("k{i}"), vec![b'a'; 8])).collect();
     let plan = cc_semantic::admission::plan_document_batches(
         &rendered,
         &budget,
@@ -396,7 +407,11 @@ fn planned_batches_keep_fresh_retry_budgets_and_the_gate_wired() {
         let out = provider.embed_documents(batch).expect("batch succeeds");
         assert_eq!(out.len(), batch.len());
     }
-    assert_eq!(inner.calls.load(Ordering::SeqCst), 4, "1 retry per batch, fresh each time");
+    assert_eq!(
+        inner.calls.load(Ordering::SeqCst),
+        4,
+        "1 retry per batch, fresh each time"
+    );
     assert!(gate.snapshot().suspended_for.is_none());
 }
 
@@ -436,8 +451,10 @@ fn retry_waits_hold_no_db_lock_and_the_fenced_write_still_lands() {
     let probe = std::thread::spawn(move || {
         for _ in 0..40 {
             if probe_conn
-                .execute_batch("BEGIN IMMEDIATE; INSERT INTO metadata(key,value) \
-                                VALUES('p7006_probe','1'); COMMIT;")
+                .execute_batch(
+                    "BEGIN IMMEDIATE; INSERT INTO metadata(key,value) \
+                                VALUES('p7006_probe','1'); COMMIT;",
+                )
                 .is_ok()
             {
                 flag.store(true, Ordering::SeqCst);
@@ -449,7 +466,8 @@ fn retry_waits_hold_no_db_lock_and_the_fenced_write_still_lands() {
 
     // ~80ms of real waiting across two backoffs, no DB handle anywhere in
     // the decorator (structural: none exists on its surface).
-    provider.embed_documents(&[DocumentInput::from_bytes(b"body").unwrap()])
+    provider
+        .embed_documents(&[DocumentInput::from_bytes(b"body").unwrap()])
         .expect("eventual success");
     probe.join().unwrap();
     assert!(
@@ -461,7 +479,13 @@ fn retry_waits_hold_no_db_lock_and_the_fenced_write_still_lands() {
     assert!(guard.renew().unwrap());
     world
         .db
-        .retry_semantic_task(guard.task().task_id, guard.task().token.as_str(), "probe", 0.0, 2)
+        .retry_semantic_task(
+            guard.task().task_id,
+            guard.task().token.as_str(),
+            "probe",
+            0.0,
+            2,
+        )
         .unwrap();
     let (state, attempts, _) = world.row("d1");
     assert_eq!(state, "pending");
@@ -478,12 +502,14 @@ fn tripped_breaker_fails_fast_in_the_drain_without_provider_or_attempt_cost() {
 
     // Trip the shared breaker BEFORE the drain: threshold 1.
     let clock = Arc::new(MockRetryClock::new(0));
-    let breaker = Arc::new(
-        CircuitBreaker::new(BreakerLimits::validated(1, Duration::from_secs(3_600)).unwrap())
-    );
+    let breaker = Arc::new(CircuitBreaker::new(
+        BreakerLimits::validated(1, Duration::from_secs(3_600)).unwrap(),
+    ));
     breaker.record_failure(&*clock);
 
-    let inner = Arc::new(ScriptedProvider::new(vec![Ok(vec![vec![1.0_f32, 0.5_f32]])]));
+    let inner = Arc::new(ScriptedProvider::new(vec![Ok(vec![vec![
+        1.0_f32, 0.5_f32,
+    ]])]));
     let provider = RetryingProvider::with_clock(
         inner.clone(),
         policy(3),
@@ -497,8 +523,15 @@ fn tripped_breaker_fails_fast_in_the_drain_without_provider_or_attempt_cost() {
         world.handler(&provider, &resolve).handle(guard)
     })
     .unwrap();
-    assert_eq!(report.retried, 1, "fast-fail handed back through the fenced retry");
-    assert_eq!(inner.calls.load(Ordering::SeqCst), 0, "open circuit: zero provider contact");
+    assert_eq!(
+        report.retried, 1,
+        "fast-fail handed back through the fenced retry"
+    );
+    assert_eq!(
+        inner.calls.load(Ordering::SeqCst),
+        0,
+        "open circuit: zero provider contact"
+    );
     assert_eq!(world.row("d1").1, 1, "still exactly one db attempt spent");
     // The breaker picture is process-wide and observable.
     assert!(matches!(

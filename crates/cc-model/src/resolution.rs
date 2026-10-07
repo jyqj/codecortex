@@ -4,7 +4,10 @@
 use crate::{CcError, CcResult};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-pub const RESOLUTION_VERSION: u32 = 1;
+// v3 preserves legal symbolic/Unicode type names while excluding ellipsis.
+// Public intermediate v2 manifests can contain missing type evidence; schema
+// v24 rebuilds those persisted rows, and this boundary rejects legacy payloads.
+pub const RESOLUTION_VERSION: u32 = 3;
 /// Syntax proves a binding exists but its target is not statically supported.
 /// Do not replace it with a coincidental global name or type-catalog fallback.
 pub const PARSER_UNSUPPORTED_BINDING: &str = "parser_unsupported_binding";
@@ -369,9 +372,12 @@ pub fn resolution_name_keys(raw: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     }
     let dotted = raw.replace("::", ".");
-    let leaf = dotted.rsplit('.').next().unwrap_or(raw);
+    let leaf = dotted.rsplit('.').next().unwrap_or(raw).trim();
     [raw.to_lowercase(), leaf.to_lowercase()]
         .into_iter()
+        // Keep the exact spelling even for an unknown/malformed query, but
+        // a trailing separator does not identify an empty-name dependency.
+        .filter(|key| !key.is_empty())
         .collect()
 }
 
@@ -425,5 +431,65 @@ impl ResolutionCoverage {
                 ResolutionOutcome::Unsupported { .. } => self.unsupported += 1,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod name_key_regression_tests {
+    use super::*;
+
+    #[test]
+    fn legacy_manifest_versions_are_rejected() {
+        for version in [1, 2] {
+            let legacy = format!(
+                r#"{{"version":{version},"records":[],"dependencies":[],"complete":true,"omitted_records":0,"reasons":[]}}"#
+            );
+            let manifest: ResolutionManifest = serde_json::from_str(&legacy).unwrap();
+            assert!(
+                matches!(manifest.validate(), Err(CcError::InvalidParams(reason)) if reason.contains("unsupported version"))
+            );
+        }
+        assert!(ResolutionManifest::new().validate().is_ok());
+    }
+
+    #[test]
+    fn qualified_and_unicode_names_keep_exact_and_leaf_invalidation_keys() {
+        for (raw, expected) in [
+            ("pkg.Type", vec!["pkg.type", "type"]),
+            ("pkg::Type", vec!["pkg::type", "type"]),
+            (" 数据.类型 ", vec!["数据.类型", "类型"]),
+            ("École.Élève", vec!["école.élève", "élève"]),
+            ("_Hidden", vec!["_hidden"]),
+        ] {
+            assert_eq!(
+                resolution_name_keys(raw),
+                expected.into_iter().map(String::from).collect()
+            );
+        }
+    }
+
+    #[test]
+    fn trailing_separator_and_punctuation_never_create_empty_leaf_keys() {
+        for raw in ["...", ".", "::", "pkg.", "pkg::", "pkg.   ", "?"] {
+            let keys = resolution_name_keys(raw);
+            assert!(keys.contains(&raw.trim().to_lowercase()), "{raw:?}");
+            assert!(!keys.contains(""), "{raw:?}");
+            let mut manifest = ResolutionManifest::new();
+            for key in keys {
+                manifest.dependency(DependencyKind::NameBucket, key);
+            }
+            manifest.validate().unwrap();
+        }
+        assert!(resolution_name_keys("").is_empty());
+        assert!(resolution_name_keys(" \t\n").is_empty());
+    }
+
+    #[test]
+    fn explicit_empty_dependency_still_fails_strict_validation() {
+        let mut manifest = ResolutionManifest::new();
+        manifest.dependency(DependencyKind::NameBucket, "");
+        assert!(
+            matches!(manifest.validate(), Err(CcError::InvalidParams(reason)) if reason.contains("invalid dependency key"))
+        );
     }
 }

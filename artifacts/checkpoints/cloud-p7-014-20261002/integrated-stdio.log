@@ -1,0 +1,30 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.06s
+     Running tests/p5d_contract.rs (target/debug/deps/p5d_contract-6d96876922d70619)
+
+running 1 test
+2026-10-02T20:07:28.533080Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T20:07:28.562718Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T20:07:28.562841Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T20:07:28.563537Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T20:07:28.563918Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T20:07:28.564598Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T20:07:28.594963Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmp35QC3L/.codecortex/index.sqlite3.tmp
+2026-10-02T20:07:28.610486Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T20:07:28.612479Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T20:07:28.619396Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T20:07:28.619534Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T20:07:28.630081Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T20:07:28.636328Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T20:07:28.704092Z  WARN serve_inner: rmcp::service: response error id=7 error=ErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+2026-10-02T20:07:28.705440Z  WARN serve_inner: rmcp::service: response error id=8 error=ErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+2026-10-02T20:07:28.706393Z  WARN serve_inner: rmcp::service: response error id=9 error=ErrorData { code: ErrorCode(-32602), message: "retrieval_strategy must be local, auto, or semantic", data: None }
+2026-10-02T20:07:28.707329Z  WARN serve_inner: rmcp::service: response error id=10 error=ErrorData { code: ErrorCode(-32602), message: "symbol mode supports only local retrieval_strategy", data: None }
+2026-10-02T20:07:28.707920Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T20:07:28.707995Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T20:07:28.708320Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_stdio_policy_override_and_capability_state ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.20s
+

@@ -1,0 +1,48 @@
+{
+  "verdict": "REJECT",
+  "tested_sha": "9164657d1d04ddd8250480d11ee128910a4971fa",
+  "product_identical_to_source_sha": "142549a65b7eaee78ae5a06a82ba8695a6f33bd9",
+  "base_sha": "3c8c204216cb54c41850c6da826a68fec3586430",
+  "candidate_sha": "cbe347fa513200de7fb8b12d1549b5e8ec20fad8",
+  "rejected_delivery_sha": "9294ec09d5b6fbd1dee9a04680fa733f579469dd",
+  "prior_findings": {
+    "P2_two_code_reference_negatives": "closed",
+    "P3_missing_driver": "closed; current drivers complete, historical origin not independently proven"
+  },
+  "new_blocker": {
+    "priority": "P2",
+    "source": "crates/cc-search/src/query_target.rs:198-219",
+    "title": "Wrapper must close immediately after comparative preposition, breaking genuine whole-clause comparisons"
+  },
+  "counts": {
+    "focused_tests": {
+      "base": 6,
+      "candidate": 10,
+      "rejected": 13,
+      "delivery": 15
+    },
+    "original_queries": 85,
+    "additional_queries": 26,
+    "all_queries": 111,
+    "direct_probes": 55,
+    "direct_failed_cases": 9,
+    "baseline_output_mismatches": 54,
+    "query_api_comparisons": 666,
+    "arm_outputs": 2664,
+    "common_hit_checks": 9978,
+    "bonus_changes": {
+      "base": 408,
+      "candidate": 126,
+      "rejected": 186
+    },
+    "rank_derived_metadata_changes": 292
+  },
+  "archive": {
+    "sha256": "9991b3a4a1c4a5bcd76e0979bc03455073795cc9af1b67c76691d4da9b588567",
+    "bytes": 10512855,
+    "manifest_entries": 124
+  },
+  "driver_sha256": "bccdff1222c603275bdc60c45490d338cbd00cc35d6ee59bfb528b82fd175e95",
+  "gate_expected_exit": 1,
+  "scope": "Focused cc-search tests and owned synthetic engine/in-process MCP only; no general NL/public quality qualification"
+}

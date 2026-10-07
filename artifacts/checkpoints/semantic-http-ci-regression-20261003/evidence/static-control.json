@@ -1,0 +1,75 @@
+{
+  "base": "350aaacf2f24f533321c495cd4a72ea38029f7df",
+  "workflow_only_adds_step": true,
+  "existing_steps_permissions_failures_unchanged": true,
+  "timeout_minutes": 30,
+  "per_subprocess_timeout_seconds": 600,
+  "server_features": "semantic-http",
+  "db_features": "default (cc-db declares no feature flags)",
+  "expected_counts": [
+    6,
+    10,
+    1
+  ],
+  "requires_equal_nonempty_discovery_and_passed_sets": true,
+  "binary_source": "env!(CARGO_BIN_EXE_codecortex), compiled by the feature-enabled cc-server integration cargo test",
+  "groups": [
+    {
+      "label": "db",
+      "args": [
+        "-p",
+        "cc-db",
+        "--lib",
+        "capability_read::tests::"
+      ],
+      "names": [
+        "capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication",
+        "capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn",
+        "capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot",
+        "capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal",
+        "capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved",
+        "capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write"
+      ]
+    },
+    {
+      "label": "status",
+      "args": [
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--lib",
+        "capability_status::tests::"
+      ],
+      "names": [
+        "capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons",
+        "capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation",
+        "capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready",
+        "capability_status::tests::old_active_space_cannot_report_configured_new_model_ready",
+        "capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll",
+        "capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder",
+        "capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs",
+        "capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready",
+        "capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded",
+        "capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps"
+      ]
+    },
+    {
+      "label": "stdio",
+      "args": [
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--test",
+        "p7_v11_ready_epoch_independent_review"
+      ],
+      "names": [
+        "ready_snapshot_bounds_query_generation_without_claiming_quiescence"
+      ]
+    }
+  ],
+  "final_script_sha256": "83cc72b722221cf0dd21f944b4f9b60b185ef3de411daabfaff82476ba129ae8",
+  "actual_names_equal_expected": true,
+  "passed_names_source": "libtest --show-output final successes list plus exact passed/failed/ignored summary"
+}

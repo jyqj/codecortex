@@ -11,7 +11,8 @@
 //!
 //! ## No implicit resident process (ADR red line)
 //!
-//! Nothing in this module spawns a thread, timer, or daemon. [`drain_pending`]
+//! The serial API spawns no threads; the parallel API uses joined scoped workers.
+//! Neither API starts a timer or daemon. [`drain_pending`]
 //! is an EXPLICIT, caller-driven drain: it claims at most
 //! [`WorkerLimits::max_batch`] tasks, processes each through the caller's
 //! handler, and returns a [`BatchReport`] — whether to drain again, when, and
@@ -207,6 +208,8 @@ impl<'a> LeaseGuard<'a> {
 /// How one handler invocation ended for its claimed task.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TaskExit {
+    /// Stop this drain and return to pending without provider-failure backoff.
+    Cancelled { started: bool },
     /// The handler fully disposed of the task: the publish CAS acked it, or
     /// the CAS rejection already wrote the fenced retry / left the row
     /// terminal (`superseded`). The loop must not touch the task again — a
@@ -264,14 +267,32 @@ pub fn drain_pending(
     limits: &WorkerLimits,
     handler: &mut dyn FnMut(&LeaseGuard<'_>) -> CcResult<TaskExit>,
 ) -> CcResult<BatchReport> {
+    drain_pending_with_lifecycle(db, owner, limits, None, handler)
+}
+
+pub fn drain_pending_with_lifecycle(
+    db: &IndexDb,
+    owner: &str,
+    limits: &WorkerLimits,
+    lifecycle: Option<&cc_db::semantic_publish::LifecycleFence>,
+    handler: &mut dyn FnMut(&LeaseGuard<'_>) -> CcResult<TaskExit>,
+) -> CcResult<BatchReport> {
     debug_assert!(
         limits.max_batch >= 1 && limits.lease_secs > 0.0,
         "unvalidated WorkerLimits"
     );
     let mut report = BatchReport::default();
     for _ in 0..limits.max_batch {
+        if lifecycle.is_some_and(|fence| !fence.is_open()) {
+            break;
+        }
         db.reclaim_expired_semantic()?;
-        let Some(task) = db.claim_semantic_ordered(owner, limits.lease_secs, limits.claim_order)?
+        let Some(task) = db.claim_semantic_with_lifecycle(
+            owner,
+            limits.lease_secs,
+            limits.claim_order,
+            lifecycle,
+        )?
         else {
             break;
         };
@@ -282,6 +303,15 @@ pub fn drain_pending(
             lease_secs: limits.lease_secs,
         };
 
+        if lifecycle.is_some_and(|fence| !fence.is_open()) {
+            db.hand_back_cancelled_semantic_task(
+                guard.task().task_id,
+                guard.task().token.as_str(),
+                false,
+            )?;
+            break;
+        }
+
         // Liveness gate immediately before work (merge semantics point 3):
         // a task superseded between its claim statement and here is skipped
         // with zero provider cost and zero writes.
@@ -291,8 +321,24 @@ pub fn drain_pending(
         }
 
         match handler(&guard) {
+            Ok(TaskExit::Cancelled { started }) => {
+                db.hand_back_cancelled_semantic_task(
+                    guard.task().task_id,
+                    guard.task().token.as_str(),
+                    started,
+                )?;
+                break;
+            }
             Ok(TaskExit::Disposed) => report.completed += 1,
             Ok(TaskExit::NeedsRetry { reason }) => {
+                if lifecycle.is_some_and(|fence| !fence.is_open()) {
+                    db.hand_back_cancelled_semantic_task(
+                        guard.task().task_id,
+                        guard.task().token.as_str(),
+                        true,
+                    )?;
+                    break;
+                }
                 if hand_back(db, &guard, &reason, limits)? {
                     report.retried += 1;
                 } else {
@@ -300,6 +346,14 @@ pub fn drain_pending(
                 }
             }
             Err(e) => {
+                if lifecycle.is_some_and(|fence| !fence.is_open()) {
+                    db.hand_back_cancelled_semantic_task(
+                        guard.task().task_id,
+                        guard.task().token.as_str(),
+                        true,
+                    )?;
+                    break;
+                }
                 if hand_back(db, &guard, &format!("{e}"), limits)? {
                     report.retried += 1;
                 } else {
@@ -309,6 +363,228 @@ pub fn drain_pending(
         }
     }
     Ok(report)
+}
+
+/// Finite joined drain. Claims linearize under one admission mutex in the DB's
+/// configured FIFO order; completion order is intentionally unspecified. Width
+/// is at most four only for an explicit per-project HTTP bound >= 2; zero and
+/// one retain a single local worker. The HTTP bound is enforced independently
+/// by the existing shared provider gate, not by this whole-attempt executor.
+/// Width is also capped by the finite claim budget: no per-document threads,
+/// no batch-sized input prefetch. Each worker owns at most one input/vector.
+/// No DB lock/connection survives claim, renewal, handler or join boundaries.
+/// Old FnMut serial APIs retain their existing behavior. This API propagates
+/// handler errors after fenced retry and physical joins, and stops on unhandled
+/// errors, cancellation or an active-space change. Handled retries continue
+/// draining other ready tasks within the shared finite claim budget. Every claim
+/// has its own lease/token.
+pub fn drain_pending_parallel_with_lifecycle(
+    db: &IndexDb,
+    owner: &str,
+    limits: &WorkerLimits,
+    lifecycle: Option<&cc_db::semantic_publish::LifecycleFence>,
+    max_concurrent_per_project: usize,
+    handler: &(dyn Fn(&LeaseGuard<'_>) -> CcResult<TaskExit> + Sync),
+) -> CcResult<BatchReport> {
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex,
+    };
+    let width = if max_concurrent_per_project >= 2 {
+        4
+    } else {
+        1
+    }
+    .min(limits.max_batch);
+    let initial_space = db.semantic_active_space()?;
+    let admitted = Mutex::new(0usize);
+    let stopped = AtomicBool::new(false);
+    let cancelled = || stopped.load(Ordering::Acquire) || lifecycle.is_some_and(|f| !f.is_open());
+    let work = || -> CcResult<BatchReport> {
+        let mut report = BatchReport::default();
+        let result = (|| -> CcResult<()> {
+            loop {
+                let task = {
+                    let mut count = admitted.lock().map_err(|_| {
+                        CcError::Database("parallel claim admission poisoned".into())
+                    })?;
+                    if cancelled() || db.semantic_active_space()? != initial_space {
+                        stopped.store(true, Ordering::Release);
+                        break;
+                    }
+                    if *count >= limits.max_batch {
+                        break;
+                    }
+                    db.reclaim_expired_semantic()?;
+                    let Some(task) = db.claim_semantic_with_lifecycle(
+                        owner,
+                        limits.lease_secs,
+                        limits.claim_order,
+                        lifecycle,
+                    )?
+                    else {
+                        break;
+                    };
+                    *count += 1;
+                    task
+                }; // admission and every DB transaction are released before work.
+                report.claimed += 1;
+                let guard = LeaseGuard {
+                    db,
+                    task,
+                    lease_secs: limits.lease_secs,
+                };
+                // The pre-work gate owns no DB connection after its result.
+                // Even a pre-work DB error hands an unstarted claim back without
+                // spending its attempt, then propagates after physical joins.
+                let prework = (|| -> CcResult<bool> {
+                    // ClaimedTask has no space field; read the immutable binding
+                    // to fence a switch-away-and-back race as well.
+                    let claimed_space: String = db
+                        .read_conn()?
+                        .query_row(
+                            "SELECT space_id FROM semantic_outbox WHERE task_id=?1",
+                            [guard.task().task_id],
+                            |row| row.get(0),
+                        )
+                        .map_err(|error| CcError::Database(error.to_string()))?;
+                    Ok(cancelled()
+                        || initial_space.as_deref() != Some(claimed_space.as_str())
+                        || db.semantic_active_space()? != initial_space)
+                })();
+                let prework = prework.and_then(|cancel| {
+                    if cancel {
+                        return Ok(None);
+                    }
+                    guard.renew().map(Some)
+                });
+                match prework {
+                    Ok(Some(false)) => {
+                        report.lease_lost += 1;
+                        continue;
+                    }
+                    Ok(Some(true)) if !cancelled() => {}
+                    Ok(_) => {
+                        stopped.store(true, Ordering::Release);
+                        db.hand_back_cancelled_semantic_task(
+                            guard.task().task_id,
+                            &guard.task().token,
+                            false,
+                        )?;
+                        break;
+                    }
+                    Err(error) => {
+                        stopped.store(true, Ordering::Release);
+                        let handback = db.hand_back_cancelled_semantic_task(
+                            guard.task().task_id,
+                            &guard.task().token,
+                            false,
+                        );
+                        return Err(match handback {
+                            Ok(_) => error,
+                            Err(other) => CcError::Database(format!(
+                                "{error}; unstarted hand-back failed: {other}"
+                            )),
+                        });
+                    }
+                }
+                let exit = handler(&guard);
+                match exit {
+                    Ok(TaskExit::Disposed) => report.completed += 1,
+                    Ok(TaskExit::Cancelled { started }) => {
+                        stopped.store(true, Ordering::Release);
+                        db.hand_back_cancelled_semantic_task(
+                            guard.task().task_id,
+                            &guard.task().token,
+                            started,
+                        )?;
+                        break;
+                    }
+                    Ok(TaskExit::NeedsRetry { reason }) => {
+                        if lifecycle.is_some_and(|f| !f.is_open()) {
+                            stopped.store(true, Ordering::Release);
+                            db.hand_back_cancelled_semantic_task(
+                                guard.task().task_id,
+                                &guard.task().token,
+                                true,
+                            )?;
+                            break;
+                        } else if hand_back(db, &guard, &reason, limits)? {
+                            report.retried += 1;
+                        } else {
+                            report.lease_lost += 1;
+                        }
+                        // This expected result has been fenced into backoff;
+                        // it does not cancel ready work owned by this drain.
+                    }
+                    Err(error) => {
+                        stopped.store(true, Ordering::Release);
+                        if lifecycle.is_some_and(|f| !f.is_open()) {
+                            db.hand_back_cancelled_semantic_task(
+                                guard.task().task_id,
+                                &guard.task().token,
+                                true,
+                            )?;
+                        } else {
+                            hand_back(db, &guard, &error.to_string(), limits)?;
+                        }
+                        return Err(error);
+                    }
+                }
+            }
+            Ok(())
+        })();
+        if result.is_err() {
+            stopped.store(true, Ordering::Release);
+        }
+        result.map(|()| report)
+    };
+    std::thread::scope(|scope| {
+        // Exactly width workers for the whole finite drain, never per-document spawn.
+        let workers: Vec<_> = (0..width)
+            .map(|_| {
+                scope.spawn(|| {
+                    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(work));
+                    match result {
+                        Ok(result) => result,
+                        Err(_) => {
+                            stopped.store(true, Ordering::Release);
+                            Err(CcError::Database(
+                                "parallel attempt panicked; lease recovery retained".into(),
+                            ))
+                        }
+                    }
+                })
+            })
+            .collect();
+        let mut total = BatchReport::default();
+        let mut errors = Vec::new();
+        for worker in workers {
+            match worker.join().expect("worker panic is captured") {
+                Ok(report) => {
+                    total.claimed += report.claimed;
+                    total.completed += report.completed;
+                    total.retried += report.retried;
+                    total.lease_lost += report.lease_lost;
+                }
+                Err(error) => {
+                    errors.push(error);
+                }
+            }
+        }
+        match errors.len() {
+            0 => Ok(total),
+            1 => Err(errors.pop().unwrap()),
+            _ => Err(CcError::Database(format!(
+                "parallel attempts failed: {}",
+                errors
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            ))),
+        }
+    })
 }
 
 /// Real-clock unix seconds for publish timestamps (the worker is the
@@ -372,6 +648,9 @@ impl<'a> EmbedHandler<'a> {
 
     /// Process one claimed task (see the struct docs for the order).
     pub fn handle(&self, guard: &LeaseGuard<'_>) -> CcResult<TaskExit> {
+        if self.publisher.is_cancelled() {
+            return Ok(TaskExit::Cancelled { started: false });
+        }
         let task = guard.task();
         if task.op == OutboxOp::Revoke {
             return Ok(TaskExit::NeedsRetry {
@@ -379,6 +658,9 @@ impl<'a> EmbedHandler<'a> {
             });
         }
         let Some(input) = (self.resolve_input)(task)? else {
+            if self.publisher.is_cancelled() {
+                return Ok(TaskExit::Cancelled { started: false });
+            }
             return Ok(TaskExit::NeedsRetry {
                 reason: "embed input unavailable for task".into(),
             });
@@ -392,8 +674,12 @@ impl<'a> EmbedHandler<'a> {
         // Single-input batch: the batch bound per attempt is one; `max_batch`
         // bounds claims per drain (admission), not provider inputs.
         let batch = [input];
+        if self.publisher.is_cancelled() {
+            return Ok(TaskExit::Cancelled { started: false });
+        }
         let vectors = match self.provider.embed_documents(&batch) {
             Ok(vectors) => vectors,
+            Err(ProviderError::Cancelled) => return Ok(TaskExit::Cancelled { started: true }),
             Err(e) => {
                 return Ok(TaskExit::NeedsRetry {
                     reason: provider_reason(&e),
@@ -410,6 +696,7 @@ impl<'a> EmbedHandler<'a> {
             .publisher
             .publish_embedding(task, &vector, now_unix_secs())?
         {
+            PublishVerdict::Cancelled => Ok(TaskExit::Cancelled { started: true }),
             // Acked (and the visible set bumped iff changed) inside the CAS.
             PublishVerdict::Published { .. } => Ok(TaskExit::Disposed),
             // The CAS already wrote the fenced retry (or no-oped against a

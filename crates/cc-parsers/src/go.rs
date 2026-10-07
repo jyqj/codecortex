@@ -697,9 +697,14 @@ impl GoParser {
             return;
         }
 
-        let line_no = func_node.start_position().row as u32 + 1;
-        let start_col = func_node.start_position().column as u32;
-        let end_col = func_node.end_position().column as u32;
+        // Anchor selectors to their callee token, not the receiver expression:
+        // a.B().C() has two function expressions starting at `a`, but distinct
+        // B/C tokens. Use this same byte-column span for the call and its ref.
+        let callee_node = func_node.child_by_field_name("field").unwrap_or(func_node);
+        let line_no = callee_node.start_position().row as u32 + 1;
+        let start_col = callee_node.start_position().column as u32;
+        let end_line = callee_node.end_position().row as u32 + 1;
+        let end_col = callee_node.end_position().column as u32;
 
         // A selector is not the same-file free function with the same leaf name.
         let target = if receiver_expr.is_none() {
@@ -737,7 +742,7 @@ impl GoParser {
             } else {
                 "unresolved".into()
             },
-            ref_end_line: Some(line_no),
+            ref_end_line: Some(end_line),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::TreeSitter,
             parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallRef),
@@ -750,7 +755,7 @@ impl GoParser {
             callee_symbol: callee,
             line: line_no,
             start_col,
-            end_line: Some(line_no),
+            end_line: Some(end_line),
             end_col,
             target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
             target_file_path: target.map(|_| file_path.to_string()),
@@ -1661,6 +1666,96 @@ impl FileParser for GoParser {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn assert_callee_token_calls(code: &str, expected: usize) -> ParseOutcome {
+        let parser = GoParser::new();
+        let out = parser.parse("calls.go", code, Language::Go).unwrap();
+        assert_eq!(out.call_edges.len(), expected);
+        let again = parser.parse("calls.go", code, Language::Go).unwrap();
+        assert_eq!(
+            serde_json::to_value(&out).unwrap(),
+            serde_json::to_value(&again).unwrap()
+        );
+        let mut ids = HashSet::new();
+        let mut refs = HashSet::new();
+        for call in &out.call_edges {
+            assert!(ids.insert(&call.edge_id), "duplicate {}", call.edge_id);
+            let line = code.lines().nth(call.line as usize - 1).unwrap();
+            assert_eq!(
+                &line.as_bytes()[call.start_col as usize..call.end_col as usize],
+                call.callee_symbol.as_bytes()
+            );
+            assert_eq!(call.end_line, Some(call.line));
+            let reference = out
+                .symbol_refs
+                .iter()
+                .find(|r| Some(&r.ref_id) == call.callee_ref_id.as_ref())
+                .unwrap();
+            assert!(refs.insert(&reference.ref_id));
+            assert_eq!(
+                (
+                    reference.line,
+                    reference.column,
+                    reference.ref_end_line,
+                    reference.ref_end_col
+                ),
+                (call.line, call.start_col, call.end_line, Some(call.end_col))
+            );
+            assert_eq!(reference.symbol_name, call.callee_symbol);
+        }
+        out
+    }
+
+    #[test]
+    fn nested_call_identity_distinguishes_repeated_selector_tokens() {
+        let out = assert_callee_token_calls("package p\nfunc f() { a.B().B().B() }\n", 3);
+        assert!(out.call_edges.iter().all(|c| c.callee_symbol == "B"));
+    }
+
+    #[test]
+    fn nested_call_identity_preserves_argument_calls_and_direct_ids() {
+        let code = "package p\nfunc f() { a.B(C()).D(E()); F(G()) }\n";
+        let out = assert_callee_token_calls(code, 6);
+        for c in out.call_edges.iter().filter(|c| c.receiver_expr.is_none()) {
+            assert_eq!(
+                c.edge_id,
+                StableId::edge_id("call", "calls.go", c.line, c.start_col)
+            );
+        }
+    }
+
+    #[test]
+    fn nested_call_identity_multiline_unicode_byte_spans() {
+        assert_callee_token_calls("package p\nfunc f() { 对象.方法().\n    方法() }\n", 2);
+    }
+
+    #[test]
+    fn nested_call_identity_generic_receiver_and_method_controls() {
+        let code = "package p\nfunc (r R[T]) f() { Box[int]{}.Build().Build(); pkg.Make[int]().Next().Next(); r.Method() }\n";
+        // Preserve currently supported generic calls; do not expand extraction here.
+        let out = assert_callee_token_calls(code, 6);
+        assert_eq!(
+            out.call_edges
+                .iter()
+                .filter(|c| c.callee_symbol == "Build")
+                .count(),
+            2
+        );
+        assert_eq!(
+            out.call_edges
+                .iter()
+                .filter(|c| c.callee_symbol == "Next")
+                .count(),
+            2
+        );
+        assert_eq!(
+            out.call_edges
+                .iter()
+                .filter(|c| c.callee_symbol == "Method")
+                .count(),
+            1
+        );
+    }
 
     #[test]
     fn parse_simple_go() {

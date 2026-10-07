@@ -1,0 +1,117 @@
+[
+  {
+    "label": "model",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-model",
+      "--test",
+      "declaration_identity_v1",
+      "--test",
+      "declaration_identity_independent_review",
+      "--test",
+      "provenance_compatibility"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "python-focused",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-index",
+      "--lib",
+      "python_provenance"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "python-review",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-index",
+      "--test",
+      "python_provenance_independent_review"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "query-target",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-search",
+      "--lib",
+      "query_target"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "format",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "lint",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 101
+  },
+  {
+    "label": "build",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "build",
+      "--locked",
+      "--workspace",
+      "--message-format=json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "label": "production-lint",
+    "argv": [
+      "cargo",
+      "+1.95.0",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--lib",
+      "--bins",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  }
+]

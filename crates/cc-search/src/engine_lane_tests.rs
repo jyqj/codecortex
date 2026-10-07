@@ -814,6 +814,7 @@ impl RetrievalLane for FakeLane {
 
 fn fake_candidate_chunk() -> CandidateChunk {
     CandidateChunk {
+        qname: None,
         document: None,
         source_evidence: None,
         chunk_id: "chunk:src/x.rs".to_string(),
@@ -1168,4 +1169,468 @@ fn graph_lane_does_not_break_existing_search() {
     };
     let results = engine.search(&request).unwrap();
     assert!(!results.is_empty(), "lexical results should still work");
+}
+
+#[test]
+fn query_target_gates_only_name_bonus_and_preserves_exact_identity() {
+    let (engine, _tmp) = scoped_test_engine();
+    let request = SearchRequest {
+        query: "method Ignite on Lantern".into(),
+        ..Default::default()
+    };
+    let plan = build_plan(&engine, &request);
+    let outcomes = vec![];
+    let ranks = plan.lane_ranks(&outcomes);
+    let make_hit = |name: &str, kind: &str, exact_identity| {
+        let mut chunk = fake_candidate_chunk();
+        chunk.symbol_name = Some(name.into());
+        chunk.symbol_kind = Some(kind.into());
+        plan.hit_from_chunk(
+            chunk,
+            &FusedScore {
+                total: 0.5,
+                by_lane: vec![],
+                exact_identity,
+            },
+            &ranks,
+        )
+        .unwrap()
+    };
+    let member = make_hit("Ignite", "method", false);
+    let receiver = make_hit("Lantern", "class", false);
+    let collision = make_hit("Ignite", "class", false);
+    let exact = make_hit("Lantern", "class", true);
+    for (hit, boost) in [
+        (&member, true),
+        (&receiver, false),
+        (&collision, false),
+        (&exact, true),
+    ] {
+        assert_eq!(hit.reasons.iter().any(|r| r == "symbol-exact"), boost);
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .any(|(key, _)| key == "boost:symbol-exact"),
+            boost
+        );
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .map(|(_, amount)| amount)
+                .sum::<f64>(),
+            hit.rerank_score
+        );
+    }
+    // All non-name contributions are identical for the same receiver chunk.
+    assert_eq!(
+        receiver.score_trace,
+        exact
+            .score_trace
+            .iter()
+            .filter(|(key, _)| key != "boost:symbol-exact")
+            .cloned()
+            .collect::<Vec<_>>()
+    );
+    assert!(exact.reasons.iter().any(|r| r == "exact-target"));
+    let mut hits = [member, exact];
+    hits.sort_by(crate::plan::compare_hits);
+    assert_eq!(hits[0].symbol_name.as_deref(), Some("Lantern"));
+}
+
+// Focused SearchPlan integration controls for the bounded owner hint.
+#[test]
+fn query_target_contextual_owner_preserves_exact_identity_and_non_name_trace() {
+    let (engine, _tmp) = scoped_test_engine();
+    let request = SearchRequest {
+        query: "Which Lantern API changes the stored state with Ignite?".into(),
+        ..Default::default()
+    };
+    let plan = build_plan(&engine, &request);
+    let outcomes = vec![];
+    let ranks = plan.lane_ranks(&outcomes);
+    let make_hit = |name: &str, kind: Option<&str>, exact_identity| {
+        let mut chunk = fake_candidate_chunk();
+        chunk.symbol_name = Some(name.into());
+        chunk.symbol_kind = kind.map(str::to_owned);
+        plan.hit_from_chunk(
+            chunk,
+            &FusedScore {
+                total: 0.5,
+                by_lane: vec![],
+                exact_identity,
+            },
+            &ranks,
+        )
+        .unwrap()
+    };
+    let member = make_hit("Ignite", Some("method"), false);
+    let receiver = make_hit("Lantern", Some("class"), false);
+    let other_type = make_hit("Ignite", Some("class"), false);
+    let same_named_method = make_hit("Lantern", Some("method"), false);
+    let unknown_kind = make_hit("Lantern", None, false);
+    let exact = make_hit("Lantern", Some("class"), true);
+    for (hit, boosted) in [
+        (&member, true),
+        (&receiver, false),
+        (&other_type, true),
+        (&same_named_method, true),
+        (&unknown_kind, true),
+        (&exact, true),
+    ] {
+        assert_eq!(hit.reasons.iter().any(|r| r == "symbol-exact"), boosted);
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .any(|(k, _)| k == "boost:symbol-exact"),
+            boosted
+        );
+        assert_eq!(
+            hit.score_trace.iter().map(|(_, value)| value).sum::<f64>(),
+            hit.rerank_score
+        );
+    }
+    assert_eq!(
+        receiver.symbol_kind,
+        Some(cc_model::symbol::SymbolKind::Class)
+    );
+    assert_eq!(
+        receiver.score_trace,
+        exact
+            .score_trace
+            .iter()
+            .filter(|(k, _)| k != "boost:symbol-exact")
+            .cloned()
+            .collect::<Vec<_>>()
+    );
+    assert!(exact.reasons.iter().any(|r| r == "exact-target"));
+    let mut hits = [member, exact];
+    hits.sort_by(crate::plan::compare_hits);
+    assert_eq!(hits[0].symbol_name.as_deref(), Some("Lantern"));
+}
+
+#[test]
+fn query_target_contextual_owner_keeps_nonmatched_fallback_and_explicit_filters() {
+    let (engine, _tmp) = scoped_test_engine();
+    for (query, name, kind) in [
+        ("class Lantern", "Lantern", "class"),
+        ("interface Observer", "Observer", "interface"),
+        ("type Label", "Label", "type_alias"),
+        ("Lantern.Ignite", "Lantern", "class"),
+        ("Lantern.spec.py", "Lantern", "class"),
+        (
+            "compare Lantern.Ignite and Shelf.Arrange",
+            "Lantern",
+            "class",
+        ),
+        (
+            "Which Lantern API compares Ignite and Reserve?",
+            "Lantern",
+            "class",
+        ),
+        ("Which Lantern type stores the state?", "Lantern", "class"),
+        (
+            "name:Lantern Which Lantern API invokes Ignite?",
+            "Lantern",
+            "class",
+        ),
+        (
+            "kind:class Which Lantern API invokes Ignite?",
+            "Lantern",
+            "class",
+        ),
+    ] {
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        let mut chunk = fake_candidate_chunk();
+        chunk.symbol_name = Some(name.into());
+        chunk.symbol_kind = Some(kind.into());
+        let hit = plan
+            .hit_from_chunk(
+                chunk,
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                    exact_identity: false,
+                },
+                &ranks,
+            )
+            .unwrap();
+        assert!(hit.reasons.iter().any(|r| r == "symbol-exact"), "{query}");
+    }
+}
+
+#[test]
+fn query_target_contextual_owner_uses_primary_query_not_conversation_context() {
+    let (engine, _tmp) = scoped_test_engine();
+    for (primary, extra, expected_boost) in [
+        ("Lantern Ignite", "Which Lantern API invokes Ignite?", true),
+        ("Which Lantern API invokes Ignite?", "class Lantern", false),
+        ("class Lantern", "Which Lantern API invokes Ignite?", true),
+    ] {
+        let request = SearchRequest {
+            query: primary.into(),
+            conversation_queries: Some(vec![extra.into()]),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        let mut chunk = fake_candidate_chunk();
+        chunk.symbol_name = Some("Lantern".into());
+        chunk.symbol_kind = Some("class".into());
+        let hit = plan
+            .hit_from_chunk(
+                chunk,
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                    exact_identity: false,
+                },
+                &ranks,
+            )
+            .unwrap();
+        assert_eq!(
+            hit.reasons.iter().any(|r| r == "symbol-exact"),
+            expected_boost,
+            "{primary}"
+        );
+    }
+}
+
+#[test]
+fn query_target_comparison_phrase_preserves_bonus_trace_and_exact_identity() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API rather than Sink accepts state?",
+        "Which Beacon API RATHER THAN Sink accepts state?",
+        "Which API on Beacon instead of Sink accepts state?",
+    ] {
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        for (name, kind, exact_identity) in [
+            ("Beacon", "class", false),
+            ("Beacon", "class", true),
+            ("Sink", "interface", false),
+            ("Beacon", "method", false),
+        ] {
+            let mut chunk = fake_candidate_chunk();
+            chunk.symbol_name = Some(name.into());
+            chunk.symbol_kind = Some(kind.into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                "{query} / {name}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .filter(|(k, _)| k == "boost:symbol-exact")
+                    .map(|(_, v)| *v)
+                    .collect::<Vec<_>>(),
+                vec![0.18]
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "exact-target"),
+                exact_identity
+            );
+        }
+    }
+}
+
+#[test]
+fn query_target_code_reference_pairs_preserve_owner_suppression() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API calls `rather()` `than()` with Commit?",
+        "Which Beacon API calls $rather $than with Commit?",
+    ] {
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        for (name, kind, exact_identity, expected_boost) in [
+            ("Beacon", "class", false, false),
+            ("Beacon", "class", true, true),
+            ("Beacon", "method", false, true),
+            ("Commit", "method", false, true),
+        ] {
+            let mut chunk = fake_candidate_chunk();
+            chunk.symbol_name = Some(name.into());
+            chunk.symbol_kind = Some(kind.into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                expected_boost,
+                "{query} / {name}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .any(|(k, _)| k == "boost:symbol-exact"),
+                expected_boost
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "exact-target"),
+                exact_identity
+            );
+        }
+    }
+}
+
+#[test]
+fn query_target_grouped_clause_preserves_bonus_and_exact_identity() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API (rather than Sink) accepts state?",
+        "Which Beacon API (instead of Sink) accepts state?",
+        "Which Beacon API [(rather than the Sink)] accepts state?",
+    ] {
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        for (name, kind, exact_identity) in [
+            ("Beacon", "class", false),
+            ("Beacon", "class", true),
+            ("Sink", "interface", false),
+        ] {
+            let mut chunk = fake_candidate_chunk();
+            chunk.symbol_name = Some(name.into());
+            chunk.symbol_kind = Some(kind.into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                "{query} / {name}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .filter(|(k, _)| k == "boost:symbol-exact")
+                    .map(|(_, v)| *v)
+                    .collect::<Vec<_>>(),
+                vec![0.18]
+            );
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "exact-target"),
+                exact_identity
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
+        }
+    }
+}
+
+#[test]
+fn query_target_closing_qualifiers_preserve_identity_and_filter_priority() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API calls (rather than Sink)::Commit with Commit?",
+        "Which Beacon API calls \"rather than Sink\"::Commit with Commit?",
+        "Which Beacon API calls [((rather than Sink))]::Commit with Commit?",
+        "Which Beacon API calls (rather than Sink)->Commit with Commit?",
+        "Which Beacon API calls (rather than Sink)?.Commit with Commit?",
+    ] {
+        for (prefix, exact_identity, boosted) in [
+            ("", false, false),
+            ("", true, true),
+            ("name:Beacon ", false, true),
+            ("kind:class ", false, true),
+        ] {
+            let request = SearchRequest {
+                query: format!("{prefix}{query}"),
+                ..Default::default()
+            };
+            let plan = build_plan(&engine, &request);
+            let outcomes = vec![];
+            let ranks = plan.lane_ranks(&outcomes);
+            let mut chunk = fake_candidate_chunk();
+            chunk.symbol_name = Some("Beacon".into());
+            chunk.symbol_kind = Some("class".into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                boosted,
+                "{prefix}{query}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .any(|(k, _)| k == "boost:symbol-exact"),
+                boosted
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
+            if exact_identity {
+                assert!(hit.reasons.iter().any(|r| r == "exact-target"));
+            }
+        }
+    }
 }

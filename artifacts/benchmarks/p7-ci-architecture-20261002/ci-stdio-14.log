@@ -1,0 +1,60 @@
+    Finished `test` profile [unoptimized] target(s) in 0.09s
+     Running unittests src/lib.rs (/tmp/p7-017-build/debug/deps/cc_search-6c8a7dd56b219064)
+
+running 5 tests
+test execution::tests::cancelled_worker_retains_permit_and_cannot_publish_late ... ok
+test execution::tests::full_queue_rejects_and_aborted_waiter_releases_admission ... ok
+test execution::tests::semantic_lane_share_never_extends_the_total_deadline ... ok
+test execution::tests::async_timeout_keeps_parent_usable ... ok
+test execution::tests::deadline_discards_late_worker_result_and_reclaims_when_it_exits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.06s
+
+    Finished `test` profile [unoptimized] target(s) in 0.11s
+     Running unittests src/lib.rs (/tmp/p7-017-build/debug/deps/cc_server-d71d26a95cfe2cf9)
+
+running 1 test
+test mcp::query_tests::mcp_cancel_notification_stops_search_and_context_optional_recall ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.10s
+
+    Finished `test` profile [unoptimized] target(s) in 0.11s
+     Running tests/p5b_execution.rs (/tmp/p7-017-build/debug/deps/p5b_execution-e522ac4cb5ffcedf)
+
+running 11 tests
+test explicit_empty_scope_disables_optional_port_without_invoking_it ... ok
+test explicit_expired_request_cannot_return_a_warm_cache_hit ... ok
+test cancellation_and_future_drop_release_async_work_without_a_detached_task ... ok
+test local_never_invokes_installed_port_and_missing_auto_is_local ... ok
+test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real stdio query policy/handles
+test owned_handle_survives_idle_close_but_poison_recovery_invalidates_old_engine ... ok
+test partial_receipt_and_provider_panics_remain_visible_not_complete_empty ... ok
+test async_dispatch_preserves_resolution_freshness_and_project_identity ... ok
+test semantic_candidates_are_hydrated_from_current_scoped_documents ... ok
+test semantic_timeout_keeps_local_result_visible_and_does_not_cache_failure ... ok
+test slow_fake_does_not_hold_codeindex_lock_or_the_only_sql_connection ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+    Finished `test` profile [unoptimized] target(s) in 0.12s
+     Running tests/p5b_execution.rs (/tmp/p7-017-build/debug/deps/p5b_execution-e522ac4cb5ffcedf)
+
+running 1 test
+2026-10-02T22:26:10.604928Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:26:10.605016Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:26:10.605449Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:26:10.605531Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T22:26:10.606273Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:26:10.637656Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpPVW8cQ/.codecortex/index.sqlite3.tmp
+2026-10-02T22:26:10.651646Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T22:26:10.654131Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T22:26:10.659478Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T22:26:10.659642Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:26:10.664529Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:26:10.668401Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:26:10.695444Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:26:10.695541Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:26:10.695793Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.18s

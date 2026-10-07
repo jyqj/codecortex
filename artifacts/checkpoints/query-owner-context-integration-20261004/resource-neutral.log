@@ -1,0 +1,46 @@
+test_build_barrier_candidate_own_smoke_and_one_formal_run (test_driver.DriverTests.test_build_barrier_candidate_own_smoke_and_one_formal_run) ... ok
+test_composed_preflight_32_only_fake_product_cache_http_and_all_phases (test_driver.DriverTests.test_composed_preflight_32_only_fake_product_cache_http_and_all_phases) ... ok
+test_failed_smoke_preserved_no_formal_no_build_fallback (test_driver.DriverTests.test_failed_smoke_preserved_no_formal_no_build_fallback) ... ok
+test_fake_build_phase_completes_before_receipt_and_never_launches_product (test_driver.DriverTests.test_fake_build_phase_completes_before_receipt_and_never_launches_product) ... ok
+test_fake_product_single_reader_initialized_unpack_phase_normal_stop (test_driver.DriverTests.test_fake_product_single_reader_initialized_unpack_phase_normal_stop) ... ok
+test_guard_persists_failure_before_waking_fixture_pending_and_ready_check (test_driver.DriverTests.test_guard_persists_failure_before_waking_fixture_pending_and_ready_check) ... ok
+test_import_help_manifest_never_launch_or_build (test_driver.DriverTests.test_import_help_manifest_never_launch_or_build) ... ok
+test_manifest_exact_protocol_and_preserved_helpers (test_driver.DriverTests.test_manifest_exact_protocol_and_preserved_helpers) ... ok
+test_measurement_cannot_build_and_all_original_postready_gates_survive (test_driver.DriverTests.test_measurement_cannot_build_and_all_original_postready_gates_survive) ... fatal: path 'artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py' does not exist in 'da8b618cbf8b67683c6b16880419089f7159c15e'
+ERROR
+test_missing_receipts_cannot_reach_preflight_or_measurement (test_driver.DriverTests.test_missing_receipts_cannot_reach_preflight_or_measurement) ... ok
+test_pinned_blob_bytes_reject_change_even_when_git_hides_dirty_file (test_driver.DriverTests.test_pinned_blob_bytes_reject_change_even_when_git_hides_dirty_file) ... ok
+test_unreadable_required_group_is_error_not_zero_or_product_fallback (test_driver.DriverTests.test_unreadable_required_group_is_error_not_zero_or_product_fallback) ... ok
+test_all_pending_guard_woken_and_future_requests_rejected (test_runtime.RuntimeTests.test_all_pending_guard_woken_and_future_requests_rejected) ... ok
+test_concurrent_append_no_loss (test_runtime.RuntimeTests.test_concurrent_append_no_loss) ... ok
+test_fixture_exit_and_malformed_reader_wake_pending (test_runtime.RuntimeTests.test_fixture_exit_and_malformed_reader_wake_pending) ... ok
+test_fixture_response_and_normal_eof_logs (test_runtime.RuntimeTests.test_fixture_response_and_normal_eof_logs) ... ok
+test_fixture_rpc_timeout_then_late_response_is_logged (test_runtime.RuntimeTests.test_fixture_rpc_timeout_then_late_response_is_logged) ... ok
+test_fixture_stdout_eof_wakes_before_root_exit (test_runtime.RuntimeTests.test_fixture_stdout_eof_wakes_before_root_exit) ... ok
+test_guard_and_response_concurrent_first_delivery_wins (test_runtime.RuntimeTests.test_guard_and_response_concurrent_first_delivery_wins) ... ok
+test_guard_notifies_before_controlled_fixture_eof (test_runtime.RuntimeTests.test_guard_notifies_before_controlled_fixture_eof) ... ok
+test_missing_or_malformed_counters_unknown (test_runtime.RuntimeTests.test_missing_or_malformed_counters_unknown) ... ok
+test_protocol_constants_unchanged (test_runtime.RuntimeTests.test_protocol_constants_unchanged) ... ok
+test_readonly_composition_phase_and_labels (test_runtime.RuntimeTests.test_readonly_composition_phase_and_labels) ... ok
+test_response_delivered_before_guard_does_not_clear_failed_gate (test_runtime.RuntimeTests.test_response_delivered_before_guard_does_not_clear_failed_gate) ... ok
+test_response_guard_eof_exit_order_and_late_logs (test_runtime.RuntimeTests.test_response_guard_eof_exit_order_and_late_logs) ... ok
+test_timeout_preserves_late_response_and_removes_pending (test_runtime.RuntimeTests.test_timeout_preserves_late_response_and_removes_pending) ... ok
+
+======================================================================
+ERROR: test_measurement_cannot_build_and_all_original_postready_gates_survive (test_driver.DriverTests.test_measurement_cannot_build_and_all_original_postready_gates_survive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/codecortex/tests/resource_harness/test_driver.py", line 73, in test_measurement_cannot_build_and_all_original_postready_gates_survive
+    old = subprocess.check_output(['git','show',f'{ref}:{path}'],
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'show', 'da8b618cbf8b67683c6b16880419089f7159c15e:artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py']' returned non-zero exit status 128.
+
+----------------------------------------------------------------------
+Ran 26 tests in 1.853s
+
+FAILED (errors=1)

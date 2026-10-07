@@ -27,14 +27,18 @@ fn query_on<T>(
 ) -> CcResult<Option<T>> {
     let mut stmt = conn.prepare_cached(sql).map_err(db_err)?;
     crate::statement_work::reset(&stmt);
-    let result = stmt.query_row(params, read).optional().map_err(db_err)?;
+    let mut yielded = 0;
+    let result = stmt
+        .query_row(params, |row| {
+            yielded = 1;
+            read(row)
+        })
+        .optional()
+        .map_err(db_err);
     if let Some(work) = work.as_deref_mut() {
-        work.merge(crate::statement_work::finish(
-            &stmt,
-            usize::from(result.is_some()),
-        ));
+        work.merge(crate::statement_work::finish(&stmt, yielded));
     }
-    Ok(result)
+    result
 }
 
 fn invalid() -> CcError {

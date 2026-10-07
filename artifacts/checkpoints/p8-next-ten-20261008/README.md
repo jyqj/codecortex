@@ -45,7 +45,13 @@
 
 v10 入口分别重建两套历史接受链，再应用固定审查的顺序差异；两套旧 guard/registry 字节、历史拒绝条件及 CI 原有步骤继续核验。随后为修复 worker TEST 就绪顺序，固定新源码 `65dd32934b3f8cb3ff4f5f5deb154a431a8c09e3`：仅 `crates/cc-eval/tests/p7_worker_contention.rs` 一个输入变化，其余 784 项保持不变，产品库代码不变。独立审查固定于 `b64746f42750422dc38aa9bb73a6f2f2b43fdc2b`。
 
-当前 v11 先精确验证固定 48efa 快照中的 v10 脚本和 registry，再完整执行 v10 旧证明，最后只接受新审查授权的单个 TEST 差异。历史 selector 测试使用原始固定 workflow blob，在读取前显式确保完整 commit 引用已获取；原负控、拒绝条件和 CI 步骤均保留。源码准入只证明来源和字节，不继承完整质量、100k 或发布结论。旧 P8 产品执行记录继续绑定 `78ae91ee…`，不重标为 `65dd3293…` 上的执行。
+固定 v11 先精确验证固定 48efa 快照中的 v10 脚本和 registry，再完整执行 v10 旧证明，最后只接受新审查授权的单个 TEST 差异。历史 selector 测试使用原始固定 workflow blob，在读取前显式确保完整 commit 引用已获取；原负控、拒绝条件和 CI 步骤均保留。源码准入只证明来源和字节，不继承完整质量、100k 或发布结论。旧 P8 产品执行记录继续绑定 `78ae91ee…`，不重标为 `65dd3293…` 上的执行。
+
+#145 随后并行合入 main `d53a4972…`。合流候选固定为 `8e12c3884edbb2743eb2aee82fafa285e8b28ef7`，独立审查固定在 `3056a14ccc3496b4e5c9ff1e3746bf6cf33a1b95` 的 [双来源审查](release/main-merge-source-review.json)。相对 v11 的 785 项输入，仅 `p8_load.rs` 的 `cfg(test)` 模块新增 43 行，生产部分原字节保持；原有两项预算测试和 main 新增两项测试全部保留。相对 main joint22 产品的四处差异逐项列出 before/after 摘要，其余输入保持一致。
+
+合流版本选择 v12：先完整执行 v11 链，再执行 main 原 joint22 guard 的完整证明和原 CI 核验，最后按固定双来源审查接受一处新增差异及四处来源差异。旧脚本、registry、main 原测试和 workflow 原字节另存固定快照，当前 CI 仍保留全部 `test_p8_*.py`、历史核验及私有 default 产物路径。原证明和新证明都实际执行；旧运行不重标成合流候选的结果。
+
+固定 delivery `0e197ff3…` 已通过 [最后独立审查](release/main-merge-final-review.json)：main 的 11,162 个 artifact 路径、模式、blob 全部相同，104 个既有测试方法和原断言保留。完整 v12 CLI 实跑 209.670 秒、退出 0，18 个新增控制和 4 个历史方法全部通过；[原始结果与中断记录](ci/main-merge-validation/) 分别归档，不将中断尝试改记成功。该实际执行与审查时的完整 Git 身份保存在 [补充历史](history-main-merge/)，后续新增归档不重标原执行 commit。
 
 | 实际执行 | 结果 | 原始证据 |
 |---|---|---|
@@ -61,6 +67,8 @@ v10 入口分别重建两套历史接受链，再应用固定审查的顺序差�
 | 最终任务快照历史与定义核验 | passed，192 原定义、4 个视图；tasks 摘要 d69e664a… | [historical-v2-final.json](validation/historical-v2-final.json) |
 | v11 新源码拒绝控制 / 实际准入 | 10 passed，70.691 秒 / exit 0、785 inputs | [测试](validation/source-v11-tests.log)、[准入](validation/source-v11-cli.json) |
 | 修复后原 worker semantic 用例 | 1 passed / 0 failed / 0 ignored，9.62 秒；384 条请求 | [真实执行与原始材料](worker-ready-fix/) |
+| 合流后的四项原预算测试 | 4 passed / 0 failed / 0 ignored / 46 filtered；warm 依赖，19.82 秒总耗时 | [完整原始记录](ci/main-merge-budget/)，实际本地 source 为 b899，785 输入与 8e12 相同；保留 Cargo 磁盘 metadata warning |
+| 合流前固定 2a75 的 P7 engineering CI | 24 组 Rust：95 passed / 0 failed / 1 ignored；15 项 Python；worker 384 条请求完整 | [原始日志与官方 artifact 检查](ci/pre-main-p7/)，不覆盖随后合入的 main |
 | 本地全 workspace Rust 测试 | 编译阶段因临时空间上限主动停止，exit 130；测试未执行 | [原日志](validation/workspace-tests.log)、[停止回执](validation/workspace-test-stop.json) |
 
 首次本地完整 source suite 实际运行完毕，为 **94 tests：92 passed / 2 failed**，1059.377 秒；失败是旧 selector 假设。其后两个修复方法实际通过，完整原始失败保留在 [回执](validation/source-tests-first-result.json) 及 [日志](validation/all-source-tests-first.log)。没有宣称在本地重跑整个修复后的历史 suite；最终远端完整 CI 负责验证全部旧链和浅 checkout。
@@ -78,10 +86,14 @@ v10 入口分别重建两套历史接受链，再应用固定审查的顺序差�
 
 #145 的原失败保留：stable Clippy 拒绝 deprecated `fetch_update`。本批已修复且严格 Clippy 通过；原失败没有改标成功。
 
-最终 PR 复查发现 #145 已独立更新至 `ebf645e9821e57b78d5dfee267e720f7312731a8`。独立审计固定本分支 `4ff6df76…` 对照：相对 #145 首版的 372 个路径，其中 325 个相同、47 个不同，含独立新增证据和不同源码准入链；两边完整 crate/Cargo 清单有四文件差异。其后本分支另清理了配置文档重复的 GC 行和失效的 reembed 说明。不能把算法近似或已采用旧 head 当作采用整个新 PR。保留 #145 开放，不覆盖其新增工作；本分支保持自身完整历史 guard 和全部 `test_p8_*.py` 检查。它的新 head CI 与本 PR 分别判断。
+此前 PR 复查发现 #145 已独立更新至 `ebf645e9821e57b78d5dfee267e720f7312731a8`。独立审计固定本分支 `4ff6df76…` 对照：相对 #145 首版的 372 个路径，其中 325 个相同、47 个不同，含独立新增证据和不同源码准入链；两边完整 crate/Cargo 清单有四文件差异。当时保留该 PR 开放，继续分别判断两套 CI，没有将算法近似当作采用整个新 PR。
+
+2026-10-07 18:37:23 UTC，#145 被并行合入 main `d53a4972af92fd10a5cddb9f15ffdf06414b3d54`。随后本分支保留它相对旧 main 的全部 **214 个 artifact 路径**，每个 Git blob 完全相同；保留 P8-LOCAL-PROGRESS 追加记录和 P8-001 的最新完整对象，再生成四个任务视图。十项本批推进及 **152/22/17/1、40 项未验收** 不变。原先 2a75 的检查继续按固定旧版本归档，合流候选另跑 CI。
 
 [集成 PR #146](https://github.com/jyqj/codecortex/pull/146) 第一份 head `48efa5a6…` 的两套 CI 原始失败也完整保留：[main CI](https://github.com/jyqj/codecortex/actions/runs/37662135799) 通过 fmt、Clippy、默认编译和默认回归后，source suite 出现 2 fail / 1 error（旧 selector 假设及浅 checkout 未取到固定 ae906 fixture）；[P7 engineering](https://github.com/jyqj/codecortex/actions/runs/37662135135) 在 worker 就绪观察时遇到 `RetrievalChanged`，发生在测量开始前。分别修复固定 ref 获取、selector 迁移和就绪检查顺序，没有降低断言或扩大预算。
 
 该 main CI 的默认 Rust 结果共 190 组、**2612 passed / 0 failed / 65 ignored**；忽略项保持原状态，失败步骤之后的 HTTP/MCP/eval 步骤被跳过，不能算通过。[main 结果及完整压缩日志](ci/first-main-result.json)、[P7 结果及完整压缩日志](ci/first-p7-result.json) 保留实际来源与摘要。新 head 的最终完整 CI 以 PR 当前检查为准；本归档封存时不提前宣称成功。
+
+随后固定 `2a75e65d…` 的 [完整主 CI 37667560396](https://github.com/jyqj/codecortex/actions/runs/37667560396) 已实际成功，check 的 35 个步骤以及 MSRV、security 全部通过。[正式日志与逐组解析](ci/old-head-2a75-full-ci/) 保留全部原件：Rust 执行累计 3115 passed / 0 failed / 126 ignored，5 组 Python 共 370 项均通过。该累计没有对重复执行去重，392 个 Rust result 组中 151 组没有实际执行测试，不能把空组称为覆盖；ignored 的原名称和原因逐项保留。这只覆盖当时旧 main `b951f27d…` 上的 `2a75e65d…`，合入 `d53a4972…` 后的结果单独按新 head 判断。
 
 其余 43 个旧草稿仍有独立改动，不批量关闭或删除分支。它们的存在不影响本批按原始任务 ID 去重计数。最终 PR 状态与 CI 以实际 GitHub 结果另行追加。

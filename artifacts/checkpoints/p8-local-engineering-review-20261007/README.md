@@ -134,3 +134,36 @@ JSON，文件实际 SHA-256 为
 这份收据检查的是实际远端 R1/R2 和本地固定的最终 pin 声明；最终完整远端树尚需在发布
 后核对。R2 本身只有 review JSON，完整 manifest/README 随最终树发布，不能声称已经
 包含在 R2 中。直接 guard 和完整 CI 的执行结果仍由集成者单独归档。
+
+## CI 兼容修复的后续独立审查
+
+`review-ci-compatibility.json` 固定接受后续远端 source
+`40d54460f38ed13810f9898bc7257bc2cdd7fbad`（R3），base 仍为原
+`6d02d77f018a5965a6f289b0b43558ed4b9f8322`，scope 仍是同一组 17 个 Rust 路径。
+该 source 已由根 agent 实际 fetch；它的唯一 parent 为前次 delivery
+`ae906513886bef4501d0a1d2ecffd68ef76c3f5d`，完整 tree
+`02066a19d2107c195a88f0f84f90bbb7ad27b782` 与本地实现
+`0ea1879417775ffb09c0fb5b2aae4f55c680b7ae` 完全相同。
+
+本审阅者完整阅读新增 diff 和调用上下文，并从 base、R1、R3、本地实现读取受保护 blob。
+完整 777 输入中，只有 `p8_load.rs` 相对 R1 改变，其余 **776 个输入字节相同**；原
+17 路径中的其余 16 项 before/after 摘要均保持原审查值。新完整清单为
+`ci-compatibility-inputs-40d54460.json`，包含 9,974,920 字节，SHA-256 为
+`e6fae2ca81379ec5f95b50c84b5d69d99cd679941ad8750ace17db8b73591e78`。
+两个原 review JSON 不覆盖，完整原 canonical oracle 与旧测试也保持原字节。
+
+生产变化限于预算预留：将 `fetch_update` 替换成初始 Acquire load、checked addition、
+固定上限判断及 `compare_exchange_weak(AcqRel, Acquire)` 重试。每次成功 CAS 是一次
+完整预留；竞争或弱失败使用返回值重试，上限拒绝与整数溢出不修改计数。原 events/JSON
+写入、错误文字、prefix 保留和 driver 边界均保持。两项新增测试分别直接检查 16 线程
+争抢硬预算的完整预留计数，以及精确上限、零字节和 `u64::MAX` 溢出时的状态保持。
+
+这是 `accepted_scoped` 静态接受，不是一次已完成的 CI 执行证明。收据生成时，原
+Rust 1.99 弃用错误及 Rust 1.95 MSRV 结果来自集成者报告，原 job URL 已记录，但本
+审阅者尚未读到归档日志；两项新测试和旧 load 测试正由实现者执行，未在 review 中写成
+通过。后续原始验证收据保持各自 source/binary，不改写这些历史观察。
+
+后续准入应将原 `p8_local_engineering` 同组 17 路径整体绑定到 R3 和实际发布的 R4
+review，以 v9 selector 保留全部旧门禁，不新增重叠组。R3 是源码提交，其 helper、
+registry 和 CI 此时仍保持前次 v8 字节；当前静态 review 不声称这些旧 pins 已允许新
+源码。R4 实际 review 字节、v9 固定值和 CI 只改 selector 的核对需另行记录。

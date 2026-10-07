@@ -126,7 +126,7 @@ class CaptureSourceTests(unittest.TestCase):
 
     def test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0(self):
         import verify_reviewed_source as current
-        import verify_reviewed_source_v11 as selected
+        import verify_reviewed_source_v12 as selected
         # Keep this historical selector's oracle bound to its fixed snapshot;
         # the explicit selected guard separately checks the current workflow.
         target = self.root / '.github/workflows/ci.yml'

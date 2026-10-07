@@ -115,10 +115,14 @@ class WorkerFixtureReviewTests(unittest.TestCase):
                 guard.approved_union(self.registry)
 
     def test_current_ci_and_every_old_step_are_preserved(self):
-        guard.verify_ci()
+        import verify_reviewed_source_v12 as selected
+        selected.verify_ci()
         target = self.root / ".github/workflows/ci.yml"
         target.parent.mkdir(parents=True)
-        target.write_text(guard.expected_ci())
+        snapshot = "2a75e65d01a3722155e7a1858d7e0e9c8a5558cf"
+        guard.git.ensure_refs([snapshot])
+        target.write_bytes(guard.git.blob(snapshot, ".github/workflows/ci.yml"))
+        self.assertEqual(target.read_text(), guard.expected_ci())
         p7 = self.root / ".github/workflows/p7-engineering.yml"
         p7.write_bytes(guard.git.blob(guard.previous.P7_SNAPSHOT, ".github/workflows/p7-engineering.yml"))
         guard.verify_ci(self.root)

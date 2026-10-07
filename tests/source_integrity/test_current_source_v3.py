@@ -125,7 +125,7 @@ class OwnerSourceTests(unittest.TestCase):
 
     def test_ci_selector_only_change_and_historical_p0_preserved(self):
         import verify_reviewed_source as current
-        import verify_reviewed_source_v11 as selected
+        import verify_reviewed_source_v12 as selected
         original = guard.v2.v1.blob(guard.BASE, '.github/workflows/ci.yml').decode()
         expected = original.replace(
             'verify_current_source_v2.py --source-version python-inventory-20261004-v2',

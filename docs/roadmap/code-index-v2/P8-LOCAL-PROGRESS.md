@@ -63,3 +63,15 @@ P7-011～020 由另一个会话推进，本批不重复记账或覆盖其工作�
 终端没有GitHub push凭据，使用已连接GitHub的Git Data写入接口交付。该接口生成新的commit元数据；实际远端source为 `18499879a8ba3197e599cfd2e9ae96bcb657d65b`。根代理从远端fetch后，独立审阅者核对父提交、17路径delta以及全部777个crate/Cargo/lock输入，与已审阅/已测本地source `853385b7ccb2780818f9f8e8a83791f1c197efcf`逐字节一致。来源准入使用实际可fetch的远端source与独立review提交 `c7766540612f1156f0a8afbdead20e934c98066c`。
 
 原始测试收据保留各自本地source/binary标识；本地作者历史另以有摘要的Git增量包保留。该包用于人工重放历史，不由CI读取或导入来授予源码批准。最终PR交付完整工具、文档、证据和准确远端pins；新远端元数据本身不构成再次执行测试。
+
+## GitHub CI 兼容性跟进
+
+首版 PR #145 的 CI run `37656213598` 在 Rust 1.99 的 Clippy 阶段失败：本批 `p8_load.rs` 使用的 `AtomicU64::fetch_update` 新被标记为弃用。Format、MSRV 和 security 检查通过；完整原日志、实际 PR merge checkout 与失败收据单独归档，不由先前本地 Rust 1.95 通过结果替代。
+
+兼容修复仅改变该文件的原子预算预留，采用 checked_add、上限检查和 AcqRel/Acquire 的比较交换循环，并添加多线程硬预算、精确上限与整数溢出测试。固定远端 source `40d54460f38ed13810f9898bc7257bc2cdd7fbad` 与独立 review `caca44337123579e092998084e29921f5ac4c169` 由 v9 明确准入，原规则及旧审查保留；新 head 的后续 CI 结果以实际运行收据为准。三轮 TODO 计数没有改变：150 done / 11 in_progress / 31 todo，正式未完成 42 项。
+
+## PR #144 主线同步后的最终任务余量
+
+主线 `b951f27d3ed50b7755bc2456c6425355f753ec17` 已采用另一批P7工作。本批保留P7-011～020的完整主线任务对象，P8十项均保留in_progress和新增证据；P8-001合并双方4条证据及两段实施说明。三方独立核对确认验收和依赖定义没有修改。当前权威状态为 **152 done / 12 in_progress / 27 todo / 1 blocked，40项未完成**，next=P7-013。上方三轮计数是当时固定主线上的历史记录；主线新增的2项done不计为本批P8验收。
+
+完整合并源码PRODUCT `d77a2143`有785个受保护输入；策略与P8唯一重叠的CLI合入一个独立审阅的22路径delta，其他五组原批准保留，显式选择v10。完整CI在合并后的PR head上另行执行。

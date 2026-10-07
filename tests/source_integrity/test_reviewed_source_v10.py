@@ -141,7 +141,7 @@ class SequentialReviewTests(unittest.TestCase):
             target.write_bytes(raw)
 
     def test_current_workflows_have_only_the_explicit_migration(self):
-        import verify_reviewed_source_v11 as selected
+        import verify_reviewed_source_v12 as selected
         selected.verify_ci()
         path = self.root / ".github/workflows/ci.yml"
         path.parent.mkdir(parents=True)

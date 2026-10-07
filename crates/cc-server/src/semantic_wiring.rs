@@ -82,7 +82,9 @@ use cc_semantic::queue::{BatchReport, EmbedHandler, LeaseGuard, TaskExit};
 use cc_semantic::space_switch::{drain_space_revocations, RevocationDrainReport};
 use cc_semantic::spec::{QueryEncodingSpec, VectorSpace};
 use cc_semantic::types::DocSpecDigest;
-use cc_semantic::vector::exact::{search_controlled, space_manifest_reads, ExactSearch};
+use cc_semantic::vector::exact::{
+    search_controlled_with_coverage, space_manifest_reads, ExactSearch,
+};
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -195,7 +197,7 @@ pub struct SemanticSubsystem {
     /// Internal attempt width from existing explicit per-project admission config.
     pub(crate) max_concurrent_per_project: usize,
     /// GC fresh-timestamp grace seconds (`semantic.gc_min_retention_secs`,
-    /// validated ≥ 1 at assembly).
+    /// validated in `1..=i64::MAX` at assembly).
     pub gc_min_retention_secs: i64,
 }
 
@@ -252,6 +254,13 @@ pub fn assemble_with(
                 .into(),
         ));
     }
+    let gc_min_retention_secs =
+        i64::try_from(config.semantic.gc_min_retention_secs).map_err(|_| {
+            CcError::Config(format!(
+                "semantic.gc_min_retention_secs must not exceed {}",
+                i64::MAX
+            ))
+        })?;
     if config.semantic.worker_lease_secs == 0 {
         return Err(CcError::Config(
             "semantic.worker_lease_secs must be at least 1".into(),
@@ -337,7 +346,7 @@ pub fn assemble_with(
         doc_spec,
         lease_secs: config.semantic.worker_lease_secs as f64,
         max_concurrent_per_project: config.semantic.max_concurrent_per_project as usize,
-        gc_min_retention_secs: config.semantic.gc_min_retention_secs as i64,
+        gc_min_retention_secs,
     }))
 }
 
@@ -967,11 +976,11 @@ impl ExactRecallService {
         //    released its connection (never a nested checkout); the
         //    adapter's generation re-verification covers the interleave.
         let space_digest = self.space.digest()?;
-        let scored = {
+        let scan = {
             let conn = self.db.read_conn()?;
             let manifest = SemanticManifestReads::on(&conn);
             let scoped = space_manifest_reads(&manifest, &space_digest);
-            search_controlled(
+            search_controlled_with_coverage(
                 &self.cache,
                 &scoped,
                 ExactSearch {
@@ -989,11 +998,11 @@ impl ExactRecallService {
         // propagates as `QueryTimedOut`, which the lane adapter turns
         // into a Timeout receipt instead of blocking the query.
         control.check()?;
-        let declaration = crate::semantic_scope_guard::declare(
+        let mut declaration = crate::semantic_scope_guard::declare(
             &self.db,
             space_digest.as_str(),
             &request.scope,
-            scored.len(),
+            scan.scored.len(),
         )?;
         // P7-011 scope fence: a recall whose space is not the active
         // publishing space returns nothing (P6-017 混排拒绝), never a
@@ -1011,6 +1020,17 @@ impl ExactRecallService {
                 candidates: Vec::new(),
             });
         }
+        // SQL publication coverage cannot prove that its cache payloads are
+        // still readable. Keep valid candidates fusable, but never cache a
+        // Complete receipt after any eligible artifact was lost in this scan.
+        // Existing publication gaps keep their more general Partial reason;
+        // the active-space fence above always takes precedence.
+        if declaration.status == LaneStatus::Complete && scan.has_unavailable_artifacts() {
+            declaration.status = LaneStatus::Partial;
+            declaration.coverage = LaneCoverage::partial(None, scan.scored.len());
+            declaration.truncation_reason = Some("semantic_artifact_unavailable".into());
+        }
+        let scored = scan.scored;
         // 3. Versioned identity for the receipts (doc version / source
         //    span). The exact backend speaks doc_keys; the sanctioned
         //    candidate reader speaks chunk_ids, so the doc_key →
@@ -1059,12 +1079,8 @@ impl ExactRecallService {
                 exact_identity: false,
             });
         }
-        // The scope declaration owns the receipt's honesty: an exact scan
-        // over a fully published hard scope stays Complete (top-k is the
-        // requested limit, not a truncation); partial publication
-        // coverage of the scope surfaces as Partial +
-        // `semantic_coverage_uncovered` — never a Complete receipt over
-        // missing vectors (P6-018 口径, recall layer).
+        // Complete requires both publication coverage and readable eligible
+        // artifacts. Top-k remains the requested limit, not a truncation.
         control.check()?;
         Ok(LaneOutcome {
             schema_version: LANE_OUTCOME_SCHEMA_VERSION,

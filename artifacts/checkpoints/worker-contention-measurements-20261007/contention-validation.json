@@ -1,0 +1,571 @@
+{
+  "phase": "contention",
+  "head": "f95bb87c20e67b8f42c86c6a025f3cc8157ebd60",
+  "tree": "3ece652837f1fda5da83fcdc97c9ff28ab7d072f",
+  "branch": "test/p7-015-worker-contention-20261007",
+  "source_status_before": "",
+  "source_inputs": 769,
+  "source_manifest": "contention-source-sha256.json",
+  "source_manifest_sha256": "13a326a7f58d4ddc33775b6581dfaf68cf1a9f89e17fe75179cc3a06fe8ac39b",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "selected_rustc_version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2",
+  "selected_rustc_sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_BUILD_BUILD_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "RUSTC": "/workspace/scratch/71bc431c4e4f/rust-env/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WRAPPER": "",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/artifacts/checkpoints/worker-contention-measurements-20261007/contention-observations",
+    "CODECORTEX_LIFECYCLE_RECEIPT_DIR": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/artifacts/checkpoints/worker-contention-measurements-20261007/contention-original-lifecycle"
+  },
+  "raw_logs_normalized": false,
+  "shared_target_boundary": "One Rust runner. Changed workspace packages cc-semantic/cc-server/cc-eval are explicitly cleaned in the contention phase before compilation. This is scoped cache invalidation, not a hermetic-build claim.",
+  "not_run": [
+    "full_workspace",
+    "external_provider",
+    "source_guard",
+    "full_P7_015_acceptance",
+    "bounded_reconcile_change"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "clean",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-semantic",
+        "-p",
+        "cc-server",
+        "-p",
+        "cc-eval"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.331,
+      "log": "contention-1.log",
+      "log_bytes": 38,
+      "log_sha256": "68d11b42ab72e5271f6d885fdb4823ffc344a1e746c7f2994c4cc8b2ac275f4c",
+      "test_summaries": [],
+      "workspace_artifacts": []
+    },
+    {
+      "argv": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "-p",
+        "cc-eval",
+        "--features",
+        "semantic",
+        "--test",
+        "p7_worker_contention",
+        "--test",
+        "semantic_lifecycle",
+        "--message-format=json-render-diagnostics",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 82.711,
+      "log": "contention-2.log",
+      "log_bytes": 214019,
+      "log_sha256": "78f3f64c50855fb4f3ddd66030b0327651ff6ee697686082d4f250e4aa243e1c",
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "workspace_artifacts": [
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-model#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-model/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_model",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-model/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_model-62315fa7a0e062e4.rlib",
+              "bytes": 14902598,
+              "sha256": "d63c516c9b3694c43b622fcc5ab19b9e8f5ec5824b008fdd7ee54242886da6de"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_model-62315fa7a0e062e4.rmeta",
+              "bytes": 8959527,
+              "sha256": "f44f19e983a52c90d184db21603da52c116af4e55c3724c82c88c279c778dec5"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-parsers#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-parsers/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_parsers",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-parsers/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_parsers-c6f28361a6d3695d.rlib",
+              "bytes": 6320554,
+              "sha256": "6fe7647fdab69bd6189efe816a9db704fe5fa4dde7d90e7e0eef46bd4b2ecfc6"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_parsers-c6f28361a6d3695d.rmeta",
+              "bytes": 708175,
+              "sha256": "942730169a6d8736f17f3a8c9cd7a282c9e3886fba6a70654eb834521344ea5c"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-db#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-db/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_db",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-db/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_db-65df7e87461d7d48.rlib",
+              "bytes": 19761594,
+              "sha256": "599406917d2af15d2f693f87f1ded171afcb1aa401c954a063da35e1ba0ab272"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_db-65df7e87461d7d48.rmeta",
+              "bytes": 1982318,
+              "sha256": "2808fa1e59ba69cfaa576b620bc4d6abc767314d999fe00afcb943d4b4993d88"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-search#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-search/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_search",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-search/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [
+            "default",
+            "regexp-udf"
+          ],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_search-1d95f29865cdedc4.rlib",
+              "bytes": 10713168,
+              "sha256": "c6bc64b7175359e0f9b1508f037ede064ef7fd728eac44a61552a388135c5314"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_search-1d95f29865cdedc4.rmeta",
+              "bytes": 1102315,
+              "sha256": "db5f8983cd30ebdc2d060a72c8b67e77d336586098f1c258a588259353763173"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-index#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-index/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_index",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-index/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_index-3b22d30b57ab98b1.rlib",
+              "bytes": 23783792,
+              "sha256": "fbf8869824a7df5a11113fed34085946bcf14f07197deb8bd3babd907186dd2b"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_index-3b22d30b57ab98b1.rmeta",
+              "bytes": 2272785,
+              "sha256": "05af81324927e2976fa64258b6b209d9c0deced89df7bbaff69e8519cfa1367d"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-semantic#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-semantic/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_semantic",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-semantic/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-14f4525a66060e48.rlib",
+              "bytes": 4518332,
+              "sha256": "12b8babb22dc66d45e9f67d01556939387bb6e1a297e6b5bc0e8deef34db7294"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_semantic-14f4525a66060e48.rmeta",
+              "bytes": 1298330,
+              "sha256": "f864db6829bb0c24d5e225be2dd6e2785865050efd3beb6a59b1f4acab15cbcd"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-server#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-server/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_server",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-server/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [
+            "semantic"
+          ],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_server-3f3efb71ca9c1d80.rlib",
+              "bytes": 34628384,
+              "sha256": "0590e2b4fbf50f533681908707ba18c11f5a0b5e379cb75ebd75fe3d3d5bc788"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_server-3f3efb71ca9c1d80.rmeta",
+              "bytes": 3798330,
+              "sha256": "d8cdc5ec7f9ec7fa69dc829870325757e044d440b6e569a2eee9795cf7b2bc47"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/Cargo.toml",
+          "target": {
+            "kind": [
+              "lib"
+            ],
+            "crate_types": [
+              "lib"
+            ],
+            "name": "cc_eval",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/src/lib.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": true,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [
+            "default",
+            "semantic"
+          ],
+          "fresh": false,
+          "executable": null,
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_eval-6ab776bbdff611f0.rlib",
+              "bytes": 28125170,
+              "sha256": "47397b6fc2df9b9926ff001fac577d521004e92df7e28f1709a002caaa408b34"
+            },
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/libcc_eval-6ab776bbdff611f0.rmeta",
+              "bytes": 3679545,
+              "sha256": "565c195ac1b932cda8a02b3cc6ab52c3c8defea69567c5ad6ee46bf40cfd830b"
+            }
+          ],
+          "executable_sha256": null
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/Cargo.toml",
+          "target": {
+            "kind": [
+              "test"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "semantic_lifecycle",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/tests/semantic_lifecycle.rs",
+            "edition": "2021",
+            "doc": false,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": true
+          },
+          "features": [
+            "default",
+            "semantic"
+          ],
+          "fresh": false,
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_lifecycle-556311da9a980ecd",
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/semantic_lifecycle-556311da9a980ecd",
+              "bytes": 53357736,
+              "sha256": "7c69eb7263e2375fcfae1fa5d9959553d5baecba7ae75f3ee2891311d6b36a1b"
+            }
+          ],
+          "executable_sha256": "7c69eb7263e2375fcfae1fa5d9959553d5baecba7ae75f3ee2891311d6b36a1b"
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/Cargo.toml",
+          "target": {
+            "kind": [
+              "bin"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "cc-eval",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/src/bin/cc-eval.rs",
+            "edition": "2021",
+            "doc": true,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": false
+          },
+          "features": [
+            "default",
+            "semantic"
+          ],
+          "fresh": false,
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/cc-eval",
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/cc-eval",
+              "bytes": 77283168,
+              "sha256": "00a201589de256351c6f0b6d1ee43016caee6b35a3ef75e0d0441bb9dc48a200"
+            }
+          ],
+          "executable_sha256": "00a201589de256351c6f0b6d1ee43016caee6b35a3ef75e0d0441bb9dc48a200"
+        },
+        {
+          "package_id": "path+file:///workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval#1.0.0",
+          "manifest_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/Cargo.toml",
+          "target": {
+            "kind": [
+              "test"
+            ],
+            "crate_types": [
+              "bin"
+            ],
+            "name": "p7_worker_contention",
+            "src_path": "/workspace/scratch/71bc431c4e4f/codecortex-p7-015/crates/cc-eval/tests/p7_worker_contention.rs",
+            "edition": "2021",
+            "doc": false,
+            "doctest": false,
+            "test": true
+          },
+          "profile": {
+            "opt_level": "0",
+            "debuginfo": 0,
+            "debug_assertions": true,
+            "overflow_checks": true,
+            "test": true
+          },
+          "features": [
+            "default",
+            "semantic"
+          ],
+          "fresh": false,
+          "executable": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_worker_contention-71ac5435a53d17fb",
+          "files": [
+            {
+              "path": "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_worker_contention-71ac5435a53d17fb",
+              "bytes": 54048208,
+              "sha256": "bc872875199b41c5e26f2f7278564f3a7a3898d5becc456be0ee3d9a14ba2298"
+            }
+          ],
+          "executable_sha256": "bc872875199b41c5e26f2f7278564f3a7a3898d5becc456be0ee3d9a14ba2298"
+        }
+      ],
+      "cleaned_workspace_libraries_recompiled": {
+        "cc_semantic": true,
+        "cc_server": true,
+        "cc_eval": true
+      }
+    }
+  ],
+  "source_inputs_unchanged": true,
+  "source_mismatches": [],
+  "head_after": "f95bb87c20e67b8f42c86c6a025f3cc8157ebd60",
+  "source_status_after": "",
+  "command_exits_all_zero": true,
+  "cleaned_workspace_recompile_verified": true
+}

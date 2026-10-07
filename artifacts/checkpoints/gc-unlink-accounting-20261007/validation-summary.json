@@ -1,0 +1,41 @@
+{
+  "scope": "P7-016 proven GC unlink accounting and representative recoverable retry subset",
+  "fixture_commit": "c27bfd0e315187be96c267914d0b74de8044918c",
+  "source_commit": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "baseline": {
+    "passed": 0,
+    "failed": 5,
+    "ignored": 0,
+    "cargo_exit": 101,
+    "receipt": "baseline-validation.json"
+  },
+  "repaired": {
+    "new_fixture_passed": 5,
+    "original_gc_passed": 8,
+    "failed": 0,
+    "ignored": 0,
+    "cargo_exit": 0,
+    "receipt": "repaired-validation.json"
+  },
+  "strict_scoped_clippy_exit": 0,
+  "workspace_format_exit": 0,
+  "checks_receipt": "checks-validation.json",
+  "repaired_scoped_all_passed": true,
+  "full_p7_016_complete": false,
+  "remaining_original_task_obligations": [
+    "representative combined retry, close/restart, rebuild, delete, lease and GC fault matrix",
+    "formal replayable owned-child SIGKILL evidence",
+    "opportunistic reclaim narrowing (wiring item 9) and original lifecycle invariants"
+  ],
+  "not_claimed": [
+    "transactional filesystem rollback",
+    "full mark-to-unlink/publication race closure",
+    "semantic quality from fake vectors",
+    "whole workspace pass",
+    "PID-attributed resource measurement"
+  ],
+  "task_authority": [
+    "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md#P7-016",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md#G4-P7"
+  ]
+}

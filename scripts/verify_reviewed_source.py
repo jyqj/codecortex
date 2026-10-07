@@ -16,52 +16,74 @@ import sys
 import verify_current_source_v3 as previous
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 'p8-local-engineering-20261007-v8'
+VERSION = 'p7-p8-engineering-20261007-v10'
 BASE = '886f90a542a6174a037c79eebbb4f74848fb1f53'
 REGISTRY = ROOT / 'scripts/reviewed-source-registry.json'
 # These pins follow committed implementation and separately recorded review.
-REGISTRY_SHA256 = '5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155'
-PRODUCT = '18499879a8ba3197e599cfd2e9ae96bcb657d65b'
-APPROVED = {'validation_work': {'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410',
-                     'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
-                     'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
-                     'paths': ['crates/cc-db/src/document_store.rs',
+REGISTRY_SHA256 = '195fa37b20130e53f3417f8076eb608f18e3b3a98c9206907ba0ce9ab31b3d8a'
+PRODUCT = 'd77a2143cdb82e722b1d1c62851298c43e707b65'
+APPROVED = {'gc_unlink_accounting': {'paths': ['crates/cc-semantic/src/gc.rs',
+                                    'crates/cc-semantic/tests/gc_unlink_accounting.rs'],
+                          'review': '1831ba6f64a52aae88ac1454bc518d318eb02a13',
+                          'review_path': 'artifacts/checkpoints/gc-unlink-review-20261007/review.json',
+                          'source': '304dd775278f2af1fee4aa791560f086f1460eff'},
+ 'python_capture_revalidation': {'paths': ['crates/cc-index/src/project_model/python_inventory.rs',
+                                           'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
+                                           'crates/cc-index/tests/python_inventory_revalidation.rs'],
+                                 'review': '9e96795711c072c9aa2095a1fc4527bc28ba75b0',
+                                 'review_path': 'artifacts/checkpoints/python-inventory-revalidation-20261007/review.json',
+                                 'source': 'e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d'},
+ 'semantic_coverage_retention': {'paths': ['crates/cc-semantic/src/vector/exact.rs',
+                                           'crates/cc-server/src/semantic_wiring.rs',
+                                           'crates/cc-server/tests/p7_dense_artifact_coverage.rs',
+                                           'crates/cc-server/tests/p7_gc_retention_config.rs'],
+                                 'review': '523c531a57bfb02d5601e6d698e48601d2bfac98',
+                                 'review_path': 'artifacts/checkpoints/semantic-coverage-retention-review-20261007/review.json',
+                                 'source': 'e22d5d47b5e0153ef3fa6849f4cf2e3c843344e4'},
+ 'validation_work': {'paths': ['crates/cc-db/src/document_store.rs',
                                'crates/cc-db/src/index_db_retrieval.rs',
                                'crates/cc-db/src/symbol_identity_store.rs',
                                'crates/cc-eval/tests/p7_validation_work.rs',
                                'crates/cc-eval/tests/packing_validation_work.rs',
                                'crates/cc-search/src/evidence_hydrator.rs',
-                               'crates/cc-search/src/selection/budget.rs']},
- 'python_capture_revalidation': {'source': 'e0c1f3ddb6e666ce01cb5dcefb50cf572e735f8d',
-                                 'review': '9e96795711c072c9aa2095a1fc4527bc28ba75b0',
-                                 'review_path': 'artifacts/checkpoints/python-inventory-revalidation-20261007/review.json',
-                                 'paths': ['crates/cc-index/src/project_model/python_inventory.rs',
-                                           'crates/cc-index/src/project_model/python_inventory/revalidation.rs',
-                                           'crates/cc-index/tests/python_inventory_revalidation.rs']}}
+                               'crates/cc-search/src/selection/budget.rs'],
+                     'review': 'd0d3a3d8c8dbca4ab33b17d651f73c8a46b8a467',
+                     'review_path': 'artifacts/checkpoints/validation-work-metadata-review-20261007/review.json',
+                     'source': 'a4090fe0b801a54a85231d5486ce3ad75c9cd410'},
+ 'worker_contention_measurements': {'paths': ['crates/cc-eval/tests/p7_worker_contention.rs'],
+                                    'review': '87f4bf9700f300df83653b0577b4238fd1744635',
+                                    'review_path': 'artifacts/checkpoints/worker-contention-review-20261007/review.json',
+                                    'source': '0a93b533a1f9f30702ac80427a65eb5de355357f'},
+ 'p7_strategy_p8_engineering': {'base': '6d02d77f018a5965a6f289b0b43558ed4b9f8322',
+                                'source': '3359647e81ea73b9ee98a56d6753f1cfa741b3d2',
+                                'review': '468a4f7f79bc7c933b6030eb3f27c68674afb2a7',
+                                'review_path': 'artifacts/checkpoints/p7-p8-integration-review-20261007/review.json',
+                                'paths': ['crates/cc-db/src/index_db_graph.rs',
+                                          'crates/cc-eval/src/benchmark/ablation.rs',
+                                          'crates/cc-eval/src/benchmark/ablation/strategy.rs',
+                                          'crates/cc-eval/src/benchmark/ablation/strategy/reporting.rs',
+                                          'crates/cc-eval/src/benchmark/comparison.rs',
+                                          'crates/cc-eval/src/benchmark/gate.rs',
+                                          'crates/cc-eval/src/benchmark/mod.rs',
+                                          'crates/cc-eval/src/benchmark/p8_load.rs',
+                                          'crates/cc-eval/src/benchmark/p8_scale.rs',
+                                          'crates/cc-eval/src/benchmark/report.rs',
+                                          'crates/cc-eval/src/benchmark/sampler.rs',
+                                          'crates/cc-eval/src/benchmark/statistics.rs',
+                                          'crates/cc-eval/src/bin/cc-eval-p8-load.rs',
+                                          'crates/cc-eval/src/bin/cc-eval.rs',
+                                          'crates/cc-eval/src/bin/p8-scale.rs',
+                                          'crates/cc-eval/tests/benchmark_cli.rs',
+                                          'crates/cc-eval/tests/p7_strategy_ablation.rs',
+                                          'crates/cc-eval/tests/p7_strategy_stdio.rs',
+                                          'crates/cc-eval/tests/p8_load.rs',
+                                          'crates/cc-eval/tests/p8_measurements.rs',
+                                          'crates/cc-eval/tests/p8_route_reload.rs',
+                                          'crates/cc-eval/tests/p8_scale.rs']}}
 
 
-# Accepted only after the independent fixed-source review above was committed.
-APPROVED['p8_local_engineering'] = {'base': '6d02d77f018a5965a6f289b0b43558ed4b9f8322',
- 'source': '18499879a8ba3197e599cfd2e9ae96bcb657d65b',
- 'review': 'c7766540612f1156f0a8afbdead20e934c98066c',
- 'review_path': 'artifacts/checkpoints/p8-local-engineering-review-20261007/review-remote-source.json',
- 'paths': ['crates/cc-db/src/index_db_graph.rs',
-           'crates/cc-eval/src/benchmark/comparison.rs',
-           'crates/cc-eval/src/benchmark/gate.rs',
-           'crates/cc-eval/src/benchmark/mod.rs',
-           'crates/cc-eval/src/benchmark/p8_load.rs',
-           'crates/cc-eval/src/benchmark/p8_scale.rs',
-           'crates/cc-eval/src/benchmark/report.rs',
-           'crates/cc-eval/src/benchmark/sampler.rs',
-           'crates/cc-eval/src/benchmark/statistics.rs',
-           'crates/cc-eval/src/bin/cc-eval-p8-load.rs',
-           'crates/cc-eval/src/bin/cc-eval.rs',
-           'crates/cc-eval/src/bin/p8-scale.rs',
-           'crates/cc-eval/tests/benchmark_cli.rs',
-           'crates/cc-eval/tests/p8_load.rs',
-           'crates/cc-eval/tests/p8_measurements.rs',
-           'crates/cc-eval/tests/p8_route_reload.rs',
-           'crates/cc-eval/tests/p8_scale.rs']}
+# The combined strategy/P8 partition was independently reviewed before registration.
+# Its single CLI owner preserves disjoint approval and the five fixed main groups.
 
 def require(condition, message):
     if not condition:
@@ -210,7 +232,14 @@ def expected_ci():
     old = 'verify_current_source_v3.py --source-version ' + previous.VERSION
     new = 'verify_reviewed_source.py --source-version ' + VERSION
     require(original.count(old) == 1, 'historical CI selector differs')
-    migrated = original.replace(old, new).replace(
+    shared_default = 'CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex"'
+    private_default = 'CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex"'
+    require(original.count(shared_default) == 19, 'historical default product references differ')
+    historical_gate = 'python3 scripts/verify_fixed_e3_integration.py'
+    versioned_gate = 'python3 scripts/verify_historical_integrations_v2.py'
+    require(original.count(historical_gate) == 1, 'historical integration entry differs')
+    migrated = original.replace(old, new).replace(shared_default, private_default).replace(
+        historical_gate, versioned_gate).replace(
         'explicitly selected v3 accepted owner-context union',
         'explicitly selected reviewed source union')
     plan_check = '          python3 scripts/code_index_plan.py\n'
@@ -226,7 +255,7 @@ def expected_ci():
 
 def verify_ci(root=ROOT):
     require((root / '.github/workflows/ci.yml').read_text() == expected_ci(),
-            'CI differs beyond the explicit source selector and local P8 checks')
+            'CI differs beyond the reviewed P7 migrations and local P8 checks')
 
 
 def main():

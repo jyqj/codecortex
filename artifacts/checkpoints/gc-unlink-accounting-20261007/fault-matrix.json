@@ -1,0 +1,158 @@
+{
+  "rust_test_functions": 5,
+  "fixed_seed_scenarios": 8,
+  "rows": [
+    {
+      "seed": 17,
+      "fault": "complete object, first unlink error",
+      "operation_sequence": [
+        "create owned DB and verified cache hit",
+        "collect a real unreferenced candidate",
+        "replace selected owned file with a directory",
+        "sweep the captured batch and record actual outcome",
+        "repair filesystem cause by restoring exact original bytes",
+        "collect and mark again from the previous cursor",
+        "run bounded GC pass and assert actual deletion counters, exhaustion and unchanged DB generation"
+      ],
+      "baseline_observation": "baseline-observations/seed-17-failed-unlink.json",
+      "repaired_error_observation": "repaired-observations/seed-17-failed-unlink.json",
+      "recovery_observation": "repaired-observations/seed-17-recovered.json",
+      "observed_baseline_status": "ok",
+      "observed_repaired_status": "error",
+      "successful_recovery_counter": "deleted_objects",
+      "partial_deletion_is_not_rolled_back": false
+    },
+    {
+      "seed": 29,
+      "fault": "complete object, second unlink error",
+      "operation_sequence": [
+        "create owned DB and verified cache hit",
+        "collect a real unreferenced candidate",
+        "replace selected owned file with a directory",
+        "sweep the captured batch and record actual outcome",
+        "repair filesystem cause by restoring exact original bytes",
+        "collect and mark again from the previous cursor",
+        "run bounded GC pass and assert actual deletion counters, exhaustion and unchanged DB generation"
+      ],
+      "baseline_observation": "baseline-observations/seed-29-failed-unlink.json",
+      "repaired_error_observation": "repaired-observations/seed-29-failed-unlink.json",
+      "recovery_observation": "repaired-observations/seed-29-recovered.json",
+      "observed_baseline_status": "ok",
+      "observed_repaired_status": "error",
+      "successful_recovery_counter": "deleted_halves",
+      "partial_deletion_is_not_rolled_back": true
+    },
+    {
+      "seed": 43,
+      "fault": "sidecar half unlink error",
+      "operation_sequence": [
+        "create owned DB and verified cache hit",
+        "collect a real unreferenced candidate",
+        "replace selected owned file with a directory",
+        "sweep the captured batch and record actual outcome",
+        "repair filesystem cause by restoring exact original bytes",
+        "collect and mark again from the previous cursor",
+        "run bounded GC pass and assert actual deletion counters, exhaustion and unchanged DB generation"
+      ],
+      "baseline_observation": "baseline-observations/seed-43-failed-unlink.json",
+      "repaired_error_observation": "repaired-observations/seed-43-failed-unlink.json",
+      "recovery_observation": "repaired-observations/seed-43-recovered.json",
+      "observed_baseline_status": "ok",
+      "observed_repaired_status": "error",
+      "successful_recovery_counter": "deleted_halves",
+      "partial_deletion_is_not_rolled_back": false
+    },
+    {
+      "seed": 59,
+      "fault": "temporary file unlink error",
+      "operation_sequence": [
+        "create owned DB and verified cache hit",
+        "collect a real unreferenced candidate",
+        "replace selected owned file with a directory",
+        "sweep the captured batch and record actual outcome",
+        "repair filesystem cause by restoring exact original bytes",
+        "collect and mark again from the previous cursor",
+        "run bounded GC pass and assert actual deletion counters, exhaustion and unchanged DB generation"
+      ],
+      "baseline_observation": "baseline-observations/seed-59-failed-unlink.json",
+      "repaired_error_observation": "repaired-observations/seed-59-failed-unlink.json",
+      "recovery_observation": "repaired-observations/seed-59-recovered.json",
+      "observed_baseline_status": "ok",
+      "observed_repaired_status": "error",
+      "successful_recovery_counter": "deleted_temps",
+      "partial_deletion_is_not_rolled_back": false
+    },
+    {
+      "seed": 61,
+      "fault": "captured complete object with selected paths already absent",
+      "keep_bin": false,
+      "keep_meta": false,
+      "operation_sequence": [
+        "collect complete object",
+        "remove selected halves",
+        "sweep",
+        "assert one object count only if at least one actual unlink occurred",
+        "replay same captured batch; assert zero counters and unchanged DB generation"
+      ],
+      "repaired_observation": "repaired-observations/seed-61-absent-half-control.json",
+      "observed_deleted_objects": 0,
+      "baseline_observation": "baseline-observations/seed-61-absent-half-control.json",
+      "baseline_reached": true,
+      "baseline_note": null
+    },
+    {
+      "seed": 67,
+      "fault": "captured complete object with selected paths already absent",
+      "keep_bin": false,
+      "keep_meta": true,
+      "operation_sequence": [
+        "collect complete object",
+        "remove selected halves",
+        "sweep",
+        "assert one object count only if at least one actual unlink occurred",
+        "replay same captured batch; assert zero counters and unchanged DB generation"
+      ],
+      "repaired_observation": "repaired-observations/seed-67-absent-half-control.json",
+      "observed_deleted_objects": 1,
+      "baseline_observation": null,
+      "baseline_reached": false,
+      "baseline_note": "the loop stopped at the seed 61 assertion; later seeds are not claimed as baseline executions"
+    },
+    {
+      "seed": 71,
+      "fault": "captured complete object with selected paths already absent",
+      "keep_bin": true,
+      "keep_meta": false,
+      "operation_sequence": [
+        "collect complete object",
+        "remove selected halves",
+        "sweep",
+        "assert one object count only if at least one actual unlink occurred",
+        "replay same captured batch; assert zero counters and unchanged DB generation"
+      ],
+      "repaired_observation": "repaired-observations/seed-71-absent-half-control.json",
+      "observed_deleted_objects": 1,
+      "baseline_observation": null,
+      "baseline_reached": false,
+      "baseline_note": "the loop stopped at the seed 61 assertion; later seeds are not claimed as baseline executions"
+    },
+    {
+      "seed": 73,
+      "fault": "captured complete object with selected paths already absent",
+      "keep_bin": true,
+      "keep_meta": true,
+      "operation_sequence": [
+        "collect complete object",
+        "remove selected halves",
+        "sweep",
+        "assert one object count only if at least one actual unlink occurred",
+        "replay same captured batch; assert zero counters and unchanged DB generation"
+      ],
+      "repaired_observation": "repaired-observations/seed-73-absent-half-control.json",
+      "observed_deleted_objects": 1,
+      "baseline_observation": null,
+      "baseline_reached": false,
+      "baseline_note": "the loop stopped at the seed 61 assertion; later seeds are not claimed as baseline executions"
+    }
+  ]
+}

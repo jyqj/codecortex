@@ -195,11 +195,25 @@ class ReviewedSourceTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, 'wrong delta pin'):
                 guard.approved_union(self.registry)
 
-    def test_ci_only_allows_explicit_selector_and_local_p8_checks(self):
+    def test_ci_only_allows_reviewed_migrations_and_local_p8_checks(self):
         guard.verify_ci()
         target = self.root / '.github/workflows/ci.yml'
         target.parent.mkdir(parents=True)
         target.write_text(guard.expected_ci() + '\n# unreviewed workflow edit\n')
+        with self.assertRaisesRegex(AssertionError, 'CI differs'):
+            guard.verify_ci(self.root)
+        fixed = guard.expected_ci()
+        historical_gate = 'python3 scripts/verify_historical_integrations_v2.py'
+        self.assertEqual(fixed.count(historical_gate), 1)
+        for replacement in ['python3 scripts/verify_fixed_e3_integration.py',
+                            'true # skip historical integration verification']:
+            target.write_text(fixed.replace(historical_gate, replacement))
+            with self.assertRaisesRegex(AssertionError, 'CI differs'):
+                guard.verify_ci(self.root)
+        private_default = 'CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex"'
+        self.assertEqual(fixed.count(private_default), 20)
+        target.write_text(fixed.replace(private_default,
+                          'CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex"', 1))
         with self.assertRaisesRegex(AssertionError, 'CI differs'):
             guard.verify_ci(self.root)
 

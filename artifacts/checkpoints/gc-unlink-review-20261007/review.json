@@ -1,0 +1,56 @@
+{
+  "name": "gc_unlink_accounting",
+  "base": "886f90a542a6174a037c79eebbb4f74848fb1f53",
+  "author_source": "84b33cf6a8751b316e5b2102a11f329bc1deab09",
+  "author_source_tree": "f37c71c90b0379b6a3cce8cd9399936fd22e3a82",
+  "author_source_inputs": 769,
+  "author_manifest_sha256": "1ce89da601a76e94be17c7def526a08b6e803c2530afe0056d97eafcf4f7b548",
+  "local_source": "a719dbfb832c6ac2f6a7ebb7341d76e299340a4e",
+  "tree": "f8c91f14ed4b69caca89510dead36a2c6e2eca2f",
+  "paths": [
+    "crates/cc-semantic/src/gc.rs",
+    "crates/cc-semantic/tests/gc_unlink_accounting.rs"
+  ],
+  "copied_blobs": {
+    "crates/cc-semantic/src/gc.rs": {
+      "blob": "7e81443aa5dc623566af70e863e11b702a4b10c1",
+      "sha256": "e02e3bfb54bd04493793632e696cff8cb47bf81429788caa0baea3e5390ac07e"
+    },
+    "crates/cc-semantic/tests/gc_unlink_accounting.rs": {
+      "blob": "ac99d15daf3b937934be90017281933c150ca7e6",
+      "sha256": "8c5f84cd741349158d861f86d361e2ccdb019eb7fc54833921ffbb29fa567cf3"
+    }
+  },
+  "isolated_source_inputs": 765,
+  "isolated_source_behavior_executed": false,
+  "source": "304dd775278f2af1fee4aa791560f086f1460eff",
+  "verdict": "accepted_scoped",
+  "schema_version": 1,
+  "review_scope": "Exact isolated two-path GC unlink delta on the immutable v3 base; source/code acceptance only.",
+  "independent_review": "independent-review.json",
+  "independent_review_sha256": "2c364657325f0e9d0e0021cc4bba72bbd49a5973af76499605d539899973956e",
+  "author_evidence": "artifacts/checkpoints/gc-unlink-accounting-20261007/validation-summary.json",
+  "author_evidence_sha256": "0eea4999391cddbbc897b9d8d975eb833f6c42add9763b177fa37350f5d217e8",
+  "validation": {
+    "baseline_new_controls": {
+      "passed": 0,
+      "failed": 5
+    },
+    "fixed_new_controls": {
+      "passed": 5,
+      "failed": 0
+    },
+    "fixed_existing_gc": {
+      "passed": 8,
+      "failed": 0
+    },
+    "strict_scoped_clippy_and_fmt": "passed",
+    "execution_attribution": "build_environment executed; todo_audit and root reviewed without rerunning Rust"
+  },
+  "root_review": "Read the production unlink/accounting/cursor paths, complete independent two-path review and exact copied blobs. Only successful unlinks count; NotFound is absence, other I/O errors propagate. The original GC oracle and failure fixtures remain fixed.",
+  "limits": [
+    "The isolated v3+GC tree has 765 inputs and was not behavior-run. Its two changed blobs are exactly those exercised by the author combined 769-input source; full-tree behavior identity is not claimed.",
+    "An error can follow earlier actual deletions; no atomic rollback, no zero-work-on-error guarantee and no closed mark/unlink race.",
+    "This is not completion of P7-016 or full fault/recovery/GC-WAL/G7 acceptance."
+  ]
+}

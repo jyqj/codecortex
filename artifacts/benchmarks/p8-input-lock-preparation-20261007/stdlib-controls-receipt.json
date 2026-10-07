@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task": "P8-001",
+  "scope": "preparation_only",
+  "execution_owner": "/root/todo_audit",
+  "source_commit": "d721f80e71ba2bf0e4aac91e658c039a4b97e2be",
+  "source_tree": "b5563c804ffc895b2ec6c3cd857b127a4369edee",
+  "source_paths_sha256": {
+    "scripts/lock_benchmark_inputs.py": "af52e875fd524f037e9e9af8c4c86e4061b07add7ce7d0afe5e51e9773335c60",
+    "tests/evidence_lock/test_benchmark_input_lock.py": "4831367ef49f264179d1cfe6ec102d6141e445cb779e51854a89717d30df06f5",
+    "docs/BENCHMARK_INPUT_LOCK.md": "c153848abcd29e2788eb7cce854bbebe68aad0d37cec79b11e736433341883f3"
+  },
+  "source_unchanged": true,
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/evidence_lock",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/71bc431c4e4f/codecortex-p8-input-lock",
+  "python": {
+    "version": "3.12.14",
+    "implementation": "CPython",
+    "executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 0.600087,
+  "test_functions": 14,
+  "test_result": "passed",
+  "log": "stdlib-controls.log",
+  "log_sha256": "d42342904902197dc7da5af9bf935650a69f3b8f7bc9037ab9639367f20284c2",
+  "capture_script_sha256": "76bc123d11d137ee27122415c80303c49e5d2581945fd883c80fc6327681d07c",
+  "rust_or_product_executed": false,
+  "release_candidate": false,
+  "counting": "Fourteen stdlib test functions include multiple synthetic negative controls; they are not benchmark queries, Rust tests, live-provider checks or completed TODO IDs."
+}

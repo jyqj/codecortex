@@ -3,22 +3,20 @@
 ## 1. 当前状态
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：150 done / 11 in_progress / 31 todo**。
+Code Index V2 共 **192 项任务：152 done / 12 in_progress / 27 todo / 1 blocked**。
 
 当前阶段：**P7｜provider与dense端到端**；计划状态：`in_progress`；更新日期：`2026-10-07`。
-下一任务：**P7-011｜dense范围与hydrate守卫**（硬依赖已完成）。
+下一任务：**P7-013｜查询总deadline和模型故障退化**（硬依赖已完成）。
 
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
-| P7-011｜dense范围与hydrate守卫 | `todo` | P6-020 (done)、P7-009 (done)、P7-010 (done) |
-| P7-012｜融合与部分覆盖语义 | `todo` | P7-011 (todo) |
-| P7-013｜查询总deadline和模型故障退化 | `todo` | P7-012 (todo) |
-| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (todo) |
+| P7-013｜查询总deadline和模型故障退化 | `in_progress` | P7-012 (done) |
+| P7-014｜配置/status/MCP全链贯通 | `in_progress` | P7-013 (in_progress) |
 | P7-015｜后台回填与前台查询竞争测试 | `todo` | P7-014 (in_progress) |
 | P7-016｜fake全故障矩阵回归 | `todo` | P6-020 (done)、P7-015 (todo) |
 | P7-017｜离线默认包和未启用测试 | `todo` | P7-016 (todo) |
 | P7-019｜本地加dense的质量/成本消融 | `todo` | P7-017 (todo) |
-| P7-020｜P7语义闭环与发布范围验收 | `todo` | P7-001 (done)、P7-002 (done)、P7-003 (done)、P7-004 (done)、P7-005 (done)、P7-006 (done)、P7-007 (done)、P7-008 (done)、P7-009 (done)、P7-010 (done)、P7-011 (todo)、P7-012 (todo)、P7-013 (todo)、P7-014 (in_progress)、P7-015 (todo)、P7-016 (todo)、P7-017 (todo)、P7-019 (todo) |
+| P7-020｜P7语义闭环与发布范围验收 | `todo` | P7-001 (done)、P7-002 (done)、P7-003 (done)、P7-004 (done)、P7-005 (done)、P7-006 (done)、P7-007 (done)、P7-008 (done)、P7-009 (done)、P7-010 (done)、P7-011 (done)、P7-012 (done)、P7-013 (in_progress)、P7-014 (in_progress)、P7-015 (todo)、P7-016 (todo)、P7-017 (todo)、P7-019 (todo) |
 | P8-001｜锁定release候选与证据输入 | `in_progress` | P7-020 (todo) |
 | P8-002｜完成真实多仓native语料认证 | `todo` | P8-001 (in_progress) |
 | P8-003｜运行外部兼容套件 | `todo` | P8-002 (todo) |
@@ -41,7 +39,7 @@ Code Index V2 共 **192 项任务：150 done / 11 in_progress / 31 todo**。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`5d0b41e3ad43d9aead060ec03555f76ccb2b38aeb8b9c32906d7c2651cf445e0`。
+> 源文件 SHA-256：`f0758315964411384e8802cbde907c2eb374ea79c87d5b3650870d71be10d786`。
 <!-- code-index-progress:end -->
 
 ## 2. 下一步与依赖
@@ -70,9 +68,9 @@ P7-011 与 P7-014 的整项状态及正式质量/规模门保持上方权威状�
 
 ### 并行 P8 本地工程批（2026-10-07）
 
-本批以 main `6d02d77f018a5965a6f289b0b43558ed4b9f8322` 为基线，分3轮推进10个原始P8 TODO，避开另一会话的P7实现。逐轮计数、具体交付和剩余验收见 [P8本地推进](P8-LOCAL-PROGRESS.md)。当前192项为150 done / 11 in_progress / 31 todo，42项未完成；10项均保持in_progress，原硬依赖和验收条件不变。
+本批以 main `6d02d77f018a5965a6f289b0b43558ed4b9f8322` 为基线，分3轮推进10个原始P8 TODO，避开另一会话的P7实现。逐轮计数、具体交付和剩余验收见 [P8本地推进](P8-LOCAL-PROGRESS.md)。三轮结束时192项为150 done / 11 in_progress / 31 todo，42项未完成；10项均保持in_progress，原硬依赖和验收条件不变。
 
-当前显式源码选择为 `p8-local-engineering-20261007-v8`：固定远端Rust source `18499879a8ba3197e599cfd2e9ae96bcb657d65b`（其777输入与已测本地source `853385b7ccb2780818f9f8e8a83791f1c197efcf`逐字节一致，独立审阅实际远端source后重新绑定准入），独立审阅17路径后，将其作为base `6d02d77`上的精确delta加入原接受链，共777项crate/Cargo/lock输入。源码准入只验证来源和字节，不能继承旧质量、100k或发布结论。历史v1/v2/v3与既有两组review pins原样保留；CI只增加两项本地Python检查并更新准确selector。最终测试/CI单独绑定实际源码与head，见 `artifacts/checkpoints/p8-local-waves-20261007/integration/`。
+P8兼容修复阶段显式源码选择为 `p8-local-engineering-20261007-v9`：固定远端 Rust source `40d54460f38ed13810f9898bc7257bc2cdd7fbad`，独立 review `caca44337123579e092998084e29921f5ac4c169`。首版 P8 交付在 Rust 1.99 CI 中因新弃用的 `AtomicU64::fetch_update` 被严格 Clippy 拒绝；后续仅将 `p8_load.rs` 的预算预留改为保留 checked_add、硬上限及 AcqRel/Acquire 语义的 CAS 循环，并增加并发和溢出边界测试。独立审查重新接受原 base `6d02d77` 上同一 17 路径 delta，其余 776 个 crate/Cargo/lock 输入保持原远端 source `18499879` 的字节。原 1.95 测试与失败 CI 的来源记录保持不变；新 head 的完整 CI 单独验证。源码准入不继承质量、100k 或发布结论；历史 v1/v2/v3、原两组 review pins 和原审查文件均保留。见 `artifacts/checkpoints/p8-ci-compatibility-20261007/` 和独立审查目录。
 
 ## 3. 每次开始
 
@@ -146,3 +144,7 @@ P5-019 必须完成独立 exact/path/selector 等查询质量、成本、并发�
 冷路径登记锁属于工作线程直到缓存发布，已打开缓存走不受冷锁影响的快路径；查询 clone 共用租约，在取消后仍运行的 blocking 工作结束前不能释放。保持这些负例，不为吞吐牺牲实例一致性。监听器启动/原生析构不可强制抢占；20 秒启动看门狗不是性能指标，既有 500 毫秒 debug 索引门限未修改。
 
 P5-020/G5 需在当前实现上完成本地增强版整体验收后再判断 M2；真实 provider/vector、持久化 semantic epoch、公开 holdout、100k 和跨平台发行仍未完成。
+
+### PR #144 合入后的 P7/P8 共同交付
+
+当前状态为 192 = 152 done / 12 in_progress / 27 todo / 1 blocked，共40项未完成；下一任务 P7-013。本批10项P8均保留in_progress，主线两个新增done归P7原验收记录。当前源码选择为 `p7-p8-engineering-20261007-v10`，完整PRODUCT `d77a2143cdb82e722b1d1c62851298c43e707b65`有785个受保护输入。唯一交叉CLI并入22路径联合delta，固定source `3359647e81ea73b9ee98a56d6753f1cfa741b3d2`，独立review `468a4f7f79bc7c933b6030eb3f27c68674afb2a7`；该独立delta源有781项输入，不能与完整PRODUCT混称。其余五组主线批准pins保留，disjoint与before/after约束不变；main的历史v2门、19个私有默认binary路径和P7 workflow均保留，并加入两条本批Python检查。组合CI另按实际PR head验证，详见本批集成与独立审查目录。

@@ -1,0 +1,571 @@
+{
+  "schema_version": 1,
+  "task": "P7-013",
+  "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+  "execution_owner": "/root/todo_audit",
+  "source_identity": "source-identity.json",
+  "verdict": "progressed_current_evidence_with_open_normal_schedule_failure",
+  "full_task_accepted": false,
+  "tasks_json_changed": false,
+  "production_change_for_task": "None. Existing deadline/fault/cache/physical-capacity implementation is exercised at this fixed source; the new production change belongs to P7-014.",
+  "primary_tests": {
+    "passed": 57,
+    "failed": 1,
+    "ignored": 0,
+    "distinct_functions": 58
+  },
+  "primary_matrix": [
+    {
+      "label": "deadline-current-http",
+      "receipt": "deadline-current-http-receipt.json",
+      "receipt_sha256": "6c92f6241695fe5ff744a8be8c7721a2463d1a502d992e603d2bdd10c3a86775",
+      "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--test",
+        "p7_query_deadline_public",
+        "--test",
+        "p7_production_fairness_model_review",
+        "--test",
+        "p7_v11_generation_public",
+        "--test",
+        "p7_v05_v11_independent_review",
+        "--test",
+        "p7_v11_ready_epoch_independent_review",
+        "--test",
+        "p7_status_snapshot_independent_review",
+        "--test",
+        "p7_v11_cache_key_matrix",
+        "--test",
+        "cache_key_review_behavior",
+        "--test",
+        "p7_v11_cache_consumption",
+        "--test",
+        "v11_consumption_independent_review",
+        "--test",
+        "p7_acceptance_matrix"
+      ],
+      "exit_code": 101,
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "FAILED",
+          "passed": 1,
+          "failed": 1,
+          "ignored": 0
+        }
+      ],
+      "test_cases": [
+        {
+          "identity": "cc-server/tests/cache_key_review_behavior.rs::production_service_adapter_and_consumer_preserve_distinct_cached_values",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/cache_key_review_behavior.rs::public_schema_mismatch_reopen_serves_new_source_without_old_result_cache",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::transport::rejected_transport_batch_never_poison_caches_and_recovery_is_reused_without_another_call",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::explicit_empty_hard_scopes_never_invoke_optional_port",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::wired::hard_scope_filters_stronger_outsider_before_top_k_and_intersects_language",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::wired::uncovered_language_is_partial_and_deleted_document_never_returns_on_second_query",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::wired::dense_recall_outside_soft_preselection_survives_final_source_hydration",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::transport::slow_offline_transport_cancellation_keeps_worker_capacity_until_physical_exit",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_acceptance_matrix.rs::same_request_fault_recovery_and_repeated_failure_never_reuses_complete_success",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::actual_config_change_requires_explicit_set_project_and_close_fences_old_publication",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::close_during_begin_immediate_wait_prevents_configured_space_transition",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::closed_background_owner_retains_slot_and_pin_until_real_http_exit",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::aborted_production_queries_retain_physical_slots_pins_and_provider_gate",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::fifo_background_load_does_not_starve_search_context_or_release_slots_early",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_production_fairness_model_review.rs::fifo_foreground_load_does_not_starve_background_or_hold_db_cpu",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_query_deadline_public.rs::real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context",
+          "result": "FAILED",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_query_deadline_public.rs::protocol_cancel_keeps_http_deadline_bounded_and_later_auto_request_can_fallback",
+          "result": "ok",
+          "ignored_reason": null
+        }
+      ]
+    },
+    {
+      "label": "deadline-current-remaining",
+      "receipt": "deadline-current-remaining-receipt.json",
+      "receipt_sha256": "641a55e6ce5551c6433f9f6c4d2174f4b33c2dccf133a7c8578f4f50246c4be1",
+      "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--no-fail-fast",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--test",
+        "p7_v11_generation_public",
+        "--test",
+        "p7_v05_v11_independent_review",
+        "--test",
+        "p7_v11_ready_epoch_independent_review",
+        "--test",
+        "p7_status_snapshot_independent_review",
+        "--test",
+        "p7_v11_cache_key_matrix",
+        "--test",
+        "p7_v11_cache_consumption",
+        "--test",
+        "v11_consumption_independent_review"
+      ],
+      "exit_code": 0,
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "test_cases": [
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::candidate_source_is_exact_current_production_prefix",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::independent::degradation_overrides_ready_in_separate_process_scope",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::independent::forced_real_worker_publication_returns_complete_old_then_new_observations",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::independent::legacy_status_counterexample_pairs_old_root_with_new_real_publication",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::independent::stable_status_matches_coverage_and_configured_space_mismatch_stays_partial",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_status_snapshot_independent_review.rs::independent::ordinary_real_worker_publication_never_restarts_the_statistics",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::real_source_stages_straddling_writer_commit_are_discarded_then_recovered",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::public_bm25_contribution_matches_independent_sql_order_and_is_nonzero",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::real_mixed_source_reads_exhaust_at_three_without_an_envelope",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::nested_real_generation_fences_have_a_finite_nine_work_attempt_bound",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::changed_generation_control_errors_short_circuit_and_stable_errors_survive",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v05_v11_independent_review.rs::public_local_dsl_returns_complete_literal_domain_and_warm_cache_stays_scoped",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_consumption.rs::graph_window_and_hard_set_permutations_are_consumed_separately",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_consumption.rs::actual_dense_publication_bypasses_result_caches_and_context_is_reassembled",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_consumption.rs::immutable_config_domains_consume_cold_warm_and_fresh_per_field",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_key_matrix.rs::shared_query_cache_axes_change_transport_calls_without_reembedding_artifacts",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_key_matrix.rs::public_query_handles_observe_config_domains_and_real_rebuild_incarnations",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_cache_key_matrix.rs::local_and_graph_cache_axes_force_real_misses_and_preserve_equivalent_sets",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_generation_public.rs::real_rebuild_fence_has_three_attempt_ceiling_and_stable_recovery",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_generation_public.rs::successful_http_crossing_rebuild_is_retryable_conflict_not_mixed_source",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/p7_v11_ready_epoch_independent_review.rs::ready_snapshot_bounds_query_generation_without_claiming_quiescence",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/v11_consumption_independent_review.rs::literal_graph_scope_and_analytic_captured_ranking",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/tests/v11_consumption_independent_review.rs::final_envelope_matches_reopened_cold_domain_and_obeys_real_budgets",
+          "result": "ok",
+          "ignored_reason": null
+        }
+      ]
+    },
+    {
+      "label": "deadline-encoding-unit",
+      "receipt": "deadline-encoding-unit-receipt.json",
+      "receipt_sha256": "7274beb07fdc78ccd8d22a6735b7e93d90978944eb8d9b21556885fe662dc425",
+      "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic-http",
+        "--lib",
+        "semantic_query_encoding::tests::"
+      ],
+      "exit_code": 0,
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "test_cases": [
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::capacity_rejects_invalid_limits_and_service_validates_namespace",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::exact_root_interface_encodes_then_hits_cache_even_when_direct_capacity_is_full",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::cold_query_uses_real_encoder_then_cache_hit_is_provider_and_factory_free",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::transport_clamps_each_request_to_absolute_budget_and_redacts_errors",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::failure_and_assembly_diagnostics_are_redacted_and_never_cached",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::malformed_real_encoder_output_is_rejected_before_shared_cache_publication",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::retired_instance_cannot_publish_or_serve_hits_and_new_instance_can_encode",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::exact_root_drop_and_project_cancel_hold_pin_capacity_and_cancel_only_child_transport",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::typed_provider_timeout_and_cancel_survive_redaction_other_failures_do_not_leak",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::versioned_space_keys_and_oversize_skips_are_provider_safe",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::queue_deadline_prevents_factory_call_and_reserved_query_slot_survives_background_load",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::timeout_cancel_and_future_drop_refuse_late_writes_and_hold_capacity_until_exit",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-server/unittests src/lib.rs::semantic_query_encoding::tests::publication_barrier_drop_cancel_deadline_and_retirement_are_atomic",
+          "result": "ok",
+          "ignored_reason": null
+        }
+      ]
+    },
+    {
+      "label": "deadline-executor-unit",
+      "receipt": "deadline-executor-unit-receipt.json",
+      "receipt_sha256": "f46cad274efcc2f7838f52c688e446c9b77cfa42f136163b536d5a2510671c2b",
+      "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+      "command": [
+        "cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-j2",
+        "--message-format=json-render-diagnostics",
+        "-p",
+        "cc-search",
+        "--lib",
+        "execution::tests::"
+      ],
+      "exit_code": 0,
+      "test_summaries": [
+        {
+          "status": "ok",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0
+        }
+      ],
+      "test_cases": [
+        {
+          "identity": "cc-search/unittests src/lib.rs::execution::tests::semantic_lane_share_never_extends_the_total_deadline",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-search/unittests src/lib.rs::execution::tests::cancelled_worker_retains_permit_and_cannot_publish_late",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-search/unittests src/lib.rs::execution::tests::full_queue_rejects_and_aborted_waiter_releases_admission",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-search/unittests src/lib.rs::execution::tests::async_timeout_keeps_parent_usable",
+          "result": "ok",
+          "ignored_reason": null
+        },
+        {
+          "identity": "cc-search/unittests src/lib.rs::execution::tests::deadline_discards_late_worker_result_and_reclaims_when_it_exits",
+          "result": "ok",
+          "ignored_reason": null
+        }
+      ]
+    }
+  ],
+  "diagnostic_repeat": {
+    "label": "deadline-isolated-diagnostic",
+    "receipt": "deadline-isolated-diagnostic-receipt.json",
+    "receipt_sha256": "fa7982b2e0d56cab6fcfe19d7499dc6c82ab3111ae4bb9832091fa728272b0de",
+    "source": "5af7ac0089ee7522e78ff2ce2468f881c8cf70f2",
+    "command": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--offline",
+      "--locked",
+      "-j2",
+      "--message-format=json-render-diagnostics",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--test",
+      "p7_query_deadline_public",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "test_summaries": [
+      {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "test_cases": [
+      {
+        "identity": "cc-server/tests/p7_query_deadline_public.rs::protocol_cancel_keeps_http_deadline_bounded_and_later_auto_request_can_fallback",
+        "result": "ok",
+        "ignored_reason": null
+      },
+      {
+        "identity": "cc-server/tests/p7_query_deadline_public.rs::real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context",
+        "result": "ok",
+        "ignored_reason": null
+      }
+    ]
+  },
+  "diagnostic_counting": "Exactly one unchanged-target replay with --test-threads=1 passed 2 repeated functions. It does not erase the primary failure, count as new coverage, or prove an environment cause.",
+  "failure_detail": "p7-013-deadline-failure.json",
+  "acceptance_map": "P7-013-ACCEPTANCE.md",
+  "remaining_gate": "Review an actual normal-schedule run of the unchanged original target in the final integrated-source P7 engineering CI; preserve this local failure and its unresolved cause.",
+  "live_provider_effect_or_cost": "Not measured. Only fake/loopback engineering evidence; no real model keys or paid-provider certification."
+}

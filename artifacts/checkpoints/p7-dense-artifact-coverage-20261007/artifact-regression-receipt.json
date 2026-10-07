@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "label": "artifact-regression",
+  "source_commit": "f6c860c96f22e39bc3ced5a81891e3070ffbada5",
+  "source_tree": "50890bf1bd5adfe1b38cb12270ffad6ded7b83fd",
+  "status_after": "",
+  "command": [
+    "cargo",
+    "+1.95.0",
+    "test",
+    "--locked",
+    "--offline",
+    "-j2",
+    "--message-format=json-render-diagnostics",
+    "-p",
+    "cc-semantic",
+    "--test",
+    "manifest_exact_integration",
+    "--test",
+    "p7_cache_allocation_independent_review",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "/workspace/scratch/71bc431c4e4f/codecortex-p7-012",
+  "exit_code": 0,
+  "duration_seconds": 3.999,
+  "source_count": 769,
+  "source_manifest_sha256": "bb08eb49c0740ccf19cc54dc18fa31674a32c5c78ade4332cd6122b7e80cfeb1",
+  "source_unchanged": true,
+  "log_sha256": "fb2e65359b3a16dd1a35d237e80cdbe12b8b428f72cf41ca7de4a2e859a2ba9c",
+  "executables": {
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/manifest_exact_integration-f815e973078eb3f5": {
+      "sha256": "ab88a34aae80d329b73425cf216d24684c2658ab3e45c391bf8cc317b13bdc6e",
+      "target": "manifest_exact_integration",
+      "test": true
+    },
+    "/workspace/scratch/71bc431c4e4f/target-validation-cost/debug/deps/p7_cache_allocation_independent_review-683ec1af4fd3932e": {
+      "sha256": "b25517c27c09b221d2b6eea5afc690544c2eb5ce75129fd131ad9fd77df2c869",
+      "target": "p7_cache_allocation_independent_review",
+      "test": true
+    }
+  },
+  "environment": {
+    "CARGO_TARGET_DIR": "/workspace/scratch/71bc431c4e4f/target-validation-cost",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_INCREMENTAL": "0"
+  }
+}

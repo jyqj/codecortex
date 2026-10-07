@@ -385,6 +385,35 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
     // Keep the full source prefix first. Optional outlines are packed only
     // into residual space and cannot displace a fitting body.
     while measure(&mut value)? > cap {
+        // Final-validation work is optional diagnostic metadata, not source
+        // proof. Omit the whole receipt only when that avoids the next body
+        // eviction, with the existing explicit details-omitted marker. If the
+        // current bodies still cannot fit, restore every original field before
+        // following the unchanged evidence priority; the receipt may fit after
+        // that eviction. Missing work never means zero or a completed attempt.
+        let optional_work = value
+            .pointer_mut("/evidence_summary/source_freshness")
+            .and_then(Value::as_object_mut)
+            .and_then(|freshness| {
+                freshness.remove("validation_work").map(|work| {
+                    let previous_omission = freshness.insert("details_omitted".into(), json!(true));
+                    (work, previous_omission)
+                })
+            });
+        if let Some((work, previous_omission)) = optional_work {
+            if measure(&mut value)? <= cap {
+                break;
+            }
+            let freshness = value["evidence_summary"]["source_freshness"]
+                .as_object_mut()
+                .expect("existing freshness object");
+            freshness.insert("validation_work".into(), work);
+            if let Some(previous) = previous_omission {
+                freshness.insert("details_omitted".into(), previous);
+            } else {
+                freshness.remove("details_omitted");
+            }
+        }
         // Even a large derived graph description has lower priority than
         // the final complete primary hit. Its omission remains explicit.
         if value["machine_pack"]["hits"].as_array().unwrap().len() == 1

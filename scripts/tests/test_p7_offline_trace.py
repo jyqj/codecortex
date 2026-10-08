@@ -128,6 +128,8 @@ class TraceVerifierTests(unittest.TestCase):
         def guard(pid, command):
             return {'action': 'kill', 'result': 'filter_loaded_before_exec', 'exec_command': command,
                     'exec_sha256': 'digest', 'socket_fds_before_exec': [],
+                    'before': {'NSpid': str(pid), 'Pid': str(pid), 'NoNewPrivs': '1',
+                               'Seccomp': '2', 'Seccomp_filters': '1'},
                     'after': {'NSpid': str(pid), 'Pid': str(pid), 'NoNewPrivs': '1',
                               'Seccomp': '2', 'Seccomp_filters': '2'}}
         for index, disabled in enumerate((False, True)):
@@ -156,6 +158,32 @@ class TraceVerifierTests(unittest.TestCase):
         return {'binary': self.command[0], 'build_receipt': {'binary_sha256': 'digest'},
                 'cases': cases, 'network_positive_controls': {'probes': probes}}
 
+    def test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero(self):
+        proof = self.synthetic_matrix()['cases'][0]['child_network_guard']
+        proof['before'].update(Seccomp='0', Seccomp_filters='0', NoNewPrivs='0')
+        proof['after']['Seccomp_filters'] = '1'
+        self.assertEqual(trace.guard_root(proof, require_parent_policy=False), 10)
+
+    def test_guard_receipt_requires_its_own_filter_increment_and_same_process(self):
+        for field, value in (('Seccomp_filters', '2'), ('Seccomp_filters', '-1'),
+                             ('NSpid', '900'), ('Pid', '900')):
+            with self.subTest(field=field, value=value):
+                proof = self.synthetic_matrix()['cases'][0]['child_network_guard']
+                proof['before'][field] = value
+                with self.assertRaisesRegex(ValueError, 'filter increment|guard PID'):
+                    trace.guard_root(proof)
+
+    def test_product_and_positive_probe_cannot_omit_inherited_parent_isolation(self):
+        for kind in ('product', 'probe'):
+            with self.subTest(kind=kind):
+                observations = self.synthetic_matrix()
+                proof = (observations['cases'][0]['child_network_guard'] if kind == 'product' else
+                         observations['network_positive_controls']['probes']['ipv4']['pre_exec'])
+                proof['before'].update(Seccomp='0', Seccomp_filters='0', NoNewPrivs='0')
+                proof['after']['Seccomp_filters'] = '1'
+                with self.assertRaisesRegex(ValueError, 'inherited parent isolation'):
+                    trace.verify_product_observations(observations, trace.read_traces(self.prefix), 'digest')
+
     def test_full_matrix_requires_four_disjoint_product_trees_and_observed_probe_calls(self):
         observations = self.synthetic_matrix()
         report = trace.verify_product_observations(observations, trace.read_traces(self.prefix), 'digest')
@@ -181,6 +209,18 @@ class TraceVerifierTests(unittest.TestCase):
         command = observations['network_positive_controls']['probes']['ipv4']['pre_exec']['exec_command']
         self.write(50, exec_line(command) + '\n+++ killed by SIGSYS +++\n')
         with self.assertRaisesRegex(ValueError, 'actual positive socket probe'):
+            trace.verify_product_observations(observations, trace.read_traces(self.prefix), 'digest')
+
+    def test_positive_controls_cannot_reuse_a_tree_or_claim_the_wrong_address_family(self):
+        observations = self.synthetic_matrix()
+        probes = observations['network_positive_controls']['probes']
+        probes['ipv6'] = probes['ipv4']
+        with self.assertRaisesRegex(ValueError, 'positive probe trees overlap'):
+            trace.verify_product_observations(observations, trace.read_traces(self.prefix), 'digest')
+        observations = self.synthetic_matrix()
+        path = self.root / 'syscalls.60'
+        path.write_text(path.read_text().replace('socket(AF_INET6, ', 'socket(AF_INET, '))
+        with self.assertRaisesRegex(ValueError, 'exact address family'):
             trace.verify_product_observations(observations, trace.read_traces(self.prefix), 'digest')
 
 

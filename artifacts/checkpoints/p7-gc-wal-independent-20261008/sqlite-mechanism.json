@@ -1,0 +1,54 @@
+{
+  "scope": "independent SQLite mechanism; actual product tests are separately bound",
+  "sqlite_version": "3.53.1",
+  "cases": [
+    {
+      "retire_old_writer_query_only": false,
+      "checkpoint": [
+        0,
+        0,
+        0
+      ],
+      "reopen_error": "unable to open database file",
+      "old_writer_after_error": {
+        "accepted": true
+      },
+      "authoritative_rows": [
+        [
+          "new"
+        ]
+      ],
+      "old_reader_rows": [
+        [
+          "after-returned-error"
+        ],
+        [
+          "old"
+        ]
+      ]
+    },
+    {
+      "retire_old_writer_query_only": true,
+      "checkpoint": [
+        0,
+        0,
+        0
+      ],
+      "reopen_error": "unable to open database file",
+      "old_writer_after_error": {
+        "accepted": false,
+        "error": "attempt to write a readonly database"
+      },
+      "authoritative_rows": [
+        [
+          "new"
+        ]
+      ],
+      "old_reader_rows": [
+        [
+          "old"
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+test_child_socket_sigsys_is_rejected_even_when_parent_exits_zero (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_child_socket_sigsys_is_rejected_even_when_parent_exits_zero) ... ok
+test_clean_fork_thread_and_failed_clone_are_all_accounted (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_clean_fork_thread_and_failed_clone_are_all_accounted) ... ok
+test_full_matrix_requires_four_disjoint_product_trees_and_observed_probe_calls (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_full_matrix_requires_four_disjoint_product_trees_and_observed_probe_calls) ... ok
+test_grandchild_io_uring_and_swallowed_eperm_are_rejected (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_grandchild_io_uring_and_swallowed_eperm_are_rejected) ... ok
+test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) ... 
+  test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Seccomp_filters', value='2') ... FAIL
+  test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Seccomp_filters', value='-1') ... FAIL
+  test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='NSpid', value='900') ... FAIL
+  test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Pid', value='900') ... FAIL
+test_incomplete_tool_contract_wrong_guard_pid_and_missing_positive_trace_are_rejected (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_incomplete_tool_contract_wrong_guard_pid_and_missing_positive_trace_are_rejected) ... ok
+test_missing_descendant_missing_exit_extra_root_and_pid_reuse_fail_closed (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_missing_descendant_missing_exit_extra_root_and_pid_reuse_fail_closed) ... ok
+test_only_successful_anonymous_stream_ipc_is_separately_accounted (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_only_successful_anonymous_stream_ipc_is_separately_accounted) ... ok
+test_positive_controls_cannot_reuse_a_tree_or_claim_the_wrong_address_family (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_positive_controls_cannot_reuse_a_tree_or_claim_the_wrong_address_family) ... ok
+test_product_and_positive_probe_cannot_omit_inherited_parent_isolation (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_product_and_positive_probe_cannot_omit_inherited_parent_isolation) ... 
+  test_product_and_positive_probe_cannot_omit_inherited_parent_isolation (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_product_and_positive_probe_cannot_omit_inherited_parent_isolation) (kind='product') ... FAIL
+  test_product_and_positive_probe_cannot_omit_inherited_parent_isolation (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_product_and_positive_probe_cannot_omit_inherited_parent_isolation) (kind='probe') ... FAIL
+test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero) ... ERROR
+test_unfinished_vfork_resume_preserves_parent_child_edge (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_unfinished_vfork_resume_preserves_parent_child_edge) ... ok
+test_unknown_selected_syscall_is_never_silently_ignored (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_unknown_selected_syscall_is_never_silently_ignored) ... ok
+test_unknown_trace_record_truncated_argv_and_namespace_change_fail_closed (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_unknown_trace_record_truncated_argv_and_namespace_change_fail_closed) ... ok
+test_wrapper_pre_exec_calls_are_separate_but_every_launch_descendant_is_included (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_wrapper_pre_exec_calls_are_separate_but_every_launch_descendant_is_included) ... ok
+test_wrong_or_failed_exec_cannot_bind_a_product (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_wrong_or_failed_exec_cannot_bind_a_product) ... ok
+
+======================================================================
+ERROR: test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 165, in test_standalone_guard_accepts_a_real_filter_increment_from_bare_host_zero
+    self.assertEqual(trace.guard_root(proof), 10)
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_trace.py", line 155, in guard_root
+    require(after["Seccomp"] == "2" and after["NoNewPrivs"] == "1"
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_trace.py", line 50, in require
+    raise ValueError(message)
+ValueError: missing enforced product network isolation
+
+======================================================================
+FAIL: test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Seccomp_filters', value='2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 173, in test_guard_receipt_requires_its_own_filter_increment_and_same_process
+    with self.assertRaisesRegex(ValueError, 'filter increment|guard PID'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Seccomp_filters', value='-1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 173, in test_guard_receipt_requires_its_own_filter_increment_and_same_process
+    with self.assertRaisesRegex(ValueError, 'filter increment|guard PID'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='NSpid', value='900')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 173, in test_guard_receipt_requires_its_own_filter_increment_and_same_process
+    with self.assertRaisesRegex(ValueError, 'filter increment|guard PID'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_guard_receipt_requires_its_own_filter_increment_and_same_process (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_guard_receipt_requires_its_own_filter_increment_and_same_process) (field='Pid', value='900')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 173, in test_guard_receipt_requires_its_own_filter_increment_and_same_process
+    with self.assertRaisesRegex(ValueError, 'filter increment|guard PID'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_product_and_positive_probe_cannot_omit_inherited_parent_isolation (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_product_and_positive_probe_cannot_omit_inherited_parent_isolation) (kind='product')
+----------------------------------------------------------------------
+ValueError: missing enforced product network isolation
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 184, in test_product_and_positive_probe_cannot_omit_inherited_parent_isolation
+    with self.assertRaisesRegex(ValueError, 'inherited parent isolation'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "inherited parent isolation" does not match "missing enforced product network isolation"
+
+======================================================================
+FAIL: test_product_and_positive_probe_cannot_omit_inherited_parent_isolation (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_product_and_positive_probe_cannot_omit_inherited_parent_isolation) (kind='probe')
+----------------------------------------------------------------------
+ValueError: missing enforced product network isolation
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 184, in test_product_and_positive_probe_cannot_omit_inherited_parent_isolation
+    with self.assertRaisesRegex(ValueError, 'inherited parent isolation'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "inherited parent isolation" does not match "missing enforced product network isolation"
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.031s
+
+FAILED (failures=6, errors=1)

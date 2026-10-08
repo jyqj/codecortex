@@ -10,6 +10,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: never
+  PYTHONDONTWRITEBYTECODE: "1"
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
   CARGO_PROFILE_TEST_DEBUG: "0"
@@ -97,7 +98,11 @@ jobs:
           shutil.copy2(rows[0]['executable'], binary)
           digest = hashlib.sha256(binary.read_bytes()).hexdigest()
           assert digest == hashlib.sha256(pathlib.Path(rows[0]['executable']).read_bytes()).hexdigest()
+          driver = root / 'artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py'
+          driver_sha256 = hashlib.sha256(driver.read_bytes()).hexdigest()
+          assert not driver.is_symlink() and driver_sha256 == '39630b6be2bba3319584af74521863ef5d53a4e7fd723de8c3a454b29e34259c', 'original lifecycle driver changed'
           receipt = {'binary_path': str(binary), 'binary_sha256': digest,
+                     'lifecycle_driver': str(driver), 'lifecycle_driver_sha256': driver_sha256,
                      'build_exit_code': 0, 'cargo_artifact': rows[0],
                      'source_before': before, 'source_after': after,
                      'cargo_log_sha256': hashlib.sha256((out / 'http-product-build.jsonl').read_bytes()).hexdigest()}
@@ -106,6 +111,12 @@ jobs:
           python3 artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py \
             "$RUNNER_TEMP/p7-closeout/http-codecortex" "$RUNNER_TEMP/p7-closeout/lifecycle" \
             2>&1 | tee "$RUNNER_TEMP/p7-closeout/lifecycle.log"
+          python3 - <<'PY_AFTER_LIFECYCLE'
+          import hashlib, json, os, pathlib
+          receipt = json.loads((pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout/http-build-receipt.json').read_text())
+          driver = pathlib.Path(receipt['lifecycle_driver'])
+          assert not driver.is_symlink() and hashlib.sha256(driver.read_bytes()).hexdigest() == receipt['lifecycle_driver_sha256']
+          PY_AFTER_LIFECYCLE
 
       - name: Three-seed real product retry, crash, deletion, recovery and automatic GC
         run: |
@@ -275,6 +286,89 @@ jobs:
             --runner "$P7_OFFLINE_RUNNER" --runner-receipt "$RUNNER_TEMP/p7-offline/runner-identity.json" \
             --output "$RUNNER_TEMP/p7-offline/trace-matrix" \
             2>&1 | tee "$RUNNER_TEMP/p7-offline/product-matrix.log"
+      - name: Build candidate scorer from the same fixed default source
+        if: matrix.package == 'default'
+        run: |
+          python3 -B scripts/p8_candidate_execution.py build-runner \
+            --output "$RUNNER_TEMP/p7-offline/p8-runner-build" \
+            --target-dir "$RUNNER_TEMP/p7-offline/product/cargo-target"
+      - name: Freeze candidate, execute original MCP fixture and replay original scorer
+        if: matrix.package == 'default'
+        env:
+          EXACT_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -B scripts/p8_candidate_execution.py run \
+            --product "$RUNNER_TEMP/p7-offline/product/codecortex" \
+            --product-build-receipt "$RUNNER_TEMP/p7-offline/product/build-receipt.json" \
+            --runner "$RUNNER_TEMP/p7-offline/p8-runner-build/cc-eval" \
+            --runner-build-receipt "$RUNNER_TEMP/p7-offline/p8-runner-build/build-receipt.json" \
+            --expected-source-commit "$EXACT_SOURCE" \
+            --output "$RUNNER_TEMP/p7-offline/p8-candidate-execution"
+      - name: Print bounded offline failure diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'p7-offline'
+          budget = 65536
+          def emit(record):
+              global budget
+              line = json.dumps(record, ensure_ascii=True)
+              size = len(line.encode()) + 1
+              if size > budget:
+                  return False
+              print(line)
+              budget -= size
+              return True
+          emit({'diagnostic_only': True, 'network_socket_attempts': None,
+                'scope': 'bounded failure readback; full verifier and raw artifacts remain authoritative'})
+          network = re.compile(r'^(?:<\.\.\. )?(?:socket(?:pair|call)?|connect|bind|listen|accept4?|send(?:to|msg|mmsg)?|recv(?:from|msg|mmsg|mmsg_time64)?|getsockname|getpeername|setsockopt|getsockopt|shutdown|io_uring_(?:setup|enter|register))\b')
+          quoted = re.compile(r'"(?:[^"\\]|\\.)*"')
+          seen = 0
+          for directory, dirs, names in os.walk(root, followlinks=False):
+              dirs[:] = sorted(name for name in dirs if name not in {
+                  'cargo-target', 'candidate', 'archives', 'prepared-corpus', 'prepared-inputs', 'builds'
+              } and not (Path(directory) / name).is_symlink())
+              for name in sorted(names):
+                  path = Path(directory) / name
+                  if path.is_symlink() or not path.is_file():
+                      continue
+                  relative = str(path.relative_to(root))
+                  if seen >= 512 or budget < 512:
+                      print(json.dumps({'diagnostic_truncated': True, 'files_inspected': seen}))
+                      raise SystemExit(0)
+                  if not (name.endswith('.json') or name == 'stderr.log' or re.fullmatch(r'syscalls\.\d+', name)):
+                      continue
+                  seen += 1
+                  try:
+                      if name.endswith('.json') and path.stat().st_size <= 262144:
+                          value = json.loads(path.read_text())
+                          if isinstance(value, dict) and value.get('action') in ('errno', 'kill') and 'before' in value:
+                              keys = ('action', 'result', 'before', 'after', 'socket_fds_before_exec',
+                                      'closed_socket_fds', 'ipv4', 'ipv6', 'local_ipc_policy', 'exec_sha256', 'error')
+                              emit({'file': relative, 'guard': {key: value[key] for key in keys if key in value}})
+                          elif name == 'failure.json' and isinstance(value, dict):
+                              emit({'file': relative, 'failure': {key: value.get(key) for key in
+                                    ('status', 'error', 'network_socket_attempts')}})
+                      elif name == 'stderr.log':
+                          with path.open('rb') as stream:
+                              stream.seek(max(0, path.stat().st_size - 8192))
+                              tail = stream.read(8192).decode('utf-8', 'replace')
+                          if tail:
+                              emit({'file': relative, 'stderr_tail': tail, 'tail_only': True})
+                      elif re.fullmatch(r'syscalls\.\d+', name):
+                          with path.open('rb') as stream:
+                              data = stream.read(2 * 1024 * 1024 + 1)
+                          for line in data[:2 * 1024 * 1024].decode('utf-8', 'replace').splitlines():
+                              if network.match(line) or line.startswith('+++ ') or 'SIGSYS' in line:
+                                  emit({'file': relative, 'trace_diagnostic': quoted.sub('"<quoted>"', line)[:4096]})
+                          if len(data) > 2 * 1024 * 1024:
+                              emit({'file': relative, 'diagnostic_prefix_truncated': True})
+                  except (OSError, ValueError) as error:
+                      emit({'file': relative, 'diagnostic_read_error': str(error)[:512]})
+          PY
       - name: Archive package, commands, identities and raw observations
         if: always()
         uses: actions/upload-artifact@v4

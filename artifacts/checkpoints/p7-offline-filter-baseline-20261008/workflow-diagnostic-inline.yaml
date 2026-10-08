@@ -1,0 +1,66 @@
+# Diagnostic readback only. Place before the existing always-upload step.
+- name: Print bounded offline failure diagnostics
+  if: failure()
+  shell: bash
+  run: |
+    python3 -B - <<'PY'
+    import json, os, re
+    from pathlib import Path
+    root = Path(os.environ['RUNNER_TEMP']) / 'p7-offline'
+    budget = 65536
+    def emit(record):
+        global budget
+        line = json.dumps(record, ensure_ascii=True)
+        size = len(line.encode()) + 1
+        if size > budget:
+            return False
+        print(line)
+        budget -= size
+        return True
+    emit({'diagnostic_only': True, 'network_socket_attempts': None,
+          'scope': 'bounded failure readback; full verifier and raw artifacts remain authoritative'})
+    network = re.compile(r'^(?:<\.\.\. )?(?:socket(?:pair|call)?|connect|bind|listen|accept4?|send(?:to|msg|mmsg)?|recv(?:from|msg|mmsg|mmsg_time64)?|getsockname|getpeername|setsockopt|getsockopt|shutdown|io_uring_(?:setup|enter|register))\b')
+    quoted = re.compile(r'"(?:[^"\\]|\\.)*"')
+    seen = 0
+    for directory, dirs, names in os.walk(root, followlinks=False):
+        dirs[:] = sorted(name for name in dirs if name not in {
+            'cargo-target', 'candidate', 'archives', 'prepared-corpus', 'prepared-inputs', 'builds'
+        } and not (Path(directory) / name).is_symlink())
+        for name in sorted(names):
+            path = Path(directory) / name
+            if path.is_symlink() or not path.is_file():
+                continue
+            relative = str(path.relative_to(root))
+            if seen >= 512 or budget < 512:
+                print(json.dumps({'diagnostic_truncated': True, 'files_inspected': seen}))
+                raise SystemExit(0)
+            if not (name.endswith('.json') or name == 'stderr.log' or re.fullmatch(r'syscalls\.\d+', name)):
+                continue
+            seen += 1
+            try:
+                if name.endswith('.json') and path.stat().st_size <= 262144:
+                    value = json.loads(path.read_text())
+                    if isinstance(value, dict) and value.get('action') in ('errno', 'kill') and 'before' in value:
+                        keys = ('action', 'result', 'before', 'after', 'socket_fds_before_exec',
+                                'closed_socket_fds', 'ipv4', 'ipv6', 'local_ipc_policy', 'exec_sha256', 'error')
+                        emit({'file': relative, 'guard': {key: value[key] for key in keys if key in value}})
+                    elif name == 'failure.json' and isinstance(value, dict):
+                        emit({'file': relative, 'failure': {key: value.get(key) for key in
+                              ('status', 'error', 'network_socket_attempts')}})
+                elif name == 'stderr.log':
+                    with path.open('rb') as stream:
+                        stream.seek(max(0, path.stat().st_size - 8192))
+                        tail = stream.read(8192).decode('utf-8', 'replace')
+                    if tail:
+                        emit({'file': relative, 'stderr_tail': tail, 'tail_only': True})
+                elif re.fullmatch(r'syscalls\.\d+', name):
+                    with path.open('rb') as stream:
+                        data = stream.read(2 * 1024 * 1024 + 1)
+                    for line in data[:2 * 1024 * 1024].decode('utf-8', 'replace').splitlines():
+                        if network.match(line) or line.startswith('+++ ') or 'SIGSYS' in line:
+                            emit({'file': relative, 'trace_diagnostic': quoted.sub('"<quoted>"', line)[:4096]})
+                    if len(data) > 2 * 1024 * 1024:
+                        emit({'file': relative, 'diagnostic_prefix_truncated': True})
+            except (OSError, ValueError) as error:
+                emit({'file': relative, 'diagnostic_read_error': str(error)[:512]})
+    PY

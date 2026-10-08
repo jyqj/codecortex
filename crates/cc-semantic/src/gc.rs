@@ -168,6 +168,8 @@ pub struct CollectedBatch {
 /// actually unlinked. Already absent paths do not count as deletions. An
 /// object counts once after both unlink attempts succeed (including an
 /// already absent half). `pruned_dirs` counts removed empty directories.
+/// A current manifest reference takes precedence over timestamp freshness;
+/// other fresh candidates count as `kept_fresh` before live-task protection.
 /// An error returns no counters and may follow earlier successful unlinks;
 /// it must not be interpreted as zero work or a rolled-back filesystem.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -504,13 +506,15 @@ fn sweep_batch_with_mark_hook(
         .map(|entry| fresh_timestamp(entry, cfg))
         .collect();
 
-    // Pass 2: build probes for the non-fresh objects/halves and mark them
-    // under one short read snapshot (the synchronization point). Temps need
-    // no DB mark: a temp name is never a publishable address.
+    // Pass 2: mark every current object/half under one short read snapshot.
+    // A publish between collection and this lease may refresh the timestamp
+    // and commit a manifest reference; freshness must not hide that actual
+    // reference from the snapshot or its protection counter. The batch cap
+    // still bounds all probes. Temps have no publishable address or DB mark.
     let probe_indices: Vec<usize> = entries
         .iter()
         .enumerate()
-        .filter(|(i, entry)| !marked[*i] && !matches!(entry.kind, GcEntryKind::Temp { .. }))
+        .filter(|(_, entry)| !matches!(entry.kind, GcEntryKind::Temp { .. }))
         .map(|(i, _)| i)
         .collect();
     let probes: Vec<GcMarkProbe> = probe_indices
@@ -543,14 +547,11 @@ fn sweep_batch_with_mark_hook(
                 }
                 continue;
             }
-            if *fresh {
-                counters.kept_fresh += 1;
-                continue;
-            }
             match marks_aligned[index] {
                 Some(GcMark::ManifestRef) | Some(GcMark::ManifestPair) => {
                     counters.kept_referenced += 1;
                 }
+                _ if *fresh => counters.kept_fresh += 1,
                 Some(GcMark::LiveTask) => counters.kept_live_task += 1,
                 Some(GcMark::Unreferenced) | None => match &entry.kind {
                     GcEntryKind::Object { bin, meta, .. } => {

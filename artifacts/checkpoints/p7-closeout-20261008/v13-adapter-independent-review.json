@@ -1,0 +1,40 @@
+{
+  "reviewer": "root (independent of adapter/test author p7_wiring)",
+  "source": "3f68243266c1e53a1414a4d7f7b851ae9779df5d",
+  "verdict": "accepted_scoped",
+  "paths": {
+    "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
+    "tests/source_integrity/test_reviewed_source_v13.py": "a42075de17b4658204cfad1a7adc9fdc3af43d61e41345b7c82b2dee96dcdce4"
+  },
+  "unchanged_old_methods": [
+    [
+      "test_current_source_v2",
+      "CaptureSourceTests",
+      "test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0"
+    ],
+    [
+      "test_current_source_v3",
+      "OwnerSourceTests",
+      "test_ci_selector_only_change_and_historical_p0_preserved"
+    ],
+    [
+      "test_reviewed_source_v10",
+      "SequentialReviewTests",
+      "test_current_workflows_have_only_the_explicit_migration"
+    ],
+    [
+      "test_reviewed_source_v11",
+      "WorkerFixtureReviewTests",
+      "test_current_ci_and_every_old_step_are_preserved"
+    ]
+  ],
+  "scope": "Migration adapter and 17 new source-validation tamper methods. Only four old default CI selection checks receive the exact frozen v12 CI context. Their old source files, assertion bodies, explicit fixture checks and all actual old approval functions remain intact. v13 separately verifies the real active CI as the original workflow with one explicit version selector change.",
+  "review_findings": [
+    "Facade construction first runs exact byte-checked v12 snapshots and real old verify_ci; it does not substitute a true return value",
+    "Context-managed sys.modules replacement is restricted to one named old module during the four exact methods; restored after each call",
+    "Every frozen old test file is compared with BASE before wrapping",
+    "New tests exercise current source add/remove/byte/symlink drift, validation inventory hiding, review binding, old proof failures, all four actual old method bodies, current CI byte/symlink drift, Python -O and floating selectors"
+  ],
+  "unresolved_source_blockers": [],
+  "execution_status": "Final 17 tests and complete old discovery await final immutable pins and actual CI; no passing execution inferred from this code review."
+}

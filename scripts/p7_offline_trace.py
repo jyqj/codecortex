@@ -146,15 +146,23 @@ def exec_command(call):
     return decode(match[1]), arguments
 
 
-def guard_root(guard, security=None):
+def guard_root(guard, security=None, *, require_parent_policy=True):
     require(guard.get("action") == "kill" and guard.get("result") == "filter_loaded_before_exec",
             "missing product kill-filter receipt")
-    after = guard["after"]
+    before, after = guard["before"], guard["after"]
     nspid = [int(value) for value in after["NSpid"].split()]
     require(nspid and min(nspid) > 0 and str(nspid[0]) == after["Pid"], "invalid guard PID identity")
+    require(before["NSpid"] == after["NSpid"] and before["Pid"] == after["Pid"],
+            "guard PID changed while loading filter")
+    previous_filters = int(before["Seccomp_filters"])
+    require(previous_filters >= 0 and int(after["Seccomp_filters"]) == previous_filters + 1,
+            "guard receipt does not prove its own filter increment")
     require(after["Seccomp"] == "2" and after["NoNewPrivs"] == "1"
-            and int(after["Seccomp_filters"]) >= 2 and guard["socket_fds_before_exec"] == [],
+            and guard["socket_fds_before_exec"] == [],
             "missing enforced product network isolation")
+    if require_parent_policy:
+        require(previous_filters >= 1 and before["Seccomp"] == "2" and before["NoNewPrivs"] == "1",
+                "product or positive probe is missing inherited parent isolation")
     if security is not None:
         require(security["identity"] == "same_pid_namespace_and_direct_parent"
                 and security["RequestedPid"] == str(nspid[-1])
@@ -237,16 +245,23 @@ def verify_product_observations(observations, traces, product_digest):
             tree["explicitly_disabled"] = case["explicitly_disabled"]
             tree["reopened"] = guard_field.startswith("reopened")
             products.append(tree)
-    positive = []
+    positive, positive_used = [], set()
     for family in ("ipv4", "ipv6"):
         probe = observations["network_positive_controls"]["probes"][family]
         require(probe["reached_socket"] is True and probe["exit_code"] == -signal.SIGSYS,
                 "guard's actual socket positive control is missing")
         tree = inspect_tree(traces, guard_root(probe["pre_exec"]), probe["pre_exec"]["exec_command"])
-        require(not used.intersection(tree["processes_and_threads"]), "positive probe overlaps product tree")
+        members = set(tree["processes_and_threads"])
+        require(not used.intersection(members), "positive probe overlaps product tree")
+        require(not positive_used.intersection(members), "positive probe trees overlap or reuse a PID")
+        positive_used.update(members)
+        address_family = {"ipv4": "AF_INET", "ipv6": "AF_INET6"}[family]
+        reached = [row for row in tree["attempts"] if row.get("syscall") == "socket"
+                   and row["pid"] == tree["root_pid"]
+                   and row["raw"].startswith(f"socket({address_family}, ")]
         require(tree["root_terminal"] == {"signal": "SIGSYS"}
-                and any(row.get("syscall") == "socket" for row in tree["attempts"]),
-                "raw trace did not observe the actual positive socket probe")
+                and len(reached) == 1,
+                "raw trace did not observe the actual positive socket probe with its exact address family")
         positive.append({"family": family, "tree": tree})
     violations = [event for tree in products for event in tree["attempts"]]
     return {"status": "passed" if not violations else "failed", "product_trees": products,
@@ -310,7 +325,10 @@ def real_controls(output):
         traces, record = run_trace([sys.executable, str(guard), "--action", "kill", "--receipt",
                                    str(receipt), "--", *product], directory, timeout=30)
         pre_exec = json.loads(receipt.read_text())
-        tree = inspect_tree(traces, guard_root(pre_exec), product)
+        # These standalone controls install only their own kill filter. A
+        # native host can start at zero; product matrices still require the
+        # inherited runner policy in addition to their exact +1 kill filter.
+        tree = inspect_tree(traces, guard_root(pre_exec, require_parent_policy=False), product)
         require(tree["root_terminal"] == {"exit_code": 0}, "negative control parent must exit zero")
         require(len(tree["processes_and_threads"]) >= 2, "real child was not observed")
         require(bool(tree["attempts"]) is attack, "trace verifier did not distinguish the child socket control")

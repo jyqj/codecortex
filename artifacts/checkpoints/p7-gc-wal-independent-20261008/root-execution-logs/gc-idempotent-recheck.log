@@ -1,0 +1,23 @@
+   Compiling cc-db v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-semantic)
+    Finished `test` profile [unoptimized] target(s) in 11.22s
+     Running tests/gc_concurrent_replacement.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/gc_concurrent_replacement-8c65fdfb9b00c564)
+
+running 3 tests
+test nonexistent_namespace_gc_remains_side_effect_free ... ok
+test collected_old_timestamp_cannot_delete_a_fresh_reput ... ok
+test collected_old_checksum_cannot_delete_current_manifest_reference ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/gc_unlink_accounting.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/gc_unlink_accounting-7ec5b5c3add72fc1)
+
+running 5 tests
+test failed_second_object_unlink_exposes_partial_deletion_and_retries_as_half ... ok
+test failed_temp_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test failed_half_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test failed_first_object_unlink_preserves_counterpart_and_retries ... ok
+test already_absent_halves_are_idempotent_and_never_count_as_unlinks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+

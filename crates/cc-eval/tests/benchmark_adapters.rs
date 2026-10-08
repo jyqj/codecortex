@@ -228,11 +228,13 @@ mod p7_offline {
     }
 
     impl SpawnPolicy {
+        #[cfg(not(target_os = "linux"))]
         fn verified_network_guard() -> Self {
-            assert!(
-                cfg!(target_os = "linux"),
-                "isolated offline acceptance requires Linux seccomp"
-            );
+            panic!("isolated offline acceptance requires Linux seccomp");
+        }
+
+        #[cfg(target_os = "linux")]
+        fn verified_network_guard() -> Self {
             let launcher = PathBuf::from(
                 std::env::var("P7_017_NETWORK_GUARD")
                     .expect("explicit product network launcher required"),

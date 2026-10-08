@@ -221,6 +221,13 @@ async fn actual_source_isolated_local_dense_hybrid_and_no_lanes_controls() {
     }
     // Real built artifacts are also used for negative source/binary controls.
     let build_base = build_path.parent().unwrap();
+    let mut misattributed_source = build.clone();
+    misattributed_source.source_commit = if build.source_commit.starts_with('0') {
+        "1".repeat(40)
+    } else {
+        "0".repeat(40)
+    };
+    assert!(mechanism::validate_build(&misattributed_source, build_base, &suite_path).is_err());
     let mut aliased_source = build.clone();
     let hybrid = aliased_source
         .variants
@@ -271,6 +278,7 @@ async fn actual_source_isolated_local_dense_hybrid_and_no_lanes_controls() {
         "source_commit":build.source_commit,"passed":true,"cells":controls,
         "same_locked_inputs_and_effective_budgets":true,"all_36_requests_preserved":true,
         "actual_hybrid_mislabel_rejected":true,"aliased_source_rejected":true,"aliased_binary_rejected":true,
+        "misattributed_source_commit_rejected":true,
         "paired_bootstrap_replayed":true,"provider_query_positive_controls_observed":true,
         "cost_billing_and_cache_reuse":"unknown; never imputed as zero",
         "original_p7_019_fake_engineering_leg_complete":true,

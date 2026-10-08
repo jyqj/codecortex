@@ -112,6 +112,13 @@ pub fn validate_build(build: &Build, base: &Path, suite: &Path) -> Result<BuildO
         let binary = base.join(&variant.binary).canonicalize()?;
         let receipt_path = base.join(&variant.build_receipt).canonicalize()?;
         let receipt: BuildReceipt = manifest::json_file(&receipt_path)?;
+        if receipt.build_options["binding"]["source_commit"].as_str()
+            != Some(build.source_commit.as_str())
+        {
+            return Err(invalid(
+                "mechanism source commit differs from build receipt binding",
+            ));
+        }
         let projection = super::projected_semantic_identity(&receipt.build_options)?;
         let target = Path::new(&projection.cargo_target_dir).canonicalize()?;
         if !roots.insert(source.clone())

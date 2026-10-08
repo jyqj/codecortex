@@ -367,7 +367,7 @@ def run(repo, evaluator, evaluator_sha, original_receipt, out):
                   "--evaluator", evaluator, "--output", out / "original-schema-and-v02.json"]
     for suite in suites:
         schema_cmd.extend(["--suite", suite])
-    base.command(out, "original-schema-and-v02-command", schema_cmd, 1800)
+    base.command(out, "original-schema-and-v02", schema_cmd, 1800)
     check = json.loads(base.read_file(out / "original-schema-and-v02.json"))
     base.require(check["errors"] == {} and check["native_unique_query_ids"] == 327
                  and check["compat_unique_query_ids"] == 282

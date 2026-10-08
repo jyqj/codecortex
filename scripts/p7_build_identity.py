@@ -117,3 +117,12 @@ def verify_cargo_artifact(root, artifact, package_kind):
     if not executable or not Path(executable).is_file():
         raise ValueError("Cargo artifact has no production executable")
     return Path(executable).resolve(strict=True)
+
+
+def verify_release_profile(profile):
+    """Require actual optimized release fields; the argv label is insufficient."""
+    if (not isinstance(profile, dict)
+            or profile.get("opt_level") not in ("1", "2", "3", "s", "z")
+            or profile.get("debug_assertions") is not False
+            or profile.get("test") is not False):
+        raise ValueError("actual Cargo release profile is not optimized")

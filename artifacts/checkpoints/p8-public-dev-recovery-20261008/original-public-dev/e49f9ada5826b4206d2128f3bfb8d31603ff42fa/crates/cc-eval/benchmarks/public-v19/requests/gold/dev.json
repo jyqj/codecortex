@@ -1,0 +1,3192 @@
+[
+  {
+    "family_id": "v19.requests.f0001",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "api.request uses with sessions.Session() and delegates session.request, ensuring session close on exit.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/api.py",
+        "symbol": "request",
+        "start_line": 24,
+        "end_line": 71,
+        "start_byte": 382,
+        "end_byte": 3355,
+        "span_sha256": "bffbdcd407ff8368c2dc4d52cce3043d9a20ae053881c6b63f1ff27907245674",
+        "file_sha256": "4d15480ac046f089209798e8650476ef4a28ebe6f81b400758f8ef42ec6b5509"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0001"
+  },
+  {
+    "family_id": "v19.requests.f0002",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "head uses kwargs.setdefault rather than overriding an explicit value, then dispatches request('head', ...).",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/api.py",
+        "symbol": "head",
+        "start_line": 102,
+        "end_line": 114,
+        "start_byte": 4262,
+        "end_byte": 4802,
+        "span_sha256": "1a475728bfb66fb98b06f828dc21a861cd275365d85fdc075c83696ca6da6596",
+        "file_sha256": "4d15480ac046f089209798e8650476ef4a28ebe6f81b400758f8ef42ec6b5509"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0002"
+  },
+  {
+    "family_id": "v19.requests.f0003",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "HTTPProxyAuth.__call__ writes Proxy-Authorization using _basic_auth_str.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPProxyAuth.__call__",
+        "start_line": 119,
+        "end_line": 121,
+        "start_byte": 3653,
+        "end_byte": 3817,
+        "span_sha256": "868cb18c6cc872b6b31010dc97092e0dbb24bfbc77f0b417717a1b7b96ec8ef9",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0003"
+  },
+  {
+    "family_id": "v19.requests.f0004",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_find_no_duplicates tracks a matching value and raises CookieConflictError on the second match, KeyError on absence.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar._find_no_duplicates",
+        "start_line": 423,
+        "end_line": 452,
+        "start_byte": 14534,
+        "end_byte": 15961,
+        "span_sha256": "562dc8e9407f8b48cfe3028b0a46094bd18afe54809b3af4c582d716561f499b",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0004"
+  },
+  {
+    "family_id": "v19.requests.f0006",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Host changes strip auth. Same-host standard HTTP-to-HTTPS upgrades retain it. Same-scheme equivalent default ports retain it; other port/scheme changes strip.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.should_strip_auth",
+        "start_line": 154,
+        "end_line": 184,
+        "start_byte": 4927,
+        "end_byte": 6265,
+        "span_sha256": "85a7a8a960e433c57acf25d23ceebb69a062c0bc7d0b2001fd685116c292e58c",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0006"
+  },
+  {
+    "family_id": "v19.requests.f0007",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "JSON is used only when data is falsey and json is not None; dumps uses allow_nan=False, ValueError becomes InvalidJSONError, and strings are UTF-8 encoded.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_body",
+        "start_line": 576,
+        "end_line": 652,
+        "start_byte": 18281,
+        "end_byte": 21334,
+        "span_sha256": "1ea920c6cecbd5b6f3dd9e253dd8044ebf9a7dd11b21d5257314b3fa1c5479b9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0007"
+  },
+  {
+    "family_id": "v19.requests.f0008",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "dispatch_hook passes current hook_data sequentially; a non-None return replaces it and None preserves it.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/hooks.py",
+        "symbol": "dispatch_hook",
+        "start_line": 32,
+        "end_line": 48,
+        "start_byte": 556,
+        "end_byte": 1137,
+        "span_sha256": "0d3c9f78d42aa1d772fe3d5e4bc17aba09097382861a53a0f900ed8caf0564ae",
+        "file_sha256": "ebd8a02475d31a0e473a8f553e9501ff43645b9563885ad52844e7a63f0d76ab"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0008"
+  },
+  {
+    "family_id": "v19.requests.f0009",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare runs method/url/headers/cookies/body/auth/hooks in order. prepare_auth can mutate the request and recomputes length; prepare_hooks then registers provided hooks.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare",
+        "start_line": 424,
+        "end_line": 451,
+        "start_byte": 12982,
+        "end_byte": 14049,
+        "span_sha256": "7ad37522a317945da6fce864d7f596b1260840c28a96177929f71fdfc6b93be9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_auth",
+        "start_line": 670,
+        "end_line": 697,
+        "start_byte": 22142,
+        "end_byte": 23275,
+        "span_sha256": "85eaf3b66e5a7195e7fd3dedce94cd4bc87802332c6af9b23aace0e3bdfd83f6",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_hooks",
+        "start_line": 722,
+        "end_line": 729,
+        "start_byte": 24300,
+        "end_byte": 24690,
+        "span_sha256": "9c196808e9e057719acee384f148a81667417de7bec30c7a9a3ed8d6f3117b8b",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0009"
+  },
+  {
+    "family_id": "v19.requests.f0010",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "mount sorts longer prefixes first by moving shorter entries; get_adapter scans that order with lowercase prefix matching.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.mount",
+        "start_line": 888,
+        "end_line": 897,
+        "start_byte": 32982,
+        "end_byte": 33379,
+        "span_sha256": "3bb0cd28973d8749d034bdaa99f26c0866ac7afc601b466e4daa86d6cff59f66",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.get_adapter",
+        "start_line": 870,
+        "end_line": 881,
+        "start_byte": 32388,
+        "end_byte": 32825,
+        "span_sha256": "7cc2aa7ee07fbe8df0bc3f460cace896345cc92988eae89fbe8e052bc3a3c67f",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0010"
+  },
+  {
+    "family_id": "v19.requests.f0012",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Session.send receives adapter.send result, sets elapsed, then dispatches response hooks and assigns the returned response.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.send",
+        "start_line": 752,
+        "end_line": 829,
+        "start_byte": 28106,
+        "end_byte": 30976,
+        "span_sha256": "ee680a2136df9d7eb8fd90129c9c29701597a3158fadd119dd67021339be7ef0",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/hooks.py",
+        "symbol": "dispatch_hook",
+        "start_line": 32,
+        "end_line": 48,
+        "start_byte": 556,
+        "end_byte": 1137,
+        "span_sha256": "0d3c9f78d42aa1d772fe3d5e4bc17aba09097382861a53a0f900ed8caf0564ae",
+        "file_sha256": "ebd8a02475d31a0e473a8f553e9501ff43645b9563885ad52844e7a63f0d76ab"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "sessions:Session.send",
+        "callee": "hooks:dispatch_hook",
+        "expression": "dispatch_hook(\"response\", hooks, r, **kwargs)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 29623,
+        "end_byte": 29668,
+        "line": 791,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0008"
+  },
+  {
+    "family_id": "v19.requests.f0013",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_headers calls check_header_validity for each pair. It validates name and value through _validate_header_part, which selects str/bytes regexes and raises InvalidHeader for invalid type or match.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_headers",
+        "start_line": 565,
+        "end_line": 574,
+        "start_byte": 17839,
+        "end_byte": 18275,
+        "span_sha256": "0135a83d5abd5534747a1572f562a5919222b72e47e4b319e7dc21a8934babea",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "check_header_validity",
+        "start_line": 1087,
+        "end_line": 1095,
+        "start_byte": 33705,
+        "end_byte": 34070,
+        "span_sha256": "b1d57c2ee735c48e8b69e9771e9d1d6afa575411851f409a6b0e7fb713320789",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "_validate_header_part",
+        "start_line": 1098,
+        "end_line": 1119,
+        "start_byte": 34073,
+        "end_byte": 34983,
+        "span_sha256": "cc506210525ba55c0353578e2b0d090cf417fc68c88d5132491e29665cb656e9",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:PreparedRequest.prepare_headers",
+        "callee": "utils:check_header_validity",
+        "expression": "check_header_validity(header)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 18148,
+        "end_byte": 18177,
+        "line": 572,
+        "kind": "call"
+      },
+      {
+        "caller": "utils:check_header_validity",
+        "callee": "utils:_validate_header_part",
+        "expression": "_validate_header_part(header, value, 1)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "start_byte": 34031,
+        "end_byte": 34070,
+        "line": 1095,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0013"
+  },
+  {
+    "family_id": "v19.requests.f0014",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Response.json calls guess_json_utf on content when no encoding and length >3; the helper detects UTF BOMs or UTF-16/32 null placement, otherwise UTF-8 or None.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.json",
+        "start_line": 1091,
+        "end_line": 1124,
+        "start_byte": 37723,
+        "end_byte": 39442,
+        "span_sha256": "fc904c06133463c83a91ed7f37bfcf6ef3ccde014b6c94da2913edba2a1c9ac3",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "guess_json_utf",
+        "start_line": 1008,
+        "end_line": 1037,
+        "start_byte": 30993,
+        "end_byte": 32179,
+        "span_sha256": "fe37ac0fa8e96dedf2e0aa5e03365bc912dbf2bf407ffeeb9c765bff50beec28",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:Response.json",
+        "callee": "utils:guess_json_utf",
+        "expression": "guess_json_utf(self.content)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 38494,
+        "end_byte": 38522,
+        "line": 1106,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0014"
+  },
+  {
+    "family_id": "v19.requests.f0015",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "resolve_redirects considers non-None position plus Content-Length/Transfer-Encoding rewindable, then rewind_body seeks an integer position and raises on failed seek or unusable position.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.resolve_redirects",
+        "start_line": 186,
+        "end_line": 307,
+        "start_byte": 6271,
+        "end_byte": 11236,
+        "span_sha256": "0b20370a5823e5449cbcd3d7a8a91fd7a09412f1366232db5e82c6806a1ed2be",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "rewind_body",
+        "start_line": 1139,
+        "end_line": 1155,
+        "start_byte": 35393,
+        "end_byte": 36060,
+        "span_sha256": "7c7d6c0fa114dee9daa375b37ab577b1084126af012d263b781e07c49ce374dc",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "sessions:SessionRedirectMixin.resolve_redirects",
+        "callee": "utils:rewind_body",
+        "expression": "rewind_body(prepared_request)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 10420,
+        "end_byte": 10449,
+        "line": 284,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0015"
+  },
+  {
+    "family_id": "v19.requests.f0016",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Only under trust_env and verify is True or None, REQUESTS_CA_BUNDLE wins over CURL_CA_BUNDLE, then settings merge with Session values.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.merge_environment_settings",
+        "start_line": 831,
+        "end_line": 868,
+        "start_byte": 30982,
+        "end_byte": 32382,
+        "span_sha256": "06010d57dc781d0b8d487454d6e8df78ce89a418fd6cc8a4799035e7310a92b9",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0016"
+  },
+  {
+    "family_id": "v19.requests.f0017",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "send unpacks tuple into connect/read and catches ValueError with a helpful error; TimeoutSauce passes through and scalar becomes both timeouts.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0017"
+  },
+  {
+    "family_id": "v19.requests.f0018",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The HOOKS constant contains only response; default_hooks derives its keys from that constant. dispatch_hook accepts arbitrary keys but does not register built-in request events.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/hooks.py",
+        "symbol": "default_hooks",
+        "start_line": 25,
+        "end_line": 26,
+        "start_byte": 424,
+        "end_byte": 518,
+        "span_sha256": "7fbcccc4bdf61e38c65c4916323e7b246094bfe13012f48c8f87bea8536acd6b",
+        "file_sha256": "ebd8a02475d31a0e473a8f553e9501ff43645b9563885ad52844e7a63f0d76ab"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/hooks.py",
+        "symbol": "dispatch_hook",
+        "start_line": 32,
+        "end_line": 48,
+        "start_byte": 556,
+        "end_byte": 1137,
+        "span_sha256": "0d3c9f78d42aa1d772fe3d5e4bc17aba09097382861a53a0f900ed8caf0564ae",
+        "file_sha256": "ebd8a02475d31a0e473a8f553e9501ff43645b9563885ad52844e7a63f0d76ab"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "assignment_not_member",
+      "module": "hooks",
+      "name": "HOOKS",
+      "missing": "request"
+    },
+    "scope": "entire src/requests/hooks.py; built-in HOOKS declaration and its consumers",
+    "global_family": "v19.requests.f0018"
+  },
+  {
+    "family_id": "v19.requests.f0019",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The function sets entdig=None, handles absent qop or auth, and returns None in the remaining qop branch with an explicit auth-int TODO. No entity-body digest is implemented in this scope.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.build_digest_header",
+        "start_line": 157,
+        "end_line": 266,
+        "start_byte": 4971,
+        "end_byte": 8750,
+        "span_sha256": "a0b8a932428d46c6819c10756d787c3d817e49590f3d98434966bea27261bdb6",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "required_literal",
+      "ref": "auth:HTTPDigestAuth.build_digest_header",
+      "literal": "# XXX handle auth-int.",
+      "also": "return None"
+    },
+    "scope": "src/requests/auth.py HTTPDigestAuth.build_digest_header implementation only",
+    "global_family": "v19.requests.f0019"
+  },
+  {
+    "family_id": "v19.requests.f0020",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The source defines synchronous Session/SessionRedirectMixin; AST class enumeration has no AsyncSession. This does not claim third-party async adapters are impossible.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.request",
+        "start_line": 557,
+        "end_line": 653,
+        "start_byte": 20172,
+        "end_byte": 24302,
+        "span_sha256": "e5f6c309a7fb6392906cd2e375cd6de46981c2ed44afea845c61b7f0871504c1",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "missing_class",
+      "module": "sessions",
+      "name": "AsyncSession"
+    },
+    "scope": "class definitions and async function definitions in src/requests/sessions.py only",
+    "global_family": "v19.requests.f0020"
+  },
+  {
+    "family_id": "v19.requests.f0022",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Within the non-empty Python str input scope, guess_filename reads obj.name and returns os.path.basename(name) only when name[0] != '<' and name[-1] != '>'. A name starting with '<' OR ending with '>' fails the guard and yields implicit None. The scope excludes bytes: byte indexing yields integers, so the existing character comparisons do not establish the same placeholder filtering for bytes.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "guess_filename",
+        "start_line": 283,
+        "end_line": 287,
+        "start_byte": 8603,
+        "end_byte": 8868,
+        "span_sha256": "5a0c4dbf5498ed6d5df0f5d5b5720cc71e06efbc7b974b8fedf8180ca05fc5ac",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": "obj.name is a non-empty Python str; excludes bytes and non-str inputs. This is a task scope restriction, not a source behavior change.",
+    "global_family": "v19.requests.f0022",
+    "input_scope": {
+      "attribute": "obj.name",
+      "type": "Python str",
+      "non_empty": true,
+      "excluded_input_types": [
+        "bytes"
+      ]
+    },
+    "author_revision": 2
+  },
+  {
+    "family_id": "v19.requests.f0023",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "atomic_open creates a temp file in the destination directory, yields a binary handler, replaces destination after success, and removes temporary file on BaseException.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "atomic_open",
+        "start_line": 329,
+        "end_line": 338,
+        "start_byte": 10428,
+        "end_byte": 10842,
+        "span_sha256": "90d802127599d3efc72e28f11a22dcf27e3ebbfdf5fca35a525b9ec2050b5fdc",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0023"
+  },
+  {
+    "family_id": "v19.requests.f0025",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "urldefragauth parses URL, repairs netloc/path, drops userinfo with rsplit('@',1), then reconstructs with empty fragment.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "urldefragauth",
+        "start_line": 1122,
+        "end_line": 1136,
+        "start_byte": 34986,
+        "end_byte": 35390,
+        "span_sha256": "e2354f6d404a7e71f3e3a476411f0a3c24859f03fdb4c9a17442efc882505e77",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0025"
+  },
+  {
+    "family_id": "v19.requests.f0026",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "to_native_string preserves builtin_str and otherwise calls decode(encoding), with encoding default ascii.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/_internal_utils.py",
+        "symbol": "to_native_string",
+        "start_line": 26,
+        "end_line": 36,
+        "start_byte": 739,
+        "end_byte": 1152,
+        "span_sha256": "8450677ddec9713fb6c67226d6bdc8f9e738853dc23f761bebba1eb4c6f09ee4",
+        "file_sha256": "4c7d8d132c9898fc7d715e473f3ac74785ddc4ab96d2c9240f87835dc6d981ff"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0026"
+  },
+  {
+    "family_id": "v19.requests.f0027",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "unicode_is_ascii asserts str, tries encode('ascii') and catches UnicodeEncodeError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/_internal_utils.py",
+        "symbol": "unicode_is_ascii",
+        "start_line": 39,
+        "end_line": 51,
+        "start_byte": 1155,
+        "end_byte": 1541,
+        "span_sha256": "c9f40a5ae410343d049339a9ee7ae73b6847c46ce6f82dd37b290c36bfeb3594",
+        "file_sha256": "4c7d8d132c9898fc7d715e473f3ac74785ddc4ab96d2c9240f87835dc6d981ff"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0027"
+  },
+  {
+    "family_id": "v19.requests.f0028",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "create_cookie builds an underspecified cookie, default domain '', path '/', HttpOnly rest entry; validates kwargs, updates flags and constructs cookielib.Cookie.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "create_cookie",
+        "start_line": 494,
+        "end_line": 528,
+        "start_byte": 17347,
+        "end_byte": 18454,
+        "span_sha256": "d2dfa10d7b0cdade2ccebe5726fa03bfd19aee1ce0aaab17dac346d928612be7",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0028"
+  },
+  {
+    "family_id": "v19.requests.f0029",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "cookiejar_from_dict creates RequestsCookieJar if absent, records existing names, and only calls set_cookie for names permitted by overwrite.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "cookiejar_from_dict",
+        "start_line": 579,
+        "end_line": 601,
+        "start_byte": 19806,
+        "end_byte": 20640,
+        "span_sha256": "04e3a1bca2a53c65e13f88b5f5b5f733150aca74afb4cf6206cfafd240b98d4f",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0029"
+  },
+  {
+    "family_id": "v19.requests.f0033",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_implementation uses platform.python_implementation; CPython/Jython/IronPython use platform version, PyPy builds from pypy_version_info, unknown uses Unknown.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/help.py",
+        "symbol": "_implementation",
+        "start_line": 35,
+        "end_line": 64,
+        "start_byte": 528,
+        "end_byte": 2017,
+        "span_sha256": "15f02c1988c23ae4805075658a518c668490e49a903e5bd3d397e46fa68efb20",
+        "file_sha256": "e5845e93980b2e25be418fb7fe0b8e6e999fef8f84afc5a43f4546efdc24691f"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0033"
+  },
+  {
+    "family_id": "v19.requests.f0034",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "iter_slices normalizes slice_length then yields string[pos:pos+slice_length] until exhausted.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "iter_slices",
+        "start_line": 621,
+        "end_line": 630,
+        "start_byte": 19636,
+        "end_byte": 19987,
+        "span_sha256": "d71bae38d4b9198e590835c0e2f168e1034bc7e884a6dee06e7e584ab29718b9",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0034"
+  },
+  {
+    "family_id": "v19.requests.f0037",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "merge_hooks returns session_hooks when request_hooks is None or has response=[]; an empty session response list instead returns request_hooks.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "merge_hooks",
+        "start_line": 108,
+        "end_line": 124,
+        "start_byte": 2987,
+        "end_byte": 3569,
+        "span_sha256": "51ee9e2f1ab386413512b626841373790e163ab4a809ec731458876f7bd0b8db",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0037"
+  },
+  {
+    "family_id": "v19.requests.f0038",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "303 and302 rewrite all methods except HEAD;301 rewrites POST only. Other cases preserve the method.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.rebuild_method",
+        "start_line": 370,
+        "end_line": 392,
+        "start_byte": 13714,
+        "end_byte": 14630,
+        "span_sha256": "f7c1ff644bd71b3ea281b11c560f277ef6be6123e38ea68891490bf2b3f40465",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0038"
+  },
+  {
+    "family_id": "v19.requests.f0039",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "get_redirect_target checks is_redirect then encodes location as latin1 and decodes through to_native_string(...,'utf8'); non-redirect returns None.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.get_redirect_target",
+        "start_line": 134,
+        "end_line": 152,
+        "start_byte": 3757,
+        "end_byte": 4921,
+        "span_sha256": "f69ff6f395aa4adb3df8c30410e84bd23ef8c66a121c10d97bf168475f91ef18",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0039"
+  },
+  {
+    "family_id": "v19.requests.f0040",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "It indexes _store by key.lower(), stores (original_key,value), looks up by lowercase and iterates stored cased keys.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/structures.py",
+        "symbol": "CaseInsensitiveDict.__setitem__",
+        "start_line": 59,
+        "end_line": 62,
+        "start_byte": 1722,
+        "end_byte": 1924,
+        "span_sha256": "30aee3e53448706c3f3702eda66d1414008c962ccd8cfa87a9a9f8d946796c5f",
+        "file_sha256": "ba9460c39078f25e6f1d2a24ac941ac6f8d2ee97197fa8c8d0c262d8a1e67a02"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/structures.py",
+        "symbol": "CaseInsensitiveDict.__getitem__",
+        "start_line": 64,
+        "end_line": 65,
+        "start_byte": 1930,
+        "end_byte": 2012,
+        "span_sha256": "f789d09c35cf12d392b586c9f6215560e3865c0f7cf4c02f06cd3e51f6925ebf",
+        "file_sha256": "ba9460c39078f25e6f1d2a24ac941ac6f8d2ee97197fa8c8d0c262d8a1e67a02"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/structures.py",
+        "symbol": "CaseInsensitiveDict.__iter__",
+        "start_line": 70,
+        "end_line": 71,
+        "start_byte": 2101,
+        "end_byte": 2203,
+        "span_sha256": "7e668dd661a81b920cd68a504d9b0455022a27870377f7bf65090fee6aac53ba",
+        "file_sha256": "ba9460c39078f25e6f1d2a24ac941ac6f8d2ee97197fa8c8d0c262d8a1e67a02"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0040"
+  },
+  {
+    "family_id": "v19.requests.f0042",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_url converts bytes/objects to str, strips leading whitespace and directly sets self.url then returns for non-http colon-containing schemes.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_url",
+        "start_line": 483,
+        "end_line": 563,
+        "start_byte": 15028,
+        "end_byte": 17833,
+        "span_sha256": "6478ddde57f60d7a30c83bc824e2c37fe6a784e46ee888972fe341389e05b649",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0042"
+  },
+  {
+    "family_id": "v19.requests.f0046",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "__init__ creates threading.local; init_per_thread_state checks its init marker then seeds last_nonce,nonce_count,chal,pos,num_401_calls.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.__init__",
+        "start_line": 141,
+        "end_line": 145,
+        "start_byte": 4301,
+        "end_byte": 4536,
+        "span_sha256": "29f6f39c4f1e898cf648d66814318f8cd5d184db3e822c9b882a1b37834e7780",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.init_per_thread_state",
+        "start_line": 147,
+        "end_line": 155,
+        "start_byte": 4542,
+        "end_byte": 4965,
+        "span_sha256": "0d3d497a15c17891504ede351f2aa7491717027868bb8f41187554eff11cc4f4",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0046"
+  },
+  {
+    "family_id": "v19.requests.f0047",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "A repeated nonce increments nonce_count; a new nonce resets it to1; ncvalue is eight lowercase hex digits and last_nonce is updated after supported qop processing.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.build_digest_header",
+        "start_line": 157,
+        "end_line": 266,
+        "start_byte": 4971,
+        "end_byte": 8750,
+        "span_sha256": "a0b8a932428d46c6819c10756d787c3d817e49590f3d98434966bea27261bdb6",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0047"
+  },
+  {
+    "family_id": "v19.requests.f0048",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Empty content returns ''; unset encoding uses apparent_encoding; decode uses errors='replace', with LookupError/TypeError fallback to default decoding.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.text",
+        "start_line": 1054,
+        "end_line": 1089,
+        "start_byte": 36401,
+        "end_byte": 37717,
+        "span_sha256": "8c1c3a8f170716f232e5f08328b8411b8da655010eb5c04990ad3cad6d48d505",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.apparent_encoding",
+        "start_line": 897,
+        "end_line": 904,
+        "start_byte": 30607,
+        "end_byte": 31000,
+        "span_sha256": "68d5771fd3405103d7bf40e5b179b0f368a34fe780d5cd9c61eea8e038bb2185",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0048"
+  },
+  {
+    "family_id": "v19.requests.f0049",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "It prepends pending to the next chunk, splits using delimiter or splitlines, saves a trailing incomplete line and yields final pending after the loop.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.iter_lines",
+        "start_line": 994,
+        "end_line": 1032,
+        "start_byte": 34387,
+        "end_byte": 35671,
+        "span_sha256": "716f78fbfb2390e28d84ca359d1bdfcbcd2357760232c0f58ebd654b03a3254e",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0049"
+  },
+  {
+    "family_id": "v19.requests.f0050",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Hostname-less URL returns True; IPv4 uses CIDR membership or exact IP; non-IP hosts strip leading dot and compare host or host:port, then dot-prefixed suffix; platform bypass is checked too.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "should_bypass_proxies",
+        "start_line": 810,
+        "end_line": 870,
+        "start_byte": 25115,
+        "end_byte": 27287,
+        "span_sha256": "1113a55be201c3063bb5f9cf3eb7e1cd0ffeb21fe78a3f0dcdb9b2215a86bd2b",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0050"
+  },
+  {
+    "family_id": "v19.requests.f0051",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "It uses finally to delete a newly added variable or restore the old value. value None leaves the environment untouched.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "set_environ",
+        "start_line": 788,
+        "end_line": 807,
+        "start_byte": 24435,
+        "end_byte": 25112,
+        "span_sha256": "363d75cffd3a9d2f580025fb51b1e2a550fe260297075bde692623c5f6385b6e",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0051"
+  },
+  {
+    "family_id": "v19.requests.f0053",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Request stores user fields and hooks. Request.prepare creates PreparedRequest and forwards method,url,headers,files,data,json,params,auth,cookies,hooks. PreparedRequest initializes separate body/header/cookie state.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Request.__init__",
+        "start_line": 323,
+        "end_line": 355,
+        "start_byte": 9685,
+        "end_byte": 10805,
+        "span_sha256": "9e8d0d8405f6cb06c11b6879a1818b363893768b44d432ebc96163b0707fafbf",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Request.prepare",
+        "start_line": 360,
+        "end_line": 375,
+        "start_byte": 10887,
+        "end_byte": 11405,
+        "span_sha256": "0e289b3b7c25839905d58bf60ad289b7f92b9ebf62206a36cab4955725b21c6d",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.__init__",
+        "start_line": 407,
+        "end_line": 422,
+        "start_byte": 12284,
+        "end_byte": 12976,
+        "span_sha256": "c08916573318c8a503d0a16dc9931219476ee5280008ff0921f004f67141e2d4",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0053"
+  },
+  {
+    "family_id": "v19.requests.f0054",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "MockRequest exposes URL/header/origin policy interface and collects added headers; MockResponse.info exposes HTTPMessage headers. extract_cookies_to_jar constructs them from original HTTP response and calls jar.extract_cookies.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockRequest",
+        "start_line": 31,
+        "end_line": 111,
+        "start_byte": 715,
+        "end_byte": 3457,
+        "span_sha256": "a385f14df476e80aaae16dbda6a2c8c207edfcf7a2a586f894214dc39def5968",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockResponse",
+        "start_line": 114,
+        "end_line": 132,
+        "start_byte": 3460,
+        "end_byte": 4056,
+        "span_sha256": "117f29c54a6fdbdd6a2c276ab350b57b1c819f9f3dac4d38971a151c342a9ada",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "extract_cookies_to_jar",
+        "start_line": 135,
+        "end_line": 150,
+        "start_byte": 4059,
+        "end_byte": 4782,
+        "span_sha256": "29a7792b23ada8c89aa4fceb6aabe4af26c841b15348d3973e19e4e240b74e83",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0054"
+  },
+  {
+    "family_id": "v19.requests.f0055",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "__getstate__ serializes declared attrs; __setstate__ resets proxy_manager/config, restores attrs and calls init_poolmanager with saved connection count,maxsize,block.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.__getstate__",
+        "start_line": 223,
+        "end_line": 224,
+        "start_byte": 6985,
+        "end_byte": 7102,
+        "span_sha256": "2438cc3818c5ae29973b374a8a909a3fbbe43377250243743ae18f60f871cc8b",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.__setstate__",
+        "start_line": 226,
+        "end_line": 237,
+        "start_byte": 7108,
+        "end_byte": 7572,
+        "span_sha256": "c39023e61edd41c8740083c7103d5915b3d6796af8f24ceaee3de2ce397b54fc",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.init_poolmanager",
+        "start_line": 239,
+        "end_line": 267,
+        "start_byte": 7578,
+        "end_byte": 8617,
+        "span_sha256": "3ba5b7c4195795fef4630868d10d063867bf25cd13d55e1c9679e68ea8a37564",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0055"
+  },
+  {
+    "family_id": "v19.requests.f0056",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "build_connection_pool_key_attributes delegates _urllib3_request_context; it returns scheme/host/port separately from cert_reqs,ca_certs or ca_cert_dir and optional cert_file/key_file.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.build_connection_pool_key_attributes",
+        "start_line": 403,
+        "end_line": 453,
+        "start_byte": 13766,
+        "end_byte": 16510,
+        "span_sha256": "ee65295267be1d3a92fb2c8d258c6461fcd2f018970044d676c990ab48d6fd0b",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "_urllib3_request_context",
+        "start_line": 85,
+        "end_line": 119,
+        "start_byte": 2080,
+        "end_byte": 3334,
+        "span_sha256": "9deff85b95822c7e335d37ad3ab21f6878964ae73071b28271d53839ca2eef43",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0056"
+  },
+  {
+    "family_id": "v19.requests.f0058",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "__getstate__ ensures content read and returns declared attrs; __setstate__ restores attrs, marks consumed, removes raw stream. Serialized response carries data rather than a live connection.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.__getstate__",
+        "start_line": 818,
+        "end_line": 824,
+        "start_byte": 27596,
+        "end_byte": 27894,
+        "span_sha256": "c8ec69ca576d86dfb366513b428aad3e4655b863d4a0551823b76e9920afbadf",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.__setstate__",
+        "start_line": 826,
+        "end_line": 832,
+        "start_byte": 27900,
+        "end_byte": 28163,
+        "span_sha256": "de376dcb064e9166d8d1f1519ee126671afb832339cda093e607880bbdc5a4ba",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0058"
+  },
+  {
+    "family_id": "v19.requests.f0059",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Session.__init__ uses default_headers/default_hooks/cookiejar_from_dict, then mounts HTTPAdapter on https:// and http://. Session also owns verify,cert,trust_env and redirect cap.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.__init__",
+        "start_line": 442,
+        "end_line": 503,
+        "start_byte": 15684,
+        "end_byte": 18379,
+        "span_sha256": "b9590599f1902be38735e3e6978978ea6d6c1a16f984f1770c4c2c35c783b58f",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "default_headers",
+        "start_line": 951,
+        "end_line": 962,
+        "start_byte": 29563,
+        "end_byte": 29912,
+        "span_sha256": "9e37c4462108faed7706a7ffb8796052de21c9348a1a72c9c129c0a5b0c7bd6a",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/hooks.py",
+        "symbol": "default_hooks",
+        "start_line": 25,
+        "end_line": 26,
+        "start_byte": 424,
+        "end_byte": 518,
+        "span_sha256": "7fbcccc4bdf61e38c65c4916323e7b246094bfe13012f48c8f87bea8536acd6b",
+        "file_sha256": "ebd8a02475d31a0e473a8f553e9501ff43645b9563885ad52844e7a63f0d76ab"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0059"
+  },
+  {
+    "family_id": "v19.requests.f0060",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "build_response creates Response, copies status,case-insensitive headers,encoding,raw,reason,url,cookies; assigns request and connection=self.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.build_response",
+        "start_line": 365,
+        "end_line": 401,
+        "start_byte": 12341,
+        "end_byte": 13760,
+        "span_sha256": "bdf7a4f64543f7337d3e4ca3a8aa9405a49791e424c69a8cb139d6a0dd458a7b",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.__init__",
+        "start_line": 765,
+        "end_line": 810,
+        "start_byte": 25437,
+        "end_byte": 27442,
+        "span_sha256": "798e16abb50d926855c778f27f7571a4bee2634cd7f2622c7c080bda361b8dad",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0060"
+  },
+  {
+    "family_id": "v19.requests.f0061",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "resolve_proxies copies explicit mapping; when trust_env and not bypass, reads environment mappings and setdefaults selected scheme. get_environ_proxies returns empty on bypass else getproxies.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "resolve_proxies",
+        "start_line": 911,
+        "end_line": 939,
+        "start_byte": 28290,
+        "end_byte": 29371,
+        "span_sha256": "577d4f66d38ebc4525168bda52c08057152fb9e4688c7e6183757b22bd9a7a4a",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "get_environ_proxies",
+        "start_line": 873,
+        "end_line": 882,
+        "start_byte": 27290,
+        "end_byte": 27557,
+        "span_sha256": "82ec73259a8328d0a78c88f3a4ab0e29c7f6a4005ed615614d5cae81e1e15eaf",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "should_bypass_proxies",
+        "start_line": 810,
+        "end_line": 870,
+        "start_byte": 25115,
+        "end_byte": 27287,
+        "span_sha256": "1113a55be201c3063bb5f9cf3eb7e1cd0ffeb21fe78a3f0dcdb9b2215a86bd2b",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0061"
+  },
+  {
+    "family_id": "v19.requests.f0063",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Constructor initializes CompatJSONDecodeError before InvalidJSONError using its args; __reduce__ delegates the compatible JSON error rather than IOError MRO.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/exceptions.py",
+        "symbol": "JSONDecodeError.__init__",
+        "start_line": 45,
+        "end_line": 53,
+        "start_byte": 1240,
+        "end_byte": 1693,
+        "span_sha256": "fc844f0c6f3a750ca5c6a2ec93a8519e0604ded872f49588519438c82bea82d9",
+        "file_sha256": "c5e18f3352454968e337bb3056f0867df2f37c0a0d2c1a77dc05e7e0b3c0411b"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/exceptions.py",
+        "symbol": "JSONDecodeError.__reduce__",
+        "start_line": 55,
+        "end_line": 63,
+        "start_byte": 1699,
+        "end_byte": 2167,
+        "span_sha256": "05e43388b04a38e5fe5246b7c18f782c3d7a49fa553db0ba5a7647d81fe1620a",
+        "file_sha256": "c5e18f3352454968e337bb3056f0867df2f37c0a0d2c1a77dc05e7e0b3c0411b"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/exceptions.py",
+        "symbol": "InvalidJSONError",
+        "start_line": 38,
+        "end_line": 39,
+        "start_byte": 1049,
+        "end_byte": 1123,
+        "span_sha256": "01d612b73ba8fd832424553d708112674379dcbac3f26daa566cdbbd9f7f62fe",
+        "file_sha256": "c5e18f3352454968e337bb3056f0867df2f37c0a0d2c1a77dc05e7e0b3c0411b"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0063"
+  },
+  {
+    "family_id": "v19.requests.f0064",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Under TYPE_CHECKING is_prepared checks URL and method non-None to narrow to _ValidatedRequest; at runtime it intentionally returns True to avoid AssertionError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/_types.py",
+        "symbol": "is_prepared",
+        "start_line": 47,
+        "end_line": 52,
+        "start_byte": 1200,
+        "end_byte": 1485,
+        "span_sha256": "235a3ea54314432c051ca9e8a57b7d69696c8b34d701cd7e0c48388e426ccbb9",
+        "file_sha256": "84dec9789a8e839807242448a9aa86acd12c440211921e32f43afcbc422a629c"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0064"
+  },
+  {
+    "family_id": "v19.requests.f0065",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "api.request delegates inside temporary Session; Session.request builds Request, prepares it, merges environment settings and calls send with timeout/allow_redirects plus settings.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/api.py",
+        "symbol": "request",
+        "start_line": 24,
+        "end_line": 71,
+        "start_byte": 382,
+        "end_byte": 3355,
+        "span_sha256": "bffbdcd407ff8368c2dc4d52cce3043d9a20ae053881c6b63f1ff27907245674",
+        "file_sha256": "4d15480ac046f089209798e8650476ef4a28ebe6f81b400758f8ef42ec6b5509"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.request",
+        "start_line": 557,
+        "end_line": 653,
+        "start_byte": 20172,
+        "end_byte": 24302,
+        "span_sha256": "e5f6c309a7fb6392906cd2e375cd6de46981c2ed44afea845c61b7f0871504c1",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "api:request",
+        "callee": "sessions:Session.request",
+        "expression": "session.request(method=method, url=url, **kwargs)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/api.py",
+        "start_byte": 3306,
+        "end_byte": 3355,
+        "line": 71,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0001"
+  },
+  {
+    "family_id": "v19.requests.f0066",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Session.prepare_request constructs merged cookies and optionally netrc auth, creates PreparedRequest, calls p.prepare with merged settings and user body/files/json.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.prepare_request",
+        "start_line": 511,
+        "end_line": 555,
+        "start_byte": 18505,
+        "end_byte": 20166,
+        "span_sha256": "79d24a58dc13e6a49e22fa60143d45f233a4309a145be8161566714fd3f66bd7",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare",
+        "start_line": 424,
+        "end_line": 451,
+        "start_byte": 12982,
+        "end_byte": 14049,
+        "span_sha256": "7ad37522a317945da6fce864d7f596b1260840c28a96177929f71fdfc6b93be9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "sessions:Session.prepare_request",
+        "callee": "models:PreparedRequest.prepare",
+        "expression": "p.prepare(",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 19644,
+        "end_byte": 19654,
+        "line": 541,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0053"
+  },
+  {
+    "family_id": "v19.requests.f0067",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_auth wraps a two-item tuple in HTTPBasicAuth then invokes auth_handler(self); __call__ writes Authorization using latin1 username/password bytes joined by colon and base64 encoded.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_auth",
+        "start_line": 670,
+        "end_line": 697,
+        "start_byte": 22142,
+        "end_byte": 23275,
+        "span_sha256": "85eaf3b66e5a7195e7fd3dedce94cd4bc87802332c6af9b23aace0e3bdfd83f6",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPBasicAuth.__call__",
+        "start_line": 111,
+        "end_line": 113,
+        "start_byte": 3379,
+        "end_byte": 3537,
+        "span_sha256": "2206cc815a5a75bb8260b609c47de080b1bccde56e5115ee944a4ad2b5b4aa99",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "_basic_auth_str",
+        "start_line": 34,
+        "end_line": 75,
+        "start_byte": 751,
+        "end_byte": 2378,
+        "span_sha256": "6cfa7b117d8fa0c446eabc66b4c718e4fe7c317d268ba5241ce728bf3e0a3486",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:PreparedRequest.prepare_auth",
+        "callee": "auth:HTTPBasicAuth.__call__",
+        "expression": "r = auth_handler(self)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 23061,
+        "end_byte": 23083,
+        "line": 691,
+        "kind": "call"
+      },
+      {
+        "caller": "auth:HTTPBasicAuth.__call__",
+        "callee": "auth:_basic_auth_str",
+        "expression": "_basic_auth_str(self.username, self.password)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "start_byte": 3475,
+        "end_byte": 3520,
+        "line": 112,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0067"
+  },
+  {
+    "family_id": "v19.requests.f0068",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_cookies normalizes a jar and calls get_cookie_header; it wraps MockRequest, lets jar.add_cookie_header add new headers and returns collected Cookie, which prepares into self.headers.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_cookies",
+        "start_line": 699,
+        "end_line": 720,
+        "start_byte": 23281,
+        "end_byte": 24294,
+        "span_sha256": "9d6365b410528875da9893b0efa40cff83d6f7a0c12c2af7e8b451309067ca37",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "get_cookie_header",
+        "start_line": 153,
+        "end_line": 161,
+        "start_byte": 4811,
+        "end_byte": 5135,
+        "span_sha256": "7a5eeee0856be23329ff83a2c04a261735d1192d2638ca030ad8c5c20971dde9",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockRequest.get_new_headers",
+        "start_line": 98,
+        "end_line": 99,
+        "start_byte": 3123,
+        "end_byte": 3200,
+        "span_sha256": "8520855c10796c6327f2e8f7ffe14a2b233575e2d9131c16ff345b485b6006fb",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:PreparedRequest.prepare_cookies",
+        "callee": "cookies:get_cookie_header",
+        "expression": "get_cookie_header(cookies_jar, self)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 24169,
+        "end_byte": 24205,
+        "line": 718,
+        "kind": "call"
+      },
+      {
+        "caller": "cookies:get_cookie_header",
+        "callee": "cookies:MockRequest.get_new_headers",
+        "expression": "r.get_new_headers()",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "start_byte": 5102,
+        "end_byte": 5121,
+        "line": 161,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0068"
+  },
+  {
+    "family_id": "v19.requests.f0069",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "build_response invokes get_encoding_from_headers. Its parser lowercases parameter keys; explicit charset wins, text defaults ISO-8859-1, application/json defaults utf-8, absent/other types give None.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.build_response",
+        "start_line": 365,
+        "end_line": 401,
+        "start_byte": 12341,
+        "end_byte": 13760,
+        "span_sha256": "bdf7a4f64543f7337d3e4ca3a8aa9405a49791e424c69a8cb139d6a0dd458a7b",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "get_encoding_from_headers",
+        "start_line": 569,
+        "end_line": 591,
+        "start_byte": 18258,
+        "end_byte": 18945,
+        "span_sha256": "fd2b35a406ecd6393d5893a70fd9c964459d09410cd6162b0060e6d190ac3867",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "_parse_content_type_header",
+        "start_line": 547,
+        "end_line": 566,
+        "start_byte": 17548,
+        "end_byte": 18255,
+        "span_sha256": "21e55128404ac531c8c4e507bff3e3169293c20d22f1e62117cbc79e630e3f94",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "adapters:HTTPAdapter.build_response",
+        "callee": "utils:get_encoding_from_headers",
+        "expression": "get_encoding_from_headers(response.headers)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "start_byte": 13265,
+        "end_byte": 13308,
+        "line": 385,
+        "kind": "call"
+      },
+      {
+        "caller": "utils:get_encoding_from_headers",
+        "callee": "utils:_parse_content_type_header",
+        "expression": "_parse_content_type_header(content_type)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "start_byte": 18596,
+        "end_byte": 18636,
+        "line": 581,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0069"
+  },
+  {
+    "family_id": "v19.requests.f0071",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "rebuild_proxies resolves new mapping, removes prior Proxy-Authorization, reads credentials from scheme proxy and adds Basic header only for non-https with both credentials.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.rebuild_proxies",
+        "start_line": 334,
+        "end_line": 368,
+        "start_byte": 12309,
+        "end_byte": 13708,
+        "span_sha256": "aec3073fb0819c20aeee541f712f44e7ba3d29df7c7c6d2c68efa15018eec484",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "resolve_proxies",
+        "start_line": 911,
+        "end_line": 939,
+        "start_byte": 28290,
+        "end_byte": 29371,
+        "span_sha256": "577d4f66d38ebc4525168bda52c08057152fb9e4688c7e6183757b22bd9a7a4a",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "_basic_auth_str",
+        "start_line": 34,
+        "end_line": 75,
+        "start_byte": 751,
+        "end_byte": 2378,
+        "span_sha256": "6cfa7b117d8fa0c446eabc66b4c718e4fe7c317d268ba5241ce728bf3e0a3486",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "sessions:SessionRedirectMixin.rebuild_proxies",
+        "callee": "utils:resolve_proxies",
+        "expression": "resolve_proxies(prepared_request, proxies, self.trust_env)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 13065,
+        "end_byte": 13123,
+        "line": 353,
+        "kind": "call"
+      },
+      {
+        "caller": "sessions:SessionRedirectMixin.rebuild_proxies",
+        "callee": "auth:_basic_auth_str",
+        "expression": "_basic_auth_str(username, password)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 13645,
+        "end_byte": 13680,
+        "line": 366,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0071"
+  },
+  {
+    "family_id": "v19.requests.f0073",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "proxy_headers calls get_auth_from_url to percent-decode user/password and, if username is present, creates Proxy-Authorization with _basic_auth_str.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.proxy_headers",
+        "start_line": 613,
+        "end_line": 632,
+        "start_byte": 22681,
+        "end_byte": 23488,
+        "span_sha256": "4fa19a392488f7e0fd04d0d71cf31221e662af27987f0c380f7ba50d111bb8bf",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "get_auth_from_url",
+        "start_line": 1070,
+        "end_line": 1084,
+        "start_byte": 33244,
+        "end_byte": 33702,
+        "span_sha256": "61480ca8e68ec4b3169298e54eaeb00d689c7cafcbe48a3317b6313d6c29ac7a",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "_basic_auth_str",
+        "start_line": 34,
+        "end_line": 75,
+        "start_byte": 751,
+        "end_byte": 2378,
+        "span_sha256": "6cfa7b117d8fa0c446eabc66b4c718e4fe7c317d268ba5241ce728bf3e0a3486",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "adapters:HTTPAdapter.proxy_headers",
+        "callee": "utils:get_auth_from_url",
+        "expression": "get_auth_from_url(proxy)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "start_byte": 23337,
+        "end_byte": 23361,
+        "line": 627,
+        "kind": "call"
+      },
+      {
+        "caller": "adapters:HTTPAdapter.proxy_headers",
+        "callee": "auth:_basic_auth_str",
+        "expression": "_basic_auth_str(username, password)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "start_byte": 23429,
+        "end_byte": 23464,
+        "line": 630,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0003"
+  },
+  {
+    "family_id": "v19.requests.f0074",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_encode_files uses guess_filename(v) or field key for non-tuple inputs, reads readable content, creates RequestField and delegates multipart encoding.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "RequestEncodingMixin._encode_files",
+        "start_line": 183,
+        "end_line": 251,
+        "start_byte": 4684,
+        "end_byte": 7247,
+        "span_sha256": "6fdd7f8ffeefddf4a95b1b419526f8bdf6f5fa6734be31c56c4474d468946ef8",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "guess_filename",
+        "start_line": 283,
+        "end_line": 287,
+        "start_byte": 8603,
+        "end_byte": 8868,
+        "span_sha256": "5a0c4dbf5498ed6d5df0f5d5b5720cc71e06efbc7b974b8fedf8180ca05fc5ac",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:RequestEncodingMixin._encode_files",
+        "callee": "utils:guess_filename",
+        "expression": "guess_filename(v) or k",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 6652,
+        "end_byte": 6674,
+        "line": 233,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0022"
+  },
+  {
+    "family_id": "v19.requests.f0078",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "links passes header to parse_header_links, which splits entries on comma plus angle bracket and parses semicolon parameters. The getter keys each entry by rel if present, otherwise url.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.links",
+        "start_line": 1127,
+        "end_line": 1142,
+        "start_byte": 39462,
+        "end_byte": 39947,
+        "span_sha256": "3ea196282a4dcb2145e32d01700645a05101136887694e333a2c36f86519d45d",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "parse_header_links",
+        "start_line": 965,
+        "end_line": 999,
+        "start_byte": 29915,
+        "end_byte": 30814,
+        "span_sha256": "83c2b334523d8e3bbe00eaafb1d5247ae4ebb8fda0aaab1d19fdbaff97913c43",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:Response.links",
+        "callee": "utils:parse_header_links",
+        "expression": "parse_header_links(header)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 39718,
+        "end_byte": 39744,
+        "line": 1135,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0078"
+  },
+  {
+    "family_id": "v19.requests.f0079",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "build_response calls extract_cookies_to_jar on response.cookies; bridge returns if no usable _original_response, otherwise wraps request/HTTPMessage and invokes jar.extract_cookies.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.build_response",
+        "start_line": 365,
+        "end_line": 401,
+        "start_byte": 12341,
+        "end_byte": 13760,
+        "span_sha256": "bdf7a4f64543f7337d3e4ca3a8aa9405a49791e424c69a8cb139d6a0dd458a7b",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "extract_cookies_to_jar",
+        "start_line": 135,
+        "end_line": 150,
+        "start_byte": 4059,
+        "end_byte": 4782,
+        "span_sha256": "29a7792b23ada8c89aa4fceb6aabe4af26c841b15348d3973e19e4e240b74e83",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "adapters:HTTPAdapter.build_response",
+        "callee": "cookies:extract_cookies_to_jar",
+        "expression": "extract_cookies_to_jar(response.cookies, req, resp)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "start_byte": 13575,
+        "end_byte": 13626,
+        "line": 395,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0054"
+  },
+  {
+    "family_id": "v19.requests.f0080",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_request bootstraps mapping request cookies into a CookieJar, merges Session jar into a new RequestsCookieJar then request cookies into that jar. merge_cookies mappings use overwrite=False; CookieJar inputs use update or per-cookie set_cookie.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.prepare_request",
+        "start_line": 511,
+        "end_line": 555,
+        "start_byte": 18505,
+        "end_byte": 20166,
+        "span_sha256": "79d24a58dc13e6a49e22fa60143d45f233a4309a145be8161566714fd3f66bd7",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "cookiejar_from_dict",
+        "start_line": 579,
+        "end_line": 601,
+        "start_byte": 19806,
+        "end_byte": 20640,
+        "span_sha256": "04e3a1bca2a53c65e13f88b5f5b5f733150aca74afb4cf6206cfafd240b98d4f",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "merge_cookies",
+        "start_line": 604,
+        "end_line": 625,
+        "start_byte": 20643,
+        "end_byte": 21503,
+        "span_sha256": "121fca761d081d05b96f906ccbaee11fc41419d8d11e197baec120c902c190cc",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "sessions:Session.prepare_request",
+        "callee": "cookies:cookiejar_from_dict",
+        "expression": "cookiejar_from_dict(cookies)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 19220,
+        "end_byte": 19248,
+        "line": 528,
+        "kind": "call"
+      },
+      {
+        "caller": "sessions:Session.prepare_request",
+        "callee": "cookies:merge_cookies",
+        "expression": "merge_cookies(RequestsCookieJar(), self.cookies)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "start_byte": 19339,
+        "end_byte": 19387,
+        "line": 532,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0029"
+  },
+  {
+    "family_id": "v19.requests.f0082",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "cert_verify checks chosen HTTPS CA location and raises OSError if invalid; client cert_file/key_file are likewise existence-checked and rejected with path-specific OSError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.cert_verify",
+        "start_line": 307,
+        "end_line": 363,
+        "start_byte": 10117,
+        "end_byte": 12335,
+        "span_sha256": "eb57aa8f0dd93cabe4ef71d4813a021b480c21b8bc449285c9b8596471243f4d",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0082"
+  },
+  {
+    "family_id": "v19.requests.f0083",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "resolve_redirects updates history then checks len(resp.history)>=max_redirects, raises TooManyRedirects(response=resp); Session initializes limit from DEFAULT_REDIRECT_LIMIT.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "SessionRedirectMixin.resolve_redirects",
+        "start_line": 186,
+        "end_line": 307,
+        "start_byte": 6271,
+        "end_byte": 11236,
+        "span_sha256": "0b20370a5823e5449cbcd3d7a8a91fd7a09412f1366232db5e82c6806a1ed2be",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.__init__",
+        "start_line": 442,
+        "end_line": 503,
+        "start_byte": 15684,
+        "end_byte": 18379,
+        "span_sha256": "b9590599f1902be38735e3e6978978ea6d6c1a16f984f1770c4c2c35c783b58f",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0083"
+  },
+  {
+    "family_id": "v19.requests.f0084",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The local SOCKSProxyManager fallback is defined under except ImportError and raises InvalidSchema('Missing dependencies for SOCKS support.').",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "SOCKSProxyManager",
+        "start_line": 66,
+        "end_line": 67,
+        "start_byte": 1582,
+        "end_byte": 1710,
+        "span_sha256": "5330e6ece63a804a462a871cc5382d9b546fe9601b07d63eda3fa364521476a1",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0084"
+  },
+  {
+    "family_id": "v19.requests.f0086",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The iterable/non-str-bytes-list-tuple-Mapping branch raises NotImplementedError('Streamed bodies and files are mutually exclusive.') when files is truthy.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_body",
+        "start_line": 576,
+        "end_line": 652,
+        "start_byte": 18281,
+        "end_byte": 21334,
+        "span_sha256": "1ea920c6cecbd5b6f3dd9e253dd8044ebf9a7dd11b21d5257314b3fa1c5479b9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0086"
+  },
+  {
+    "family_id": "v19.requests.f0087",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "iter_content raises StreamConsumedError when _content_consumed and _content is bool, whereas cached bytes use iter_slices. StreamConsumedError inherits RequestException and TypeError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.iter_content",
+        "start_line": 914,
+        "end_line": 977,
+        "start_byte": 31300,
+        "end_byte": 33949,
+        "span_sha256": "323e273ccf71610659ffc370524d1e1eead7da13682fe35090212476dfb23838",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/exceptions.py",
+        "symbol": "StreamConsumedError",
+        "start_line": 138,
+        "end_line": 139,
+        "start_byte": 3893,
+        "end_byte": 4010,
+        "span_sha256": "86e88a5715a50799581f3256a035a88cf14568a5993be56367a44260b85e81e5",
+        "file_sha256": "c5e18f3352454968e337bb3056f0867df2f37c0a0d2c1a77dc05e7e0b3c0411b"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0087"
+  },
+  {
+    "family_id": "v19.requests.f0089",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "__bool__ returns self.ok; ok catches HTTPError from raise_for_status. 302 raises no error and is truthy;404 raises HTTPError and is falsey, without requiring status200.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.__bool__",
+        "start_line": 837,
+        "end_line": 845,
+        "start_byte": 28251,
+        "end_byte": 28679,
+        "span_sha256": "d7a96e987e3be77eb63e6059b51014960691693621c504ed0bdbacab895768f8",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.ok",
+        "start_line": 862,
+        "end_line": 874,
+        "start_byte": 29277,
+        "end_byte": 29809,
+        "span_sha256": "3bc5ad576e142da36327052db196930d30dcf6bfab30a0ac35c96e970df0e8f9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.raise_for_status",
+        "start_line": 1144,
+        "end_line": 1171,
+        "start_byte": 39953,
+        "end_byte": 41004,
+        "span_sha256": "5edee5271a109ee8a4062ed80e2e415a7eb2d885ec7779db8136939fe4581388",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0089"
+  },
+  {
+    "family_id": "v19.requests.f0090",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The nested generate in iter_content catches ReadTimeoutError and raises ConnectionError(e). This scoped stream stage differs from HTTPAdapter.send's ReadTimeout wrapper.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.iter_content",
+        "start_line": 914,
+        "end_line": 977,
+        "start_byte": 31300,
+        "end_byte": 33949,
+        "span_sha256": "323e273ccf71610659ffc370524d1e1eead7da13682fe35090212476dfb23838",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0090"
+  },
+  {
+    "family_id": "v19.requests.f0091",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "send uses get_connection_with_tls_context; get_connection emits a DeprecationWarning directing Requests>=2.32.2 subclass authors to the TLS-aware method.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.get_connection",
+        "start_line": 512,
+        "end_line": 553,
+        "start_byte": 18715,
+        "end_byte": 20478,
+        "span_sha256": "83eb9796d502e5d07e1f72c6fc501dec2710fdf30376133ee5dbbd6a4c4349a4",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.get_connection_with_tls_context",
+        "start_line": 455,
+        "end_line": 510,
+        "start_byte": 16516,
+        "end_byte": 18709,
+        "span_sha256": "1037958f2ec01269b2d0a0e417c385bc0dcb10b36359fe700c8f4457b9267f73",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0091"
+  },
+  {
+    "family_id": "v19.requests.f0092",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_init populates codes using setattr; LookupDict.__getitem__ and get read self.__dict__, not base dict storage, and default to None or caller default.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/status_codes.py",
+        "symbol": "_init",
+        "start_line": 109,
+        "end_line": 125,
+        "start_byte": 3819,
+        "end_byte": 4340,
+        "span_sha256": "a618d5234ae7524d8f997b828c7b48f0873f154661f7ea64e11da19385c0be9d",
+        "file_sha256": "1950f47c89cf18019787e07d8ce48f66d6b38e622f7d94d70a90247fee6c040e"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/structures.py",
+        "symbol": "LookupDict.__getitem__",
+        "start_line": 118,
+        "end_line": 121,
+        "start_byte": 3666,
+        "end_byte": 3847,
+        "span_sha256": "f849396dfea0e48d2056531bcbd6817d117b2aec402fc5330bcc3eafb0429bd1",
+        "file_sha256": "ba9460c39078f25e6f1d2a24ac941ac6f8d2ee97197fa8c8d0c262d8a1e67a02"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/structures.py",
+        "symbol": "LookupDict.get",
+        "start_line": 129,
+        "end_line": 130,
+        "start_byte": 4016,
+        "end_byte": 4133,
+        "span_sha256": "eb53a1d1867651b7cd68d93941fb3377ecd9c803f334ac8d6b0586607be26a4b",
+        "file_sha256": "ba9460c39078f25e6f1d2a24ac941ac6f8d2ee97197fa8c8d0c262d8a1e67a02"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0092"
+  },
+  {
+    "family_id": "v19.requests.f0093",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_find returns the first filtered match or KeyError, explicitly allowing arbitrary selection on conflicts. _find_no_duplicates is the conflict-checking counterpart.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar._find",
+        "start_line": 401,
+        "end_line": 421,
+        "start_byte": 13626,
+        "end_byte": 14528,
+        "span_sha256": "a2e748e05a19dcd0656c1e045a2c4bac852b6406babed079f92e873e9316d31d",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar._find_no_duplicates",
+        "start_line": 423,
+        "end_line": 452,
+        "start_byte": 14534,
+        "end_byte": 15961,
+        "span_sha256": "562dc8e9407f8b48cfe3028b0a46094bd18afe54809b3af4c582d716561f499b",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0004"
+  },
+  {
+    "family_id": "v19.requests.f0094",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "is_valid_cidr requires one slash, integer mask1..32 and socket.inet_aton address; address_in_network likewise uses inet_aton. These implementations are IPv4-only, not IPv6 CIDR validators.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "is_valid_cidr",
+        "start_line": 763,
+        "end_line": 784,
+        "start_byte": 23875,
+        "end_byte": 24405,
+        "span_sha256": "a1e8abe31b8fcc070b5f4c654c3f8edfbaaccbcdaa1a611cc5e5d1fa69556325",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "address_in_network",
+        "start_line": 726,
+        "end_line": 738,
+        "start_byte": 22810,
+        "end_byte": 23412,
+        "span_sha256": "580d9778d9a7f69d07c1023af4ec75747950860188b2d0b97b52c6123331f7ab",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "global_family": "v19.requests.f0094"
+  },
+  {
+    "family_id": "v19.requests.f0096",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "send extracts response/history cookies into self.cookies, follows redirects and consumes content. No direct save/dump/file-open cookie persistence is implemented in this scope; custom user code is excluded.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.send",
+        "start_line": 752,
+        "end_line": 829,
+        "start_byte": 28106,
+        "end_byte": 30976,
+        "span_sha256": "ee680a2136df9d7eb8fd90129c9c29701597a3158fadd119dd67021339be7ef0",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "no_calls",
+      "ref": "sessions:Session.send",
+      "missing": [
+        "self.cookies.save",
+        "self.cookies.dump",
+        "open"
+      ],
+      "anchor": "extract_cookies_to_jar(self.cookies, request, r.raw)"
+    },
+    "scope": "src/requests/sessions.py Session.send direct implementation; excludes behavior of user-supplied hooks/adapters/jars",
+    "global_family": "v19.requests.f0096"
+  },
+  {
+    "family_id": "v19.requests.f0097",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The method body is only its docstring and pass; documentation explicitly says nothing by default. Session header setup occurs elsewhere and is outside the requested extension point.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.add_headers",
+        "start_line": 599,
+        "end_line": 611,
+        "start_byte": 22030,
+        "end_byte": 22675,
+        "span_sha256": "057e4fb9067e09dcf3d4b16470f4fe277ee3b70b6a9f3247c60cf3c0222ec884",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "no_calls",
+      "ref": "adapters:HTTPAdapter.add_headers",
+      "missing": [
+        "default_user_agent",
+        "request.headers.update",
+        "request.headers.setdefault"
+      ],
+      "anchor": "pass"
+    },
+    "scope": "src/requests/adapters.py HTTPAdapter.add_headers base implementation only, not Session default_headers or subclass overrides",
+    "global_family": "v19.requests.f0097"
+  },
+  {
+    "family_id": "v19.requests.f0098",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "The entire body raises NotImplementedError directing use of add_unredirected_header; no generic mutation implementation exists in this method.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockRequest.add_header",
+        "start_line": 89,
+        "end_line": 93,
+        "start_byte": 2744,
+        "end_byte": 3006,
+        "span_sha256": "3aeea21b4358b4bc8eedf064fa7596395e7c5eca671b681f77fadd818beb50bc",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "required_literal",
+      "ref": "cookies:MockRequest.add_header",
+      "literal": "raise NotImplementedError(",
+      "also": "Cookie headers should be added with add_unredirected_header()"
+    },
+    "scope": "src/requests/cookies.py MockRequest.add_header implementation only",
+    "global_family": "v19.requests.f0098"
+  },
+  {
+    "family_id": "v19.requests.f0099",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "AuthBase.__call__ only raises NotImplementedError; it contains no token-refresh implementation and is a subclass hook contract.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "AuthBase.__call__",
+        "start_line": 81,
+        "end_line": 82,
+        "start_byte": 2465,
+        "end_byte": 2589,
+        "span_sha256": "9f3c81a143ff49d499ca984a38371e8d0b0789e9bc7e23e53abd1acb53464c15",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "required_literal",
+      "ref": "auth:AuthBase.__call__",
+      "literal": "raise NotImplementedError",
+      "also": "Auth hooks must be callable."
+    },
+    "scope": "src/requests/auth.py AuthBase.__call__ base body only; excludes third-party subclasses",
+    "global_family": "v19.requests.f0099"
+  },
+  {
+    "family_id": "v19.requests.f0100",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "links reads header, parses entries, indexes by rel or URL and returns mapping; no HTTP transport operation or recursion occurs in the getter.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.links",
+        "start_line": 1127,
+        "end_line": 1142,
+        "start_byte": 39462,
+        "end_byte": 39947,
+        "span_sha256": "3ea196282a4dcb2145e32d01700645a05101136887694e333a2c36f86519d45d",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": {
+      "type": "no_calls",
+      "ref": "models:Response.links",
+      "missing": [
+        "requests.get",
+        "requests.request",
+        "self.connection.send",
+        "get"
+      ],
+      "anchor": "parse_header_links(header)"
+    },
+    "scope": "src/requests/models.py Response.links getter only; excludes code consuming the returned mapping",
+    "global_family": "v19.requests.f0078"
+  },
+  {
+    "family_id": "v19.requests.f0101",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0101",
+    "rationale": "Existing paths return unchanged. The function walks path parents to a valid archive boundary, checks is_zipfile and member membership, otherwise returns the original path. A valid member is read into mkstemp with matching suffix and fd is closed in finally.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "extract_zipped_paths",
+        "start_line": 290,
+        "end_line": 325,
+        "start_byte": 8945,
+        "end_byte": 10398,
+        "span_sha256": "7916bab8df6598032c316d47deafcf16918dcc2643f15ff79bb432d87d2e24f8",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New archive-member resolution/extraction workflow; previous atomic_open question concerns atomic destination replacement, not archive traversal or member lookup."
+  },
+  {
+    "family_id": "v19.requests.f0102",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0102",
+    "rationale": "to_key_val_list returns None for None, raises ValueError for str/bytes/bool/int, returns list(value.items()) for SupportsItems and list(value) otherwise.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "to_key_val_list",
+        "start_line": 376,
+        "end_line": 404,
+        "start_byte": 11876,
+        "end_byte": 12734,
+        "span_sha256": "bcd3e2541135e62a5c74ac0293b6581e63f57d2ee04a55928e26f22c5710a344",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New primitive-input rejection and mapping structural protocol contract; old parameter encoding question concerns expansion/encoding of valid pair values."
+  },
+  {
+    "family_id": "v19.requests.f0103",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0103",
+    "rationale": "__getstate__ copies __dict__ and removes _cookies_lock; __setstate__ restores state then creates threading.RLock when the lock is absent.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.__getstate__",
+        "start_line": 454,
+        "end_line": 459,
+        "start_byte": 15967,
+        "end_byte": 16215,
+        "span_sha256": "83d9243fb8ccd5cb2266abba0bb17fc322be05e625578bc12e4f7b06c08b5d92",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.__setstate__",
+        "start_line": 461,
+        "end_line": 465,
+        "start_byte": 16221,
+        "end_byte": 16478,
+        "span_sha256": "12b35273f6413c1338bb3d6f56b560c2e35799aef7142c6fa8e1ff9021850d0d",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "Cookie-jar synchronization serialization is distinct from existing Response raw-stream serialization and HTTPAdapter pool recreation."
+  },
+  {
+    "family_id": "v19.requests.f0104",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0104",
+    "rationale": "Only a non-None value starting and ending with a double quote is transformed; occurrences of backslash-double-quote are removed with value.replace, then super().set_cookie is called.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.set_cookie",
+        "start_line": 382,
+        "end_line": 389,
+        "start_byte": 12904,
+        "end_byte": 13233,
+        "span_sha256": "ba27b194d4944f27d0d13f95098410f1100d651103d6c9316b1519a4af274456",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New low-level cookie-value escape sanitization; prior set(name,None) deletion and create_cookie metadata questions have different triggers and outputs."
+  },
+  {
+    "family_id": "v19.requests.f0105",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0105",
+    "rationale": "Truthy max-age wins and yields int(time.time()+int(max-age)); invalid integer raises TypeError. Otherwise expires parses the GMT template and calendar.timegm converts it. create_cookie receives the computed expiry.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "morsel_to_cookie",
+        "start_line": 531,
+        "end_line": 557,
+        "start_byte": 18457,
+        "end_byte": 19431,
+        "span_sha256": "294003fd63844222bb2aee099a0e7a4048fee9c00fc6b4f5158368da97d56783",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New expiration computation and precedence; the previous cookie factory question only specified default fields/validation flags."
+  },
+  {
+    "family_id": "v19.requests.f0108",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0108",
+    "rationale": "The literal condition returns True when a non-None cookie.domain is already in the accumulated list. Two distinct domains alone do not satisfy that condition. This records pinned source behavior without fixing or normalizing the apparent name/doc mismatch.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.multiple_domains",
+        "start_line": 318,
+        "end_line": 329,
+        "start_byte": 10483,
+        "end_byte": 10943,
+        "span_sha256": "cb4f9c5448ad69260f984029ec9a4528203286822034e9be24c2ce73fd76d453",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New literal repeated-domain predicate behavior, separate from name/domain/path cookie lookup conflicts or cookie merging."
+  },
+  {
+    "family_id": "v19.requests.f0109",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0109",
+    "rationale": "copy makes a new PreparedRequest, copies headers if present and uses _copy_cookie_jar; body and hooks are assigned directly, so are reused; _body_position is retained. Generic cookie jars are copied with individual Cookie copies.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.copy",
+        "start_line": 456,
+        "end_line": 465,
+        "start_byte": 14139,
+        "end_byte": 14538,
+        "span_sha256": "2bc725af77812fe9698027d3545df4edacaaf68f6009cb95880f3df672f1cb59",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "_copy_cookie_jar",
+        "start_line": 479,
+        "end_line": 491,
+        "start_byte": 16834,
+        "end_byte": 17344,
+        "span_sha256": "514b0e21429f8738133299684eb7edee7d253a1cfbe4ad3eddac0c51a3ff8b18",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New PreparedRequest mutable alias/copy boundary; prior jar.update copy behavior concerns incoming cookie updates rather than request clone semantics."
+  },
+  {
+    "family_id": "v19.requests.f0110",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0110",
+    "rationale": "handle_401 returns immediately outside400..499. With a Digest challenge and num_401_calls<2 it increments the counter, consumes content and closes, copies request, regenerates cookies/auth and sends via r.connection. Other paths reset counter to1 and return the original response.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.handle_401",
+        "start_line": 273,
+        "end_line": 319,
+        "start_byte": 8955,
+        "end_byte": 10772,
+        "span_sha256": "0e52767c0fea552c35b03ea00e282fdfdf0af8651b83cb3dde778495e3e43419",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.close",
+        "start_line": 1173,
+        "end_line": 1184,
+        "start_byte": 41010,
+        "end_byte": 41461,
+        "span_sha256": "143242910eaebd91ec7a8738c7e6ca8b15cc87367780d12ebe2c71fa1b23fa49",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.copy",
+        "start_line": 456,
+        "end_line": 465,
+        "start_byte": 14139,
+        "end_byte": 14538,
+        "span_sha256": "2bc725af77812fe9698027d3545df4edacaaf68f6009cb95880f3df672f1cb59",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "auth:HTTPDigestAuth.handle_401",
+        "callee": "models:Response.close",
+        "expression": "r.close()",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "start_byte": 10141,
+        "end_byte": 10150,
+        "line": 301,
+        "kind": "call"
+      },
+      {
+        "caller": "auth:HTTPDigestAuth.handle_401",
+        "callee": "models:PreparedRequest.copy",
+        "expression": "r.request.copy()",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "start_byte": 10170,
+        "end_byte": 10186,
+        "line": 302,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New challenge replay eligibility and bounded resend workflow; prior Digest qop absence, nonce-count construction and thread initialization cover different stages."
+  },
+  {
+    "family_id": "v19.requests.f0111",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0111",
+    "rationale": "_get_idna_encoded_host invokes idna.encode(host,uts46=True).decode('utf-8') and catches idna.IDNAError to raise UnicodeError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest._get_idna_encoded_host",
+        "start_line": 474,
+        "end_line": 481,
+        "start_byte": 14796,
+        "end_byte": 15022,
+        "span_sha256": "1a862a5b333e6e29c1dca6d1593bee2aff2a20bd1f6a1719b3968f6f43096eff",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New concrete IDNA algorithm option/error boundary; prior URL missing-schema/wildcard errors and ASCII predicate are not this host normalization task."
+  },
+  {
+    "family_id": "v19.requests.f0112",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0112",
+    "rationale": "generate uses raw.stream(chunk_size,decode_content=True) when available; otherwise loops raw.read(chunk_size) until falsey chunk. _content_consumed becomes True after generator exhaustion.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.iter_content",
+        "start_line": 914,
+        "end_line": 977,
+        "start_byte": 31300,
+        "end_byte": 33949,
+        "span_sha256": "323e273ccf71610659ffc370524d1e1eead7da13682fe35090212476dfb23838",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New producer capability dispatch/exhaustion lifecycle; prior consumed-stream rejection and ReadTimeout wrapper ask about failure envelopes, not source capability selection."
+  },
+  {
+    "family_id": "v19.requests.f0113",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0113",
+    "rationale": "close calls self.poolmanager.clear(), then proxy.clear() for every manager in self.proxy_manager.values(). It does not merely close one Response raw stream.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.close",
+        "start_line": 555,
+        "end_line": 563,
+        "start_byte": 20484,
+        "end_byte": 20794,
+        "span_sha256": "beef193f63d82514af4d2cbd223d7b6fdcba79946e537302c51967c06f6c3e42",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New adapter-owned pool/cache resource disposal; old Response.close question concerns one raw stream and connection release, not clearing all adapter pools."
+  },
+  {
+    "family_id": "v19.requests.f0114",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0114",
+    "rationale": "chunked is not(body is None or 'Content-Length' in request.headers). The flag is passed as chunked=chunked to conn.urlopen. An existing length header disables chunking even if the body exists.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New transport framing boolean passed to urllib3; existing prepare_content_length and streamed-files errors are body preparation stages, not this wire flag decision."
+  },
+  {
+    "family_id": "v19.requests.f0115",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0115",
+    "rationale": "ConnectTimeoutError excluding NewConnectionError becomes ConnectTimeout; ResponseError becomes RetryError; urllib3 proxy/SSL reasons become corresponding Requests exceptions; other reasons fall back ConnectionError with request context.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New MaxRetryError reason discrimination, distinct from timeout-argument validation or stream-time ReadTimeoutError conversion."
+  },
+  {
+    "family_id": "v19.requests.f0116",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0116",
+    "rationale": "It tries integer version components; ValueError silently returns. Versions lexicographically less than[1,3,4] emit RequestsDependencyWarning about slowdown; no exception abort is implemented here.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/__init__.py",
+        "symbol": "_check_cryptography",
+        "start_line": 99,
+        "end_line": 108,
+        "start_byte": 2693,
+        "end_byte": 3114,
+        "span_sha256": "1f3c146012288ed8eb0b6d4e0dd286d3f4fd4b0b83d369f4550a2d7b297c6211",
+        "file_sha256": "80534322a1a3167d8775829ee220a6acf4fe455f3f778c4b8e94bcf7fadfa0b5"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New optional cryptography version diagnostic, distinct from urllib3/chardet/charset-normalizer compatibility bounds."
+  },
+  {
+    "family_id": "v19.requests.f0117",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0117",
+    "rationale": "info assembles platform,implementation,system_ssl and dependency version dictionaries; using_pyopenssl is pyopenssl is not None, using_charset_normalizer is chardet is None, and requests.version is included.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/help.py",
+        "symbol": "info",
+        "start_line": 67,
+        "end_line": 123,
+        "start_byte": 2020,
+        "end_byte": 3905,
+        "span_sha256": "7d372a2b71cc4b46cbe533d1ca5146d56706f2eee994b6f88e529dacc2d886c0",
+        "file_sha256": "e5845e93980b2e25be418fb7fe0b8e6e999fef8f84afc5a43f4546efdc24691f"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New diagnostic dependency report schema/usage flags; old _implementation task only concerns Python interpreter name/version selection."
+  },
+  {
+    "family_id": "v19.requests.f0120",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0120",
+    "rationale": "Without Host it returns original URL. With Host, it converts header to native UTF-8 string, parses original URL and reconstructs with Host as netloc, retaining scheme,path,params,query,fragment.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockRequest.get_full_url",
+        "start_line": 60,
+        "end_line": 78,
+        "start_byte": 1701,
+        "end_byte": 2375,
+        "span_sha256": "0df6317816a943d481393987cf1058b3a4288c5ad1cbc7c2086c4dfda15cadb4",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New Host-header influence on cookie policy URL, not the prior generic CookieJar wrapper architecture or cookie extraction guard."
+  }
+]

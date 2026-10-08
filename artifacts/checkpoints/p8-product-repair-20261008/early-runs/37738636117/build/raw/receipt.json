@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "phase": "failed_actual_command",
+  "product_source_commit": "ea6cc7e02ba5f0649f93dd03176fb36cfa797743",
+  "execution_head": "4d40f78cd22f96b6204f19909672f7728e50d692",
+  "source_inputs": {
+    "bytes": 201120,
+    "sha256": "2af3b5efb0482e7cb4244dacb88b00d388f52b88537b870e8f15612eaa2d195d"
+  },
+  "source_count": 797,
+  "source_guard": "Not repinned or waived. This isolated utility validates this candidate; required main/source-chain acceptance is pending.",
+  "build_profile": "release/default features",
+  "commands": [
+    {
+      "name": "format-check",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "returncode": 0,
+      "duration_s": 3.5836992089999953,
+      "log": "format-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summaries": []
+    },
+    {
+      "name": "new-text-admission",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-index",
+        "--test",
+        "explicit_text_admission",
+        "--",
+        "--nocapture"
+      ],
+      "returncode": 101,
+      "duration_s": 47.90913332900001,
+      "log": "new-text-admission.log",
+      "bytes": 10614,
+      "sha256": "63c914a845b7cb4a37ffcfe2a91a2a647ca83254f4dfe4142e298503dc62a29c",
+      "summaries": []
+    }
+  ],
+  "binaries": {}
+}

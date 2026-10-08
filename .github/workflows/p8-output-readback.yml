@@ -1,0 +1,34 @@
+name: P8 exact public artifact readback
+on:
+  push:
+    branches: ["work/p8-output-readback-996727-20261008"]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  exact-readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download the exact original public artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$RUNNER_TEMP/p8-readback-input"
+          gh api repos/jyqj/codecortex/actions/runs/37735653177/jobs > "$RUNNER_TEMP/p8-readback-input/jobs.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531074232 > "$RUNNER_TEMP/p8-readback-input/metadata.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531074232/zip > "$RUNNER_TEMP/p8-readback-input/metadata.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531039777 > "$RUNNER_TEMP/p8-readback-input/external.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531039777/zip > "$RUNNER_TEMP/p8-readback-input/external.zip"
+      - name: Verify and export original bytes
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONOPTIMIZE: "0"
+        run: python3 artifacts/checkpoints/p8-output-readback-20261008/readback.py --input "$RUNNER_TEMP/p8-readback-input" --part ${{ matrix.part }}

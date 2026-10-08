@@ -1,0 +1,656 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/cacheutils.py",
+      "boltons/dictutils.py",
+      "boltons/listutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 7,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15642
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 35,
+        "hydrate_requested": 35,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 171,
+            "sorts": 0,
+            "statements": 138,
+            "vm_steps": 6439
+          },
+          "text": {
+            "cache_hits": 35,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 20088,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 11,
+          "grep": 0,
+          "lexical": 24,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 19041
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 17000,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 1581,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 8008,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 12640,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 11,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 11
+          },
+          "elapsed_us": 4052,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 35,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 25,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 20088,
+        "redundant_bytes": 0,
+        "unique_bytes": 20088
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 6263,
+        "redundant_bytes": 0,
+        "unique_bytes": 6263
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 12,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 376956,
+      "scope": "disk_generation:v1",
+      "verified_hits": 35
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:boltons/listutils.py:0",
+        "end_line": 29,
+        "file_path": "boltons/listutils.py",
+        "fused_score": 0.0196078431372549,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "bfb192c54a51d1ded512018138dfce8db2c9c76a4786d983371cb5308460ef02",
+            "doc_version": "886e40fa3ba33610fd38cce5e8dadb13888947c60644bec2f297d82dee7dc303",
+            "encoding_key": "5e6ab036be46125a6a504728e7d82dea657075b4371850badf8f82c355d2d47f",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "4059c5ad6d2945d2b423a87e9a980ca5606d7e88217c950e226dc23ddff5f4bc",
+            "source": {
+              "byte_len": 12316,
+              "content_digest": "bb6eb6fb23b920811b8d0eae660f72b9836dbc3aa02c4e1d8a44e6d686f7699b",
+              "encoding": "utf8",
+              "snapshot_id": "8a30bfdad43624be65d85b4fceee924a0ac695bfe32b0984baf336fe76beb8e6"
+            },
+            "span": {
+              "end": 1511,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "path@1",
+          "fts-summary",
+          "path-token:list",
+          "symbol:BarrelList",
+          "preselect:fts-summary:+2.03",
+          "preselect:token-search:+4.60"
+        ],
+        "rerank_score": 0.46697626418988647,
+        "score_trace": [
+          [
+            "rrf:path",
+            0.0196078431372549
+          ],
+          [
+            "overlap",
+            0.14736842105263157
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+      },
+      {
+        "breadcrumb": "cachedmethod",
+        "chunk_id": "chunk:boltons/cacheutils.py:53",
+        "end_line": 611,
+        "file_path": "boltons/cacheutils.py",
+        "fused_score": 0.02660695468914647,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.043478260869565216,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "70d1ac1db676f83ec891e2aaedc20b585c2bb5d1c9ae41cf40ae7cad3c7170a7",
+            "doc_version": "73fd61b51732b44629b52428560818cb41dfecf24f1f70f693343afb7211fa72",
+            "encoding_key": "6cfac7bd14cdd6bfb80d15a4a52faaa7f51c76e93df49642bfe7d4fb0cde3905",
+            "entity_key": "5282c1c1f6affc2317202a12f78368cf5d681ef3b1b8310f2dfe5dcde4e5ef3d"
+          },
+          "qname": "cachedmethod",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 22030,
+              "start": 20276
+            },
+            "signature": {
+              "end": 20341,
+              "start": 20276
+            },
+            "slice_digest": "f7f7333113f49bdf56558e8d1075c094062d40393ddd14fdd2b07de112601dee",
+            "source": {
+              "byte_len": 30408,
+              "content_digest": "da940cc875b6f75a4e3f9cf404495d3b24a24c517aa8722690c8be4ffc27fcf4",
+              "encoding": "utf8",
+              "snapshot_id": "e3220213f177acbf0d515eb9d6f59c1e57a60cb24a946a3db719caa64a2c83f1"
+            },
+            "span": {
+              "end": 22030,
+              "start": 20273
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@23",
+          "fts-summary",
+          "symbol:CachedMethod",
+          "symbol:cachedmethod",
+          "preselect:fts-summary:+2.18",
+          "preselect:token-search:+3.60"
+        ],
+        "rerank_score": 0.455184561507857,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.015068493150684932
+          ],
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "overlap",
+            0.14736842105263157
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.23120918576607896
+          ]
+        ],
+        "source": "index",
+        "start_line": 569,
+        "symbol_kind": "function",
+        "symbol_name": "cachedmethod",
+        "text": "\n\n\ndef cachedmethod(cache, scoped=True, typed=False, key=None):\n    \"\"\"Similar to :func:`cached`, ``cachedmethod`` is used to cache\n    methods based on their arguments, using any :class:`dict`-like\n    *cache* object.\n\n    Args:\n        cache (str/Mapping/callable): Can be the name of an attribute\n            on the instance, any Mapping/:class:`dict`-like object, or\n            a callable which returns a Mapping.\n        scoped (bool): Whether the method itself and the object it is\n            bound to are part of the cache keys. ``True`` by default,\n            different methods will not read one another's cache\n            results. ``False`` can be useful for certain shared cache\n            use cases. More advanced behavior can be produced through\n            the *key* arguments.\n        typed (bool): Whether to factor argument types into the cache\n            check. Default ``False``, setting to ``True`` causes the\n            cache keys for ``3`` and ``3.0`` to be considered unequal.\n        key (callable): A callable with a signature that matches\n            :func:`make_cache_key` that returns a tuple of hashable\n            values to be used as the key in the cache.\n\n    >>> class Lowerer(object):\n    ...     def __init__(self):\n    ...         self.cache = LRI()\n    ...\n    ...     @cachedmethod('cache')\n    ...     def lower(self, text):\n    ...         return text.lower()\n    ...\n    >>> lowerer = Lowerer()\n    >>> lowerer.lower('WOW WHO COULD GUESS CACHING COULD BE SO NEAT')\n    'wow who could guess caching could be so neat'\n    >>> len(lowerer.cache)\n    1\n\n    \"\"\"\n    def cached_method_decorator(func):\n        return CachedMethod(func, cache, scoped=scoped, typed=typed, key=key)\n    return cached_method_decorator"
+      },
+      {
+        "breadcrumb": "OrderedMultiDict > keys",
+        "chunk_id": "chunk:boltons/dictutils.py:41",
+        "end_line": 607,
+        "file_path": "boltons/dictutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.03,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "cf964926b47ab72668c38a44932a7bfdd5d8b8efdf3d91058544bb7dd358aeb9",
+            "doc_version": "b2b88e9190072813faed6529564d24356497778224d478b098e948e4bf0fa548",
+            "encoding_key": "949332e4afd5097e1b73b4b55e293603d6f7c4e6dc7ad5de357f6ac01394e609",
+            "entity_key": "d76e46eb00b97fc754f2dc08b4f5ffd07a106460d55a6994b07819b35d05a912"
+          },
+          "qname": "OrderedMultiDict.keys",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 22263,
+              "start": 22056
+            },
+            "signature": {
+              "end": 22093,
+              "start": 22056
+            },
+            "slice_digest": "367e648699a150cf31d804d3758f9fa0f4a6b094a525f879ce922dea10ccf77f",
+            "source": {
+              "byte_len": 38300,
+              "content_digest": "f89cc672d532bc2e31c89c372cb876200986c9297eaebc4809dd48a3b74ab139",
+              "encoding": "utf8",
+              "snapshot_id": "453256b0bb264692161a45e8e80aef8d2a6cb0120dfb8cc1aca4a36bad5f3b65"
+            },
+            "span": {
+              "end": 22263,
+              "start": 22050
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:addlist",
+          "symbol:getlist",
+          "preselect:fts-summary:+2.16",
+          "preselect:token-search:+3.60"
+        ],
+        "rerank_score": 0.4399329019343266,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.12894736842105262
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.2304169060622936
+          ],
+          [
+            "boost:graph-rerank",
+            0.009
+          ]
+        ],
+        "source": "index",
+        "start_line": 601,
+        "symbol_kind": "method",
+        "symbol_name": "keys",
+        "text": "\n\n    def keys(self, multi=False):\n        \"\"\"Returns a list containing the output of :meth:`iterkeys`.  See\n        that method's docs for more details.\n        \"\"\"\n        return list(self.iterkeys(multi=multi))"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Locate the method that reverses a segmented list in place, flipping both each segment and the sequence of segments.",
+    "references": [
+      {
+        "file_path": "boltons/urlutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:addlist",
+          "symbol:getlist"
+        ],
+        "source_digest": "b1f182e4a494a56fe42809a4514e84ab7a131a5638d2306598cb582d4e1b37ce"
+      },
+      {
+        "file_path": "boltons/urlutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:addlist",
+          "symbol:getlist"
+        ],
+        "source_digest": "b1f182e4a494a56fe42809a4514e84ab7a131a5638d2306598cb582d4e1b37ce"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "Locate the method that reverses a segmented list in place, flipping both each segment and the sequence of segments.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Locate the method that reverses a segmented list in place, flipping both each segment and the sequence of segments.",
+  "token_budget": 4000,
+  "token_estimate": 3911
+}

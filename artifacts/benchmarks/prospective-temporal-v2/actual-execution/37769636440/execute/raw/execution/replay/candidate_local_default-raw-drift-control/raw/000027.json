@@ -1,0 +1,655 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/timeutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 2,
+      "callers_added": 1,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 13,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15694
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 72,
+            "sorts": 0,
+            "statements": 61,
+            "vm_steps": 3084
+          },
+          "text": {
+            "cache_hits": 5,
+            "legacy_auto_reads": 0,
+            "storage_reads": 19,
+            "utf8_bytes": 18562,
+            "zstd_decodes": 11
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 8523
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 549,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 784,
+        "soft_scanned": 784,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 784,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 12695
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 784,
+                "utf8_bytes": 326117,
+                "zstd_decodes": 495
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 549,
+                "utf8_bytes": 290596,
+                "zstd_decodes": 371
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 12626,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1658,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 4974,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 9889,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 679,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 17,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 18562,
+        "redundant_bytes": 0,
+        "unique_bytes": 18562
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 11127,
+        "redundant_bytes": 0,
+        "unique_bytes": 11127
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 4,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 143720,
+      "scope": "disk_generation:v1",
+      "verified_hits": 24
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "parse_timedelta",
+        "chunk_id": "chunk:boltons/timeutils.py:8",
+        "end_line": 188,
+        "file_path": "boltons/timeutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.21972245773362195,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "32bea94d26e2722f180b15d4ab1b26cbe73349f4cee6d5ae2c5876e54a8f778e",
+            "doc_version": "19d05a6e778820f9e27173b6c34056119924748139f69abe294d8964fb2ff0f7",
+            "encoding_key": "6c1cb9a7894c0d48f7f60d9c77e8ae92214a5711c8cdd82068157f7e88c59fe1",
+            "entity_key": "95a9046ce8a6dee0841a550c4fd6a4ede9137fb74a851f3b77e031f5c1a21329"
+          },
+          "qname": "parse_timedelta",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 7231,
+              "start": 5948
+            },
+            "signature": {
+              "end": 5979,
+              "start": 5948
+            },
+            "slice_digest": "9166a73262b0a495808f22b1f9b581f8e5e01728b97d4bf457909a6c1d793b3c",
+            "source": {
+              "byte_len": 22962,
+              "content_digest": "de647aa3627630682c7cd6961c77c644e1e05ee456394c8ce1a77837a448044c",
+              "encoding": "utf8",
+              "snapshot_id": "ffcfb63a228ceac1d7b39764fad4bd04bf842ba8dca50dc6c3dac9f5af87b655"
+            },
+            "span": {
+              "end": 7231,
+              "start": 5945
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:parse_timedelta",
+          "preselect:fts-summary:+2.29",
+          "preselect:token-search:+1.20"
+        ],
+        "rerank_score": 0.4813907356503471,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.20416666666666666
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.13973870421261345
+          ],
+          [
+            "boost:graph-rerank",
+            0.06591673732008659
+          ]
+        ],
+        "source": "index",
+        "start_line": 146,
+        "symbol_kind": "function",
+        "symbol_name": "parse_timedelta",
+        "text": "\n\n\ndef parse_timedelta(text):\n    \"\"\"Robustly parses a short text description of a time period into a\n    :class:`datetime.timedelta`. Supports weeks, days, hours, minutes,\n    and seconds, with or without decimal points:\n\n    Args:\n        text (str): Text to parse.\n    Returns:\n        datetime.timedelta\n    Raises:\n        ValueError: on parse failure.\n\n    >>> parse_td('1d 2h 3.5m 0s') == timedelta(days=1, seconds=7410)\n    True\n\n    Also supports full words and whitespace.\n\n    >>> parse_td('2 weeks 1 day') == timedelta(days=15)\n    True\n\n    Negative times are supported, too:\n\n    >>> parse_td('-1.5 weeks 3m 20s') == timedelta(days=-11, seconds=43400)\n    True\n    \"\"\"\n    td_kwargs = {}\n    for match in _PARSE_TD_RE.finditer(text):\n        value, unit = match.group('value'), match.group('unit')\n        try:\n            unit_key = _PARSE_TD_KW_MAP[unit]\n        except KeyError:\n            raise ValueError('invalid time unit %r, expected one of %r'\n                             % (unit, _PARSE_TD_KW_MAP.keys()))\n        try:\n            value = float(value)\n        except ValueError:\n            raise ValueError('invalid time value for unit %r: %r'\n                             % (unit, value))\n        td_kwargs[unit_key] = value\n    return timedelta(**td_kwargs)"
+      },
+      {
+        "breadcrumb": "decimal_relative_time",
+        "chunk_id": "chunk:boltons/timeutils.py:12",
+        "end_line": 248,
+        "file_path": "boltons/timeutils.py",
+        "fused_score": 0.021153846153846155,
+        "graph_score": 0.2764949357461537,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "dc327787a2479f20902110ce1e063fce945b5b6cc7f5c7ff536350adbc5b36a7",
+            "doc_version": "738931b4917dc91b61007e7e41ea2ee5c2a6ab075dc44b737e7ee5155dcf1332",
+            "encoding_key": "b09cfc95b1021148af99b83f1ed3835058c560976b8764c6a1600bddde0455f8",
+            "entity_key": "415aa66a103a4a9517689158b5bbc1ff683f7a1709f23098c377bc808ab8e224"
+          },
+          "qname": "decimal_relative_time",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 9446,
+              "start": 7487
+            },
+            "signature": {
+              "end": 7562,
+              "start": 7487
+            },
+            "slice_digest": "373a5238ab826044b934e8c5715fcb91a76108fadfc91fefe5f6102127ef0730",
+            "source": {
+              "byte_len": 22962,
+              "content_digest": "de647aa3627630682c7cd6961c77c644e1e05ee456394c8ce1a77837a448044c",
+              "encoding": "utf8",
+              "snapshot_id": "ffcfb63a228ceac1d7b39764fad4bd04bf842ba8dca50dc6c3dac9f5af87b655"
+            },
+            "span": {
+              "end": 9446,
+              "start": 7484
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "fts-summary",
+          "symbol:parse_timedelta",
+          "preselect:fts-summary:+2.29",
+          "preselect:token-search:+1.20"
+        ],
+        "rerank_score": 0.36903345739504934,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "overlap",
+            0.11666666666666665
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.13973870421261345
+          ],
+          [
+            "boost:graph-rerank",
+            0.04147424036192305
+          ]
+        ],
+        "source": "index",
+        "start_line": 199,
+        "symbol_kind": "function",
+        "symbol_name": "decimal_relative_time",
+        "text": "\n\n\ndef decimal_relative_time(d, other=None, ndigits=0, cardinalize=True):\n    \"\"\"Get a tuple representing the relative time difference between two\n    :class:`~datetime.datetime` objects or one\n    :class:`~datetime.datetime` and now.\n\n    Args:\n        d (datetime): The first datetime object.\n        other (datetime): An optional second datetime object. If\n            unset, defaults to the current time as determined\n            :meth:`datetime.utcnow`.\n        ndigits (int): The number of decimal digits to round to,\n            defaults to ``0``.\n        cardinalize (bool): Whether to pluralize the time unit if\n            appropriate, defaults to ``True``.\n    Returns:\n        (float, str): A tuple of the :class:`float` difference and\n           respective unit of time, pluralized if appropriate and\n           *cardinalize* is set to ``True``.\n\n    Unlike :func:`relative_time`, this method's return is amenable to\n    localization into other languages and custom phrasing and\n    formatting.\n\n    >>> now = datetime.now(timezone.utc).replace(tzinfo=None)\n    >>> decimal_relative_time(now - timedelta(days=1, seconds=3600), now)\n    (1.0, 'day')\n    >>> decimal_relative_time(now - timedelta(seconds=0.002), now, ndigits=5)\n    (0.002, 'seconds')\n    >>> decimal_relative_time(now, now - timedelta(days=900), ndigits=1)\n    (-2.5, 'years')\n\n    \"\"\"\n    if other is None:\n        if d.tzinfo is None:\n            other = datetime.now(timezone.utc).replace(tzinfo=None)\n        else:\n            other = datetime.now(d.tzinfo)\n    diff = other - d\n    diff_seconds = timedelta.total_seconds(diff)\n    abs_diff = abs(diff)\n    b_idx = bisect.bisect(_BOUND_DELTAS, abs_diff) - 1\n    bbound, bunit, bname = _BOUNDS[b_idx]\n    f_diff = diff_seconds / timedelta.total_seconds(bunit)\n    rounded_diff = round(f_diff, ndigits)\n    if cardinalize:\n        return rounded_diff, _cardinalize_time_unit(bname, abs(rounded_diff))\n    return rounded_diff, bname"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "定位将 '-1.5 weeks 3m 20s' 这样的时长文本解析为 datetime.timedelta 的函数，并指出它的旧别名。",
+    "references": [
+      {
+        "file_path": "boltons/timeutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:parse_timedelta"
+        ],
+        "source_digest": "de647aa3627630682c7cd6961c77c644e1e05ee456394c8ce1a77837a448044c"
+      },
+      {
+        "file_path": "boltons/timeutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:parse_timedelta"
+        ],
+        "source_digest": "de647aa3627630682c7cd6961c77c644e1e05ee456394c8ce1a77837a448044c"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/timeutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:e6c4a5688a7117cd41bd1f80",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 276,
+      "text": "caller: relative_time → decimal_relative_time (boltons/timeutils.py:276)",
+      "title": "Caller: relative_time",
+      "token_estimate": 18
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/timeutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:040613b5d09362604d9d7893",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 247,
+      "text": "callee: decimal_relative_time → _cardinalize_time_unit (boltons/timeutils.py:247)",
+      "title": "Callee: _cardinalize_time_unit",
+      "token_estimate": 20
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/timeutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:867a46c44d01c95df4e0415b",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 276,
+      "text": "callee: relative_time → decimal_relative_time (boltons/timeutils.py:276)",
+      "title": "Callee: decimal_relative_time",
+      "token_estimate": 18
+    }
+  ],
+  "query": "定位将 '-1.5 weeks 3m 20s' 这样的时长文本解析为 datetime.timedelta 的函数，并指出它的旧别名。",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "定位将 '-1.5 weeks 3m 20s' 这样的时长文本解析为 datetime.timedelta 的函数，并指出它的旧别名。",
+  "token_budget": 4000,
+  "token_estimate": 3924
+}

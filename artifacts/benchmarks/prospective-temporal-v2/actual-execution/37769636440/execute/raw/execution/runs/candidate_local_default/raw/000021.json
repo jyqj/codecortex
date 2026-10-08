@@ -1,0 +1,689 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/mathutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 2,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 6,
+      "omitted_hits": 3,
+      "omitted_nodes": 0,
+      "original_hits": 6,
+      "original_nodes": 8,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15833
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 6,
+        "hydrate_requested": 6,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 22,
+            "sorts": 0,
+            "statements": 19,
+            "vm_steps": 898
+          },
+          "text": {
+            "cache_hits": 4,
+            "legacy_auto_reads": 0,
+            "storage_reads": 2,
+            "utf8_bytes": 3949,
+            "zstd_decodes": 2
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 6,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 6,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 7492
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 0,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 27,
+        "skipped_duplicates": 27,
+        "soft_scanned": 27,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 27,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 286
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 27,
+                "utf8_bytes": 8146,
+                "zstd_decodes": 13
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 27,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 13766
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1729,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 836,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 6,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 6
+          },
+          "elapsed_us": 4215,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "query_expansion_atom_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 27,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 3194,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1174,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "test",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons/mathutils.py",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 1,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 6
+      },
+      "input_candidates": 6,
+      "intent": "test",
+      "intent_facet_anchors": {
+        "implementation": "chunk:boltons/mathutils.py:0"
+      },
+      "limit_omitted": 0,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 3949,
+        "redundant_bytes": 0,
+        "unique_bytes": 3949
+      },
+      "requested_limit": 10,
+      "selected": 6,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 3949,
+        "redundant_bytes": 0,
+        "unique_bytes": 3949
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "test",
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 1,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 8146,
+      "scope": "disk_generation:v1",
+      "verified_hits": 6
+    }
+  },
+  "intent": "test",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:boltons/mathutils.py:0",
+        "end_line": 29,
+        "file_path": "boltons/mathutils.py",
+        "fused_score": 0.0411764705882353,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "8366ae68a744c8e629f85a22cf509b67e1ccc4ce61dd258be4896ac31ad673e3",
+            "doc_version": "e6f76b80e626179bc4cc0f9d65cbd8985d63c24ec73ef9ef993706b4194ad181",
+            "encoding_key": "ff7b6f72f615cc83bda686ea952fac6cf81f8e7fde5d46ffba0d0edbbdfd18b8",
+            "entity_key": null
+          },
+          "evidence_priority": "intent_facet",
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "4059c5ad6d2945d2b423a87e9a980ca5606d7e88217c950e226dc23ddff5f4bc",
+            "source": {
+              "byte_len": 8146,
+              "content_digest": "7d6af6b3c153b06a77ba814981d27ad9a8fa2287389bb31a6e2cf32197c7e14e",
+              "encoding": "utf8",
+              "snapshot_id": "cb9d0a87654b67ed634d68c6ccabef133c092325005101617a2eda6dc88666d6"
+            },
+            "span": {
+              "end": 1511,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "path@1",
+          "lexical@1",
+          "fts-summary",
+          "path-token:boltons",
+          "path-token:mathutils",
+          "preselect:fts-summary:+2.23",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.41242706816816754,
+        "score_trace": [
+          [
+            "rrf:path",
+            0.0196078431372549
+          ],
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.15217391304347824
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.16907668453645402
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+      },
+      {
+        "breadcrumb": "Bits [members: __init__, __getitem__, __len__, __eq__, __or__, __and__, __lshift__, __rshift__, __hash__, as_list, as_bin, as_hex, as_int, as_bytes, from_list, from_bin]",
+        "chunk_id": "chunk:boltons/mathutils.py:5",
+        "end_line": 137,
+        "file_path": "boltons/mathutils.py",
+        "fused_score": 0.020754716981132078,
+        "graph_score": 0.4,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.3333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "5a63ee5748d442547d921772a614dd2a4ccbeddfdad3892f41c1f67d8d070ad5",
+            "doc_version": "7d0353ae259e2be61ef614d21e470fe562f2b930514924d9a4c8258183fd3f28",
+            "encoding_key": "22f52495701c01bb9c4ef84c4317f10f4b7ed1f56a0c1bb840a3f7e48573de20",
+            "entity_key": "721918f08173210894f0f99e86902ccfcd9440796c6299b92193d032327830ec"
+          },
+          "qname": "Bits",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 8145,
+              "start": 4018
+            },
+            "signature": {
+              "end": 4034,
+              "start": 4018
+            },
+            "slice_digest": "e38f4937a460aea98b80763306376ea6798dc5877d0aea162943bb440cd3c49b",
+            "source": {
+              "byte_len": 8146,
+              "content_digest": "7d6af6b3c153b06a77ba814981d27ad9a8fa2287389bb31a6e2cf32197c7e14e",
+              "encoding": "utf8",
+              "snapshot_id": "cb9d0a87654b67ed634d68c6ccabef133c092325005101617a2eda6dc88666d6"
+            },
+            "span": {
+              "end": 4528,
+              "start": 4015
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@3",
+          "fts-summary",
+          "path-token:boltons",
+          "path-token:mathutils",
+          "preselect:fts-summary:+2.23",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.38635314064802084,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.020754716981132078
+          ],
+          [
+            "overlap",
+            0.10652173913043478
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.16907668453645402
+          ],
+          [
+            "boost:graph-rerank",
+            0.039999999999999994
+          ]
+        ],
+        "source": "index",
+        "start_line": 121,
+        "symbol_kind": "class",
+        "symbol_name": "Bits",
+        "text": "\n\n\nclass Bits:\n    '''\n    An immutable bit-string or bit-array object.\n    Provides list-like access to bits as bools,\n    as well as bitwise masking and shifting operators.\n    Bits also make it easy to convert between many\n    different useful representations:\n\n    * bytes -- good for serializing raw binary data\n    * int -- good for incrementing (e.g. to try all possible values)\n    * list of bools -- good for iterating over or treating as flags\n    * hex/bin string -- good for human readability\n\n    '''"
+      },
+      {
+        "breadcrumb": "ceil",
+        "chunk_id": "chunk:boltons/mathutils.py:3",
+        "end_line": 94,
+        "file_path": "boltons/mathutils.py",
+        "fused_score": 0.02,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.2,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "77576f90554a3c592499ad788eaa8ff6dbf6f149cc5d1e0bba77feba1eb483c0",
+            "doc_version": "92a95d4d30908041dbf194070e33a03db597c398b62953ff48c529e7d7c6b63c",
+            "encoding_key": "b56541d973a486e91e7f27e77a0efd9c7d9d867b84c5d48a413695ecc5741c11",
+            "entity_key": "9cd50b40b783cbc2d990694f37696c431a6fdb45a1a44a87b3e7bff10da928bd"
+          },
+          "qname": "ceil",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 3277,
+              "start": 2539
+            },
+            "signature": {
+              "end": 2570,
+              "start": 2539
+            },
+            "slice_digest": "a560bad9b08a6e81d2c48e51b16d09670ad35bc8d60471951f97684c4900e1f9",
+            "source": {
+              "byte_len": 8146,
+              "content_digest": "7d6af6b3c153b06a77ba814981d27ad9a8fa2287389bb31a6e2cf32197c7e14e",
+              "encoding": "utf8",
+              "snapshot_id": "cb9d0a87654b67ed634d68c6ccabef133c092325005101617a2eda6dc88666d6"
+            },
+            "span": {
+              "end": 3277,
+              "start": 2536
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@5",
+          "fts-summary",
+          "path-token:boltons",
+          "path-token:mathutils",
+          "preselect:fts-summary:+2.23",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.3455984236668888,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.02
+          ],
+          [
+            "overlap",
+            0.10652173913043478
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.16907668453645402
+          ]
+        ],
+        "source": "index",
+        "start_line": 69,
+        "symbol_kind": "function",
+        "symbol_name": "ceil",
+        "text": "\n\n\ndef ceil(x, options=None):\n    \"\"\"Return the ceiling of *x*. If *options* is set, return the smallest\n    integer or float from *options* that is greater than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> ceil(3.5, options=VALID_CABLE_CSA)\n    4\n    >>> ceil(4, options=VALID_CABLE_CSA)\n    4\n    \"\"\"\n    if options is None:\n        return _ceil(x)\n    options = sorted(options)\n    i = bisect.bisect_left(options, x)\n    if i == len(options):\n        raise ValueError(\"no ceil options greater than or equal to: %r\" % x)\n    return options[i]"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Within boltons/mathutils.py at this source revision, locate an implementation of the Euclidean algorithm for the greatest common divisor of two integers.",
+    "references": [],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/mathutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:31864730ff8fb302533eac3a",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 171,
+      "text": "caller: __getitem__ → Bits (boltons/mathutils.py:171)",
+      "title": "Caller: __getitem__",
+      "token_estimate": 13
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/mathutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:081a2108698e5f3e9ac36c61",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 191,
+      "text": "caller: __or__ → Bits (boltons/mathutils.py:191)",
+      "title": "Caller: __or__",
+      "token_estimate": 12
+    }
+  ],
+  "query": "Within boltons/mathutils.py at this source revision, locate an implementation of the Euclidean algorithm for the greatest common divisor of two integers.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Within boltons/mathutils.py at this source revision, locate an implementation of the Euclidean algorithm for the greatest common divisor of two integers.",
+  "token_budget": 4000,
+  "token_estimate": 3959
+}

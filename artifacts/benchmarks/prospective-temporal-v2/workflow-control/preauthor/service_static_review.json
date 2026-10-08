@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "role": "Non-author of service_workflow.py, its three Actions workflows and Rust probe; protocol designer and independent reviewer of the unchanged temporal3.1 operator disclosed.",
+  "verdict": "accepted_scoped_static_service_closure",
+  "reviewed_blobs": {
+    ".github/workflows/p8-temporal-execute.yml": "4e2c86d6b8158d49c766f1190965d7cdc8d31873",
+    ".github/workflows/p8-temporal-prepare-data.yml": "062c98bec041d185fffe1866ca6f2cf1eb92c940",
+    ".github/workflows/p8-temporal-replay.yml": "aad8b2458d57dd538cdefa58373e546092bac2e1",
+    "artifacts/benchmarks/prospective-temporal-v2/service-workflow/OPERATIONS.md": "76f7acc92ba43b21bc22b91e3bc9683a12b572cc",
+    "artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py": "b5da580a70c3e8630e0869187541b1065e4b265e",
+    "artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py": "ae61da6ba3ef8c6ef6c6a81857b0e58d97e815c6"
+  },
+  "reviewed_file_map": {
+    ".github/workflows/p8-temporal-execute.yml": {
+      "bytes": 4276,
+      "mode": 420,
+      "sha256": "3ef121a4ad49a8ce562ae5f208a5bf364023c3c8309f6db1fb5611b72250b6e8"
+    },
+    ".github/workflows/p8-temporal-prepare-data.yml": {
+      "bytes": 4259,
+      "mode": 420,
+      "sha256": "456c844ce39e7aa7417c9a1d3b5beba2958c84fdf26ee412b654a7d9f0e30aff"
+    },
+    ".github/workflows/p8-temporal-replay.yml": {
+      "bytes": 6086,
+      "mode": 420,
+      "sha256": "e184c8b27a1dd9969d486a84be88273757b41a38a894c91f954d6ac8fdfc7c5f"
+    },
+    "artifacts/benchmarks/prospective-temporal-v2/service-workflow/OPERATIONS.md": {
+      "bytes": 19884,
+      "mode": 420,
+      "sha256": "8db16e466fc99cdff618b22dd816ab426c1c1172bdfc012dcef89b75ae6e07d4"
+    },
+    "artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py": {
+      "bytes": 22112,
+      "mode": 420,
+      "sha256": "255aab123adab8f9b655d750d418e6ab322fc87784d958110fbb4ea4374ca8a9"
+    },
+    "artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py": {
+      "bytes": 4869,
+      "mode": 420,
+      "sha256": "14987971375822cd5cf7a81c405bd284f37706f421a12ba239cd074c4571a721"
+    }
+  },
+  "reviewed_file_map_sha256": "299e5027bdf627eea271481c275f6c07fbb7eb0d00a6fdc3993fee04bf610b31",
+  "mode_scope": "Expected sealed modes are0644. Blob APIs establish bytes; the frozen service commit must bind these declared modes through the original record()/check_logic() checks before first seal.",
+  "candidate_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+  "package": {
+    "original_run_id": 37749276827,
+    "manifest_sha256": "1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b",
+    "archive_sha256": "acb16c6c8b34dc513569d4667b0dff721713f791eb7c7752791ad2430ed438f3"
+  },
+  "unchanged_operator": {
+    "blob": "41ce2df9fd364de00bf2265aac6f4f791235e6a8",
+    "sha256": "ff63fc8da0d3de6ce5233549dcbebbb54d64422eb09b4f9c7eb7680a6734e148",
+    "six_file_map_sha256": "c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4",
+    "prior_non_author_review_blob": "4071c4aaf8ed8c18cb050830596d63757aaa2aa4"
+  },
+  "source_checks": {
+    "full_driver_and_three_workflows_read": true,
+    "driver_v2_exact_640_character_review_binding_insertion_restores_v1": true,
+    "final_guide_changes_only_probe_identity_and_exact_observation_description": true,
+    "all_six_file_sha256_and_byte_counts_independently_recomputed": true,
+    "service_map_matches_author": true,
+    "rust_probe_review": {
+      "blob": "530caea2bb7db3198bd3fad87bfc723f03d60602",
+      "sha256": "fb8641054bae8029a14b487e6104334084eac2996cd0a05b9e1f31db33543665"
+    }
+  },
+  "mechanical_boundaries": [
+    {
+      "area": "Frozen logic and ancestry",
+      "finding": "Reads all six service files and all six unchanged operator files; binds records to an immutable full baseline commit, rejects merge/nonlinear or non-data changes at every descendant, including change-then-revert. Only non-executable regular declared data suffixes in reserved data/control directories are allowed."
+    },
+    {
+      "area": "Candidate/source/package isolation",
+      "finding": "Exact candidate and upstream HEAD/clean state, original package bytes and helper closure are checked. Dedicated read-only workflows use isolated checkouts, external output paths, fixedRust homes and separately measured actual routing."
+    },
+    {
+      "area": "Pre-data-seal preparation",
+      "finding": "Copies owned draft data, validates reviewed48-row schema/source admission, invokes unchanged evaluator freeze/validate only, permits only the original two suite digests to change, and checks all draft/upstream/candidate/helper/binary bytes afterward. No product ranking queries."
+    },
+    {
+      "area": "Execution authorization",
+      "finding": "Requires formal branch and GITHUB_RUN_ATTEMPT1, records actual run identity, then waits at most the original600s for its run-specific permission branch. Calls the original operator in a separate -I -S process; does not contaminate the measurement module fingerprint with orchestration imports. Original service witness, per-arm binding and one-attempt gate remain in operator."
+    },
+    {
+      "area": "Replay",
+      "finding": "Requires actual execution run/utility identity, exact execution/result records and independently supplied complete raw/data maps. The separate independent review file must exist at a safe relative path and match bytes/mode/SHA; its author and conclusion are not automatically authenticated. Restores archive-erased modes only on a new owned copy and proves downloaded bytes unchanged. Calls original scorer replay only, with zero new product requests."
+    },
+    {
+      "area": "Exit/report semantics",
+      "finding": "Preserves original helper exit0/1/2/3 and all raw artifacts; gate1 is not converted to pass. Workflow outcome and static approval do not decide task completion or quality."
+    }
+  ],
+  "manual_boundary": [
+    "contract.json is not self-authenticating. Its exact hash must be independently pinned in the first pre-author seal; formal locks and permission then bind that hash/data inventory.",
+    "Actual external service chronology, prior attempts, role independence, source/gold conclusions, candidate exposure and genuine authorization remain manual non-author review. JSON fields alone do not establish those events.",
+    "Final frozen logic Git commit/modes, actual Python/entrypoint controls, corrected-runtime evidence, complete preseal module/environment comparison and current002/003 publication must be checked before admitting fresh roles.",
+    "No fresh authoring, data seal, execution permission or future success is granted by this static review."
+  ],
+  "runtime_observation_status": "The root and p7_wiring own actual zero-query Rust-probe/preseal output review. This receipt does not claim those jobs were executed by this reviewer.",
+  "remaining_code_findings": [],
+  "task_ledger_changed": false
+}

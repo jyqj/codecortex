@@ -1,0 +1,38 @@
+name: P8 original temporal preseal artifact readback
+on:
+  push:
+    branches: [work/p8-temporal-readback-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inventory:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: synthetic-control
+            artifact: '11538793031'
+          - mode: prepare-source
+            artifact: '11538762460'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download fixed original artifact and service responses
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ matrix.artifact }}
+        run: |
+          mkdir "$RUNNER_TEMP/ptv2-readback"
+          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID" > "$RUNNER_TEMP/ptv2-readback/artifact.json"
+          gh api repos/jyqj/codecortex/actions/runs/37752995462 > "$RUNNER_TEMP/ptv2-readback/run.json"
+          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/ptv2-readback/original.zip"
+      - name: Inventory exact original bytes and expose existing metadata
+        env:
+          READBACK_ROOT: ${{ runner.temp }}/ptv2-readback
+          READBACK_MODE: ${{ matrix.mode }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -I -S artifacts/checkpoints/p8-temporal-readback-20261008/inventory.py

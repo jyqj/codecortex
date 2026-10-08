@@ -1,0 +1,52 @@
+name: P8 product formatting and counterexample
+on:
+  push:
+    branches: [work/p8-product-format-996727-20261008]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Preserve before and after formatting
+        run: python3 artifacts/checkpoints/p8-product-repair-20261008/observe_format.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-product-format
+          path: artifacts/checkpoints/p8-product-repair-20261008/format-observation
+          if-no-files-found: error
+          include-hidden-files: true
+  counterexample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+      - uses: actions/checkout@v4
+        with:
+          ref: b608d2639aff026a993d59f1a4ab59e8f7c270f5
+          path: tests-only
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tests-only
+      - name: Observe original implementation failure without changing assertions
+        working-directory: tests-only
+        run: python3 ../utility/artifacts/checkpoints/p8-product-repair-20261008/observe_counterexample.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-original-admission-counterexample
+          path: tests-only/artifacts/checkpoints/p8-product-repair-20261008/counterexample
+          if-no-files-found: error
+          include-hidden-files: true

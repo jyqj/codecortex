@@ -309,6 +309,14 @@ impl Default for AutoIndexConfig {
 pub struct IndexingConfig {
     #[serde(default = "default_include_patterns")]
     pub include: Vec<String>,
+    /// Opt in to UTF-8, NUL-free files without a recognized language or include pattern.
+    /// These files use the generic line-based parser; this is not AST support.
+    #[serde(default)]
+    pub include_text_files: bool,
+    /// Opt in to hidden source files. System/cache directories, generated control
+    /// files, and environment-secret paths remain excluded in this mode.
+    #[serde(default)]
+    pub include_hidden_files: bool,
     #[serde(default = "default_ignore_patterns")]
     pub ignore: Vec<String>,
     #[serde(default = "default_max_file_bytes")]
@@ -439,6 +447,8 @@ impl Default for IndexingConfig {
     fn default() -> Self {
         Self {
             include: default_include_patterns(),
+            include_text_files: false,
+            include_hidden_files: false,
             ignore: default_ignore_patterns(),
             max_file_bytes: default_max_file_bytes(),
             chunk_line_budget: default_chunk_line_budget(),

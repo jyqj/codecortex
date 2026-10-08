@@ -13,6 +13,10 @@ pub trait Backend {
     }
     async fn prepare(&mut self, files: &[FileRecord]) -> Result<Value>;
     async fn readiness(&mut self, files: &[FileRecord]) -> Result<Readiness>;
+    /// Optional raw readiness observations retained even when measurement fails.
+    fn readiness_observation(&self) -> Option<&Value> {
+        None
+    }
     async fn search(&mut self, input: &SearchInput) -> Result<Value>;
     async fn close(&mut self) -> Result<()>;
 }

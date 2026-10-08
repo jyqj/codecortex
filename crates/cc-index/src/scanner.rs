@@ -72,6 +72,8 @@ pub struct WalkManifest {
 pub struct IgnoreRules {
     gitignore: Option<ignore::gitignore::Gitignore>,
     overrides: Option<ignore::overrides::Override>,
+    include_hidden_files: bool,
+    broad_source_admission: bool,
 }
 
 impl IgnoreRules {
@@ -99,12 +101,24 @@ impl IgnoreRules {
         Self {
             gitignore,
             overrides,
+            include_hidden_files: config.include_hidden_files,
+            broad_source_admission: config.include_text_files || config.include_hidden_files,
         }
+    }
+
+    /// Hidden source events are opt-in; the final scanner still verifies
+    /// language/text, size, and on-disk admission. Both create and removal
+    /// events must reach that scanner, so this does not inspect file bytes.
+    pub fn permits_hidden_source_events(&self, rel_path: &str) -> bool {
+        self.include_hidden_files && !rel_path.is_empty() && !self.is_ignored(rel_path)
     }
 
     /// Whether the scan walk would filter this relative file path via
     /// gitignore or configured ignore patterns.
     pub fn is_ignored(&self, rel_path: &str) -> bool {
+        if self.broad_source_admission && Scanner::protected_text_path(rel_path) {
+            return true;
+        }
         if let Some(gitignore) = &self.gitignore {
             if gitignore
                 .matched_path_or_any_parents(rel_path, false)
@@ -146,6 +160,79 @@ impl Scanner {
 
     pub(crate) fn project_path(&self) -> &Path {
         &self.project_path
+    }
+
+    /// Explicit broad text/hidden admission never includes generated state,
+    /// dependency/build caches, or environment-secret paths. This is path based,
+    /// independent of benchmark questions or expected answers.
+    fn protected_text_path(rel: &str) -> bool {
+        rel.split('/').any(|part| {
+            part.starts_with(".env")
+                || part.starts_with(".codecortex")
+                || matches!(
+                    part,
+                    ".git" | ".hg" | ".svn" | ".codecortex" | ".codecortex.json"
+                        | ".DS_Store" | "Thumbs.db"
+                        | ".config" | ".cache" | ".local" | ".ssh" | ".gnupg"
+                        | ".venv" | "venv" | "__pycache__" | "node_modules"
+                        | "vendor" | ".mypy_cache" | ".pytest_cache" | ".tox" | ".eggs"
+                        | "target" | "dist" | "build" | "coverage" | ".next"
+                        | ".idea" | ".vscode"
+                )
+        })
+    }
+
+    fn admits_relative_path(&self, rel: &str) -> bool {
+        !rel.is_empty()
+            && (self.config.include_hidden_files || !rel.split('/').any(|c| c.starts_with('.')))
+            && (!(self.config.include_text_files || self.config.include_hidden_files)
+                || !Self::protected_text_path(rel))
+    }
+
+    /// The full walk and event/scoped walks share the final admission decision.
+    /// Broad text admission reads at most the configured file cap and rejects
+    /// binary/non-UTF-8 bytes before they can be treated as generic source.
+    fn admitted_language(&self, path: &Path, rel: &str, size: u64) -> Option<Language> {
+        if !self.admits_relative_path(rel) || size > self.config.max_file_bytes {
+            return None;
+        }
+        if (self.config.include_text_files || self.config.include_hidden_files)
+            && std::fs::symlink_metadata(path).ok()?.file_type().is_symlink()
+        {
+            return None;
+        }
+        let language = detect_language(rel);
+        if language != Language::Unknown {
+            return Some(language);
+        }
+        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        let name = path.file_name().and_then(|e| e.to_str()).unwrap_or("");
+        let included = self.config.include.iter().any(|p| {
+            p.ends_with(&format!("*.{ext}"))
+                || p.ends_with(&format!("/{name}"))
+                || p.ends_with(name)
+        });
+        if included {
+            return Some(language);
+        }
+        if !self.config.include_text_files {
+            return None;
+        }
+        // A file can grow after the walk's stat. Bound the read itself as well.
+        use std::io::Read;
+        let mut bytes = Vec::new();
+        std::fs::File::open(path)
+            .ok()?
+            .take(self.config.max_file_bytes.saturating_add(1))
+            .read_to_end(&mut bytes)
+            .ok()?;
+        if bytes.len() as u64 > self.config.max_file_bytes
+            || bytes.contains(&0)
+            || std::str::from_utf8(&bytes).is_err()
+        {
+            return None;
+        }
+        Some(language)
     }
 
     /// Scan the project directory and return all indexable files.
@@ -212,8 +299,18 @@ impl Scanner {
         // Prune hidden subtrees beyond the config-linker depth budget: only
         // the config pass consumes hidden paths, and it never looked deeper.
         let root = self.project_path.clone();
+        let include_hidden_files = self.config.include_hidden_files;
+        let broad_source_admission = include_hidden_files || self.config.include_text_files;
         builder.filter_entry(move |entry| {
             let rel = entry.path().strip_prefix(&root).unwrap_or(entry.path());
+            if broad_source_admission
+                && Self::protected_text_path(&rel.to_string_lossy().replace('\\', "/"))
+            {
+                return false;
+            }
+            if include_hidden_files {
+                return true;
+            }
             let has_hidden = rel.components().any(|c| {
                 matches!(
                     c,
@@ -336,17 +433,21 @@ impl Scanner {
             let hidden = rel_path.split('/').any(|c| c.starts_with('.'));
             let depth = rel_path.split('/').count();
 
-            walk_files.push(WalkedFile {
-                rel_path: rel_path.clone(),
-                size: entry.size,
-                mtime: entry.mtime,
-                mtime_secs: entry.mtime_secs,
-                depth,
-                hidden,
-            });
+            // Broader source admission does not broaden the configuration
+            // linker's existing hidden-input depth contract.
+            if !hidden || depth <= CONFIG_WALK_MAX_DEPTH {
+                walk_files.push(WalkedFile {
+                    rel_path: rel_path.clone(),
+                    size: entry.size,
+                    mtime: entry.mtime,
+                    mtime_secs: entry.mtime_secs,
+                    depth,
+                    hidden,
+                });
+            }
 
             // ── Indexable-set filters (scanner semantics) ────────────────
-            if hidden {
+            if !self.admits_relative_path(&rel_path) {
                 continue;
             }
             if let Some(ovr) = &overrides {
@@ -358,33 +459,11 @@ impl Scanner {
                     continue;
                 }
             }
-            if entry.size > self.config.max_file_bytes {
+            let Some(language) =
+                self.admitted_language(&entry.abs_path, &rel_path, entry.size)
+            else {
                 continue;
-            }
-
-            // Detect language and check if included
-            let language = detect_language(&rel_path);
-            if language == Language::Unknown {
-                // Check if extension matches any include pattern
-                let ext = entry
-                    .abs_path
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .unwrap_or("");
-                let file_name = entry
-                    .abs_path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("");
-                let glob_match = self.config.include.iter().any(|p| {
-                    p.ends_with(&format!("*.{}", ext))
-                        || p.ends_with(&format!("/{}", file_name))
-                        || p.ends_with(file_name)
-                });
-                if !glob_match {
-                    continue;
-                }
-            }
+            };
 
             indexable.push(ScannedFile {
                 rel_path,
@@ -415,7 +494,7 @@ impl Scanner {
         // and user-ignore matches (file itself or any ancestor directory,
         // mirroring walker-level directory pruning).
         let admissible = |rel: &str| -> bool {
-            if rel.is_empty() || rel.split('/').any(|c| c.starts_with('.')) {
+            if !self.admits_relative_path(rel) {
                 return false;
             }
             if let Some(ovr) = &overrides {
@@ -472,12 +551,17 @@ impl Scanner {
         }
 
         let mut builder = ignore::WalkBuilder::new(&self.project_path);
-        builder.hidden(true).git_ignore(true).git_global(false);
+        builder
+            .hidden(!self.config.include_hidden_files)
+            .git_ignore(true)
+            .git_global(false);
 
         let root = self.project_path.clone();
         let want_files_filter = want_files;
         let subtree_prefixes_filter = subtree_prefixes;
         let descend_dirs_filter = descend_dirs;
+        let broad_source_admission =
+            self.config.include_hidden_files || self.config.include_text_files;
         builder.filter_entry(move |entry| {
             let rel = match entry.path().strip_prefix(&root) {
                 Ok(r) => r,
@@ -487,6 +571,9 @@ impl Scanner {
                 return true;
             }
             let rel = rel.to_string_lossy().replace('\\', "/");
+            if broad_source_admission && Self::protected_text_path(&rel) {
+                return false;
+            }
             let under_subtree = subtree_prefixes_filter
                 .iter()
                 .any(|prefix| rel.starts_with(prefix.as_str()));
@@ -541,22 +628,9 @@ impl Scanner {
             Ok(m) => m,
             Err(_) => return,
         };
-        if metadata.len() > self.config.max_file_bytes {
+        let Some(language) = self.admitted_language(path, &rel_path, metadata.len()) else {
             return;
-        }
-        let language = detect_language(&rel_path);
-        if language == Language::Unknown {
-            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-            let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-            let glob_match = self.config.include.iter().any(|p| {
-                p.ends_with(&format!("*.{ext}"))
-                    || p.ends_with(&format!("/{file_name}"))
-                    || p.ends_with(file_name)
-            });
-            if !glob_match {
-                return;
-            }
-        }
+        };
         let mtime = metadata
             .modified()
             .ok()

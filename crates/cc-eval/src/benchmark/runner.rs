@@ -105,6 +105,9 @@ pub async fn run<B: Backend>(
             Err(e) => manifest.infrastructure_failure = Some(e.to_string()),
         }
     }
+    if let Some(observation) = backend.readiness_observation() {
+        report::json(&out.join("readiness-observation.json"), observation)?;
+    }
     resources.push(sampler::sample("after_index", backend.pid()));
     if manifest.infrastructure_failure.is_none() {
         for _ in 0..loaded.suite.warmup {

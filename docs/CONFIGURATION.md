@@ -17,6 +17,8 @@
 {
   "indexing": {
     "include": ["**/*.py", "**/*.ts", "**/*.go"],
+    "include_text_files": false,
+    "include_hidden_files": false,
     "ignore": ["**/generated/**"],
     "max_file_bytes": 512000,
     "chunk_line_budget": 80,
@@ -65,6 +67,8 @@
 | 字段 | 默认 | 含义 |
 |------|------|------|
 | `include` | 27 项默认 glob | **扩展**（而非收窄）索引范围。已知语言的文件总是被索引；`include` 救援匹配这些 glob 的未知语言文件。设值是**替换**默认集而非追加。 |
+| `include_text_files` | `false` | 显式纳入没有已知语言或 `include` 匹配的 UTF-8、无 NUL 文本；沿用文件大小上限，经现有 generic 行级分块写入检索索引，不声明 AST/符号解析支持。 |
+| `include_hidden_files` | `false` | 显式纳入隐藏源码；可与文本开关组合纳入隐藏文档。全量和事件增量遵守同一准入规则。 |
 | `ignore` | 15 项默认排除 glob | 在 gitignore 感知发现之上额外排除的 glob（默认含 `.git/**`、`node_modules/**`、`target/**` 等）。设值是**替换**默认集而非追加。 |
 | `max_file_bytes` | `512000` | 超过此大小的文件跳过。 |
 | `chunk_line_budget` | `80` | 已接入所有 Registry 解析器与 SFC；每块占用行数，范围 1–10000。 |
@@ -82,6 +86,8 @@
 | `dispatch_synthesis` | `true` | 索引时合成事件 emitter → handler 等派发边。 |
 | `event_fanout_cap` | `6` | 单个 emit 点最多匹配的 handler 数（先按 receiver/同文件收窄）。 |
 | `event_denylist` | `[]` | 派发合成排除的事件名。空则用内置默认。 |
+
+任一显式文本/隐藏开关启用时，符号链接文件、环境文件名 `.env*`、生成的根控制文件 `.codecortex.json`、版本库状态（`.git/.hg/.svn`）、`.codecortex/.config/.cache/.local/.ssh/.gnupg`、依赖与构建缓存目录（包括 `node_modules/vendor/target/build/dist/coverage/.venv/venv/__pycache__/.next/.idea/.vscode/.mypy_cache/.pytest_cache/.tox/.eggs`）仍排除；清空 `ignore` 不会放开这些路径。正常 gitignore 与用户 `ignore` 仍生效。新增源准入不扩大模块配置捕获原有的隐藏目录深度上限。两个开关均省略时，保持原有索引范围。
 
 ## search
 

@@ -1,0 +1,1575 @@
+[
+  {
+    "id": "P7-018",
+    "phase": "P7",
+    "phase_name": "provider与dense端到端",
+    "batch": "P7-D",
+    "title": "受授权的真实provider小集认证",
+    "status": "blocked",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/benchmarks/manifests/",
+      "artifacts/benchmarks/"
+    ],
+    "depends_on": [
+      "P7-017"
+    ],
+    "steps": [
+      "选公开固定输入显式批准费用",
+      "验证真实返回、用量和partial behavior"
+    ],
+    "deliverables": [
+      "受授权的真实provider小集认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V15, V19, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "live与fake分栏；无授权则blocked/deferred而不假称通过",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V15",
+      "V19",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。",
+    "conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+    "required_for": [
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "319a55323211aecb603dd0398d0097f9f75024f4",
+        "artifact_paths": [
+          "artifacts/checkpoints/p7-live-disposition-20261007/receipt.json",
+          "artifacts/checkpoints/p7-live-disposition-20261007/README.md"
+        ],
+        "review": "Root reconciled original acceptance, immutable D1+D2 and original task brief; no new live authorization inferred.",
+        "rollback_status": "No product or provider action occurred. A future authorized live run must have its own concrete input and budget evidence.",
+        "scope": "Original P7-018 conditional disposition completed; V15/V19/V20 live not_run/blocked, no live manifest, no done or quality claim."
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "2026-10-02 用户拍板（D1）：本轮不授权真实付费 provider，本任务维持 conditional 不执行，live 证据栏显式标 blocked；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。\n2026-10-07：按原TASK-BRIEFS 622–629及D1+D2落实blocked状态与双轨live收据；未创建live manifest，未读取密钥，未调用真实provider。此为原条件处置，不是认证完成或本轮测试通过。"
+  },
+  {
+    "id": "P8-005",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-A",
+    "title": "完整规模1k到100k",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/sampler.rs",
+      "crates/cc-eval/tests/index_v2_scale.rs"
+    ],
+    "depends_on": [
+      "P8-004"
+    ],
+    "steps": [
+      "固定seed与release构建测1k/5k/10k/50k/100k",
+      "同时报chunk/edge/vector"
+    ],
+    "deliverables": [
+      "完整规模1k到100k的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不存在只报文件数或把不同工作量直接算倍数",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "accepted_fixed_e3_declared_local_100k_subgate_only",
+        "artifacts": [
+          "docs/checkpoints/2026-10-03-fixed-e3-integration/README.md",
+          "docs/reviews/20261003-independent-e3",
+          "artifacts/checkpoints/candidate-independent-100k-gate-20261003",
+          "artifacts/checkpoints/candidate-independent-100k-recovery-20261003",
+          "artifacts/checkpoints/baseline-cloud-20261003-build-blocked",
+          "artifacts/checkpoints/baseline-cloud-20261003-resumed-once"
+        ],
+        "limitations": "2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。"
+      },
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 2,
+        "source": "4917a43c04f72022240537761eeb785a745f3153",
+        "artifacts": [
+          "artifacts/checkpoints/p8-scale-20261007",
+          "artifacts/checkpoints/p8-local-waves-20261007/round2",
+          "docs/roadmap/code-index-v2/P8-SCALE.md"
+        ],
+        "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"
+      },
+      {
+        "target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-oracle-compat-20261008/README.md"
+        ],
+        "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open",
+        "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained",
+        "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history",
+        "summary": "2026-10-08 本会话第2/3轮：完成共享原15表投影的有界磁盘完整oracle，100002行真实SQLite正/负控及18项相关回归通过；另修复已知无forward叶节点被误计4096加载预算，7项新控和37项原解析/模块回归通过。相同10k计划复跑完成两次10000文件full build（各55620 symbols/63619 chunks），整控仍在300秒预算终止、未产出完整parity，不能记全规模或性能认证。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。\n2026-10-07 P8本地推进第二轮：新增有界真实规模驱动、固定1k/5k/10k/50k/100k计划、实际files/symbols/chunks/各edge表计数和原始阶段报告。60文件N=1 smoke的9个样本通过；大矩阵、release性能和向量工作量未认证。原oracle每表100000行保护保持，超预算明确not_run。\n2026-10-08 本会话第2/3轮：完成共享原15表投影的有界磁盘完整oracle，100002行真实SQLite正/负控及18项相关回归通过；另修复已知无forward叶节点被误计4096加载预算，7项新控和37项原解析/模块回归通过。相同10k计划复跑完成两次10000文件full build（各55620 symbols/63619 chunks），整控仍在300秒预算终止、未产出完整parity，不能记全规模或性能认证。",
+    "acceptance_subgates": {
+      "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+      "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+      "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+      "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+      "strict_paired_causal_performance": "not_established",
+      "whole_tree_memory_peak": "unknown"
+    }
+  },
+  {
+    "id": "P8-006",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "增量规模与fanout曲线",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/mutations.rs",
+      "crates/cc-index/"
+    ],
+    "depends_on": [
+      "P7-020",
+      "P8-001",
+      "P8-005"
+    ],
+    "steps": [
+      "测no-op/body/API/config/batch和超预算闭包",
+      "输出各phase计数"
+    ],
+    "deliverables": [
+      "增量规模与fanout曲线的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "时间可归因且闭包完成后full parity，未完成有显式status",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V07",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 2,
+        "source": "4917a43c04f72022240537761eeb785a745f3153",
+        "artifacts": [
+          "artifacts/checkpoints/p8-scale-20261007",
+          "artifacts/checkpoints/p8-local-waves-20261007/round2",
+          "docs/roadmap/code-index-v2/P8-SCALE.md"
+        ],
+        "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"
+      },
+      {
+        "target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-oracle-compat-20261008/README.md"
+        ],
+        "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open",
+        "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained",
+        "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history",
+        "summary": "2026-10-08 本会话第2/3轮：大表parity路径保持重复行、原Value判等、只读一致快照和原FK/integrity；行/字节/磁盘预算错误不变成采样相等，closure未完即使行相同仍incomplete_not_certified。18项oracle/defects/scale/route相关回归通过（7项新增、11项原有）；完整增量/fanout矩阵和前置P8-005正式验收继续开放。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第二轮：新增真实no-op/body/API/config/batch增量及fanout预算恢复，与重新全量构建完整15表对账并保留手写call-edge断言。新驱动发现并修复派生route_node误作解析输入的问题；2文件回归红转绿，60文件9样本通过。原120秒timeout与失败raw保留；300秒测试工作预算不是性能阈值。\n2026-10-08 本会话第2/3轮：大表parity路径保持重复行、原Value判等、只读一致快照和原FK/integrity；行/字节/磁盘预算错误不变成采样相等，closure未完即使行相同仍incomplete_not_certified。18项oracle/defects/scale/route相关回归通过（7项新增、11项原有）；完整增量/fanout矩阵和前置P8-005正式验收继续开放。"
+  },
+  {
+    "id": "P8-007",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "多并发与混合负载",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/runner.rs",
+      "crates/cc-server/"
+    ],
+    "depends_on": [
+      "P8-006"
+    ],
+    "steps": [
+      "C1/4/8/16 mixed read/build/backfill",
+      "记录offered load和排队"
+    ],
+    "deliverables": [
+      "多并发与混合负载的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V11",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 3,
+        "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+        "artifacts": [
+          "artifacts/checkpoints/p8-load-20261007",
+          "docs/roadmap/code-index-v2/P8-LOAD.md",
+          "artifacts/checkpoints/p8-local-waves-20261007/round3"
+        ],
+        "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+      },
+      {
+        "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+        "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+        ],
+        "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+        "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+        "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+        "summary": "第2–3轮独立审查修复 runtime 全终态与退出处理：完整对账不一致保留 exit 1 和统计；submit 入队前/后失败、KeyboardInterrupt、raw 预算失败保留实际已投递终态；未收敛工作不封存。runtime 30 项独立控制、全 P8 Python 350 项通过。完整 C1/4/8/16 read/build/backfill 实际证据及 P8-006 前置仍需独立关闭。",
+        "execution_identity": {
+          "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+          "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+          "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+          "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+        }
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。\n2026-10-08 独立验收补充（28fe）：第2–3轮独立审查修复 runtime 全终态与退出处理：完整对账不一致保留 exit 1 和统计；submit 入队前/后失败、KeyboardInterrupt、raw 预算失败保留实际已投递终态；未收敛工作不封存。runtime 30 项独立控制、全 P8 Python 350 项通过。完整 C1/4/8/16 read/build/backfill 实际证据及 P8-006 前置仍需独立关闭。"
+  },
+  {
+    "id": "P8-008",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "冷建/重开/热查分层",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/runner.rs",
+      "crates/cc-eval/src/benchmark/statistics.rs"
+    ],
+    "depends_on": [
+      "P8-007"
+    ],
+    "steps": [
+      "分离OS cache、process cold、result-cache hit与uncached warm",
+      "采全部样本"
+    ],
+    "deliverables": [
+      "冷建/重开/热查分层的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "无best-of，sample N/分布/CI齐全",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 1,
+        "source": "1fb1b5ccc556206a8cb4597963ee959d7f66ff11",
+        "artifacts": [
+          "artifacts/checkpoints/p8-local-waves-20261007/round1",
+          "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"
+        ],
+        "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第一轮：新增全部attempt的延迟分层及次序统计量CI；缺少lifecycle/cache观测保持unknown，reopen要求明确预存索引凭据。新测量11项及旧report11项通过；未执行完整V20/性能认证。"
+  },
+  {
+    "id": "P8-009",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "内存/磁盘/费用总账",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/sampler.rs",
+      "crates/cc-semantic/"
+    ],
+    "depends_on": [
+      "P8-008"
+    ],
+    "steps": [
+      "分别client/server/process-tree和artifact/FTS大小",
+      "成本reported/estimated分栏"
+    ],
+    "deliverables": [
+      "内存/磁盘/费用总账的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "单位和归属正确，不把unavailable填0或把runner当server",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 1,
+        "source": "1fb1b5ccc556206a8cb4597963ee959d7f66ff11",
+        "artifacts": [
+          "artifacts/checkpoints/p8-local-waves-20261007/round1",
+          "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"
+        ],
+        "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第一轮：修复ps进程树不完整/溢出误报并新增内存角色、磁盘及费用账本；unknown不补零、重叠不相加、reported/estimated分开。新测量11项及旧report11项通过；既有native live-child测试unavailable仍OPEN。"
+  },
+  {
+    "id": "P8-010",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "长时soak与连续修改",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/tests/soak.rs",
+      "crates/cc-eval/src/benchmark/mutations.rs"
+    ],
+    "depends_on": [
+      "P8-009"
+    ],
+    "steps": [
+      "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+      "终点完整对账"
+    ],
+    "deliverables": [
+      "长时soak与连续修改的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "内存/队列不无界增长，长期索引和全量一致",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V07",
+      "V17",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 3,
+        "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+        "artifacts": [
+          "artifacts/checkpoints/p8-load-20261007",
+          "docs/roadmap/code-index-v2/P8-LOAD.md",
+          "artifacts/checkpoints/p8-local-waves-20261007/round3"
+        ],
+        "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+      },
+      {
+        "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+        "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+        ],
+        "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+        "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+        "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+        "summary": "第2–3轮独立审查修复异常调度后的后台写入与封存竞态，保留原 180 秒排空和 70 秒清理上限；所有已拥有工作收敛后才能封存。提交失败及中断的原负控已红转绿，原错误和全部实际终态可追踪。此为驱动可靠性修复，不能代替完整一小时 soak 与资源趋势验收。",
+        "execution_identity": {
+          "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+          "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+          "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+          "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+        }
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增有界长生命周期worker、body/add/rename/delete/API/restore循环、停止投递后排空和终点原15表+3公开探针对账；比较前不修复增量侧。四组每组12次修改，144操作/48修改均完成且终点一致。取消/deadline/raw预算有实测非零收据；仅短时smoke，未认证长时资源增长、真实切分支或catalog压实。\n2026-10-08 独立验收补充（28fe）：第2–3轮独立审查修复异常调度后的后台写入与封存竞态，保留原 180 秒排空和 70 秒清理上限；所有已拥有工作收敛后才能封存。提交失败及中断的原负控已红转绿，原错误和全部实际终态可追踪。此为驱动可靠性修复，不能代替完整一小时 soak 与资源趋势验收。"
+  },
+  {
+    "id": "P8-011",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "端到端故障与恢复认证",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/tests/semantic_lifecycle.rs",
+      "crates/cc-server/tests/mcp_stdio.rs"
+    ],
+    "depends_on": [
+      "P7-020",
+      "P8-007",
+      "P8-010"
+    ],
+    "steps": [
+      "kill进程/网络断开/缓存损坏/数据库忙/换库",
+      "保持raw故障工件"
+    ],
+    "deliverables": [
+      "端到端故障与恢复认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "没有假ready或删除复活，恢复与费用影响清楚",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V14",
+      "V17",
+      "V18"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/recovery/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "当前785输入候选的真实kill/restart、SQLite busy释放和删除不复活3个有限故障场景通过；4个未覆盖故障仍not_run"
+      }
+    ],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P8-012",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "MSRV与平台冷构建矩阵",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      ".github/workflows/ci.yml",
+      "CONTRIBUTING.md"
+    ],
+    "depends_on": [
+      "P8-011"
+    ],
+    "steps": [
+      "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+      "全新target"
+    ],
+    "deliverables": [
+      "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V01",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/platform/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases",
+        "summary": "八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run"
+      },
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/platform-cold-default/"
+        ],
+        "scope": "one actual Linux default cold-build cell only; not a complete platform or MSRV matrix",
+        "review": "platform implementation, main integration and independent evidence review; complete inputs match the fixed candidate",
+        "rollback_status": "isolated new target and disposable fixture; preserve original cold receipt and prior matrix",
+        "summary": "补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留"
+      },
+      {
+        "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+        "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+        ],
+        "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+        "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+        "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+        "summary": "第2轮修复便携八格汇总比本地校验宽松的问题：统一构建契约，重验原选择、feature/profile/compiler/log/target/source/binary 绑定；空或畸形集合保留非零失败 matrix。42 项独立平台控制通过。真实八平台原件必须继续按其实际执行 commit 审阅，当前 source admission 不直接授予平台或任务验收。",
+        "execution_identity": {
+          "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+          "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+          "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+          "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+        }
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-08 第一轮：八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 第三轮补充（不重复计数）：补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留。\n2026-10-08 独立验收补充（28fe）：第2轮修复便携八格汇总比本地校验宽松的问题：统一构建契约，重验原选择、feature/profile/compiler/log/target/source/binary 绑定；空或畸形集合保留非零失败 matrix。42 项独立平台控制通过。真实八平台原件必须继续按其实际执行 commit 审阅，当前 source admission 不直接授予平台或任务验收。"
+  },
+  {
+    "id": "P8-013",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "指标/门槛与失败退出最终认证",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/gate.rs",
+      "crates/cc-eval/tests/benchmark_cli.rs"
+    ],
+    "depends_on": [
+      "P8-012"
+    ],
+    "steps": [
+      "故意注入quality/perf/lock失败",
+      "验证退出和raw报告仍保留"
+    ],
+    "deliverables": [
+      "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "红线失败必非零，inconclusive不被自动passed",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V03",
+      "V04",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 2,
+        "source": "b81d786d1f5ff56ab0363822cfe7ded515164543",
+        "artifacts": [
+          "artifacts/checkpoints/p8-local-waves-20261007/round2",
+          "docs/roadmap/code-index-v2/P8-GATES.md"
+        ],
+        "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第二轮：修复零计划样本被误放行、零基线p95被当作无回归、非法门槛/锁漂移没有持久失败收据的问题。6个CLI故障合同从2通过/4失败到6通过，原11个report回归通过；raw不覆盖。完整质量/性能V20与原硬依赖未验收。"
+  },
+  {
+    "id": "P8-014",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "可选LLM评审旁证流程",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/benchmarks/manifests/",
+      "docs/BENCHMARK.md"
+    ],
+    "depends_on": [
+      "P8-013"
+    ],
+    "steps": [
+      "冻结judge prompt/model并盲化系统名",
+      "复核争议答案/证据充分性"
+    ],
+    "deliverables": [
+      "可选LLM评审旁证流程的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不替代确定性gold，提示注入文本只作数据，费用需授权",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V19"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": "可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。",
+    "required_for": [
+      "optional-judge"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "冻结judge prompt/model、盲化系统名、私有映射与人工意见回收流程，18项控制和实际离线CLI通过；真实LLM评审未执行"
+      }
+    ],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P8-015",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "真实语义效果发布认证",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/benchmarks/manifests/",
+      "artifacts/benchmarks/"
+    ],
+    "depends_on": [
+      "P8-013",
+      "P7-018"
+    ],
+    "steps": [
+      "在已授权live条件复跑holdout与费用/错误分布",
+      "核对模型revision"
+    ],
+    "deliverables": [
+      "真实语义效果发布认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V15, V19, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "缺live证据只发布已验证的能力范围，不伪造M4-semantic通过",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V15",
+      "V19",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+    "required_for": [
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/release/P8-015-receipt.json"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "语义发布候选/模型revision/请求/费用/预算交叉核验，24项控制通过；完整纸面材料也不能替代真实provider/独立custody/批准/评分权威，保持blocked"
+      }
+    ],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P8-016",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "数据库/配置/包回滚演练",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-db/src/index_migrate.rs",
+      "crates/cc-semantic/src/cache.rs",
+      "docs/TROUBLESHOOTING.md"
+    ],
+    "depends_on": [
+      "P7-020",
+      "P8-012",
+      "P8-013"
+    ],
+    "steps": [
+      "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+    ],
+    "deliverables": [
+      "数据库/配置/包回滚演练的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "回滚不误读新向量/丢用户源码，恢复步骤实测",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V13",
+      "V17",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/platform/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases",
+        "summary": "已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份"
+      },
+      {
+        "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+        "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+        ],
+        "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+        "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+        "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+        "summary": "第2轮修复 cold-build 列表 manifest 与历史 map manifest 的回滚读取不兼容；核对原 digest/count，拒绝重复路径/重复 JSON key/不规范路径，并对同一份 schema 原字节完成哈希和解析。29 项独立回滚/恢复控制通过。原真实历史版本对、active cache、disable fallback 和硬前置的验收仍开放。",
+        "execution_identity": {
+          "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+          "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+          "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+          "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+        }
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-08 第一轮：已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 独立验收补充（28fe）：第2轮修复 cold-build 列表 manifest 与历史 map manifest 的回滚读取不兼容；核对原 digest/count，拒绝重复路径/重复 JSON key/不规范路径，并对同一份 schema 原字节完成哈希和解析。29 项独立回滚/恢复控制通过。原真实历史版本对、active cache、disable fallback 和硬前置的验收仍开放。"
+  },
+  {
+    "id": "P8-017",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "删除临时兼容和重复模块",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-index/",
+      "crates/cc-search/",
+      "crates/cc-eval/"
+    ],
+    "depends_on": [
+      "P8-016"
+    ],
+    "steps": [
+      "清临时旧branch/重复评分器/多份schema来源",
+      "保留必要外部wire兼容"
+    ],
+    "deliverables": [
+      "删除临时兼容和重复模块的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "运行路径只有一个事实与算法所有者，删除有回归证据",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/cleanup/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。"
+  },
+  {
+    "id": "P8-018",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "文档事实与安装契约同步",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "docs/ARCHITECTURE.md",
+      "docs/BENCHMARK.md",
+      "docs/MCP_TOOLS.md",
+      "docs/CONFIGURATION.md"
+    ],
+    "depends_on": [
+      "P8-017"
+    ],
+    "steps": [
+      "从schema/capabilities生成可核查事实",
+      "更新安装/故障/默认离线说明"
+    ],
+    "deliverables": [
+      "文档事实与安装契约同步的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 3,
+        "source": "ed2fa642091434346be2b4eda9367106d7d48533",
+        "artifacts": [
+          "artifacts/benchmarks/p8-facts-review-20261007",
+          "docs/roadmap/code-index-v2/P8-FACTS.md",
+          "artifacts/checkpoints/p8-local-waves-20261007/round3"
+        ],
+        "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增stdlib事实生成/漂移检查，直接解析Cargo/schema/capabilities/tool/config源；同步当前8crate、schema25、30基础表+5FTS、14工具和semantic默认关闭/实际默认值。13个CLI正负例和实际SQLite DDL核对通过，CI新增事实检查；跨平台安装/真实运行认证未完成。"
+  },
+  {
+    "id": "P8-019",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "发布工件与完整报告归档",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      ".github/workflows/ci.yml",
+      "artifacts/benchmarks/",
+      "docs/benchmarks/"
+    ],
+    "depends_on": [
+      "P8-018"
+    ],
+    "steps": [
+      "归档精确binary/checksum/manifest/raw/gates",
+      "latest只指向run"
+    ],
+    "deliverables": [
+      "发布工件与完整报告归档的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V01, V04, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "报告可重算，历史原始run不被下一轮覆盖",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V01",
+      "V04",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 1,
+        "source": "d1bf4b799e52d6367fe4959d08c5a79e63b3bafe",
+        "artifacts": [
+          "artifacts/benchmarks/p8-release-local-20261007",
+          "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"
+        ],
+        "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第一轮：新增不可覆盖归档、候选绑定、完整清单/checksum、失败raw保留及仅passed_local且实语料锁才可提升的latest指针。39项有界夹具测试通过；完整G8、指标复算、发行批准保持OPEN。"
+  },
+  {
+    "id": "P8-020",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "P8发布评审与遗留关闭",
+    "status": "in_progress",
+    "priority": "blocking",
+    "scope": [
+      "docs/roadmap/code-index-v2/",
+      "artifacts/benchmarks/"
+    ],
+    "depends_on": [
+      "P8-001",
+      "P8-002",
+      "P8-003",
+      "P8-004",
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016",
+      "P8-017",
+      "P8-018",
+      "P8-019"
+    ],
+    "steps": [
+      "G8按local/semantic能力分别审核",
+      "汇总风险、回滚和后续决策"
+    ],
+    "deliverables": [
+      "P8发布评审与遗留关闭的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V19, V20, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "本次选择发布范围内blocker为0，其他证据不足明确列出",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V19",
+      "V20",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/release-review/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准"
+      }
+    ],
+    "conditional_dependencies": [
+      {
+        "task": "P8-015",
+        "when": "M4-semantic release; not required for M4-local"
+      }
+    ],
+    "implementation_notes": "\n2026-10-08 第三轮：按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准。只计原始TODO推进，完整前置/验收仍开放。"
+  },
+  {
+    "id": "P9-001",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-A",
+    "title": "ANN收益与选型决策",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/ablation.rs",
+      "docs/adr/"
+    ],
+    "depends_on": [
+      "P8-020"
+    ],
+    "steps": [
+      "依据exact延迟/内存与doc规模比较候选backend",
+      "记录不选理由"
+    ],
+    "deliverables": [
+      "ANN收益与选型决策的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "没有实测压力不先引入服务/依赖，决定可为deferred",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-002",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-A",
+    "title": "ANN适配与过滤更新闭环",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-semantic/src/vector/",
+      "crates/cc-eval/tests/semantic_lifecycle.rs"
+    ],
+    "depends_on": [
+      "P9-001"
+    ],
+    "steps": [
+      "仅在选型通过后实现适配",
+      "验证过滤recall、insert/delete/tombstone"
+    ],
+    "deliverables": [
+      "ANN适配与过滤更新闭环的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V16, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不牺牲hard scope/版本正确性，近似不足有声明",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V16",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-003",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-A",
+    "title": "ANN量化和规模认证",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/ablation.rs",
+      "crates/cc-semantic/src/vector/"
+    ],
+    "depends_on": [
+      "P9-002"
+    ],
+    "steps": [
+      "量化独立实验不更改exact oracle",
+      "测不同filter selectivity和cold加载"
+    ],
+    "deliverables": [
+      "ANN量化和规模认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V20, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "与exact比较质量/资源/更新成本全报，不能只比unfiltered topk",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V20",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-004",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-A",
+    "title": "ANN决策收口",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "docs/adr/",
+      "docs/CONFIGURATION.md"
+    ],
+    "depends_on": [
+      "P9-003"
+    ],
+    "steps": [
+      "保留一种选定生产backend及exact",
+      "清试验依赖"
+    ],
+    "deliverables": [
+      "ANN决策收口的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V21, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "收益门未过恢复exact，未落地不标完成",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V21",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-005",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-B",
+    "title": "LSP按需生命周期",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-server/src/precise_queries/"
+    ],
+    "depends_on": [
+      "P8-020"
+    ],
+    "steps": [
+      "参考Astrolabe pool的lazy/cooldown/idle/RSS/inflight generation",
+      "不默认全仓启动"
+    ],
+    "deliverables": [
+      "LSP按需生命周期的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "没有LSP仍全功能local可用，回收不打断健康请求",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-006",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-B",
+    "title": "LSP源码快照和冲突表达",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-server/src/precise_queries/",
+      "crates/cc-model/src/context.rs"
+    ],
+    "depends_on": [
+      "P9-005"
+    ],
+    "steps": [
+      "绑定document version/workspace",
+      "静态与LSP冲突并列记录"
+    ],
+    "deliverables": [
+      "LSP源码快照和冲突表达的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V09, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不以LSP observation无条件覆盖持久化结构事实",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V09",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-007",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-B",
+    "title": "LSP精度/内存收益认证",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/ablation.rs",
+      "crates/cc-eval/benchmarks/native/"
+    ],
+    "depends_on": [
+      "P9-006"
+    ],
+    "steps": [
+      "固定server版本，对歧义样本测精度、启动/idle成本与失败降级"
+    ],
+    "deliverables": [
+      "LSP精度/内存收益认证的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V20, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "缓存/外部进程内存全计，收益不足可不开启",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V20",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-008",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-B",
+    "title": "LSP工具面和安装边界收口",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "docs/MCP_TOOLS.md",
+      "docs/CONFIGURATION.md",
+      "crates/cc-server/src/precise_queries/"
+    ],
+    "depends_on": [
+      "P9-007"
+    ],
+    "steps": [
+      "避免工具爆炸，优先precision选项",
+      "不自动下载执行未知server"
+    ],
+    "deliverables": [
+      "LSP工具面和安装边界收口的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V21, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "行为有明确capability/许可/配置，缺失可诊断",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V21",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-009",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-C",
+    "title": "可选rerank端口与降级",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-search/src/rerank/",
+      "crates/cc-semantic/src/providers/"
+    ],
+    "depends_on": [
+      "P8-020"
+    ],
+    "steps": [
+      "限定候选/预算，保留原始相关性证据",
+      "错误回本地确定性排序"
+    ],
+    "deliverables": [
+      "可选rerank端口与降级的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V11, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "模型不能捏造新文件/边，取消和fallback有状态",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V11",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-010",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-C",
+    "title": "rerank盲测与费用消融",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/ablation.rs",
+      "crates/cc-eval/benchmarks/manifests/"
+    ],
+    "depends_on": [
+      "P9-009"
+    ],
+    "steps": [
+      "固定候选池/模型/prompt，重复配对/holdout",
+      "source注入只当数据"
+    ],
+    "deliverables": [
+      "rerank盲测与费用消融的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V19, V20, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "收益CI/成本/latency全报，不用单次分数启用默认模型",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V19",
+      "V20",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-011",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-C",
+    "title": "按需查询分解收益决策",
+    "status": "todo",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-search/src/query_policy.rs",
+      "crates/cc-eval/src/benchmark/ablation.rs"
+    ],
+    "depends_on": [
+      "P9-010"
+    ],
+    "steps": [
+      "只对复杂任务测分解/facet召回",
+      "保持scope和总deadline"
+    ],
+    "deliverables": [
+      "按需查询分解收益决策的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V19, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不为每个查询调用LLM，收益不足维持原路径",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V19",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  },
+  {
+    "id": "P9-012",
+    "phase": "P9",
+    "phase_name": "有收益门的可选增强",
+    "batch": "P9-C",
+    "title": "P9可选增强逐项结项",
+    "status": "todo",
+    "priority": "blocking",
+    "scope": [
+      "docs/roadmap/code-index-v2/",
+      "docs/adr/"
+    ],
+    "depends_on": [
+      "P9-001",
+      "P9-002",
+      "P9-003",
+      "P9-004",
+      "P9-005",
+      "P9-006",
+      "P9-007",
+      "P9-008",
+      "P9-009",
+      "P9-010",
+      "P9-011"
+    ],
+    "steps": [
+      "分别记录ANN/LSP/rerank启用或deferred",
+      "删除未选试验债务"
+    ],
+    "deliverables": [
+      "P9可选增强逐项结项的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V21, V22 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不将未选功能算实现完成，不阻断已通过主线发行",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V21",
+      "V22"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。",
+    "conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+    "required_for": [
+      "optional"
+    ],
+    "evidence": [],
+    "conditional_dependencies": []
+  }
+]

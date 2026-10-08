@@ -1,0 +1,1176 @@
+{
+  "artifacts": {
+    "11577657909": {
+      "api_identity": {
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11577657909/zip",
+        "created_at": "2026-10-08T20:46:20Z",
+        "digest": "sha256:028c71416e00dc7783d1223995737474094ab4cf9ead63e1f600c0200cdbdd14",
+        "expired": false,
+        "expires_at": "2027-01-06T19:57:20Z",
+        "id": 11577657909,
+        "name": "p8-mixed-c1-599a7050e7d52b5b7b93975c419138e175b3f754",
+        "node_id": "MDg6QXJ0aWZhY3QxMTU3NzY1NzkwOQ==",
+        "size_in_bytes": 16595504,
+        "updated_at": "2026-10-08T20:46:20Z",
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11577657909",
+        "workflow_run": {
+          "head_branch": "task/p8-complete-a217-20261009",
+          "head_repository_id": 1249213794,
+          "head_sha": "599a7050e7d52b5b7b93975c419138e175b3f754",
+          "id": 37835809253,
+          "repository_id": 1249213794
+        }
+      },
+      "branch_switches": 50,
+      "build_operations": 300,
+      "catalog_compactions": 6,
+      "concurrency_cap": 1,
+      "endpoint_query_execution": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "completed": 1200,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "independent_call_occupancy": {
+        "by_kind_peak": {
+          "build": 1,
+          "read": 1
+        },
+        "peak": 1,
+        "read_build_overlap": false,
+        "remaining": {
+          "build": 0,
+          "read": 0
+        }
+      },
+      "independent_sqlite_comparison": {
+        "method": "Read-only immutable SQLite copies; exact existing 15-table exclusions; every typed row and duplicate compared; no product/oracle executable run",
+        "rows_per_side": 8508,
+        "tables": [
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "doc_key",
+              "doc_version",
+              "file_path",
+              "chunk_id",
+              "encoding_key",
+              "reference_json",
+              "record_json"
+            ],
+            "table": "document_manifest"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "id",
+              "version",
+              "basis_epoch",
+              "reason",
+              "root_count",
+              "completed_files",
+              "payload",
+              "digest"
+            ],
+            "table": "resolution_frontier"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 2127,
+            "incremental_rows": 2127,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "source_symbol",
+              "source_symbol_uid",
+              "target_symbol",
+              "target_symbol_uid",
+              "relation_kind",
+              "line",
+              "confidence",
+              "parser_tier"
+            ],
+            "table": "semantic_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "site_id",
+              "file_path",
+              "line",
+              "col",
+              "enclosing_symbol_uid",
+              "receiver_expr",
+              "site_kind",
+              "key",
+              "handler_expr",
+              "handler_symbol_uid",
+              "confidence"
+            ],
+            "table": "dispatch_sites"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "version",
+              "payload",
+              "digest"
+            ],
+            "table": "resolution_manifests"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "file_path",
+              "kind",
+              "key"
+            ],
+            "table": "resolution_dependencies"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "format_version",
+              "payload",
+              "fingerprint",
+              "package_key"
+            ],
+            "table": "public_surfaces"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "language",
+              "content_hash",
+              "chunk_policy",
+              "document_spec",
+              "size",
+              "summary",
+              "content_excerpt",
+              "parser_tier",
+              "parser_confidence",
+              "is_test_file"
+            ],
+            "table": "files"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "symbol_id",
+              "file_path",
+              "name",
+              "kind",
+              "container",
+              "start_line",
+              "end_line",
+              "start_col",
+              "end_col",
+              "signature",
+              "doc",
+              "parser_tier",
+              "parser_confidence",
+              "qname",
+              "parent_symbol_id",
+              "export_name",
+              "is_default_export",
+              "symbol_uid",
+              "framework_role",
+              "community_id",
+              "receiver_type",
+              "param_types",
+              "return_type",
+              "param_count",
+              "base_types",
+              "implements"
+            ],
+            "table": "symbols"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "file_path",
+              "import_string",
+              "resolved_path",
+              "imported_name",
+              "alias",
+              "is_namespace",
+              "is_default",
+              "is_reexport",
+              "context_json"
+            ],
+            "table": "imports"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "ref_id",
+              "file_path",
+              "symbol_name",
+              "container",
+              "ref_kind",
+              "line",
+              "column_no",
+              "target_symbol_id",
+              "target_file_path",
+              "target_symbol_uid",
+              "ref_name",
+              "resolution_kind",
+              "resolution_confidence",
+              "resolution_strategy",
+              "ref_end_line",
+              "ref_end_col",
+              "parser_tier",
+              "parser_confidence"
+            ],
+            "table": "symbol_refs"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "caller_symbol",
+              "callee_symbol",
+              "line",
+              "start_col",
+              "end_line",
+              "end_col",
+              "target_symbol_id",
+              "target_file_path",
+              "caller_symbol_id",
+              "callee_ref_id",
+              "caller_symbol_uid",
+              "callee_symbol_uid",
+              "dispatch_kind",
+              "call_kind",
+              "resolution_kind",
+              "resolution_confidence",
+              "resolution_strategy",
+              "receiver_expr",
+              "arg_count",
+              "is_optional_chain",
+              "is_awaited",
+              "is_constructor",
+              "parser_tier",
+              "parser_confidence",
+              "synthesized_by",
+              "synthesis_key",
+              "registered_file",
+              "registered_line"
+            ],
+            "table": "call_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "chunk_id",
+              "file_path",
+              "language",
+              "chunk_index",
+              "start_line",
+              "end_line",
+              "breadcrumb",
+              "symbol_name",
+              "symbol_kind",
+              "text",
+              "text_encoding",
+              "source_json",
+              "token_estimate",
+              "parser_tier",
+              "parser_confidence"
+            ],
+            "table": "chunks"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "test_file_path",
+              "code_file_path",
+              "reason",
+              "confidence"
+            ],
+            "table": "test_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "route_path",
+              "handler_name",
+              "method",
+              "line",
+              "start_col",
+              "end_line",
+              "end_col",
+              "handler_symbol_id",
+              "handler_symbol_uid",
+              "handler_expr",
+              "router_symbol_uid",
+              "framework",
+              "route_kind",
+              "confidence",
+              "parser_tier",
+              "normalized_path",
+              "route_id",
+              "resolution_strategy",
+              "resolution_confidence"
+            ],
+            "table": "routes"
+          }
+        ]
+      },
+      "latency": {
+        "all": {
+          "maximum_ns": 61858382,
+          "n": 900,
+          "p50_ns": 1515818,
+          "p95_ns": 51618379,
+          "p99_ns": 53373711
+        },
+        "build": {
+          "maximum_ns": 61858382,
+          "n": 300,
+          "p50_ns": 15577852,
+          "p95_ns": 52950892,
+          "p99_ns": 54397858
+        },
+        "read": {
+          "maximum_ns": 2787408,
+          "n": 600,
+          "p50_ns": 1422855,
+          "p95_ns": 1671190,
+          "p99_ns": 1809745
+        }
+      },
+      "mutation_counts": {
+        "add": 50,
+        "bounded_symbol_churn": 50,
+        "delete": 50,
+        "real_git_branch_switch": 50,
+        "rename": 50,
+        "restore_api": 50
+      },
+      "observed_executor_peak": 1,
+      "observed_waiting_for_executor_peak": 1,
+      "observed_work_ns": 449504697562,
+      "observer": {
+        "files": 9,
+        "manifest_sha256": "a55e5f21ad81c1f8972ce95a66e339c161eecef6d802119099badf3f10ee999f"
+      },
+      "operations": 900,
+      "original_zip": "/workspace/scratch/28fef0db5e01/runtime-review/round7-599-originals/11577657909/11577657909.zip",
+      "outcomes": {
+        "success": 900
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "218560cda252c664366b692505a5ffb551b28e522da2b68b27c4c7f2154a7332",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 9915,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "218560cda252c664366b692505a5ffb551b28e522da2b68b27c4c7f2154a7332",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8009,
+          "tool_count": 14
+        }
+      },
+      "profile": "mixed",
+      "queue_wait_ns": {
+        "maximum": 1394212,
+        "p95": 268103
+      },
+      "raw_event_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 900,
+        "oracle_process": 1,
+        "resources": 449
+      },
+      "raw_sha256": "7d731e31a81491d15174379cda677081c62da72c85cf4e9b0b7454ce6bcec915",
+      "read_operations": 600,
+      "report_sha256": "28d3b146a171ecf1735365be3099b7549dca5bb85b8e8f5c9d065b208cf8182a",
+      "reported_actual_concurrency": {
+        "build": 0,
+        "maximum": 1,
+        "read": 0,
+        "read_build_overlap": false
+      },
+      "resource_samples": 449,
+      "rpc": {
+        "event_counts": {
+          "notification": 1,
+          "request": 1354,
+          "response": 1354,
+          "rpc_send": 1354,
+          "stdout_wire": 1354,
+          "terminal": 2
+        },
+        "methods": {
+          "index": 301,
+          "initialize": 1,
+          "search": 601,
+          "status": 450,
+          "tools/list": 1
+        },
+        "terminals": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 789270830258
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 789270943528
+          }
+        ]
+      },
+      "rss": {
+        "allowed_bytes": 137423872,
+        "observed": 449,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 88047616,
+        "status": "observed",
+        "tail_median_bytes": 85610496,
+        "warmed_median_bytes": 83095552
+      },
+      "sampled_query_execution_maxima": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "scope_limits": [
+        "Original f8 execution, no later-head relabeling.",
+        "C is a client cap; actual overlapping client calls and sampled product executor occupancy are separate.",
+        "Timing groups are descriptive; each mutation has50 samples and retains insufficient_for_tail_claim rather than pooling across C or mutation.",
+        "Backfill uses the separately reviewed seeded original worker control; default stdio mixed profile has semantic disabled."
+      ],
+      "sealed_files": {
+        "build": 17,
+        "runtime": 2110
+      },
+      "source": {
+        "head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+        "input_count": 1087,
+        "manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+        "source_tree": "ace0d27684155176b28192fb222f9d0ae2c43aa9"
+      },
+      "statistic_groups": [
+        {
+          "mutation_action": null,
+          "n": 600,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 2787,
+              "p50_us": 1422,
+              "p95_us": 1671,
+              "samples": 600,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 1671,
+              "lower_us": 1636,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 600,
+              "upper_us": 1706
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 1809,
+              "lower_us": 1753,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 600,
+              "upper_us": 2031
+            },
+            "recorded_samples": 600
+          },
+          "operation": "read"
+        },
+        {
+          "mutation_action": null,
+          "n": 300,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 61858,
+              "p50_us": 15577,
+              "p95_us": 52950,
+              "samples": 300,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 52950,
+              "lower_us": 52762,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 300,
+              "upper_us": 53667
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 54397,
+              "lower_us": 53667,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 300,
+              "upper_us": null
+            },
+            "recorded_samples": 300
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "add",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 19031,
+              "p50_us": 15083,
+              "p95_us": 18634,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 18634,
+              "lower_us": 16451,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 19031,
+              "lower_us": 18634,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "bounded_symbol_churn",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 46836,
+              "p50_us": 36515,
+              "p95_us": 39638,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 39638,
+              "lower_us": 38119,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 46836,
+              "lower_us": 39638,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "delete",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 22420,
+              "p50_us": 14606,
+              "p95_us": 15661,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 15661,
+              "lower_us": 15533,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 22420,
+              "lower_us": 15661,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "real_git_branch_switch",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 61858,
+              "p50_us": 52705,
+              "p95_us": 55024,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 55024,
+              "lower_us": 53671,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 61858,
+              "lower_us": 55024,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "rename",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 17274,
+              "p50_us": 15615,
+              "p95_us": 16983,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 16983,
+              "lower_us": 16597,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 17274,
+              "lower_us": 16983,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        },
+        {
+          "mutation_action": "restore_api",
+          "n": 50,
+          "offered_to_terminal": {
+            "distribution": {
+              "max_us": 12317,
+              "p50_us": 10993,
+              "p95_us": 12121,
+              "samples": 50,
+              "tail_claim": "insufficient_for_tail_claim"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 12121,
+              "lower_us": 11923,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 50,
+              "upper_us": null
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 12317,
+              "lower_us": 12121,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 50,
+              "upper_us": null
+            },
+            "recorded_samples": 50
+          },
+          "operation": "build"
+        }
+      ],
+      "statistics_sha256": "6b5cf29cca5cbfa5d5e18905ccde3ff7533ca567ef4c6385d02c5bf673536689",
+      "successful_per_second_descriptive": 2.0022037697967847,
+      "uncompressed_bytes_read": 72065397,
+      "zip_bytes": 16595504,
+      "zip_members_read_and_crc_sha256_checked": 2129,
+      "zip_sha256": "028c71416e00dc7783d1223995737474094ab4cf9ead63e1f600c0200cdbdd14"
+    }
+  },
+  "checks": [
+    {
+      "artifact_id": 11577657909,
+      "check": "11577657909/api_size_digest",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "11577657909/api_repository",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "11577657909/archive_regular_unique_members",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-build/complete_seal_inventory",
+      "detail": {
+        "actual": 17,
+        "different": [],
+        "expected": 17
+      },
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-runtime/complete_seal_inventory",
+      "detail": {
+        "actual": 2110,
+        "different": [],
+        "expected": 2110
+      },
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "mixed/complete_git_source",
+      "detail": {
+        "input_count": 1087
+      },
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "mixed/observer_git_and_retained_bytes",
+      "detail": [],
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "identity_unchanged",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "copied_build_receipts",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "fresh_release_binary/codecortex",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "fresh_release_binary/p8-oracle",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "fresh_release_binary/p8-runtime-statistics",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "fresh_build_invocation_and_logs",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "report_hash/raw.jsonl",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "report_hash/plan.json",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "report_hash/parity.json",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "full_original_offered_denominator",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "schedule_and_actual_terminal_timings",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "original_outcomes_and_report_exit",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "all_original_valid_build_and_read_responses",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "complete_mutation_cycle",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "actual_concurrency_and_overlap",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "final_admission_and_pins_drained",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "actual_branch_switch_receipts",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "catalog_compaction_raw_log",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "fresh_full_source_and_git_equal",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-runtime/product/all_rpc_wire_response_pairs",
+      "detail": {
+        "errors": [],
+        "requests": 1354,
+        "responses": 1354
+      },
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-runtime/product/process_terminal",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-runtime/full-product/all_rpc_wire_response_pairs",
+      "detail": {
+        "errors": [],
+        "requests": 4,
+        "responses": 4
+      },
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "p8-runtime/full-product/process_terminal",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "no_incremental_side_repair",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "all_raw_build_responses_match_wire",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "all_raw_read_responses_match_wire",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "owned_processes_closed_and_server_pid",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "two_retained_statistical_replays",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/read/None",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/None",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/add",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/bounded_symbol_churn",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/delete",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/real_git_branch_switch",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/rename",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "independent_statistics/build/restore_api",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "legacy_all_attempt_latency/all",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "legacy_all_attempt_latency/read",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "legacy_all_attempt_latency/build",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "original_oracle_success",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/project/sqlite_integrity_fk",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/fresh-full/sqlite_integrity_fk",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/document_manifest",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/resolution_frontier",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/semantic_edges",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/dispatch_sites",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/resolution_manifests",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/resolution_dependencies",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/public_surfaces",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/files",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/symbols",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/imports",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/symbol_refs",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/call_edges",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/chunks",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/test_edges",
+      "passed": true
+    },
+    {
+      "artifact_id": 11577657909,
+      "check": "soak/sqlite/routes",
+      "passed": true
+    }
+  ],
+  "download_file_reference": {
+    "file_id": "file_00000000555c81f59d01be5faac96d72",
+    "file_name": "11577657909.zip"
+  },
+  "missing_artifacts": [],
+  "reviewer": "/root/runtime_review",
+  "schema_version": 1,
+  "scope": "Original599 mixed read/build artifact, read-only independent audit; not current-M execution",
+  "state": "scoped_original_599_mixed_verified"
+}

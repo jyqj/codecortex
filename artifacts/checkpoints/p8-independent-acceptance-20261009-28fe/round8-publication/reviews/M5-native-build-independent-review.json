@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "conclusion": "accepted_original_fixed_M5_native_build_only",
+  "started_at_utc": "2026-10-08T22:21:45.009778+00:00",
+  "finished_at_utc": "2026-10-08T22:21:46.004283+00:00",
+  "source_commit": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+  "source_tree": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
+  "source_inputs": 1087,
+  "source_manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+  "observer_files": 9,
+  "observer_manifest_sha256": "24633284861537b2264596da603d4a209f0d7f65bff419a65aa89e406bcf012f",
+  "original_verify_receipt_passed": true,
+  "independent_complete_seal_files": 17,
+  "independent_complete_seal_bytes": 32075144,
+  "all_seal_files_sha256_and_size_verified": true,
+  "build_receipt_sha256": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+  "build_seal_sha256": "9b7b462cc663f7edc618a4cfd02009e7a3a1349f85aa6741b11a2501bfb3560e",
+  "cargo_log_sha256": "405863f67b28a92ad6f1e7228fe05baacfef24926e950381c022f6579fd779bd",
+  "cargo_stderr_sha256": "60ab071bc564bbfc9072d9d4e3ebe0f2d888ebff1e8177efdf48adcea727ee5a",
+  "build_exit_code": 0,
+  "build_elapsed_seconds": 452.2590189580078,
+  "toolchain": {
+    "cargo": {
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "executable_sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+      "invocation": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+    },
+    "rustc": {
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "executable_sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+      "invocation": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2"
+    }
+  },
+  "compiler_environment": {
+    "RUSTC": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": ""
+  },
+  "target_initially_absent": true,
+  "build_command": [
+    "cargo",
+    "build",
+    "--release",
+    "--locked",
+    "--offline",
+    "--no-default-features",
+    "-p",
+    "cc-server",
+    "--bin",
+    "codecortex",
+    "-p",
+    "cc-eval",
+    "--bin",
+    "p8-oracle",
+    "--bin",
+    "p8-runtime-statistics",
+    "--message-format=json-render-diagnostics",
+    "--target-dir",
+    "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/private-target"
+  ],
+  "artifacts": {
+    "codecortex": {
+      "bytes": 27086168,
+      "sha256": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+      "original_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/private-target/release/codecortex",
+      "copy_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+      "fresh": false,
+      "features": [],
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": false
+      },
+      "retained_copy_mode": "0555"
+    },
+    "p8-oracle": {
+      "bytes": 2960568,
+      "sha256": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+      "original_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/private-target/release/p8-oracle",
+      "copy_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+      "fresh": false,
+      "features": [],
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": false
+      },
+      "retained_copy_mode": "0555"
+    },
+    "p8-runtime-statistics": {
+      "bytes": 976544,
+      "sha256": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d",
+      "original_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/private-target/release/p8-runtime-statistics",
+      "copy_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+      "fresh": false,
+      "features": [],
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": false
+      },
+      "retained_copy_mode": "0555"
+    }
+  },
+  "current_source_and_observer_equal_build_before_after": true,
+  "original_build_inputs_and_output_readonly": true,
+  "native_executable_invocations_by_reviewer": 0,
+  "limits": [
+    "Build identity/admission only; not actual one-hour soak completion, performance certification or original TODO closure.",
+    "New native build and copied outputs bound only to M5, not reused from599 orG3."
+  ],
+  "task_complete": false,
+  "original_remaining": 29
+}

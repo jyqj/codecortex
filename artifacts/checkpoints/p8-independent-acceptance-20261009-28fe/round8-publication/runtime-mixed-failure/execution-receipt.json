@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "kind": "original_fixed_M5_four_concurrency_mixed_observations",
+  "started_at_utc": "2026-10-08T22:39:59.966779+00:00",
+  "status": "failed",
+  "source_directory": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+  "source_and_build_before": {
+    "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+    "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+    "build_inputs": {
+      "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+      "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+      "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+      "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+    }
+  },
+  "build_directory": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build",
+  "build_scope": "Reuse the single independently verified fresh-target locked offline release build executed at M5; no cell is claimed to have a separately compiled binary.",
+  "plan": {
+    "concurrency_caps": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "operations_per_cell": 900,
+    "files_per_cell": 1000,
+    "interval_ms": 500,
+    "profile": "mixed"
+  },
+  "execution_environment": {
+    "four_cells_share_host": true,
+    "overlaps_M5_cache_soak": true,
+    "performance_scope": "Observed workload and resource distributions only; no isolated-host or causal speed comparison.",
+    "fixtures": "Each original invocation owns a separate newly created synthetic project and output directory.",
+    "provider": "Semantic disabled; no live or paid provider."
+  },
+  "cells": [
+    {
+      "concurrency": 1,
+      "started_at_utc": "2026-10-08T22:40:00.053045+00:00",
+      "status": "passed",
+      "phases": [
+        {
+          "name": "mixed",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "--binary",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+            "--oracle",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+            "--statistics",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+            "--build-receipt",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/build-receipt.json",
+            "--profile",
+            "mixed",
+            "--concurrency",
+            "1",
+            "--operations",
+            "900",
+            "--files",
+            "1000",
+            "--interval-ms",
+            "500",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c1/runtime"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:40:00.053807+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "elapsed_seconds": 455.8972901990055,
+          "finished_at_utc": "2026-10-08T22:47:36.036932+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c1/mixed.log",
+          "log_bytes": 164278,
+          "log_sha256": "ea3cda88b231fc7b5b510137d1dbe4cbf9aadaa390854ff9a208d9e6329f6b1a"
+        },
+        {
+          "name": "verify",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "verify",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c1/runtime",
+            "--build-output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:47:36.038265+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "passed",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7085490520112216,
+          "finished_at_utc": "2026-10-08T22:47:36.783935+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c1/verify.log",
+          "log_bytes": 127,
+          "log_sha256": "99627ce65eedf5900af4c01d77702c6b507139f072b8bf383a48b858388d22b8"
+        }
+      ],
+      "finished_at_utc": "2026-10-08T22:47:36.785192+00:00"
+    },
+    {
+      "concurrency": 4,
+      "started_at_utc": "2026-10-08T22:40:00.053957+00:00",
+      "status": "failed",
+      "phases": [
+        {
+          "name": "mixed",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "--binary",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+            "--oracle",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+            "--statistics",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+            "--build-receipt",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/build-receipt.json",
+            "--profile",
+            "mixed",
+            "--concurrency",
+            "4",
+            "--operations",
+            "900",
+            "--files",
+            "1000",
+            "--interval-ms",
+            "500",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c4/runtime"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:40:00.055217+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 453.98900376800157,
+          "finished_at_utc": "2026-10-08T22:47:34.122709+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c4/mixed.log",
+          "log_bytes": 177,
+          "log_sha256": "2ae9fe41ac1500fccb46c3ef1697c97ae043b5f3286b740d51ce88c10725e539"
+        },
+        {
+          "name": "verify",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "verify",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c4/runtime",
+            "--build-output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:47:34.126460+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 0.2510218300012639,
+          "finished_at_utc": "2026-10-08T22:47:34.421586+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c4/verify.log",
+          "log_bytes": 141,
+          "log_sha256": "0343be3c68b536c113823efdd6f834ee1d919f7f55f42acb64694eb95f7b1a18"
+        }
+      ],
+      "finished_at_utc": "2026-10-08T22:47:34.422945+00:00"
+    },
+    {
+      "concurrency": 8,
+      "started_at_utc": "2026-10-08T22:40:00.054632+00:00",
+      "status": "failed",
+      "phases": [
+        {
+          "name": "mixed",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "--binary",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+            "--oracle",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+            "--statistics",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+            "--build-receipt",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/build-receipt.json",
+            "--profile",
+            "mixed",
+            "--concurrency",
+            "8",
+            "--operations",
+            "900",
+            "--files",
+            "1000",
+            "--interval-ms",
+            "500",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c8/runtime"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:40:00.056062+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 454.9500972840033,
+          "finished_at_utc": "2026-10-08T22:47:35.087311+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c8/mixed.log",
+          "log_bytes": 61,
+          "log_sha256": "039bb0e4a6957f50ee983bf8d29bb6f17735defb80a39b032f05df8389df5e8b"
+        },
+        {
+          "name": "verify",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "verify",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c8/runtime",
+            "--build-output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:47:35.088489+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 0.8349785829923349,
+          "finished_at_utc": "2026-10-08T22:47:35.968665+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c8/verify.log",
+          "log_bytes": 61,
+          "log_sha256": "039bb0e4a6957f50ee983bf8d29bb6f17735defb80a39b032f05df8389df5e8b"
+        }
+      ],
+      "finished_at_utc": "2026-10-08T22:47:35.969555+00:00"
+    },
+    {
+      "concurrency": 16,
+      "started_at_utc": "2026-10-08T22:40:00.054988+00:00",
+      "status": "failed",
+      "phases": [
+        {
+          "name": "mixed",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "--binary",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+            "--oracle",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+            "--statistics",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+            "--build-receipt",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/build-receipt.json",
+            "--profile",
+            "mixed",
+            "--concurrency",
+            "16",
+            "--operations",
+            "900",
+            "--files",
+            "1000",
+            "--interval-ms",
+            "500",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c16/runtime"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:40:00.056701+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 454.0440745520027,
+          "finished_at_utc": "2026-10-08T22:47:34.187891+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c16/mixed.log",
+          "log_bytes": 178,
+          "log_sha256": "f4e43e6ac2fb5927c03046179fb66b54a3064029204cf815e6c1ce3b960211ac"
+        },
+        {
+          "name": "verify",
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_runtime.py",
+            "verify",
+            "--output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c16/runtime",
+            "--build-output",
+            "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build"
+          ],
+          "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+          "started_at_utc": "2026-10-08T22:47:34.188824+00:00",
+          "source_and_build_before": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "status": "failed",
+          "exit_code": 2,
+          "elapsed_seconds": 0.19421831599902362,
+          "finished_at_utc": "2026-10-08T22:47:34.425150+00:00",
+          "source_and_build_after": {
+            "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+            "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+            "build_inputs": {
+              "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+              "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+              "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+              "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+            }
+          },
+          "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-mixed/c16/verify.log",
+          "log_bytes": 142,
+          "log_sha256": "cd8d3e05426f7f76eb78c023397cc4558688d53e344b9a83184abec5d2e53f32"
+        }
+      ],
+      "finished_at_utc": "2026-10-08T22:47:34.426068+00:00"
+    }
+  ],
+  "task_state_changed": false,
+  "finished_at_utc": "2026-10-08T22:47:36.800170+00:00",
+  "source_and_build_after": {
+    "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+    "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+    "build_inputs": {
+      "build-receipt.json": "ea81dc31bfc10072b51fa98eb25474fc62fce9b86e15b38234317bbb482f29d0",
+      "codecortex": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+      "p8-oracle": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+      "p8-runtime-statistics": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+    }
+  }
+}

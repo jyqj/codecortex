@@ -1,0 +1,1135 @@
+{
+  "artifacts": {
+    "11580896618": {
+      "api_identity": {
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11580896618/zip",
+        "created_at": "2026-10-08T21:44:09Z",
+        "digest": "sha256:292315dc13d6c867dadda071a86f47cca963dee054efeb9d53860110c9db38ea",
+        "expired": false,
+        "expires_at": "2027-01-06T19:57:20Z",
+        "id": 11580896618,
+        "name": "p8-soak-599a7050e7d52b5b7b93975c419138e175b3f754",
+        "node_id": "MDg6QXJ0aWZhY3QxMTU4MDg5NjYxOA==",
+        "size_in_bytes": 21154450,
+        "updated_at": "2026-10-08T21:44:09Z",
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11580896618",
+        "workflow_run": {
+          "head_branch": "task/p8-complete-a217-20261009",
+          "head_repository_id": 1249213794,
+          "head_sha": "599a7050e7d52b5b7b93975c419138e175b3f754",
+          "id": 37835809253,
+          "repository_id": 1249213794
+        }
+      },
+      "branch_switches": 200,
+      "catalog_compactions": 25,
+      "configured_concurrency": 4,
+      "coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 813515620,
+        "last_ns": 3600557081620,
+        "maximum_gap_ns": 1029104893,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 3594,
+        "passed": true,
+        "work_end_ns": 3600864485342,
+        "work_start_ns": 813624128
+      },
+      "endpoint_query_execution": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "completed": 4800,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "endpoint_query_pins": 0,
+      "first_actual_offer_to_last_terminal_ns": 3600044493390,
+      "first_to_last_schedule_ns": 3600000000000,
+      "full_rpc": {
+        "event_counts": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "methods": {
+          "index": 1,
+          "initialize": 1,
+          "search": 1,
+          "tools/list": 1
+        },
+        "terminals": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 4008553144807
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 4008553255274
+          }
+        ]
+      },
+      "identical_copied_source_and_git_files": 1038,
+      "independent_sqlite_comparison": {
+        "method": "Read-only immutable SQLite copies; exact existing 15-table exclusions; every typed row and duplicate compared; no product/oracle executable run",
+        "rows_per_side": 8508,
+        "tables": [
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "doc_key",
+              "doc_version",
+              "file_path",
+              "chunk_id",
+              "encoding_key",
+              "reference_json",
+              "record_json"
+            ],
+            "table": "document_manifest"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "id",
+              "version",
+              "basis_epoch",
+              "reason",
+              "root_count",
+              "completed_files",
+              "payload",
+              "digest"
+            ],
+            "table": "resolution_frontier"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 2127,
+            "incremental_rows": 2127,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "source_symbol",
+              "source_symbol_uid",
+              "target_symbol",
+              "target_symbol_uid",
+              "relation_kind",
+              "line",
+              "confidence",
+              "parser_tier"
+            ],
+            "table": "semantic_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "site_id",
+              "file_path",
+              "line",
+              "col",
+              "enclosing_symbol_uid",
+              "receiver_expr",
+              "site_kind",
+              "key",
+              "handler_expr",
+              "handler_symbol_uid",
+              "confidence"
+            ],
+            "table": "dispatch_sites"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "version",
+              "payload",
+              "digest"
+            ],
+            "table": "resolution_manifests"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "file_path",
+              "kind",
+              "key"
+            ],
+            "table": "resolution_dependencies"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "format_version",
+              "payload",
+              "fingerprint",
+              "package_key"
+            ],
+            "table": "public_surfaces"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1000,
+            "incremental_rows": 1000,
+            "projected_columns": [
+              "file_path",
+              "language",
+              "content_hash",
+              "chunk_policy",
+              "document_spec",
+              "size",
+              "summary",
+              "content_excerpt",
+              "parser_tier",
+              "parser_confidence",
+              "is_test_file"
+            ],
+            "table": "files"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "symbol_id",
+              "file_path",
+              "name",
+              "kind",
+              "container",
+              "start_line",
+              "end_line",
+              "start_col",
+              "end_col",
+              "signature",
+              "doc",
+              "parser_tier",
+              "parser_confidence",
+              "qname",
+              "parent_symbol_id",
+              "export_name",
+              "is_default_export",
+              "symbol_uid",
+              "framework_role",
+              "community_id",
+              "receiver_type",
+              "param_types",
+              "return_type",
+              "param_count",
+              "base_types",
+              "implements"
+            ],
+            "table": "symbols"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "file_path",
+              "import_string",
+              "resolved_path",
+              "imported_name",
+              "alias",
+              "is_namespace",
+              "is_default",
+              "is_reexport",
+              "context_json"
+            ],
+            "table": "imports"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "ref_id",
+              "file_path",
+              "symbol_name",
+              "container",
+              "ref_kind",
+              "line",
+              "column_no",
+              "target_symbol_id",
+              "target_file_path",
+              "target_symbol_uid",
+              "ref_name",
+              "resolution_kind",
+              "resolution_confidence",
+              "resolution_strategy",
+              "ref_end_line",
+              "ref_end_col",
+              "parser_tier",
+              "parser_confidence"
+            ],
+            "table": "symbol_refs"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "caller_symbol",
+              "callee_symbol",
+              "line",
+              "start_col",
+              "end_line",
+              "end_col",
+              "target_symbol_id",
+              "target_file_path",
+              "caller_symbol_id",
+              "callee_ref_id",
+              "caller_symbol_uid",
+              "callee_symbol_uid",
+              "dispatch_kind",
+              "call_kind",
+              "resolution_kind",
+              "resolution_confidence",
+              "resolution_strategy",
+              "receiver_expr",
+              "arg_count",
+              "is_optional_chain",
+              "is_awaited",
+              "is_constructor",
+              "parser_tier",
+              "parser_confidence",
+              "synthesized_by",
+              "synthesis_key",
+              "registered_file",
+              "registered_line"
+            ],
+            "table": "call_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 1127,
+            "incremental_rows": 1127,
+            "projected_columns": [
+              "chunk_id",
+              "file_path",
+              "language",
+              "chunk_index",
+              "start_line",
+              "end_line",
+              "breadcrumb",
+              "symbol_name",
+              "symbol_kind",
+              "text",
+              "text_encoding",
+              "source_json",
+              "token_estimate",
+              "parser_tier",
+              "parser_confidence"
+            ],
+            "table": "chunks"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "test_file_path",
+              "code_file_path",
+              "reason",
+              "confidence"
+            ],
+            "table": "test_edges"
+          },
+          {
+            "complete_typed_multisets_equal": true,
+            "full_rows": 0,
+            "incremental_rows": 0,
+            "projected_columns": [
+              "edge_id",
+              "file_path",
+              "route_path",
+              "handler_name",
+              "method",
+              "line",
+              "start_col",
+              "end_line",
+              "end_col",
+              "handler_symbol_id",
+              "handler_symbol_uid",
+              "handler_expr",
+              "router_symbol_uid",
+              "framework",
+              "route_kind",
+              "confidence",
+              "parser_tier",
+              "normalized_path",
+              "route_id",
+              "resolution_strategy",
+              "resolution_confidence"
+            ],
+            "table": "routes"
+          }
+        ]
+      },
+      "independent_statistics_groups": [
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 15686,
+              "p50_us": 1456,
+              "p95_us": 1690,
+              "samples": 2400,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 1690,
+              "lower_us": 1678,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 2400,
+              "upper_us": 1705
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 1777,
+              "lower_us": 1764,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 2400,
+              "upper_us": 1819
+            },
+            "recorded_samples": 2400
+          },
+          "mutation_action": null,
+          "n": 2400,
+          "operation": "read"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 87169,
+              "p50_us": 16403,
+              "p95_us": 61100,
+              "samples": 1201,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 61100,
+              "lower_us": 60798,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 1201,
+              "upper_us": 61665
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 63509,
+              "lower_us": 62901,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 1201,
+              "upper_us": 64666
+            },
+            "recorded_samples": 1201
+          },
+          "mutation_action": null,
+          "n": 1201,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 18946,
+              "p50_us": 16115,
+              "p95_us": 18429,
+              "samples": 200,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 18429,
+              "lower_us": 17942,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 200,
+              "upper_us": 18882
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 18884,
+              "lower_us": 18807,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 200,
+              "upper_us": null
+            },
+            "recorded_samples": 200
+          },
+          "mutation_action": "add",
+          "n": 200,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 54744,
+              "p50_us": 39261,
+              "p95_us": 41520,
+              "samples": 201,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 41520,
+              "lower_us": 40839,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 201,
+              "upper_us": 42130
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 44392,
+              "lower_us": 42040,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 201,
+              "upper_us": null
+            },
+            "recorded_samples": 201
+          },
+          "mutation_action": "bounded_symbol_churn",
+          "n": 201,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 18074,
+              "p50_us": 15487,
+              "p95_us": 16572,
+              "samples": 200,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 16572,
+              "lower_us": 16345,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 200,
+              "upper_us": 16854
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 17019,
+              "lower_us": 16671,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 200,
+              "upper_us": null
+            },
+            "recorded_samples": 200
+          },
+          "mutation_action": "delete",
+          "n": 200,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 87169,
+              "p50_us": 60253,
+              "p95_us": 63705,
+              "samples": 200,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 63705,
+              "lower_us": 63272,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 200,
+              "upper_us": 65183
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 67918,
+              "lower_us": 64666,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 200,
+              "upper_us": null
+            },
+            "recorded_samples": 200
+          },
+          "mutation_action": "real_git_branch_switch",
+          "n": 200,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 18237,
+              "p50_us": 16672,
+              "p95_us": 17774,
+              "samples": 200,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 17774,
+              "lower_us": 17675,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 200,
+              "upper_us": 18060
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 18175,
+              "lower_us": 17956,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 200,
+              "upper_us": null
+            },
+            "recorded_samples": 200
+          },
+          "mutation_action": "rename",
+          "n": 200,
+          "operation": "build"
+        },
+        {
+          "all_attempt_offered_to_terminal": {
+            "distribution": {
+              "max_us": 18597,
+              "p50_us": 11655,
+              "p95_us": 12344,
+              "samples": 200,
+              "tail_claim": "empirical_distribution_only"
+            },
+            "missing_samples": 0,
+            "p95_ci": {
+              "confidence": 0.95,
+              "estimate_us": 12344,
+              "lower_us": 12202,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.95,
+              "samples": 200,
+              "upper_us": 13037
+            },
+            "p99_ci": {
+              "confidence": 0.95,
+              "estimate_us": 13111,
+              "lower_us": 12746,
+              "method": "binomial_order_statistics_95pct_iid_assumption",
+              "quantile": 0.99,
+              "samples": 200,
+              "upper_us": null
+            },
+            "recorded_samples": 200
+          },
+          "mutation_action": "restore_api",
+          "n": 200,
+          "operation": "build"
+        }
+      ],
+      "max_dispatch_wait_ns": 5204665,
+      "mutations": {
+        "add": 200,
+        "bounded_symbol_churn": 201,
+        "delete": 200,
+        "real_git_branch_switch": 200,
+        "rename": 200,
+        "restore_api": 200
+      },
+      "observed_executor_peak": 1,
+      "observed_waiting_for_executor_peak": 1,
+      "observed_workload_call_peak": 1,
+      "observer": {
+        "files": 9,
+        "manifest_sha256": "a55e5f21ad81c1f8972ce95a66e339c161eecef6d802119099badf3f10ee999f"
+      },
+      "operations": 3601,
+      "original_zip": "/workspace/scratch/28fef0db5e01/acceptance-review/soak-599-originals/11580896618/11580896618.zip",
+      "outcomes": {
+        "success": 3601
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "218560cda252c664366b692505a5ffb551b28e522da2b68b27c4c7f2154a7332",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 15566,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "218560cda252c664366b692505a5ffb551b28e522da2b68b27c4c7f2154a7332",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8074,
+          "tool_count": 14
+        }
+      },
+      "raw_event_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 3601,
+        "oracle_process": 1,
+        "resources": 3594
+      },
+      "raw_sha256": "be3349472565f86b6c7453153c4c748278abc5948d12635a83bc1ebf3418993a",
+      "report_sha256": "7ae15448a501c5b9ef18de54be2a03765b1c0120f580a79a568c65908073b397",
+      "reported_observed_work_ns": 3600050859861,
+      "rpc": {
+        "event_counts": {
+          "notification": 1,
+          "request": 7200,
+          "response": 7200,
+          "rpc_send": 7200,
+          "stdout_wire": 7200,
+          "terminal": 2
+        },
+        "methods": {
+          "index": 1202,
+          "initialize": 1,
+          "search": 2401,
+          "status": 3595,
+          "tools/list": 1
+        },
+        "terminals": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 4008589917052
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 4008590033482
+          }
+        ]
+      },
+      "rss": {
+        "allowed_bytes": 148047872,
+        "observed": 3594,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 110170112,
+        "status": "observed",
+        "tail_median_bytes": 107556864,
+        "warmed_median_bytes": 91594752
+      },
+      "scope_limits": [
+        "Original 599a7050e7d52b5b7b93975c419138e175b3f754 execution only; does not become a later-head run.",
+        "Uniform one request/second, actual workload peak 1 under C4 cap; not saturated concurrent stress.",
+        "Default semantic disabled; separate backfill control and broader P8 dependencies remain.",
+        "Mixed strata and correlated time series do not certify stable tails or general leak absence.",
+        "Original artifacts opened as data; original compiler/target unavailable locally and no artifact executable was run."
+      ],
+      "sealed_files": {
+        "build": 17,
+        "runtime": 2110
+      },
+      "source": {
+        "head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+        "input_count": 1087,
+        "manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+        "source_tree": "ace0d27684155176b28192fb222f9d0ae2c43aa9"
+      },
+      "statistics_numeric_recompute_scope": "All 8 original groups x 6 timing views, distribution and both existing IID quantile intervals; no executable replay",
+      "statistics_output_sha256": "77b31686065c7b6beebc679d97eef20968578c59096beee04e3421c55113068c",
+      "uncompressed_bytes_read": 150442971,
+      "zip_bytes": 21154450,
+      "zip_members_read_and_crc_sha256_checked": 2129,
+      "zip_sha256": "292315dc13d6c867dadda071a86f47cca963dee054efeb9d53860110c9db38ea"
+    }
+  },
+  "cache_acceptance": {
+    "actual_scheduled_reads": 2400,
+    "endpoint_actual_counters": {
+      "graph_hit_rate": 0.0,
+      "graph_hits": 0,
+      "graph_misses": 0,
+      "result_hit_rate": 0.0,
+      "result_hits": 0,
+      "result_misses": 0
+    },
+    "finding": "All scheduled reads use symbol mode and endpoint result/graph hit and miss counters remain zero. This original hour proves its measured symbol-read/edit lifecycle scope, not actual result-cache reuse during soak.",
+    "no_separate_cache_probe_events": true,
+    "original_observation_status": "passed_observation",
+    "original_search_rpc_modes": {
+      "symbol": 2401
+    },
+    "status": "not_demonstrated_by_original_soak",
+    "task_acceptance": "P8-010 original cache reuse clause remains unfulfilled by this artifact; separate lifecycle cache evidence or another source run cannot be relabeled into this hour."
+  },
+  "checks": [
+    {
+      "check": "11580896618/api_size_digest",
+      "passed": true
+    },
+    {
+      "check": "11580896618/api_repository",
+      "passed": true
+    },
+    {
+      "check": "11580896618/archive_regular_unique_members",
+      "passed": true
+    },
+    {
+      "check": "p8-build/complete_seal_inventory",
+      "detail": {
+        "actual": 17,
+        "different": [],
+        "expected": 17
+      },
+      "passed": true
+    },
+    {
+      "check": "p8-runtime/complete_seal_inventory",
+      "detail": {
+        "actual": 2110,
+        "different": [],
+        "expected": 2110
+      },
+      "passed": true
+    },
+    {
+      "check": "soak/complete_git_source",
+      "detail": {
+        "input_count": 1087
+      },
+      "passed": true
+    },
+    {
+      "check": "soak/observer_git_and_retained_bytes",
+      "detail": [],
+      "passed": true
+    },
+    {
+      "check": "soak/unchanged_source_observer_toolchain",
+      "passed": true
+    },
+    {
+      "check": "soak/retained_build_evidence_exact",
+      "passed": true
+    },
+    {
+      "check": "soak/build/codecortex",
+      "passed": true
+    },
+    {
+      "check": "soak/build/p8-oracle",
+      "passed": true
+    },
+    {
+      "check": "soak/build/p8-runtime-statistics",
+      "passed": true
+    },
+    {
+      "check": "soak/fresh_locked_offline_build",
+      "passed": true
+    },
+    {
+      "check": "soak/report_hash/raw.jsonl",
+      "passed": true
+    },
+    {
+      "check": "soak/report_hash/plan.json",
+      "passed": true
+    },
+    {
+      "check": "soak/report_hash/parity.json",
+      "passed": true
+    },
+    {
+      "check": "soak/all_offered_ids_and_statuses",
+      "passed": true
+    },
+    {
+      "check": "soak/complete_schedule_and_ordered_timings",
+      "passed": true
+    },
+    {
+      "check": "soak/all_original_valid_responses",
+      "passed": true
+    },
+    {
+      "check": "soak/all_six_mutation_cycle",
+      "passed": true
+    },
+    {
+      "check": "soak/real_branch_receipts",
+      "passed": true
+    },
+    {
+      "check": "soak/actual_catalog_compaction_log",
+      "passed": true
+    },
+    {
+      "check": "soak/full_control_identical_source_and_git_copy",
+      "passed": true
+    },
+    {
+      "check": "soak/resource_time_coverage",
+      "passed": true
+    },
+    {
+      "check": "soak/original_rss_rule",
+      "passed": true
+    },
+    {
+      "check": "soak/actual_hour",
+      "passed": true
+    },
+    {
+      "check": "soak/endpoint_queue_and_pins_drained",
+      "passed": true
+    },
+    {
+      "check": "p8-runtime/product/all_rpc_wire_response_pairs",
+      "detail": {
+        "errors": [],
+        "requests": 7200,
+        "responses": 7200
+      },
+      "passed": true
+    },
+    {
+      "check": "p8-runtime/product/process_terminal",
+      "passed": true
+    },
+    {
+      "check": "p8-runtime/full-product/all_rpc_wire_response_pairs",
+      "detail": {
+        "errors": [],
+        "requests": 4,
+        "responses": 4
+      },
+      "passed": true
+    },
+    {
+      "check": "p8-runtime/full-product/process_terminal",
+      "passed": true
+    },
+    {
+      "check": "soak/no_incremental_side_repair",
+      "passed": true
+    },
+    {
+      "check": "soak/raw_builds_equal_actual_wire_responses",
+      "passed": true
+    },
+    {
+      "check": "soak/raw_queries_equal_actual_wire_responses",
+      "passed": true
+    },
+    {
+      "check": "soak/owned_processes_closed_and_native_pid",
+      "passed": true
+    },
+    {
+      "check": "soak/both_original_statistics_outputs_identical",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/read/None",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/None",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/add",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/bounded_symbol_churn",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/delete",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/real_git_branch_switch",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/rename",
+      "passed": true
+    },
+    {
+      "check": "soak/statistics_recompute/build/restore_api",
+      "passed": true
+    },
+    {
+      "check": "soak/original_complete_oracle",
+      "passed": true
+    },
+    {
+      "check": "soak/project/sqlite_integrity_fk",
+      "passed": true
+    },
+    {
+      "check": "soak/fresh-full/sqlite_integrity_fk",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/document_manifest",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/resolution_frontier",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/semantic_edges",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/dispatch_sites",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/resolution_manifests",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/resolution_dependencies",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/public_surfaces",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/files",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/symbols",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/imports",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/symbol_refs",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/call_edges",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/chunks",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/test_edges",
+      "passed": true
+    },
+    {
+      "check": "soak/sqlite/routes",
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "helper": {
+    "legacy_narrative_correction": "6e3 initial-use note replaced with actual dynamically verified599 identity; no evidence rewritten",
+    "path": "/workspace/scratch/28fef0db5e01/runtime-review/artifact-original-audit/audit_originals.py",
+    "sha256": "2533b1c243480f13bd9c91954dd4823625a907e2529d33559e988d1b634a4bac",
+    "use": "Read helper and invoked only data-audit soak function; no original artifact modules imported; numeric original thresholds unchanged"
+  },
+  "new_matrix": false,
+  "new_product_execution": false,
+  "original_artifact_code_executed": false,
+  "original_artifact_files_modified": false,
+  "original_run": 37835809253,
+  "original_source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "original_todo_completions_claimed": 0,
+  "original_zip_unchanged": true,
+  "remaining_original_todos": 29,
+  "reviewer": "/root/acceptance_review",
+  "root_download_receipt": {
+    "corrected_bytes": 548,
+    "corrected_json_valid": true,
+    "corrected_sha256": "d2a7ad2bf7e38dd0cc1795bad264a9c8850359b02fdaf8659a5196cb9e7f71fc",
+    "correction": "root preserved malformed original and replaced only trailing literal backslash-n with actual LF; reviewer did not modify root files",
+    "literal_backslash_n_suffix": true,
+    "original_bytes": 549,
+    "original_error": "Extra data: line 13 column 2 (char 547)",
+    "original_json_valid": false,
+    "original_sha256": "dbc13c442d85d9c222742f4941657f1ae9965500c7c18b908800c893dd2fcb93"
+  },
+  "schema_version": 1,
+  "scope": "599 original data-only soak verification using separately inspected existing readback helper",
+  "state": "scoped_original_hour_verified_cache_acceptance_gap"
+}

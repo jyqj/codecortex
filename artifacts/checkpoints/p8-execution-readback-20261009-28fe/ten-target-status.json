@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "prepared_at_utc": "2026-10-08T22:25:10.451049+00:00",
+  "scope": "Originalten-target acceptance readback mapping only. No statuses/dependencies/thresholds or original reportbytes altered.",
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_completed_original_todos": 0
+  },
+  "fixed_original_source": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "original_task_definition_ref": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+  "task_definition_scope": "Exact originalid/depends/acceptance fields copied from the already-reviewed fixed task extract; current taskstatus is not mutated.",
+  "targets": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-004"
+      ],
+      "original_steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "original_acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "readback_status": "full_original_matrix_pending",
+      "verified_original_scope": "Original599 run37835810882 has four independently audited rep0shards at1k/5k/10k/50k,41/1500 registeredmeasurementIDs, each groupN1. Complete150shards and original1500 identities remain unaccepted; no100k original shard in this frozen report selection.",
+      "remaining": "Complete the original fixed150-shard matrix, all original statistics/counts/source/parity requirements and relevant regressions; keep old6e3 results separate.",
+      "selected_reports": [
+        "original-reports/runtime-review/round8-599-scale/round8-scale-handoff.json",
+        "original-reports/runtime-review/round8-599-scale/original-scale-phase-review.json",
+        "original-reports/runtime-review/round8-599-scale/599-50000-original-phase-review.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "original_steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "original_acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V07",
+        "V20"
+      ],
+      "readback_status": "full_original_matrix_pending",
+      "verified_original_scope": "The same41 observed phase/fanout measurementIDs preserve originalphasecounts, boundeddebt and complete15-table parity at the audited endpoints. Fourrep0shards are not the fullincremental/fanoutcurve.",
+      "remaining": "Complete originalmatrix and dependency P8-005 plus P7-020/P8-001; no partial closure or old/new source pooling.",
+      "selected_reports": [
+        "original-reports/runtime-review/round8-599-scale/round8-scale-handoff.json",
+        "original-reports/runtime-review/round8-599-scale/original-scale-phase-review.json",
+        "original-reports/runtime-review/round8-599-scale/599-50000-original-phase-review.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-006"
+      ],
+      "original_steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "original_acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V11",
+        "V20"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "Four599 cap1/4/8/16 mixedprofiles each900/900terminalattempts (600reads+300builds), actualoverlappingcalls1/4/7/12; separate768held-backfillqueries across3seeds×2phases×4caps×32.",
+      "remaining": "No unique new execution/implementation gap identified within the existing declaredlocalrange; formally close P8-006 and bind exactoriginals with finalsource review. No cap==actualoccupancy claim.",
+      "selected_reports": [
+        "original-reports/acceptance-review/p8-007-009-closure/p8-007-009-original-acceptance-mapping.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-007"
+      ],
+      "original_steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "original_acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "30cold+400reopen+400uncached+400nativegraph-result-cachehit=1230measured, oneexcludedexplicitwarmup,431closedprocesses. AlllayersN/distribution/order-statistic95%CI retained.",
+      "remaining": "No unique new lifecycle execution gap identified; P8-007 remains harddependency. KeepOSpagecacheunknown,N30coldtailinconclusive andN400observational/no-bestof restrictions.",
+      "selected_reports": [
+        "original-reports/acceptance-review/p8-007-009-closure/p8-007-009-original-acceptance-mapping.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-008"
+      ],
+      "original_steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "original_acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "1261resource stages,30DB/90SQLitephysicalobjects,128901120Bphysical;logicalFTSpagesinsideDB;artifactlogicalfilelengths343588203B scopedbeforefinalreceipt. Reported/estimatedprovider costs remainnull.",
+      "remaining": "No unique new execution gap identified in disabledlocalprofile; P8-008 harddependency. Keepclient/server/tree separate, overlappingpeaks unsummed, externalusageunknown, fakeprovider separatefrompaid.",
+      "selected_reports": [
+        "original-reports/acceptance-review/p8-007-009-closure/p8-007-009-original-acceptance-mapping.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-009"
+      ],
+      "original_steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "original_acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "readback_status": "old_hour_verified_cache_gap_new_M5_soak_running",
+      "verified_original_scope": "Original599hour artifact11580896618 retains3601success=1201build+2400read,>=1h,RSS/branch/compaction/15-tableparity;2401symbol-searchRPCs includingendpoint and allresult/graphcachehits/misses0. It does not prove cache-soak acceptance.",
+      "remaining": "M5 new native release build root-reportedexit0/452.259s; newsoak root-reportedstartedaround2026-10-08T22:16:47Z andstillrunning atpackagepreparation. Waitforactualcompleteoriginal/rawindependentreview andP8-009; no predictionofsuccess.",
+      "selected_reports": [
+        "original-reports/acceptance-review/soak-599-originals/soak-599-independent-review.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "original_steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "original_acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "Original599full-recovery artifact11575083478:7actualproductionfaulttests,27realSIGKILLrows,3seeds×4activefaultcases; receipts/source/binary/wire/SQLchecks preserveoriginalfailures/not_run scopes.",
+      "remaining": "No unique execution gap identified for the reviewedexistingrange. OriginalharddependenciesP7-020,P8-007,P8-010 remain; neitherdatareviewnor sourceadmission closes them.",
+      "selected_reports": [
+        "original-reports/acceptance-review/platform-599-originals/recovery-rollback-independent-review.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-011"
+      ],
+      "original_steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "original_acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V01",
+        "V21"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "Original599 eightcoldbuildcellsLinuxx86_64/macOSaarch64 ×Rust1.95/stable1.99 ×default/semantic,eachrelease/freshtarget/source/compiler/binary bound. Repairedcollector independently rereadall8originals.",
+      "remaining": "No missingcell within the original eight-cellcontract; P8-011 dependency/finalbinding remain. Collectorreadback is not a newbuild; no additionalOS/SDKinstallation claim.",
+      "selected_reports": [
+        "original-reports/acceptance-review/platform-599-originals/platform-eight-cells-independent-review.json",
+        "original-reports/acceptance-review/platform-599-originals/collector-independent-readback.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P8-012"
+      ],
+      "original_steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "original_acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "Original599gatesartifact11574928381 preserves6realcontracttests:quality/perffailedexit1,smallNinconclusiveexit1,lock/policyinvalidexit2,rawpreservation andnooverwriteassertions.",
+      "remaining": "No unique failure-gate execution gap identified in originalscope;P8-012 remains. These syntheticevaluatorcontrols do not certify fullquality/performance or turninconclusivegreen.",
+      "selected_reports": [
+        "original-reports/acceptance-review/gates-599-originals/gates-independent-review.json"
+      ],
+      "formal_original_task_complete": false
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "original_task_status": "in_progress",
+      "original_depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "original_steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "original_acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "readback_status": "scoped_original_execution_covered_hard_dependencies_open",
+      "verified_original_scope": "Full-recovery includesactualpublicsourceversionpair old277f2490fad3fa30f2812b5547bad033867c9ea5/new599 withdistinctPIDs andschema25→24→25→backupevidence, unchangedsource/config andimmutableSQL/wirevalidation.",
+      "remaining": "No unique version-pair execution gap identified for originalreviewedentry;P7-020/P8-012/P8-013 dependenciesremain. This is actualsource-builtpair, not proof of releasedpackage/binarydistribution orpaidproviderrecovery.",
+      "selected_reports": [
+        "original-reports/acceptance-review/platform-599-originals/recovery-rollback-independent-review.json"
+      ],
+      "formal_original_task_complete": false
+    }
+  ],
+  "new_M5_progress_snapshot": {
+    "source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+    "origin": "Root direct observation relayed in collaboration; not an independent native-build acceptance record.",
+    "release_build_reported_exit_code": 0,
+    "release_build_reported_elapsed_seconds": 452.259,
+    "soak_reported_start_utc_approx": "2026-10-08T22:16:47Z",
+    "soak_status": "running_not_yet_independently_accepted",
+    "source_proof_pin_commit": "2e2b1e50775fc3df133c7fe72da1f9dc9d6bb55a",
+    "full_source_proof_status": "Root reports original 181-control proof running on actual PINS5; no passed prediction.",
+    "new_build_soak_raw_included": false
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "kind": "original_source_gates_on_actual_PINS5",
+  "cwd": "/workspace/scratch/28fef0db5e01/codecortex",
+  "head_before": "2e2b1e50775fc3df133c7fe72da1f9dc9d6bb55a",
+  "tree_before": "fd3406cbd780b012567fc0071aee40059310019b",
+  "inputs_before": {
+    "scripts/verify_reviewed_source_v15.py": "a124a5147ab04dbd861032c77b35d3f5ac6ce79e8f14c4dbbc4b0276c4f285b5",
+    "scripts/reviewed-source-registry-v15.json": "f09324b16d01f327371c4a245e786f161193cf81572633543aafd23cdcfcaf77",
+    "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json": "322ca00da68b27e245b9fb5b46935969ae29a3649ef5d362d7b65fdcc3d84229",
+    "docs/roadmap/code-index-v2/tasks.json": "a9b1e95e38ed207b6d1950d98ee68a8a51a706dd427559f2484290346e006bee",
+    "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+    "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+    "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+  },
+  "started_at_utc": "2026-10-08T22:18:01.586210+00:00",
+  "status": "failed",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/source_integrity",
+        "-v"
+      ],
+      "started_at_utc": "2026-10-08T22:18:01.586646+00:00",
+      "status": "passed",
+      "log": "00.log",
+      "exit_code": 0,
+      "elapsed_seconds": 1225.6409551560064,
+      "finished_at_utc": "2026-10-08T22:38:27.228221+00:00",
+      "log_bytes": 29281,
+      "log_sha256": "60570ebc6538bb843f0c3acdfd97984a4cdf1f73ea9ab30ae91087e302befc2a"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "started_at_utc": "2026-10-08T22:38:27.233458+00:00",
+      "status": "passed",
+      "log": "01.log",
+      "exit_code": 0,
+      "elapsed_seconds": 180.56354623399966,
+      "finished_at_utc": "2026-10-08T22:41:27.797436+00:00",
+      "log_bytes": 572,
+      "log_sha256": "339b27395382f2d6866a67e2ff1bd19cef7de8016f4a31fa59eb36ab147f12f6"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/verify_historical_integrations_v2.py"
+      ],
+      "started_at_utc": "2026-10-08T22:41:27.801804+00:00",
+      "status": "failed",
+      "log": "02.log",
+      "exit_code": 1,
+      "elapsed_seconds": 6.459417970007053,
+      "finished_at_utc": "2026-10-08T22:41:34.261550+00:00",
+      "log_bytes": 773,
+      "log_sha256": "783008b138521a838eb0adcb0f02adc7f57032f344394f8d09ee0b09816d3f04"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/code_index_plan.py"
+      ],
+      "started_at_utc": "2026-10-08T22:41:34.262121+00:00",
+      "status": "passed",
+      "log": "03.log",
+      "exit_code": 0,
+      "elapsed_seconds": 0.06633998100005556,
+      "finished_at_utc": "2026-10-08T22:41:34.328915+00:00",
+      "log_bytes": 205,
+      "log_sha256": "f89e30bd04896781879968f89b03a66f5f47271046cf377fe3c4e518e49ac159"
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/p8_facts.py",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-08T22:41:34.329497+00:00",
+      "status": "passed",
+      "log": "04.log",
+      "exit_code": 0,
+      "elapsed_seconds": 0.08753207900736015,
+      "finished_at_utc": "2026-10-08T22:41:34.417303+00:00",
+      "log_bytes": 2632,
+      "log_sha256": "7fba000395cc0acb4b44665e974b86756e9dab603c18cbd46243699c5b64fbfc"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-08T22:41:34.417718+00:00",
+      "status": "passed",
+      "log": "05.log",
+      "exit_code": 0,
+      "elapsed_seconds": 0.014380431006429717,
+      "finished_at_utc": "2026-10-08T22:41:34.434344+00:00",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "Actual original source-integrity tests, full v15 including historical v14 proof, historical integrations, plan and facts gates. Runtime acceptance remains separate.",
+  "head_after": "2e2b1e50775fc3df133c7fe72da1f9dc9d6bb55a",
+  "tree_after": "fd3406cbd780b012567fc0071aee40059310019b",
+  "inputs_after": {
+    "scripts/verify_reviewed_source_v15.py": "a124a5147ab04dbd861032c77b35d3f5ac6ce79e8f14c4dbbc4b0276c4f285b5",
+    "scripts/reviewed-source-registry-v15.json": "f09324b16d01f327371c4a245e786f161193cf81572633543aafd23cdcfcaf77",
+    "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json": "322ca00da68b27e245b9fb5b46935969ae29a3649ef5d362d7b65fdcc3d84229",
+    "docs/roadmap/code-index-v2/tasks.json": "a9b1e95e38ed207b6d1950d98ee68a8a51a706dd427559f2484290346e006bee",
+    "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+    "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+    "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+  },
+  "finished_at_utc": "2026-10-08T22:41:34.443493+00:00",
+  "source_unchanged": true,
+  "passed": false
+}

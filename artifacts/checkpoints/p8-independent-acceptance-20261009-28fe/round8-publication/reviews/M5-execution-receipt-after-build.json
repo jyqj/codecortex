@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "kind": "original_fixed_M5_local_build_and_cache_soak",
+  "started_at_utc": "2026-10-08T22:09:14.662596+00:00",
+  "source": {
+    "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+    "inputs": {
+      "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+      "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+      "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+    }
+  },
+  "source_directory": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+  "status": "running",
+  "phases": [
+    {
+      "name": "build",
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/p8_runtime_build.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build"
+      ],
+      "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+      "started_at_utc": "2026-10-08T22:09:14.665972+00:00",
+      "source_before": {
+        "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+        "inputs": {
+          "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+          "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+          "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+        }
+      },
+      "status": "passed",
+      "exit_code": 0,
+      "elapsed_seconds": 452.2590189580078,
+      "finished_at_utc": "2026-10-08T22:16:46.928971+00:00",
+      "source_after": {
+        "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+        "inputs": {
+          "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+          "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+          "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+        }
+      },
+      "log_path": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build.log",
+      "log_bytes": 469,
+      "log_sha256": "9ff542468f3bdb371f93b90a2e475d014d04320331960a40f3680d45e53c539e"
+    },
+    {
+      "name": "soak",
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/p8_runtime.py",
+        "--binary",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/codecortex",
+        "--oracle",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-oracle",
+        "--statistics",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/p8-runtime-statistics",
+        "--build-receipt",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/build/build-receipt.json",
+        "--profile",
+        "soak",
+        "--concurrency",
+        "4",
+        "--operations",
+        "3601",
+        "--files",
+        "1000",
+        "--interval-ms",
+        "1000",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/runtime"
+      ],
+      "cwd": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/source",
+      "started_at_utc": "2026-10-08T22:16:46.941374+00:00",
+      "source_before": {
+        "head": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+        "inputs": {
+          "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+          "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+          "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+        }
+      },
+      "status": "running"
+    }
+  ],
+  "environment_selection": {
+    "CARGO_HOME": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/cargo-home",
+    "CARGO_TARGET_DIR": "/workspace/scratch/28fef0db5e01/runtime-review/m5-local-soak/private-target",
+    "CARGO_TERM_COLOR": "never",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_NET_OFFLINE": "true",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "toolchain_directory": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin",
+  "disk_free_before": 8919494656,
+  "execution_scope": "Owned synthetic project with semantic disabled; original local hybrid result-cache reuse protocol. No live or paid provider.",
+  "preserved_plan": {
+    "profile": "soak",
+    "concurrency_cap": 4,
+    "operations": 3601,
+    "offered_reads": 2400,
+    "files": 1000,
+    "interval_ms": 1000,
+    "duration_seconds": 3600,
+    "raw_budget_bytes": 536870912
+  },
+  "limits": [
+    "No benchmark denominator is pooled with another source or run.",
+    "Original resource, terminal, cache and complete no-repair parity gates determine the actual result.",
+    "Task completion and aggregate scale acceptance are separate requirements."
+  ]
+}

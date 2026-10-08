@@ -1,0 +1,358 @@
+{
+  "accepted_current_regression_gates": [
+    {
+      "artifact_id_observed_in_original_log": 11585183330,
+      "execution_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+      "fresh_artifact_full_replay_claimed": false,
+      "id": "current296_p7_semantic",
+      "job_id": 113541229427,
+      "job_metadata": {
+        "bytes": 2325,
+        "local_path": "/dev/shm/a217aaae3bde/codecortex/artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/p7-offline-semantic-job-metadata.json",
+        "repository_path": "artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/p7-offline-semantic-job-metadata.json",
+        "sha256": "002943125c584f98ffd3ab2582229807209fd30b404e0a80ade9844cb029f005"
+      },
+      "original_log": {
+        "bytes": 50826,
+        "local_path": "/dev/shm/a217aaae3bde/codecortex/artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/job-113541229427-original.log",
+        "repository_path": "artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/job-113541229427-original.log",
+        "sha256": "01594007ca2782fb19bfd9553d8e3da8fbf998fb4eb0f84a90eb567f7ef5aff8"
+      },
+      "review": {
+        "bytes": 2984,
+        "local_path": "/dev/shm/a217aaae3bde/codecortex/artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/p7-offline-semantic-independent-review.json",
+        "repository_path": "artifacts/checkpoints/p8-completion-20261009/execution-296/p7-offline-semantic/p7-offline-semantic-independent-review.json",
+        "sha256": "6274fac8f3dd62ab3e30bb18e7cfe8ef0d9717a6b14cecb99f11aaf970796440"
+      },
+      "run_id": 37844310901,
+      "scope": "已接受当次精确296 checkout的P7 semantic offline实际回归日志；保留3个合理skipped步骤，不宣称新原artifact完整重放、live provider/费用/发行或TODO认证。",
+      "status": "accepted_scoped_actual_regression_log"
+    }
+  ],
+  "actual_pending_blockers": [
+    {
+      "id": "scale_150_shards",
+      "note": "仅固定599原件；旧6e3/6956不计数。",
+      "observed_accepted": 4,
+      "required": 150,
+      "status": "pending"
+    },
+    {
+      "id": "scale_1500_samples",
+      "note": "50组×全局30 repetitions；每环境stratum不自动拥有N30。",
+      "observed_accepted": 41,
+      "required": 1500,
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "original_scale_combine_and_ci_aggregate",
+      "note": "完整原combine/CIaggregate、唯一覆盖及分层结果尚未得到。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "pr165_actual_ci",
+      "note": "纯归档修复的真实CI与历史guard必须通过；不能用静态迁移审查替代。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "current296_p7_mechanism",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "fresh_main_and_final_head_required_gates",
+      "note": "root需读取新main与最终PR实际HEAD、真实CI/P7及必要合并门，权限不足不能推断无门。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "final_pr_review_and_merge",
+      "note": "最终仅状态/证据/说明及既有导航派生视图；合并结果尚未发生。",
+      "status": "pending"
+    }
+  ],
+  "current_counts": {
+    "done": 163,
+    "remaining": 29
+  },
+  "formal_task_completion": false,
+  "new_product_execution": false,
+  "own_scope_coverage_review": "既有八个own-scope接受记录与原steps/acceptance均有明确映射；本轮仅读取记录与四个原local.json定位，没有新实验或放宽标准。005/006完整矩阵仍不具备最终验收。",
+  "peer_review_corrections": [
+    "scale_closeout独立发现早期派生map错误地把公开查询写到每scale阶段；v2已改为完整15表canonical/integrity/FK、config SQL target/fanout事实断言，public-query回归另归真实P7/CI。原tasks字面条款不变，旧map不改。",
+    "P8-006原step要求各phase计数，v2明确列files_*/dirty_plan/document_changes/project_model，不再只写timing。",
+    "pr_audit确认011/012/013/016无新增own-scope缺口，建议补benchmarks原raw导航；v2已绑定实际证据checkpoint原manifest与ARCHIVE-FORMAT。",
+    "P8-016的发布构建歧义改为默认/semantic两包release配置冷构建覆盖，不声称已经发布。",
+    "仅凭真实新增296 semantic原日志独审更新该pending；mechanism及其余门仍待。v1 pending快照完整保留。"
+  ],
+  "per_task_validation_packages": {
+    "P8-005": [
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-006": [
+      {
+        "code": "V07",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity",
+          "name": "dirty oracle"
+        }
+      },
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-007": [
+      {
+        "code": "V11",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "deadline/取消、有界线程、1连接读池、锁外网络、混代读拒绝/有限重试、缓存 key 完整",
+          "name": "查询执行/缓存"
+        }
+      },
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-008": [
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-009": [
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-010": [
+      {
+        "code": "V07",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity",
+          "name": "dirty oracle"
+        }
+      },
+      {
+        "code": "V17",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+          "name": "恢复与 GC"
+        }
+      },
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-011": [
+      {
+        "code": "V14",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2",
+          "minimum_scenarios": "claim CAS、过期 lease、删除竞争、两进程、模型切换、artifact-before-manifest、重复 ack",
+          "name": "outbox/publish"
+        }
+      },
+      {
+        "code": "V17",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+          "name": "恢复与 GC"
+        }
+      },
+      {
+        "code": "V18",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L1–L3",
+          "minimum_scenarios": "14工具不丢失，旧 mode不变，新参数贯穿schema/sanitize/dispatch/status，默认无网络无key可用",
+          "name": "MCP/配置兼容"
+        }
+      }
+    ],
+    "P8-012": [
+      {
+        "code": "V01",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L1–L3",
+          "minimum_scenarios": "SHA、dirty/binary digest、toolchain/SDK，现有测试/stdio、ignored 明列、全新 target 冷构建",
+          "name": "可复现构建/旧测试"
+        }
+      },
+      {
+        "code": "V21",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3/L5",
+          "minimum_scenarios": "新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测",
+          "name": "回滚/发行/文档"
+        }
+      }
+    ],
+    "P8-013": [
+      {
+        "code": "V03",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L1",
+          "minimum_scenarios": "primary/supporting、linear nDCG、重复、glob、空结果、must_contain 注记、native 范围/组/chain",
+          "name": "scorer goldens"
+        }
+      },
+      {
+        "code": "V04",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "MCP 握手/错误/取消、HTTP 失败、readiness、timeout、退出码、raw→metrics/report 可重算",
+          "name": "传输与报告"
+        }
+      },
+      {
+        "code": "V20",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L3/L5",
+          "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+          "name": "性能/资源/成本"
+        }
+      }
+    ],
+    "P8-016": [
+      {
+        "code": "V13",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2",
+          "minimum_scenarios": "typed write effects、一次 commit 推进、aux不刷内容、rollback、换库 incarnation",
+          "name": "schema/epoch"
+        }
+      },
+      {
+        "code": "V17",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3",
+          "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+          "name": "恢复与 GC"
+        }
+      },
+      {
+        "code": "V21",
+        "final_package_acceptance": "pending",
+        "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+        "original_minimum": {
+          "level": "L2/L3/L5",
+          "minimum_scenarios": "新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测",
+          "name": "回滚/发行/文档"
+        }
+      }
+    ]
+  },
+  "preserve_and_avoid_overclaim": [
+    "P8-005 acceptance_subgates不是可更新状态字段：含open/not_established/unknown全部保留，完整新验收只能另附evidence。",
+    "新296六runtime已实际验过；其余599保持原身份，引用适用性桥。134/136 validation不变并不等于136/136不变。",
+    "mixed配置C1/4/8/16实际RPC峰1/4/7/12，soak配置C4实际峰1无overlap；fake-worker backfill是独立进程协议。",
+    "生命周期OS缓存未清；cold N30尾部CI上界null/inconclusive保留，不能写成有界稳定p99。",
+    "资源是有限stage快照，不能宣称连续峰值或加总重叠runner/server/tree；未知服务及付费数据保持null。",
+    "故障是loopback fake provider，费用请求数不是实付；SIGKILL观察边界与原Rust事务边界分别绑定。",
+    "平台只覆盖当次x86_64 Linux/aarch64 macOS及实际1.95.0/1.99.0；单格七not_run原记录不改，由8/0/0完整collector证明。",
+    "gate synthetic controls只证明failure/inconclusive/invalid行为，不证明质量/速度/heldout通过。",
+    "rollback两public revisions不是已发布包；四原local.json只证明disable后local可用，不证明live-provider掉线自动切换。",
+    "既有平台旧mapping的awaiting字段是历史导航；当前接受取最终原review，不能改写旧文件。",
+    "原ZIP与derived非ELF/MachO包/分片不同：必须保留原ZIP来源和省略收据；不能称派生包完整ZIP。",
+    "未完成任何必要CI/P7/最终合并门时不得把own-scope接受升级为task done；source approval与release/G8认证分离。"
+  ],
+  "previous_draft": {
+    "bytes": 17649,
+    "local_path": "/dev/shm/a217aaae3bde/runtime-review/final-ten-draft/independent-findings-v2.json",
+    "sha256": "7c9eef729a54170a261d5a1bc75239a3892398c340b947ad74db903d5ea1a65b"
+  },
+  "reference_only_revision_zh": "v3仅将已接受的规模范围纠正原件及四个固定599 Git blob绑定到已收紧的v2文字；不追加测量或接受结论。",
+  "repository_files_modified_by_this_generator": [],
+  "revision": 3,
+  "scale_scope_correction": {
+    "artifact_ids": [],
+    "bytes": 6953,
+    "criteria_changed": false,
+    "local_path": "/dev/shm/a217aaae3bde/scale-round5-review/original-acceptance-mapping-scope-correction-v2.json",
+    "native_workloads_executed": 0,
+    "scope_zh": "仅纠正派生映射的逐阶段公开查询过度主张，并补明原phase计数；不改变原任务或既有验收结果。",
+    "sha256": "355c0dd5a7ed3d11ccb4fdfae1d082217d111e1d998c57ed10e50818e6a5f925",
+    "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+    "state": "accepted_documentation_scope_correction_only",
+    "workflow_run": 37835810882
+  },
+  "task_statuses_changed": []
+}

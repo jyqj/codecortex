@@ -1,0 +1,125 @@
+{
+  "schema": "p8-scale-original-mapping-scope-correction-v2",
+  "observed_utc": "2026-10-08T23:37:45.488000+00:00",
+  "reviewer": "scale_closeout",
+  "status": "accepted_documentation_scope_correction_only",
+  "original_mapping": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/original-acceptance-mapping.json",
+    "sha256": "97660140cb7cc40fe7d3bb3e04f872188cc2544732d3087c5d8724291292ae66",
+    "unchanged": true
+  },
+  "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "source_files_checked": [
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "sha256": "d57c5e804d90e085c1b01a3371bb8e1f811f8d653eaa0ad0e76c245afc9f5a7a",
+      "exact_git_blob_matches": true
+    }
+  ],
+  "correction": {
+    "task_id": "P8-006",
+    "field": "derived checks[2] only; original task steps/acceptance/requirements unchanged",
+    "unsupported_phrase": "每检查点增量与 fresh full 原 15 表完整 parity、integrity/FK/公开查询和手写 target 见证；no-op 零改动、batch 实改数量和 config 独立见证。",
+    "supported_replacement": "每检查点增量与fresh full原15表完整canonical parity及integrity/FK；保留scale的config-target独立只读SQL见证及fanout手写事实断言、no-op零改动和batch实改数量。此scale路径没有逐stage public search probes；公开查询旧功能回归只能引用独立实际P7/CI证据，不能由scale原件替代。",
+    "basis": [
+      "p8_scale.rs::parity calls oracle canonical or streaming comparison and never oracle::run search probes.",
+      "p8_scale.rs::config_fact opens original SQLite READ_ONLY and queries call_edges target_file_path.",
+      "p8_scale.rs::fanout_case supplies hand-written call-edge assertions to mutation_case; mutation_case compares canonical rows without public search probes.",
+      "oracle::run contains public search probes but is a separate path not invoked by the scale workload."
+    ]
+  },
+  "additional_draft_clarification": "For original step 输出各phase计数, explicitly map preserved raw IndexReport files_*, dirty_plan, document_changes and project_model per-build counts as well as timing; do not describe only timing.",
+  "criteria_changed": false,
+  "product_or_observer_files_modified": [],
+  "native_workloads_executed": 0,
+  "old_shard_acceptance_replayed": false,
+  "original_shard_acceptances_unchanged": true,
+  "task_statuses_changed": false,
+  "counts": {
+    "accepted_shards": 4,
+    "required_shards": 150,
+    "accepted_samples": 41,
+    "required_samples": 1500,
+    "formal_tasks_done": 163,
+    "formal_tasks_remaining": 29
+  },
+  "supersedes_preliminary_addendum": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/original-acceptance-mapping-scope-correction.json",
+    "sha256": "8f82dd02140d8c50dda26b0abdde330a71e4877694b33f3d69a8c8d5998a59f7"
+  },
+  "sealed_replay_helper": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/review_scale_fixed_source.py",
+    "sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee",
+    "changed": false
+  },
+  "fixed_replay_state": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/validated/state.json",
+    "sha256": "b0b1833dca9315f6d59b80c3940209bbebceecf737da20e33e44fa41922361e6",
+    "changed": false
+  },
+  "accepted_original_evidence": [
+    {
+      "artifact_id": 11576619839,
+      "archive_path": "/dev/shm/a217aaae3bde/ci-artifacts/11576619839/p8-scale-shard-5000-0-37835810882.zip",
+      "archive_sha256_from_original_metadata": "sha256:34af8ce515b0bf27fcb0f97c626ec59c26d62a8024f1724d083cd8aa52bfefc0",
+      "workflow_run": 37835810882,
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "accepted_review_path": "/dev/shm/a217aaae3bde/scale-round5-review/validated/shards/11576619839/review.json",
+      "accepted_review_sha256": "4a992abab8892c7b36ec1a79c931f537401e09f13596ec740297a9ae6bd1037c",
+      "original_native_raw_blake3": "9f011ff97d5bc069e1f44bd2a7f4b8c5e51abf5d54259f0b4c5b47b3cde98d43",
+      "sample_count": 9,
+      "acceptance_unchanged": true
+    },
+    {
+      "artifact_id": 11577045484,
+      "archive_path": "/dev/shm/a217aaae3bde/ci-artifacts/11577045484/p8-scale-shard-1000-0-37835810882.zip",
+      "archive_sha256_from_original_metadata": "sha256:8cd0d46fc0d978e3e6713cc479f1b6ae99123d6ce0e406a87d40fe253183afd0",
+      "workflow_run": 37835810882,
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "accepted_review_path": "/dev/shm/a217aaae3bde/scale-round5-review/validated/shards/11577045484/review.json",
+      "accepted_review_sha256": "4dd3112d2c9e595a163b03c73218667a49062a774527c85522ebd90fa93eaed9",
+      "original_native_raw_blake3": "8f0d241c15d7aa93311fd1a44ebc6a46dd4202e647fa25cbd85e84819917e4d3",
+      "sample_count": 14,
+      "acceptance_unchanged": true
+    },
+    {
+      "artifact_id": 11577518538,
+      "archive_path": "/dev/shm/a217aaae3bde/ci-artifacts/11577518538/p8-scale-shard-10000-0-37835810882.zip",
+      "archive_sha256_from_original_metadata": "sha256:3c6978e33fb33f7954c48131eb5f86a01606ca4a12d08f85efd8e84b864131d8",
+      "workflow_run": 37835810882,
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "accepted_review_path": "/dev/shm/a217aaae3bde/scale-round5-review/validated/shards/11577518538/review.json",
+      "accepted_review_sha256": "a77cb8d11f985e2147157f12949d8e8edccac3c44ef778f685be08b5ee4f51a5",
+      "original_native_raw_blake3": "5a4d28393b4a266f9b50c1e5be19b64f0c00e97ba03c7a863987135fd0e3403c",
+      "sample_count": 9,
+      "acceptance_unchanged": true
+    },
+    {
+      "artifact_id": 11580138693,
+      "archive_path": "/dev/shm/a217aaae3bde/ci-artifacts/11580138693/p8-scale-shard-50000-0-37835810882.zip",
+      "archive_sha256_from_original_metadata": "sha256:9cc839d50caa242531c823007d18e9abdf9cd01115fb6bd299e3dc8622edeea8",
+      "workflow_run": 37835810882,
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "accepted_review_path": "/dev/shm/a217aaae3bde/scale-round5-review/validated/shards/11580138693/review.json",
+      "accepted_review_sha256": "acd4d7d8d8f2ce85d45ae129b83be7a2a64e00fa66e673e97fbcd50c843a7964",
+      "original_native_raw_blake3": "1c593b3d9cc24e34389e7f859548d5a6fb507ce23caefc28dbbda52021860832",
+      "sample_count": 9,
+      "acceptance_unchanged": true
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "schema": "p8-scale-original-acceptance-fixed-source-mapping-v1",
+  "status": "prepared_waiting_for_complete_actual_matrix",
+  "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "workflow_run_id": 37835810882,
+  "authorities_sha256": {
+    "docs/roadmap/code-index-v2/tasks.json": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "docs/roadmap/code-index-v2/06-VALIDATION.md": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+    "docs/roadmap/code-index-v2/P8-SCALE.md": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+    ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+    "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+  },
+  "complete_source_inventory": {
+    "input_count": 1087,
+    "manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59"
+  },
+  "unfinished_tasks_at_fixed_source": 29,
+  "tasks": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "hard_dependencies": [
+        "P8-004"
+      ],
+      "original_steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "original_acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validation_packages": [
+        "V20"
+      ],
+      "families": [
+        "scale"
+      ],
+      "checks": [
+        "matrix.scales 五档完整；当前 registered plan 为 150 slices、50 groups × 30 N=1500，所有 global repetition 唯一且不遗漏。",
+        "每 cold counts_by_repetition 含实际 files/symbols/chunks、各 edge 表以及 vectors 的状态/值；核对输入/seed/release 与原 raw。",
+        "capacity 模式读 groups.environment_strata 及每层 N，不合并异机器样本计算性能倍数。"
+      ],
+      "cannot_done": [
+        "只完成 1k/单片/单个 100k 协议或旧源结果；其余规模 not_run/timeout。",
+        "只报文件数；把 disabled/null vectors 当真实向量吞吐，或把不同 workload/环境直接算提速。"
+      ],
+      "status_at_fixed_source": "in_progress",
+      "original_deliverables": [
+        "完整规模1k到100k的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "dependency_status_at_fixed_source": {
+        "P8-004": "done"
+      }
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "original_steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "original_acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validation_packages": [
+        "V07",
+        "V20"
+      ],
+      "families": [
+        "scale"
+      ],
+      "checks": [
+        "全部规模 cold/no_op/body/api/config/batch_1/10/100/1000 与 fanout_1/4/16/64/128 的当前矩阵覆盖完整。",
+        "逐样本原 IndexReport.phase_timing、build_timing 与 index/outer/full_control/parity wall 时间可归因；嵌套 timing 不重复相加。",
+        "每检查点增量与 fresh full 原 15 表完整 parity、integrity/FK/公开查询和手写 target 见证；no-op 零改动、batch 实改数量和 config 独立见证。",
+        "至少有实际 first_build_incomplete，之后恢复闭包并达到完整 parity；raw 保留中间 incomplete/status 及全部 rebuild。"
+      ],
+      "cannot_done": [
+        "P8-005 未验收；closure 仍 incomplete、只做抽样/截断 parity、比较前补修增量侧或只汇总成功阶段。"
+      ],
+      "status_at_fixed_source": "in_progress",
+      "original_deliverables": [
+        "增量规模与fanout曲线的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+      ],
+      "dependency_status_at_fixed_source": {
+        "P7-020": "done",
+        "P8-001": "done",
+        "P8-005": "in_progress"
+      }
+    }
+  ],
+  "artifact_family": {
+    "workflow": ".github/workflows/p8-scale.yml",
+    "artifacts": "build: build.json/cargo.jsonl/source-before.json/source-after.json/p8-scale；每 shard: shard.json/registered-plan.json/native/{plan,raw,worker-summary,report,worker.stderr}；aggregate: matrix.json。",
+    "status_fields": {
+      "build.json": "status=passed; exit_code=0",
+      "shard.json": "status=passed; exit_code=0",
+      "native/report.json": "status=measurement_complete; exit_code=worker_exit_code=0; stderr_complete=true; fixture_cleanup.error absent/null; summary.passed=true",
+      "matrix.json": "status=complete_measurement_coverage; passed=true"
+    },
+    "source_binding": "build.source_commit=固定产品源；source-before=source-after，source_manifest_sha256/driver_source/Cargo release artifact/保留 binary 的 SHA256+BLAKE3 全部匹配。每片 build_receipt_sha256、source/driver/binary 与同一 build 相等；原 raw engine/plan/digest 再核验。",
+    "replay": "scripts/p8_scale_matrix.py 的 validate_build、validate_shard、aggregate/combine：重读原 raw 和完整 inventory；不得只信 matrix 的 passed。"
+  },
+  "common_acceptance_rules": [
+    "原 hard depends_on 先闭合；既有已接受前置无需无理由重跑。各 task 的原旧功能回归、Vxx 适用断言和既有 CI/source guard 不省略；原硬正确性失败不能由性能或控制测试抵消。",
+    "当前证据保留真实 run/命令/退出/profile/固定源/Cargo build/binary/raw 绑定；旧源历史只保留原适用范围。旧 binary 回滚的 previous source 是明确登记的必要例外。",
+    "accepted_scoped 源码审批、seal/verify 完整性、observation passed、task done 分别判断；不修改原 report 的 task_complete=false/release_certified=false。原范围及依赖满足后由独立审查给权威任务表作 done 决策。",
+    "required case 的 not_run/incomplete/timeout 不由顶层 green 消除；明确对应的另一实际子矩阵可以补齐覆盖，但原 limited report 不改写。",
+    "原 unavailable/null、CI 不确定、disabled provider、OS cache 未清及 fake provider 边界保留；不新增 live、绝对 SLA 或稳定尾延迟要求。平台原条款允许 SDK blocker 解决或明确发布范围；当前登记为八单元。",
+    "本文所有 N/规模/时长/阈值取自固定 workflow/protocol，非新门槛。P8-017 本人 authored hygiene 的独立 reviewer 是 root。"
+  ],
+  "registered_population": {
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "global_repetitions_per_group": 30,
+    "shards_per_scale": 30,
+    "total_shards": 150,
+    "total_groups": 50,
+    "total_samples": 1500,
+    "main_stages": [
+      "cold",
+      "no_op",
+      "body",
+      "api",
+      "config",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000"
+    ],
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "fanout_owner_scale": 1000
+  },
+  "independent_replay": {
+    "helper": "review_scale_fixed_source.py",
+    "state": "validated/state.json",
+    "original_functions": [
+      "validate_build",
+      "validate_shard",
+      "combine"
+    ],
+    "required_inputs": [
+      "Original GitHub build ZIP and independent artifact metadata",
+      "Every one of the 150 original GitHub shard ZIPs and its independent artifact metadata",
+      "Unmodified frozen 599 checkout with full crates/Cargo inventory and original drivers"
+    ],
+    "extra_integrity_checks": [
+      "Complete build and shard source inventory equality against exact Git 599",
+      "Source .rs/.toml and Cargo.lock BLAKE3 from the preserved binary hash operation compared to raw engine",
+      "Original ZIP size and SHA256 equality before extraction, after replay, and before deleting only the derived extraction",
+      "Compact values are the unchanged return from the original validate_shard; each is sealed and fed to unmodified combine only after 150 unique original artifact reviews"
+    ],
+    "original_zip_retention": "Keep every original ZIP and metadata in durable archive; never replace raw with compact summaries."
+  },
+  "scope_limits": [
+    "Full P8-005 and P8-006 require all registered actual samples and relevant current original regression gates; a passed single shard or build cannot close either task.",
+    "Heterogeneous hosts are reported as separate environment strata; N=30 is total registered coverage, not 30 per stratum or certified stable tails.",
+    "No best-of, cross-workload speedup, same-environment causal comparison, real semantic/provider effect, or G8/release certification is inferred.",
+    "Semantic disabled and vectors unavailable/null remain explicit; no synthetic vector count or cost zero is substituted.",
+    "Worker snapshots are not continuous peaks or whole-process-tree memory certification.",
+    "Cold index/parse-cache state does not imply OS page-cache eviction.",
+    "The native original 15-table parity projection and full fresh controls are retained; missing, budget-exceeded, failed and timeout outcomes cannot be omitted or relabeled.",
+    "Utility controls that read old 6e3 raw are labeled old-source helper checks and contribute zero samples to run 37835810882."
+  ],
+  "task_statuses_changed": false
+}

@@ -1,0 +1,1641 @@
+{
+  "accepted_evidence_index": {
+    "bytes": 13850,
+    "local_path": "/dev/shm/a217aaae3bde/runtime-review/final-ten-draft/accepted-evidence-index.json",
+    "sha256": "b8172aed2cdb30ea959391158dadaa4a6cb98007a3feff0e82a2e2ee7c5fbc74"
+  },
+  "closure_order": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "counts": {
+    "done": 163,
+    "remaining": 29
+  },
+  "formal_task_completion": false,
+  "original_snapshot": {
+    "bytes": 33278,
+    "local_path": "/dev/shm/a217aaae3bde/runtime-review/final-ten-draft/original-task-snapshot.json",
+    "sha256": "57787948b149182bf3943fb8a6bd9d9f9ba987b67efa156dc0f13e3830a8bc69"
+  },
+  "pending_final_gates": [
+    {
+      "id": "scale_150_shards",
+      "note": "仅固定599原件；旧6e3/6956不计数。",
+      "observed_accepted": 4,
+      "required": 150,
+      "status": "pending"
+    },
+    {
+      "id": "scale_1500_samples",
+      "note": "50组×全局30 repetitions；每环境stratum不自动拥有N30。",
+      "observed_accepted": 41,
+      "required": 1500,
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "original_scale_combine_and_ci_aggregate",
+      "note": "完整原combine/CIaggregate、唯一覆盖及分层结果尚未得到。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "pr165_actual_ci",
+      "note": "纯归档修复的真实CI与历史guard必须通过；不能用静态迁移审查替代。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "current296_p7_mechanism",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "current296_p7_semantic",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "fresh_main_and_final_head_required_gates",
+      "note": "root需读取新main与最终PR实际HEAD、真实CI/P7及必要合并门，权限不足不能推断无门。",
+      "status": "pending"
+    },
+    {
+      "accepted_result": null,
+      "id": "final_pr_review_and_merge",
+      "note": "最终仅状态/证据/说明及既有导航派生视图；合并结果尚未发生。",
+      "status": "pending"
+    }
+  ],
+  "prepared_utc": "2026-10-08T23:31:10.885687+00:00",
+  "schema_version": 1,
+  "tasks": [
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 0,
+          "literal": "固定seed与release构建测1k/5k/10k/50k/100k",
+          "mapped_observation_zh": "固定599 release来源/build11576810573已绑定；五档×30完整覆盖尚待150/150片与1500/1500样本，当前仅4片41样本。",
+          "original_field": "steps",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 1,
+          "literal": "同时报chunk/edge/vector",
+          "mapped_observation_zh": "每规模原counts包含files/symbols/chunks/各edge表；vectors须保持disabled/null状态。完整汇总尚待原combine。",
+          "original_field": "steps",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 0,
+          "literal": "不存在只报文件数或把不同工作量直接算倍数",
+          "mapped_observation_zh": "保留工作量与环境分层；不能把异质host或不同工作量直接计算倍数。完整五档与原回归尚未通过，当前不得done。",
+          "original_field": "acceptance",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "scale_mapping",
+        "scale_build",
+        "scale_shard_11577045484",
+        "scale_shard_11576619839",
+        "scale_shard_11577518538",
+        "scale_shard_11580138693",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "done",
+          "included_in_this_ten": false,
+          "task_id": "P8-004"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "不存在只报文件数或把不同工作量直接算倍数",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "acceptance_subgates": {
+          "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+          "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+          "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+          "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+          "strict_paired_causal_performance": "not_established",
+          "whole_tree_memory_peak": "unknown"
+        },
+        "batch": "P8-A",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "完整规模1k到100k的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-004"
+        ],
+        "id": "P8-005",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/sampler.rs",
+          "crates/cc-eval/tests/index_v2_scale.rs"
+        ],
+        "steps": [
+          "固定seed与release构建测1k/5k/10k/50k/100k",
+          "同时报chunk/edge/vector"
+        ],
+        "title": "完整规模1k到100k",
+        "validations": [
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "1e94f407d6506092fdca0ae3d2cc9e959eed7aceade100853476f597144d3472",
+      "own_scope_state": "pending_complete_original_matrix",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "不主张严格paired因果提速或稳定p99；环境分层如实保留。",
+        "semantic disabled、vectors unavailable/null不能写成0向量吞吐或live-provider规模。",
+        "原acceptance_subgates是不可变历史快照，full_1k_5k_10k_50k_100k_scale_acceptance=open等原值永久保留，新验收另附。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-005",
+      "title": "完整规模1k到100k",
+      "validation_mapping": [
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 0,
+          "literal": "测no-op/body/API/config/batch和超预算闭包",
+          "mapped_observation_zh": "原计划覆盖cold/no_op/body/api/config/batch_1/10/100/1000及fanout_1/4/16/64/128；须含真实首次incomplete后完成闭包，当前完整矩阵pending。",
+          "original_field": "steps",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 1,
+          "literal": "输出各phase计数",
+          "mapped_observation_zh": "逐样本保留IndexReport.phase_timing/build_timing与index/outer/full_control/parity计时；嵌套阶段不重复相加。",
+          "original_field": "steps",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "scale_mapping",
+            "scale_build",
+            "scale_shard_11577045484",
+            "scale_shard_11576619839",
+            "scale_shard_11577518538",
+            "scale_shard_11580138693"
+          ],
+          "index": 0,
+          "literal": "时间可归因且闭包完成后full parity，未完成有显式status",
+          "mapped_observation_zh": "每阶段完整原15表canonical parity、integrity/FK与公开查询/手写target见证；中间incomplete及rebuild不能丢弃，比较前不修增量侧。当前只验部分片，完整接受pending。",
+          "original_field": "acceptance",
+          "scope_state": "pending_complete_original_matrix"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "scale_mapping",
+        "scale_build",
+        "scale_shard_11577045484",
+        "scale_shard_11576619839",
+        "scale_shard_11577518538",
+        "scale_shard_11580138693",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "done",
+          "included_in_this_ten": false,
+          "task_id": "P7-020"
+        },
+        {
+          "current_status": "done",
+          "included_in_this_ten": false,
+          "task_id": "P8-001"
+        },
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-005"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "时间可归因且闭包完成后full parity，未完成有显式status",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-B",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "增量规模与fanout曲线的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "id": "P8-006",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/mutations.rs",
+          "crates/cc-index/"
+        ],
+        "steps": [
+          "测no-op/body/API/config/batch和超预算闭包",
+          "输出各phase计数"
+        ],
+        "title": "增量规模与fanout曲线",
+        "validations": [
+          "V07",
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "65aca517fc2115bfa001afffe75c0ba1a8eaf2635d5085d9d10ad4e620b51f8d",
+      "own_scope_state": "pending_complete_original_matrix",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "registered 200/1024与fanout8/128不改；native5h/512MiB、oracle16GiB canonical/8GiB scratch/5m rows/2MiB cache不改。",
+        "超预算或未闭合必须保留原status；不截断对账、不只汇总成功阶段。",
+        "P8-005未正式完成时本任务不得done；release_certification=not_run、G8=not_evaluated保持。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "validation_mapping": [
+        {
+          "code": "V07",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity",
+            "name": "dirty oracle"
+          }
+        },
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "mixed-c1",
+            "mixed-c4",
+            "mixed-c8",
+            "mixed-c16",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 0,
+          "literal": "C1/4/8/16 mixed read/build/backfill",
+          "mapped_observation_zh": "新296四档C1/4/8/16各900请求全部成功，实际RPC最大1/4/7/12；C4/8/16实际read/build overlap。独立原worker fake-provider backfill为seeds7/19/43×C1/4/8/16×quiet/held共24cell、768请求。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "mixed-c1",
+            "mixed-c4",
+            "mixed-c8",
+            "mixed-c16",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 1,
+          "literal": "记录offered load和排队",
+          "mapped_observation_zh": "原offered/dispatch/queue/service/end-to-end记录、全部唯一终态和尾部保留；实际统计重放字节相同，终点队列与owned cleanup已核对。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "mixed-c1",
+            "mixed-c4",
+            "mixed-c8",
+            "mixed-c16",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 0,
+          "literal": "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "mapped_observation_zh": "已观测窗口内全部请求终态齐全、无死锁/饥饿或隐藏timeout，负载统计和原15表oracle真实重放一致。原V11相关取消/deadline/缓存等回归仍需当前CI/P7闭合。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "mixed-c1",
+        "mixed-c4",
+        "mixed-c8",
+        "mixed-c16",
+        "backfill",
+        "runtime_six_index",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-006"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-B",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "多并发与混合负载的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-006"
+        ],
+        "id": "P8-007",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/runner.rs",
+          "crates/cc-server/"
+        ],
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "title": "多并发与混合负载",
+        "validations": [
+          "V11",
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "b12a4f13e5f8c0520279a6aca3a78e0ea620286f81d1ab38867d88f4bda2c629",
+      "own_scope_state": "accepted_scoped_original296",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "配置并发上限不是实际峰值：C1/4/8/16实际RPC峰1/4/7/12。",
+        "默认mixed没有semantic backfill；backfill由另一个原worker执行证明，不能称为同进程live-provider混合压测。",
+        "fake provider无真实网络吞吐/付费结论；2s/5s/100ms原控制不改；不主张稳定p99或性能提升。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-007",
+      "title": "多并发与混合负载",
+      "validation_mapping": [
+        {
+          "code": "V11",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "deadline/取消、有界线程、1连接读池、锁外网络、混代读拒绝/有限重试、缓存 key 完整",
+            "name": "查询执行/缓存"
+          }
+        },
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 0,
+          "literal": "分离OS cache、process cold、result-cache hit与uncached warm",
+          "mapped_observation_zh": "固定599 artifact11576107053分层30 cold build、400 process reopen、400 warm uncached、400 result-cache hit；OS page cache状态保留未清除/unknown。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 1,
+          "literal": "采全部样本",
+          "mapped_observation_zh": "1230/1230 attempts与1200源核对查询均保留，无best-of；431个owned进程正常关闭，原evaluator重放等价。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 0,
+          "literal": "无best-of，sample N/分布/CI齐全",
+          "mapped_observation_zh": "全部N、分布及原95%次序统计CI保留。cold N30的p95/p99上界null及inconclusive_insufficient_tail_samples如实保留，不伪造有限尾部结论。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "lifecycle",
+        "lifecycle_cargo",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-007"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "无best-of，sample N/分布/CI齐全",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-B",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "冷建/重开/热查分层的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-007"
+        ],
+        "id": "P8-008",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/runner.rs",
+          "crates/cc-eval/src/benchmark/statistics.rs"
+        ],
+        "steps": [
+          "分离OS cache、process cold、result-cache hit与uncached warm",
+          "采全部样本"
+        ],
+        "title": "冷建/重开/热查分层",
+        "validations": [
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "8ef3261fef77774871682996b6c633b017bc372d284fdba3de5f9b2744f5ba92",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "process cold不等于OS缓存冷/磁盘冷；只有报告的四层。",
+        "CI方法保留原IID假设；N30冷建不能主张稳定p99或统计性能改善。",
+        "不可将原599源、原binary或source_root改标为296。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "validation_mapping": [
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 0,
+          "literal": "分别client/server/process-tree和artifact/FTS大小",
+          "mapped_observation_zh": "1261个资源stage快照区分client native、server SELF与native process-tree，PID/父子/namespace身份核对；原ps unavailable另列，不冒充server。30关闭DB的90个物理对象按device/inode去重，128901120B物理总量，FTS逻辑页不重复加总。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 1,
+          "literal": "成本reported/estimated分栏",
+          "mapped_observation_zh": "reported/estimated/input/output tokens/requests_billed均保持null及disabled-provider原因，network_filter=not_measured。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "lifecycle",
+            "lifecycle_cargo"
+          ],
+          "index": 0,
+          "literal": "单位和归属正确，不把unavailable填0或把runner当server",
+          "mapped_observation_zh": "角色、单位、物理/逻辑归属已独立核对；unavailable不填0，不相加重叠角色与非同时峰值。完整旧回归仍待当前CI/P7。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "lifecycle",
+        "lifecycle_cargo",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-008"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "单位和归属正确，不把unavailable填0或把runner当server",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-B",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "内存/磁盘/费用总账的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-008"
+        ],
+        "id": "P8-009",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/sampler.rs",
+          "crates/cc-semantic/"
+        ],
+        "steps": [
+          "分别client/server/process-tree和artifact/FTS大小",
+          "成本reported/estimated分栏"
+        ],
+        "title": "内存/磁盘/费用总账",
+        "validations": [
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "c579ac1dc41b3dcdaaa4aed21ef331d5d240feb8b3fcd64337ebe5bd1e50eb0e",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "这些是stage snapshots，sampling_interval_ms=null，不构成连续峰值或全系统内存总量。",
+        "server SELF与tree采样时刻可能不同；不能把两者或runner替代观测叠加。",
+        "未知外部服务/LSP/容器与实付费用不补0；不据此宣称免费或无网络。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "validation_mapping": [
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "soak",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 0,
+          "literal": "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "mapped_observation_zh": "同一296 stdio product实际3600.037999068秒；3601点每秒计划、3601成功，持续六类修改并完成200真实branch切换和25 catalog compaction；worker/backfill复用边界结合原worker独立768请求记录。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "soak",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 1,
+          "literal": "终点完整对账",
+          "mapped_observation_zh": "终点增量侧未补修，与fresh full全部15表原生oracle重放相同；资源/队列/统计原raw可重算。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "soak",
+            "backfill",
+            "runtime_six_index"
+          ],
+          "index": 0,
+          "literal": "内存/队列不无界增长，长期索引和全量一致",
+          "mapped_observation_zh": "3596资源点maxgap1.031181477s<原5s；RSS warm92676096B→tail109080576B低于原149399552B阈值；终点CPU/async/admitted/pins=0；owned worker/sampler/product均确认停止。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original296"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "soak",
+        "backfill",
+        "runtime_six_index",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-009"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-B",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "长时soak与连续修改的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-009"
+        ],
+        "id": "P8-010",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/tests/soak.rs",
+          "crates/cc-eval/src/benchmark/mutations.rs"
+        ],
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "title": "长时soak与连续修改",
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "3ddcb5d70c4fa9861aecf6ace914ef6e650dd51e6e26315d05f13f28ce86f4da",
+      "own_scope_state": "accepted_scoped_original296",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "soak配置C4但实际RPC峰1且无read/build overlap；不能称饱和C4或复用mixed峰值。",
+        "原中位数增长规则与有限1h窗口通过，不是统计学无泄漏或任意时长不增长证明。",
+        "默认soak非live semantic provider；backfill原件作用域分开，不重标599旧soak。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-010",
+      "title": "长时soak与连续修改",
+      "validation_mapping": [
+        {
+          "code": "V07",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity",
+            "name": "dirty oracle"
+          }
+        },
+        {
+          "code": "V17",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+            "name": "恢复与 GC"
+          }
+        },
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "fault",
+            "rollback",
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 0,
+          "literal": "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "mapped_observation_zh": "599 artifact11575083478包含kill/restart、SQLite busy、删除源本地场景；active seeds223/227/229分别执行真实loopback HTTP断开、缓存payload损坏、格式999拒读恢复、并发换库；四原Rust crash/rename边界控另行绑定。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "fault",
+            "rollback",
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "保持raw故障工件",
+          "mapped_observation_zh": "495-file完整封存清单、原RPC/stdout/stderr/退出与故障DB均保留；预期SIGKILL缺一未完成回应为明确场景，正常退出严格拒坏JSON/重复/缺失response。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "fault",
+            "rollback",
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 0,
+          "literal": "没有假ready或删除复活，恢复与费用影响清楚",
+          "mapped_observation_zh": "原raw已证无假ready/删除复活、换库incarnation隔离与恢复完整性；每seed观测6个loopback provider请求，paid_cost/actual_paid_cost=null，费用边界清楚。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "fault",
+        "rollback",
+        "old_p7",
+        "old_engineering",
+        "applicability",
+        "historical_observer_addendum"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "done",
+          "included_in_this_ten": false,
+          "task_id": "P7-020"
+        },
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-007"
+        },
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-010"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-C",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "端到端故障与恢复认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "id": "P8-011",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/tests/semantic_lifecycle.rs",
+          "crates/cc-server/tests/mcp_stdio.rs"
+        ],
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "title": "端到端故障与恢复认证",
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "107a73744c74d6b7f1dc96a4ba58758190defe7156a0e38037f453ce6ed4263b",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "原SIGKILL本地pending-request边界与四Rust内部crash边界分别证明，不相互替代。",
+        "loopback fake provider不是liveprovider；null付费不等于实付0，不主张任意断电/设备故障。",
+        "恢复使用声明dev profile，不能写成release冷性能；当前296 P7 mechanism/semantic仍需真实原门。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "validation_mapping": [
+        {
+          "code": "V14",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2",
+            "minimum_scenarios": "claim CAS、过期 lease、删除竞争、两进程、模型切换、artifact-before-manifest、重复 ack",
+            "name": "outbox/publish"
+          }
+        },
+        {
+          "code": "V17",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+            "name": "恢复与 GC"
+          }
+        },
+        {
+          "code": "V18",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L1–L3",
+            "minimum_scenarios": "14工具不丢失，旧 mode不变，新参数贯穿schema/sanitize/dispatch/status，默认无网络无key可用",
+            "name": "MCP/配置兼容"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "platform",
+            "platform_collector",
+            "old_engineering"
+          ],
+          "index": 0,
+          "literal": "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "mapped_observation_zh": "599 Linux/macOS×MSRV1.95/stable×default/semantic全部八格与16份原bundle/raw逐一核对；当次stable实际rustc1.99.0，Linux x86_64与macOS aarch64按实际记录。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "platform",
+            "platform_collector",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "全新target",
+          "mapped_observation_zh": "每格全新private target、Cargo fresh=false、release真实profile、exact features/producer/toolchain/SDK/1087源+4observer及stdio实际源码命中通过strict portable-v2；八格collector为8/0/0。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "platform",
+            "platform_collector",
+            "old_engineering"
+          ],
+          "index": 0,
+          "literal": "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "mapped_observation_zh": "八格真实冷构建覆盖完整；macOS SDK/声明MSRV边界按该runner实测接受，缓存命中不替冷建。原单机其余七格not_run及其exit2保留，由最终完整collector闭合。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "platform",
+        "platform_collector",
+        "old_engineering",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-011"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-C",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-011"
+        ],
+        "id": "P8-012",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          ".github/workflows/ci.yml",
+          "CONTRIBUTING.md"
+        ],
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "title": "MSRV与平台冷构建矩阵",
+        "validations": [
+          "V01",
+          "V21"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "9d659bb5b73a6f1de815b66964d41391a4d0601b235ff842aab135888184d4c8",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "只代表当次Linux x86_64/macOS aarch64及1.95.0/实际stable1.99.0，不扩写成所有架构/未来stable。",
+        "产品冷构建不表示依赖下载/OS page cache冷；工程回归的warm target不可替代该矩阵。",
+        "P8-011及最终CI/文档事实漂移门仍是原硬条件。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "validation_mapping": [
+        {
+          "code": "V01",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L1–L3",
+            "minimum_scenarios": "SHA、dirty/binary digest、toolchain/SDK，现有测试/stdio、ignored 明列、全新 target 冷构建",
+            "name": "可复现构建/旧测试"
+          }
+        },
+        {
+          "code": "V21",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3/L5",
+            "minimum_scenarios": "新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测",
+            "name": "回滚/发行/文档"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "gates"
+          ],
+          "index": 0,
+          "literal": "故意注入quality/perf/lock失败",
+          "mapped_observation_zh": "599 artifact11574928381六个原nonignored gate测试及六次原CLI重放覆盖quality/perf/lock与invalid policy。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "gates"
+          ],
+          "index": 1,
+          "literal": "验证退出和raw报告仍保留",
+          "mapped_observation_zh": "quality/latency failed→exit1，零分母/不足样本inconclusive→exit1，raw-lock/bad-policy invalid_measurement→exit2；原raw与机器报告保留，坏policy拒覆写原报告。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "gates"
+          ],
+          "index": 0,
+          "literal": "红线失败必非零，inconclusive不被自动passed",
+          "mapped_observation_zh": "故意红线失败真实非零，inconclusive不转passed；原报告重放仅必要路径迁移，其余结果/原因/raw不变。V03 scorer goldens与V04广义传输回归仍随当前CI/P7闭合。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "gates",
+        "applicability"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-012"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-C",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-012"
+        ],
+        "id": "P8-013",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-eval/src/benchmark/gate.rs",
+          "crates/cc-eval/tests/benchmark_cli.rs"
+        ],
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "title": "指标/门槛与失败退出最终认证",
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "fb677c9e5338c3f3a418f3a13e04d3a82091ef10b843fce3ebcfccb029e0953c",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "fixture是明确synthetic；这些是失败门行为证明，不是产品质量、heldout或性能改进证明。",
+        "零plan library项由原exact nonignored测试binary/source/log证明，无新Cargo代替。",
+        "标题“最终认证”不扩写成G8或release批准。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "validation_mapping": [
+        {
+          "code": "V03",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L1",
+            "minimum_scenarios": "primary/supporting、linear nDCG、重复、glob、空结果、must_contain 注记、native 范围/组/chain",
+            "name": "scorer goldens"
+          }
+        },
+        {
+          "code": "V04",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "MCP 握手/错误/取消、HTTP 失败、readiness、timeout、退出码、raw→metrics/report 可重算",
+            "name": "传输与报告"
+          }
+        },
+        {
+          "code": "V20",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L3/L5",
+            "minimum_scenarios": "1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用",
+            "name": "性能/资源/成本"
+          }
+        }
+      ]
+    },
+    {
+      "criteria": [
+        {
+          "evidence_ids": [
+            "rollback",
+            "fault",
+            "disable_local_raw",
+            "platform",
+            "platform_collector",
+            "old_p7"
+          ],
+          "index": 0,
+          "literal": "旧binary开新schema的受控重建、cache版本隔离、disable语义回退",
+          "mapped_observation_zh": "实际599 schema25→原277f2490 schema24旧binary受控重建→599 schema25恢复→原备份恢复；四原local.json明确dense disabled、semantic not_configured、network_authorized=false，local available且命中原源码marker。cache格式/space/namespace由原三Rust测试及三个active seed格式999拒读→恢复完成证明。",
+          "original_field": "steps",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "rollback",
+            "fault",
+            "disable_local_raw",
+            "platform",
+            "platform_collector",
+            "old_p7"
+          ],
+          "index": 0,
+          "literal": "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "mapped_observation_zh": "用户source/config哈希保持，四DB snapshot integrity/FK通过；旧binary不误读新schema、cache不跨版本/空间/namespace。默认/semantic包发布构建范围另由599八格真实release证据配合。",
+          "original_field": "acceptance",
+          "scope_state": "accepted_scoped_original599"
+        },
+        {
+          "evidence_ids": [
+            "old_p7",
+            "old_engineering"
+          ],
+          "index": 1,
+          "literal": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "mapped_observation_zh": "本草案时formal task completion=false；完整150/150片、1500/1500样本及原combine，PR165实际CI、296 P7 mechanism/semantic、fresh main/最终PR必要门与合并仍pending，当前163 done/29 remain。原历史失败与not_run证据全部保留。",
+          "original_field": "acceptance",
+          "scope_state": "pending_current_regressions_and_dependencies"
+        }
+      ],
+      "evidence_ids": [
+        "rollback",
+        "fault",
+        "disable_local_raw",
+        "platform",
+        "platform_collector",
+        "old_p7",
+        "applicability",
+        "historical_observer_addendum"
+      ],
+      "formal_task_completion": false,
+      "hard_dependencies": [
+        {
+          "current_status": "done",
+          "included_in_this_ten": false,
+          "task_id": "P7-020"
+        },
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-012"
+        },
+        {
+          "current_status": "in_progress",
+          "included_in_this_ten": true,
+          "task_id": "P8-013"
+        }
+      ],
+      "original_definition": {
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "batch": "P8-D",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "contracts_doc": "02-CONTRACTS.md",
+        "deliverables": [
+          "数据库/配置/包回滚演练的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "id": "P8-016",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "priority": "normal",
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "scope": [
+          "crates/cc-db/src/index_migrate.rs",
+          "crates/cc-semantic/src/cache.rs",
+          "docs/TROUBLESHOOTING.md"
+        ],
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "title": "数据库/配置/包回滚演练",
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ]
+      },
+      "original_definition_sha256_from_checklist": "72249af70bb1f7b49f6e0b6993b561e11b511db7319b81d6b0c18ca08480db36",
+      "own_scope_state": "accepted_scoped_original599",
+      "pending_final_gate_ids": [
+        "scale_150_shards",
+        "scale_1500_samples",
+        "original_scale_combine_and_ci_aggregate",
+        "pr165_actual_ci",
+        "current296_p7_mechanism",
+        "current296_p7_semantic",
+        "fresh_main_and_final_head_required_gates",
+        "final_pr_review_and_merge"
+      ],
+      "scope_limits_zh": [
+        "两公开source revisions不是已发布包版本，恢复dev profile不是release性能。",
+        "disable后local可用不能扩写成liveprovider掉线自动切换；实付费用仍null。",
+        "不覆盖任意断电/物理设备或live-provider认证；P8-012/013及P7-020原硬依赖不变。"
+      ],
+      "status_action_now": "keep_in_progress",
+      "status_now": "in_progress",
+      "task_id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "validation_mapping": [
+        {
+          "code": "V13",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2",
+            "minimum_scenarios": "typed write effects、一次 commit 推进、aux不刷内容、rollback、换库 incarnation",
+            "name": "schema/epoch"
+          }
+        },
+        {
+          "code": "V17",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3",
+            "minimum_scenarios": "每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费",
+            "name": "恢复与 GC"
+          }
+        },
+        {
+          "code": "V21",
+          "final_package_acceptance": "pending",
+          "mapping": "上述own-scope原记录只覆盖本任务情景；广义V套餐的相关旧回归需由当前CI/P7原门闭合，不据本条宣称整个套餐已通过。",
+          "original_minimum": {
+            "level": "L2/L3/L5",
+            "minimum_scenarios": "新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测",
+            "name": "回滚/发行/文档"
+          }
+        }
+      ]
+    }
+  ]
+}

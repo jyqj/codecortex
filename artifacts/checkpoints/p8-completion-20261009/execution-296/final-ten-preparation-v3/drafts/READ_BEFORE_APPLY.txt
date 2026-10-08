@@ -1,0 +1,15 @@
+这十项仍是关账准备草案，不是可执行任务补丁。当前 formal_task_completion=false，163 done / 29 remain；没有任何任务被本草案改为 done。
+
+建议阅读顺序：final-ten-acceptance-mapping.json → accepted-evidence-index.json → task-append-drafts.json → independent-findings.json。
+
+规模进度快照来自 scale_closeout 2026-10-08T23:23:48Z 的原件接受状态，且本准备程序实际读取了列出的四份 review：4/150片、41/1500样本。它不代表将来执行完成后的计数，也不宣称已读取尚未完成的100k或其余145片。准备后即使有新结果，必须另读新原件接受记录并更新草案，不能补写未来成功。
+
+每个任务的原steps、acceptance、validations、硬依赖及不可变字段都来自原tasks.json并与既有独立checklist逐对象相等。P8-005 acceptance_subgates所有字段含open/not_established/unknown原封保留；这是不可变历史快照。新全规模接受必须另附evidence，不能回写旧子门。
+
+status/evidence/implementation_notes是最终允许变动的三个任务字段；当前一律不改status。evidence与implementation_notes只追加，原失败/not_run/历史来源不能删除或重标。原先缺implementation_notes的任务可以新增这个允许字段，不能虚构已有说明。顶层导航及四份派生视图由root最终使用既有方式更新。
+
+599的scale/lifecycle/resource/platform/recovery/gates仍是599的观测，296六runtime是296的新执行。全1087产品输入与各不变观察器闭包适用性单独引用；不要声称136 validation全部与599相同（只134不变，runtime脚本及测试已变化）。
+
+当前pending包括：完整150/150片、1500/1500样本及原最终combine/CIaggregate；PR165实际CI；296 P7 mechanism/semantic；fresh main/最终HEAD的真实必要门与最终PR合并。最终关账前root必须把每项pending替换为实际固定HEAD/run/raw/review结果，并确认十个原任务硬依赖按原顺序闭合。10项实际完成后才可能173 done / 19 remain；这不是现在的进度。
+
+本次准备仅读取已有review、manifest与四个已有rollback local.json字段，不重跑任何产品、验收或旧测试，不写仓库tasks/源码/refs，不删除或改动原证据。相关CI/V套餐范围不因单一own-scope通过自动全部通过。

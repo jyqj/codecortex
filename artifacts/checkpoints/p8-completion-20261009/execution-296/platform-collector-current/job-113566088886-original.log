@@ -1,0 +1,280 @@
+﻿2026-10-08T22:26:13.9957985Z Current runner version: '2.337.0'
+2026-10-08T22:26:13.9987800Z ##[group]Runner Image Provisioner
+2026-10-08T22:26:13.9988969Z Hosted Compute Agent
+2026-10-08T22:26:13.9989689Z Version: 20261002.596
+2026-10-08T22:26:13.9990406Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T22:26:13.9991278Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T22:26:13.9992160Z Worker ID: {c7c2acb9-884d-494a-88b9-a33d3ccfe10a}
+2026-10-08T22:26:13.9993064Z Region: eastus
+2026-10-08T22:26:13.9993763Z Cloud: Azure
+2026-10-08T22:26:13.9994414Z ##[endgroup]
+2026-10-08T22:26:13.9996322Z ##[group]Operating System
+2026-10-08T22:26:13.9997214Z Ubuntu
+2026-10-08T22:26:13.9997859Z 24.04.5
+2026-10-08T22:26:13.9998668Z LTS
+2026-10-08T22:26:13.9999382Z ##[endgroup]
+2026-10-08T22:26:14.0000045Z ##[group]Runner Image
+2026-10-08T22:26:14.0000770Z Image: ubuntu-24.04
+2026-10-08T22:26:14.0001434Z Version: 20261004.327.1
+2026-10-08T22:26:14.0002932Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T22:26:14.0004918Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T22:26:14.0006192Z ##[endgroup]
+2026-10-08T22:26:14.0007472Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T22:26:14.0010113Z Contents: read
+2026-10-08T22:26:14.0010847Z Metadata: read
+2026-10-08T22:26:14.0011572Z ##[endgroup]
+2026-10-08T22:26:14.0014173Z Secret source: Actions
+2026-10-08T22:26:14.0015345Z Cache mode: write
+2026-10-08T22:26:14.0016453Z Prepare workflow directory
+2026-10-08T22:26:14.0453041Z Prepare all required actions
+2026-10-08T22:26:14.0511155Z Getting action download info
+2026-10-08T22:26:14.2239945Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-08T22:26:14.4415260Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-10-08T22:26:14.6314917Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-08T22:26:14.8894072Z Complete job name: all eight platform cells
+2026-10-08T22:26:14.9667965Z ##[group]Run actions/checkout@v4
+2026-10-08T22:26:14.9669709Z with:
+2026-10-08T22:26:14.9670485Z   ref: 29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:14.9671497Z   repository: jyqj/codecortex
+2026-10-08T22:26:14.9678659Z   token: ***
+2026-10-08T22:26:14.9679387Z   ssh-strict: true
+2026-10-08T22:26:14.9680101Z   ssh-user: git
+2026-10-08T22:26:14.9680822Z   persist-credentials: true
+2026-10-08T22:26:14.9681618Z   clean: true
+2026-10-08T22:26:14.9682333Z   sparse-checkout-cone-mode: true
+2026-10-08T22:26:14.9683186Z   fetch-depth: 1
+2026-10-08T22:26:14.9683894Z   fetch-tags: false
+2026-10-08T22:26:14.9684951Z   show-progress: true
+2026-10-08T22:26:14.9685708Z   lfs: false
+2026-10-08T22:26:14.9686405Z   submodules: false
+2026-10-08T22:26:14.9687141Z   set-safe-directory: true
+2026-10-08T22:26:14.9687983Z   allow-unsafe-pr-checkout: false
+2026-10-08T22:26:14.9689385Z env:
+2026-10-08T22:26:14.9690072Z   CARGO_TERM_COLOR: never
+2026-10-08T22:26:14.9690915Z   CARGO_INCREMENTAL: 0
+2026-10-08T22:26:14.9691692Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T22:26:14.9692504Z ##[endgroup]
+2026-10-08T22:26:15.0607748Z Syncing repository: jyqj/codecortex
+2026-10-08T22:26:15.0610496Z ##[group]Getting Git version info
+2026-10-08T22:26:15.0611728Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-08T22:26:15.0613373Z [command]/usr/bin/git version
+2026-10-08T22:26:15.2319648Z git version 2.55.0
+2026-10-08T22:26:15.2336303Z ##[endgroup]
+2026-10-08T22:26:15.2349939Z Temporarily overriding HOME='/home/runner/work/_temp/ac9c5feb-c529-448a-940e-3d05aa5c763b' before making global git config changes
+2026-10-08T22:26:15.2353223Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T22:26:15.2355962Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-08T22:26:15.2401112Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-08T22:26:15.2404795Z ##[group]Initializing the repository
+2026-10-08T22:26:15.2409117Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-08T22:26:15.4342234Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T22:26:15.4343402Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T22:26:15.4349310Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T22:26:15.4350315Z hint: call:
+2026-10-08T22:26:15.4351112Z hint:
+2026-10-08T22:26:15.4351726Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T22:26:15.4352274Z hint:
+2026-10-08T22:26:15.4352819Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T22:26:15.4353616Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T22:26:15.4354254Z hint:
+2026-10-08T22:26:15.4354661Z hint: 	git branch -m <name>
+2026-10-08T22:26:15.4355164Z hint:
+2026-10-08T22:26:15.4355718Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T22:26:15.4356611Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-08T22:26:15.4359118Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-08T22:26:15.4444943Z ##[endgroup]
+2026-10-08T22:26:15.4445533Z ##[group]Disabling automatic garbage collection
+2026-10-08T22:26:15.4448330Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T22:26:15.4477078Z ##[endgroup]
+2026-10-08T22:26:15.4477745Z ##[group]Setting up auth
+2026-10-08T22:26:15.4482715Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T22:26:15.4510640Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T22:26:15.5254570Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T22:26:15.5283951Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T22:26:15.5476678Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T22:26:15.5506600Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T22:26:15.5697800Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T22:26:15.5737023Z ##[endgroup]
+2026-10-08T22:26:15.5742246Z ##[group]Fetching the repository
+2026-10-08T22:26:15.5743213Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:31.4797012Z From https://github.com/jyqj/codecortex
+2026-10-08T22:26:31.4798023Z  * branch            29682890c89511dd6f477a6bf48bd969aa1537af -> FETCH_HEAD
+2026-10-08T22:26:31.4800842Z ##[endgroup]
+2026-10-08T22:26:31.4801467Z ##[group]Determining the checkout info
+2026-10-08T22:26:31.4803396Z ##[endgroup]
+2026-10-08T22:26:31.4809610Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T22:26:31.6182097Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T22:26:31.7388829Z ##[group]Checking out the ref
+2026-10-08T22:26:31.7393480Z [command]/usr/bin/git checkout --progress --force 29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:32.7634283Z Updating files:  67% (14464/21461)
+2026-10-08T22:26:32.7699394Z Updating files:  68% (14594/21461)
+2026-10-08T22:26:32.7799920Z Updating files:  69% (14809/21461)
+2026-10-08T22:26:32.7922829Z Updating files:  70% (15023/21461)
+2026-10-08T22:26:32.8160736Z Updating files:  71% (15238/21461)
+2026-10-08T22:26:32.8500751Z Updating files:  72% (15452/21461)
+2026-10-08T22:26:32.8691334Z Updating files:  73% (15667/21461)
+2026-10-08T22:26:32.9502376Z Updating files:  74% (15882/21461)
+2026-10-08T22:26:32.9693718Z Updating files:  75% (16096/21461)
+2026-10-08T22:26:32.9833691Z Updating files:  76% (16311/21461)
+2026-10-08T22:26:33.0006820Z Updating files:  77% (16525/21461)
+2026-10-08T22:26:33.0293996Z Updating files:  78% (16740/21461)
+2026-10-08T22:26:33.0486489Z Updating files:  79% (16955/21461)
+2026-10-08T22:26:33.0640005Z Updating files:  80% (17169/21461)
+2026-10-08T22:26:33.0793023Z Updating files:  81% (17384/21461)
+2026-10-08T22:26:33.0913200Z Updating files:  82% (17599/21461)
+2026-10-08T22:26:33.1054717Z Updating files:  83% (17813/21461)
+2026-10-08T22:26:33.1682579Z Updating files:  84% (18028/21461)
+2026-10-08T22:26:33.2402889Z Updating files:  85% (18242/21461)
+2026-10-08T22:26:33.2987063Z Updating files:  86% (18457/21461)
+2026-10-08T22:26:33.3170179Z Updating files:  87% (18672/21461)
+2026-10-08T22:26:33.3290215Z Updating files:  88% (18886/21461)
+2026-10-08T22:26:33.3392228Z Updating files:  89% (19101/21461)
+2026-10-08T22:26:33.3534458Z Updating files:  90% (19315/21461)
+2026-10-08T22:26:33.6685646Z Updating files:  91% (19530/21461)
+2026-10-08T22:26:33.7627623Z Updating files:  92% (19745/21461)
+2026-10-08T22:26:33.9366409Z Updating files:  92% (19806/21461)
+2026-10-08T22:26:33.9508670Z Updating files:  93% (19959/21461)
+2026-10-08T22:26:33.9606733Z Updating files:  94% (20174/21461)
+2026-10-08T22:26:33.9750355Z Updating files:  95% (20388/21461)
+2026-10-08T22:26:33.9900992Z Updating files:  96% (20603/21461)
+2026-10-08T22:26:34.0056466Z Updating files:  97% (20818/21461)
+2026-10-08T22:26:34.0191571Z Updating files:  98% (21032/21461)
+2026-10-08T22:26:34.0395914Z Updating files:  99% (21247/21461)
+2026-10-08T22:26:34.0396576Z Updating files: 100% (21461/21461)
+2026-10-08T22:26:34.0396988Z Updating files: 100% (21461/21461), done.
+2026-10-08T22:26:34.0599000Z Note: switching to '29682890c89511dd6f477a6bf48bd969aa1537af'.
+2026-10-08T22:26:34.0599631Z 
+2026-10-08T22:26:34.0600098Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T22:26:34.0674855Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T22:26:34.0675485Z state without impacting any branches by switching back to a branch.
+2026-10-08T22:26:34.0675831Z 
+2026-10-08T22:26:34.0676073Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T22:26:34.0676634Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T22:26:34.0676957Z 
+2026-10-08T22:26:34.0677087Z   git switch -c <new-branch-name>
+2026-10-08T22:26:34.0677307Z 
+2026-10-08T22:26:34.0677428Z Or undo this operation with:
+2026-10-08T22:26:34.0677631Z 
+2026-10-08T22:26:34.0677735Z   git switch -
+2026-10-08T22:26:34.0677894Z 
+2026-10-08T22:26:34.0688515Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T22:26:34.0688825Z 
+2026-10-08T22:26:34.0689043Z HEAD is now at 2968289 build: pin independently reviewed runtime cleanup source
+2026-10-08T22:26:34.0734723Z ##[endgroup]
+2026-10-08T22:26:34.0773331Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T22:26:34.0794419Z 29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.1005738Z ##[group]Run actions/download-artifact@v4
+2026-10-08T22:26:34.1005989Z with:
+2026-10-08T22:26:34.1006240Z   pattern: p8-platform-cell-*-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.1006566Z   path: /home/runner/work/_temp/p8-platform-cells
+2026-10-08T22:26:34.1006837Z   merge-multiple: false
+2026-10-08T22:26:34.1007042Z   repository: jyqj/codecortex
+2026-10-08T22:26:34.1007243Z   run-id: 37844310829
+2026-10-08T22:26:34.1007423Z env:
+2026-10-08T22:26:34.1007596Z   CARGO_TERM_COLOR: never
+2026-10-08T22:26:34.1007798Z   CARGO_INCREMENTAL: 0
+2026-10-08T22:26:34.1008002Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T22:26:34.1008446Z ##[endgroup]
+2026-10-08T22:26:34.2376181Z (node:2097) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T22:26:34.2377270Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T22:26:34.3215226Z Found 17 artifact(s)
+2026-10-08T22:26:34.3216179Z Filtering artifacts by pattern 'p8-platform-cell-*-29682890c89511dd6f477a6bf48bd969aa1537af'
+2026-10-08T22:26:34.3232025Z Preparing to download the following artifacts:
+2026-10-08T22:26:34.3233180Z - p8-platform-cell-linux-stable-default-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11582216782, Size: 8719614, Expected Digest: sha256:214a1b185991570d5cfa9c940f506c8ed496d74da3681c7ee5febdacc4d2420f)
+2026-10-08T22:26:34.3235031Z - p8-platform-cell-linux-stable-semantic-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11581366798, Size: 8968475, Expected Digest: sha256:b1b9564d5a0385324a605369f937a651b0431f171c23e650071a757e063b840a)
+2026-10-08T22:26:34.3236277Z - p8-platform-cell-macos-stable-default-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11581087200, Size: 8351462, Expected Digest: sha256:852de83da2c01fcf00aa7e0e87f264c4f57c5b4258c7ded67aa88848d613ac78)
+2026-10-08T22:26:34.3237823Z - p8-platform-cell-macos-1.95-default-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11580918430, Size: 8031151, Expected Digest: sha256:09d0868c4adbce842d491de1d80d1ef4954075a21a678be2b88726b3e7c80dd7)
+2026-10-08T22:26:34.3239053Z - p8-platform-cell-linux-1.95-semantic-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11580744067, Size: 9021966, Expected Digest: sha256:fc300f1052046b8c3794ca4a2a50033a092d6385ed59d04a084bb1cf0c35c095)
+2026-10-08T22:26:34.3240116Z - p8-platform-cell-linux-1.95-default-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11580537979, Size: 8767589, Expected Digest: sha256:cdf73be86ace5cb08760bd14546e1122bd33cd115f89af9ab58a8fdbdb8451bc)
+2026-10-08T22:26:34.3241147Z - p8-platform-cell-macos-1.95-semantic-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11580162484, Size: 8269697, Expected Digest: sha256:31882ea5cd762469cffb93d273cdd9488481604a24ca49c601047eb67a427a6f)
+2026-10-08T22:26:34.3242196Z - p8-platform-cell-macos-stable-semantic-29682890c89511dd6f477a6bf48bd969aa1537af (ID: 11580151973, Size: 8605267, Expected Digest: sha256:d44ef907bc4af2f59cb5135a2200981d308af0a9e191338db73383545d956942)
+2026-10-08T22:26:34.4556759Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-fe3f2c4e-d3ac-51db-95a5-51b28dd7b306/artifacts/f796f0773e0c95330f8cb99ca804b897914bdda2bf6e73eeab60c45142f7810e.zip
+2026-10-08T22:26:34.4557984Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-linux-stable-default-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4698277Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-f2420fc5-a5f8-5a4a-83cb-fa933a508913/artifacts/9b220054421b991e9bfdfd3083a7db130a25b79737032faa8703467ee57a60ad.zip
+2026-10-08T22:26:34.4700184Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-macos-stable-semantic-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4761597Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-d0011d50-fddf-50c4-a778-a53b447e7c04/artifacts/3dc92215b3c79f3b81b0c0a93886d4dd2fcd3ff82d4c309a064008ff7301d175.zip
+2026-10-08T22:26:34.4763581Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-macos-1.95-default-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4814548Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-b81470b1-050e-5a70-b1eb-d7ffe4b0fa55/artifacts/8193ef46381ce9ba6d155b2c0dd851a7c2861a7bf6cc286b584f91a356c70d91.zip
+2026-10-08T22:26:34.4816537Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-linux-1.95-semantic-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4832593Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-8997c671-e250-5e2c-b75d-a049ed54299f/artifacts/6377f61ccdf8129bf6f8bf6569326de0e4d8525aa8fdc9e8506cccc5f6258c7a.zip
+2026-10-08T22:26:34.4834894Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-macos-1.95-semantic-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4872998Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-dbf3f515-ff0b-53ca-a9ee-3450b0a0d805/artifacts/1994073c0faa9a860f259b63cde53dc8bf6c5cdc2f38df9a3266898728672843.zip
+2026-10-08T22:26:34.4875081Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-linux-stable-semantic-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.4938829Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-21e24b94-6c13-59be-a458-e96b74a5c57f/artifacts/26fb55a7685aca9cf0556a90fe8841d10720f98e5ea434f85ca54ed7fcb84615.zip
+2026-10-08T22:26:34.4941174Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-macos-stable-default-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.5206892Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/b45e4484-21be-8df8-8889-4d452bdb7beb/workflow-job-run-300a7a30-5d60-5ebd-9248-163a90da8267/artifacts/b46053558a04b87b4f89007dad4b05ba056eab3296332170de9abb7c64bf6724.zip
+2026-10-08T22:26:34.5208453Z Starting download of artifact to: /home/runner/work/_temp/p8-platform-cells/p8-platform-cell-linux-1.95-default-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:34.5304884Z (node:2097) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T22:26:35.1578637Z SHA256 digest of downloaded artifact is 09d0868c4adbce842d491de1d80d1ef4954075a21a678be2b88726b3e7c80dd7
+2026-10-08T22:26:35.1579371Z Artifact download completed successfully.
+2026-10-08T22:26:35.1894533Z SHA256 digest of downloaded artifact is 31882ea5cd762469cffb93d273cdd9488481604a24ca49c601047eb67a427a6f
+2026-10-08T22:26:35.1895810Z Artifact download completed successfully.
+2026-10-08T22:26:35.2232313Z SHA256 digest of downloaded artifact is 852de83da2c01fcf00aa7e0e87f264c4f57c5b4258c7ded67aa88848d613ac78
+2026-10-08T22:26:35.2233123Z Artifact download completed successfully.
+2026-10-08T22:26:35.2386414Z SHA256 digest of downloaded artifact is 214a1b185991570d5cfa9c940f506c8ed496d74da3681c7ee5febdacc4d2420f
+2026-10-08T22:26:35.2387230Z Artifact download completed successfully.
+2026-10-08T22:26:35.2540357Z SHA256 digest of downloaded artifact is cdf73be86ace5cb08760bd14546e1122bd33cd115f89af9ab58a8fdbdb8451bc
+2026-10-08T22:26:35.2541189Z Artifact download completed successfully.
+2026-10-08T22:26:35.2558980Z SHA256 digest of downloaded artifact is b1b9564d5a0385324a605369f937a651b0431f171c23e650071a757e063b840a
+2026-10-08T22:26:35.2559698Z Artifact download completed successfully.
+2026-10-08T22:26:35.2716740Z SHA256 digest of downloaded artifact is fc300f1052046b8c3794ca4a2a50033a092d6385ed59d04a084bb1cf0c35c095
+2026-10-08T22:26:35.2717265Z Artifact download completed successfully.
+2026-10-08T22:26:35.2782426Z SHA256 digest of downloaded artifact is d44ef907bc4af2f59cb5135a2200981d308af0a9e191338db73383545d956942
+2026-10-08T22:26:35.2783297Z Artifact download completed successfully.
+2026-10-08T22:26:35.2783798Z Total of 8 artifact(s) downloaded
+2026-10-08T22:26:35.2788300Z Download artifact has finished successfully
+2026-10-08T22:26:35.2952548Z ##[group]Run python3 scripts/p8_cold_build.py \
+2026-10-08T22:26:35.2953177Z [36;1mpython3 scripts/p8_cold_build.py \[0m
+2026-10-08T22:26:35.2953557Z [36;1m  --collect-cells "$RUNNER_TEMP/p8-platform-cells" \[0m
+2026-10-08T22:26:35.2953925Z [36;1m  --expected-commit "$EXACT_SOURCE" \[0m
+2026-10-08T22:26:35.2954274Z [36;1m  --output-dir "$RUNNER_TEMP/p8-platform-complete"[0m
+2026-10-08T22:26:35.3174202Z shell: /usr/bin/bash -e {0}
+2026-10-08T22:26:35.3174515Z env:
+2026-10-08T22:26:35.3174755Z   CARGO_TERM_COLOR: never
+2026-10-08T22:26:35.3175010Z   CARGO_INCREMENTAL: 0
+2026-10-08T22:26:35.3175267Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T22:26:35.3175573Z   EXACT_SOURCE: 29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:35.3175884Z ##[endgroup]
+2026-10-08T22:26:36.1088207Z {"status": "passed", "counts": {"passed": 8, "failed": 0, "not_run": 0}}
+2026-10-08T22:26:36.1214491Z ##[group]Run actions/upload-artifact@v4
+2026-10-08T22:26:36.1214790Z with:
+2026-10-08T22:26:36.1215107Z   name: p8-platform-complete-29682890c89511dd6f477a6bf48bd969aa1537af
+2026-10-08T22:26:36.1215527Z   path: /home/runner/work/_temp/p8-platform-complete
+2026-10-08T22:26:36.1215842Z   if-no-files-found: error
+2026-10-08T22:26:36.1216096Z   compression-level: 6
+2026-10-08T22:26:36.1216333Z   overwrite: false
+2026-10-08T22:26:36.1216572Z   include-hidden-files: false
+2026-10-08T22:26:36.1216817Z env:
+2026-10-08T22:26:36.1217039Z   CARGO_TERM_COLOR: never
+2026-10-08T22:26:36.1217278Z   CARGO_INCREMENTAL: 0
+2026-10-08T22:26:36.1217516Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T22:26:36.1217761Z ##[endgroup]
+2026-10-08T22:26:36.2536070Z (node:2189) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T22:26:36.2536784Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T22:26:36.2576651Z With the provided path, there will be 1 file uploaded
+2026-10-08T22:26:36.2580976Z Artifact name is valid!
+2026-10-08T22:26:36.2581444Z Root directory input is valid!
+2026-10-08T22:26:36.4490289Z Beginning upload of artifact content to blob storage
+2026-10-08T22:26:36.4627471Z (node:2189) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-08T22:26:36.4878046Z Uploaded bytes 1396
+2026-10-08T22:26:36.5034134Z Finished uploading artifact content to blob storage!
+2026-10-08T22:26:36.5034938Z SHA256 digest of uploaded artifact zip is 4610a0017c8b6949ad58c67a1ffb27ab6e5e921b82e9a755e686c94735023232
+2026-10-08T22:26:36.5037365Z Finalizing artifact upload
+2026-10-08T22:26:36.7196586Z Artifact p8-platform-complete-29682890c89511dd6f477a6bf48bd969aa1537af.zip successfully finalized. Artifact ID 11582543141
+2026-10-08T22:26:36.7197541Z Artifact p8-platform-complete-29682890c89511dd6f477a6bf48bd969aa1537af has been successfully uploaded! Final size is 1396 bytes. Artifact ID is 11582543141
+2026-10-08T22:26:36.7202152Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37844310829/artifacts/11582543141
+2026-10-08T22:26:36.7425702Z Post job cleanup.
+2026-10-08T22:26:36.8090978Z [command]/usr/bin/git version
+2026-10-08T22:26:36.8121378Z git version 2.55.0
+2026-10-08T22:26:36.8148554Z Temporarily overriding HOME='/home/runner/work/_temp/40360a24-e48a-4bd6-8936-061be1a3f906' before making global git config changes
+2026-10-08T22:26:36.8149568Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T22:26:36.8152438Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-08T22:26:36.8663081Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T22:26:36.8695831Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T22:26:36.8908438Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T22:26:36.9552234Z http.https://github.com/.extraheader
+2026-10-08T22:26:36.9553465Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-08T22:26:37.0763093Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T22:26:37.0983699Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T22:26:37.1012866Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T22:26:37.1337995Z Cleaning up orphan processes
+2026-10-08T22:26:37.1603758Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

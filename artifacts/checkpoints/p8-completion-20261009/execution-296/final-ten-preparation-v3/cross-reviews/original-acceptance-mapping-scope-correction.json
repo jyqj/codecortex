@@ -1,0 +1,61 @@
+{
+  "schema": "p8-scale-original-mapping-scope-correction-v1",
+  "observed_utc": "2026-10-08T23:36:47.673830+00:00",
+  "reviewer": "scale_closeout",
+  "status": "accepted_documentation_scope_correction_only",
+  "original_mapping": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/original-acceptance-mapping.json",
+    "sha256": "97660140cb7cc40fe7d3bb3e04f872188cc2544732d3087c5d8724291292ae66",
+    "unchanged": true
+  },
+  "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "source_files_checked": [
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
+      "exact_git_blob_matches": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "sha256": "d57c5e804d90e085c1b01a3371bb8e1f811f8d653eaa0ad0e76c245afc9f5a7a",
+      "exact_git_blob_matches": true
+    }
+  ],
+  "correction": {
+    "task_id": "P8-006",
+    "field": "derived checks[2] only; original task steps/acceptance/requirements unchanged",
+    "unsupported_phrase": "每检查点…公开查询…见证",
+    "supported_replacement": "每检查点增量与fresh full原15表完整canonical parity及integrity/FK；config阶段保持独立只读SQL target见证，fanout保持手写事实断言；no-op零改动、batch实改数量和config独立见证。公共查询旧功能回归仅可引用实际单独P7/CI证据，不能由scale原件替代。",
+    "basis": [
+      "p8_scale.rs::parity calls oracle canonical or streaming comparison and never oracle::run search probes.",
+      "p8_scale.rs::config_fact opens original SQLite READ_ONLY and queries call_edges target_file_path.",
+      "p8_scale.rs::fanout_case supplies hand-written call-edge assertions to mutation_case; mutation_case compares canonical rows without public search probes.",
+      "oracle::run contains public search probes but is a separate path not invoked by the scale workload."
+    ]
+  },
+  "additional_draft_clarification": "For original step 输出各phase计数, explicitly map preserved raw IndexReport files_*, dirty_plan, document_changes and project_model per-build counts as well as timing; do not describe only timing.",
+  "criteria_changed": false,
+  "product_or_observer_files_modified": [],
+  "native_workloads_executed": 0,
+  "old_shard_acceptance_replayed": false,
+  "original_shard_acceptances_unchanged": true,
+  "task_statuses_changed": false,
+  "counts": {
+    "accepted_shards": 4,
+    "required_shards": 150,
+    "accepted_samples": 41,
+    "required_samples": 1500,
+    "formal_tasks_done": 163,
+    "formal_tasks_remaining": 29
+  }
+}

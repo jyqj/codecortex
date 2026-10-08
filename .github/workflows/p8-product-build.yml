@@ -1,0 +1,28 @@
+name: P8 product repair build
+on:
+  push:
+    branches: [work/p8-product-build-996727-20261008]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Test exact candidate and build optimized local binaries
+        run: python3 artifacts/checkpoints/p8-product-repair-20261008/observe_build.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-product-repair-build
+          path: artifacts/checkpoints/p8-product-repair-20261008/build-observation
+          if-no-files-found: error
+          include-hidden-files: true

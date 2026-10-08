@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "candidate_root": "/workspace/scratch/28fef0db5e01/pr-audit/cache-observer-candidate/candidate-fixed",
+  "base": "d381f413bee3606bdc7410a73be855a0aab4aabb",
+  "supersedes_for_integration": "candidate b794592a; old candidate and original controls retained unchanged",
+  "changed_files": {
+    "scripts/p8_runtime.py": {
+      "sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+      "bytes": 55928
+    },
+    "scripts/tests/test_p8_runtime_cache.py": {
+      "sha256": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+      "bytes": 23273
+    }
+  },
+  "original31_tests_sha256": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
+  "normal_raw_row_unmodified": true,
+  "fix_scope": "Only terminal-retention sidecar projection after failed original raw emit; four nested response bodies omitted, call metadata and omission flags retained. Normal raw and original rows unchanged.",
+  "original_failed_budget_reproduction": "runtime-review/round8-cache-observer-review/retention-budget-before/",
+  "new_tests": [
+    "CacheTerminalRetentionTests.test_exhausted_raw_sidecar_keeps_metadata_without_nested_response_bodies",
+    "CacheTerminalRetentionTests.test_failed_request_prefix_and_non_cache_terminal_metadata_are_preserved"
+  ],
+  "patch_sha256": "cecfa71f36b6ebddea261adddce2b4c46c64b677944d3d99aabf302b2c5b348f",
+  "sidecar_fix_sha256": "80e45ebfeb747e81fec478673e09f97299a9f81a0fb71231bd8d33047f6854c0",
+  "formal_soak_run": false,
+  "original_todo_remaining": 29
+}

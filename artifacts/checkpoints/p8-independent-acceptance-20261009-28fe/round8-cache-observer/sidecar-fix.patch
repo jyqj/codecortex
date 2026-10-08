@@ -1,0 +1,90 @@
+--- a/scripts/p8_runtime.py
++++ b/scripts/p8_runtime.py
+@@ -457,6 +457,26 @@
+     return dict(path="statistics.json", sha256=digest(output / "statistics.json"),
+                 replay_path="statistics-replay.json", replay_identical=True,
+                 exit_code=commands[0]["exit_code"], status=report.get("observation_status"))
++
++
++def terminal_operation_metadata(row):
++    """Retain failure identities without bypassing the exhausted raw-body budget."""
++    missing = {key: value for key, value in row.items() if key != "response"}
++    if "cache_probe" in row:
++        probe = row["cache_probe"]
++        retained = {key: probe[key] for key in
++                    ("protocol", "server_pid", "preceding_mutation", "observation") if key in probe}
++        retained["requests"] = []
++        for call in probe.get("requests", []):
++            metadata = {key: call[key] for key in
++                        ("role", "name", "arguments", "started_ns", "finished_ns", "status", "error")
++                        if key in call}
++            metadata["response_omitted"] = "response" in call
++            retained["requests"].append(metadata)
++        retained.update(raw_responses_retained=False,
++                        scope="terminal metadata only; original raw write failed; not replayable cache evidence")
++        missing["cache_probe"] = retained
++    return missing
+ 
+ 
+ def run(args):
+@@ -543,7 +563,7 @@
+             # A full/broken raw sink must not prevent owned work from stopping.
+             # Retain the missing terminal metadata separately; never relabel it
+             # as a complete original raw stream or feed it to the scorer.
+-            missing = {key: value for key, value in row.items() if key != "response"}
++            missing = terminal_operation_metadata(row)
+             missing["raw_retention_error"] = f"{type(error).__name__}: {error}"
+             with row_lock: terminal_retention_failures.append(missing)
+             raise
+--- a/scripts/tests/test_p8_runtime_cache.py
++++ b/scripts/tests/test_p8_runtime_cache.py
+@@ -294,4 +294,49 @@
+         self.assertEqual([sum(q["mutations"].values()) for q in result["time_quarters"]], [0,0,0,24])
+ 
+ 
++class CacheTerminalRetentionTests(unittest.TestCase):
++    def test_exhausted_raw_sidecar_keeps_metadata_without_nested_response_bodies(self):
++        body = "raw-body-budget-witness-" * 4096
++        calls = [dict(role=role, name="status" if "status" in role else "search",
++                      arguments={"owned_control": role}, started_ns=10 * i, finished_ns=10 * i + 1,
++                      status="success", response={"body": body})
++                 for i, role in enumerate(runtime.SOAK_READ_ROLES)]
++        probe = dict(protocol=runtime.SOAK_READ_PROTOCOL, server_pid=1001,
++                     preceding_mutation={"action": "rename", "operation_id": 3},
++                     observation={"lookup": {"state": "miss"}}, requests=calls)
++        row = dict(id=4, operation="read", status="success", offered_ns=0, finished_ns=40,
++                   response={"body": body}, cache_probe=probe)
++        original = copy.deepcopy(row)
++        retained = runtime.terminal_operation_metadata(row)
++        self.assertEqual(row, original, "normal raw and in-memory original must not be projected")
++        self.assertNotIn("response", retained)
++        self.assertNotIn(body, json.dumps(retained))
++        self.assertLess(len(json.dumps(retained)), 4096)
++        kept = retained["cache_probe"]
++        self.assertIs(kept["raw_responses_retained"], False)
++        self.assertIn("not replayable cache evidence", kept["scope"])
++        for key in ("protocol", "server_pid", "preceding_mutation", "observation"):
++            self.assertEqual(kept[key], probe[key])
++        for before, after in zip(calls, kept["requests"]):
++            self.assertEqual({key: value for key, value in after.items() if key != "response_omitted"},
++                             {key: value for key, value in before.items() if key != "response"})
++            self.assertIs(after["response_omitted"], True)
++
++    def test_failed_request_prefix_and_non_cache_terminal_metadata_are_preserved(self):
++        calls = [dict(role="before_status", name="status", arguments={"aspect": "index"},
++                      started_ns=1, finished_ns=2, status="success", response={"retained_in_raw": False}),
++                 dict(role="symbol", name="search", arguments={"query": runtime.QUERY},
++                      started_ns=3, finished_ns=4, status="error", error="controlled deadline")]
++        row = dict(id=1, operation="read", status="error", error="controlled deadline",
++                   cache_probe=dict(protocol=runtime.SOAK_READ_PROTOCOL, server_pid=1001, requests=calls))
++        retained = runtime.terminal_operation_metadata(row)
++        self.assertEqual(len(retained["cache_probe"]["requests"]), 2)
++        self.assertEqual([c["response_omitted"] for c in retained["cache_probe"]["requests"]], [True, False])
++        self.assertEqual(retained["cache_probe"]["requests"][1]["error"], "controlled deadline")
++        plain = dict(id=3, operation="build", status="success", response={"large": "body"}, finished_ns=8)
++        self.assertEqual(runtime.terminal_operation_metadata(plain),
++                         dict(id=3, operation="build", status="success", finished_ns=8))
++        self.assertIn("response", plain)
++
++
+ if __name__ == "__main__": unittest.main()

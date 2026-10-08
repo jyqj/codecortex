@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/runtime_review",
+  "author": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T22:03:46.249261+00:00",
+  "conclusion": "accepted_scoped_minimal_M4_plus_G3_observer_integration",
+  "blocking_findings": [],
+  "resolved_findings": [
+    {
+      "severity": "P2",
+      "path": "scripts/p8_runtime.py",
+      "description": "Nested cache response bodies bypassed the raw budget via terminal sidecar; fixed by separate metadata-only projection with omitted-body markers and without mutating original rows.",
+      "before": "retention-budget-before/result.json",
+      "after": "retention-budget-after/result.json",
+      "original_raw_retention_error_preserved": true,
+      "comparison_limit": "Independent before and after runs have different timestamps/raw lengths (1111 and1100bytes); no cross-run raw-byte equality is claimed. The unchanged Raw.emit path, exact request metadata, and all four in-memory original responses are verified.",
+      "final_helper_line": 462
+    }
+  ],
+  "base": "d381f413bee3606bdc7410a73be855a0aab4aabb",
+  "cache_origin": "24b0cba53178d14ef6c02355ee271fa0067be3e0",
+  "owner_product": "f5518ca6d21f54cfd324e33edc3b739608ae28b8",
+  "owner_review": "5463095d9650402161a23a332c2505b15c4d88b6",
+  "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+  "cache_test_sha256": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+  "source_proof": "integrated-source-independent-proof.json",
+  "controls": {
+    "existing_unmodified_unittest_command": "python -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v",
+    "working_directory": "/workspace/scratch/28fef0db5e01/pr-audit/cache-observer-candidate/candidate-fixed",
+    "test_count": 61,
+    "exit_code": 0,
+    "elapsed_seconds": 20.399,
+    "output_retention": "fixed-runtime-controls.log; full original unittest stdout/stderr retained. Earlier59/control results retain their b794 source and are not relabeled.",
+    "additional_independent_run_controls": "synthetic-run-boundaries/result.json",
+    "additional_count": 2,
+    "additional_fixed_source_retention_run": "retention-budget-after/result.json",
+    "run_control_log": "run-boundary-controls.log",
+    "scope": "Synthetic control execution only; not actual native product throughput or one-hour certification"
+  },
+  "original_probe": "original-probe-independent-result.json",
+  "original_probe_validator_applicability": "Original replay binds b794; the six validator/helper ASTs are independently identical in final bc33. No execution identity is relabeled.",
+  "findings": [
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        616,
+        633,
+        646,
+        657
+      ],
+      "result": "Soak read/build share the original write admission lock; mutation, cache_previous and preceding_mutation update while held. Finished_ns is recorded before release; replay sorts actual call_start and completed builds, retaining admission wait. Mixed continues the original parallel path."
+    },
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        160,
+        183,
+        236,
+        317
+      ],
+      "result": "A retained before/after native PID plus full generation isolates exactly one real hybrid lookup counter delta. Each accepted cache response has the exact current owned stable.py entity/span bytes; generation changes require miss/refill then subsequent same-generation hit. No-op generation retains hit."
+    },
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        512,
+        520,
+        307,
+        366
+      ],
+      "result": "Formal planned 3601 operations and 2400 compound reads remain. Four RPCs belong to one latency/outcome sample, not four samples. Limits are explicit 30/60/60/30, sum180 before admission wait; 60 remains maximum single-RPC timeout, so old symbol-only latency is not directly comparable."
+    },
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        357,
+        371,
+        813,
+        818
+      ],
+      "result": "Four cache quarters use actual hybrid completion and actual build completion. First and last offered timestamps alone cannot certify coverage. Existing >=1h actual work, RSS trend/coverage, compaction, branch switches and all original outcome gates remain."
+    },
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        667,
+        703,
+        736,
+        840,
+        858,
+        867
+      ],
+      "result": "M4 constructor-pending, rejected-submit admission gate, KeyboardInterrupt preservation, terminal-retention and all-owned-writers seal predicate remain intact outside reviewed cache inserts and the new sidecar metadata-only projection. Independent partial run controls preserve original failure and actual prefix counts, no statistics and no cache success."
+    },
+    {
+      "severity": "info",
+      "path": "scripts/p8_runtime.py",
+      "lines": [
+        768,
+        779,
+        800
+      ],
+      "result": "Original independent full-control build, no-repair 15-table oracle invocation and product-vs-infrastructure exit1/2 distinction retained. Original raw replay runs once per offered operation; no endpoint validation was removed."
+    }
+  ],
+  "limits": [
+    "This accepts the observer integration and engineering controls, not original P8-010 completion. No long Actions or native product execution was launched by this reviewer.",
+    "The actual 14-read probe is original bb9 native product with P4-equivalent observer, 0.648456145 s; binary was read and hashed only. It does not prove M4/integrated product or one-hour behavior.",
+    "Shared server PID and query pool counters prove process/pool reuse at this scope; individual OS-thread or semantic-worker identity is not claimed.",
+    "The immutable stable target checks current bytes across surrounding project generations. This alone is not a changed-query-result invalidation test; the full fixture mutation and 15-table endpoint gates remain necessary.",
+    "Partial cache summary on infrastructure failure is diagnostic and explicitly not certification. Its temporal origin differs; overall exit2/report status is authoritative. Receiver must not treat an isolated nested summary as task success.",
+    "The two earlier interrupted-run controls remain bound to b794; final bc33 independently passes61 controls and the real run/Raw retention regression, with the cache helper AST unchanged.",
+    "Final source/review/pins chain must bind these exact two changed files and reviewed controls. Existing G3 one-hour original run37846051479 must be independently read at its actual source; do not relabel it as the final integration.",
+    "No roadmap status changed; original TODO remains29 and this scoped review adds no task closure."
+  ],
+  "task_complete": false,
+  "new_original_todos_complete": 0,
+  "original_remaining": 29
+}

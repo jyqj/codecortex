@@ -1,0 +1,731 @@
+diff --git a/scripts/p8_runtime.py b/scripts/p8_runtime.py
+index a69d8205..db1f7195 100644
+--- a/scripts/p8_runtime.py
++++ b/scripts/p8_runtime.py
+@@ -6,7 +6,9 @@ self measurements, real Git switches and exact no-repair oracle are retained.
+ This driver never changes roadmap status or grants release approval.
+ """
+ import argparse
++from collections import Counter
+ from concurrent.futures import CancelledError, ThreadPoolExecutor, wait
++import hashlib
+ import json
+ import math
+ import os
+@@ -28,6 +30,9 @@ MARKER = "p8-runtime-owned-fixture-v1\n"
+ QUERY = "p8_runtime_stable_signal"
+ COMPACTION_EVENT = "resolver catalog dropped for tombstone compaction"
+ MAX_RAW_BYTES = 512 * 1024 * 1024
++CACHE_COUNTERS = ("graph_hits", "graph_misses", "result_hits", "result_misses")
++SOAK_READ_PROTOCOL = "symbol_plus_local_hybrid_cache_v1"
++SOAK_READ_ROLES = ("before_status", "symbol", "hybrid", "after_status")
+ 
+ 
+ class Raw:
+@@ -152,6 +157,226 @@ def require_stable_symbol(response):
+         "exact stable.py public symbol missing")
+ 
+ 
++def cache_identity(state):
++    """Require native process and complete public generation, not an epoch guess."""
++    diagnostics = state.get("diagnostics", {})
++    process = diagnostics.get("process_resources", {})
++    retrieval = diagnostics.get("retrieval", {})
++    generation = retrieval.get("generation")
++    freshness = state.get("resolution_freshness", {})
++    require(type(process.get("pid")) is int and process["pid"] > 0,
++            "cache observation lacks native server PID")
++    require(isinstance(generation, dict)
++            and type(generation.get("index_epoch")) is int
++            and type(generation.get("evidence_epoch")) is int
++            and isinstance(generation.get("incarnation"), list)
++            and len(generation["incarnation"]) == 16
++            and all(type(n) is int and 0 <= n <= 255 for n in generation["incarnation"])
++            and freshness.get("complete") is True
++            and freshness.get("status") == "ready"
++            and freshness == retrieval.get("resolution_freshness")
++            and freshness.get("index_epoch") == generation["index_epoch"],
++            "cache observation lacks complete generation")
++    return dict(pid=process["pid"], generation=generation)
++
++
++def cache_lookup(before, after):
++    require(cache_identity(before) == cache_identity(after),
++            "server or generation changed inside cache read")
++    old = before.get("diagnostics", {}).get("search_cache", {})
++    new = after.get("diagnostics", {}).get("search_cache", {})
++    delta = {}
++    for key in CACHE_COUNTERS:
++        require(type(old.get(key)) is int and type(new.get(key)) is int
++                and 0 <= old[key] <= new[key], "cache counter missing/reset")
++        delta[key] = new[key] - old[key]
++    graph = delta["graph_hits"], delta["graph_misses"]
++    result = delta["result_hits"], delta["result_misses"]
++    if graph == (1, 0) and result == (0, 0):
++        return dict(state="hit", owner="graph_result_cache", delta=delta)
++    if graph == (0, 1) and result in ((0, 0), (0, 1), (1, 0)):
++        return dict(state="miss", owner="graph_result_cache", delta=delta)
++    if graph == (0, 0) and result in ((1, 0), (0, 1)):
++        return dict(state="hit" if result[0] else "miss", owner="result_cache", delta=delta)
++    raise ValueError("cache counters do not isolate exactly one hybrid lookup")
++
++
++def require_stable_hybrid(response, project):
++    """Verify the retained hit against the current owned fixture's exact bytes."""
++    owned(project)
++    source = (project / "stable.py").read_bytes()
++    expected = f"def {QUERY}():\n    return 7\n".encode()
++    require(source == expected, "owned stable.py changed")
++    require(isinstance(response, dict) and response.get("_truncated") is not True,
++            "hybrid response missing/truncated")
++    require(response.get("evidence_summary", {}).get("packing", {}).get("partial") is False,
++            "hybrid packing completeness missing")
++    hits = response.get("machine_pack", {}).get("hits")
++    require(isinstance(hits, list) and len(hits) == 1, "hybrid top_k=1 needs one machine hit")
++    hit = hits[0]
++    require(isinstance(hit, dict) and hit.get("file_path") == "stable.py"
++            and hit.get("symbol_name") == QUERY and type(hit.get("start_line")) is int
++            and type(hit.get("end_line")) is int and hit["start_line"] == 1
++            and hit["end_line"] == 2 and isinstance(hit.get("text"), str),
++            "hybrid exact stable.py entity/span missing")
++    metadata = hit.get("metadata", {})
++    fresh = metadata.get("source_freshness", {})
++    proof = metadata.get("source_evidence", {})
++    span = proof.get("span", {})
++    require(fresh.get("status") == "current_verified" and fresh.get("disk_checked") is True,
++            "hybrid hit is not currently source verified")
++    require(type(span.get("start")) is int and type(span.get("end")) is int
++            and span["start"] == 0 and span["end"] in (len(source), len(source) - 1)
++            and proof.get("source", {}).get("byte_len") == len(source)
++            and proof.get("source", {}).get("encoding") == "utf8"
++            and source[span["start"]:span["end"]] == hit["text"].encode(),
++            "hybrid returned source bytes/span differ from current fixture")
++    return dict(file_path="stable.py", symbol_name=QUERY, source_bytes=len(source),
++                source_sha256=hashlib.sha256(source).hexdigest(), span=span,
++                method="current owned source bytes and exact entity/span; no digest self-report accepted as byte proof")
++
++
++def validate_cache_probe(probe, previous, project):
++    require(probe.get("protocol") == SOAK_READ_PROTOCOL, "unknown soak cache read protocol")
++    calls = probe.get("requests", [])
++    require([call.get("role") for call in calls] == list(SOAK_READ_ROLES)
++            and all(call.get("status") == "success" for call in calls),
++            "cache read lacks all four successful original requests")
++    wanted = (("status", {"aspect": "index"}),
++              ("search", {"query": QUERY, "mode": "symbol", "top_k": 5}),
++              ("search", {"query": QUERY, "mode": "hybrid", "top_k": 1, "retrieval_strategy": "local"}),
++              ("status", {"aspect": "index"}))
++    for call, (name, arguments) in zip(calls, wanted):
++        require(call.get("name") == name and call.get("arguments") == arguments
++                and type(call.get("started_ns")) is int and type(call.get("finished_ns")) is int
++                and call["finished_ns"] >= call["started_ns"], "cache request identity/timing differs")
++    require(all(a["finished_ns"] <= b["started_ns"] for a, b in zip(calls, calls[1:])),
++            "cache requests overlap or have reversed timing")
++    require(isinstance(calls[0].get("response"), dict) and isinstance(calls[3].get("response"), dict),
++            "cache status original response missing")
++    before, after = calls[0]["response"], calls[3]["response"]
++    identity = cache_identity(before)
++    require(type(probe.get("server_pid")) is int and probe["server_pid"] == identity["pid"],
++            "cache native PID differs from owned stdio process")
++    mutation = probe.get("preceding_mutation")
++    if mutation is not None:
++        require(mutation.get("index_epoch") == identity["generation"]["index_epoch"],
++                "cache generation differs from preceding completed mutation")
++    lookup = cache_lookup(before, after)
++    if previous is not None:
++        require(previous["identity"]["pid"] == identity["pid"], "soak cache server PID changed")
++    same = previous is not None and previous["identity"] == identity
++    expected = "hit" if same else "miss"
++    require(lookup["state"] == expected, "cache lookup differs from actual previous accepted generation")
++    require_stable_symbol(calls[1]["response"])
++    witness = require_stable_hybrid(calls[2]["response"], project)
++    old_pool = before.get("diagnostics", {}).get("query_execution", {})
++    new_pool = after.get("diagnostics", {}).get("query_execution", {})
++    for key in ("completed", "rejected", "cpu_limit", "async_limit", "queue_limit"):
++        require(type(old_pool.get(key)) is int and type(new_pool.get(key)) is int
++                and 0 <= old_pool[key] <= new_pool[key], "query pool counter missing/reset")
++    require(new_pool["completed"] > old_pool["completed"]
++            and new_pool["rejected"] == old_pool["rejected"]
++            and all(old_pool[k] == new_pool[k] > 0 for k in ("cpu_limit", "async_limit", "queue_limit")),
++            "shared query pool completion/bounds not observed")
++    if previous is not None:
++        require(old_pool["completed"] >= previous["completed"], "shared query pool completion regressed")
++    return dict(identity=identity, lookup=lookup, expected=expected,
++                invalidated=previous is not None and not same,
++                previous_identity=None if previous is None else previous["identity"],
++                completed=new_pool["completed"], completed_delta=new_pool["completed"] - old_pool["completed"],
++                source_witness=witness,
++                worker_scope="same native server and shared query pool path/counters; not individual OS-thread identity or semantic worker")
++
++
++def soak_read(product, project, row, previous, preceding_mutation, elapsed):
++    """Four explicit RPCs inside ONE offered read, under the soak admission lock."""
++    probe = dict(protocol=SOAK_READ_PROTOCOL, server_pid=product.process.pid,
++                 preceding_mutation=preceding_mutation, requests=[])
++    row["cache_probe"] = probe  # Keep attempted/failed prefix even on an exception.
++    requests = (("before_status", "status", {"aspect": "index"}),
++                ("symbol", "search", {"query": QUERY, "mode": "symbol", "top_k": 5}),
++                ("hybrid", "search", {"query": QUERY, "mode": "hybrid", "top_k": 1, "retrieval_strategy": "local"}),
++                ("after_status", "status", {"aspect": "index"}))
++    for role, name, arguments in requests:
++        call = dict(role=role, name=name, arguments=arguments, started_ns=elapsed(), status="error")
++        probe["requests"].append(call)
++        try:
++            call["response"] = product.tool(name, arguments, timeout=60 if name == "search" else 30)
++            call["status"] = "success"
++            if role == "symbol": row["response"] = call["response"]
++        except Exception as error:
++            call["error"] = f"{type(error).__name__}: {error}"
++            raise
++        finally:
++            call["finished_ns"] = elapsed()
++    probe["observation"] = validate_cache_probe(probe, previous, project)
++    return probe["observation"]
++
++
++def soak_cache_summary(rows, operations, start_ns, end_ns, project):
++    reads = sorted((r for r in rows if r["operation"] == "read"), key=lambda r:r.get("call_started_ns", r["offered_ns"]))
++    expected_reads = operations - (operations + 2) // 3
++    request_counts = {role: Counter() for role in SOAK_READ_ROLES}
++    states, errors, mutation_coverage = Counter(), [], Counter()
++    quarters = [dict(reads=0, hits=0, misses=0, invalidations=0, mutations={}) for _ in range(4)]
++    builds = sorted((r for r in rows if r["operation"] == "build" and r["status"] == "success"),
++                    key=lambda r:r["finished_ns"])
++    def quarter_at(at): return min(3, max(0, (at - start_ns) * 4 // max(1, end_ns - start_ns)))
++    for row in builds:
++        action = row["mutation"]["action"]
++        bucket = quarters[quarter_at(row["finished_ns"])]["mutations"]
++        bucket[action] = bucket.get(action, 0) + 1
++    previous = None
++    for row in reads:
++        probe = row.get("cache_probe", {})
++        for call in probe.get("requests", []):
++            if call.get("role") in request_counts: request_counts[call["role"]][call.get("status", "missing")] += 1
++        try:
++            require(row["status"] == "success", "original read did not succeed")
++            preceding = [r for r in builds if r["finished_ns"] <= row["call_started_ns"]]
++            last = preceding[-1] if preceding else None
++            expected_mutation = None if last is None else dict(
++                action=last["mutation"]["action"], ordinal=last["mutation_ordinal"], operation_id=last["id"],
++                index_epoch=last["response"]["resolution_freshness"].get("index_epoch"))
++            require(probe.get("preceding_mutation") == expected_mutation,
++                    "cache preceding mutation differs from original operation timeline")
++            observed = validate_cache_probe(probe, previous, project)
++            require(probe["requests"][0]["started_ns"] >= row["call_started_ns"]
++                    and probe["requests"][-1]["finished_ns"] <= row["finished_ns"],
++                    "compound requests escape original operation timing")
++            require(observed == probe.get("observation") and row.get("response") == probe["requests"][1]["response"],
++                    "cache receipt differs from original requests/symbol response")
++            previous = observed
++            states[observed["lookup"]["state"]] += 1
++            states["invalidations"] += observed["invalidated"]
++            quarter = quarter_at(probe["requests"][2]["finished_ns"])
++            bucket = quarters[quarter];bucket["reads"] += 1
++            bucket["hits" if observed["expected"] == "hit" else "misses"] += 1
++            bucket["invalidations"] += observed["invalidated"]
++            mutation = probe.get("preceding_mutation") or {}
++            action = mutation.get("action", "not_observed")
++            mutation_coverage[action] += 1
++        except (ValueError, KeyError, TypeError, AttributeError, OSError) as error:
++            errors.append(dict(id=row["id"], error=str(error)))
++    complete = len(reads) == expected_reads and not errors
++    demonstrated = all(q["hits"] > 0 and q["misses"] > 0 and q["invalidations"] > 0 for q in quarters)
++    actual_counts = {role:dict(counts) for role, counts in request_counts.items()}
++    statuses = request_counts["before_status"] + request_counts["after_status"]
++    return dict(protocol=SOAK_READ_PROTOCOL, passed=complete and demonstrated,
++                expected_offered_reads=expected_reads, recorded_offered_reads=len(reads),
++                validated_reads=states["hit"] + states["miss"], observed=dict(states),
++                request_counts=actual_counts, status_request_counts=dict(statuses),
++                expected_requests_per_role=expected_reads, errors=errors,
++                time_quarters=quarters, preceding_mutation_coverage=dict(mutation_coverage),
++                quarter_time_basis="actual hybrid RPC completion and actual mutation operation completion; never offered time",
++                quarter_mutation_scope="successful completed builds; every failure remains in original outcomes/statistics",
++                temporal_cache_coverage=demonstrated,
++                denominator="one offered compound read; symbol+hybrid+two status RPCs and all their time/failures included; no extra latency samples",
++                comparison_scope="not directly comparable to the previous symbol-only read protocol",
++                isolation="soak read/build share original write admission lock; wait remains measured; mixed unchanged")
++
++
+ def median(values):
+     values = sorted(values)
+     require(bool(values), "median requires observations")
+@@ -234,6 +459,26 @@ def replay_statistics(statistics, output):
+                 exit_code=commands[0]["exit_code"], status=report.get("observation_status"))
+ 
+ 
++def terminal_operation_metadata(row):
++    """Retain failure identities without bypassing the exhausted raw-body budget."""
++    missing = {key: value for key, value in row.items() if key != "response"}
++    if "cache_probe" in row:
++        probe = row["cache_probe"]
++        retained = {key: probe[key] for key in
++                    ("protocol", "server_pid", "preceding_mutation", "observation") if key in probe}
++        retained["requests"] = []
++        for call in probe.get("requests", []):
++            metadata = {key: call[key] for key in
++                        ("role", "name", "arguments", "started_ns", "finished_ns", "status", "error")
++                        if key in call}
++            metadata["response_omitted"] = "response" in call
++            retained["requests"].append(metadata)
++        retained.update(raw_responses_retained=False,
++                        scope="terminal metadata only; original raw write failed; not replayable cache evidence")
++        missing["cache_probe"] = retained
++    return missing
++
++
+ def run(args):
+     require(args.concurrency in (1, 4, 8, 16), "C must be 1/4/8/16")
+     require(60 <= args.operations <= 10000 and 8 <= args.files <= 10000,
+@@ -260,6 +505,18 @@ def run(args):
+     plan["offer_schedule"] = "uniform" if args.profile == "soak" else "fixed_concurrency_sized_bursts"
+     plan["mutation_schedule"] = "six-action cycle in serialized write-admission order"
+     plan["observer_concurrency_scope"] = "one separate status RPC; excluded from workload C and latency"
++    if args.profile == "soak":
++        reads = args.operations - (args.operations + 2) // 3
++        plan["read_protocol"] = dict(
++            name=SOAK_READ_PROTOCOL, offered_read_operations=reads,
++            planned_request_counts=dict(symbol=reads, hybrid=reads, before_status=reads, after_status=reads),
++            request_roles=list(SOAK_READ_ROLES), strategy="local",
++            rpc_timeout_seconds=dict(before_status=30, symbol=60, hybrid=60, after_status=30),
++            rpc_timeout_sum_seconds=180,
++            timeout_scope="180 is the four sequential RPC timeout sum, excludes admission wait, and is not a performance SLA; outer request_timeout_seconds=60 is the maximum single-RPC timeout",
++            admission="read/build share original write lock only in soak; lock wait remains in operation timing",
++            denominator="one offered compound read with every RPC and validation included; no added samples",
++            comparison_scope="not directly comparable to prior symbol-only reads")
+     plan["execution_environment"] = execution_environment()
+     plan["statistics_sha256"] = digest(statistics)
+     plan["build_identity"] = identity["build_identity"]
+@@ -283,6 +540,7 @@ def run(args):
+     row_lock, write_lock = threading.Lock(), threading.Lock()
+     active = dict(read=0, build=0, maximum=0, read_build_overlap=False)
+     mutation_sequence = [0]
++    cache_previous, preceding_mutation = [None], [None]
+     stop = threading.Event()
+     cancel_work = threading.Event()
+     product, comparison_product, sampler, work_cleanup = None, None, None, None
+@@ -305,7 +563,7 @@ def run(args):
+             # A full/broken raw sink must not prevent owned work from stopping.
+             # Retain the missing terminal metadata separately; never relabel it
+             # as a complete original raw stream or feed it to the scorer.
+-            missing = {key: value for key, value in row.items() if key != "response"}
++            missing = terminal_operation_metadata(row)
+             missing["raw_retention_error"] = f"{type(error).__name__}: {error}"
+             with row_lock: terminal_retention_failures.append(missing)
+             raise
+@@ -356,11 +614,12 @@ def run(args):
+             held_write = False
+             try:
+                 if cancel_work.is_set(): raise CancelledError("owned work canceled before start")
+-                if kind == "build":
++                if kind == "build" or args.profile == "soak":
+                     while not write_lock.acquire(timeout=.1):
+                         if cancel_work.is_set(): raise CancelledError("waiting write canceled")
+                     held_write = True
+                     if cancel_work.is_set(): raise CancelledError("write canceled before mutation")
++                if kind == "build":
+                     row["mutation_ordinal"] = mutation_sequence[0]
+                     row["mutation"] = mutate(project, mutation_sequence[0])
+                     mutation_sequence[0] += 1
+@@ -370,8 +629,13 @@ def run(args):
+                     active["maximum"] = max(active["maximum"], active["read"] + active["build"])
+                     active["read_build_overlap"] |= active["read"] > 0 and active["build"] > 0
+                 try:
+-                    response = product.tool("index", {"path": str(project), "full": False}, timeout=60) if kind == "build" else product.tool(
+-                        "search", {"query": QUERY, "mode": "symbol", "top_k": 5}, timeout=60)
++                    if kind == "read" and args.profile == "soak":
++                        cache_previous[0] = soak_read(product, project, row, cache_previous[0],
++                                                      preceding_mutation[0], elapsed)
++                        response = row["response"]  # Original symbol response stays Rust-replayable.
++                    else:
++                        response = product.tool("index", {"path": str(project), "full": False}, timeout=60) if kind == "build" else product.tool(
++                            "search", {"query": QUERY, "mode": "symbol", "top_k": 5}, timeout=60)
+                 finally:
+                     with row_lock: active[kind] -= 1
+                 row["response"] = response
+@@ -379,6 +643,9 @@ def run(args):
+                     require(response.get("parse_errors") == [], "incremental parse errors or missing coverage")
+                     require(response.get("resolution_freshness", {}).get("complete") is True,
+                             "incremental closure incomplete or not observed")
++                    preceding_mutation[0] = dict(action=row["mutation"]["action"],
++                                                ordinal=row["mutation_ordinal"], operation_id=number,
++                                                index_epoch=response["resolution_freshness"].get("index_epoch"))
+                 else:
+                     require_stable_symbol(response)
+                 row["status"] = "success"
+@@ -548,6 +815,8 @@ def run(args):
+             if not coverage["passed"]: failures.append("RSS samples do not cover the complete work interval")
+             if compactions == 0: failures.append("no actual catalog compaction")
+             if switches < 2: failures.append("branch switches not exercised")
++            cache_reuse = soak_cache_summary(rows, args.operations, offer_start - begun, observed_end, project)
++            if not cache_reuse["passed"]: failures.append("complete soak cache invalidation/refill/hit evidence failed")
+         report = dict(schema_version=1, status="passed_observation" if not failures else "failed",
+                       exit_code=0 if not failures else 1, task_complete=False,
+                       profile=args.profile, offered=args.operations, outcomes=statuses,
+@@ -564,6 +833,7 @@ def run(args):
+                       parity_sha256=digest(out / "parity.json"), product_sha256=digest(binary),
+                       oracle_sha256=digest(oracle), semantic_backfill="not_run_in_default_product_profile",
+                       release_approval=False)
++        if args.profile == "soak": report["cache_reuse"] = cache_reuse
+     except (Exception, KeyboardInterrupt) as error:
+         report.update(status="failed", exit_code=2, error=f"{type(error).__name__}: {error}",
+                       offered_terminal_rows=len(rows), failures=failures)
+@@ -591,6 +861,11 @@ def run(args):
+         report["owned_cleanup"] = owned_cleanup
+         if writers_stopped:
+             raw.close()
++            if args.profile == "soak" and "cache_reuse" not in report:
++                # Preserve actual attempted RPC counts on infrastructure failures,
++                # without presenting a partial run as completed planned workload.
++                report["cache_reuse"] = soak_cache_summary(rows, args.operations, 0, elapsed(), project)
++                report["cache_reuse"]["scope"] = "partial failure; quarter origin unavailable; not certification"
+         else:
+             report.update(status="failed", exit_code=2,
+                           artifact_seal_error="owned writer termination not established; no completed archive seal")
+diff --git a/scripts/tests/test_p8_runtime_cache.py b/scripts/tests/test_p8_runtime_cache.py
+new file mode 100644
+index 00000000..f4286b62
+--- /dev/null
++++ b/scripts/tests/test_p8_runtime_cache.py
+@@ -0,0 +1,342 @@
++"""Explicit protocol controls only; these fakes are not product cache evidence."""
++import copy
++import json
++from pathlib import Path
++import sys
++import tempfile
++from types import SimpleNamespace
++import unittest
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import p8_runtime as runtime
++
++ACTIONS = ("bounded_symbol_churn", "add", "rename", "delete", "real_git_branch_switch", "restore_api")
++
++# Observed wire shape, projected without moving fields. Explicit protocol fixtures.
++FIXTURE_ORIGIN = {'scope': 'Minimal field-preserving projections from retained actualG wire bodies; schema fixtures only, not a new product execution. ProtocolProduct maps only owned entity/source coordinates and live synthetic counters.', 'source_commit': 'bb9a96d71622458c39a143055360cc97f0d11d78', 'G2_product_Rust_same': 'd2d492b329a5630bf4a5fa6bc4b6eac30d07b13c', 'status': {'artifact': 11576468006, 'member': 'p8-runtime/product/rpc.jsonl', 'member_sha256': 'd387c314670769cbde5f0aaf414f53c73b03cafd0d18b99ca395dfb1e9e847ad', 'response_id': 4, 'response_canonical_sha256': 'bb14dfd0e05af850d6a7d6537683f2b7dfdada9ffe433d47240de8afce547eb7'}, 'hybrid': {'member': 'measurement/replay-input.json', 'member_sha256': '9c03093974eacb7f34f69c6f9789812be3e7d3ab976c39e2116ba52957a44302', 'sample_index': 0, 'response_canonical_sha256': 'b2f24f5f3a15f39d4af1d74ce17368cae9c6571bd2cbc21cfa1ee82821626242'}}
++G_STATUS_SHAPE = {'resolution_freshness': {'basis_epoch': None, 'complete': True, 'completed_files': 0, 'index_epoch': 5, 'reason': None, 'retry': None, 'root_count': 0, 'scope': 'observed_resolution_invalidations', 'status': 'ready'}, 'diagnostics': {'process_resources': {'pid': 6643}, 'retrieval': {'generation': {'evidence_epoch': 1, 'incarnation': [5, 146, 226, 99, 157, 174, 103, 161, 85, 169, 197, 41, 192, 113, 244, 171], 'index_epoch': 5, 'semantic_epoch': None}, 'resolution_freshness': {'basis_epoch': None, 'complete': True, 'completed_files': 0, 'index_epoch': 5, 'reason': None, 'retry': None, 'root_count': 0, 'scope': 'observed_resolution_invalidations', 'status': 'ready'}}, 'search_cache': {'graph_hit_rate': 0.0, 'graph_hits': 0, 'graph_misses': 0, 'result_hit_rate': 0.0, 'result_hits': 0, 'result_misses': 0}, 'query_execution': {'async_admitted': 0, 'async_in_flight': 0, 'async_limit': 8, 'completed': 0, 'cpu_admitted': 0, 'cpu_in_flight': 0, 'cpu_limit': 4, 'queue_limit': 32, 'rejected': 0}}}
++G_HYBRID_SHAPE = {'machine_pack': {'hits': [{'file_path': 'source_000.py', 'symbol_name': 'p8_lifecycle_000000', 'start_line': 1, 'end_line': 2, 'text': 'def p8_lifecycle_000000(value):\n    return value + 17', 'metadata': {'source_evidence': {'boundary': 'symbol', 'owner': {'end': 53, 'start': 0}, 'signature': {'end': 36, 'start': 0}, 'slice_digest': 'cb81271fb4d222e6255c3fb4d980f3219318a91a8e8a215c70d7d13f26066cfa', 'source': {'byte_len': 715, 'content_digest': '170165262feb9e145f3e4b25eeaa5b43af61519401a3d5972f4ed4cd135a5fc4', 'encoding': 'utf8', 'snapshot_id': '8251b1dd9c800dede9de37bdc90b2badf9c43e6ed1f7eb07ecc2df76cf6f71d2'}, 'span': {'end': 53, 'start': 0}}, 'source_freshness': {'disk_checked': True, 'hydrator': 'current-document-scope-source-generation-v1', 'status': 'current_verified'}}}]}, 'evidence_summary': {'packing': {'compacted': False, 'configured_max_bytes': 18000, 'continuation': 'Use files region/expand on retained references; recheck source version.', 'limit_bytes': 16000, 'omitted_hits': 0, 'omitted_nodes': 0, 'original_hits': 1, 'original_nodes': 1, 'partial': False, 'spec': 'whole-json-intent-facets-source-support-before-incidental-v5', 'token_estimate_method': 'ceil(serialized_utf8_bytes/4); not a tokenizer', 'used_bytes': 14120}}}
++
++
++class ProtocolProduct:
++    """Known state machine with explicit mutation/timeout/corruption injection."""
++    def __init__(self, project):
++        self.project = project
++        self.epoch = 5
++        self.pid = 1001
++        self.process = SimpleNamespace(pid=self.pid)
++        self.completed = 0
++        self.rejected = 0
++        self.counts = dict.fromkeys(runtime.CACHE_COUNTERS, 0)
++        self.filled = set()
++        self.calls = []
++        self.fail_role = None
++        self.bad_hit = None
++        self.force_lookup = None
++
++    def status(self):
++        state = copy.deepcopy(G_STATUS_SHAPE)
++        diagnostics = state["diagnostics"]
++        diagnostics["process_resources"]["pid"] = self.pid
++        diagnostics["retrieval"]["generation"]["index_epoch"] = self.epoch
++        state["resolution_freshness"]["index_epoch"] = self.epoch
++        diagnostics["retrieval"]["resolution_freshness"]["index_epoch"] = self.epoch
++        diagnostics["search_cache"].update(self.counts)
++        diagnostics["query_execution"].update(completed=self.completed, rejected=self.rejected)
++        return state
++
++    def hit(self):
++        # Explicit test-only mapping from an observed lifecycle entity to this
++        # owned tiny fixture; actual wire paths and metadata layout stay intact.
++        response = copy.deepcopy(G_HYBRID_SHAPE)
++        hit = response["machine_pack"]["hits"][0]
++        source = (self.project/'stable.py').read_bytes()
++        hit.update(file_path="stable.py", symbol_name=runtime.QUERY, start_line=1, end_line=2,
++                   text=source[:-1].decode())
++        proof = hit["metadata"]["source_evidence"]
++        proof["span"] = dict(start=0, end=len(source)-1)
++        proof["source"]["byte_len"] = len(source)
++        if self.bad_hit: self.bad_hit(hit)
++        return response
++
++    def tool(self, name, arguments, timeout=45):
++        if name == "search" and arguments["mode"] == "hybrid":
++            # SearchParams denies unknown fields; the actual public field is
++            # retrieval_strategy, not the informal plan description "strategy".
++            assert set(arguments) == {"query", "mode", "top_k", "retrieval_strategy"}
++            assert arguments["retrieval_strategy"] == "local"
++        role = ("before_status" if len(self.calls) % 4 == 0 else "after_status") if name == "status" else arguments["mode"]
++        self.calls.append(dict(role=role, name=name, arguments=copy.deepcopy(arguments), timeout=timeout))
++        if role == self.fail_role: raise TimeoutError("explicit protocol timeout " + role)
++        if name == "status": return self.status()
++        self.completed += 1
++        if arguments["mode"] == "symbol": return [dict(name=runtime.QUERY, file_path="stable.py")]
++        lookup = self.force_lookup or ("hit" if self.epoch in self.filled else "miss")
++        self.counts["graph_hits" if lookup == "hit" else "graph_misses"] += 1
++        self.filled.add(self.epoch)
++        return self.hit()
++
++
++class SoakCacheProtocolTests(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory(prefix="cache-protocol-only-")
++        self.addCleanup(self.temp.cleanup)
++        self.project = Path(self.temp.name)
++        (self.project/'.p8-owned').write_text(runtime.MARKER)
++        (self.project/'stable.py').write_text(f"def {runtime.QUERY}():\n    return 7\n")
++        self.product = ProtocolProduct(self.project)
++
++    def read(self, previous=None, number=1, mutation=None):
++        at = number*1_000_000_000
++        row = dict(id=number, operation="read", status="error", offered_ns=at,
++                   scheduled_ns=at, started_ns=at, call_started_ns=at+1)
++        clock = iter(range(at+2, at+200)).__next__
++        try:
++            result = runtime.soak_read(self.product, self.project, row, previous, mutation, clock)
++            row["status"] = "success"
++        except Exception as error:
++            row["error"] = str(error)
++            result = None
++        row["finished_ns"] = clock()
++        return row, result
++
++    def successful_probe(self):
++        row, observed = self.read()
++        self.assertIsNotNone(observed, row)
++        return row["cache_probe"]
++
++    def test_observed_wire_status_has_outer_and_nested_matching_freshness(self):
++        # Direct retained-body projection; no invented diagnostics-root field.
++        self.assertNotIn("resolution_freshness", G_STATUS_SHAPE["diagnostics"])
++        identity = runtime.cache_identity(copy.deepcopy(G_STATUS_SHAPE))
++        self.assertEqual(identity["pid"], G_STATUS_SHAPE["diagnostics"]["process_resources"]["pid"])
++        self.assertEqual(identity["generation"], G_STATUS_SHAPE["diagnostics"]["retrieval"]["generation"])
++        for change in (lambda s:s.pop("resolution_freshness"),
++                       lambda s:s["diagnostics"]["retrieval"].pop("resolution_freshness"),
++                       lambda s:s["resolution_freshness"].update(index_epoch=999),
++                       lambda s:s["diagnostics"]["retrieval"]["resolution_freshness"].update(complete=False)):
++            state = copy.deepcopy(G_STATUS_SHAPE);change(state)
++            with self.assertRaises(ValueError): runtime.cache_identity(state)
++
++    def test_real_generation_rule_includes_noop_hit_and_refill_then_hit(self):
++        first, a = self.read(); self.assertEqual(a["lookup"]["state"], "miss")
++        second, b = self.read(a, 2); self.assertEqual(b["lookup"]["state"], "hit")
++        self.product.epoch += 1
++        third, c = self.read(b, 4); self.assertEqual(c["lookup"]["state"], "miss")
++        self.assertTrue(c["invalidated"])
++        _, d = self.read(c, 5); self.assertEqual(d["lookup"]["state"], "hit")
++        _, e = self.read(d, 7); self.assertEqual(e["lookup"]["state"], "hit")
++        self.assertFalse(e["invalidated"])
++        self.assertEqual([x["role"] for x in first["cache_probe"]["requests"]], list(runtime.SOAK_READ_ROLES))
++        self.assertEqual(first["response"], first["cache_probe"]["requests"][1]["response"])
++        self.assertEqual(len(self.product.calls), 20)
++        self.assertGreater(first["finished_ns"], first["cache_probe"]["requests"][-1]["finished_ns"])
++
++    def test_zero_ambiguous_reset_missing_and_boolean_counters_rejected(self):
++        before = self.product.status()
++        variations = [dict(graph_hits=0, graph_misses=0), dict(graph_hits=1, graph_misses=1),
++                      dict(graph_hits=2, graph_misses=0), dict(graph_hits=True),
++                      dict(graph_hits=-1), dict(result_misses=1, graph_hits=1)]
++        for changes in variations:
++            with self.subTest(changes=changes):
++                after = copy.deepcopy(before);after["diagnostics"]["search_cache"].update(changes)
++                with self.assertRaises(ValueError): runtime.cache_lookup(before, after)
++        after = copy.deepcopy(before);del after["diagnostics"]["search_cache"]["graph_hits"]
++        with self.assertRaises(ValueError): runtime.cache_lookup(before, after)
++
++    def test_cross_generation_or_server_cannot_be_cache_receipt(self):
++        original = self.successful_probe()
++        for key in ("pid", "epoch", "incarnation", "incomplete"):
++            with self.subTest(key=key):
++                probe = copy.deepcopy(original);after = probe["requests"][-1]["response"]["diagnostics"]
++                if key == "pid": after["process_resources"]["pid"] += 1
++                elif key == "epoch":
++                    after["retrieval"]["generation"]["index_epoch"] += 1
++                    after["retrieval"]["resolution_freshness"]["index_epoch"] += 1
++                elif key == "incarnation": after["retrieval"]["generation"]["incarnation"][0] += 1
++                else: after["retrieval"]["resolution_freshness"]["complete"] = False
++                with self.assertRaises(ValueError): runtime.validate_cache_probe(probe, None, self.project)
++
++    def test_wrong_hit_after_invalidation_and_wrong_miss_same_generation_fail(self):
++        _, previous = self.read()
++        self.product.force_lookup = "miss"
++        row, bad = self.read(previous, 2)
++        self.assertIsNone(bad);self.assertEqual(row["status"], "error")
++        self.product.epoch += 1;self.product.force_lookup = "hit"
++        row, bad = self.read(previous, 4)
++        self.assertIsNone(bad);self.assertIn("previous accepted generation", row["error"])
++
++    def test_cache_hit_cannot_hide_stale_source_or_wrong_entity(self):
++        bad_hits = [lambda h:h.update(file_path="wrong.py"), lambda h:h.update(symbol_name="query echo"),
++                    lambda h:h.update(text=f"def {runtime.QUERY}():\n    return 6"),
++                    lambda h:h.update(start_line=2),
++                    lambda h:h["metadata"]["source_freshness"].update(status="stale"),
++                    lambda h:h["metadata"]["source_freshness"].update(disk_checked=False),
++                    lambda h:h["metadata"]["source_evidence"]["span"].update(start=1),
++                    lambda h:h["metadata"]["source_evidence"]["source"].update(byte_len=1)]
++        for bad in bad_hits:
++            with self.subTest(bad=bad):
++                self.product = ProtocolProduct(self.project)
++                _, previous = self.read();self.product.bad_hit = bad
++                row, result = self.read(previous, 2)
++                self.assertIsNone(result);self.assertEqual(row["status"], "error")
++        with self.assertRaises(ValueError): runtime.require_stable_hybrid({"query":runtime.QUERY}, self.project)
++        response = self.product.hit();response["evidence_summary"]["packing"]["partial"] = True
++        with self.assertRaises(ValueError): runtime.require_stable_hybrid(response, self.project)
++
++    def test_missing_original_call_or_changed_request_is_rejected(self):
++        original = self.successful_probe()
++        for index in range(4):
++            probe = copy.deepcopy(original);probe["requests"].pop(index)
++            with self.assertRaises(ValueError): runtime.validate_cache_probe(probe, None, self.project)
++        for change in (lambda p:p["requests"][2]["arguments"].update(query="other"),
++                       lambda p:p["requests"][2]["arguments"].update(retrieval_strategy="semantic"),
++                       lambda p:p["requests"][2].update(started_ns=0),
++                       lambda p:p["requests"][0].pop("response")):
++            probe = copy.deepcopy(original);change(probe)
++            with self.assertRaises(ValueError): runtime.validate_cache_probe(probe, None, self.project)
++
++    def test_shared_pool_counters_must_progress_without_reset_or_rejection(self):
++        original = self.successful_probe()
++        for change in (dict(completed=0), dict(completed=True), dict(rejected=1), dict(cpu_limit=5)):
++            probe = copy.deepcopy(original)
++            probe["requests"][-1]["response"]["diagnostics"]["query_execution"].update(change)
++            with self.assertRaises(ValueError): runtime.validate_cache_probe(probe, None, self.project)
++        self.product.pid += 1
++        row, value = self.read(original["observation"], 2)
++        self.assertIsNone(value);self.assertEqual(row["status"], "error")
++
++    def test_each_failed_request_prefix_keeps_actual_counts_no_invented_attempts(self):
++        for index, role in enumerate(runtime.SOAK_READ_ROLES):
++            with self.subTest(role=role):
++                self.product = ProtocolProduct(self.project);self.product.fail_role = role
++                row, result = self.read()
++                self.assertIsNone(result);self.assertEqual(row["status"], "error")
++                calls = row["cache_probe"]["requests"]
++                self.assertEqual(len(calls), index+1)
++                self.assertEqual(calls[-1]["status"], "error")
++                self.assertIn("explicit protocol timeout", calls[-1]["error"])
++                self.assertGreaterEqual(calls[-1]["finished_ns"], calls[-1]["started_ns"])
++                summary = runtime.soak_cache_summary([row], 3, 0, 3_000_000_000, self.project)
++                self.assertFalse(summary["passed"])
++                self.assertEqual(summary["recorded_offered_reads"], 1)
++                self.assertEqual(summary["expected_offered_reads"], 2)
++                self.assertEqual(sum(sum(v.values()) for v in summary["request_counts"].values()), index+1)
++
++    def complete_rows(self):
++        self.product = ProtocolProduct(self.project)
++        rows=[];previous=None;mutation=None
++        for number in range(72):
++            at = number*1_000_000_000
++            if number % 3 == 0:
++                ordinal=number//3;action=ACTIONS[ordinal % 6]
++                if action != "restore_api": self.product.epoch += 1
++                mutation=dict(action=action, ordinal=ordinal, operation_id=number, index_epoch=self.product.epoch)
++                rows.append(dict(id=number, operation="build", status="success", offered_ns=at,
++                                 call_started_ns=at+1, finished_ns=at+10, mutation_ordinal=ordinal,
++                                 mutation=dict(action=action), response=dict(resolution_freshness=dict(index_epoch=self.product.epoch))))
++            else:
++                row, previous = self.read(previous, number, mutation)
++                self.assertIsNotNone(previous, row);rows.append(row)
++        return rows
++
++    def test_summary_keeps_original_operation_N_and_explicit_rpc_totals_and_quarters(self):
++        rows = self.complete_rows()
++        result = runtime.soak_cache_summary(rows, 72, 0, 72_000_000_000, self.project)
++        self.assertTrue(result["passed"], result)
++        self.assertEqual(result["recorded_offered_reads"], 48)
++        self.assertEqual(result["request_counts"], {role:{"success":48} for role in runtime.SOAK_READ_ROLES})
++        self.assertEqual(result["status_request_counts"], {"success":96})
++        self.assertEqual(result["validated_reads"], 48)
++        self.assertEqual(len(rows), 72)
++        for q in result["time_quarters"]:
++            self.assertEqual(q["reads"], 12)
++            self.assertGreater(q["hits"], 0);self.assertGreater(q["misses"], 0)
++            self.assertEqual(set(q["mutations"]), set(ACTIONS))
++
++    def test_summary_rejects_missing_raw_changed_receipt_or_preceding_mutation(self):
++        original = self.complete_rows()
++        for mutate in (lambda rows:rows.pop(1),
++                       lambda rows:rows[1].pop("cache_probe"),
++                       lambda rows:rows[1]["cache_probe"]["observation"].update(expected="hit"),
++                       lambda rows:rows[1]["cache_probe"]["preceding_mutation"].update(operation_id=99),
++                       lambda rows:rows[1].update(finished_ns=rows[1]["call_started_ns"]),
++                       lambda rows:rows[1].update(response=[{"query":runtime.QUERY}])):
++            rows = copy.deepcopy(original);mutate(rows)
++            result=runtime.soak_cache_summary(rows, 72, 0, 72_000_000_000, self.project)
++            self.assertFalse(result["passed"])
++
++    def test_clustered_cache_receipts_cannot_certify_temporal_reuse(self):
++        rows=self.complete_rows()
++        result=runtime.soak_cache_summary(rows, 72, 0, 3600_000_000_000, self.project)
++        self.assertFalse(result["passed"])
++        self.assertFalse(result["temporal_cache_coverage"])
++
++    def test_spread_offers_with_clustered_actual_calls_do_not_cover_four_quarters(self):
++        rows = self.complete_rows()
++        # Keep all72 original offered times spread across the interval, but
++        # queue all actual operations until its final100us. Preserve ordering,
++        # request durations, generation transitions and source responses.
++        for row in rows:
++            old_base = row["id"] * 1_000_000_000
++            actual_base = 72_000_000_000 - 100_000 + row["id"] * 1000
++            delta = actual_base - old_base
++            row["call_started_ns"] += delta
++            row["finished_ns"] += delta
++            if "cache_probe" in row:
++                row["started_ns"] += delta
++                for call in row["cache_probe"]["requests"]:
++                    call["started_ns"] += delta;call["finished_ns"] += delta
++        result = runtime.soak_cache_summary(rows, 72, 0, 72_000_000_000, self.project)
++        self.assertFalse(result["passed"])
++        self.assertEqual(result["validated_reads"], 48)
++        self.assertEqual([q["reads"] for q in result["time_quarters"]], [0,0,0,48])
++        self.assertEqual([sum(q["mutations"].values()) for q in result["time_quarters"]], [0,0,0,24])
++
++
++class CacheTerminalRetentionTests(unittest.TestCase):
++    def test_exhausted_raw_sidecar_keeps_metadata_without_nested_response_bodies(self):
++        body = "raw-body-budget-witness-" * 4096
++        calls = [dict(role=role, name="status" if "status" in role else "search",
++                      arguments={"owned_control": role}, started_ns=10 * i, finished_ns=10 * i + 1,
++                      status="success", response={"body": body})
++                 for i, role in enumerate(runtime.SOAK_READ_ROLES)]
++        probe = dict(protocol=runtime.SOAK_READ_PROTOCOL, server_pid=1001,
++                     preceding_mutation={"action": "rename", "operation_id": 3},
++                     observation={"lookup": {"state": "miss"}}, requests=calls)
++        row = dict(id=4, operation="read", status="success", offered_ns=0, finished_ns=40,
++                   response={"body": body}, cache_probe=probe)
++        original = copy.deepcopy(row)
++        retained = runtime.terminal_operation_metadata(row)
++        self.assertEqual(row, original, "normal raw and in-memory original must not be projected")
++        self.assertNotIn("response", retained)
++        self.assertNotIn(body, json.dumps(retained))
++        self.assertLess(len(json.dumps(retained)), 4096)
++        kept = retained["cache_probe"]
++        self.assertIs(kept["raw_responses_retained"], False)
++        self.assertIn("not replayable cache evidence", kept["scope"])
++        for key in ("protocol", "server_pid", "preceding_mutation", "observation"):
++            self.assertEqual(kept[key], probe[key])
++        for before, after in zip(calls, kept["requests"]):
++            self.assertEqual({key: value for key, value in after.items() if key != "response_omitted"},
++                             {key: value for key, value in before.items() if key != "response"})
++            self.assertIs(after["response_omitted"], True)
++
++    def test_failed_request_prefix_and_non_cache_terminal_metadata_are_preserved(self):
++        calls = [dict(role="before_status", name="status", arguments={"aspect": "index"},
++                      started_ns=1, finished_ns=2, status="success", response={"retained_in_raw": False}),
++                 dict(role="symbol", name="search", arguments={"query": runtime.QUERY},
++                      started_ns=3, finished_ns=4, status="error", error="controlled deadline")]
++        row = dict(id=1, operation="read", status="error", error="controlled deadline",
++                   cache_probe=dict(protocol=runtime.SOAK_READ_PROTOCOL, server_pid=1001, requests=calls))
++        retained = runtime.terminal_operation_metadata(row)
++        self.assertEqual(len(retained["cache_probe"]["requests"]), 2)
++        self.assertEqual([c["response_omitted"] for c in retained["cache_probe"]["requests"]], [True, False])
++        self.assertEqual(retained["cache_probe"]["requests"][1]["error"], "controlled deadline")
++        plain = dict(id=3, operation="build", status="success", response={"large": "body"}, finished_ns=8)
++        self.assertEqual(runtime.terminal_operation_metadata(plain),
++                         dict(id=3, operation="build", status="success", finished_ns=8))
++        self.assertIn("response", plain)
++
++
++if __name__ == "__main__": unittest.main()

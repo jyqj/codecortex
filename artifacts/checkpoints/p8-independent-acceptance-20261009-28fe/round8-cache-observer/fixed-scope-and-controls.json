@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "kind": "author_candidate_scope_and_validation",
+  "base": "d381f413bee3606bdc7410a73be855a0aab4aabb",
+  "frozen_v1_preserved": true,
+  "changed_from_v1": [
+    "scripts/p8_runtime.py",
+    "scripts/tests/test_p8_runtime_cache.py"
+  ],
+  "v1_cache_functions_and_classes_ast_retained": true,
+  "added_cache_tests": 2,
+  "original_runtime_tests": 31,
+  "author_controls": {
+    "passed": 46,
+    "execution_receipt": "validation-fixed/receipt.json",
+    "receipt_sha256": "28c75a3b69253164df305a960b44009207c719f72a681f2179e4004161b0ab5a",
+    "logs": [
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime_cache.py",
+          "-v"
+        ],
+        "cwd": "/workspace/scratch/28fef0db5e01/pr-audit/cache-observer-candidate/candidate-fixed",
+        "exit_code": 0,
+        "elapsed_seconds": 0.3054830989858601,
+        "log": "00.log",
+        "log_bytes": 2923,
+        "log_sha256": "1540aec672672c695cf978ad5771393201cc5a0137ab88e4a6a0ff2655c4957e"
+      },
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime.py",
+          "-v"
+        ],
+        "cwd": "/workspace/scratch/28fef0db5e01/pr-audit/cache-observer-candidate/candidate-fixed",
+        "exit_code": 0,
+        "elapsed_seconds": 15.773759502000757,
+        "log": "01.log",
+        "log_bytes": 4671,
+        "log_sha256": "8b0b25d678be69306985d2a9767c307622d251d91af2f2c37a13f7889321424c"
+      }
+    ]
+  },
+  "independent_reviewer": "runtime_review",
+  "formal_soak": false,
+  "certifies_original_todo": false,
+  "remaining_original_todos": 29,
+  "scope": "Controller integration and metadata-only terminal sidecar correction; normal raw and M4 ownership/cleanup rules retained."
+}

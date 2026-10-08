@@ -1,0 +1,22 @@
+{
+  "conclusion": "blocked_pending_minimal_raw_retention_body_budget_fix",
+  "runtime_sha256": "b794592a4e37bf51e812c77d39a2b0bfda82c4667176512bf38c791493836e1b",
+  "supersedes": "initial-integration-review-superseded.json",
+  "finding": {
+    "severity": "P2",
+    "path": "scripts/p8_runtime.py",
+    "line": 545,
+    "description": "record_operation excludes only top-level response. Newly added cache_probe.requests contains four complete response bodies, so raw retention failure moves these bodies into an uncapped terminal metadata sidecar.",
+    "reproduction": "retention-budget-before/result.json",
+    "raw_limit_and_actual_bytes": 1111,
+    "sidecar_bytes": 10604,
+    "nested_body_bytes": 3315,
+    "body_count": 4,
+    "failure_exit_and_statistics_scope_remain_correct": true
+  },
+  "required_fix": "Project only sidecar request metadata with an explicit omitted-response marker; keep normal raw and in-memory original response objects unchanged; preserve non-success status, all actual offered terminals, and no statistics on incomplete raw.",
+  "implementation_owner": "/root/pr_audit",
+  "independent_reviewer": "/root/runtime_review",
+  "task_complete": false,
+  "original_remaining": 29
+}

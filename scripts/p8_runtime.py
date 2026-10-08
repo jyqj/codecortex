@@ -279,16 +279,30 @@ def run(args):
     write_json(out / "plan.json", plan)
     raw = Raw(out / "raw.jsonl")
     project, full = out / "project", out / "fresh-full"
-    rows, resource_rows, failures, sampler_errors = [], [], [], []
+    rows, resource_rows, failures, sampler_errors, terminal_retention_failures = [], [], [], [], []
     row_lock, write_lock = threading.Lock(), threading.Lock()
     active = dict(read=0, build=0, maximum=0, read_build_overlap=False)
     mutation_sequence = [0]
     stop = threading.Event()
     cancel_work = threading.Event()
-    product, sampler = None, None
+    product, sampler, work_cleanup = None, None, None
+    futures = {}
+    rejected_submissions = set()
     begun = time.monotonic_ns()
     report = dict(schema_version=1, status="running", exit_code=2, task_complete=False)
     def elapsed(): return time.monotonic_ns() - begun
+    def record_operation(row):
+        with row_lock: rows.append(row)
+        try:
+            raw.emit("operation", **row)
+        except Exception as error:
+            # A full/broken raw sink must not prevent owned work from stopping.
+            # Retain the missing terminal metadata separately; never relabel it
+            # as a complete original raw stream or feed it to the scorer.
+            missing = {key: value for key, value in row.items() if key != "response"}
+            missing["raw_retention_error"] = f"{type(error).__name__}: {error}"
+            with row_lock: terminal_retention_failures.append(missing)
+            raise
     try:
         make_fixture(project, args.files)
         product = Product(identity, project, out / "product", out / "semantic-cache")
@@ -330,7 +344,7 @@ def run(args):
                        started_ns=elapsed(), status="error")
             held_write = False
             try:
-                if cancel_work.is_set(): raise CancelledError("drain deadline exceeded")
+                if cancel_work.is_set(): raise CancelledError("owned work canceled before start")
                 if kind == "build":
                     while not write_lock.acquire(timeout=.1):
                         if cancel_work.is_set(): raise CancelledError("waiting write canceled")
@@ -364,11 +378,19 @@ def run(args):
             finally:
                 row["finished_ns"] = elapsed()
                 if held_write: write_lock.release()
-                with row_lock: rows.append(row)
-                raw.emit("operation", **row)
-                slots.release()
-        futures = {}
+                try:
+                    record_operation(row)
+                finally:
+                    slots.release()
+        def admitted_operation(number, scheduled, offered, admission):
+            # submit() can fail after enqueueing its internal work item. Until
+            # the caller owns the returned future, that item must not mutate
+            # source, emit a terminal row or release the caller's slot.
+            admission["ready"].wait()
+            if admission["accepted"]:
+                return operation(number, scheduled, offered)
         pool = ThreadPoolExecutor(max_workers=args.concurrency)
+        drain_deadline = False
         try:
             for number in range(args.operations):
                 tick = number if args.profile == "soak" else number // args.concurrency * args.concurrency
@@ -380,35 +402,74 @@ def run(args):
                     row = dict(id=number, operation="build" if number % 3 == 0 else "read",
                                scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
                                status="queue_rejected")
-                    rows.append(row)
-                    raw.emit("operation", **row)
+                    record_operation(row)
                     continue
-                future = pool.submit(operation, number, scheduled, offered)
-                futures[future] = (number, scheduled, offered)
+                admission = dict(ready=threading.Event(), accepted=False)
+                try:
+                    future = pool.submit(admitted_operation, number, scheduled, offered, admission)
+                    futures[future] = (number, scheduled, offered)
+                    admission["accepted"] = True
+                except (Exception, KeyboardInterrupt) as error:
+                    admission["accepted"] = False
+                    rejected_submissions.add(number)
+                    row = dict(id=number, operation="build" if number % 3 == 0 else "read",
+                               scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
+                               status="error", reason="submission_error",
+                               error=f"{type(error).__name__}: {error}")
+                    try:
+                        record_operation(row)
+                    except Exception:
+                        # record_operation kept the missing terminal metadata;
+                        # preserve the original submission/cancellation cause.
+                        pass
+                    finally:
+                        slots.release()
+                    raise
+                finally:
+                    admission["ready"].set()
             done, pending = wait(futures, timeout=180)
             if pending:
-                cancel_work.set()
-                for future in pending:
-                    if future.cancel():
-                        number, scheduled, offered = futures[future]
-                        row = dict(id=number, operation="build" if number % 3 == 0 else "read",
-                                   scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
-                                   status="canceled", reason="drain_deadline_before_start")
-                        with row_lock: rows.append(row)
-                        raw.emit("operation", **row)
-                        slots.release()
-                if product.process.poll() is None: product.process.kill()
-                # A live request has a 60-second RPC deadline. Canceling queued
-                # futures prevents a second unbounded queue drain in __exit__.
-                _, still_running = wait([f for f in pending if not f.cancelled()], timeout=70)
-                raw.emit("drain_deadline", pending_at_deadline=len(pending),
-                         canceled=sum(f.cancelled() for f in pending),
-                         still_running=len(still_running), cleanup_bound_seconds=70)
-                require(not still_running, "owned requests did not stop after kill and RPC deadline")
+                drain_deadline = True
                 raise RuntimeError("owned work failed to drain in 180 seconds; queued work canceled")
             for future in done: future.result()
         finally:
-            pool.shutdown(wait=False, cancel_futures=True)
+            # This also runs for an offer/journal/submission failure, before
+            # product/log cleanup or sealing. Waiting writers must not mutate
+            # the fixture after an exceptional scheduler exit.
+            cancel_work.set()
+            pending = [future for future in futures if not future.done()]
+            try:
+                if pending:
+                    reason = "drain_deadline_before_start" if drain_deadline else "runner_exception_before_start"
+                    work_cleanup = dict(reason=reason, pending_at_deadline=len(pending), canceled=0,
+                                        still_running=None, cleanup_bound_seconds=70, retention_errors=[])
+                    for future in pending:
+                        if future.cancel():
+                            number, scheduled, offered = futures[future]
+                            work_cleanup["canceled"] += 1
+                            if number in rejected_submissions:
+                                continue  # Its terminal row and slot are already accounted for.
+                            row = dict(id=number, operation="build" if number % 3 == 0 else "read",
+                                       scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
+                                       status="canceled", reason=reason)
+                            try:
+                                record_operation(row)
+                            except Exception as error:
+                                work_cleanup["retention_errors"].append(str(error))
+                            finally:
+                                slots.release()
+                    if product.process.poll() is None: product.process.kill()
+                    # Preserve the original post-kill bound without invoking
+                    # an executor's implicit unbounded queue drain.
+                    _, still_running = wait([f for f in pending if not f.cancelled()], timeout=70)
+                    work_cleanup["still_running"] = len(still_running)
+                    try:
+                        raw.emit("drain_deadline" if drain_deadline else "work_cleanup", **work_cleanup)
+                    except Exception as error:
+                        work_cleanup["retention_errors"].append(str(error))
+                    require(not still_running, "owned requests did not stop after kill and RPC deadline")
+            finally:
+                pool.shutdown(wait=False, cancel_futures=True)
         observed_span = time.monotonic_ns() - offer_start
         observed_end = elapsed()
         stop.set()
@@ -438,7 +499,12 @@ def run(args):
             raw.emit("oracle_process", argv=command, exit_code=result.returncode, stdout=result.stdout, stderr=result.stderr)
             require(digest(oracle) == plan["oracle_sha256"] == build_receipt["oracle_sha256"],
                     "oracle executable changed during observation")
-            require(result.returncode == 0, "complete no-repair endpoint oracle failed")
+            require(result.returncode in (0, 1), "complete no-repair endpoint oracle could not complete")
+            if result.returncode == 1:
+                # The oracle completed and found unequal persisted facts. Keep
+                # that product gate failure distinct from an invalid run, and
+                # still replay every original workload outcome and latency.
+                failures.append("complete no-repair endpoint oracle failed")
         finally:
             comparison_product.close()
         product.close()
@@ -478,9 +544,11 @@ def run(args):
                       parity_sha256=digest(out / "parity.json"), product_sha256=digest(binary),
                       oracle_sha256=digest(oracle), semantic_backfill="not_run_in_default_product_profile",
                       release_approval=False)
-    except Exception as error:
+    except (Exception, KeyboardInterrupt) as error:
         report.update(status="failed", exit_code=2, error=f"{type(error).__name__}: {error}",
                       offered_terminal_rows=len(rows), failures=failures)
+        if isinstance(error, KeyboardInterrupt):
+            report["interrupted"] = True
     finally:
         stop.set()
         if sampler is not None:
@@ -491,6 +559,15 @@ def run(args):
             except Exception as error:
                 report.update(status="failed", exit_code=2, cleanup_error=str(error))
         raw.close()
+        unfinished = sum(not future.done() for future in futures)
+        if work_cleanup is not None:
+            report["work_cleanup"] = work_cleanup
+        if terminal_retention_failures:
+            write_json(out / "terminal-retention-failures.json", terminal_retention_failures)
+            report["terminal_retention_failures"] = "terminal-retention-failures.json"
+        if unfinished:
+            report.update(status="failed", exit_code=2, unfinished_work=unfinished,
+                          artifact_seal_error="owned workload still running; no completed archive seal")
         try:
             final_identity = verify_receipt(root, receipt_path, binaries)
             require(final_identity == identity["build_identity"],
@@ -503,11 +580,12 @@ def run(args):
                           final_build_verification_error=f"{type(error).__name__}: {error}")
         report["raw_sha256"] = digest(out / "raw.jsonl")
         report["plan_sha256"] = digest(out / "plan.json")
-        report["artifact_seal"] = "seal.json"
+        report["artifact_seal"] = None if unfinished else "seal.json"
         report["elapsed_ns"] = elapsed()
         write_json(out / "report.json", report)
-        seal_output(out)
-        verify_output(out)
+        if not unfinished:
+            seal_output(out)
+            verify_output(out)
     return report
 
 

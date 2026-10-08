@@ -168,7 +168,7 @@ def cargo_config_identity(root, env):
             for path in dict.fromkeys(candidates) if path.is_file()]
 
 
-def cargo_artifact(log, root, target, package):
+def cargo_artifact(log, root, target, package, *, local_files=True):
     messages = [json.loads(line) for line in Path(log).read_text().splitlines() if line.strip()]
     if not any(row.get("reason") == "build-finished" and row.get("success") is True
                for row in messages):
@@ -185,22 +185,29 @@ def cargo_artifact(log, root, target, package):
         raise ValueError("Cargo artifact features differ from the requested package")
     if artifact.get("fresh") is not False:
         raise ValueError("fresh/warm Cargo artifacts cannot prove a cold build")
-    if Path(artifact.get("manifest_path", "")).resolve() != root / "crates/cc-server/Cargo.toml":
+    manifest = Path(artifact.get("manifest_path", ""))
+    if (manifest.resolve() if local_files else manifest) != root / "crates/cc-server/Cargo.toml":
         raise ValueError("Cargo artifact is not bound to the selected product manifest")
     executable = Path(artifact["executable"])
-    if (target.is_symlink() or target.resolve() != target
-            or executable.resolve(strict=True) != executable
-            or not executable.resolve(strict=True).is_relative_to(target)):
+    if (not executable.is_absolute() or ".." in executable.parts
+            or not executable.is_relative_to(target)):
         raise ValueError("Cargo executable escaped the new target directory")
-    if not executable.is_file() or executable.stat().st_size == 0:
-        raise ValueError("Cargo executable is empty or absent")
+    if local_files:
+        if (target.is_symlink() or target.resolve() != target
+                or executable.resolve(strict=True) != executable):
+            raise ValueError("Cargo executable escaped the new target directory")
+        if not executable.is_file() or executable.stat().st_size == 0:
+            raise ValueError("Cargo executable is empty or absent")
     return artifact
 
 
-def validate_cell(receipt_path):
-    """Strict local replay: changed/missing source, compiler, logs or binary fail."""
-    receipt_path = Path(receipt_path).resolve(strict=True)
-    record = json.loads(receipt_path.read_text())
+def validate_build_contract(record, evidence_root, original_receipt):
+    """Replay the same recorded build contract locally and after CI export.
+
+    Original compiler/target paths are checked as metadata here. They need not
+    exist on the collection host; live byte checks remain in validate_cell,
+    while collect_cells checks the retained source manifest and binary.
+    """
     if record.get("schema_version") != 1 or record.get("status") != "passed":
         raise ValueError("a passed v1 cold-build receipt is required")
     cell = record["cell"]
@@ -210,25 +217,31 @@ def validate_cell(receipt_path):
         raise ValueError("a failed/stopped build cannot pass")
     if record.get("target_initially_absent") is not True:
         raise ValueError("a new target directory is required")
+    original_receipt = Path(original_receipt)
+    if (not original_receipt.is_absolute() or ".." in original_receipt.parts
+            or original_receipt.name != "receipt.json"):
+        raise ValueError("original cell receipt must have an absolute owned path")
     command = record["command"]
+    if not isinstance(command, list) or not command or not all(isinstance(value, str) for value in command):
+        raise ValueError("a recorded Cargo argument vector is required")
     for argument in ("--locked", "--offline", "--no-default-features", "--target-dir", "--target"):
         if argument not in command:
             raise ValueError(f"missing required build argument: {argument}")
+    for argument in ("--target-dir", "--target", "--features"):
+        if argument in command and (command.count(argument) != 1 or command.index(argument) + 1 >= len(command)):
+            raise ValueError(f"ambiguous or incomplete build argument: {argument}")
     root = Path(record["source_before"]["source_root"])
-    target = receipt_path.parent / "target"
+    if not root.is_absolute() or ".." in root.parts:
+        raise ValueError("recorded source root must be an absolute path")
+    if record["source_before"] != record["source_after"]:
+        raise ValueError("source changed before, during or after the build")
+    target = original_receipt.parent / "target"
     if command[command.index("--target-dir") + 1] != str(target):
         raise ValueError("command target directory differs from receipt ownership")
     expected_features = ["semantic"] if cell["package"] == "semantic" else []
     actual_features = [command[command.index("--features") + 1]] if "--features" in command else []
     if expected_features != actual_features:
         raise ValueError("command features differ from the matrix cell")
-    identity, manifest = source_identity(root, record["source_before"]["source_commit"])
-    if identity != record["source_before"] or identity != record["source_after"]:
-        raise ValueError("source changed before, during or after the build")
-    if digest(receipt_path.parent / "source-inputs.json") != identity["manifest_sha256"]:
-        raise ValueError("source manifest bytes changed")
-    if manifest != json.loads((receipt_path.parent / "source-inputs.json").read_text()):
-        raise ValueError("source manifest does not enumerate the verified source")
     tools = record["toolchain"]
     if tools != record["toolchain_after"]:
         raise ValueError("compiler identity changed during the build")
@@ -245,19 +258,16 @@ def validate_cell(receipt_path):
     if record["compiler_environment"] != dict(RUSTC=tools["rustc"]["path"], RUSTC_WRAPPER="", RUSTC_WORKSPACE_WRAPPER=""):
         raise ValueError("Cargo compiler invocation is not explicitly bound")
     for name in ("cargo", "rustc"):
-        if digest(tools[name]["path"]) != tools[name]["sha256"]:
-            raise ValueError(f"{name} bytes changed")
-    for name, expected in record["logs_sha256"].items():
-        if name not in ("cargo-build.jsonl", "cargo-stderr.log") or digest(receipt_path.parent / name) != expected:
-            raise ValueError("build log digest mismatch")
+        if not isinstance(tools[name].get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", tools[name]["sha256"]):
+            raise ValueError(f"{name} byte identity is missing")
     if set(record["logs_sha256"]) != {"cargo-build.jsonl", "cargo-stderr.log"}:
         raise ValueError("both Cargo logs must be bound")
+    for name, expected in record["logs_sha256"].items():
+        if digest(evidence_root / name) != expected:
+            raise ValueError("build log digest mismatch")
     if record["cargo_configs"] != record["cargo_configs_after"]:
         raise ValueError("Cargo configuration changed during the build")
-    for config in record["cargo_configs"]:
-        if digest(config["path"]) != config["sha256"]:
-            raise ValueError("Cargo configuration bytes changed")
-    artifact = cargo_artifact(receipt_path.parent / "cargo-build.jsonl", root, target, cell["package"])
+    artifact = cargo_artifact(evidence_root / "cargo-build.jsonl", root, target, cell["package"], local_files=False)
     profile = record["profile"]
     if profile not in ("dev", "release") or ("--release" in command) != (profile == "release"):
         raise ValueError("command profile differs from the receipt")
@@ -269,7 +279,32 @@ def validate_cell(receipt_path):
     expected_binary = target / tools["host"] / ("release" if profile == "release" else "debug") / "codecortex"
     if artifact["executable"] != str(expected_binary):
         raise ValueError("Cargo executable path does not match the selected target/profile")
-    if artifact != record["cargo_artifact"] or digest(artifact["executable"]) != record["binary_sha256"]:
+    if artifact != record["cargo_artifact"]:
+        raise ValueError("Cargo artifact or binary digest changed")
+    return artifact
+
+
+def validate_cell(receipt_path):
+    """Strict local replay: changed/missing source, compiler, logs or binary fail."""
+    receipt_path = Path(receipt_path).resolve(strict=True)
+    record = json.loads(receipt_path.read_text())
+    artifact = validate_build_contract(record, receipt_path.parent, receipt_path)
+    root = Path(record["source_before"]["source_root"])
+    identity, manifest = source_identity(root, record["source_before"]["source_commit"])
+    if identity != record["source_before"] or identity != record["source_after"]:
+        raise ValueError("source changed before, during or after the build")
+    if digest(receipt_path.parent / "source-inputs.json") != identity["manifest_sha256"]:
+        raise ValueError("source manifest bytes changed")
+    if manifest != json.loads((receipt_path.parent / "source-inputs.json").read_text()):
+        raise ValueError("source manifest does not enumerate the verified source")
+    for name in ("cargo", "rustc"):
+        if digest(record["toolchain"][name]["path"]) != record["toolchain"][name]["sha256"]:
+            raise ValueError(f"{name} bytes changed")
+    for config in record["cargo_configs"]:
+        if digest(config["path"]) != config["sha256"]:
+            raise ValueError("Cargo configuration bytes changed")
+    cargo_artifact(receipt_path.parent / "cargo-build.jsonl", root, receipt_path.parent / "target", record["cell"]["package"])
+    if digest(artifact["executable"]) != record["binary_sha256"]:
         raise ValueError("Cargo artifact or binary digest changed")
     if record.get("stdio_smoke") is not None:
         validate_smoke(receipt_path.parent, record)
@@ -371,10 +406,8 @@ def validate_smoke(output, record):
     return smoke
 
 
-def selected_cell(matrix_path, cell):
-    """Verify one CI selection without calling the other seven cells passed."""
-    matrix_path = Path(matrix_path).resolve(strict=True)
-    matrix = json.loads(matrix_path.read_text())
+def selected_inventory(matrix, cell):
+    """Check the complete original selection before following its receipt."""
     expected = {(os_name, tc, pkg) for os_name in PLATFORMS for tc in TOOLCHAINS for pkg in PACKAGES}
     rows = matrix.get("cells", [])
     keys = [(r["cell"]["platform"], r["cell"]["toolchain"], r["cell"]["package"]) for r in rows]
@@ -386,8 +419,16 @@ def selected_cell(matrix_path, cell):
     if any(row.get("status") != "not_run" or row.get("reason") not in {"platform_unavailable", "cell_not_selected"}
            for row in rows if row["cell"] != cell):
         raise ValueError("unselected matrix cells must remain explicitly not_run")
-    receipt = Path(selected[0]["receipt"]).resolve(strict=True)
-    if not receipt.is_relative_to(matrix_path.parent) or digest(receipt) != selected[0]["receipt_sha256"]:
+    return selected[0]
+
+
+def selected_cell(matrix_path, cell):
+    """Verify one CI selection without calling the other seven cells passed."""
+    matrix_path = Path(matrix_path).resolve(strict=True)
+    matrix = json.loads(matrix_path.read_text())
+    selected = selected_inventory(matrix, cell)
+    receipt = Path(selected["receipt"]).resolve(strict=True)
+    if not receipt.is_relative_to(matrix_path.parent) or digest(receipt) != selected["receipt_sha256"]:
         raise ValueError("selected receipt is outside its matrix or has changed")
     record = validate_cell(receipt)
     if record["cell"] != cell or matrix["source"] != record["source_before"]:
@@ -442,11 +483,16 @@ def collect_cells(directory, root, expected_commit):
             if digest(home / name) != expected_hash:
                 raise ValueError("platform bundle byte digest differs")
         record = json.loads((home / "receipt.json").read_text())
-        if (bundle.get("status") != "passed" or record.get("status") != "passed"
-                or record.get("cell") != cell or record.get("build_exit_code") != 0
-                or record.get("stop_reason") is not None or record.get("target_initially_absent") is not True
-                or record.get("source_before") != record.get("source_after")):
-            raise ValueError("platform bundle contains an unpassed or warm cell")
+        if (bundle.get("schema_version") != 1 or bundle.get("status") != "passed"
+                or bundle.get("live_strict_receipt_and_stdio_replay") is not True
+                or record.get("cell") != cell):
+            raise ValueError("platform bundle is not an exported, verified cell")
+        matrix = json.loads((home / "matrix.json").read_text())
+        selected = selected_inventory(matrix, cell)
+        if (digest(home / "receipt.json") != selected["receipt_sha256"]
+                or matrix["source"] != record["source_before"]):
+            raise ValueError("exported selection/source does not match its receipt")
+        validate_build_contract(record, home, selected["receipt"])
         identity = dict(record["source_before"])
         identity["source_root"] = source["source_root"]
         if identity != source or json.loads((home / "source-inputs.json").read_text()) != manifest:
@@ -457,30 +503,10 @@ def collect_cells(directory, root, expected_commit):
             raise ValueError("platform receipt hash differs")
         if digest(home / "codecortex") != record["binary_sha256"] or record["binary_sha256"] != bundle["binary_sha256"]:
             raise ValueError("platform binary hash differs")
-        command = record["command"]
-        if not {"--locked", "--offline", "--no-default-features", "--target-dir", "--target"} <= set(command):
-            raise ValueError("platform command weakened cold-build requirements")
-        tools = record["toolchain"]
-        if tools != record["toolchain_after"] or tools["matrix_toolchain"] != cell["toolchain"]:
-            raise ValueError("platform toolchain binding differs")
-        release = tools["rustc_release"]
-        if ((cell["toolchain"] == "1.95" and release != "1.95.0")
-                or (cell["toolchain"] == "stable" and not re.fullmatch(r"\d+\.\d+\.\d+", release))
-                or ("apple-darwin" if cell["platform"] == "macos" else "linux") not in tools["host"]):
-            raise ValueError("platform compiler does not match its matrix cell")
-        rows = [json.loads(line) for line in (home / "cargo-build.jsonl").read_text().splitlines() if line.strip()]
-        artifacts = [row for row in rows if row.get("reason") == "compiler-artifact"
-                     and row.get("target", {}).get("name") == "codecortex" and row.get("executable")]
-        if (len(artifacts) != 1 or artifacts[0] != record["cargo_artifact"]
-                or artifacts[0].get("fresh") is not False
-                or artifacts[0].get("target", {}).get("kind") != ["bin"]
-                or sorted(artifacts[0].get("features", [])) != ([] if cell["package"] == "default" else ["semantic"])
-                or not any(row.get("reason") == "build-finished" and row.get("success") is True for row in rows)):
-            raise ValueError("platform Cargo artifact is absent, warm or feature-mismatched")
-        if any(digest(home / name) != expected_hash for name, expected_hash in record["logs_sha256"].items()):
-            raise ValueError("platform Cargo log hash differs")
+        if (home / "codecortex").stat().st_size == 0:
+            raise ValueError("platform binary is empty")
         validate_smoke(home, record)
-        found[key] = dict(cell=cell, status="passed", rustc_release=release,
+        found[key] = dict(cell=cell, status="passed", rustc_release=record["toolchain"]["rustc_release"],
                           bundle_sha256=digest(bundle_path), binary_sha256=record["binary_sha256"],
                           wall_seconds=record["wall_seconds"])
     if set(found) != expected:
@@ -602,10 +628,22 @@ def main(argv=None):
             if not args.expected_commit or not args.output_dir:
                 parser.error("collect requires --expected-commit and --output-dir")
             output = new_directory(args.output_dir)
-            record = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
-            write_json(output / "matrix.json", record)
-            print(json.dumps(dict(status=record["status"], counts=record["counts"])))
-            return 0
+            record = dict(schema_version=1, task="P8-012", status="invalid", exit_code=2,
+                          expected_commit=args.expected_commit,
+                          input_directory=str(args.collect_cells.absolute()),
+                          runner_sha256=digest(__file__),
+                          scope="platform evidence replay; failed or incomplete collection cannot certify any matrix")
+            try:
+                collected = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
+                record.update(collected, exit_code=0)
+            except BaseException as error:
+                if isinstance(error, (KeyboardInterrupt, SystemExit)):
+                    record.update(status="cancelled", exit_code=3)
+                record["error"] = f"{type(error).__name__}: {error}"
+            finally:
+                write_json(output / "matrix.json", record)
+            print(json.dumps({key: record[key] for key in ("status", "exit_code", "counts", "error") if key in record}))
+            return record["exit_code"]
         if args.verify:
             record = validate_cell(args.verify)
             print(json.dumps(dict(status="verified", cell=record["cell"])))

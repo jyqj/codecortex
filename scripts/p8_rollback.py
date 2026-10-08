@@ -8,6 +8,7 @@ reported separately from this executable, offline local drill.
 """
 import argparse
 from contextlib import closing
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -32,6 +33,41 @@ FIXTURE_FILES = {
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def product_manifest_hashes(path, source):
+    """Read either producer's bound manifest without discarding duplicate paths."""
+    raw = Path(path).read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == source.get("manifest_sha256"),
+            "product source manifest digest mismatch")
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, "duplicate key in product source manifest")
+            result[key] = value
+        return result
+
+    manifest = json.loads(raw, object_pairs_hook=unique_object)
+    if isinstance(manifest, dict):
+        entries = list(manifest.items())
+    else:
+        require(isinstance(manifest, list) and all(isinstance(row, dict) for row in manifest),
+                "product source manifest must be a digest map or cold-build entry list")
+        entries = [(row.get("path"), row.get("sha256")) for row in manifest]
+    hashes = {}
+    for name, value in entries:
+        require(isinstance(name, str) and "\0" not in name and Path(name).parts
+                and not Path(name).is_absolute()
+                and ".." not in Path(name).parts and Path(name).as_posix() == name,
+                "invalid path in product source manifest")
+        require(name not in hashes, "duplicate path in product source manifest")
+        require(isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value),
+                "invalid digest in product source manifest")
+        hashes[name] = value
+    require(type(source.get("input_count")) is int and len(hashes) == source["input_count"],
+            "product source manifest count mismatch")
+    return hashes
 
 
 def binary_identity(binary, receipt_path, package):
@@ -69,9 +105,7 @@ def binary_identity(binary, receipt_path, package):
     require(isinstance(manifest_name, str) and Path(manifest_name).name == manifest_name,
             "source manifest must be a sibling filename")
     manifest = receipt_path.parent / manifest_name
-    require(digest(manifest) == before.get("manifest_sha256"), "product source manifest digest mismatch")
-    require(len(json.loads(manifest.read_text())) == before.get("input_count"),
-            "product source manifest count mismatch")
+    product_manifest_hashes(manifest, before)
     return dict(binary_path=str(binary), binary_sha256=digest(binary), package_kind=package,
                 receipt_path=str(receipt_path), receipt_sha256=digest(receipt_path),
                 source=before, source_manifest_path=str(manifest),
@@ -285,12 +319,15 @@ def exercise(identity, project, output, cache, wrapper, full=True):
 def product_schema_version(identity):
     """Read the schema contract from bytes already bound by the build manifest."""
     relative = "crates/cc-db/src/index_migrate.rs"
-    manifest = json.loads(Path(identity["source_manifest_path"]).read_text())
+    manifest = product_manifest_hashes(identity["source_manifest_path"], identity["source"])
     root = Path(identity["source"]["source_root"]).resolve(strict=True)
     path = root / relative
-    require(path.is_file() and not path.is_symlink()
-            and digest(path) == manifest.get(relative), "schema source differs from the bound product manifest")
-    matches = re.findall(r"^pub const CURRENT_SCHEMA_VERSION: u32 = ([0-9]+);$", path.read_text(), re.MULTILINE)
+    require(path.is_file() and path.resolve() == path,
+            "schema source differs from the bound product manifest")
+    raw = path.read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == manifest.get(relative),
+            "schema source differs from the bound product manifest")
+    matches = re.findall(r"^pub const CURRENT_SCHEMA_VERSION: u32 = ([0-9]+);$", raw.decode(), re.MULTILINE)
     require(len(matches) == 1, "one exact production schema version is required")
     return int(matches[0])
 

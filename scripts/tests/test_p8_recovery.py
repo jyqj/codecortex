@@ -13,6 +13,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import p8_recovery as recovery
+import p8_rollback as rollback
 from p8_rollback import Product
 
 
@@ -297,6 +298,109 @@ class RecoveryControls(unittest.TestCase):
         self.assertEqual(report["status"], "cancelled")
         self.assertEqual(report["counts"]["not_run"], 6)
         second.assert_not_called()
+
+
+class RollbackManifestControls(unittest.TestCase):
+    """Use the actual cold-receipt producer with its explicit synthetic compiler."""
+
+    def product(self):
+        from test_p8_platform import PlatformControls
+        fixture = PlatformControls()
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        schema = fixture.root / "crates/cc-db/src/index_migrate.rs"
+        schema.parent.mkdir(parents=True)
+        schema.write_text("pub const CURRENT_SCHEMA_VERSION: u32 = 25;\n")
+        fixture.git("add", ".")
+        fixture.git("commit", "-qm", "synthetic schema contract")
+        receipt, record = fixture.build_receipt()
+        binary = record["cargo_artifact"]["executable"]
+        return fixture, schema, receipt, record, binary
+
+    def rewrite_manifest(self, receipt, record, value):
+        path = receipt.parent / record.get("source_manifest", "source-inputs.json")
+        rollback.write_json(path, value)
+        record["source_before"]["manifest_sha256"] = rollback.digest(path)
+        record["source_before"]["input_count"] = len(value)
+        record["source_after"] = dict(record["source_before"])
+        rollback.write_json(receipt, record)
+        return path
+
+    def test_both_original_manifest_formats_expose_the_bound_schema(self):
+        _, _, receipt, record, binary = self.product()
+        identity = rollback.binary_identity(binary, receipt, "default")
+        path = Path(identity["source_manifest_path"])
+        entries = json.loads(path.read_text())
+        self.assertIsInstance(entries, list)
+        self.assertEqual(rollback.product_schema_version(identity), 25)
+        self.rewrite_manifest(receipt, record, {row["path"]: row["sha256"] for row in entries})
+        historical = rollback.binary_identity(binary, receipt, "default")
+        self.assertEqual(rollback.product_schema_version(historical), 25)
+
+    def test_duplicate_paths_or_invalid_manifest_shapes_are_rejected(self):
+        _, _, receipt, record, binary = self.product()
+        entries = json.loads((receipt.parent / record.get("source_manifest", "source-inputs.json")).read_text())
+        for invalid, error in ((entries + [entries[0]], "duplicate path"),
+                               ([{"path": "Cargo.toml"}], "invalid digest"),
+                               ({".": "a" * 64}, "invalid path"),
+                               ({"bad\0path": "a" * 64}, "invalid path"),
+                               (["Cargo.toml"], "digest map or cold-build entry list")):
+            with self.subTest(error=error):
+                self.rewrite_manifest(receipt, record, invalid)
+                with self.assertRaisesRegex(ValueError, error):
+                    rollback.binary_identity(binary, receipt, "default")
+
+    def test_schema_read_rechecks_manifest_and_source_after_identity(self):
+        _, schema, receipt, _, binary = self.product()
+        identity = rollback.binary_identity(binary, receipt, "default")
+        path = Path(identity["source_manifest_path"])
+        original = path.read_bytes()
+        path.write_bytes(original + b" ")
+        with self.assertRaisesRegex(ValueError, "manifest digest mismatch"):
+            rollback.product_schema_version(identity)
+        path.write_bytes(original)
+        schema.write_text("pub const CURRENT_SCHEMA_VERSION: u32 = 26;\n")
+        with self.assertRaisesRegex(ValueError, "schema source differs"):
+            rollback.product_schema_version(identity)
+
+    def test_schema_version_is_parsed_from_the_same_bytes_as_its_digest(self):
+        _, schema, receipt, _, binary = self.product()
+        identity = rollback.binary_identity(binary, receipt, "default")
+        original_digest = rollback.digest
+        original_read = Path.read_bytes
+        replacement = "pub const CURRENT_SCHEMA_VERSION: u32 = 26;\n"
+
+        def replace_after_digest(path):
+            result = original_digest(path)
+            if Path(path) == schema:
+                schema.write_text(replacement)
+            return result
+
+        def replace_after_read(path):
+            result = original_read(path)
+            if path == schema:
+                schema.write_text(replacement)
+            return result
+
+        # The old two-read implementation parsed the unbound replacement (26).
+        # A single-byte-snapshot implementation always parses its bound 25.
+        with mock.patch.object(rollback, "digest", side_effect=replace_after_digest), \
+                mock.patch.object(Path, "read_bytes", replace_after_read):
+            self.assertEqual(rollback.product_schema_version(identity), 25)
+        self.assertEqual(schema.read_text(), replacement)
+
+    def test_duplicate_map_keys_and_wrong_counts_are_rejected(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        path = Path(temporary.name) / "manifest.json"
+        path.write_text('{"Cargo.toml":"' + "a" * 64 + '","Cargo.toml":"' + "b" * 64 + '"}')
+        source = dict(manifest_sha256=rollback.digest(path), input_count=1)
+        with self.assertRaisesRegex(ValueError, "duplicate key"):
+            rollback.product_manifest_hashes(path, source)
+        rollback.write_json(path, {"Cargo.toml": "a" * 64})
+        source.update(manifest_sha256=rollback.digest(path), input_count=2)
+        with self.assertRaisesRegex(ValueError, "count mismatch"):
+            rollback.product_manifest_hashes(path, source)
 
 
 if __name__ == "__main__":

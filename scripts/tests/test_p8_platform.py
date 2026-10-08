@@ -1,5 +1,6 @@
 """P8 platform/rollback contract controls; synthetic compiler is never product evidence."""
 import contextlib
+import copy
 import io
 import json
 import os
@@ -153,6 +154,24 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         cold.export_cell(matrix, cell, destination)
         return destination
 
+    def seal_bundle_inventory(self, destination):
+        """Rehash altered synthetic evidence so validators must inspect its contract."""
+        bundle = json.loads((destination / "bundle.json").read_text())
+        bundle["files"] = {p.relative_to(destination).as_posix(): cold.digest(p)
+                           for p in destination.rglob("*")
+                           if p.is_file() and p != destination / "bundle.json"}
+        bundle["receipt_sha256"] = cold.digest(destination / "receipt.json")
+        cold.write_json(destination / "bundle.json", bundle)
+
+    def reseal_exported_receipt(self, destination, record):
+        cold.write_json(destination / "receipt.json", record)
+        matrix = json.loads((destination / "matrix.json").read_text())
+        for row in matrix["cells"]:
+            if row["cell"] == record["cell"]:
+                row["receipt_sha256"] = cold.digest(destination / "receipt.json")
+        cold.write_json(destination / "matrix.json", matrix)
+        self.seal_bundle_inventory(destination)
+
     def test_selected_cell_requires_stdio_and_does_not_certify_other_seven(self):
         parent = cold.new_directory(self.base / "bundles")
         destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
@@ -175,6 +194,106 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         shutil.copytree(destination, parent / "duplicate")
         with self.assertRaisesRegex(ValueError, "duplicate"):
             cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_collector_replays_same_build_contract_after_consistent_resealing(self):
+        parent = cold.new_directory(self.base / "contract-bundles")
+        for os_name in cold.PLATFORMS:
+            for tc in cold.TOOLCHAINS:
+                for package in cold.PACKAGES:
+                    self.bundle(parent, dict(platform=os_name, toolchain=tc, package=package))
+        commit = self.git("rev-parse", "HEAD")
+        self.assertEqual(cold.collect_cells(parent, self.root, commit)["counts"]["passed"], 8)
+        destination = parent / "linux-1.95-default"
+        pristine = {p.relative_to(destination): p.read_bytes() for p in destination.rglob("*") if p.is_file()}
+        original = json.loads((destination / "receipt.json").read_text())
+        controls = (
+            ("profile", lambda r: r.update(profile="release"), "command profile"),
+            ("cargo", lambda r: r["command"].__setitem__(0, "wrong-cargo"), "selected Cargo/target"),
+            ("compiler environment", lambda r: r.update(compiler_environment={"RUSTC": "wrong-rustc"}), "explicitly bound"),
+            ("log inventory", lambda r: r.update(logs_sha256={}), "both Cargo logs"),
+            ("target ownership", lambda r: r["command"].__setitem__(r["command"].index("--target-dir") + 1,
+                                                                  "/not-the-owned-target"), "receipt ownership"),
+            ("compiler host", lambda r: r["command"].__setitem__(r["command"].index("--target") + 1,
+                                                               "aarch64-apple-darwin"), "selected Cargo/target"),
+            ("feature command", lambda r: r["command"].extend(["--features", "semantic"]), "command features"),
+            ("Cargo config drift", lambda r: r.update(cargo_configs_after=[{"path": "/changed"}]), "configuration changed"),
+            ("artifact profile", lambda r: r["cargo_artifact"]["profile"].update(opt_level="3"), "artifact profile"),
+            ("artifact manifest", lambda r: r["cargo_artifact"].update(manifest_path="/other/Cargo.toml"), "product manifest"),
+            ("artifact ownership", lambda r: r["cargo_artifact"].update(executable="/outside/codecortex"), "escaped"),
+        )
+        for name, mutate, expected in controls:
+            with self.subTest(control=name):
+                for relative, data in pristine.items():
+                    (destination / relative).write_bytes(data)
+                record = copy.deepcopy(original)
+                mutate(record)
+                if record["cargo_artifact"] != original["cargo_artifact"]:
+                    log = destination / "cargo-build.jsonl"
+                    rows = [json.loads(line) for line in log.read_text().splitlines()]
+                    rows[0] = record["cargo_artifact"]
+                    log.write_text("".join(json.dumps(row) + "\n" for row in rows))
+                    record["logs_sha256"]["cargo-build.jsonl"] = cold.digest(log)
+                self.reseal_exported_receipt(destination, record)
+                with self.assertRaisesRegex(ValueError, expected):
+                    cold.collect_cells(parent, self.root, commit)
+
+    def test_collector_does_not_require_original_target_or_compiler_paths(self):
+        import shutil
+        parent = cold.new_directory(self.base / "portable-bundles")
+        for os_name in cold.PLATFORMS:
+            for tc in cold.TOOLCHAINS:
+                for package in cold.PACKAGES:
+                    self.bundle(parent, dict(platform=os_name, toolchain=tc, package=package))
+        for path in self.base.iterdir():
+            if path.name.startswith(("bundle-build-", "toolchain-")):
+                shutil.rmtree(path)
+        result = cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+        self.assertEqual(result["counts"], dict(passed=8, failed=0, not_run=0))
+
+    def test_collector_requires_original_selected_cell_and_source(self):
+        parent = cold.new_directory(self.base / "selection-bundles")
+        destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
+        original = json.loads((destination / "matrix.json").read_text())
+        for name, mutate, expected in (
+            ("receipt", lambda m: next(row for row in m["cells"] if row["status"] == "passed").update(
+                receipt_sha256="0" * 64), "selection/source"),
+            ("source", lambda m: m["source"].update(source_commit="0" * 40), "selection/source"),
+            ("other cell", lambda m: next(row for row in m["cells"] if row["status"] == "not_run").update(
+                status="passed"), "unselected matrix cells"),
+        ):
+            with self.subTest(control=name):
+                matrix = copy.deepcopy(original)
+                mutate(matrix)
+                cold.write_json(destination / "matrix.json", matrix)
+                self.seal_bundle_inventory(destination)
+                with self.assertRaisesRegex(ValueError, expected):
+                    cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_failed_collection_retains_machine_readable_failure_and_input_bytes(self):
+        for malformed in (False, True):
+            with self.subTest(malformed=malformed):
+                parent = cold.new_directory(self.base / f"failed-input-{malformed}")
+                if malformed:
+                    (parent / "bundle.json").write_text("{invalid original JSON\n")
+                original = {p.name: p.read_bytes() for p in parent.iterdir()}
+                output = self.base / f"failed-output-{malformed}"
+                with contextlib.redirect_stdout(io.StringIO()):
+                    code = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                                      "--expected-commit", self.git("rev-parse", "HEAD"), "--output-dir", str(output)])
+                self.assertEqual(code, 2)
+                failure = json.loads((output / "matrix.json").read_text())
+                self.assertEqual((failure["status"], failure["exit_code"]), ("invalid", 2))
+                self.assertEqual(failure["expected_commit"], self.git("rev-parse", "HEAD"))
+                self.assertEqual(failure["input_directory"], str(parent))
+                self.assertIn("JSONDecodeError" if malformed else "received 0", failure["error"])
+                self.assertNotIn("counts", failure)
+                self.assertEqual({p.name: p.read_bytes() for p in parent.iterdir()}, original)
+                preserved = (output / "matrix.json").read_bytes()
+                with contextlib.redirect_stderr(io.StringIO()):
+                    second = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                                        "--expected-commit", self.git("rev-parse", "HEAD"), "--output-dir", str(output)])
+                self.assertEqual(second, 2)
+                self.assertEqual((output / "matrix.json").read_bytes(), preserved)
 
     def test_bundle_binary_mutation_and_unrequested_source_fail(self):
         parent = cold.new_directory(self.base / "mutated-bundle")
@@ -383,7 +502,8 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         path.write_text(f"pub const CURRENT_SCHEMA_VERSION: u32 = {version};\n")
         manifest = root / "source-inputs.json"
         cold.write_json(manifest, {"crates/cc-db/src/index_migrate.rs": cold.digest(path)})
-        return dict(source={"source_root": str(root), "source_commit": label},
+        return dict(source={"source_root": str(root), "source_commit": label,
+                            "manifest_sha256": cold.digest(manifest), "input_count": 1},
                     source_manifest_path=str(manifest))
 
     def test_actual_version_pair_requires_distinct_revisions_and_older_real_schema(self):

@@ -1,0 +1,769 @@
+{
+  "schema_version": 1,
+  "scope": "read_only_non_atomic_GitHub_snapshot_no_CI_rerun_no_remote_or_source_mutation",
+  "reviewer": "/root/pr_audit@28fef0db5e01",
+  "observed_start_utc": "2026-10-08 19:20:45 UTC",
+  "observed_end_utc": "2026-10-08 19:21:53 UTC",
+  "sources": {
+    "open_prs": "https://api.github.com/repos/jyqj/codecortex/pulls?state=open&per_page=100&sort=updated&direction=desc",
+    "pr159": "https://github.com/jyqj/codecortex/pull/159",
+    "pr160": "https://github.com/jyqj/codecortex/pull/160",
+    "current_workflows": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=f8ca8070592a1bc03cedc2df4e27e1382a3077a7&event=pull_request",
+    "scale_run": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37824742267",
+    "scale_jobs": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37824742267/jobs?filter=latest&per_page=100&page=1",
+    "ci_jobs": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580014/jobs",
+    "platform_jobs": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580050/jobs",
+    "runtime_jobs": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579995/jobs",
+    "backfill_job_log": "https://github.com/jyqj/codecortex/actions/runs/37829579995/job/113491126945"
+  },
+  "changes": {
+    "previous_open_count": 44,
+    "current_open_count": 45,
+    "added": [
+      160
+    ],
+    "removed": [],
+    "head_changes": [
+      {
+        "number": 159,
+        "previous": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+        "current": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7"
+      }
+    ],
+    "unchanged_historical_heads": 43
+  },
+  "pr159": {
+    "head": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "draft": true,
+    "state": "open",
+    "mergeable": true,
+    "updated_at": "2026-10-08T19:15:57Z",
+    "task_counts_from_body": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29
+    }
+  },
+  "pr160": {
+    "head": "bb9a96d71622458c39a143055360cc97f0d11d78",
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "draft": true,
+    "state": "open",
+    "updated_at": "2026-10-08T19:12:13Z",
+    "source_identities_from_body": {
+      "product": "7e4e4fefb8a5302b90579a41f4d334fe176aeb3f",
+      "review": "32674879181b5fd6e8117167eab38922a7f1187d",
+      "execution": "bb9a96d71622458c39a143055360cc97f0d11d78"
+    },
+    "declared_tasks": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "task_counts_from_body": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29
+    },
+    "ownership_note": "Overlaps active #159 work; this read-only audit does not claim its branch or change its task ownership."
+  },
+  "workflows": [
+    {
+      "id": 37829580024,
+      "name": "P8 original failure gates",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 3,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580024/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580024/logs",
+      "workflow_id": 378814666
+    },
+    {
+      "id": 37829580038,
+      "name": "P7 engineering regressions",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 35,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580038/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580038/logs",
+      "workflow_id": 377627814
+    },
+    {
+      "id": 37829580014,
+      "name": "CI",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_number": 327,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580014/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580014/logs",
+      "workflow_id": 284891610
+    },
+    {
+      "id": 37829579995,
+      "name": "P8 runtime observations",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 3,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579995/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579995/logs",
+      "workflow_id": 378814663
+    },
+    {
+      "id": 37829580050,
+      "name": "P8 platform cold builds",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_number": 3,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580050/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829580050/logs",
+      "workflow_id": 378814665
+    },
+    {
+      "id": 37829579972,
+      "name": "P7 closeout evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 22,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579972/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579972/logs",
+      "workflow_id": 378002355
+    },
+    {
+      "id": 37829579977,
+      "name": "P8 lifecycle and resource observations",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 3,
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579977/jobs",
+      "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37829579977/logs",
+      "workflow_id": 378814664
+    }
+  ],
+  "ci_jobs": [
+    {
+      "id": 113491127062,
+      "name": "msrv",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127163,
+      "name": "check",
+      "status": "in_progress",
+      "conclusion": null,
+      "active_or_failed_steps": [
+        {
+          "name": "Fixed resource driver harmless fixtures and TODO consistency",
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ]
+    },
+    {
+      "id": 113491127391,
+      "name": "security",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    }
+  ],
+  "platform_jobs": [
+    {
+      "id": 113491126784,
+      "name": "actual recovery and rollback matrix",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127278,
+      "name": "cold linux / 1.95 / default",
+      "status": "in_progress",
+      "conclusion": null,
+      "active_or_failed_steps": [
+        {
+          "name": "Fresh target build and real product stdio smoke",
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ]
+    },
+    {
+      "id": 113491127290,
+      "name": "cold macos / stable / semantic",
+      "status": "in_progress",
+      "conclusion": null,
+      "active_or_failed_steps": [
+        {
+          "name": "Fresh target build and real product stdio smoke",
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ]
+    },
+    {
+      "id": 113491127327,
+      "name": "cold macos / stable / default",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127362,
+      "name": "cold macos / 1.95 / semantic",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127405,
+      "name": "cold macos / 1.95 / default",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127464,
+      "name": "cold linux / 1.95 / semantic",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127467,
+      "name": "cold linux / stable / semantic",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127481,
+      "name": "cold linux / stable / default",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    }
+  ],
+  "runtime_jobs": [
+    {
+      "id": 113491126945,
+      "name": "fake_backfill",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127306,
+      "name": "mixed (8)",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127442,
+      "name": "soak",
+      "status": "in_progress",
+      "conclusion": null,
+      "active_or_failed_steps": [
+        {
+          "name": "One-hour actual stdio session with Git switches and catalog churn",
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ]
+    },
+    {
+      "id": 113491127478,
+      "name": "mixed (1)",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491127586,
+      "name": "mixed (16)",
+      "status": "completed",
+      "conclusion": "success",
+      "active_or_failed_steps": []
+    },
+    {
+      "id": 113491128368,
+      "name": "mixed (4)",
+      "status": "queued",
+      "conclusion": null
+    }
+  ],
+  "runtime_status_note": "The run API reports queued while individual job API already reports completed/running jobs. Both observations are preserved rather than flattening job state into queued.",
+  "backfill_log_observation": {
+    "job_id": 113491126945,
+    "result_at": "2026-10-08T19:16:08Z",
+    "status": "passed_observation",
+    "verification": "sealed_raw_verified",
+    "verified_observation_status": "passed_observation",
+    "sealed_files": 32,
+    "artifact_contents_downloaded": false,
+    "excerpt_original_spans": [
+      {
+        "first": 750,
+        "last": 794
+      }
+    ],
+    "acceptance_note": "This validates the observed job result, not complete TODO or current final source acceptance."
+  },
+  "original_scale": {
+    "id": 37824742267,
+    "head_sha": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+    "status": "in_progress",
+    "conclusion": null,
+    "run_attempt": 1,
+    "api_updated_at": "2026-10-08T18:36:44Z",
+    "total_jobs": 6,
+    "jobs": [
+      {
+        "id": 113474558647,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success",
+        "active_or_failed_steps": []
+      },
+      {
+        "id": 113477461294,
+        "name": "preflight (1000, 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "active_or_failed_steps": []
+      },
+      {
+        "id": 113477461300,
+        "name": "preflight (50000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_or_failed_steps": [
+          {
+            "name": "Execute all phases for this registered single-repetition capacity slice",
+            "status": "in_progress",
+            "conclusion": null
+          }
+        ]
+      },
+      {
+        "id": 113477461337,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_or_failed_steps": [
+          {
+            "name": "Execute all phases for this registered single-repetition capacity slice",
+            "status": "in_progress",
+            "conclusion": null
+          }
+        ]
+      },
+      {
+        "id": 113477461343,
+        "name": "preflight (5000, 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "active_or_failed_steps": []
+      },
+      {
+        "id": 113477461366,
+        "name": "preflight (10000, 0)",
+        "status": "completed",
+        "conclusion": "success",
+        "active_or_failed_steps": []
+      }
+    ],
+    "preflight_successes": 3,
+    "preflight_running": 2,
+    "remaining_145_shards_released": false
+  },
+  "open_pr_heads": [
+    {
+      "number": 159,
+      "head": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+      "draft": true,
+      "labels": [
+        "p8-scale-run"
+      ]
+    },
+    {
+      "number": 160,
+      "head": "bb9a96d71622458c39a143055360cc97f0d11d78",
+      "draft": true,
+      "labels": [
+        "p8-scale-run"
+      ]
+    },
+    {
+      "number": 3,
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix",
+        "needs-rebase"
+      ]
+    },
+    {
+      "number": 4,
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 62,
+      "head": "336b962ffe7cb5d144273cfc2f45b0526ecba8bc",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 64,
+      "head": "67f89aff2392ced113327cfe8f671cd153c7e0c8",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 65,
+      "head": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 68,
+      "head": "a739431b6595bb44e79130843e27e2cde2d34eb1",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 69,
+      "head": "0850acc4fdacde2609c56cf733b7776e5027ceff",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 70,
+      "head": "22353112f4125f6fac6541c4043cc174ed56550a",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 71,
+      "head": "24affebcaab1caa9acd08841233867c89931dbf3",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 72,
+      "head": "ed3b998731bca26d1682dd455e47530453e71caa",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 73,
+      "head": "a9941df988bad756b39be6cc7807d6708368f031",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 74,
+      "head": "e49f9ada5826b4206d2128f3bfb8d31603ff42fa",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 75,
+      "head": "c2026ebad0b6037f1c30b7d2b34055e211849b70",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 76,
+      "head": "ba79bcfc3f2bcc622297ef53b5de37ce205a5c89",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 78,
+      "head": "465e9e0bd435e2e30c08de8702f78a0d10c49c8e",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 79,
+      "head": "0c0ec9e8906493373faf800ca37b78c589f38324",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 80,
+      "head": "3aae8bf2a690213426af91427dc837fedbe50c83",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 82,
+      "head": "5aafcda4a5098c8407d9373eafc3185e59932550",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 83,
+      "head": "d6a41bbcf76b5dc15e4924e54c7375f673d714f7",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 86,
+      "head": "9213fef97c8bd32843eab6815227f7d78142ab80",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 87,
+      "head": "704c0fd0901c85c51eaaa265bfc1aab49ccb3341",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 90,
+      "head": "1bb86a6afaf64f8e922f0b71d42d5d6801567e52",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 91,
+      "head": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 95,
+      "head": "5d3d9e101198cebdfa1a959f74ad6ef5da4a064c",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 99,
+      "head": "b25723458a77edd2207ed1a52dceb0ea1009cb93",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 104,
+      "head": "06478892104347a846cdfdb81f843574e188634b",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 105,
+      "head": "7210cee93243621693418e6f26374557d9f30832",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 106,
+      "head": "b53c85e2822a42acf802e3df25266fca9b492253",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 108,
+      "head": "99973e7d6faf3809add4a12cd444f8e69f04d93c",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 109,
+      "head": "0c1e0b3a1b21620aa8f10abf4f48342b8f0458d8",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 112,
+      "head": "199558c754aae7f8d1dba0ee73256a2ed11a4230",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 114,
+      "head": "52a50730b58e2b59351449fc80f65771b24c26a8",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 115,
+      "head": "c2b731840d0051c18d1dca316574da063e7ef909",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 116,
+      "head": "9a4f97877f1b18af77013f7bed7cd047994e26f3",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 118,
+      "head": "5ee2a75a9a41281aa4250735cb8fa44f9b752558",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 119,
+      "head": "8c7c764ac17c5725c08ab2c22a4c2aea87ca35a2",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 120,
+      "head": "c6e0d13811ad2d315dfc3c797f170ab61c68567f",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 122,
+      "head": "cec4ad8ef47c6c3fe86cae6a35e357935b94a0ec",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 124,
+      "head": "c32a08a591e4fb1e9d457eee91b2703727b3d619",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 126,
+      "head": "da8b618cbf8b67683c6b16880419089f7159c15e",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    },
+    {
+      "number": 127,
+      "head": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 133,
+      "head": "6c1416109003bcff0c1911307a4af5bd48870517",
+      "draft": true,
+      "labels": [
+        "needs-review"
+      ]
+    },
+    {
+      "number": 137,
+      "head": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "draft": true,
+      "labels": [
+        "needs-review",
+        "needs-ci-fix"
+      ]
+    }
+  ],
+  "limitations": [
+    "Workflow/job success is not a substitute for reading all acceptance artifacts.",
+    "Original scale remains bound to 6e3eb4f; no result is relabeled to f8ca807.",
+    "No new evidence supports merging or closing the historical 43 drafts."
+  ]
+}

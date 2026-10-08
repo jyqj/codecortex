@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "purpose": "只读复查 v15 source review 的产品提交、独审记录、pins 顺序；不授予运行时或 TODO 完成验收。",
+  "observed_head": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+  "reviewer": "/root/runtime_review",
+  "execution_scope": {
+    "source_and_evidence_mutated": false,
+    "large_builds_run": false,
+    "controls_21_plus_7_run": false,
+    "performed": [
+      "阅读 v15/v14 guard、历史上下文、v15 adapter 和原始测试方法",
+      "读取旧固定独审 Git blob",
+      "逐字节核对当前 236 个历史保护项并拒绝各级 symlink",
+      "核对当前 v15 review 与旧固定 REVIEW blob 相同",
+      "核对原旧产品到 f2366d9 的源域/验证域差异",
+      "AST 计数 v14 21 项、v15 7 项",
+      "复核两个冻结 runtime 文件 SHA256"
+    ]
+  },
+  "anchors": {
+    "keep_version": "p8-completion-source-20261009-v15",
+    "keep_base_and_historical_head": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "prior_product": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3",
+    "prior_review": "3b0db8fa2ee778c98196bba74a35ef4b36df610b",
+    "prior_review_sha256": "0a3982e86a55340de581e681792bca0b8b4a2a52d1faf0452020ae73216afdb0",
+    "product_commit_completed": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+    "review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+    "registry_path": "scripts/reviewed-source-registry-v15.json",
+    "guard_path": "scripts/verify_reviewed_source_v15.py",
+    "complete_crate_and_cargo_inputs": 1087,
+    "cumulative_base_to_product_delta_rows": 27,
+    "complete_validation_inputs": 135
+  },
+  "six_reviewed_changes": [
+    "scripts/p8_cold_build.py",
+    "scripts/p8_rollback.py",
+    "scripts/p8_runtime.py",
+    "scripts/tests/test_p8_platform.py",
+    "scripts/tests/test_p8_recovery.py",
+    "scripts/tests/test_p8_runtime.py"
+  ],
+  "frozen_runtime_sha256": {
+    "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+    "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc"
+  },
+  "minimal_legal_update_order": [
+    {
+      "step": 1,
+      "status": "completed_by_root",
+      "action": "固定产品提交 P=f2366d9（完整 40 位 SHA 见 anchors）。这 6 个文件是完整验证输入域的一部分；提交后保持冻结。",
+      "verified": "94364da0 到 P 在 crates/Cargo.toml/Cargo.lock 没有差异；验证域仅这 6 个文件及被明列排除的 v15 guard/registry 不同。"
+    },
+    {
+      "step": 2,
+      "status": "pending_root_integration",
+      "action": "生成新的真实独审主记录和对应审计原件，提交为独立 review commit R；此提交保持 P 的 6 个文件和所有其他验证输入字节不变。",
+      "required_fields": [
+        "source=P 的完整 SHA",
+        "tree=git rev-parse P^{tree}",
+        "base=原固定 7354db236c9d9850a75f31672697ae9eab44565e",
+        "verdict=accepted_scoped；scope=independently_reviewed_source_and_validation_inputs",
+        "independent_reviewers=实际非作者复核者；unresolved_blockers=[]",
+        "paths=从原 BASE 到 P 的 27 条 before_sha256/sha256",
+        "complete_inputs=完整 1087 个 crates/Cargo 输入的固定 Git 字节 SHA256",
+        "validation_inputs=validation_inventory(P) 的完整 135 条 SHA256"
+      ],
+      "audit_requirements": [
+        "增量记录绑定原 REVIEW=3b0db8fa、其原摘要、新 P 和实际 6 文件清单；旧审查与旧失败保留原身份。",
+        "原 crate 全量/27 项 delta 可按字节无差异复用，不把 BASE 改成旧产品或新 HEAD。",
+        "独审原件和执行记录放在 artifacts 下；不要放入 scripts/.github/workflows/tests/source_integrity 引入未审验证文件。",
+        "review_records 若引用本次记录，应登记已提交实际原件的 bytes 和 SHA256；v15 guard 只固定主 review blob，不替代对这些审计链接的人工核对。",
+        "只陈述真实通过的合成控制/测试与生命周期修复，不把 source acceptance 或旧运行结果改写为 P8 完成/全规模/八平台验收。"
+      ]
+    },
+    {
+      "step": 3,
+      "status": "pending_root_integration",
+      "action": "R 已提交后安装固定 pins：guard 仅改 PRODUCT=P、REVIEW=R、REGISTRY_SHA256；registry 同步产品/独审身份、review_sha256、完整 validation_inputs。BASE/VERSION/所有历史 guard、adapter、tests 和 CI 保持原字节。",
+      "registry_generation": [
+        "validation_inputs 必须来自 guard.validation_inventory(P) 的不可变 Git blob，不从工作树重新认可字节。",
+        "review_sha256=sha256(git show R:REVIEW_PATH 的精确字节)。",
+        "review.complete_inputs/paths 与 registry.complete_inputs/delta 精确相等；同一完整验证清单同时出现在 review 和 registry。",
+        "最终 JSON 序列化落盘后再计算 registry 整文件 SHA256，写入 guard.REGISTRY_SHA256。",
+        "pins commit 只能包含该明确的固定 pin/registry 更新；后续任何验证输入变化都要回到产品和独审步骤。"
+      ]
+    },
+    {
+      "step": 4,
+      "status": "pending_root_integration",
+      "action": "运行本清单 commands.controls_21_plus_7_and_v15_guard；或已要求的 CI 全量 Python 命令包含相同 28 项后，不必无理由重复。归档精确最终源码/新 P/R/pins head、命令、退出码、原日志。"
+    }
+  ],
+  "historical_sparse_inputs": {
+    "catalogue_files": 302,
+    "catalogue_bytes": 170619506,
+    "protected_files": 236,
+    "protected_bytes": 169740756,
+    "artifact_files": 186,
+    "artifact_bytes": 167847285,
+    "additional_protected_docs": [
+      "docs/checkpoints/2026-10-03-packing-integration/original-tests/qname_db_independent_review.rs",
+      "docs/checkpoints/2026-10-03-packing-integration/source-manifest.json",
+      "docs/internals/python-inventory-capture-v1.md"
+    ],
+    "current_byte_verification": "PASSED at observed_head; every protected file and each relative parent checked as non-symlink, exact original bytes",
+    "current_v15_review_extra_to_history": "原主 review 当前也存在且精确匹配 prior_review_sha256；新的 R 提交后此物理路径须等于 R 的 blob。",
+    "authoritative_inventory": "v15_historical_context.catalogue(): 历史验证根的全部文件 + EXPLICIT_RECORDS + 6 份历史 registry 的 records keys 与 deltas[*].review_path。所需路径由固定 7354db2 的 Git blobs 计算，不用目录通配推断。",
+    "requirements": [
+      "186 项 artifacts 包含旧 query-owner 系列 evidence.tar.gz；历史证明哈希其原始字节，不能删包只留 JSON、解压摘要或改用 symlink。",
+      "当前 236 项保护文件已齐全；本轮不必重复物化进 workspace。临时 HistoricalContext 才需在单次 TMPDIR 内复制目录。",
+      "每个单独 exec_command 创建私有 /dev/shm 目录并设置 TMPDIR；不可跨工具调用复用 /dev/shm 数据。",
+      "只允许精确 EXPLICIT_RECORDS 中的 holdout 审查元数据例外，不能展开或发现 holdout corpus bodies。",
+      "21+7 的所需历史上下文与额外 verify_historical_integrations_v2.py 的 docs 证据要求不能混为一份清单；完整 CI 另跑其实际原证明。"
+    ]
+  },
+  "test_loader_requirement": "单独 discover test_reviewed_source_v14.py 不会自行安装 v15 adapter；必须显式 install，或用完整 discovery 先加载 v15 测试。adapter 仅为旧 guard 的省略 root/path 调用选择 byte-checked 历史目录，显式负控 root 仍调用实际原方法。禁止通过修改旧 tests、临时成功 registry、mock 批准函数或 -O 运行替代。",
+  "commands": {
+    "read_only_sparse_preflight_and_exact_path_inventory": "cd /workspace/scratch/28fef0db5e01/codecortex\nPYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts python3 - <<'PY_PREFLIGHT'\nimport hashlib\nimport json\nimport v15_historical_context as history\nimport verify_reviewed_source_v15 as guard\nblobs, protected = history.catalogue()\nverified = history.verify_current_history()\nexternal = sorted(p for p in protected if not p.startswith(tuple(r + \"/\" for r in history.VALIDATION_ROOTS)))\nprint(json.dumps({\"historical_head\": history.HISTORICAL_HEAD,\n                  \"catalogue_files\": len(blobs),\n                  \"catalogue_bytes\": sum(map(len, blobs.values())),\n                  \"protected_files\": len(verified),\n                  \"exact_external_inputs\": [{\"path\": p, \"bytes\": len(blobs[p]), \"sha256\": hashlib.sha256(blobs[p]).hexdigest()} for p in external]}, indent=2))\nraw = guard.git.blob(guard.REVIEW, guard.REVIEW_PATH)\nguard.unchanged_file(guard.ROOT, guard.REVIEW_PATH, raw, \"v15 review preflight\")\nprint(\"current historical protections and pinned v15 review bytes passed\")\nPY_PREFLIGHT\n",
+    "controls_21_plus_7_and_v15_guard": "set -euo pipefail\ncd /workspace/scratch/28fef0db5e01/codecortex\nCODECORTEX_V15_TMP=$(mktemp -d /dev/shm/codecortex-28fe-v15-controls-XXXXXX)\ntrap 'rm -rf -- \"$CODECORTEX_V15_TMP\"' EXIT\nexport TMPDIR=\"$CODECORTEX_V15_TMP\"\nexport PYTHONDONTWRITEBYTECODE=1\nexport PYTHONPATH=\"$PWD/scripts:$PWD/tests/source_integrity\"\npython3 - <<'PY_CONTROLS'\nimport unittest\nimport v15_historical_test_adapter as adapter\nadapter.install()\nloader = unittest.defaultTestLoader\nold = loader.loadTestsFromName(\"test_reviewed_source_v14\")\nnew = loader.loadTestsFromName(\"test_reviewed_source_v15\")\ncounts = (old.countTestCases(), new.countTestCases())\nif counts != (21, 7):\n    raise SystemExit(\"unexpected control counts: \" + repr(counts))\nresult = unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite([old, new]))\nif not result.wasSuccessful() or result.testsRun != 28 or result.skipped:\n    raise SystemExit(1)\nPY_CONTROLS\npython3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15\ngit diff --check\n",
+    "existing_ci_python_gate_exact_commands": "set -euo pipefail\ncd /workspace/scratch/28fef0db5e01/codecortex\nCODECORTEX_CI_TMP=$(mktemp -d /dev/shm/codecortex-28fe-python-ci-XXXXXX)\ntrap 'rm -rf -- \"$CODECORTEX_CI_TMP\"' EXIT\nexport TMPDIR=\"$CODECORTEX_CI_TMP\"\nexport PYTHONDONTWRITEBYTECODE=1\ngit fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e\npython3 -m unittest discover -s tests/resource_harness -v\npython3 scripts/code_index_plan.py\npython3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v\npython3 scripts/p8_facts.py --check\npython3 -m unittest discover -s tests/source_integrity -v\npython3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15\npython3 scripts/verify_historical_integrations_v2.py\n",
+    "check_unchanged_crates_before_reusing_full_manifest": "git diff --exit-code 94364da0cf771ff8f9b4dc81779cfc35e58f11a3 f2366d9139049d301f4f1d6695d307f52d8855b3 -- crates Cargo.toml Cargo.lock"
+  },
+  "evidence_storage_note": {
+    "archive": "/workspace/scratch/28fef0db5e01/runtime-review/raw-reproductions.tar.gz",
+    "index": "/workspace/scratch/28fef0db5e01/runtime-review/raw-reproductions-index.json",
+    "archive_receipt": "Root 报告全部 628 个成员逐 size/SHA 校验后无损归档，已删除 5 个展开目录；本次未重复复核归档。引用 archive member，不再指向删除后的目录。",
+    "valid_oracle_counterexample_member_prefix": "oracle-mismatch-before-v2/",
+    "invalid_initial_oracle_fixture_member_prefix": "oracle-mismatch-before/：原夹具语法错误，不能作为有效产品反例。",
+    "cleanup_failed_seal": "cleanup-before/ 原 seal 故意保留当时已损坏状态；不能重新封存为成功。"
+  },
+  "source_references": [
+    "scripts/verify_reviewed_source_v15.py:18 immutable identities and exclusions",
+    "scripts/verify_reviewed_source_v15.py:99 validation inventory",
+    "scripts/verify_reviewed_source_v15.py:132 snapshots",
+    "scripts/verify_reviewed_source_v15.py:143 reconstruct",
+    "scripts/verify_reviewed_source_v15.py:196 approved_union",
+    "scripts/verify_reviewed_source_v15.py:207 expected_ci",
+    "scripts/v15_historical_context.py:102 catalogue",
+    "scripts/v15_historical_context.py:152 current protected byte checks",
+    "scripts/v15_historical_context.py:160 HistoricalContext",
+    "tests/source_integrity/v15_historical_test_adapter.py:58 install",
+    "tests/source_integrity/test_reviewed_source_v14.py:33 setUpClass",
+    "tests/source_integrity/test_reviewed_source_v15.py:16 adapter.install",
+    ".github/workflows/ci.yml:44 existing Python gate"
+  ]
+}

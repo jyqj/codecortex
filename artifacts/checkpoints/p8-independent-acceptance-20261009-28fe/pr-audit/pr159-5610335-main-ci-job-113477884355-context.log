@@ -1,0 +1,91 @@
+﻿2026-10-08T18:43:34.2644633Z Current runner version: '2.337.0'
+2026-10-08T18:43:34.2668822Z ##[group]Runner Image Provisioner
+2026-10-08T18:43:34.2670012Z Hosted Compute Agent
+2026-10-08T18:43:34.2670648Z Version: 20261002.596
+2026-10-08T18:43:34.2671347Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T18:43:34.2672062Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T18:43:34.2672713Z Worker ID: {2b24b967-95f1-4516-8675-77d2ffadba95}
+2026-10-08T18:43:34.2673409Z Region: centralus
+2026-10-08T18:43:34.2673929Z Cloud: Azure
+2026-10-08T18:43:34.2674457Z ##[endgroup]
+2026-10-08T18:43:34.2675785Z ##[group]Operating System
+2026-10-08T18:43:34.2676417Z Ubuntu
+2026-10-08T18:43:34.2676941Z 24.04.5
+2026-10-08T18:43:34.2677440Z LTS
+2026-10-08T18:43:34.2677939Z ##[endgroup]
+2026-10-08T18:43:34.2678505Z ##[group]Runner Image
+2026-10-08T18:43:34.2679093Z Image: ubuntu-24.04
+2026-10-08T18:43:34.2679921Z Version: 20261004.327.1
+2026-10-08T18:43:34.2681261Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T18:43:34.2682816Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T18:43:34.2683741Z ##[endgroup]
+2026-10-08T18:43:58.2479354Z HEAD is now at e4c327c Merge 5610335b31f0f866cfa17712c8a55b9b22dac4cf into 7354db236c9d9850a75f31672697ae9eab44565e
+2026-10-08T18:43:58.2550291Z ##[endgroup]
+2026-10-08T18:43:58.2597589Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T18:43:58.2620209Z e4c327ccabc0661a37c6a5488017a037ce291e81
+2026-10-08T18:44:01.3084294Z env:
+2026-10-08T18:44:01.3084544Z   CARGO_TERM_COLOR: always
+2026-10-08T18:44:01.3084811Z   RUSTFLAGS: -D warnings
+2026-10-08T18:44:01.3085071Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T18:44:01.3085338Z   CARGO_INCREMENTAL: 0
+2026-10-08T18:44:01.3085574Z ##[endgroup]
+2026-10-08T18:44:01.3251637Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-08T18:44:01.3252186Z binary: rustc
+2026-10-08T18:44:01.3252687Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-08T18:44:01.3253261Z commit-date: 2026-09-28
+2026-10-08T18:44:01.3253655Z host: x86_64-unknown-linux-gnu
+2026-10-08T18:44:01.3253992Z release: 1.99.0
+2026-10-08T18:48:17.2434942Z ##[group]Run cargo test --workspace --all-targets --exclude cc-semantic --locked
+2026-10-08T18:48:17.2437814Z [36;1mcargo test --workspace --all-targets --exclude cc-semantic --locked[0m
+2026-10-08T18:48:17.2438454Z [36;1mcargo test -p cc-semantic --lib --locked[0m
+2026-10-08T18:48:17.2439267Z [36;1mcargo test -p cc-semantic --locked \[0m
+2026-10-08T18:48:17.2440073Z [36;1m  --test artifact_cache --test attempt_lease_contract \[0m
+2026-10-08T18:48:17.2440833Z [36;1m  --test bounded_parallel --test manifest_exact_integration \[0m
+2026-10-08T18:48:17.2441647Z [36;1m  --test p7_cache_allocation_independent_review --test publish_cas \[0m
+2026-10-08T18:48:17.2442319Z [36;1m  --test query_cache --test queue_worker --test retry_worker_layering \[0m
+2026-10-08T18:48:17.2442830Z [36;1m  --test semantic_degrade --test space_switch[0m
+2026-10-08T18:48:17.3533373Z shell: /usr/bin/bash -e {0}
+2026-10-08T18:48:17.3534070Z env:
+2026-10-08T18:48:17.3534769Z   CARGO_TERM_COLOR: always
+2026-10-08T18:48:17.3535174Z   RUSTFLAGS: -D warnings
+2026-10-08T18:48:17.3535584Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T18:48:17.3540690Z   CARGO_INCREMENTAL: 0
+2026-10-08T18:48:17.3541133Z   CACHE_ON_FAILURE: false
+2026-10-08T18:48:17.3541541Z ##[endgroup]
+2026-10-08T18:48:18.1005018Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.67s
+2026-10-08T18:49:15.1024296Z test synth::tests::synth_ground_truth_facts_match_emitted_content ... ok
+2026-10-08T18:49:15.1025137Z test tests::assertion_negate ... ok
+2026-10-08T18:49:15.1025874Z test tests::assertion_output_not_contains ... ok
+2026-10-08T18:49:15.1027109Z test tests::bench_incremental_dirty_closure ... ignored, measures dirty-closure incremental rebuild latency; run explicitly
+2026-10-08T18:49:15.1028507Z test tests::bench_incremental_noop ... ignored, measures incremental no-op rebuild latency; run explicitly
+2026-10-08T18:49:15.1030218Z test tests::bench_incremental_single_file ... ignored, measures single-file incremental rebuild latency; run explicitly
+2026-10-08T18:49:15.1031278Z test tests::assertion_field_matches_regex ... ok
+2026-10-08T18:49:15.1032424Z test tests::benchmark_incremental_index_report_correctness ... ignored, benchmarks incremental indexing report counters; run explicitly
+2026-10-08T18:49:15.1033800Z test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly
+2026-10-08T18:49:15.1034928Z test tests::corpus_load_new_format ... ok
+2026-10-08T18:49:15.1035659Z test tests::incremental_latency_summary_computation ... ok
+2026-10-08T18:49:15.1070998Z test synth::tests::synth_generation_is_deterministic ... ok
+2026-10-08T18:49:15.1080406Z test tests::report_summary_computation ... ok
+2026-10-08T18:49:15.1233071Z test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... ok
+2026-10-08T18:49:17.7059746Z test tests::integration_fixtures_and_corpus ... ok
+2026-10-08T18:49:23.3743867Z test tests::benchmark_fixture ... ok
+2026-10-08T18:49:23.3754523Z 
+2026-10-08T18:49:23.3758019Z test result: ok. 56 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 8.36s
+2026-10-08T19:02:34.8808985Z ##[group]Run cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture
+2026-10-08T19:02:34.8809767Z [36;1mcargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture[0m
+2026-10-08T19:02:34.8849400Z shell: /usr/bin/bash -e {0}
+2026-10-08T19:02:34.8849848Z env:
+2026-10-08T19:02:34.8850068Z   CARGO_TERM_COLOR: always
+2026-10-08T19:02:34.8850320Z   RUSTFLAGS: -D warnings
+2026-10-08T19:02:34.8850573Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T19:02:34.8850842Z   CARGO_INCREMENTAL: 0
+2026-10-08T19:02:34.8851082Z   CACHE_ON_FAILURE: false
+2026-10-08T19:02:34.8851311Z ##[endgroup]
+2026-10-08T19:02:35.0178757Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-10-08T19:02:35.0749268Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/cc_eval-85fe4fb03e12e1f1)
+2026-10-08T19:02:35.0772426Z 
+2026-10-08T19:02:35.0772639Z running 1 test
+2026-10-08T19:02:37.4092370Z # CodeCortex Eval Report
+2026-10-08T19:02:37.4093980Z | Total | Passed | Failed | Duration | p95 | Max | Output |
+2026-10-08T19:02:37.4094486Z |-------|--------|--------|----------|-----|-----|--------|
+2026-10-08T19:02:37.4094879Z | 94 | 94 | 0 | 1745ms | 104ms | 418ms | 345753 bytes |

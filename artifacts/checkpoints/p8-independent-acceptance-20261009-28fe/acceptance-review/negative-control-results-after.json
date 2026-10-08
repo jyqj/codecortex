@@ -1,0 +1,63 @@
+{
+  "baseline_source": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+  "scope": "original synthetic counterexamples rerun against the working-tree fix; not product acceptance",
+  "executed_inputs_sha256": {
+    "scripts/p8_cold_build.py": "867c024d6b1bd85750d054c8802a687d5cac38c7d6752b2f11e19be19ff7435b",
+    "scripts/tests/test_p8_platform.py": "9ecf71482d1c7f0ff3c2957047ea9e1fb1a82edc941864d6ecfdcdfda1819ee6",
+    "scripts/p8_rollback.py": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
+    "scripts/tests/test_p8_recovery.py": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11"
+  },
+  "raw_stdout_sha256": "820d5a309fdfbc0066a157f20d0921035b18b1e9019da72d8a87eb6eab210d7e",
+  "observed_json_objects": [
+    {
+      "status": "invalid",
+      "exit_code": 2,
+      "error": "ValueError: complete eight-cell platform matrix required; received 0"
+    },
+    {
+      "source_commit": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+      "scope": "synthetic isolated contract negative controls; no product performance or platform evidence",
+      "cases": [
+        {
+          "id": "cold_profile_lie",
+          "local_validator": "ValueError: command profile differs from the receipt",
+          "exported_collector": "ValueError: exported selection/source does not match its receipt"
+        },
+        {
+          "id": "cold_compiler_invocation_unbound",
+          "local_validator": "ValueError: selected Cargo/target do not match the toolchain",
+          "exported_collector": "ValueError: exported selection/source does not match its receipt"
+        },
+        {
+          "id": "cold_compiler_environment_unbound",
+          "local_validator": "ValueError: Cargo compiler invocation is not explicitly bound",
+          "exported_collector": "ValueError: exported selection/source does not match its receipt"
+        },
+        {
+          "id": "cold_missing_log_bindings",
+          "local_validator": "ValueError: both Cargo logs must be bound",
+          "exported_collector": "ValueError: exported selection/source does not match its receipt"
+        },
+        {
+          "id": "cold_failed_collection_does_not_retain_receipt",
+          "exit_code": 2,
+          "output_files": [
+            "matrix.json"
+          ],
+          "stderr": ""
+        },
+        {
+          "id": "rollback_cold_receipt_manifest_compatibility",
+          "binary_identity": "accepted",
+          "manifest_type": "list",
+          "product_schema_version": 25
+        }
+      ],
+      "baseline_counts": {
+        "passed": 8,
+        "failed": 0,
+        "not_run": 0
+      }
+    }
+  ]
+}

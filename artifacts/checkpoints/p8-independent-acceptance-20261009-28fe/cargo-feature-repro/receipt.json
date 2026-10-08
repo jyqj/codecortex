@@ -1,0 +1,70 @@
+{
+  "scope": "Real Cargo feature-selection reproduction; minimal dependency-free crate, not CodeCortex product acceptance",
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cases": [
+    {
+      "case": "original",
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--release",
+        "--offline",
+        "--features",
+        "semantic",
+        "--test",
+        "worker",
+        "--no-run",
+        "--message-format=json-render-diagnostics",
+        "--target-dir",
+        "/workspace/scratch/28fef0db5e01/cargo-feature-repro/target-original"
+      ],
+      "returncode": 0,
+      "features": [
+        "default",
+        "semantic"
+      ],
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": true
+      },
+      "fresh": false,
+      "required_features_match": false,
+      "stdout_sha256": "057c3f601a24133feb0f8c11affe35d99c28e48bd9d8cdbfdd77ff9a45bd9661"
+    },
+    {
+      "case": "explicit_features",
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--release",
+        "--offline",
+        "--features",
+        "semantic",
+        "--no-default-features",
+        "--test",
+        "worker",
+        "--no-run",
+        "--message-format=json-render-diagnostics",
+        "--target-dir",
+        "/workspace/scratch/28fef0db5e01/cargo-feature-repro/target-explicit_features"
+      ],
+      "returncode": 0,
+      "features": [
+        "semantic"
+      ],
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": true
+      },
+      "fresh": false,
+      "required_features_match": true,
+      "stdout_sha256": "0e2bca967c75d35d2aee90fde05ffbe124cc95ed7b8d3458e5fd2c8493bbf8d5"
+    }
+  ]
+}

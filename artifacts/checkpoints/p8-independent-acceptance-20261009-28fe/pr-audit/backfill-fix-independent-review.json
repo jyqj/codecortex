@@ -1,0 +1,28 @@
+{
+  "decision": "accept_scoped_backfill_build_feature_fix",
+  "source_head": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+  "reviewed_diff_sha256": "775700f4b96501a2a584638c24daf5b4060472e2fc37a340ef0a1fd57b0349b2",
+  "reviewer": "/root/pr_audit",
+  "files": {
+    "scripts/p8_backfill.py": "a5b4c935f19e229a133535d2c8d07f6e9c7d8ad0e886cef4499f5ee089dd477b",
+    "scripts/tests/test_p8_backfill.py": "8638c806e5b11003e2c997bb2ba3ad6ed6b5acbafdbce06ed44f115fc121a4f4"
+  },
+  "independent_validation": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p8_backfill.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "tests_passed": 2,
+    "log": "backfill-fix-independent-unittest.log"
+  },
+  "scope": "Build explicit original semantic features without empty default marker; existing strict profile/freshness/source/private-target checks unchanged. Minimal real-Cargo reproduction reviewed; full CodeCortex backfill remains unexecuted by reviewer.",
+  "formal_todo_completion": false
+}

@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit@28fef0db5e01",
+  "scope": "read_only_diagnosis_no_benchmark_execution_or_source_edit",
+  "source_url": "https://github.com/jyqj/codecortex/actions/runs/37825701618/job/113477884355",
+  "run_id": 37825701618,
+  "job_id": 113477884355,
+  "failed_pr_head": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+  "tested_checkout": "e4c327ccabc0661a37c6a5488017a037ce291e81",
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "latest_pr_head_at_final_read": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+  "latest_pr_state": {
+    "open": true,
+    "draft": true,
+    "done": 163,
+    "remaining": 29
+  },
+  "failure": {
+    "command": "cargo test -p cc-eval --features eval-http --locked",
+    "toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "profile": "test unoptimized + debuginfo",
+    "executable": "target/debug/deps/cc_eval-ac0077850ddb8368",
+    "environment": {
+      "RUSTFLAGS": "-D warnings",
+      "CARGO_INCREMENTAL": "0"
+    },
+    "test": "tests::benchmark_fixture",
+    "tool": "index",
+    "cases": 1,
+    "fixture_files": 18,
+    "total_cases": 94,
+    "displayed_warm_p95_ms": 528.02,
+    "unchanged_limit_ms": 500,
+    "suite_result": {
+      "passed": 55,
+      "failed": 1,
+      "ignored": 5,
+      "seconds": 16.87,
+      "exit_code": 101
+    }
+  },
+  "comparator_in_same_job": {
+    "command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+    "test": "tests::benchmark_fixture",
+    "result": "passed",
+    "suite": {
+      "passed": 56,
+      "failed": 0,
+      "ignored": 5,
+      "seconds": 8.36
+    },
+    "limitation": "Different Cargo invocation/feature graph and time; passing captured test does not expose exact warm latency."
+  },
+  "evidence": {
+    "failure_log_original_line_span": {
+      "first": 7031,
+      "last": 7160
+    },
+    "context_log_original_line_spans": [
+      {
+        "name": "runner",
+        "first": 1,
+        "last": 21
+      },
+      {
+        "name": "checkout",
+        "first": 173,
+        "last": 176
+      },
+      {
+        "name": "toolchain",
+        "first": 370,
+        "last": 381
+      },
+      {
+        "name": "default_command",
+        "first": 708,
+        "last": 725
+      },
+      {
+        "name": "default_lib_result",
+        "first": 1208,
+        "last": 1225
+      },
+      {
+        "name": "standalone_eval_command",
+        "first": 5972,
+        "last": 5986
+      },
+      {
+        "name": "standalone_eval_summary",
+        "first": 5992,
+        "last": 5994
+      }
+    ],
+    "read_only_files_at_review": {
+      "crates/cc-eval/src/lib.rs": {
+        "at_head_sha256": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+        "working_tree_same": true
+      },
+      "crates/cc-eval/src/bench.rs": {
+        "at_head_sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756",
+        "working_tree_same": true
+      },
+      "crates/cc-eval/src/runner.rs": {
+        "at_head_sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f",
+        "working_tree_same": true
+      },
+      "crates/cc-eval/corpus/index_build.toml": {
+        "at_head_sha256": "ed394d7d2e1e0e6cf682cd1c47d83427b9d57c5902a0cd5f6bda4728e0acc05b",
+        "working_tree_same": true
+      },
+      "crates/cc-eval/Cargo.toml": {
+        "at_head_sha256": "d79b3b1693130c199c8b803bf555ef94836230c00c28afd499bab1e4ffa99179",
+        "working_tree_same": true
+      },
+      ".github/workflows/ci.yml": {
+        "at_head_sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+        "working_tree_same": true
+      }
+    },
+    "excerpt_files": {
+      "pr159-5610335-main-ci-job-113477884355-context.log": {
+        "sha256": "cf0829704842b666c57343855827db949a67485c60f9015c8bf1eb81b8780e81",
+        "bytes": 6724
+      },
+      "pr159-5610335-main-ci-job-113477884355-eval-http-failure.log": {
+        "sha256": "74fc12b377d8391c4cf8179fd44201f73ed5453683e853ac1d621d971db6c00e",
+        "bytes": 12341
+      }
+    },
+    "base_is_ancestor_of_head": true
+  },
+  "conclusions": [
+    "The original strict 500 ms gate failed on the recorded checkout. The failure is not waived.",
+    "The only index corpus case sets full=true; each repeated warm call performs a full rebuild in a reused MCP session.",
+    "With one index case the reported p95 is the best of its two measured calls after one discarded warmup. Percentile helper consolidation cannot alter a one-element result.",
+    "The benchmark and corpus integration tests copy fixtures into separate temporary roots and disable auto-index for fresh fixtures. No direct shared SQLite database collision is established.",
+    "eval-http adds optional reqwest and adapter code; the observed lib test inventories have the same count. This does not prove the full Cargo feature graphs or binary behavior identical.",
+    "No leaked CPU child from the reviewed resource-probe controls was demonstrated. Those controls explicitly kill and wait for their child.",
+    "Source admission and successful default tests do not establish performance acceptance. Current evidence cannot distinguish product regression, feature/build differences, scheduling, or runner pressure."
+  ],
+  "recommended_control": {
+    "status": "proposed_not_executed",
+    "commits": [
+      "7354db236c9d9850a75f31672697ae9eab44565e",
+      "e4c327ccabc0661a37c6a5488017a037ce291e81"
+    ],
+    "build": "Use separate clean worktrees/private targets with exact rustc 1.99.0 and original RUSTFLAGS/CARGO_INCREMENTAL. Build all targets via original cargo command plus --no-run --message-format=json before any timed run. Bind emitted lib executable, compiler profile/features, source/fixture/corpus hashes.",
+    "cells": {
+      "A": "baseline lib suite, original harness concurrency",
+      "B": "baseline same lib binary, --test-threads=1",
+      "C": "candidate lib suite, original harness concurrency",
+      "D": "candidate same lib binary, --test-threads=1"
+    },
+    "fixed_orders": [
+      [
+        "A",
+        "B",
+        "D",
+        "C"
+      ],
+      [
+        "B",
+        "C",
+        "A",
+        "D"
+      ],
+      [
+        "C",
+        "D",
+        "B",
+        "A"
+      ],
+      [
+        "D",
+        "A",
+        "C",
+        "B"
+      ]
+    ],
+    "execution": "Fresh process per cell, no overlapping build or other matrix cell. Run bound executable from crates/cc-eval with --nocapture and optional --test-threads=1. Preserve default ignored tests and all existing assertions. Record --list inventories, every exit/result, stdout/stderr, /usr/bin/time -v and available cgroup cpu.stat before/after. Never set RAYON_NUM_THREADS to mask behavior.",
+    "followup_feature_control": "Only if the same-source concurrency contrast remains ambiguous, compare explicit package default and eval-http artifacts under the same suite/schedule and exact pinned build metadata.",
+    "outcome_constraints": [
+      "Candidate serial failures with baseline serial passes support a source-performance regression; investigate the real full-index phase.",
+      "Normal-only failures reproducible across both versions support scheduling sensitivity; they do not by themselves authorize weakening CI.",
+      "Candidate-only concurrency sensitivity remains a product-by-load interaction, not proof of a harmless flaky test.",
+      "If every planned cell passes, the original failure remains unexplained; do not call it repaired.",
+      "No threshold, corpus full flag, original assertion, test selection or historical CI predicate may be changed as a way to obtain green.",
+      "Diagnostic runs do not replace successful original CI at a final reviewed commit."
+    ]
+  }
+}

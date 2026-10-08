@@ -1,0 +1,33 @@
+diff --git a/scripts/p8_backfill.py b/scripts/p8_backfill.py
+index 4593486..b7217f4 100644
+--- a/scripts/p8_backfill.py
++++ b/scripts/p8_backfill.py
+@@ -44,7 +44,7 @@ def artifact(messages, root, target):
+ def execute(root, output):
+     root, out = root.resolve(strict=True), new_directory(output)
+     target = Path(os.environ.get("CARGO_TARGET_DIR", out.with_name(out.name + "-cargo-target"))).absolute().resolve()
+-    command = ["cargo", "test", "--release", "--locked", "--offline", "-p", "cc-eval",
++    command = ["cargo", "test", "--release", "--locked", "--offline", "--no-default-features", "-p", "cc-eval",
+                "--features", "semantic", "--test", "p7_worker_contention", "--no-run",
+                "--message-format=json-render-diagnostics", "--target-dir", str(target)]
+     record = dict(schema_version=1, status="running", build_command=command, target_dir=str(target),
+diff --git a/scripts/tests/test_p8_backfill.py b/scripts/tests/test_p8_backfill.py
+index 70bb8f6..b46ad3d 100644
+--- a/scripts/tests/test_p8_backfill.py
++++ b/scripts/tests/test_p8_backfill.py
+@@ -31,6 +31,7 @@ class BackfillBuildTests(unittest.TestCase):
+             finished = {"reason": "build-finished", "success": True}
+             self.assertEqual(backfill.artifact([row, finished], fixture.root, fixture.target), row)
+             for change, error in (({"fresh": True}, "was reused"),
++                                  ({"features": ["default", "semantic"]}, "actual release semantic test profile"),
+                                   ({"executable": str(fixture.out / "codecortex")}, "outside its private target")):
+                 with self.subTest(change=change), self.assertRaisesRegex(ValueError, error):
+                     backfill.artifact([{**row, **change}, finished], fixture.root, fixture.target)
+@@ -62,6 +63,7 @@ class BackfillBuildTests(unittest.TestCase):
+             self.assertNotEqual(receipt["exit_code"], 0)
+             self.assertEqual(len(observed), 1)
+             command, environment = observed[0]
++            self.assertIn("--no-default-features", command)
+             self.assertEqual(command[-2:], ["--target-dir", str(target)])
+             self.assertEqual(environment["CARGO_TARGET_DIR"], str(target))
+             self.assertEqual(environment["CARGO_BUILD_BUILD_DIR"], str(target))

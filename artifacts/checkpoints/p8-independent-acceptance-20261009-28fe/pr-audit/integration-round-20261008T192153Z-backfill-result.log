@@ -1,0 +1,45 @@
+2026-10-08T19:08:10.6835998Z [36;1mpython3 -m unittest discover -s scripts/tests -p 'test_p8_backfill.py' -v[0m
+2026-10-08T19:08:10.6896765Z shell: /usr/bin/bash -e {0}
+2026-10-08T19:08:10.6897023Z env:
+2026-10-08T19:08:10.6897224Z   CARGO_TERM_COLOR: never
+2026-10-08T19:08:10.6897468Z   CARGO_INCREMENTAL: 0
+2026-10-08T19:08:10.6897690Z   CARGO_BUILD_JOBS: 2
+2026-10-08T19:08:10.6897921Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T19:08:10.6898180Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T19:08:10.6898433Z ##[endgroup]
+2026-10-08T19:08:10.9823422Z test_failed_build_uses_private_target_and_retains_sealed_failure (test_p8_backfill.BackfillBuildTests.test_failed_build_uses_private_target_and_retains_sealed_failure) ... ok
+2026-10-08T19:08:11.0438747Z test_reused_or_foreign_target_test_executable_is_rejected (test_p8_backfill.BackfillBuildTests.test_reused_or_foreign_target_test_executable_is_rejected) ... ok
+2026-10-08T19:08:11.0440339Z 
+2026-10-08T19:08:11.0440611Z ----------------------------------------------------------------------
+2026-10-08T19:08:11.0441166Z Ran 2 tests in 0.136s
+2026-10-08T19:08:11.0441390Z 
+2026-10-08T19:08:11.0441501Z OK
+2026-10-08T19:08:11.0618479Z ##[group]Run python3 scripts/p8_backfill.py --output "$RUNNER_TEMP/p8-backfill"
+2026-10-08T19:08:11.0619095Z [36;1mpython3 scripts/p8_backfill.py --output "$RUNNER_TEMP/p8-backfill"[0m
+2026-10-08T19:08:11.0679128Z shell: /usr/bin/bash -e {0}
+2026-10-08T19:08:11.0679395Z env:
+2026-10-08T19:08:11.0679598Z   CARGO_TERM_COLOR: never
+2026-10-08T19:08:11.0679843Z   CARGO_INCREMENTAL: 0
+2026-10-08T19:08:11.0680397Z   CARGO_BUILD_JOBS: 2
+2026-10-08T19:08:11.0680645Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T19:08:11.0680914Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T19:08:11.0681260Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p8-backfill-target
+2026-10-08T19:08:11.0681613Z ##[endgroup]
+2026-10-08T19:16:08.6867830Z {
+2026-10-08T19:16:08.6868169Z   "status": "passed_observation",
+2026-10-08T19:16:08.6868760Z   "exit_code": 0,
+2026-10-08T19:16:08.6869181Z   "error": null,
+2026-10-08T19:16:08.6870308Z   "executable_sha256": "f7258e464ab96563dd50278d25a102bef12fcb37c7b9506783ebaa32e34e6ad5"
+2026-10-08T19:16:08.6871815Z }
+2026-10-08T19:16:08.6981982Z ##[group]Run python3 scripts/p8_backfill.py verify --output "$RUNNER_TEMP/p8-backfill"
+2026-10-08T19:16:08.6982626Z [36;1mpython3 scripts/p8_backfill.py verify --output "$RUNNER_TEMP/p8-backfill"[0m
+2026-10-08T19:16:08.7043266Z shell: /usr/bin/bash -e {0}
+2026-10-08T19:16:08.7043526Z env:
+2026-10-08T19:16:08.7043725Z   CARGO_TERM_COLOR: never
+2026-10-08T19:16:08.7043965Z   CARGO_INCREMENTAL: 0
+2026-10-08T19:16:08.7044183Z   CARGO_BUILD_JOBS: 2
+2026-10-08T19:16:08.7044422Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T19:16:08.7044687Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T19:16:08.7044939Z ##[endgroup]
+2026-10-08T19:16:08.7981575Z {"status": "sealed_raw_verified", "observation_status": "passed_observation", "files": 32}
+2026-10-08T19:16:08.8119904Z ##[group]Run actions/upload-artifact@v4

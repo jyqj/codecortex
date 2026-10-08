@@ -1,0 +1,46 @@
+{"status": "invalid", "exit_code": 2, "error": "ValueError: complete eight-cell platform matrix required; received 0"}
+{
+  "source_commit": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+  "scope": "synthetic isolated contract negative controls; no product performance or platform evidence",
+  "cases": [
+    {
+      "id": "cold_profile_lie",
+      "local_validator": "ValueError: command profile differs from the receipt",
+      "exported_collector": "ValueError: exported selection/source does not match its receipt"
+    },
+    {
+      "id": "cold_compiler_invocation_unbound",
+      "local_validator": "ValueError: selected Cargo/target do not match the toolchain",
+      "exported_collector": "ValueError: exported selection/source does not match its receipt"
+    },
+    {
+      "id": "cold_compiler_environment_unbound",
+      "local_validator": "ValueError: Cargo compiler invocation is not explicitly bound",
+      "exported_collector": "ValueError: exported selection/source does not match its receipt"
+    },
+    {
+      "id": "cold_missing_log_bindings",
+      "local_validator": "ValueError: both Cargo logs must be bound",
+      "exported_collector": "ValueError: exported selection/source does not match its receipt"
+    },
+    {
+      "id": "cold_failed_collection_does_not_retain_receipt",
+      "exit_code": 2,
+      "output_files": [
+        "matrix.json"
+      ],
+      "stderr": ""
+    },
+    {
+      "id": "rollback_cold_receipt_manifest_compatibility",
+      "binary_identity": "accepted",
+      "manifest_type": "list",
+      "product_schema_version": 25
+    }
+  ],
+  "baseline_counts": {
+    "passed": 8,
+    "failed": 0,
+    "not_run": 0
+  }
+}

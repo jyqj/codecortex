@@ -1,0 +1,70 @@
+{
+  "product": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+  "review": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+  "head_before_pin_commit": "d5ec0c4fae7f6c3bbbe9008d8adac290405f4ffa",
+  "guard_sha256": "4574ac4c057592608fd656701a0ae403c30ad0c2dac3c823dec932b676a87214",
+  "registry_sha256": "1ef48af60683b0d2db7faf128d248c0496409bf5d6228161674b5935e19acf57",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-c",
+        "import unittest; import v15_historical_test_adapter as a; a.install(); l=unittest.defaultTestLoader; old=l.loadTestsFromName(\"test_reviewed_source_v14\"); new=l.loadTestsFromName(\"test_reviewed_source_v15\"); counts=(old.countTestCases(),new.countTestCases()); print(\"required_counts\",counts,flush=True); assert counts==(21,7); r=unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite([old,new])); raise SystemExit(0 if r.wasSuccessful() and r.testsRun==28 and not r.skipped else 1)"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 300.0747889320046,
+      "log": "v15-proof-00.log",
+      "log_sha256": "32fced308be778e3f32049bf90d6e1019a3393ff88d10fcde639886a829598c9"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 207.49402519100113,
+      "log": "v15-proof-01.log",
+      "log_sha256": "27b5cfecb1e525a5d9f84b395ad07741e778677d9bdf973aba7406f19672a195"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.07028939700103365,
+      "log": "v15-proof-02.log",
+      "log_sha256": "e4e8becefb48e4f5d935aca44d9532f39fb463f65521b073d7d0858a0cebcd8e"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/p8_facts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06964930800313596,
+      "log": "v15-proof-03.log",
+      "log_sha256": "babfeffa791f652b292238b130e5bfe3fcd59b8ba6a4117636353533024e320b"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.034908093002741225,
+      "log": "v15-proof-04.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "passed": true,
+  "scope": "Original v14/v15 source-admission controls and complete inherited source proof; not product acceptance"
+}

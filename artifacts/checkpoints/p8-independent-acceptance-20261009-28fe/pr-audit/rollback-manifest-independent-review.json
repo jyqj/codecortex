@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "workspace": "28fef0db5e01",
+  "review_scope": "scripts/p8_rollback.py and scripts/tests/test_p8_recovery.py only",
+  "decision": "accept_scoped_rollback_manifest_repair",
+  "source_base": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+  "reviewed_diff_sha256": "9f09ce5d0b3afda50fa56c171f9b424039fa024626b622c9ccf31769c0e8f6bf",
+  "files": {
+    "scripts/p8_rollback.py": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
+    "scripts/tests/test_p8_recovery.py": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11"
+  },
+  "observed_original_findings": [
+    {
+      "finding": "schema was hashed and then read again; mutation after digest made bound 25 return unbound 26",
+      "status": "fixed; parse the same raw bytes whose SHA-256 matched manifest"
+    },
+    {
+      "finding": "dot and NUL manifest paths were admitted",
+      "status": "fixed; reject empty path parts and NUL"
+    }
+  ],
+  "validation": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p8_recovery.py",
+      "-v"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "tests_passed": 29,
+    "exit_code": 0,
+    "log": "rollback-manifest-independent-unittest.log",
+    "whitespace_check": "git diff --check -- scripts/p8_rollback.py scripts/tests/test_p8_recovery.py; exit 0"
+  },
+  "assessment": [
+    "Both original cold-build list and historical map manifests are accepted under the original manifest SHA-256 and input count.",
+    "Duplicate JSON keys and duplicate entry paths are rejected without lossy dict conversion; malformed entries, invalid digests, counts, absolute/traversal/dot/NUL paths are rejected.",
+    "Schema lookup revalidates bound manifest, rejects symlink components, reads bytes once, validates their hash and parses those exact bytes.",
+    "Existing binary/receipt/feature/stop/failed-build checks remain unchanged."
+  ],
+  "unresolved_blockers_in_reviewed_scope": [],
+  "limits": [
+    "Uses explicit synthetic compiler through existing real cold-receipt producer for controls.",
+    "No new full-product recovery, rollback, release, runtime or task-completion claim.",
+    "Changes in p8_cold_build.py, p8_runtime.py and their tests remain outside this scoped approval; their independent owners/reviewers must certify exact final bytes.",
+    "No source guard predicates, historical facts, CI, registry or approval records were modified by reviewer."
+  ]
+}

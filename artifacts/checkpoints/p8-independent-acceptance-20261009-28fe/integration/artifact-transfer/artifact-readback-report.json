@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/runtime_review",
+  "purpose": "只读获取既有 GitHub CI 工件原件；未修改 runtime/source，未启动任何矩阵。",
+  "status": "blocked_at_signed_transfer_http_403",
+  "repo": "jyqj/codecortex",
+  "run_id": 37829580050,
+  "pr_number": 159,
+  "head_sha": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+  "current_utc": "2026-10-08 19:31:55 UTC",
+  "steps": [
+    {
+      "step": 1,
+      "name": "resolve_workflow_and_artifacts",
+      "status": "passed",
+      "evidence": [
+        "github-run-api.json",
+        "github-artifacts-api.json"
+      ],
+      "observed": "Workflow completed/success is API metadata only, not independent artifact acceptance."
+    },
+    {
+      "step": 2,
+      "name": "select_small_platform_complete_zip",
+      "status": "passed",
+      "artifact_id": 11573822193,
+      "artifact_name": "p8-platform-complete-f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+      "expected_zip_bytes": 1404,
+      "expected_zip_digest": "sha256:8f75fa7d10cb94ca014c02cf78d43fd6fe066511794ee1eadb80fd2c187841f6"
+    },
+    {
+      "step": 3,
+      "name": "github_download_workflow_artifact_reference",
+      "status": "passed",
+      "resolved_reference": {
+        "file_id": "file_0000000093d8820bbcdd381ca12d8db1",
+        "file_name": "p8-platform-complete-f8ca8070592a1bc03cedc2df4e27e1382a3077a7.zip"
+      },
+      "boundary": "Tool returned a reusable file reference; local ZIP bytes were not yet available."
+    },
+    {
+      "step": 4,
+      "name": "library_prepare_materialize",
+      "status": "passed",
+      "transfer_count": 1,
+      "workspace_path_present": false,
+      "library_file_id_present": false,
+      "unavailable_items": [],
+      "warnings": [],
+      "boundary": "Used exact non-list/search file_id + file_name; no invented Library identity, no native upload."
+    },
+    {
+      "step": 5,
+      "name": "official_transfer_helper",
+      "status": "failed",
+      "helper_sha256": "5e1557817be17db06e2375f8c34ed83e948d520242e5ee4cb50a30c7a4c83378",
+      "helper_source": "skill://openai-library@openai-curated-remote/root/.codex/plugins/cache/openai-curated-remote/openai-library/0.1.61/skills/library/scripts/library_file_transfer.py",
+      "exit_code": 1,
+      "error": "library file transfer failed: download failed with HTTP status 403",
+      "evidence": "platform-materialize-receipt.json"
+    },
+    {
+      "step": 6,
+      "name": "expiry_control",
+      "status": "passed",
+      "clock": {
+        "current_time": "2026-10-08 19:31:55 UTC"
+      },
+      "download_expiry": "2026-10-08T19:35:39Z",
+      "prepared_expiry": "2026-10-08T20:31:03Z",
+      "same_url": false,
+      "method": "GET",
+      "returned_header_names": [],
+      "finding": "Prepared URL was renewed and had not expired when transfer failed. Signed URLs and headers are not persisted in the readback report."
+    },
+    {
+      "step": 7,
+      "name": "archive_sha256_and_matrix_json",
+      "status": "not_run",
+      "reason": "ZIP did not materialize. Destination file does not exist; no archive SHA was computed and no matrix content was read."
+    },
+    {
+      "step": 8,
+      "name": "recovery_version_pair_readback",
+      "status": "not_run",
+      "reason": "Small-artifact transfer prerequisite failed; avoided downloading or allocating 121,218,875 bytes in the full workspace.",
+      "artifact_id": 11573750355,
+      "expected_zip_bytes": 121218875,
+      "expected_zip_digest": "sha256:15d95ffcd408e270fb6d3103793b7678abf27d1a97fd39d0c0acf291ecba16cd"
+    }
+  ],
+  "read_boundaries": {
+    "github_metadata_read": true,
+    "selected_zip_file_reference_resolved": true,
+    "prepared_transfer_received": true,
+    "zip_bytes_read": false,
+    "matrix_read": false,
+    "matrix_accepted": false,
+    "recovery_zip_requested": false,
+    "recovery_version_pair_read": false,
+    "signed_urls_persisted": false,
+    "library_upload_performed": false,
+    "browser_used": false,
+    "credentials_extracted": false,
+    "url_rewritten_or_permissions_bypassed": false,
+    "workflow_restarted": false,
+    "source_changed": false
+  },
+  "local_files": [
+    "github-run-api.json",
+    "github-artifacts-api.json",
+    "platform-artifact-selection.json",
+    "platform-materialize-receipt.json"
+  ],
+  "completion_boundary": "此尝试证明文档规定的非 list/search file 引用准备流程可用，但当前返回 transfer 经官方 helper 仍 403。不能据 API success 或声明 digest 给 matrix、P8-016..019、recovery/version-pair 记验收完成。"
+}

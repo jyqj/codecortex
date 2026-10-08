@@ -1,0 +1,101 @@
+{
+  "schema": "codecortex.independent-scoped-review.v1",
+  "recorded_at_utc": "2026-10-08T19:25:46.477148+00:00",
+  "reviewer": "/root/acceptance_review",
+  "implementation_owner": "/root/runtime_review",
+  "decision": "accepted_scoped",
+  "repository": "jyqj/codecortex",
+  "working_base_commit": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+  "reviewed_files_sha256": {
+    "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+    "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc"
+  },
+  "source_identity": "The reviewed files were uncommitted implementation deltas at review time; this is file-content approval, not a claim that the working-base commit contains them.",
+  "ownership_boundary": "Reviewer did not author either runtime file. Reviewer-authored cold-build work is outside this approval.",
+  "rounds": [
+    {
+      "round": 2,
+      "scope": "Independent static review of lifecycle convergence, terminal denominators, original budget failures, statistics admission, and parity versus execution exit classes.",
+      "findings": "Initial exit-path repairs preserve original budget gates, retain failed original terminal metadata without passing partial work to replay statistics, and converge futures before sealed teardown. The subsequent independent fault injections still found submission and KeyboardInterrupt terminal-report gaps.",
+      "formal_product_acceptance": false
+    },
+    {
+      "round": 3,
+      "scope": "Independent before/after reproduction of submit failure and KeyboardInterrupt before and after normal drain, plus bounded original runtime control suite.",
+      "before_file_sha256": {
+        "scripts/p8_runtime.py": "1d68c70ec5b62d3ce30a03e784bc34b76e80616147d9de006be3f06e92253464",
+        "scripts/tests/test_p8_runtime.py": "0a750efde335c408aa9845e2cbb0140fabb3a3389e70b63f6dbf8cb404fef81e"
+      },
+      "before_controls": {
+        "tests": 28,
+        "seconds": 6.247,
+        "result": "passed"
+      },
+      "before_negative_findings": [
+        "The fifth offered submit raised before enqueue: offered id 4 lacked a terminal row while ids 0..3 were retained.",
+        "KeyboardInterrupt before drain lacked original error and actual offered-terminal count in the report.",
+        "KeyboardInterrupt after drain left status=running despite exit_code=2 and a sealed archive."
+      ],
+      "after_controls": {
+        "tests": 30,
+        "seconds": 8.087,
+        "result": "passed"
+      },
+      "after_negative_findings": [
+        "Submission failure preserves exactly the actual five offered terminal ids 0..4, failed status and exit 2, with no statistics.",
+        "KeyboardInterrupt before and after drain records failed status, exit 2, original KeyboardInterrupt reason and actual 60 terminal rows, with no statistics.",
+        "All returned futures are done and each retained archive seal verifies for all three independently injected cases."
+      ],
+      "implementation_checks": [
+        "Submit admission is released only after the future is registered; a failed submit wakes a rejected wrapper, preventing work that was enqueued then rejected from recording duplicate terminals or releasing the admission slot twice.",
+        "Only actually offered operations enter the terminal denominator; unoffered planned operations are not fabricated.",
+        "Original 180-second drain and 70-second cleanup budgets remain unchanged; genuinely unfinished work is not sealed as a complete archive.",
+        "Complete unequal parity is exit 1 with valid statistics; execution/oracle failure is exit 2. Partial or failed budget evidence is retained but not scored as successful replay."
+      ],
+      "negative_control_scope": "isolated synthetic runtime controls; build admission mocked, original process/RPC/future/journal/seal paths used"
+    }
+  ],
+  "original_evidence": [
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/reproduce_runtime_exit_gaps.py",
+      "filename": "reproduce_runtime_exit_gaps.py",
+      "sha256": "df7dd5f7bd03d64952e1a60c2c3c30d216087331319ab042a48f58a7c1ce9758",
+      "bytes": 3019
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/runtime-exit-negative-before.json",
+      "filename": "runtime-exit-negative-before.json",
+      "sha256": "608f21ac5c8ac4a932b6ee1273fbf6e78f2b5d946cf9483460308e70cb883c0a",
+      "bytes": 5421
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/runtime-exit-negative-after.json",
+      "filename": "runtime-exit-negative-after.json",
+      "sha256": "bb9cbe4f0f77918b00cc4000bfbdcffea5410aa947cfb328b0c502fa1a81fcdd",
+      "bytes": 5143
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/runtime-tests-before.log",
+      "filename": "runtime-tests-before.log",
+      "sha256": "4d99d2094e3bf1e17c873c0b9b02e86f196dec4f4220fbf286a125b4bed5a0b5",
+      "bytes": 4887
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/runtime-tests-after.log",
+      "filename": "runtime-tests-after.log",
+      "sha256": "95fe22e7fa313ab936e9b4c1c51e17e9ed26126a1e6ae4032e3bf4f1d7c7765e",
+      "bytes": 5231
+    }
+  ],
+  "limits": {
+    "actual_product_certified": false,
+    "original_todo_completion_certified": false,
+    "full_scale_matrix_executed_by_this_review": false,
+    "one_hour_soak_executed_by_this_review": false,
+    "formal_runtime_mixed_matrix_certified": false,
+    "gate_threshold_changes": false,
+    "tasks_status_changes": false,
+    "release_approval": false,
+    "scope_note": "This approval is limited to the two exact runtime file hashes and bounded synthetic engineering controls. Actual source-bound CI observations and each original roadmap acceptance criterion remain separate gates."
+  }
+}

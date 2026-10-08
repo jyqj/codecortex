@@ -1,0 +1,448 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/acceptance_review",
+  "decision": "read_only_source_and_ci_audit_no_todo_acceptance",
+  "repository": "jyqj/codecortex",
+  "comparison": {
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "pr159": {
+      "number": 159,
+      "head": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+      "branch": "task/p8-complete-a217-20261009",
+      "commits": 10,
+      "changed_files": 92,
+      "product": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3",
+      "review": "3b0db8fa2ee778c98196bba74a35ef4b36df610b"
+    },
+    "pr160": {
+      "number": 160,
+      "head": "bb9a96d71622458c39a143055360cc97f0d11d78",
+      "branch": "task/p8-completion-20261009",
+      "commits": 4,
+      "changed_files": 91,
+      "product": "7e4e4fefb8a5302b90579a41f4d334fe176aeb3f",
+      "review": "32674879181b5fd6e8117167eab38922a7f1187d"
+    },
+    "relationship": "diverged",
+    "ahead_by_160": 4,
+    "behind_by_160": 10,
+    "changed_path_intersection": 65,
+    "direct_head_differing_paths": 73
+  },
+  "compared_complete_source_input_counts": {
+    "pr159": 1087,
+    "pr160": 1087
+  },
+  "source_digest_differences": [
+    {
+      "path": "crates/cc-eval/src/bench.rs",
+      "pr159_sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756",
+      "pr160_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "pr159_sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+      "pr160_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "pr159_sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+      "pr160_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6"
+    },
+    {
+      "path": "crates/cc-eval/src/report.rs",
+      "pr159_sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0",
+      "pr160_sha256": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_measurements.rs",
+      "pr159_sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0",
+      "pr160_sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7"
+    },
+    {
+      "path": "crates/cc-server/src/project_session.rs",
+      "pr159_sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314",
+      "pr160_sha256": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc"
+    }
+  ],
+  "validation_digest_differences": [
+    ".github/workflows/p8-platform.yml",
+    ".github/workflows/p8-runtime.yml",
+    ".github/workflows/p8-scale.yml",
+    "scripts/p7_fault_lifecycle_stdio.py",
+    "scripts/p8_backfill.py",
+    "scripts/p8_cold_build.py",
+    "scripts/p8_recovery.py",
+    "scripts/p8_rollback.py",
+    "scripts/p8_runtime_build.py",
+    "scripts/p8_scale_matrix.py",
+    "scripts/tests/test_p8_backfill.py",
+    "scripts/tests/test_p8_platform.py",
+    "scripts/tests/test_p8_runtime_evidence.py",
+    "scripts/tests/test_p8_scale_matrix.py",
+    "scripts/tests/test_p8_platform_independent_review.py"
+  ],
+  "six_file_overlap": [
+    {
+      "path": "scripts/p8_cold_build.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": false,
+      "same_as_our_independently_fixed_version": false
+    },
+    {
+      "path": "scripts/p8_rollback.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": false,
+      "same_as_our_independently_fixed_version": false
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": true,
+      "same_as_our_independently_fixed_version": false
+    },
+    {
+      "path": "scripts/tests/test_p8_platform.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": false,
+      "same_as_our_independently_fixed_version": false
+    },
+    {
+      "path": "scripts/tests/test_p8_recovery.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": true,
+      "same_as_our_independently_fixed_version": false
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime.py",
+      "both_prs_touch": true,
+      "same_at_original_pr_heads": true,
+      "same_as_our_independently_fixed_version": false
+    }
+  ],
+  "implementation_findings": [
+    "PR160 runtime.py, test_p8_runtime.py and test_p8_recovery.py are byte-identical to original PR159 f8ca807; they do not contain the six-file independently reviewed fix set now frozen by root.",
+    "PR160 cold-build/rollback/platform tests add different strict v2 receipts, loaded-observer Git binding, exact Cargo command/producer/copy checks and manifest-shape support. These are overlapping alternatives, not a clean follow-on patch.",
+    "PR160 cold collector CLI still writes matrix.json only after collect_cells succeeds; static source inspection shows the independently fixed failure-receipt path is absent.",
+    "PR160 rollback manifest parsing handles mappings/lists and duplicate rejection but its product_schema_version does not itself recheck source input_count; the current independent fix is not identical.",
+    "The six Rust input differences include PR159's shared nearest-rank owner and regression tests, a capacity predicate spelling difference, and deterministic project-session cancellation controls. Whole-branch replacement would discard these independent deltas."
+  ],
+  "evidence_assessment": {
+    "pr160_archived_engineering": {
+      "archives": {
+        "evidence-part-001.tar.gz": {
+          "bytes": 24926931,
+          "file_count": 1491,
+          "sha256": "0797014dfc3358bd0514a98355ae2090eada6a369ae1d825d64ec9dbd1522be5"
+        },
+        "evidence-part-002.tar.gz": {
+          "bytes": 18294681,
+          "file_count": 27,
+          "sha256": "e3e539b15a1a4df7ec9be6591a538346c5dda9e7eb589fc3eebe12cd3cc0ff92"
+        }
+      },
+      "changes_to_original_evidence": false,
+      "created_utc": "2026-10-08T19:01:09.285805+00:00",
+      "evidence_bytes": 139705330,
+      "evidence_files": 1518,
+      "excluded_by_scope": [
+        "Cargo target caches",
+        "large working-tree source copies",
+        "future archive commit",
+        "unfinished final P2 approval"
+      ],
+      "groups": {
+        "p8-final-independent-source-review/engineering-log-integrity-review.json": {
+          "bytes": 3854,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/intake-570b2afb.json": {
+          "bytes": 257401,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/intake-6956b095.json": {
+          "bytes": 257203,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/intake-bce4f18c.json": {
+          "bytes": 257401,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/inventory_git_inputs.py": {
+          "bytes": 5528,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/portable-scale-controls-eef27cc9": {
+          "bytes": 7749,
+          "file_count": 3
+        },
+        "p8-final-independent-source-review/portable-scale-review-eef27cc9.json": {
+          "bytes": 3653,
+          "file_count": 1
+        },
+        "p8-final-independent-source-review/verify_engineering_logs.py": {
+          "bytes": 3445,
+          "file_count": 1
+        },
+        "p8-final-python-570b2afb": {
+          "bytes": 63754,
+          "file_count": 11
+        },
+        "p8-final-python-bce4f18c": {
+          "bytes": 63285,
+          "file_count": 11
+        },
+        "p8-final-runtime-controller-bce4f18c": {
+          "bytes": 165230,
+          "file_count": 9
+        },
+        "p8-platform-independent-review-6956": {
+          "bytes": 683102,
+          "file_count": 574
+        },
+        "p8-platform-independent-review-88c580cd": {
+          "bytes": 30937,
+          "file_count": 10
+        },
+        "p8-platform-independent-review-f69acbbe": {
+          "bytes": 21093,
+          "file_count": 8
+        },
+        "p8-platform-observer-f69acbbe": {
+          "bytes": 197718,
+          "file_count": 8
+        },
+        "p8-platform-review-final.stderr": {
+          "bytes": 12405,
+          "file_count": 1
+        },
+        "p8-platform-review-final.stdout": {
+          "bytes": 0,
+          "file_count": 1
+        },
+        "p8-platform-review-verbose-recovery.stderr": {
+          "bytes": 123,
+          "file_count": 1
+        },
+        "p8-platform-review-verbose-recovery.stdout": {
+          "bytes": 0,
+          "file_count": 1
+        },
+        "p8-platform-review-verbose.stderr": {
+          "bytes": 155,
+          "file_count": 1
+        },
+        "p8-platform-review-verbose.stdout": {
+          "bytes": 0,
+          "file_count": 1
+        },
+        "p8-runtime-build-bce4f18c": {
+          "bytes": 31969472,
+          "file_count": 16
+        },
+        "p8-runtime-build-c6d5edba": {
+          "bytes": 31956389,
+          "file_count": 16
+        },
+        "p8-runtime-short-bce4f18c": {
+          "bytes": 6366082,
+          "file_count": 231
+        },
+        "p8-runtime-short-c6d5edba": {
+          "bytes": 6353213,
+          "file_count": 231
+        },
+        "p8-target-measurements-cleanup-20261009": {
+          "bytes": 7590,
+          "file_count": 4
+        },
+        "p8-unified-clippy-6956": {
+          "bytes": 300089,
+          "file_count": 5
+        },
+        "p8-unified-clippy-be9c74ff": {
+          "bytes": 293886,
+          "file_count": 5
+        },
+        "p8-unified-clippy-c6d5edba": {
+          "bytes": 293780,
+          "file_count": 5
+        },
+        "p8-unified-rust-controls": {
+          "bytes": 515615,
+          "file_count": 305
+        },
+        "p8-unified-validation-0832118b": {
+          "bytes": 552557,
+          "file_count": 6
+        },
+        "p8-unified-validation-formatted": {
+          "bytes": 501107,
+          "file_count": 5
+        },
+        "p8-unified-validation-sql-ordinal": {
+          "bytes": 350370,
+          "file_count": 4
+        },
+        "p8-worktree-cleanup-20261009": {
+          "bytes": 92220,
+          "file_count": 8
+        },
+        "validation-scale-20261009/capacity-build-bce4f18c": {
+          "bytes": 28756713,
+          "file_count": 6
+        },
+        "validation-scale-20261009/capacity-build-c6d5edba": {
+          "bytes": 28756816,
+          "file_count": 6
+        },
+        "validation-scale-20261009/capacity-observations-1000-c6d5edba": {
+          "bytes": 147768,
+          "file_count": 3
+        },
+        "validation-scale-20261009/capacity-observations-10000-c6d5edba": {
+          "bytes": 147928,
+          "file_count": 3
+        },
+        "validation-scale-20261009/capacity-preflight-1000-c6d5edba": {
+          "bytes": 151671,
+          "file_count": 5
+        },
+        "validation-scale-20261009/capacity-preflight-10000-c6d5edba": {
+          "bytes": 151694,
+          "file_count": 5
+        },
+        "validation-scale-20261009/capacity-preflight-c6d5edba-summary.json": {
+          "bytes": 2046,
+          "file_count": 1
+        },
+        "validation-scale-20261009/capacity-preflight-observer.py": {
+          "bytes": 4288,
+          "file_count": 1
+        }
+      },
+      "kind": "original_engineering_evidence_archive",
+      "preserved_outcomes": {
+        "0832118b_release_compile": "failed: rusqlite u64 ordinal binding",
+        "6956_release_compile": "passed: five binaries",
+        "6956_release_controls": "42 passed; no performance certification",
+        "capacity_1k_10k_c6d5edba": "not_run: registered free-space threshold unmet",
+        "clippy_6956": "failed: capacity predicate lint",
+        "clippy_be9c74ff": "failed: statistics test helper lint",
+        "clippy_c6d5edba": "passed: original workspace/all-targets gate",
+        "final_python_570b2afb": "350 passed plus fmt/diff/roadmap/facts exit 0",
+        "final_python_bce4f18c": "348 passed plus fmt/diff/roadmap/facts exit 0",
+        "platform_6956_independent_review": "blocked: eight reproducible acceptance counterexamples",
+        "platform_88c580cd_independent_review": "55 platform plus 24 recovery Python controls passed; no formal platform build matrix claim",
+        "runtime_short_scope": "engineering-only short mixed schedule; no long soak or final release certification",
+        "sql_ordinal_release_compile": "controller-cancelled exit 130"
+      },
+      "schema_version": 1,
+      "scope": "Immutable failures, cancellation, correctness controls, short engineering observations and explicit not_run records; not formal scale/runtime/platform acceptance or final P2 review",
+      "source_bundle_heads": {
+        "refs/heads/task/p8-final-candidate-20261009": "570b2afb33d19cb56e110fa0130b529541327fdd",
+        "refs/heads/task/p8-platform-review-20261009": "88c580cdd216e4347d0a625ade92a865ddecf6a3",
+        "refs/heads/task/p8-scale-20261009": "958c7d58e8f4486a0dd3917395a8883a58c1aaff"
+      },
+      "source_bundle_prerequisites": [
+        "7354db236c9d9850a75f31672697ae9eab44565e"
+      ],
+      "todo_status_changes": false,
+      "verification": "All archived members and original files rehashed; both retained runtime build/observation pairs passed their original offline verifier; bundle verify passed with exactly one prerequisite"
+    },
+    "pr160_archive_verification_scope": "Only manifests, tar membership, bytes, seals and two old short runtime pairs were verified by the archived verifier; this audit inspected their exact published summary/verification text, not the binary archives.",
+    "capacity_preflight_scope": {
+      "archive": "scale-preflight-originals.tar.gz",
+      "bytes": 2125305,
+      "manifest_sha256": "da1aad6bd345bc30f506b25b9dae03fcb90e15252016a1a7d1cddfd392163a59",
+      "preserved_files": 29,
+      "results": {
+        "scale_1000": "all 14 groups passed one registered repetition",
+        "scale_10000": "native exit 1; cold/no-op passed; seven mutation groups incomplete after 129 actual builds"
+      },
+      "schema_version": 1,
+      "scope": "engineering preflights only; immutable old 8/128 plan; not final candidate acceptance",
+      "sha256": "abfea29121b896965a71ee3208f749593c95f9af3d9460192fc10ceaae70f9a1"
+    },
+    "reuse": "Preserve exact original source, observer, product and scope. These old engineering archives are useful failure/implementation evidence but cannot fill final candidate N30, one-hour soak or eight-cell acceptance gaps. New PR160 CI artifacts are separate observations of bb9a96, not evidence of f8ca807/f2366d9.",
+    "recommended_integration": "Use PR159/current independently fixed line as the active integration base; retain PR160's source review and engineering archive links, review any selected additional source changes separately. Do not replace six fixed files, combine guard registries, relabel artifacts, or pool source versions into one acceptance result."
+  },
+  "rollback_ci": [
+    {
+      "pr": 159,
+      "source": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+      "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "run_id": 37829580050,
+      "job_id": 113491126784,
+      "job_conclusion": "success",
+      "full_platform_workflow_conclusion": "success",
+      "stdout_status": "passed_declared_fault_matrix",
+      "result_time_utc": "2026-10-08T19:13:14.8255318Z",
+      "artifact": {
+        "id": 11573750355,
+        "name": "p8-full-recovery-f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+        "size_in_bytes": 121218875,
+        "digest": "sha256:15d95ffcd408e270fb6d3103793b7678abf27d1a97fd39d0c0acf291ecba16cd",
+        "expired": false
+      },
+      "raw_log": {
+        "path": "/workspace/scratch/28fef0db5e01/acceptance-review/pr159-recovery-job-113491126784.log",
+        "sha256": "8ac978d85b6632e431a1e14285a257bd7a59cdc17d25cba06bbea6ac06d57522",
+        "bytes": 71335
+      }
+    },
+    {
+      "pr": 160,
+      "source": "bb9a96d71622458c39a143055360cc97f0d11d78",
+      "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "run_id": 37830166284,
+      "job_id": 113493141896,
+      "job_conclusion": "success",
+      "full_platform_workflow_conclusion": "not_completed_at_observation",
+      "stdout_status": "passed_declared_fault_matrix",
+      "result_time_utc": "2026-10-08T19:22:17.7843701Z",
+      "artifact": {
+        "id": 11573412691,
+        "name": "p8-full-recovery-bb9a96d71622458c39a143055360cc97f0d11d78",
+        "size_in_bytes": 121424645,
+        "digest": "sha256:b2a0e1347c24b8770af511b6a88b20f99392a38c085db4b956811059b1ab1b82",
+        "expired": false
+      },
+      "raw_log": {
+        "path": "/workspace/scratch/28fef0db5e01/acceptance-review/pr160-recovery-job-113493141896.log",
+        "sha256": "729a20d53e6bb96648ab402b8322d957c64ef3c561a4d924ad9e3006908ba913",
+        "bytes": 71478
+      }
+    }
+  ],
+  "rollback_reasoning": "Both exact job logs show actual current/previous checkouts and --full-matrix with --previous-source-root and --previous-commit. The exact recovery source requires run_version_pair status passed_actual_source_version_pair before passed_declared_fault_matrix. This supports actual execution, while final raw-archive acceptance remains pending independent member/hash/content review.",
+  "rollback_required_raw_review": [
+    "p8-full-recovery/full-recovery.json",
+    "p8-full-recovery/actual-version-pair/version-pair.json",
+    "actual-version-pair/*-product/{codecortex,build-receipt.json,source-inputs.json}",
+    "actual-version-pair/01-current-build and 02-previous-opens-current and 03-current-restored and 04-original-backup-restored raw RPC/local.json/stderr",
+    "actual-version-pair/backups and source-before.json",
+    "active stdio unknown-cache-format/corruption and original namespace/space/fault test receipts"
+  ],
+  "minimum_next_step": "No execution gap remains for the historical-pair entry on either observed commit. First retrieve and independently verify the existing source-bound recovery artifact, keeping all old receipt fields unchanged. If a new final-source execution is required after code changes, the existing --full-matrix --expected-commit <fixed-current> --previous-source-root <checkout-of-277f2490> --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --jobs 2 --output-dir <new-owned-output> entry already executes the actual pair; no workflow change or paid provider is required. Do not re-run it solely to establish that it previously executed.",
+  "limitations": {
+    "binary_archives_downloaded": false,
+    "new_builds_or_matrix_runs": false,
+    "remote_writes": false,
+    "repository_implementation_changes": false,
+    "tasks_status_changes": false,
+    "todo_closed_by_this_audit": 0,
+    "remaining_original_todos": 29,
+    "release_certified": false
+  },
+  "references": [
+    "https://github.com/jyqj/codecortex/pull/159",
+    "https://github.com/jyqj/codecortex/pull/160",
+    "https://github.com/jyqj/codecortex/compare/f8ca8070592a1bc03cedc2df4e27e1382a3077a7...bb9a96d71622458c39a143055360cc97f0d11d78",
+    "https://github.com/jyqj/codecortex/actions/runs/37829580050/job/113491126784",
+    "https://github.com/jyqj/codecortex/actions/runs/37829580050/artifacts/11573750355",
+    "https://github.com/jyqj/codecortex/actions/runs/37830166284/job/113493141896",
+    "https://github.com/jyqj/codecortex/actions/runs/37830166284/artifacts/11573412691"
+  ],
+  "recorded_at_utc": "2026-10-08T19:31:09.465454+00:00"
+}

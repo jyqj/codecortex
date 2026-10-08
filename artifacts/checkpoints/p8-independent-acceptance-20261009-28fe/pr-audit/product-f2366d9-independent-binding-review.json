@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-08T19:28:31.235232+00:00",
+  "reviewer": "/root/pr_audit@28fef0db5e01",
+  "verdict": "accepted_scoped_product_binding",
+  "scope": "Independent immutable product and inherited approval binding; not a new runtime, original TODO or release acceptance.",
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "previous_product": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3",
+  "parent_execution": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+  "product": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+  "product_parent_has_exactly_six_changed_files": true,
+  "source_manifest": {
+    "roots": [
+      "crates",
+      "Cargo.toml",
+      "Cargo.lock"
+    ],
+    "previous_count": 1087,
+    "product_count": 1087,
+    "path_inventory_identical": true,
+    "all_bytes_identical": true,
+    "matches_prior_registry_complete_inputs": true,
+    "canonical_json_sha256": "9f33828782a0ac3f2cd37ee20a9584f0b88d8312c240831261f5b8ed28ac38ae",
+    "base_to_product_source_delta_paths": 27,
+    "source_delta_inventory_unchanged": true
+  },
+  "validation_manifest": {
+    "roots": [
+      "scripts",
+      ".github/workflows",
+      "tests/source_integrity"
+    ],
+    "exclusions": [
+      ".github/workflows/ci.yml",
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ],
+    "generated_exclusion": "__pycache__ component AND .pyc suffix, unchanged existing rule",
+    "previous_count": 135,
+    "product_count": 135,
+    "path_inventory_identical": true,
+    "changed_content_count": 6,
+    "previous_matches_prior_registry_validation_inputs": true,
+    "canonical_json_sha256": "0df9a14f24c740215de773ca72129711dd5737aeda3a5762755cd3492ea8a291"
+  },
+  "prior_registry": {
+    "commit": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "path": "scripts/reviewed-source-registry-v15.json",
+    "sha256": "5b16e2e8b9f14286cdf16ab45b7d974a244dc24adeb849ee0a58dae64314216f",
+    "product_source": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3"
+  },
+  "validation_delta": {
+    "scripts/p8_cold_build.py": {
+      "before_sha256": "dfb3ee25e527afdc8c08a44a4f44cda5c7f9720da87cacce67648c69b2c32f31",
+      "sha256": "867c024d6b1bd85750d054c8802a687d5cac38c7d6752b2f11e19be19ff7435b",
+      "independent_reviewer": "/root@28fef0db5e01"
+    },
+    "scripts/p8_rollback.py": {
+      "before_sha256": "5247ffaba63c43f5373227fa202991912ff070328ad194688ebfc2605c543829",
+      "sha256": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
+      "independent_reviewer": "/root/pr_audit@28fef0db5e01"
+    },
+    "scripts/p8_runtime.py": {
+      "before_sha256": "ef4ab630a362c3402ecbb268281e89f19355123daac0f2d2354c74473d752764",
+      "sha256": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+      "independent_reviewer": "/root/acceptance_review@28fef0db5e01"
+    },
+    "scripts/tests/test_p8_platform.py": {
+      "before_sha256": "33c43760add6c21f27b4fbd614a57a1f7f7fe1541f574ae8790edff6e8109cfc",
+      "sha256": "9ecf71482d1c7f0ff3c2957047ea9e1fb1a82edc941864d6ecfdcdfda1819ee6",
+      "independent_reviewer": "/root@28fef0db5e01"
+    },
+    "scripts/tests/test_p8_recovery.py": {
+      "before_sha256": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
+      "sha256": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11",
+      "independent_reviewer": "/root/pr_audit@28fef0db5e01"
+    },
+    "scripts/tests/test_p8_runtime.py": {
+      "before_sha256": "55e2ea9e9ba296fb38f6aee80928f9b5fec7a68cee3eddb542bd815911c7d588",
+      "sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+      "independent_reviewer": "/root/acceptance_review@28fef0db5e01"
+    }
+  },
+  "independent_review_bindings": [
+    {
+      "path": "/workspace/scratch/28fef0db5e01/platform-root-independent-review.json",
+      "sha256": "1d05987db596477ed646364ed1e49b37bf5da71cdabbd0b9d8cf21a66da0caf8",
+      "reviewer": "/root",
+      "approved_files_sha256": {
+        "scripts/p8_cold_build.py": "867c024d6b1bd85750d054c8802a687d5cac38c7d6752b2f11e19be19ff7435b",
+        "scripts/tests/test_p8_platform.py": "9ecf71482d1c7f0ff3c2957047ea9e1fb1a82edc941864d6ecfdcdfda1819ee6"
+      },
+      "all_files_match_product": true,
+      "reconstructed_original_diff_sha256": "5d84868d7411c8f44f5ea35026b6394b421392170edb40d4a5a2f2fabaad6088",
+      "diff_serialization": {
+        "flags": [
+          "--no-ext-diff",
+          "--no-color",
+          "--abbrev=7"
+        ],
+        "base": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+        "product": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+        "note": "Explicit original 7-character blob abbreviations; current Git automatic abbreviations are 8 characters. Original review records are unchanged."
+      },
+      "retained_original_evidence_hashes_verified": 0
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/pr-audit/rollback-manifest-independent-review.json",
+      "sha256": "bf5735760d41b384212e2e97397346ef0a581f8e8a6ca590d17eeb3bef186a55",
+      "reviewer": "/root/pr_audit",
+      "approved_files_sha256": {
+        "scripts/p8_rollback.py": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
+        "scripts/tests/test_p8_recovery.py": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11"
+      },
+      "all_files_match_product": true,
+      "reconstructed_original_diff_sha256": "9f09ce5d0b3afda50fa56c171f9b424039fa024626b622c9ccf31769c0e8f6bf",
+      "diff_serialization": {
+        "flags": [
+          "--no-ext-diff",
+          "--no-color",
+          "--abbrev=7"
+        ],
+        "base": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+        "product": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+        "note": "Explicit original 7-character blob abbreviations; current Git automatic abbreviations are 8 characters. Original review records are unchanged."
+      },
+      "retained_original_evidence_hashes_verified": 0
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/runtime-independent-review.json",
+      "sha256": "4b92f306aef7f8574b861574666577a211721084c31bfeceb73653300e891612",
+      "reviewer": "/root/acceptance_review",
+      "approved_files_sha256": {
+        "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+        "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc"
+      },
+      "all_files_match_product": true,
+      "retained_original_evidence_hashes_verified": 5
+    }
+  ],
+  "integration_controls": {
+    "log_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls-restored.log",
+    "log_sha256": "9bc8857b42ca5f6cfe2e319c64d2977c8b1c361bd4c2af6fa5b4e3768c5fcfde",
+    "receipt_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls-restored-receipt.json",
+    "receipt_sha256": "7907dc0d4041c8b0dfa36e9a2ec8c4b16377c7407f769e2ec1eca921ccc85e44",
+    "count": 350,
+    "exit_code": 0,
+    "all_six_inputs_match_product": true,
+    "retained_prior_failed_attempts": [
+      {
+        "receipt_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls-receipt.json",
+        "receipt_sha256": "cbdef7609a5a9ebb0e99edd7c07e2e886ab237b13b7eda5e6faf936a6c706334",
+        "log_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls.log",
+        "log_sha256": "d7e2a0d5b05534c2a44d62b6e3df439d5cf6795fc260141459a83cccc59ac871",
+        "exit_code": 1
+      },
+      {
+        "receipt_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls-final-receipt.json",
+        "receipt_sha256": "1a94193293363db5389834018ae6fc65955584c8a851c9e5dee2faeb8022e947",
+        "log_path": "/workspace/scratch/28fef0db5e01/integration-validation/p8-controls-final.log",
+        "log_sha256": "c42963704de98db2760c3e766ee67826dd9de887983007a050b6b9db4b1cf49f",
+        "exit_code": 1
+      }
+    ],
+    "rerun_by_this_binding_review": false
+  },
+  "unresolved_blockers_in_scope": [],
+  "pending": [
+    "Consolidated independent REVIEW commit must bind this exact PRODUCT and immutable original review records.",
+    "Final v15 pin/registry update and unchanged historical guard chain still require separate review and verification."
+  ],
+  "limits": {
+    "source_or_worktree_modified_by_reviewer": false,
+    "remote_modified": false,
+    "ci_rerun": false,
+    "new_actual_product_acceptance": false,
+    "todo_completion": false,
+    "tasks_done": 163,
+    "tasks_remaining": 29
+  }
+}

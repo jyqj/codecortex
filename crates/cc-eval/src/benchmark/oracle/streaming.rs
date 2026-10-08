@@ -101,8 +101,10 @@ fn spool(
         if *canonical_bytes > limits.max_canonical_bytes {
             return Err(invalid("streaming oracle canonical byte budget exceeded"));
         }
+        let ordinal = i64::try_from(count)
+            .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
         insert
-            .execute((side, serialized, count))
+            .execute((side, serialized, ordinal))
             .map_err(db_error)?;
         count += 1;
     }
@@ -319,7 +321,7 @@ mod tests {
             for (ordinal, value) in expected.iter().rev().enumerate() {
                 tx.execute(
                     "INSERT INTO canonical_rows(side,value,ordinal) VALUES (?1,?2,?3)",
-                    (side, value, ordinal as u64),
+                    (side, value, i64::try_from(ordinal).unwrap()),
                 )
                 .unwrap();
             }

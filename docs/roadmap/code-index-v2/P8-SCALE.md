@@ -145,6 +145,11 @@ python3 scripts/p8_scale_matrix.py aggregate \
 构建收据还固定当前 `p8_scale_matrix.py` 与 `p7_build_identity.py` 的完整 SHA-256，
 并逐字节核对固定提交的 Git blob；build/run/replay 都必须在同一提交、同一版本的
 driver/helper 上执行。运行后的脚本漂移或在另一个 checkout 加载的 helper 均被拒绝。
+producer 还封存实际完整 checkout/target 路径、原 Cargo 命令、原 compiler-artifact
+里的 executable 路径，以及复制前后完全一致的 SHA-256/字节数。跨 job 重放按该
+producer checkout 核完整 manifest/src 路径，按原命令核 target，按原 Cargo 行核
+executable→copy-source→保留二进制的同一身份；相同路径后缀或重填副本 hash 不能
+替代来源。消费端不要求已经销毁的旧 VM/target 仍存在，合法封存仍可移植验证。
 
 聚合器逐条消费完整 raw，要求每个注册样本的输入、两侧 cold、8 个 mutation 阶段、
 每次原始 build、closure 完成态、全部 15 表行数/判等/摘要、配置独立见证齐全。

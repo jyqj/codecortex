@@ -18,7 +18,7 @@ import subprocess
 import sys
 import time
 
-from p8_cold_build import digest, new_directory, write_json
+from p8_cold_build import digest, new_directory, observed_operation, write_json
 from resource_harness.runtime import Journal, StdioRPC
 
 
@@ -32,6 +32,33 @@ FIXTURE_FILES = {
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def manifest_hashes(path):
+    """Read either original bound manifest shape, rejecting ambiguous paths."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, "duplicate manifest key")
+            result[key] = value
+        return result
+    value = json.loads(Path(path).read_text(), object_pairs_hook=unique)
+    if isinstance(value, dict):
+        rows = list(value.items())
+    else:
+        require(isinstance(value, list) and all(isinstance(row, dict) for row in value),
+                "source manifest must be a hash mapping or cold-build row list")
+        rows = [(row.get("path"), row.get("sha256")) for row in value]
+    result = {}
+    for name, sha in rows:
+        require(isinstance(name, str) and name and not Path(name).is_absolute()
+                and ".." not in Path(name).parts and str(Path(name)) == name,
+                "invalid source manifest path")
+        require(name not in result, "duplicate source manifest path")
+        require(isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{64}", sha),
+                "invalid source manifest digest")
+        result[name] = sha
+    return result
 
 
 def binary_identity(binary, receipt_path, package):
@@ -70,7 +97,7 @@ def binary_identity(binary, receipt_path, package):
             "source manifest must be a sibling filename")
     manifest = receipt_path.parent / manifest_name
     require(digest(manifest) == before.get("manifest_sha256"), "product source manifest digest mismatch")
-    require(len(json.loads(manifest.read_text())) == before.get("input_count"),
+    require(len(manifest_hashes(manifest)) == before.get("input_count"),
             "product source manifest count mismatch")
     return dict(binary_path=str(binary), binary_sha256=digest(binary), package_kind=package,
                 receipt_path=str(receipt_path), receipt_sha256=digest(receipt_path),
@@ -285,7 +312,10 @@ def exercise(identity, project, output, cache, wrapper, full=True):
 def product_schema_version(identity):
     """Read the schema contract from bytes already bound by the build manifest."""
     relative = "crates/cc-db/src/index_migrate.rs"
-    manifest = json.loads(Path(identity["source_manifest_path"]).read_text())
+    manifest_path = Path(identity["source_manifest_path"])
+    require(digest(manifest_path) == identity["source"].get("manifest_sha256"),
+            "schema manifest differs from the bound product manifest")
+    manifest = manifest_hashes(manifest_path)
     root = Path(identity["source"]["source_root"]).resolve(strict=True)
     path = root / relative
     require(path.is_file() and not path.is_symlink()
@@ -330,6 +360,7 @@ def run_version_pair(current, previous, output):
     """
     output = Path(output)
     record = dict(schema_version=1, task="P8-016", status="failed", cases=[],
+                  observer_binding="legacy_direct_engineering_scope",
                   products=dict(current=current, previous=previous), runner_sha256=digest(__file__),
                   scope="actual public source revision rollback; no released-package certification",
                   schema_fault_injection=False, released_version_pair=False, release_certified=False)
@@ -429,6 +460,7 @@ def run_version_pair(current, previous, output):
 
 def run_drill(default, semantic, output, network_wrapper=None):
     record = dict(schema_version=1, task="P8-016", status="failed", runner_sha256=digest(__file__),
+                  observer_binding="legacy_direct_engineering_scope",
                   runner_dependencies_sha256={name: digest(Path(__file__).parent / name) for name in
                                               ("p8_cold_build.py", "resource_harness/runtime.py")},
                   products=dict(default=default, semantic=semantic), cases=[],
@@ -573,7 +605,8 @@ def main(argv=None):
                 parser.error("version-pair mode uses disabled default products; syscall denial is not asserted")
             previous = binary_identity(args.previous_binary, args.previous_receipt, "default")
             output = new_directory(args.output_dir)
-            record = run_version_pair(default, previous, output)
+            record = observed_operation(Path(__file__).resolve().parents[1], output, "rollback", "version-pair.json",
+                                        lambda: run_version_pair(default, previous, output), file_manifest)
             print(json.dumps(dict(status=record["status"], error=record.get("error"),
                                   receipt=str(output / "version-pair.json"))))
             return 0 if record["status"] == "passed_actual_source_version_pair" else 1
@@ -581,9 +614,10 @@ def main(argv=None):
             parser.error("injected-schema drill requires --semantic-binary and --semantic-receipt")
         semantic = binary_identity(args.semantic_binary, args.semantic_receipt, "semantic")
         output = new_directory(args.output_dir)
-        record = run_drill(default, semantic, output, args.deny_network_wrapper)
+        record = observed_operation(Path(__file__).resolve().parents[1], output, "rollback", "rollback.json",
+                                    lambda: run_drill(default, semantic, output, args.deny_network_wrapper), file_manifest)
         print(json.dumps(dict(status=record["status"], receipt=str(output / "rollback.json"),
-                              cases={case["id"]: case["status"] for case in record["cases"]})))
+                              cases={case["id"]: case["status"] for case in record.get("cases", [])})))
         return 0 if record["status"] == "passed_limited_local_drill" else 1
     except (OSError, ValueError, KeyError) as error:
         print(f"P8 rollback refused: {error}", file=sys.stderr)

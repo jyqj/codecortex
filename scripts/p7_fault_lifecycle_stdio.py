@@ -6,6 +6,7 @@ No database, cache metadata, lease clock, or product timeout is modified. The
 original independent lifecycle_stdio.py is deliberately left unchanged.
 """
 import argparse
+from contextlib import closing
 import hashlib
 import http.server
 import json
@@ -186,6 +187,9 @@ class Product:
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=self.log, text=True)
         self.responses = queue.Queue()
+        self.reader_errors = []
+        self.stdout_path = evidence.output / f"{label}.stdout.log"
+        self.stdout_log = self.stdout_path.open("xb")
         self.next_id = 0
         self.exit_receipt = None
         evidence.event("spawn", session=label, command=command, pid=self.process.pid,
@@ -193,11 +197,24 @@ class Product:
 
         def read():
             try:
-                for line in self.process.stdout:
-                    self.responses.put(json.loads(line))
+                for line in self.process.stdout.buffer:
+                    # Preserve the exact bytes before JSON decoding, including
+                    # malformed UTF-8/JSON and bytes following the last reply.
+                    self.stdout_log.write(line)
+                    self.stdout_log.flush()
+                    try:
+                        value = json.loads(line)
+                        if not isinstance(value, dict):
+                            raise ValueError("MCP stdout must contain JSON objects")
+                        self.responses.put(value)
+                    except (ValueError, UnicodeError) as error:
+                        self.reader_errors.append(repr(error))
+                        self.responses.put({"reader_error": repr(error)})
             except BaseException as error:
+                self.reader_errors.append(repr(error))
                 self.responses.put({"reader_error": repr(error)})
-        threading.Thread(target=read, daemon=True).start()
+        self.reader = threading.Thread(target=read, name=f"{label}-stdout", daemon=True)
+        self.reader.start()
         self.rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {},
                  "clientInfo": {"name": "p7-fault-lifecycle", "version": "1"}})
         self.process.stdin.write(json.dumps({"jsonrpc": "2.0",
@@ -219,6 +236,13 @@ class Product:
             response = self.responses.get(timeout=max(.01, deadline - time.monotonic()))
             self.evidence.event("mcp_response", session=self.label, response=response)
             require("reader_error" not in response, "MCP stdout must be JSON", response)
+            if "id" in response:
+                require(response["id"] == self.next_id,
+                        "MCP response must match the only pending request", response)
+            else:
+                require(isinstance(response.get("method"), str)
+                        and "result" not in response and "error" not in response,
+                        "MCP notification must be a method without a response payload", response)
             if response.get("id") == self.next_id:
                 require("error" not in response, "MCP request failed", response)
                 return response["result"]
@@ -271,14 +295,38 @@ class Product:
                 raise
             self.process.kill()
             code = self.process.wait(timeout=5)
+        self.reader.join(timeout=5)
+        reader_joined = not self.reader.is_alive()
+        tail, errors = [], list(self.reader_errors)
+        if reader_joined:
+            while True:
+                try:
+                    response = self.responses.get_nowait()
+                except queue.Empty:
+                    break
+                tail.append(response)
+                self.evidence.event("mcp_stdout_tail", session=self.label, response=response)
+                if ("reader_error" in response or "id" in response
+                        or not isinstance(response.get("method"), str)
+                        or "result" in response or "error" in response):
+                    errors.append("unexpected terminal stdout: " + repr(response))
+            self.stdout_log.close()
+            self.process.stdout.close()
         self.log.close()
         self.exit_receipt = {"session": self.label, "exit_code": code,
                              "requested_sigkill": kill, "cleanup": cleanup,
-                             "stderr_sha256": sha256(self.log_path)}
+                             "stderr_sha256": sha256(self.log_path),
+                             "stdout_reader_joined": reader_joined,
+                             "stdout_sha256": sha256(self.stdout_path) if reader_joined else None,
+                             "stdout_errors": errors, "terminal_notifications": len(tail) if not errors else None,
+                             "stdout_policy": "declared SIGKILL may interrupt stdout" if kill else "complete JSON and no unmatched response"}
         self.evidence.event("product_exit", **self.exit_receipt)
         if not cleanup:
             require(code == (-signal.SIGKILL if kill else 0),
                     "product exit must match the declared boundary", self.exit_receipt)
+            require(reader_joined, "product stdout reader must terminate at EOF", self.exit_receipt)
+            if not kill:
+                require(not errors, "product stdout tail must be valid and fully drained", self.exit_receipt)
         return self.exit_receipt
 
 
@@ -286,7 +334,7 @@ def database_snapshot(root, evidence, seed, phase):
     path = root / ".codecortex" / "index.sqlite3"
     # Read-only observer: never make desired rows, clear retry times, change
     # attempts, or advance the lease clock to make a scenario pass.
-    with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=5) as database:
+    with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=5)) as database:
         database.row_factory = sqlite3.Row
         result = {"outbox": [dict(row) for row in database.execute(
                       "SELECT * FROM semantic_outbox ORDER BY task_id")],

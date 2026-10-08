@@ -4,6 +4,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -14,6 +15,11 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import p8_cold_build as cold
 import p8_rollback as rollback
+
+
+def synthetic_rustc_verbose(release, host):
+    return (f"rustc {release} (contract_fake; never a real compiler)\n"
+            f"binary: rustc\nrelease: {release}\nhost: {host}\n")
 
 
 class PlatformControls(unittest.TestCase):
@@ -30,6 +36,17 @@ class PlatformControls(unittest.TestCase):
             "crates/cc-server/src/main.rs": "fn main() {}\n",
         }.items():
             (self.root / name).write_text(value)
+        # The compiler and RPC data remain explicit synthetic contract fixtures.
+        # Preserve real observer source bytes in this fixture's own Git commit;
+        # only loaded-module location is adapted because the test module itself
+        # executes from the checkout under test, not this tiny source fixture.
+        for name in cold.FULL_OBSERVER_MODULES:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(Path(cold.__file__).resolve().parents[1] / name, path)
+        loaded = mock.patch.object(cold, "loaded_observer_path", side_effect=lambda _module, path: path)
+        loaded.start()
+        self.addCleanup(loaded.stop)
         self.git("init", "-q")
         self.git("config", "user.name", "P8 contract test")
         self.git("config", "user.email", "p8-contract@example.invalid")
@@ -57,7 +74,8 @@ path=target/host/('release' if release else 'debug')/'codecortex'
 path.parent.mkdir(parents=True)
 path.write_bytes(b'CONTRACT FAKE ONLY: not a CodeCortex product')
 path.chmod(0o755)
-artifact=dict(reason='compiler-artifact', target=dict(name='codecortex',kind=['bin']),
+artifact=dict(reason='compiler-artifact', target=dict(name='codecortex',kind=['bin'],
+    src_path=str(pathlib.Path.cwd()/'crates/cc-server/src/main.rs')),
     manifest_path=str(pathlib.Path.cwd()/'crates/cc-server/Cargo.toml'),
     executable=str(path),features=['semantic'] if '--features' in args else [],fresh=False,
     profile=dict(opt_level='3' if release else '0',debug_assertions=not release,test=False))
@@ -69,10 +87,12 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         rustc = directory / "rustc-contract-fake"
         rustc.write_text("contract fake rustc identity; never invoked as a real compiler\n")
         rustc.chmod(0o755)
+        host = "aarch64-apple-darwin" if cold.host_platform() == "macos" else "x86_64-unknown-linux-gnu"
         return dict(cargo=dict(path=str(cargo), sha256=cold.digest(cargo), version_verbose="contract_fake"),
-                    rustc=dict(path=str(rustc), sha256=cold.digest(rustc), version_verbose="contract_fake"),
+                    rustc=dict(path=str(rustc), sha256=cold.digest(rustc),
+                               version_verbose=synthetic_rustc_verbose("1.95.0", host)),
                     matrix_toolchain="1.95", channel="1.95.0", rustc_release="1.95.0",
-                    host="aarch64-apple-darwin" if cold.host_platform() == "macos" else "x86_64-unknown-linux-gnu")
+                    host=host)
 
     def build_receipt(self, package="default", failure=False):
         tools = self.toolchain(failure)
@@ -135,6 +155,7 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         tools["matrix_toolchain"] = cell["toolchain"]
         tools["channel"] = "1.95.0" if cell["toolchain"] == "1.95" else "stable"
         tools["host"] = "aarch64-apple-darwin" if cell["platform"] == "macos" else "x86_64-unknown-linux-gnu"
+        tools["rustc"]["version_verbose"] = synthetic_rustc_verbose(tools["rustc_release"], tools["host"])
         output = cold.new_directory(self.base / f"bundle-build-{self.counter}")
         record = cold.build_cell(self.root, output, cell, tools, "dev", 1, 10)
         self.assertEqual(record["status"], "passed", record)
@@ -181,6 +202,7 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
         with self.assertRaisesRegex(ValueError, "commit differs"):
             cold.collect_cells(parent, self.root, "0" * 40)
+        (destination / "codecortex").chmod(0o755)
         (destination / "codecortex").write_bytes(b"replaced synthetic binary")
         with self.assertRaisesRegex(ValueError, "byte digest"):
             cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
@@ -288,6 +310,8 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         path, record = self.build_receipt()
         record["toolchain"]["rustc_release"] = "1.97.0"
         record["toolchain_after"]["rustc_release"] = "1.97.0"
+        for field in ("toolchain", "toolchain_after"):
+            record[field]["rustc"]["version_verbose"] = synthetic_rustc_verbose("1.97.0", record[field]["host"])
         self.rewrite(path, record)
         with self.assertRaisesRegex(ValueError, "non-MSRV"):
             cold.validate_cell(path)
@@ -383,7 +407,8 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         path.write_text(f"pub const CURRENT_SCHEMA_VERSION: u32 = {version};\n")
         manifest = root / "source-inputs.json"
         cold.write_json(manifest, {"crates/cc-db/src/index_migrate.rs": cold.digest(path)})
-        return dict(source={"source_root": str(root), "source_commit": label},
+        return dict(source={"source_root": str(root), "source_commit": label,
+                            "manifest_sha256": cold.digest(manifest)},
                     source_manifest_path=str(manifest))
 
     def test_actual_version_pair_requires_distinct_revisions_and_older_real_schema(self):
@@ -399,6 +424,55 @@ print(json.dumps(dict(reason='build-finished',success=True)))
             "pub const CURRENT_SCHEMA_VERSION: u32 = 23;\n")
         with self.assertRaisesRegex(ValueError, "differs from the bound"):
             rollback.version_pair_contract(current, older)
+
+    def test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths(self):
+        identity = self.schema_identity("cold-list-source", 24)
+        path = Path(identity["source_manifest_path"])
+        original = json.loads(path.read_text())
+        name, sha = next(iter(original.items()))
+        rows = [dict(path=name, sha256=sha, size=123, git_mode="100644", git_blob="a" * 40)]
+        cold.write_json(path, rows)
+        identity["source"]["manifest_sha256"] = cold.digest(path)
+        self.assertEqual(rollback.product_schema_version(identity), 24)
+        for invalid in (rows + rows, [], [dict(path=name, sha256="not-a-digest")]):
+            cold.write_json(path, invalid)
+            identity["source"]["manifest_sha256"] = cold.digest(path)
+            with self.subTest(manifest=invalid), self.assertRaises(ValueError):
+                rollback.product_schema_version(identity)
+        path.write_text('{"same":"' + sha + '","same":"' + sha + '"}')
+        with self.assertRaisesRegex(ValueError, "duplicate manifest"):
+            rollback.manifest_hashes(path)
+
+    def test_observer_rejects_uncommitted_bytes_and_loaded_foreign_module(self):
+        snapshot = cold.observer_snapshot(self.root)
+        self.assertEqual(snapshot["source_commit"], self.git("rev-parse", "HEAD"))
+        with mock.patch.object(cold, "loaded_observer_path", return_value=self.base / "foreign.py"):
+            with self.assertRaisesRegex(ValueError, "loaded from another checkout"):
+                cold.observer_snapshot(self.root)
+        observer = self.root / "scripts/p8_rollback.py"
+        observer.write_bytes(observer.read_bytes() + b"\n# changed observer\n")
+        with self.assertRaisesRegex(ValueError, "committed Git blob"):
+            cold.observer_snapshot(self.root)
+
+    def test_formal_observer_end_drift_cannot_leave_a_passed_receipt(self):
+        output = cold.new_directory(self.base / "observer-end-drift")
+        def operation():
+            observer = self.root / "scripts/p8_rollback.py"
+            observer.write_bytes(observer.read_bytes() + b"\n# mutated during observation\n")
+            return dict(status="passed", product_source="original historical product identity")
+        record = cold.observed_operation(self.root, output, "rollback", "receipt.json", operation, rollback.file_manifest)
+        self.assertEqual(record["status"], "failed")
+        self.assertIn("committed Git blob", record["observer_error"])
+        self.assertEqual(record["product_source"], "original historical product identity")
+        self.assertIn("observer-source/scripts/p8_rollback.py", record["evidence_files_sha256"])
+
+    def test_formal_observer_keeps_historical_product_and_current_driver_separate(self):
+        output = cold.new_directory(self.base / "observer-historical-pair")
+        record = cold.observed_operation(self.root, output, "rollback", "receipt.json",
+            lambda: dict(status="passed", product_source="277f2490fad3fa30f2812b5547bad033867c9ea5"), rollback.file_manifest)
+        self.assertEqual(record["status"], "passed")
+        self.assertEqual(record["observer_before"], record["observer_after"])
+        self.assertNotEqual(record["product_source"], record["observer_before"]["source_commit"])
 
     def test_version_pair_public_probe_rejects_echo_wrong_path_and_false_span(self):
         project = self.base / "public-fixture"

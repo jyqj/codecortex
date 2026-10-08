@@ -132,3 +132,33 @@ profile、越界产物、source / compiler / log 漂移、旧回执覆盖、缺�
 下一步仍需：对应平台的真实新 target 构建与测试；多 runner 证据聚合；当前
 候选产品的回滚复跑；主动 cache 格式隔离；真实发行包配对。P8-011、P7-020、
 P8-013 等原硬依赖不因本轮准备工作而被跳过。
+
+## 2026-10-09：严格来源接收与正式入口
+
+新增的 `.github/workflows/p8-platform.yml` 已定义真实八格构建、逐格原始
+工件上传、完整八格汇总，以及当前源码和公开历史 schema-24 源码的恢复与
+回滚执行。工作流的存在不代表这些最终源码上的执行已经完成；上文旧工程
+结果、旧源码身份与未完成项保持原来的范围。
+
+新冷构建和可移植 bundle 使用 schema 2。生产端、本机回验和跨 runner
+汇总共用同一语义核验：精确 producer manifest/src 路径、Cargo argv、目标
+triple/profile、features、非 test 产物、唯一 Cargo artifact 和最终成功事件、
+完整两份日志、前后配置及编译器记录。原 executable 的路径、大小、SHA-256
+在复制前记录，复制后重核，并与保留二进制逐一对应。汇总只解释原 runner
+路径元数据，不要求已结束的 runner 或 target 仍存在。旧 schema 1 工程档案
+不会被重新标成新 schema 2 的严格证据。
+
+正式 cold/full-recovery/rollback CLI 在执行前后核对实际已加载脚本的路径、
+同一固定 Git commit 的 blob、mode 和完整字节，同时归档原 observer 源。
+observer 属于当前执行器；历史回滚产品仍保留自己的独立 source commit。
+直接调用的旧工程函数与显式 post-build engineering witness 保持原工程范围。
+
+版本配对的 schema 读取同时接受已绑定的 hash mapping 和冷构建 row-list
+manifest，拒绝重复 path、缺失 schema 条目、非法摘要和 manifest 漂移。
+P7 复用的只读 SQLite 探针在成功与异常时都关闭连接；原 SQL 和断言未改。
+stdout 原始字节会先保留再解码，正常 EOF 必须等待 reader 结束并检查所有
+尾部消息：坏 JSON、错误或额外/重复 response 使检查失败，合法无 id 通知
+仍保留并接受。故意 SIGKILL 保留原退出断言，并明确记录可能被中断的 stdout。
+
+原合同控件和独立重封反例通过 `test_p8_platform*.py` 一起运行，仍全部属于
+明确标注的 synthetic 协议测试；它们不计为真实八格、恢复或产品性能测量。

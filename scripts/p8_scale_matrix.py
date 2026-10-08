@@ -216,19 +216,56 @@ def driver_snapshot(root):
             "manifest_sha256": hashlib.sha256(json_bytes(inputs)).hexdigest()}
 
 
+def build_command(target):
+    return ["cargo", "build", "--release", "--locked", "-p", "cc-eval", "--bin", "p8-scale",
+            "--message-format=json", "--target-dir", str(target)]
+
+
+def producer_path(value, name):
+    """Check a preserved absolute producer path without touching a prior VM."""
+    require(isinstance(value, str) and value, "missing producer " + name)
+    path = Path(value)
+    require(path.is_absolute() and str(path) == value and ".." not in path.parts,
+            "noncanonical producer " + name)
+    return path
+
+
+def verify_build_origin(record, cargo):
+    root = producer_path(record.get("build_root"), "checkout")
+    target = producer_path(record.get("target_directory"), "target directory")
+    require(record.get("command") == build_command(target), "original Cargo command/target differs")
+    artifact = record.get("cargo_artifact", {})
+    verify_artifact(artifact)
+    require(artifact.get("manifest_path") == str(root / "crates/cc-eval/Cargo.toml") and
+            artifact.get("target", {}).get("src_path") == str(root / "crates/cc-eval/src/bin/p8-scale.rs"),
+            "Cargo artifact differs from exact producer checkout")
+    executable = producer_path(artifact.get("executable"), "executable")
+    require(target in executable.parents and executable.name == "p8-scale",
+            "original executable differs from selected Cargo target")
+    candidates = [message for message in cargo if message.get("reason") == "compiler-artifact" and
+                  message.get("target", {}).get("name") == "p8-scale"]
+    require(candidates == [artifact], "Cargo artifact missing/duplicated in original log")
+    original = record.get("copy_source", {})
+    require(isinstance(original, dict) and set(original) == {"path", "bytes", "sha256"} and original.get("path") == str(executable),
+            "missing exact original executable copy source")
+    integer(original.get("bytes"), "original executable bytes", 1)
+    require(digest_ok(original.get("sha256")) and record.get("binary_bytes") == original["bytes"] and
+            record.get("binary_sha256") == original["sha256"], "original executable/copy identity differs")
+
+
 def build(root, output, target_directory=None):
     root = Path(root).resolve(strict=True)
     out = new_directory(output)
-    target = Path(target_directory).absolute() if target_directory else out.parent / (out.name + "-cargo")
+    target = (Path(target_directory).absolute() if target_directory else out.parent / (out.name + "-cargo")).resolve()
     require(target != out and out not in target.parents, "Cargo target must stay outside the evidence bundle")
     before = source_snapshot(root)
     driver = driver_snapshot(root)
     require(driver["source_commit"] == before["source_commit"], "build/driver source commits differ")
     write_new(out / "source-before.json", before)
-    command = ["cargo", "build", "--release", "--locked", "-p", "cc-eval", "--bin", "p8-scale",
-               "--message-format=json", "--target-dir", str(target)]
+    command = build_command(target)
     record = {"schema": SCHEMA, "kind": "build", "status": "failed", "started_utc": utc(),
               "command": command, "source_commit": before["source_commit"],
+              "build_root": str(root), "target_directory": str(target),
               "source_manifest_sha256": before["manifest_sha256"],
               "driver_sha256": file_sha256(__file__), "driver_source": driver,
               "environment": runtime_environment(),
@@ -251,11 +288,18 @@ def build(root, output, target_directory=None):
         artifact = candidates[0]
         verify_artifact(artifact, root)
         produced = Path(artifact["executable"]).resolve(strict=True)
-        require(target.resolve() in produced.parents, "executable outside selected Cargo target")
+        require(target in produced.parents and str(produced) == artifact["executable"] and produced.name == "p8-scale",
+                "executable outside selected Cargo target or noncanonical producer path")
+        original = {"path": str(produced), "bytes": produced.stat().st_size, "sha256": file_sha256(produced)}
         shutil.copy2(produced, out / "p8-scale")
-        record.update(status="passed", cargo_artifact=artifact,
+        record.update(cargo_artifact=artifact, copy_source=original,
+                      binary_bytes=(out / "p8-scale").stat().st_size,
                       binary_sha256=file_sha256(out / "p8-scale"),
                       binary_blake3=native_digest(out / "p8-scale", out / "p8-scale"))
+        require(file_sha256(produced) == original["sha256"] and produced.stat().st_size == original["bytes"],
+                "original executable changed while copying")
+        verify_build_origin(record, messages)
+        record["status"] = "passed"
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         record["error"] = str(error)
     record["finished_utc"] = utc()
@@ -281,12 +325,11 @@ def validate_build(directory, root=None):
             "build/execution/replay driver or helper source differs")
     if root is not None:
         require(source_snapshot(root) == before, "execution checkout differs from built source")
-    verify_artifact(record.get("cargo_artifact", {}))
     cargo = [decode(line) for line in (directory / "cargo.jsonl").read_bytes().splitlines() if line]
     require(cargo and cargo[-1] == {"reason": "build-finished", "success": True}, "Cargo completion changed")
-    require(sum(m == record["cargo_artifact"] for m in cargo) == 1, "Cargo artifact missing/duplicated in original log")
+    verify_build_origin(record, cargo)
     binary = directory / "p8-scale"
-    require(file_sha256(binary) == record["binary_sha256"] and
+    require(binary.stat().st_size == record["binary_bytes"] and file_sha256(binary) == record["binary_sha256"] and
             native_digest(binary, binary) == record["binary_blake3"], "preserved build executable changed")
     return record, binary
 

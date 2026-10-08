@@ -92,7 +92,7 @@ jobs:
           mkdir "$RUNNER_TEMP/p8-platform"
           cargo +${{ matrix.channel }} fetch --locked \
             2>&1 | tee "$RUNNER_TEMP/p8-platform/dependency-fetch.log"
-          python3 -m unittest discover -s scripts/tests -p test_p8_platform.py -v \
+          python3 -m unittest discover -s scripts/tests -p 'test_p8_platform*.py' -v \
             2>&1 | tee "$RUNNER_TEMP/p8-platform/receipt-controls.log"
       - name: Fresh target build and real product stdio smoke
         shell: bash

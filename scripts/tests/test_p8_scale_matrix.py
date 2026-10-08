@@ -477,6 +477,97 @@ class CapacityControls(unittest.TestCase):
             self.assertEqual(actual["files"], matrix.inventory(root / "failed", ("shard.json",)))
 
 
+class PortableBuildOriginControls(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="p8-portable-build-contract-")
+        self.addCleanup(self.temporary.cleanup)
+        root = Path(self.temporary.name)
+        self.build = root / "retained-build"
+        self.build.mkdir()
+        self.producer = root / "previous-vm-checkout"
+        self.target = root / "previous-vm-target"
+        self.producer.mkdir()
+        self.target.mkdir()
+        (self.target / "p8-scale").write_bytes(b"contract fixture bytes; not a compiled executable")
+        shutil.copyfile(self.target / "p8-scale", self.build / "p8-scale")
+        inputs = {path: "a" * 64 for path in ("Cargo.toml", "Cargo.lock", "crates/cc-eval/Cargo.toml",
+            "crates/cc-eval/src/bin/p8-scale.rs", "crates/cc-eval/src/benchmark/p8_scale.rs",
+            "crates/cc-eval/src/benchmark/oracle.rs", "crates/cc-eval/src/benchmark/oracle/streaming.rs")}
+        snapshot = dict(inputs=inputs, input_count=len(inputs), source_commit="e" * 40,
+                        source_tree="f" * 40, manifest_sha256=hashlib.sha256(matrix.json_bytes(inputs)).hexdigest())
+        driver_inputs = {path: "b" * 64 for path in matrix.DRIVER_FILES}
+        self.driver = dict(source_commit=snapshot["source_commit"], inputs=driver_inputs,
+                           manifest_sha256=hashlib.sha256(matrix.json_bytes(driver_inputs)).hexdigest())
+        artifact = dict(reason="compiler-artifact", features=[], executable=str(self.target / "p8-scale"),
+                        manifest_path=str(self.producer / "crates/cc-eval/Cargo.toml"),
+                        target=dict(name="p8-scale", kind=["bin"], src_path=str(self.producer / "crates/cc-eval/src/bin/p8-scale.rs")),
+                        profile=dict(opt_level="3", debug_assertions=False, test=False))
+        self.cargo = [artifact, {"reason": "build-finished", "success": True}]
+        binary = self.build / "p8-scale"
+        self.record = dict(schema=matrix.SCHEMA, kind="build", status="passed", exit_code=0,
+            source_commit=snapshot["source_commit"], source_manifest_sha256=snapshot["manifest_sha256"],
+            build_root=str(self.producer), target_directory=str(self.target), command=matrix.build_command(self.target),
+            driver_source=self.driver, driver_sha256=self.driver["inputs"][matrix.DRIVER_FILES[0]], cargo_artifact=artifact,
+            binary_sha256=matrix.file_sha256(binary), binary_bytes=binary.stat().st_size, binary_blake3="c" * 64,
+            copy_source=dict(path=artifact["executable"], sha256=matrix.file_sha256(binary), bytes=binary.stat().st_size))
+        for when in ("before", "after"):
+            matrix.write_new(self.build / f"source-{when}.json", snapshot)
+        (self.build / "cargo.stderr").write_text("synthetic protocol fixture; no compiler executed\n")
+
+    def resign_and_verify(self):
+        # Re-seal each adversarial fixture so content-inventory checks alone
+        # cannot hide a missing semantic producer/copy binding.
+        (self.build / "cargo.jsonl").write_text("".join(json.dumps(row) + "\n" for row in self.cargo))
+        self.record["files"] = matrix.inventory(self.build, ("build.json",))
+        (self.build / "build.json").write_text(json.dumps(self.record))
+        with mock.patch.object(matrix, "driver_snapshot", return_value=self.driver), \
+             mock.patch.object(matrix, "native_digest", return_value="c" * 64):
+            return matrix.validate_build(self.build)
+
+    def test_portable_archive_retains_copy_identity_after_the_producer_vm_is_gone(self):
+        self.resign_and_verify()
+        shutil.rmtree(self.producer)
+        shutil.rmtree(self.target)
+        record, binary = self.resign_and_verify()
+        self.assertEqual(record["copy_source"]["sha256"], matrix.file_sha256(binary))
+
+    def test_matching_suffix_cannot_hide_a_foreign_producer_checkout(self):
+        artifact = self.record["cargo_artifact"]
+        for owner, key in ((artifact, "manifest_path"), (artifact["target"], "src_path")):
+            original = owner[key]
+            owner[key] = original.replace("previous-vm-checkout", "foreign-checkout")
+            with self.assertRaisesRegex(ValueError, "exact producer checkout"):
+                self.resign_and_verify()
+            owner[key] = original
+        self.record["build_root"] = str(self.producer / "foreign")
+        with self.assertRaisesRegex(ValueError, "exact producer checkout"):
+            self.resign_and_verify()
+
+    def test_original_command_target_and_cargo_executable_must_agree(self):
+        original = copy.deepcopy(self.record)
+        self.record["command"][-1] = str(self.target / "other")
+        with self.assertRaisesRegex(ValueError, "command/target"):
+            self.resign_and_verify()
+        self.record["command"] = original["command"]
+        self.record["cargo_artifact"]["executable"] = str(self.producer / "p8-scale")
+        with self.assertRaisesRegex(ValueError, "selected Cargo target"):
+            self.resign_and_verify()
+
+    def test_resealed_copy_claims_cannot_replace_original_producer_bytes_or_path(self):
+        original = copy.deepcopy(self.record["copy_source"])
+        for key, value in (("sha256", "f" * 64), ("bytes", original["bytes"] + 1),
+                           ("path", str(self.target / "another-executable"))):
+            self.record["copy_source"][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.resign_and_verify()
+            self.record["copy_source"] = dict(original)
+        (self.build / "p8-scale").write_bytes(b"a replaced retained executable")
+        self.record["binary_sha256"] = matrix.file_sha256(self.build / "p8-scale")
+        self.record["binary_bytes"] = (self.build / "p8-scale").stat().st_size
+        with self.assertRaisesRegex(ValueError, "original executable/copy"):
+            self.resign_and_verify()
+
+
 class DriverIdentityControls(unittest.TestCase):
     def test_loaded_driver_and_helper_must_equal_their_committed_git_blobs(self):
         with tempfile.TemporaryDirectory(prefix="p8-driver-source-control-") as temp:

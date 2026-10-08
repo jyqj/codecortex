@@ -7,6 +7,42 @@ use cc_eval::benchmark::{
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
+// An explicit harness-owned directory retains actual CLI fault artifacts after
+// the test exits, including on a panic. Ordinary tests remain temporary.
+struct FixtureRoot {
+    temporary: Option<tempfile::TempDir>,
+    retained: Option<PathBuf>,
+}
+
+impl FixtureRoot {
+    fn new(case: &str) -> Self {
+        if let Some(parent) = std::env::var_os("CODECORTEX_GATE_EVIDENCE_DIR") {
+            let parent = PathBuf::from(parent);
+            std::fs::create_dir_all(&parent).unwrap();
+            let directory = tempfile::Builder::new()
+                .prefix(case)
+                .tempdir_in(parent)
+                .unwrap();
+            Self {
+                temporary: None,
+                retained: Some(directory.keep()),
+            }
+        } else {
+            Self {
+                temporary: Some(tempfile::tempdir().unwrap()),
+                retained: None,
+            }
+        }
+    }
+
+    fn path(&self) -> &Path {
+        match &self.retained {
+            Some(path) => path,
+            None => self.temporary.as_ref().unwrap().path(),
+        }
+    }
+}
+
 fn run_fixture(root: &Path, name: &str, samples: usize, elapsed_us: u64, found: bool) -> PathBuf {
     let out = root.join(name);
     std::fs::create_dir_all(out.join("raw")).unwrap();
@@ -96,7 +132,7 @@ fn compare_cli(
 
 #[test]
 fn unmeasurable_latency_cannot_pass_comparison() {
-    let d = tempfile::tempdir().unwrap();
+    let d = FixtureRoot::new("unmeasurable_latency_cannot_pass_comparison-");
     let base = run_fixture(d.path(), "base", 30, 0, true);
     let candidate = run_fixture(d.path(), "candidate", 30, 10, true);
     let result = b::comparison::compare(&base, &candidate, &policy()).unwrap();
@@ -114,7 +150,7 @@ fn zero_measurement_gate_is_invalid() {
 
 #[test]
 fn cli_quality_and_latency_failures_are_nonzero_and_keep_raw() {
-    let d = tempfile::tempdir().unwrap();
+    let d = FixtureRoot::new("cli_quality_and_latency_failures_are_nonzero_and_keep_raw-");
     let base = run_fixture(d.path(), "base", 30, 10, true);
     let policy_file = d.path().join("policy.json");
     report::json(&policy_file, &policy()).unwrap();
@@ -144,7 +180,7 @@ fn cli_quality_and_latency_failures_are_nonzero_and_keep_raw() {
 
 #[test]
 fn cli_inconclusive_is_nonzero() {
-    let d = tempfile::tempdir().unwrap();
+    let d = FixtureRoot::new("cli_inconclusive_is_nonzero-");
     let base = run_fixture(d.path(), "base", 2, 10, true);
     let candidate = run_fixture(d.path(), "candidate", 2, 10, true);
     let policy_file = d.path().join("policy.json");
@@ -162,7 +198,7 @@ fn cli_inconclusive_is_nonzero() {
 
 #[test]
 fn cli_lock_failure_preserves_machine_readable_failure_and_raw() {
-    let d = tempfile::tempdir().unwrap();
+    let d = FixtureRoot::new("cli_lock_failure_preserves_machine_readable_failure_and_raw-");
     let base = run_fixture(d.path(), "base", 2, 10, true);
     let candidate = run_fixture(d.path(), "candidate", 2, 10, true);
     let raw = candidate.join("raw/000000.json");
@@ -192,7 +228,7 @@ fn cli_lock_failure_preserves_machine_readable_failure_and_raw() {
 
 #[test]
 fn cli_bad_policy_is_recorded_without_overwriting_existing_report() {
-    let d = tempfile::tempdir().unwrap();
+    let d = FixtureRoot::new("cli_bad_policy_is_recorded_without_overwriting_existing_report-");
     let policy_file = d.path().join("policy.json");
     std::fs::write(&policy_file, "broken JSON").unwrap();
     let output = d.path().join("comparison.json");

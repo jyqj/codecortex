@@ -94,6 +94,107 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         record["logs_sha256"]["cargo-build.jsonl"] = cold.digest(log)
         self.rewrite(path, record)
 
+    def smoke_fixture(self, path, record):
+        """Synthetic RPC evidence for parser controls, never product execution."""
+        directory = path.parent / "stdio-smoke"
+        project = directory / "fixture"
+        (project / "src").mkdir(parents=True)
+        process = directory / "process"
+        process.mkdir()
+        for name, text in rollback.FIXTURE_FILES.items():
+            (project / name).write_text(text)
+        values = {
+            "initialize": {"protocolVersion": "2024-11-05"},
+            "tools/list": {"tools": [{"name": f"fake-tool-{i}"} for i in range(14)]},
+            "index": {"files_scanned": 2},
+            "status": {"capabilities": {"search": True}, "retrieval": {
+                "semantic_state": "not_configured", "dense_state": "disabled"}},
+            "search": [{"name": rollback.MARKER, "file_path": "src/lib.rs", "start_line": 1, "end_line": 1}],
+        }
+        events = []
+        for request_id, (name, value) in enumerate(values.items(), 1):
+            tool = name in {"index", "status", "search"}
+            request = dict(id=request_id, method="tools/call" if tool else name,
+                           params={"name": name} if tool else {})
+            response = {"structuredContent": {"result": value} if isinstance(value, list) else value} if tool else value
+            events.extend([dict(event="request", payload=request),
+                           dict(event="response", payload=dict(id=request_id, result=response))])
+        (process / "rpc.jsonl").write_text("".join(json.dumps(row) + "\n" for row in events))
+        cold.write_json(process / "process.json", dict(exit_code=0, expected_exit_code=0,
+                        cleanup="completed", tool_count=14, binary_sha256=record["binary_sha256"]))
+        cold.write_json(process / "local.json", dict(tool_count=14, index=values["index"],
+                        capabilities=values["status"], search=values["search"]))
+        (process / "product-stderr.log").write_text("SYNTHETIC CONTRACT FIXTURE ONLY\n")
+        record["stdio_smoke"] = dict(status="passed", binary_sha256=record["binary_sha256"],
+            source_files=rollback.source_manifest(project),
+            logs_sha256={p.name: cold.digest(p) for p in process.iterdir()})
+        cold.write_json(path, record)
+
+    def bundle(self, parent, cell):
+        tools = self.toolchain()
+        tools["matrix_toolchain"] = cell["toolchain"]
+        tools["channel"] = "1.95.0" if cell["toolchain"] == "1.95" else "stable"
+        tools["host"] = "aarch64-apple-darwin" if cell["platform"] == "macos" else "x86_64-unknown-linux-gnu"
+        output = cold.new_directory(self.base / f"bundle-build-{self.counter}")
+        record = cold.build_cell(self.root, output, cell, tools, "dev", 1, 10)
+        self.assertEqual(record["status"], "passed", record)
+        path = output / "receipt.json"
+        self.smoke_fixture(path, record)
+        rows = [dict(cell=dict(platform=os_name, toolchain=tc, package=pkg),
+                     status="not_run", reason="platform_unavailable" if os_name != cell["platform"] else "cell_not_selected")
+                for os_name in cold.PLATFORMS for tc in cold.TOOLCHAINS for pkg in cold.PACKAGES]
+        for row in rows:
+            if row["cell"] == cell:
+                row.clear()
+                row.update(cell=cell, status="passed", receipt=str(path), receipt_sha256=cold.digest(path))
+        matrix = output / "selection.json"
+        cold.write_json(matrix, dict(source=record["source_before"], cells=rows))
+        destination = parent / "-".join(cell.values())
+        cold.export_cell(matrix, cell, destination)
+        return destination
+
+    def test_selected_cell_requires_stdio_and_does_not_certify_other_seven(self):
+        parent = cold.new_directory(self.base / "bundles")
+        destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
+        with self.assertRaisesRegex(ValueError, "eight-cell.*received 1"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+        record = json.loads((destination / "receipt.json").read_text())
+        del record["stdio_smoke"]
+        with self.assertRaisesRegex(ValueError, "stdio smoke"):
+            cold.validate_smoke(destination, record)
+
+    def test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected(self):
+        import shutil
+        parent = cold.new_directory(self.base / "complete-bundles")
+        for os_name in cold.PLATFORMS:
+            for tc in cold.TOOLCHAINS:
+                for package in cold.PACKAGES:
+                    destination = self.bundle(parent, dict(platform=os_name, toolchain=tc, package=package))
+        result = cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+        self.assertEqual(result["counts"], dict(passed=8, failed=0, not_run=0))
+        shutil.copytree(destination, parent / "duplicate")
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_bundle_binary_mutation_and_unrequested_source_fail(self):
+        parent = cold.new_directory(self.base / "mutated-bundle")
+        destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
+        with self.assertRaisesRegex(ValueError, "commit differs"):
+            cold.collect_cells(parent, self.root, "0" * 40)
+        (destination / "codecortex").write_bytes(b"replaced synthetic binary")
+        with self.assertRaisesRegex(ValueError, "byte digest"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_smoke_success_label_cannot_hide_missing_rpc_response(self):
+        path, record = self.build_receipt()
+        self.smoke_fixture(path, record)
+        log = path.parent / "stdio-smoke/process/rpc.jsonl"
+        lines = log.read_text().splitlines()
+        log.write_text("\n".join(lines[:-1]) + "\n")
+        record["stdio_smoke"]["logs_sha256"]["rpc.jsonl"] = cold.digest(log)
+        with self.assertRaisesRegex(ValueError, "response is missing"):
+            cold.validate_smoke(path.parent, record)
+
     def test_valid_cold_contract_replays(self):
         path, record = self.build_receipt()
         self.assertEqual(record["status"], "passed", record.get("error"))
@@ -275,6 +376,44 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         self.assertEqual(identity["source"]["source_commit"], self.git("rev-parse", "HEAD"))
         self.assertIn("not current-source", identity["claim"])
 
+    def schema_identity(self, label, version):
+        root = self.base / label
+        path = root / "crates/cc-db/src/index_migrate.rs"
+        path.parent.mkdir(parents=True)
+        path.write_text(f"pub const CURRENT_SCHEMA_VERSION: u32 = {version};\n")
+        manifest = root / "source-inputs.json"
+        cold.write_json(manifest, {"crates/cc-db/src/index_migrate.rs": cold.digest(path)})
+        return dict(source={"source_root": str(root), "source_commit": label},
+                    source_manifest_path=str(manifest))
+
+    def test_actual_version_pair_requires_distinct_revisions_and_older_real_schema(self):
+        current = self.schema_identity("current", 25)
+        older = self.schema_identity("previous", 24)
+        self.assertEqual(rollback.version_pair_contract(current, older), {"current": 25, "previous": 24})
+        with self.assertRaisesRegex(ValueError, "distinct actual source"):
+            rollback.version_pair_contract(current, current)
+        same_schema = self.schema_identity("different-commit-same-schema", 25)
+        with self.assertRaisesRegex(ValueError, "actually older schema"):
+            rollback.version_pair_contract(current, same_schema)
+        (Path(older["source"]["source_root"]) / "crates/cc-db/src/index_migrate.rs").write_text(
+            "pub const CURRENT_SCHEMA_VERSION: u32 = 23;\n")
+        with self.assertRaisesRegex(ValueError, "differs from the bound"):
+            rollback.version_pair_contract(current, older)
+
+    def test_version_pair_public_probe_rejects_echo_wrong_path_and_false_span(self):
+        project = self.base / "public-fixture"
+        (project / "src").mkdir(parents=True)
+        (project / "src/lib.rs").write_text(rollback.FIXTURE_FILES["src/lib.rs"])
+        hit = dict(name=rollback.MARKER, file_path="src/lib.rs", start_line=1, end_line=1)
+        self.assertEqual(rollback.verify_fixture_search(project, [hit])["matching_symbols"], 1)
+        for value in ({"query": rollback.MARKER, "results": []}, [hit | {"file_path": "other.rs"}],
+                      [hit | {"start_line": 0}], [hit | {"end_line": 100}], "not structured"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                rollback.verify_fixture_search(project, value)
+        (project / "src/lib.rs").write_text("pub fn different_symbol() {}\n")
+        with self.assertRaisesRegex(ValueError, "does not define"):
+            rollback.verify_fixture_search(project, [hit])
+
     def test_rollback_rejects_wrong_package_or_changed_binary(self):
         path, record = self.build_receipt()
         binary = record["cargo_artifact"]["executable"]
@@ -339,6 +478,57 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         with self.assertRaisesRegex(TimeoutError, "bounded deadline"):
             rollback.backup_database(source, backup, timeout_seconds=-1)
         self.assertTrue(backup.exists())
+
+    def test_readonly_snapshot_closes_connection_on_success_and_failure(self):
+        real_connect = sqlite3.connect
+        for invalid in (False, True):
+            with self.subTest(invalid=invalid):
+                source = self.base / f"snapshot-close-{invalid}.sqlite3"
+                with contextlib.closing(real_connect(source)) as connection:
+                    if not invalid:
+                        connection.execute("CREATE TABLE files(path TEXT)")
+                opened = []
+
+                def connect(*args, **kwargs):
+                    connection = real_connect(*args, **kwargs)
+                    opened.append(connection)
+                    return connection
+
+                with mock.patch.object(rollback.sqlite3, "connect", side_effect=connect):
+                    if invalid:
+                        with self.assertRaises(sqlite3.OperationalError):
+                            rollback.db_snapshot(source)
+                    else:
+                        self.assertEqual(rollback.db_snapshot(source)["integrity"], "ok")
+                self.assertEqual(len(opened), 1)
+                with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed database"):
+                    opened[0].execute("SELECT 1")
+
+    def test_backup_closes_all_connections_on_success_and_failure(self):
+        real_connect = sqlite3.connect
+        source = self.base / "backup-close-source.sqlite3"
+        with contextlib.closing(real_connect(source)) as connection:
+            connection.execute("CREATE TABLE files(path TEXT)")
+        for expired in (False, True):
+            with self.subTest(expired=expired):
+                opened = []
+
+                def connect(*args, **kwargs):
+                    connection = real_connect(*args, **kwargs)
+                    opened.append(connection)
+                    return connection
+
+                destination = self.base / f"backup-close-{expired}.sqlite3"
+                with mock.patch.object(rollback.sqlite3, "connect", side_effect=connect):
+                    if expired:
+                        with self.assertRaises(TimeoutError):
+                            rollback.backup_database(source, destination, timeout_seconds=-1)
+                    else:
+                        self.assertEqual(rollback.backup_database(source, destination)["snapshot"]["integrity"], "ok")
+                self.assertGreaterEqual(len(opened), 2)
+                for connection in opened:
+                    with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed database"):
+                        connection.execute("SELECT 1")
 
     def test_rebuild_controls_reject_reuse_sentinel_loss_and_bad_integrity(self):
         before = dict(schema_version=1025, future_sentinel_present=True)

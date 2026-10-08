@@ -158,6 +158,153 @@ fn more_than_4096_known_leaf_roots_keep_all_native_direct_bindings() {
 }
 
 #[test]
+fn named_python_imports_keep_direct_bindings_without_loading_unrelated_forwards() {
+    let fixture = Fixture::new();
+    let parser = cc_parsers::ParserRegistry::new();
+    let count = 4_097;
+    let paths = (0..count).map(|n| format!("file{n}.py")).collect();
+    let captured = fixture.capture(paths);
+    let mut units = Vec::new();
+    for n in 0..count {
+        let next = (n + 1) % count;
+        let path = format!("file{n}.py");
+        let source = format!(
+            "from file{next} import own{next}\ndef own{n}(x: int) -> int:\n    return x\ndef call{n}() -> int:\n    return own{next}(1)\n"
+        );
+        let mut outcome = parser.parse(&path, &source, Language::Python).unwrap();
+        assert_eq!(outcome.public_surface.knowledge, SurfaceKnowledge::Known);
+        assert_eq!(outcome.public_surface.forwards.len(), 1);
+        captured.apply_imports(&path, &mut outcome);
+        assert_eq!(outcome.imports[0].imported_name, Some(format!("own{next}")));
+        assert_eq!(
+            outcome.imports[0].resolved_path,
+            Some(format!("file{next}.py"))
+        );
+        let mut parsed = leaf(&path);
+        parsed.language = Language::Python;
+        parsed.outcome = outcome;
+        units.push(parsed);
+    }
+    let mut full = fixture
+        .indexer
+        .build_resolution_catalog(true, &units, &[])
+        .unwrap();
+    fixture
+        .indexer
+        .install_forwarding(&mut full.catalog, &units, &captured)
+        .unwrap();
+    Indexer::resolve_call_edges(&full.catalog, &mut units, &full.resolution_contexts);
+    for (n, parsed) in units.iter().enumerate() {
+        let next = (n + 1) % count;
+        assert_eq!(parsed.outcome.call_edges.len(), 1);
+        let edge = &parsed.outcome.call_edges[0];
+        assert_eq!(edge.callee_symbol, format!("own{next}"));
+        assert_eq!(edge.target_file_path, Some(format!("file{next}.py")));
+        assert!(edge.callee_symbol_uid.is_some());
+    }
+
+    // The exact same parsed corpus, now mostly persisted and only one dirty
+    // unit. The old whole-module traversal walked the 4097-file Python ring
+    // despite each requested name terminating at the next direct declaration.
+    fixture
+        .indexer
+        .db
+        .writes()
+        .replace_files_batch(&units)
+        .unwrap();
+    let mut dirty = vec![units.pop().unwrap()];
+    let mut resumed = fixture
+        .indexer
+        .build_resolution_catalog(false, &dirty, &[])
+        .unwrap();
+    fixture
+        .indexer
+        .install_forwarding(&mut resumed.catalog, &dirty, &captured)
+        .unwrap();
+    Indexer::resolve_call_edges(&resumed.catalog, &mut dirty, &resumed.resolution_contexts);
+    assert_eq!(
+        dirty[0].outcome.call_edges[0].target_file_path,
+        Some("file0.py".into())
+    );
+    assert!(dirty[0].outcome.call_edges[0].callee_symbol_uid.is_some());
+}
+
+#[test]
+fn actual_forward_to_direct_declaration_does_not_expand_its_unrelated_chain() {
+    let fixture = Fixture::new();
+    let parser = cc_parsers::ParserRegistry::new();
+    let mut sources = vec![
+        (
+            "barrel.ts".to_string(),
+            "export {entry} from './leaf';\n".to_string(),
+        ),
+        (
+            "leaf.ts".to_string(),
+            "export function entry():number{return 1;}\nexport {elsewhere} from './chain0';\n"
+                .to_string(),
+        ),
+    ];
+    for n in 0..40 {
+        sources.push((
+            format!("chain{n}.ts"),
+            if n == 39 {
+                "export function elsewhere():number{return 2;}\n".into()
+            } else {
+                format!("export {{elsewhere}} from './chain{}';\n", n + 1)
+            },
+        ));
+    }
+    let captured = fixture.capture(
+        sources
+            .iter()
+            .map(|(path, _)| path.clone())
+            .chain(["caller.ts".into()])
+            .collect(),
+    );
+    let parse = |path: &str, source: &str| {
+        let mut parsed = leaf(path);
+        parsed.outcome = parser.parse(path, source, Language::TypeScript).unwrap();
+        captured.apply_imports(path, &mut parsed.outcome);
+        parsed
+    };
+    let stored: Vec<_> = sources
+        .iter()
+        .map(|(path, source)| parse(path, source))
+        .collect();
+    fixture
+        .indexer
+        .db
+        .writes()
+        .replace_files_batch(&stored)
+        .unwrap();
+    let mut dirty = vec![parse(
+        "caller.ts",
+        "import {entry} from './barrel';\nexport function run(){return entry();}\n",
+    )];
+    let mut resolution = fixture
+        .indexer
+        .build_resolution_catalog(false, &dirty, &[])
+        .unwrap();
+    assert!(!resolution.catalog.has_direct_export("barrel.ts", "entry"));
+    assert!(resolution.catalog.has_direct_export("leaf.ts", "entry"));
+    fixture
+        .indexer
+        .install_forwarding(&mut resolution.catalog, &dirty, &captured)
+        .unwrap();
+    Indexer::resolve_call_edges(
+        &resolution.catalog,
+        &mut dirty,
+        &resolution.resolution_contexts,
+    );
+    assert_eq!(dirty[0].outcome.call_edges.len(), 1);
+    assert_eq!(
+        dirty[0].outcome.call_edges[0].target_file_path,
+        Some("leaf.ts".into())
+    );
+    assert!(dirty[0].outcome.call_edges[0].callee_symbol_uid.is_some());
+}
+
+#[test]
 fn actual_forwarding_roots_above_4096_still_fail() {
     let fixture = Fixture::new();
     let paths: Vec<_> = (0..4_097).map(|n| format!("barrel{n}.ts")).collect();

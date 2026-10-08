@@ -27,7 +27,7 @@ const TABLES: &[&str] = &[
     "routes",
 ];
 mod streaming;
-pub use streaming::{compare_streaming, StreamingLimits};
+pub use streaming::{compare_streaming, compare_streaming_scale_capacity_v1, StreamingLimits};
 
 fn db_error(e: rusqlite::Error) -> super::BenchError {
     super::BenchError::Protocol(format!("oracle DB: {e}"))
@@ -147,7 +147,13 @@ pub fn canonical(root: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
             }
             rows.push(project_row(row, &cols)?);
         }
-        rows.sort_by_key(|v| serde_json::to_string(v).unwrap_or_default());
+        // The serialized row is the original ordering key, not an equality
+        // digest. Cache it once per row instead of serializing both operands
+        // on every comparison (especially expensive for manifest payloads).
+        // The keys are released after this table is sorted; projection,
+        // duplicate multiplicity and the subsequent Value comparison stay
+        // unchanged, including the original signed-zero ordering.
+        rows.sort_by_cached_key(|v| serde_json::to_string(v).unwrap_or_default());
         result.insert((*table).to_string(), rows);
     }
     Ok(result)

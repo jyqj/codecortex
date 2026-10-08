@@ -1,0 +1,165 @@
+name: P8 platform cold builds
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  recovery:
+    name: actual recovery and rollback matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check out the unmodified public schema-24 revision
+        uses: actions/checkout@v4
+        with:
+          ref: 277f2490fad3fa30f2812b5547bad033867c9ea5
+          path: p8-previous-source
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Prepare locked dependencies and verify recovery controls
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir "$RUNNER_TEMP/p8-recovery-preparation"
+          cargo fetch --locked 2>&1 | tee "$RUNNER_TEMP/p8-recovery-preparation/fetch.log"
+          cargo fetch --locked --manifest-path "$GITHUB_WORKSPACE/p8-previous-source/Cargo.toml" \
+            2>&1 | tee "$RUNNER_TEMP/p8-recovery-preparation/previous-fetch.log"
+          python3 -m unittest discover -s scripts/tests -p test_p8_recovery.py -v \
+            2>&1 | tee "$RUNNER_TEMP/p8-recovery-preparation/controls.log"
+      - name: Execute exact product faults and original persistence tests
+        env:
+          EXACT_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 scripts/p8_recovery.py --full-matrix --expected-commit "$EXACT_SOURCE" \
+            --previous-source-root "$GITHUB_WORKSPACE/p8-previous-source" \
+            --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 \
+            --jobs 2 --output-dir "$RUNNER_TEMP/p8-full-recovery"
+      - name: Preserve exact products and raw fault evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-full-recovery-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-recovery-preparation
+            ${{ runner.temp }}/p8-full-recovery/**
+            !${{ runner.temp }}/p8-full-recovery/cargo-target/**
+          include-hidden-files: true
+          if-no-files-found: error
+
+  cold-build:
+    name: cold ${{ matrix.platform }} / ${{ matrix.toolchain }} / ${{ matrix.package }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux, macos]
+        toolchain: ["1.95", stable]
+        package: [default, semantic]
+        include:
+          - platform: linux
+            runner: ubuntu-latest
+          - platform: macos
+            runner: macos-latest
+          - toolchain: "1.95"
+            channel: "1.95.0"
+          - toolchain: stable
+            channel: stable
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.channel }}
+      - name: Fetch locked dependencies before the cold interval
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir "$RUNNER_TEMP/p8-platform"
+          cargo +${{ matrix.channel }} fetch --locked \
+            2>&1 | tee "$RUNNER_TEMP/p8-platform/dependency-fetch.log"
+          python3 -m unittest discover -s scripts/tests -p test_p8_platform.py -v \
+            2>&1 | tee "$RUNNER_TEMP/p8-platform/receipt-controls.log"
+      - name: Fresh target build and real product stdio smoke
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/p8_cold_build.py --execute --stdio-smoke \
+            --only-toolchain '${{ matrix.toolchain }}' --only-package '${{ matrix.package }}' \
+            --profile release --jobs 2 --timeout-seconds 1800 \
+            --output-dir "$RUNNER_TEMP/p8-platform/cold"
+          code=$?
+          set -e
+          # A selected host cell intentionally leaves seven cells not_run.
+          # Exit 2 is only accepted after the strict selection/export verifies
+          # the one actual build, source, compiler, binary, raw RPC and EOF.
+          test "$code" -eq 2
+          python3 scripts/p8_cold_build.py \
+            --export-selected "$RUNNER_TEMP/p8-platform/cold/matrix.json" \
+            --only-platform '${{ matrix.platform }}' --only-toolchain '${{ matrix.toolchain }}' \
+            --only-package '${{ matrix.package }}' \
+            --output-dir "$RUNNER_TEMP/p8-platform/bundle"
+      - name: Upload exact binary and complete cell evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-platform-cell-${{ matrix.platform }}-${{ matrix.toolchain }}-${{ matrix.package }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/p8-platform/bundle
+          include-hidden-files: true
+          if-no-files-found: error
+      - name: Preserve raw preparation and failed build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-platform-raw-${{ matrix.platform }}-${{ matrix.toolchain }}-${{ matrix.package }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-platform/dependency-fetch.log
+            ${{ runner.temp }}/p8-platform/receipt-controls.log
+            ${{ runner.temp }}/p8-platform/cold/**
+            !${{ runner.temp }}/p8-platform/cold/**/target/**
+          include-hidden-files: true
+          if-no-files-found: error
+
+  complete-matrix:
+    name: all eight platform cells
+    needs: cold-build
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: p8-platform-cell-*-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/p8-platform-cells
+      - name: Require all eight cells at this exact source
+        env:
+          EXACT_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 scripts/p8_cold_build.py \
+            --collect-cells "$RUNNER_TEMP/p8-platform-cells" \
+            --expected-commit "$EXACT_SOURCE" \
+            --output-dir "$RUNNER_TEMP/p8-platform-complete"
+      - name: Upload complete matrix receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-platform-complete-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/p8-platform-complete
+          if-no-files-found: error

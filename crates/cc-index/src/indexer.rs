@@ -177,6 +177,11 @@ pub struct IndexReport {
     /// Per-phase timing breakdown (all in milliseconds).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub phase_timing: Option<PhaseTiming>,
+    /// Complete build-stage wall attribution, with nested prepare work kept
+    /// separate from the enclosing stage totals. Existing phase_timing fields
+    /// retain their original boundaries and millisecond units.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build_timing: Option<BuildTiming>,
     /// Build-side decision envelope: signature-gate decisions and degrade
     /// notes for the postprocess/analysis passes — the build-side counterpart
     /// of `GraphExplain`. `None` when nothing noteworthy happened.
@@ -193,6 +198,24 @@ pub struct PhaseTiming {
     pub write_ms: u64,
     pub postprocess_ms: u64,
     pub analysis_ms: u64,
+}
+
+/// Non-overlapping stage durations plus the time between their boundaries.
+/// The four stages and between_stages_us partition total_us, apart from at
+/// most six microseconds of independent integer rounding. Nested snapshot and
+/// staging durations are diagnostic subsets of prepare_us, never extra work
+/// to add to the partition. None means no full staging operation was executed.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct BuildTiming {
+    pub schema_version: u32,
+    pub prepare_us: u64,
+    pub commit_write_us: u64,
+    pub postprocess_compute_us: u64,
+    pub postprocess_apply_us: u64,
+    pub between_stages_us: u64,
+    pub total_us: u64,
+    pub prepare_snapshot_us: u64,
+    pub full_staging_us: Option<u64>,
 }
 
 pub struct Indexer {

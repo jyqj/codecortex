@@ -44,7 +44,9 @@ use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::{BuildExplain, BuildExplainCollector, CcError, CcResult};
 
 use crate::dirty_closure::DirtyPropagationStatus;
-use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult};
+use crate::indexer::{
+    BuildTiming, FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult,
+};
 use crate::indexer_phases::time_step;
 use crate::indexer_phases::{AnalysisInputs, AnalysisPlan, PostprocessPlan};
 
@@ -94,6 +96,8 @@ pub struct PreparedBuild {
     scan_diff_ms: u64,
     parse_ms: u64,
     resolve_ms: u64,
+    build_timing: BuildTiming,
+    timing_boundary: Instant,
 }
 
 /// Report inputs threaded through the commit stages: everything the final
@@ -110,6 +114,8 @@ struct ReportCarry {
     dirty_plan: cc_model::freshness::DirtyPlanExplanation,
     start: Instant,
     timing: PhaseTiming,
+    build_timing: BuildTiming,
+    timing_boundary: Instant,
 }
 
 /// Owned output of stage 1 ([`IndexBuildPlan::commit_write`]): the index
@@ -290,6 +296,8 @@ impl IndexBuildPlan {
         }
         let resolve_ms = phase_start.elapsed().as_millis() as u64;
 
+        let snapshot_started = Instant::now();
+
         // Capture report totals and route nodes from the resolved in-memory
         // units before `phase_write` consumes them. Route nodes must be the
         // same snapshot used by both DB write and infra route matching.
@@ -298,8 +306,10 @@ impl IndexBuildPlan {
         // Chunk text is final after resolution, so compress here (lock-free)
         // instead of inside the commit-side write transaction.
         let chunk_blobs = Indexer::precompress_chunks(&write_units);
+        let prepare_snapshot_us = snapshot_started.elapsed().as_micros() as u64;
 
         let hierarchy_edges = resolve_result.hierarchy_edges;
+        let mut full_staging_us = None;
         let (
             write_units,
             chunk_blobs,
@@ -309,6 +319,7 @@ impl IndexBuildPlan {
         ) = if self.mode.is_full() {
             let staged_parsed_paths: Vec<String> =
                 write_units.iter().map(|u| u.rel_path.clone()).collect();
+            let staging_started = Instant::now();
             let (staged_config_units, generation_floor) =
                 time_step("prepare", "full_build_staging", || {
                     indexer.write_full_snapshot_build_staging(
@@ -323,6 +334,7 @@ impl IndexBuildPlan {
                         },
                     )
                 })?;
+            full_staging_us = Some(staging_started.elapsed().as_micros() as u64);
             (
                 Vec::new(),
                 PrecompressedChunks::new(),
@@ -334,7 +346,7 @@ impl IndexBuildPlan {
             (write_units, chunk_blobs, None, Vec::new(), Vec::new())
         };
 
-        Ok(PreparedBuild {
+        let mut prepared = PreparedBuild {
             chunk_policy: indexer.parsers.chunk_policy(),
             project_model,
             scan_result,
@@ -356,7 +368,23 @@ impl IndexBuildPlan {
             scan_diff_ms,
             parse_ms,
             resolve_ms,
-        })
+            build_timing: BuildTiming {
+                schema_version: 1,
+                prepare_us: 0,
+                commit_write_us: 0,
+                postprocess_compute_us: 0,
+                postprocess_apply_us: 0,
+                between_stages_us: 0,
+                total_us: 0,
+                prepare_snapshot_us,
+                full_staging_us,
+            },
+            timing_boundary: start,
+        };
+        let boundary = Instant::now();
+        prepared.build_timing.prepare_us = boundary.duration_since(start).as_micros() as u64;
+        prepared.timing_boundary = boundary;
+        Ok(prepared)
     }
 
     /// Write half of a build, composed from the three stage functions so the
@@ -383,6 +411,7 @@ impl IndexBuildPlan {
         project_path: &Path,
         prepared: PreparedBuild,
     ) -> CcResult<WrittenBuild> {
+        let stage_started = Instant::now();
         if prepared.chunk_policy != indexer.parsers.chunk_policy() {
             return Err(CcError::Config(
                 "prepared chunk policy differs from commit policy; prepare again".into(),
@@ -410,7 +439,11 @@ impl IndexBuildPlan {
             scan_diff_ms,
             parse_ms,
             resolve_ms,
+            mut build_timing,
+            timing_boundary,
         } = prepared;
+        build_timing.between_stages_us +=
+            stage_started.duration_since(timing_boundary).as_micros() as u64;
 
         // Generation guard: refuse to commit a PreparedBuild whose snapshot
         // reads predate a newer index write. Checked under the caller's write
@@ -484,7 +517,7 @@ impl IndexBuildPlan {
         // committed.
         let written_index_epoch = indexer.db.reads().generation()?.index_epoch;
 
-        Ok(WrittenBuild {
+        let mut written = WrittenBuild {
             carry: ReportCarry {
                 chunk_policy,
                 project_model: project_model.report().clone(),
@@ -502,6 +535,8 @@ impl IndexBuildPlan {
                     postprocess_ms: 0,
                     analysis_ms: 0,
                 },
+                build_timing,
+                timing_boundary: stage_started,
             },
             write_units: write_result.write_units,
             config_units,
@@ -509,7 +544,12 @@ impl IndexBuildPlan {
             walk_manifest,
             build_explain,
             written_index_epoch,
-        })
+        };
+        let boundary = Instant::now();
+        written.carry.build_timing.commit_write_us =
+            boundary.duration_since(stage_started).as_micros() as u64;
+        written.carry.timing_boundary = boundary;
+        Ok(written)
     }
 
     /// Stage 2: postprocess/analysis COMPUTE — signature gates, synthesis
@@ -522,6 +562,7 @@ impl IndexBuildPlan {
         project_path: &Path,
         written: WrittenBuild,
     ) -> CcResult<StagedPostprocess> {
+        let stage_started = Instant::now();
         let WrittenBuild {
             mut carry,
             write_units,
@@ -531,6 +572,9 @@ impl IndexBuildPlan {
             mut build_explain,
             written_index_epoch,
         } = written;
+        carry.build_timing.between_stages_us += stage_started
+            .duration_since(carry.timing_boundary)
+            .as_micros() as u64;
 
         let phase_start = Instant::now();
         let postprocess = indexer.phase_postprocess_compute(
@@ -559,13 +603,18 @@ impl IndexBuildPlan {
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
         let build_explain = build_explain.finish_non_empty();
-        Ok(StagedPostprocess {
+        let mut staged = StagedPostprocess {
             carry,
             postprocess,
             analysis,
             written_index_epoch,
             build_explain,
-        })
+        };
+        let boundary = Instant::now();
+        staged.carry.build_timing.postprocess_compute_us =
+            boundary.duration_since(stage_started).as_micros() as u64;
+        staged.carry.timing_boundary = boundary;
+        Ok(staged)
     }
 
     /// Stage 3: APPLY the staged deltas — short DB transactions only — and
@@ -575,6 +624,7 @@ impl IndexBuildPlan {
         indexer: &Indexer,
         staged: StagedPostprocess,
     ) -> CcResult<IndexReport> {
+        let stage_started = Instant::now();
         let StagedPostprocess {
             mut carry,
             postprocess,
@@ -582,6 +632,9 @@ impl IndexBuildPlan {
             written_index_epoch,
             build_explain,
         } = staged;
+        carry.build_timing.between_stages_us += stage_started
+            .duration_since(carry.timing_boundary)
+            .as_micros() as u64;
 
         // Cheap generation recheck: in-process the build gate guarantees
         // equality; a cross-process writer that committed during stage 2
@@ -604,11 +657,18 @@ impl IndexBuildPlan {
         indexer.phase_analysis_apply(&analysis)?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
-        Ok(self.report(
+        let build_started = carry.start;
+        let mut report = self.report(
             carry,
             build_explain,
             indexer.db.reads().resolution_freshness()?,
-        ))
+        );
+        let finished = Instant::now();
+        if let Some(timing) = &mut report.build_timing {
+            timing.postprocess_apply_us = finished.duration_since(stage_started).as_micros() as u64;
+            timing.total_us = finished.duration_since(build_started).as_micros() as u64;
+        }
+        Ok(report)
     }
 
     fn report(
@@ -627,6 +687,8 @@ impl IndexBuildPlan {
             dirty_plan,
             start,
             timing,
+            build_timing,
+            timing_boundary: _,
         } = carry;
         IndexReport {
             chunk_policy,
@@ -647,6 +709,7 @@ impl IndexBuildPlan {
             used_parallel_parse: parse_report.used_parallel,
             dirty_propagation,
             phase_timing: Some(timing),
+            build_timing: Some(build_timing),
             dirty_plan,
             resolution_freshness,
             build_explain,

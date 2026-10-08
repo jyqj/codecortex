@@ -650,6 +650,7 @@ impl CodeIndex {
             "semantic_configured": self.query_services.semantic().is_some(),
             "retrieval": self.capabilities_info()["retrieval"].clone(),
             "search_cache": search_cache,
+            "process_resources": cc_index::current_process_usage(),
         })
     }
 }

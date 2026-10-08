@@ -1,0 +1,12 @@
+[package]
+name = "independent-direct-review"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cc-db = { path = "../local/source/crates/cc-db" }
+cc-model = { path = "../local/source/crates/cc-model" }
+rusqlite = { version = "0.40", features = ["bundled", "vtab", "functions"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+
+[workspace]

@@ -1,0 +1,186 @@
+{
+  "source": "29b03a0fec6bfde92aac9c41dce996ebb2d08cc7",
+  "pr108_head": "99973e7d6faf3809add4a12cd444f8e69f04d93c",
+  "drain_start_ns": 445794814608,
+  "http_service_excluding_initial_fixture_hold": {
+    "n": 29081,
+    "sum_ms": 9803.475071,
+    "mean_ms": 0.33710928341528834,
+    "p50_ms": 0.291093,
+    "p95_ms": 0.501043,
+    "max_ms": 16.230423
+  },
+  "serial_inter_http_gap": {
+    "n": 29081,
+    "sum_ms": 290183.812512,
+    "mean_ms": 9.978467470582167,
+    "p50_ms": 8.956197,
+    "p95_ms": 19.991722,
+    "max_ms": 223.34185
+  },
+  "adjacent_request_overlaps": 0,
+  "status_client_span": {
+    "n": 1347,
+    "sum_ms": 29318.165055,
+    "mean_ms": 21.765527138084632,
+    "p50_ms": 20.524604,
+    "p95_ms": 33.1998,
+    "max_ms": 169.447645
+  },
+  "windows": [
+    {
+      "window_s": [
+        0,
+        50
+      ],
+      "returned": 7714,
+      "server_ms": {
+        "n": 7713,
+        "sum_ms": 2491.204385,
+        "mean_ms": 0.32298773304810063,
+        "p50_ms": 0.289871,
+        "p95_ms": 0.474263,
+        "max_ms": 5.073141
+      },
+      "gap_ms": {
+        "n": 7713,
+        "sum_ms": 47503.272456,
+        "mean_ms": 6.158858091015169,
+        "p50_ms": 5.09742,
+        "p95_ms": 13.706976,
+        "max_ms": 135.693187
+      }
+    },
+    {
+      "window_s": [
+        50,
+        100
+      ],
+      "returned": 4808,
+      "server_ms": {
+        "n": 4808,
+        "sum_ms": 1868.616716,
+        "mean_ms": 0.38864740349417637,
+        "p50_ms": 0.298198,
+        "p95_ms": 0.72283,
+        "max_ms": 14.913666
+      },
+      "gap_ms": {
+        "n": 4807,
+        "sum_ms": 48122.711879,
+        "mean_ms": 10.010965649885584,
+        "p50_ms": 7.43802,
+        "p95_ms": 23.700939,
+        "max_ms": 207.900282
+      }
+    },
+    {
+      "window_s": [
+        100,
+        150
+      ],
+      "returned": 4425,
+      "server_ms": {
+        "n": 4425,
+        "sum_ms": 1513.111787,
+        "mean_ms": 0.3419461665536723,
+        "p50_ms": 0.296133,
+        "p95_ms": 0.50233,
+        "max_ms": 7.321983
+      },
+      "gap_ms": {
+        "n": 4424,
+        "sum_ms": 48476.314862,
+        "mean_ms": 10.957575692133815,
+        "p50_ms": 8.373238,
+        "p95_ms": 28.989243,
+        "max_ms": 223.34185
+      }
+    },
+    {
+      "window_s": [
+        150,
+        200
+      ],
+      "returned": 4147,
+      "server_ms": {
+        "n": 4147,
+        "sum_ms": 1355.649528,
+        "mean_ms": 0.3268988492886424,
+        "p50_ms": 0.289738,
+        "p95_ms": 0.490103,
+        "max_ms": 16.230423
+      },
+      "gap_ms": {
+        "n": 4146,
+        "sum_ms": 48636.391893,
+        "mean_ms": 11.730919414616498,
+        "p50_ms": 9.33866,
+        "p95_ms": 33.823309,
+        "max_ms": 195.416471
+      }
+    },
+    {
+      "window_s": [
+        200,
+        250
+      ],
+      "returned": 3796,
+      "server_ms": {
+        "n": 3796,
+        "sum_ms": 1230.802862,
+        "mean_ms": 0.324236791886196,
+        "p50_ms": 0.288546,
+        "p95_ms": 0.464481,
+        "max_ms": 15.719151
+      },
+      "gap_ms": {
+        "n": 3795,
+        "sum_ms": 48754.689995,
+        "mean_ms": 12.84708563768116,
+        "p50_ms": 10.286062,
+        "p95_ms": 38.496286,
+        "max_ms": 66.672564
+      }
+    },
+    {
+      "window_s": [
+        250,
+        300
+      ],
+      "returned": 4192,
+      "server_ms": {
+        "n": 4192,
+        "sum_ms": 1344.089793,
+        "mean_ms": 0.32063210710877865,
+        "p50_ms": 0.285798,
+        "p95_ms": 0.461917,
+        "max_ms": 9.954204
+      },
+      "gap_ms": {
+        "n": 4191,
+        "sum_ms": 48643.501318,
+        "mean_ms": 11.60665743688857,
+        "p50_ms": 10.709752,
+        "p95_ms": 16.616615,
+        "max_ms": 51.394416
+      }
+    }
+  ],
+  "note": "HTTP entered-to-returned measures mock handler+fixture logging, excludes client transport/decode. Initial fixture-held request excluded from service sample. Gaps include production work, client transport edges, scheduling, rounds and status contention; cannot attribute directly to SQL.",
+  "inferred_round_boundary_gap_split": {
+    "after_every_16th_input": {
+      "n": 1817,
+      "sum_ms": 50383.706972,
+      "mean_ms": 27.72906272537149,
+      "p50_ms": 26.621937
+    },
+    "other_serial_gaps": {
+      "n": 27264,
+      "sum_ms": 239800.10554,
+      "mean_ms": 8.79548509169601,
+      "p50_ms": 8.690982
+    }
+  },
+  "round_split_note": "Inferred via sequence%16 since every successful attempt is one HTTP input and rounds claim16; boundary gaps include all other per-task work, not pure reconcile. No per-phase 100k timer existed."
+}

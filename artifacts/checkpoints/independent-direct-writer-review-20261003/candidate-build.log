@@ -1,0 +1,219 @@
+["/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo", "build", "--manifest-path", "/workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/driver/Cargo.toml"]
+ Downloading crates ...
+  Downloaded rand v0.10.3
+  Downloaded chacha20 v0.10.2
+   Compiling libc v0.2.183
+   Compiling shlex v1.3.0
+   Compiling find-msvc-tools v0.1.9
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling cfg-if v1.0.4
+   Compiling unicode-ident v1.0.24
+   Compiling pkg-config v0.3.32
+   Compiling jobserver v0.1.34
+   Compiling cc v1.2.58
+   Compiling syn v2.0.117
+   Compiling parking_lot_core v0.9.12
+   Compiling smallvec v1.15.1
+   Compiling cpufeatures v0.3.0
+   Compiling serde_core v1.0.228
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling memchr v2.8.0
+   Compiling vcpkg v0.2.15
+   Compiling rand_core v0.10.0
+   Compiling scopeguard v1.2.0
+   Compiling getrandom v0.4.2
+   Compiling lock_api v0.4.14
+   Compiling libsqlite3-sys v0.38.1
+   Compiling autocfg v1.5.0
+   Compiling foldhash v0.2.0
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling hashbrown v0.17.1
+   Compiling num-traits v0.2.19
+   Compiling parking_lot v0.12.5
+   Compiling serde_derive v1.0.228
+   Compiling chacha20 v0.10.2
+   Compiling blake3 v1.8.4
+   Compiling serde_json v1.0.149
+   Compiling once_cell v1.21.4
+   Compiling thiserror v2.0.18
+   Compiling zstd-safe v7.2.4
+   Compiling tracing-core v0.1.36
+   Compiling rand v0.10.3
+   Compiling scheduled-thread-pool v0.2.7
+   Compiling hashlink v0.12.1
+   Compiling tracing-attributes v0.1.31
+   Compiling thiserror-impl v2.0.18
+   Compiling aho-corasick v1.1.4
+   Compiling bitflags v2.11.0
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling fallible-iterator v0.3.0
+   Compiling arrayref v0.3.9
+   Compiling constant_time_eq v0.4.2
+   Compiling arrayvec v0.7.6
+   Compiling pin-project-lite v0.2.17
+   Compiling itoa v1.0.18
+   Compiling regex-syntax v0.8.10
+   Compiling log v0.4.29
+   Compiling r2d2 v0.8.10
+   Compiling regex-automata v0.4.14
+   Compiling tracing v0.1.44
+   Compiling rusqlite v0.40.1
+   Compiling uuid v1.23.0
+   Compiling iana-time-zone v0.1.65
+   Compiling chrono v0.4.44
+   Compiling zstd v0.13.3
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-model v1.0.0 (/workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-model)
+   Compiling regex v1.12.3
+   Compiling cc-db v1.0.0 (/workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db)
+   Compiling independent-direct-review v0.1.0 (/workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/driver)
+error[E0277]: the trait bound `SymbolKind: From<&str>` is not satisfied
+  --> src/main.rs:46:67
+   |
+46 |         symbol_name:Some(word.into()),symbol_kind:Some("function".into()),token_estimate:12,
+   |                                                                   ^^^^ the trait `From<&str>` is not implemented for `SymbolKind`
+   |
+   = note: required for `&str` to implement `Into<SymbolKind>`
+
+error[E0624]: method `set_metadata` is private
+   --> src/main.rs:105:12
+    |
+105 |         db.set_metadata("index_epoch","41").unwrap(); db.set_metadata("evidence_epoch","73").unwrap();
+    |            ^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db.rs:821:5
+    |
+821 |     pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
+    |     ------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `set_metadata` is private
+   --> src/main.rs:105:58
+    |
+105 |         db.set_metadata("index_epoch","41").unwrap(); db.set_metadata("evidence_epoch","73").unwrap();
+    |                                                          ^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db.rs:821:5
+    |
+821 |     pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
+    |     ------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `rebuild_with_direct_writer` is private
+   --> src/main.rs:118:36
+    |
+118 |           let result = if direct {db.rebuild_with_direct_writer(build)} else {db.rebuild_with_temp_db(build)};
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_rebuild.rs:329:5
+    |
+329 | /     pub(crate) fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+330 | |     where
+331 | |         F: FnOnce(&Connection) -> CcResult<()>,
+    | |_______________________________________________- private method defined here
+
+error[E0624]: method `rebuild_with_temp_db` is private
+   --> src/main.rs:118:80
+    |
+118 |           let result = if direct {db.rebuild_with_direct_writer(build)} else {db.rebuild_with_temp_db(build)};
+    |                                                                                  ^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_rebuild.rs:302:5
+    |
+302 | /     pub(crate) fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
+303 | |     where
+304 | |         F: FnOnce(&Connection) -> CcResult<()>,
+    | |_______________________________________________- private method defined here
+
+error[E0599]: no method named `schema_version` found for struct `IndexDb` in the current scope
+   --> src/main.rs:122:23
+    |
+122 |         assert_eq!(db.schema_version().unwrap(),24);
+    |                       ^^^^^^^^^^^^^^ method not found in `IndexDb`
+
+error[E0624]: method `replace_files_batch` is private
+   --> src/main.rs:143:12
+    |
+143 |         db.replace_files_batch(&[replacement]).unwrap();
+    |            ^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_write_batch.rs:22:5
+    |
+ 22 |     pub(crate) fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
+    |     --------------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `remove_files_batch` is private
+   --> src/main.rs:145:12
+    |
+145 |         db.remove_files_batch(&["src/alpha.rs".into(),"src/beta.rs".into()]).unwrap();
+    |            ^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_write_batch.rs:514:5
+    |
+514 |     pub(crate) fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
+    |     ---------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `replace_files_batch` is private
+   --> src/main.rs:239:8
+    |
+239 |     db.replace_files_batch(&[unit("src/live.rs","healthy")]).unwrap();
+    |        ^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_write_batch.rs:22:5
+    |
+ 22 |     pub(crate) fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
+    |     --------------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `set_metadata` is private
+   --> src/main.rs:240:8
+    |
+240 |     db.set_metadata("review-marker","preserve-me").unwrap();
+    |        ^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db.rs:821:5
+    |
+821 |     pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
+    |     ------------------------------------------------------------------------- private method defined here
+
+error[E0624]: method `rebuild_with_direct_writer` is private
+   --> src/main.rs:243:14
+    |
+243 |       let e=db.rebuild_with_direct_writer(|_|Err(CcError::Database("independent callback negative".into()))).unwrap_err();
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_rebuild.rs:329:5
+    |
+329 | /     pub(crate) fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+330 | |     where
+331 | |         F: FnOnce(&Connection) -> CcResult<()>,
+    | |_______________________________________________- private method defined here
+
+error[E0624]: method `rebuild_with_direct_writer` is private
+   --> src/main.rs:247:14
+    |
+247 |       let e=db.rebuild_with_direct_writer(|c| {
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_rebuild.rs:329:5
+    |
+329 | /     pub(crate) fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+330 | |     where
+331 | |         F: FnOnce(&Connection) -> CcResult<()>,
+    | |_______________________________________________- private method defined here
+
+error[E0624]: method `rebuild_with_direct_writer` is private
+   --> src/main.rs:257:8
+    |
+257 |       db.rebuild_with_direct_writer(|c|IndexDb::insert_file_data(c,&unit("src/retry.rs","recovered"))).unwrap();
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: /workspace/codecortex/artifacts/checkpoints/independent-direct-writer-review-20261003/local/source/crates/cc-db/src/index_db_rebuild.rs:329:5
+    |
+329 | /     pub(crate) fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+330 | |     where
+331 | |         F: FnOnce(&Connection) -> CcResult<()>,
+    | |_______________________________________________- private method defined here
+
+Some errors have detailed explanations: E0277, E0599, E0624.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `independent-direct-review` (bin "independent-direct-review") due to 13 previous errors

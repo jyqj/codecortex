@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/workspace/codecortex/artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py", line 140, in <module>
+    status=v2_status(product)
+           ^^^^^^^^^^^^^^^^^^
+  File "/workspace/codecortex/artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py", line 61, in v2_status
+    value=p.tool("status",{"aspect":"capabilities"});status=value["retrieval"]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/localwidth4-candidate/scripts/p7_release_resource_preparation.py", line 103, in tool
+    value=self.rpc('tools/call',{'name':name,'arguments':args},**kw)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/localwidth4-candidate/scripts/p7_release_resource_preparation.py", line 96, in rpc
+    value=q.get(timeout=timeout);finish=time.monotonic_ns()
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/queue.py", line 179, in get
+    raise Empty
+_queue.Empty

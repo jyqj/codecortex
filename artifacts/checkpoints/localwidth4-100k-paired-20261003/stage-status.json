@@ -1,0 +1,16 @@
+{
+  "stopped": "correctness_or_non_readiness_failure",
+  "variant": "candidate",
+  "failures": [
+    {
+      "phase": "backfill-drain",
+      "reason": "memory_above_12GiB"
+    },
+    {
+      "phase": "backfill-drain",
+      "type": "Empty",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py\", line 140, in <module>\n    status=v2_status(product)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/workspace/codecortex/artifacts/checkpoints/localwidth4-100k-paired-20261003/candidate/run.py\", line 61, in v2_status\n    value=p.tool(\"status\",{\"aspect\":\"capabilities\"});status=value[\"retrieval\"]\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/localwidth4-candidate/scripts/p7_release_resource_preparation.py\", line 103, in tool\n    value=self.rpc('tools/call',{'name':name,'arguments':args},**kw)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/localwidth4-candidate/scripts/p7_release_resource_preparation.py\", line 96, in rpc\n    value=q.get(timeout=timeout);finish=time.monotonic_ns()\n          ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/queue.py\", line 179, in get\n    raise Empty\n_queue.Empty\n"
+    }
+  ]
+}

@@ -1,0 +1,496 @@
+{
+  "schema_version": 1,
+  "kind": "independent_original_fragment_partial_diagnosis",
+  "reviewer_agent": "/root/todo_acceptance",
+  "run_id": 37746625347,
+  "candidate_source": "cc5142e8e3105bd93c1c290503499972da7f364c",
+  "archive_git_commit": "a831b4939f4c2f21d9ecccbd3abc8f91a7b8095e",
+  "decision": "sampled_partial_status_is_explained_by_reported_bounded_retrieval_and_packing",
+  "scope": "Four Q02 first fragments, one first actual scheduled response per repository/profile; not a full1200-row acceptance or new execution.",
+  "method": {
+    "fragment_origin": "Exact body-free payload fragments from the lossless external reference package; each bytes/SHA256 equals index.original_files[path].segments[0].",
+    "reference_index_blob": "583a69e5078ec5741d1f2c706ef00861c6162301",
+    "reference_index_sha256": "09d56a71921b8debd2c1740a941310f1c5d1e8709111676d7543bf550899e0d0",
+    "extraction": "Balanced JSON object extraction of the complete evidence_summary directly from original first-fragment bytes, with quote/escape-aware scanning. No question substitute, whole-raw reassembly, raw renormalization or rescoring performed.",
+    "actual_operations": [
+      "GitHub original blob retrieval",
+      "SHA256 and UTF8 byte-length comparison",
+      "exact evidence_summary object JSON parse",
+      "manual comparison with the fixed original normalizer source"
+    ],
+    "not_performed": [
+      "product rerun",
+      "cc-eval scorer rerun",
+      "new benchmark queries",
+      "candidate/gate/config/budget modifications",
+      "whole corpus question retrieval",
+      "full1200 normalized-hit audit"
+    ]
+  },
+  "source_bindings": [
+    {
+      "path": "crates/cc-eval/src/benchmark/normalizer.rs",
+      "sha256": "ce9708b670da3291daf731a4bbc4934a4762c872d35f74c43389826a3ab48092",
+      "same_bytes_in_joint_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "relevant_lines": [
+        36,
+        148,
+        174,
+        197
+      ],
+      "findings": "Any valid lane receipt with Partial/Timeout/Unavailable/Error/Cancelled makes lane_partial; grep status partial independently contributes; packing.partial independently contributes. mcp returns ResultStatus::Partial when graph_partial or packing_partial. This diagnosis reads the existing logic and does not rerun it."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs",
+      "sha256": "649f6ae03f1c06acf96f5095578c8a2366ccb511061516b49719e1408a24bd6f",
+      "same_bytes_in_joint_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "relevant_lines": [
+        288,
+        289,
+        293
+      ],
+      "findings": "Original adapter calls public search with original query/top_k and mode hybrid. The observed policy is local with semantic disabled; this is not a live-semantic measurement."
+    }
+  ],
+  "observations": [
+    {
+      "profile": "cc-switch/compat",
+      "raw_path": "cc-switch/compat/raw/000000.json",
+      "original_whole_raw_sha256": "9010fa52b56d119367ef06d7eba9eb11cb9218de17916444be534027f5444abc",
+      "whole_raw_not_reconstructed": true,
+      "first_fragment": {
+        "git_blob": "701873bcde0798b61913e2f69e290f205b9a840f",
+        "sha256": "48836bce3ffac644f9be3f1cad62e6b2740ea3ce74bbd2340a58ef6f28938588",
+        "bytes": 28648
+      },
+      "evidence_summary_exact_value_sha256": "31aad596a6a26081a194c0b5f7dc85d1b6dd8c6a700fa80efa7639eacb4b48e5",
+      "packing": {
+        "compacted": true,
+        "configured_max_bytes": 24000,
+        "continuation": "Use files region/expand on retained references; recheck source version.",
+        "limit_bytes": 24000,
+        "machine_hit_nodes_omitted": 10,
+        "omitted_hits": 6,
+        "omitted_nodes": 0,
+        "original_hits": 10,
+        "original_nodes": 11,
+        "partial": true,
+        "references_omitted": true,
+        "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+        "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+        "used_bytes": 23949
+      },
+      "grep": {
+        "status": "partial",
+        "reason": "scan_cap",
+        "scanned": 20000,
+        "scan_cap": 20000,
+        "prefilter_failed": false
+      },
+      "lanes": [
+        {
+          "lane_id": "exact_symbol",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "path",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 18,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 18
+          }
+        },
+        {
+          "lane_id": "lexical",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          }
+        },
+        {
+          "lane_id": "grep",
+          "status": "partial",
+          "truncation_reason": "scan_cap",
+          "candidate_count": 0,
+          "coverage": {
+            "complete": false,
+            "examined": 20000,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "graph",
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "candidate_count": 12,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 61
+          }
+        }
+      ],
+      "source_freshness": {
+        "partial": false,
+        "budget_exhausted": false,
+        "omitted_files": {}
+      },
+      "observed_deadline_ms": 30000,
+      "observed_top_k": 10,
+      "observed_semantic_state": "disabled",
+      "retained_search_hits": 4,
+      "selected_hits_before_packing": 10
+    },
+    {
+      "profile": "cc-switch/native",
+      "raw_path": "cc-switch/native/raw/000000.json",
+      "original_whole_raw_sha256": "024b1e1cdaca8b4089531ef557fd32cb04e8710ef74ab3b8e0d4344d0637b43b",
+      "whole_raw_not_reconstructed": true,
+      "first_fragment": {
+        "git_blob": "3f2ab5f322be4de4b6dc4f05bc4e0b183a36c69c",
+        "sha256": "4a1b537555132a7778ea1a6266b2f439e7073d4f053e744a55a4d4e2b9edc79b",
+        "bytes": 28649
+      },
+      "evidence_summary_exact_value_sha256": "1baa10b8de44741e7d4c335dd49fddce70dee8c1511e99ae9984fa7d5702148f",
+      "packing": {
+        "compacted": true,
+        "configured_max_bytes": 24000,
+        "continuation": "Use files region/expand on retained references; recheck source version.",
+        "limit_bytes": 24000,
+        "machine_hit_nodes_omitted": 10,
+        "omitted_hits": 6,
+        "omitted_nodes": 0,
+        "original_hits": 10,
+        "original_nodes": 11,
+        "partial": true,
+        "references_omitted": true,
+        "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+        "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+        "used_bytes": 23950
+      },
+      "grep": {
+        "status": "partial",
+        "reason": "scan_cap",
+        "scanned": 20000,
+        "scan_cap": 20000,
+        "prefilter_failed": false
+      },
+      "lanes": [
+        {
+          "lane_id": "exact_symbol",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "path",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 18,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 18
+          }
+        },
+        {
+          "lane_id": "lexical",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          }
+        },
+        {
+          "lane_id": "grep",
+          "status": "partial",
+          "truncation_reason": "scan_cap",
+          "candidate_count": 0,
+          "coverage": {
+            "complete": false,
+            "examined": 20000,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "graph",
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "candidate_count": 12,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 61
+          }
+        }
+      ],
+      "source_freshness": {
+        "partial": false,
+        "budget_exhausted": false,
+        "omitted_files": {}
+      },
+      "observed_deadline_ms": 30000,
+      "observed_top_k": 10,
+      "observed_semantic_state": "disabled",
+      "retained_search_hits": 4,
+      "selected_hits_before_packing": 10
+    },
+    {
+      "profile": "flask/compat",
+      "raw_path": "flask/compat/raw/000000.json",
+      "original_whole_raw_sha256": "474a7d7106203f58a1c175fbc41e287467993007cd547d16b542628c206396c0",
+      "whole_raw_not_reconstructed": true,
+      "first_fragment": {
+        "git_blob": "e533d9a7e28536810fe23f8302cce50cd10a8fd2",
+        "sha256": "e22139717f9cf3b8d2aa0a682bdb6edbdedeedec254f89e7c73aee70caa86bcf",
+        "bytes": 17675
+      },
+      "evidence_summary_exact_value_sha256": "12226508988b91ca4567b6d630e855d295686efa8760eefe17f92f595fad8c06",
+      "packing": {
+        "compacted": true,
+        "configured_max_bytes": 18000,
+        "continuation": "Use files region/expand on retained references; recheck source version.",
+        "limit_bytes": 16000,
+        "machine_hit_nodes_omitted": 10,
+        "omitted_hits": 8,
+        "omitted_nodes": 0,
+        "original_hits": 10,
+        "original_nodes": 12,
+        "partial": true,
+        "references_omitted": true,
+        "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+        "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+        "used_bytes": 15589
+      },
+      "grep": {
+        "status": "complete",
+        "reason": null,
+        "scanned": 1604,
+        "scan_cap": 20000,
+        "prefilter_failed": false
+      },
+      "lanes": [
+        {
+          "lane_id": "exact_symbol",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "path",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 45
+          }
+        },
+        {
+          "lane_id": "lexical",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          }
+        },
+        {
+          "lane_id": "grep",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": 1604,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "graph",
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "candidate_count": 12,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 37
+          }
+        }
+      ],
+      "source_freshness": {
+        "partial": false,
+        "budget_exhausted": false,
+        "omitted_files": {}
+      },
+      "observed_deadline_ms": 30000,
+      "observed_top_k": 10,
+      "observed_semantic_state": "disabled",
+      "retained_search_hits": 2,
+      "selected_hits_before_packing": 10
+    },
+    {
+      "profile": "flask/native",
+      "raw_path": "flask/native/raw/000000.json",
+      "original_whole_raw_sha256": "1fbec1520927524228be8c1d766669dc36a0b121472627815ad7783e1107fd93",
+      "whole_raw_not_reconstructed": true,
+      "first_fragment": {
+        "git_blob": "560210ff5eaaa48ba8e68fa28878c8150bf8a842",
+        "sha256": "916cc902ea241235f10aab1f44603fc84471abf004a4e1600e377e8762363a55",
+        "bytes": 17673
+      },
+      "evidence_summary_exact_value_sha256": "d11e5df5c06505504c2f6621673ac48390b9b83c926ce627cda86f9c43b1806f",
+      "packing": {
+        "compacted": true,
+        "configured_max_bytes": 18000,
+        "continuation": "Use files region/expand on retained references; recheck source version.",
+        "limit_bytes": 16000,
+        "machine_hit_nodes_omitted": 10,
+        "omitted_hits": 8,
+        "omitted_nodes": 0,
+        "original_hits": 10,
+        "original_nodes": 12,
+        "partial": true,
+        "references_omitted": true,
+        "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+        "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+        "used_bytes": 15587
+      },
+      "grep": {
+        "status": "complete",
+        "reason": null,
+        "scanned": 1604,
+        "scan_cap": 20000,
+        "prefilter_failed": false
+      },
+      "lanes": [
+        {
+          "lane_id": "exact_symbol",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "path",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 45
+          }
+        },
+        {
+          "lane_id": "lexical",
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "candidate_count": 24,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          }
+        },
+        {
+          "lane_id": "grep",
+          "status": "complete",
+          "truncation_reason": null,
+          "candidate_count": 0,
+          "coverage": {
+            "complete": true,
+            "examined": 1604,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          }
+        },
+        {
+          "lane_id": "graph",
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "candidate_count": 12,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 37
+          }
+        }
+      ],
+      "source_freshness": {
+        "partial": false,
+        "budget_exhausted": false,
+        "omitted_files": {}
+      },
+      "observed_deadline_ms": 30000,
+      "observed_top_k": 10,
+      "observed_semantic_state": "disabled",
+      "retained_search_hits": 2,
+      "selected_hits_before_packing": 10
+    }
+  ],
+  "interpretation": [
+    "Both sampled cc-switch profiles report grep scanned=scan_cap=20000 with reason scan_cap, lexical candidate_limit and graph_expansion_limit. Any partial lane is already sufficient for Partial under the original normalizer.",
+    "Both sampled cc-switch profiles additionally report partial packing at limit24000, omitting6 of the10 selected hits and leaving4. used_bytes23949/23950 remain within the reported packed limit.",
+    "Both sampled Flask profiles report complete grep over1604 scanned chunks, so their Partial status is not attributable to grep scan_cap. Path and lexical candidate_limit plus graph_expansion_limit remain independent Partial causes.",
+    "Both sampled Flask profiles additionally report packing.partial=true, effective limit16000 (configured18000), omitting8 of10 hits and leaving2. used_bytes15589/15587 remain within the reported packed limit.",
+    "All four evidence objects report source_freshness.partial=false, budget_exhausted=false and empty omitted_files. These four objects do not show a source-freshness failure; that is not a proof that every row is free of hard errors.",
+    "All four report deadline_ms30000 and top_k10; no timeout or budget increase is inferred from these samples. Full execution timing/count/source-validity conclusions belong to the independent complete artifact audit.",
+    "Partial is an explicit coverage/packing limit observation, not complete-empty/no-match. Original measured gate1 must remain failed; no status, budget, normalizer or gate is changed to make this green."
+  ],
+  "task_disposition": "not_decided; retain original valid-measurement/quality-gate distinction and require complete original06 hard-correctness review",
+  "historical_candidate_reuse": "Not the joint2cd release package or preseal; these are preserved cc514 historical observations."
+}

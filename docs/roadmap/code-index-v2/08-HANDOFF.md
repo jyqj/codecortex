@@ -3,17 +3,15 @@
 ## 1. 当前状态
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：160 done / 19 in_progress / 12 todo / 1 blocked**。
+Code Index V2 共 **192 项任务：162 done / 17 in_progress / 12 todo / 1 blocked**。
 
 当前阶段：**P8｜规模、质量与发行认证**；计划状态：`in_progress`；更新日期：`2026-10-08`。
-下一任务：**P8-002｜完成真实多仓native语料认证**（硬依赖已完成）。
+下一任务：**P8-004｜封存holdout与反过拟合检查**（硬依赖已完成）。
 
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
 | P7-018｜受授权的真实provider小集认证 | `blocked` | P7-017 (done) |
-| P8-002｜完成真实多仓native语料认证 | `in_progress` | P8-001 (done) |
-| P8-003｜运行外部兼容套件 | `in_progress` | P8-002 (in_progress) |
-| P8-004｜封存holdout与反过拟合检查 | `in_progress` | P8-003 (in_progress) |
+| P8-004｜封存holdout与反过拟合检查 | `in_progress` | P8-003 (done) |
 | P8-005｜完整规模1k到100k | `in_progress` | P8-004 (in_progress) |
 | P8-006｜增量规模与fanout曲线 | `in_progress` | P7-020 (done)、P8-001 (done)、P8-005 (in_progress) |
 | P8-007｜多并发与混合负载 | `in_progress` | P8-006 (in_progress) |
@@ -29,13 +27,13 @@ Code Index V2 共 **192 项任务：160 done / 19 in_progress / 12 todo / 1 bloc
 | P8-017｜删除临时兼容和重复模块 | `in_progress` | P8-016 (in_progress) |
 | P8-018｜文档事实与安装契约同步 | `in_progress` | P8-017 (in_progress) |
 | P8-019｜发布工件与完整报告归档 | `in_progress` | P8-018 (in_progress) |
-| P8-020｜P8发布评审与遗留关闭 | `in_progress` | P8-001 (done)、P8-002 (in_progress)、P8-003 (in_progress)、P8-004 (in_progress)、P8-005 (in_progress)、P8-006 (in_progress)、P8-007 (in_progress)、P8-008 (in_progress)、P8-009 (in_progress)、P8-010 (in_progress)、P8-011 (in_progress)、P8-012 (in_progress)、P8-013 (in_progress)、P8-016 (in_progress)、P8-017 (in_progress)、P8-018 (in_progress)、P8-019 (in_progress) |
+| P8-020｜P8发布评审与遗留关闭 | `in_progress` | P8-001 (done)、P8-002 (done)、P8-003 (done)、P8-004 (in_progress)、P8-005 (in_progress)、P8-006 (in_progress)、P8-007 (in_progress)、P8-008 (in_progress)、P8-009 (in_progress)、P8-010 (in_progress)、P8-011 (in_progress)、P8-012 (in_progress)、P8-013 (in_progress)、P8-016 (in_progress)、P8-017 (in_progress)、P8-018 (in_progress)、P8-019 (in_progress) |
 
 进度入口：[重构总览](README.md) · [逐项 TODO](05-TODO.md) · [唯一任务状态源](tasks.json) · [执行交接](08-HANDOFF.md)。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`b13b140bcf3a30c12fd78353c574192dd1571d41aeb410395e4c382f95749c1e`。
+> 源文件 SHA-256：`571777a53fd96ec3af918f07d37e0125b00aaa48c37c068ecc23c5b970dbbf33`。
 <!-- code-index-progress:end -->
 
 ## 本轮继续推进（2026-10-08）

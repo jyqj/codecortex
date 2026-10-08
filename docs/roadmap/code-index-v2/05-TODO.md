@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`b13b140bcf3a30c12fd78353c574192dd1571d41aeb410395e4c382f95749c1e`。
+> 任务总数：192；源文件 SHA-256：`571777a53fd96ec3af918f07d37e0125b00aaa48c37c068ecc23c5b970dbbf33`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -15,7 +15,7 @@
 | P5 | 查询执行与证据装配 | 20 / 20 |
 | P6 | 语义持久化与发布底座 | 20 / 20 |
 | P7 | provider与dense端到端 | 19 / 20 |
-| P8 | 规模、质量与发行认证 | 1 / 20 |
+| P8 | 规模、质量与发行认证 | 3 / 20 |
 | P9 | 有收益门的可选增强 | 0 / 12 |
 
 ## P0｜基线与benchmark底座
@@ -2256,9 +2256,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 2026-10-07 主线合并说明：上述输入锁准备记录中的“保持todo”属于当时准备范围；本批新增候选冻结与验证工程后，本项现为in_progress，仍未完成正式验收。
 2026-10-08 final acceptance: 固定当前795源输入的default DEV候选，冻结binary/config/corpus/scorer/model/环境并实际执行原单题基线及原scorer重放；7类真实输入漂移均被拒绝，原gate为baseline_recorded_not_quality_certified。完成输入冻结机制及具体候选验收，未作G8 release/heldout/规模质量认证。
 
-### [ ] P8-002｜完成真实多仓native语料认证
+### [x] P8-002｜完成真实多仓native语料认证
 
-状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
+状态：`done`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/benchmarks/native/`；`crates/cc-eval/benchmarks/manifests/`
 硬依赖：P8-001
 步骤：扩至规划语言/仓库覆盖并复核gold；公开/私有数据分离
@@ -2266,14 +2266,15 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：题数、类别、语言、能力缺口和实际审阅范围透明；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V02；V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/corpus/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计"}, {"target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe", "artifact_paths": ["artifacts/checkpoints/p8-oracle-compat-20261008/README.md"], "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open", "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained", "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history", "summary": "2026-10-08 本会话第2/3轮：重新核对4仓301 native DEV输入与覆盖缺口；Rust/serde、mixed monorepo准入和相应gold复核仍开放。更正派生审计的600-family解释：原D2为初始约600个经审阅问题，family用于split/统计，不新增独立family硬门槛，也不撤销历史已接受的DEV审阅。协调issue #149映射本原任务，未新增任务。"}]
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/corpus/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases", "summary": "public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计"}, {"target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe", "artifact_paths": ["artifacts/checkpoints/p8-oracle-compat-20261008/README.md"], "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open", "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained", "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history", "summary": "2026-10-08 本会话第2/3轮：重新核对4仓301 native DEV输入与覆盖缺口；Rust/serde、mixed monorepo准入和相应gold复核仍开放。更正派生审计的600-family解释：原D2为初始约600个经审阅问题，family用于split/统计，不新增独立family硬门槛，也不撤销历史已接受的DEV审阅。协调issue #149映射本原任务，未新增任务。"}, {"status": "accepted_20261008_original_task_scope", "source": "2cd04485b0e0b23483f64671d56538bbaa47f442", "artifacts": ["artifacts/checkpoints/p8-joint-public-validation-20261008/p8-002-independent-acceptance.json", "artifacts/checkpoints/p8-joint-public-validation-20261008/actual/37752879911/raw/result.json", "crates/cc-eval/benchmarks/manifests/public-dev-20261008.dataset-index.json"], "scope": "六个固定公开仓库的native DEV语料、source/gold审阅、注册与当前release evaluator实际V02完成；327 native /282 compat、132 source、509 spans、182 canonical文件原bytes/mode独立核验。原16 V02、12 freeze、12 suite validation及schema无错误；当前1038输入候选与三组CI实际通过。", "limitations": ["327对初始约600规划目标，全部327为英文DEV；305为已知相关组件，不认证统计独立。", "14个预留Serde/Vite slots未起草；受保护heldout、完整V19排名质量与G8未由本项通过。"], "independent_acceptance": {"git_blob": "554edb990b10e910693ae126fa697ddf8753e46b", "sha256": "cd287b390adc1da68704a7d738a60f3b34af08db1d50372bbfefb784a5e0d295"}, "actual_run": 37752879911}]
 实施备注：2026-10-02 用户拍板（D3）：真实多仓语料采用公开仓 + 固定 commit（延续 09-BENCHMARK 已锁定的 Flask/cc-switch 先例）；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。
 2026-10-08 第一轮：public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计。只计原始TODO推进，完整前置/验收仍开放。
 2026-10-08 本会话第2/3轮：重新核对4仓301 native DEV输入与覆盖缺口；Rust/serde、mixed monorepo准入和相应gold复核仍开放。更正派生审计的600-family解释：原D2为初始约600个经审阅问题，family用于split/统计，不新增独立family硬门槛，也不撤销历史已接受的DEV审阅。协调issue #149映射本原任务，未新增任务。
+2026-10-08 当前合流候选正式验收：六仓327 native/282 compat DEV、132源码、509 spans、20许可文件，182 canonical bytes/OID/mode零差异；实际16旧V02+12新freeze+12suite validation与schema通过。独审554edb990b10e910693ae126fa697ddf8753e46b按原条款接受，本项done；约600规划差额、全英文DEV、305相关组件与14未起草reserved slots仍透明，未升级G8/heldout。
 
-### [ ] P8-003｜运行外部兼容套件
+### [x] P8-003｜运行外部兼容套件
 
-状态：`in_progress`；批次：`P8-A`；优先级：`normal`。
+状态：`done`；批次：`P8-A`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/adapters/`；`artifacts/benchmarks/`
 硬依赖：P8-002
 步骤：同输入锁跑cc-switch/Flask；compat与native独立分报
@@ -2281,8 +2282,9 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：无锁/输入不同/平台glob差异不能直接对比排行榜；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V03；V04；V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/compat/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "真实固定cc-eval执行两轮公开DEV native/compat共774请求并重放；原比较非绿保留，cc-switch/Flask原外部目标not_run"}, {"target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe", "artifact_paths": ["artifacts/checkpoints/p8-oracle-compat-20261008/README.md"], "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open", "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained", "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history", "summary": "2026-10-08 本会话第2/3轮：完成兼容运行完整query/gold身份、ID×repetition矩阵、raw路径、adapter/profile/退出码绑定修复。63项相关测试通过；原774个Express DEV请求仅重验已有结构，0次新检索，原comparison_not_passed保留。cc-switch/Flask原外部输入登记及实际run/replay仍未完成，见协调issue #150。"}]
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/compat/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "真实固定cc-eval执行两轮公开DEV native/compat共774请求并重放；原比较非绿保留，cc-switch/Flask原外部目标not_run"}, {"target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe", "artifact_paths": ["artifacts/checkpoints/p8-oracle-compat-20261008/README.md"], "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open", "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained", "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history", "summary": "2026-10-08 本会话第2/3轮：完成兼容运行完整query/gold身份、ID×repetition矩阵、raw路径、adapter/profile/退出码绑定修复。63项相关测试通过；原774个Express DEV请求仅重验已有结构，0次新检索，原comparison_not_passed保留。cc-switch/Flask原外部输入登记及实际run/replay仍未完成，见协调issue #150。"}, {"status": "accepted_20261008_original_execution_reporting_scope_quality_gate_failed", "source": "2cd04485b0e0b23483f64671d56538bbaa47f442", "artifacts": ["artifacts/checkpoints/p8-joint-public-validation-20261008/p8-003-independent-acceptance.json", "artifacts/checkpoints/p8-release-evidence-20261008/runs/37749276827/review/independent-original-review.json", "artifacts/checkpoints/p8-release-evidence-20261008/runs/37749276827/"], "scope": "同固定cc-switch/Flask输入锁与release binaries实际跑完compat/native四组，每组100 IDs×3 repetitions共1200结果；独立分报、4104 evidence hits与锁定路径/摘要/span核验，四组原replay完成。39 wrapper、4 profile、5 scanner、2 watcher、5 readiness unit与2 readiness real及同源三组CI通过。", "limitations": ["四组原quality gate与replay exit1保留：cc-switch每profile300 Partial；Flask每profile270 Partial+30 NoMatch。未发布候选，release_certified=false。", "只接受原任务的执行/分报范围，不认证G8/整体质量、外部native机械gold的语义正确性或排行榜可比性。", "原driver的P8_003_done=false和所有失败raw字节保留，人工任务范围验收独立记录；旧cc514实测独立归档，不重标为2cd。"], "independent_acceptance": {"git_blob": "5d961a11f0a0f2a1536cba589f250651d57edc4f", "sha256": "0a0d547e0f196244b83dda58bdd850dc4fc1cdf15bda34612edfcb781039812a"}, "actual_run": 37749276827}]
 实施备注：2026-10-08 本会话第2/3轮：完成兼容运行完整query/gold身份、ID×repetition矩阵、raw路径、adapter/profile/退出码绑定修复。63项相关测试通过；原774个Express DEV请求仅重验已有结构，0次新检索，原comparison_not_passed保留。cc-switch/Flask原外部输入登记及实际run/replay仍未完成，见协调issue #150。
+2026-10-08 当前合流候选正式验收：原固定cc-switch/Flask同锁四组各300条，共1200条/4104命中，完整原source/query/suite/raw锁、原评分与replay分别归档核验；构建和相关旧功能实际通过。独审5d961a11f0a0f2a1536cba589f250651d57edc4f按原运行/分报条款接受，本项done。四组原质量gate1及Partial/NoMatch、原driver自动未结项字段保持原bytes，人工条款验收不等于G8/release或外部native语义gold认证。
 
 ### [ ] P8-004｜封存holdout与反过拟合检查
 

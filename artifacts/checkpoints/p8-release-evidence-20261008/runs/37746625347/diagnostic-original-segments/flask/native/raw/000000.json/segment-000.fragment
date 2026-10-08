@@ -1,0 +1,507 @@
+{
+  "evidence_summary": {
+    "files": [
+      "docs/api.rst",
+      "tests/test_reqctx.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 2,
+      "callers_added": 0,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 12,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15587
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 60,
+        "hydrate_requested": 40,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 72,
+            "sorts": 0,
+            "statements": 65,
+            "vm_steps": 3716
+          },
+          "text": {
+            "cache_hits": 0,
+            "legacy_auto_reads": 0,
+            "storage_reads": 40,
+            "utf8_bytes": 53486,
+            "zstd_decodes": 37
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 12,
+          "grep": 0,
+          "lexical": 24,
+          "path": 24
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 10124
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 503,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1604,
+        "skipped_duplicates": 1101,
+        "soft_scanned": 1101,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1101,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 11966
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1101,
+                "utf8_bytes": 733536,
+                "zstd_decodes": 861
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 1603,
+                "rows": 1604,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 12839
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 503,
+                "utf8_bytes": 818582,
+                "zstd_decodes": 366
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1132,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 45
+          },
+          "elapsed_us": 7742,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 10052,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1604,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 18010,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 12,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 37
+          },
+          "elapsed_us": 8911,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 118,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 9,
+        "test": 1
+      },
+      "input_candidates": 40,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 30,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 53486,
+        "redundant_bytes": 0,
+        "unique_bytes": 53486
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 16420,
+        "redundant_bytes": 0,
+        "unique_bytes": 16420
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 36,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          104,
+          173,
+          20,
+          39,
+          200,
+          179,
+          67,
+          144,
+          101,
+          65,
+          172,
+          155,
+          66,
+          226,
+          52,
+          229
+        ],
+        "index_epoch": 6,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 679571,
+      "scope": "disk_generation:v1",
+      "verified_hits": 40
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:docs/api.rst:0",
+        "end_line": 80,
+        "file_path": "docs/api.rst",
+        "fused_score": 0.018518518518518517,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "unknown",
+        "lexical_score": 0.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "e97ea24f1afea896302cd984357740921cb1fcaf6e93933eae5eb45c16de3530",
+            "doc_version": "aa3a56374b2e6a79e3a229c4a8a570664beafe41b43e05b29d834fd4ea15595a",
+            "encoding_key": "dd92903f17570a654471a6d8935b84beaec069883060dd48d2a270153bd7805a",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "bounded_fallback",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "7e2bed8436a208c7689f73b5ae4d5fe06aba8996f2092e499dcdd41c6190fbaf",
+            "source": {
+              "byte_len": 21704,
+              "content_digest": "a20ee302f2732702c08ab362820fa7fff50e19221166f07429f217f26ac9d529",
+              "encoding": "utf8",
+              "snapshot_id": "2f5bd8655fd6225f84c8508ea2413f161ddd65626bf404ac6f77cf2881df9215"
+            },
+            "span": {
+              "end": 2085,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "path@4",
+          "fts-summary",
+          "path-token:api",
+          "preselect:fts-summary:+2.11",
+          "preselect:token-search:+1.00"
+        ],
+        "rerank_score": 0.25954293562815967,
+        "score_trace": [
+          [
+            "rrf:path",
+            0.018518518518518517
+          ],
+          [
+            "overlap",
+            0.11666666666666665
+          ],
+          [
+            "boost:stage-a",
+            0.12435775044297448
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "API\n===\n\n.. module:: flask\n\nThis part of the documentation covers all the interfaces of Flask. For\nparts where Flask depends on external libraries, we document the most\nimportant right here and provide links to the canonical documentation.\n\n\nApplication Object\n------------------\n\n.. autoclass:: Flask\n   :members:\n   :inherited-members:\n\n\nBlueprint Objects\n-----------------\n\n.. autoclass:: Blueprint\n   :members:\n   :inherited-members:\n\nIncoming Request Data\n---------------------\n\n.. autoclass:: Request\n    :members:\n    :inherited-members:\n    :exclude-members: json_module\n\n.. attribute:: request\n\n   To access incoming request data, you can use the global `request`\n   object. Flask parses incoming request data for you and gives you\n   access to it through that global object. Internally Flask makes\n   sure that you always get the correct data for the active thread if you\n   are in a multithreaded environment.\n\n   This is a proxy. See :ref:`notes-on-proxies` for more information.\n\n   The request object is an instance of a :class:`~flask.Request`.\n\n\nResponse Objects\n----------------\n\n.. autoclass:: flask.Response\n    :members:\n    :inherited-members:\n    :exclude-members: json_module\n\nSessions\n--------\n\nIf you have set :attr:`Flask.secret_key` (or configured it from\n:data:`SECRET_KEY`) you can use sessions in Flask applications. A session makes\nit possible to remember information from one request to another. The way Flask\ndoes this is by using a signed cookie. The user can look at the session\ncontents, but can't modify it unless they know the secret key, so make sure to\nset that to something complex and unguessable.\n\nTo access the current session you can use the :class:`session` object:\n\n.. class:: session\n\n   The session object works pretty much like an ordinary dict, with the\n   difference that it keeps track of modifications.\n\n   This is a proxy. See :ref:`notes-on-proxies` for more information.\n\n   The following attributes are interesting:\n\n   .. attribute:: new\n\n      ``True`` if the session is new, ``False`` otherwise.\n\n   .. attribute:: modified\n"
+      },
+      {
+        "breadcrumb": "TestGreenletContextCopying > test_greenlet_context_copying_api",
+        "chunk_id": "chunk:tests/test_reqctx.py:11",
+        "end_line": 202,
+        "file_path": "tests/test_reqctx.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "797ad11d635b9b91020edb0450d7f50268e04278e232496d6a5ed157173faa87",
+            "doc_version": "1362c367cf4f9f91c06929b90d5e85ea13ece6c8759994b3ca6a70313631ad1a",
+            "encoding_key": "848d69350d8bba61c387e9cc6c4ac29fcc54a25ce9e67929986d1a9c3b17b09e",
+            "entity_key": "afc9e1e8dcf77ac46ac88d679a4bcc79f72e72cd0df7259a1cd1df60300e3b05"
+          },
+          "qname": "TestGreenletContextCopying.test_greenlet_context_copying_api",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 5178,
+              "start": 4440
+            },
+            "signature": {
+              "end": 4506,
+              "start": 4440
+            },
+            "slice_digest": "9eab9c0914e136a28b92839a78c7da2eace0e9544897355baa7fd8d7a1cb09f6",
+            "source": {
+              "byte_len": 8691,
+              "content_digest": "b3bc68e8157001d69d71d2cc12bdb48d6e328276ecbf2ffa73cb22c1fbb0e9b2",
+              "encoding": "utf8",
+              "snapshot_id": "861942b0413dfcacdfbc3c9fadfd9f4c0010af964e961a3bc5b621a130351bb3"
+            },
+            "span": {
+              "end": 5178,
+              "start": 4434
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:CustomFlask",
+          "symbol:test_greenlet_context_copying_api",
+          "preselect:fts-summary:+1.40",
+          "preselect:token-search:+2.40"
+        ],
+        "rerank_score": 0.23190203883280608,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.05833333333333333
+          ],
+          [
+            "boost:stage-a",
+            0.15200007804849236
+          ]
+        ],
+        "source": "index",
+        "start_line": 177,
+        "symbol_kind": "method",
+        "symbol_name": "test_greenlet_context_copying_api",
+        "text": "\n\n    def test_greenlet_context_copying_api(self, app, client):\n        greenlets = []\n\n        @app.route(\"/\")\n        def index():\n            flask.session[\"fizz\"] = \"buzz\"\n\n            @flask.copy_current_request_context\n            def g():\n                assert flask.request\n                assert flask.current_app == app\n                assert flask.request.path == \"/\"\n                assert flask.request.args[\"foo\"] == \"bar\"\n                assert flask.session.get(\"fizz\") == \"buzz\"\n                return 42\n\n            greenlets.append(greenlet(g))\n            return \"Hello World!\"\n\n        rv = client.get(\"/?foo=bar\")\n        assert rv.data == b\"Hello World!\"\n\n        result = greenlets[0].run()\n        assert result == 42"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "

@@ -1,0 +1,107 @@
+{
+  "controls": [
+    {
+      "attack": false,
+      "parent_returncode": 0,
+      "tree": {
+        "attempts": [],
+        "exec_command": [
+          "/usr/bin/python3",
+          "-c",
+          "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n libc=ctypes.CDLL(None,use_errno=True); fds=(ctypes.c_int*2)()\n libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]\n assert libc.socketpair(socket.AF_UNIX,socket.SOCK_STREAM,0,fds)==0\n os.write(fds[0],b'ipc'); assert os.read(fds[1],3)==b'ipc'\n os.close(fds[0]); os.close(fds[1])\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.waitstatus_to_exitcode(status)==0\nprint('owned child waited; parent exits zero',flush=True)\n"
+        ],
+        "local_anonymous_ipc": [
+          {
+            "line": 1,
+            "pid": 2999,
+            "raw": "socketpair(AF_UNIX, SOCK_STREAM, 0, [3, 4]) = 0",
+            "scope": "anonymous AF_UNIX SOCK_STREAM IPC; no external address"
+          }
+        ],
+        "processes_and_threads": {
+          "2992": {
+            "from_line": 5,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "c9de3c64be6fc2c4bd4f97cb8d9592b0c581a39ba2b7fa95ddf66cf7e5e305d6"
+          },
+          "2993": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "d6682cb916d8bac22c19ae2c3682bad82a15e27224cfa879ed3b770e9c970bb5"
+          },
+          "2999": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "5badad6a1583219d02cd8a5a31d166ac58859e991b7ab7d4427097cafa7b642f"
+          }
+        },
+        "root_pid": 2992,
+        "root_terminal": {
+          "exit_code": 0
+        }
+      }
+    },
+    {
+      "attack": true,
+      "parent_returncode": 0,
+      "tree": {
+        "attempts": [
+          {
+            "pid": 3021,
+            "reason": "SIGSYS in guarded product tree"
+          },
+          {
+            "known_network_syscall": true,
+            "line": 1,
+            "pid": 3021,
+            "raw": "socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 41",
+            "syscall": "socket"
+          }
+        ],
+        "exec_command": [
+          "/usr/bin/python3",
+          "-c",
+          "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\nprint('owned child waited; parent exits zero',flush=True)\n"
+        ],
+        "local_anonymous_ipc": [],
+        "processes_and_threads": {
+          "3009": {
+            "from_line": 5,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "3c308cb426ca5da72cada6ae1e17e6fcfc71f02b5e29e55006bbe40864ee116b"
+          },
+          "3020": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "04a312769749ac98d976f1719f8672c9b2746b2659063a84be77a34b7f60bc9c"
+          },
+          "3021": {
+            "from_line": 1,
+            "terminal": {
+              "signal": "SIGSYS"
+            },
+            "trace_sha256": "929e21dbb0fe6966c1963b46de5868812c6bd053283d354bca502a98f8ad2492"
+          }
+        },
+        "root_pid": 3009,
+        "root_terminal": {
+          "exit_code": 0
+        }
+      }
+    }
+  ],
+  "guard_sha256": "9ca7d37e3e827ad62ffe44d87ebff5cc35dac7ba26cf8c4b9c537888b7c69ac1",
+  "schema_version": 1,
+  "status": "passed",
+  "verifier_sha256": "c3cdcc8d5a95b572514f25f3c46fbc02e7a618a379242bfe82b8c6427e0aba5a"
+}

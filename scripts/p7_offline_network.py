@@ -24,12 +24,17 @@ import sys
 
 ALLOW, KILL_PROCESS, ERRNO = 0x7FFF0000, 0x80000000, 0x00050000
 LOCAL_IPC_POLICY = {"syscall": "socketpair", "family": "AF_UNIX", "protocol": 0,
-                    "scope": "anonymous local IPC only; no socket/bind/connect exception"}
+                    "trace_admitted_types": ["SOCK_STREAM", "SOCK_SEQPACKET"],
+                    "receive": {"syscall": "recvfrom", "length": 8, "flags": 0,
+                                "address": "NULL", "address_length": "NULL",
+                                "requires_new_pair_inode_trace_witness": True},
+                    "scope": "anonymous local IPC only; no socket/bind/connect/sendmsg/recvmsg exception"}
 NETWORK_SYSCALLS = (
     "socket", "socketpair", "connect", "bind", "listen", "accept", "accept4",
     "sendto", "recvfrom", "sendmsg", "recvmsg", "sendmmsg", "recvmmsg",
     "getsockname", "getpeername", "setsockopt", "getsockopt", "shutdown",
     "socketcall", "io_uring_setup", "io_uring_enter", "io_uring_register",
+    "pidfd_getfd",
 )
 
 
@@ -89,7 +94,7 @@ def install_filter(action):
     context = library.seccomp_init(ALLOW)
     if not context:
         raise RuntimeError("seccomp_init failed")
-    denied, unavailable, local_ipc = [], [], None
+    denied, unavailable, local_ipc, receive_rule = [], [], None, False
     try:
         # SCMP_FLTATR_ACT_BADARCH = 2. An ABI switch cannot evade the native
         # syscall rules by only terminating one thread in a multithreaded child.
@@ -102,10 +107,13 @@ def install_filter(action):
                 continue
             if syscall == "socketpair":
                 # Tokio signal delivery needs an anonymous Unix stream pair.
+                # Rust std::process also uses an anonymous seqpacket pair for
+                # its eight-byte exec-error notification / successful EOF.
                 # No endpoint address is supplied by socketpair. All other
                 # domains and nonzero protocols remain denied, as do ordinary
                 # Unix socket/bind/connect calls. Trace acceptance additionally
-                # restricts observed pairs to the actual SOCK_STREAM IPC form.
+                # restricts observed pairs to STREAM/SEQPACKET with exact
+                # kernel inode identities, not merely a numeric FD.
                 for argument, value in ((0, int(socket.AF_UNIX)), (2, 0)):
                     comparison = ArgumentComparison(argument, 1, value, 0)  # SCMP_CMP_NE
                     result = library.seccomp_rule_add_array(context, action, number, 1,
@@ -114,11 +122,27 @@ def install_filter(action):
                         raise RuntimeError(f"conditional socketpair rule failed: {result}")
                 local_ipc = dict(LOCAL_IPC_POLICY)
                 continue
+            if syscall == "recvfrom":
+                # Exactly Rust's Linux spawn acknowledgement. Seccomp cannot
+                # dereference an FD to determine its socket family; the full
+                # tree observer must additionally bind this FD's kernel inode
+                # to a newly created anonymous pair in that same product tree.
+                # Addressed receives, ancillary FD transfers, and every send
+                # syscall remain denied. pidfd_getfd cannot import a socket.
+                for argument, value in ((2, 8), (3, 0), (4, 0), (5, 0)):
+                    comparison = ArgumentComparison(argument, 1, value, 0)
+                    result = library.seccomp_rule_add_array(context, action, number, 1,
+                                                           ctypes.byref(comparison))
+                    if result != 0:
+                        raise RuntimeError(f"conditional spawn receive rule failed: {result}")
+                receive_rule = True
+                continue
             result = library.seccomp_rule_add_array(context, action, number, 0, None)
             if result != 0:
                 raise RuntimeError(f"seccomp rule {syscall} failed: {result}")
             denied.append(syscall)
-        if not {"socket", "connect", "io_uring_setup"}.issubset(denied) or local_ipc is None:
+        if (not {"socket", "connect", "io_uring_setup", "pidfd_getfd"}.issubset(denied)
+                or local_ipc is None or not receive_rule):
             raise RuntimeError("essential network syscall rules unavailable")
         libc = ctypes.CDLL(None, use_errno=True)
         libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
@@ -153,8 +177,11 @@ def verify_kill_policy(output):
         marker = f"P7_NETWORK_PROBE_REACHED family={int(family)}"
         code = ("import socket; " + f"print({marker!r}, flush=True); "
                 + f"socket.socket({int(family)},socket.SOCK_STREAM)")
-        command = [sys.executable, str(Path(__file__).resolve()), "--action", "kill",
-                   "--receipt", str(receipt), "--", sys.executable, "-c", code]
+        # The probe is a controlled stdlib program, independent of user site
+        # imports or HOME/pwd/NSS discovery during Python site initialization.
+        # The exact IPv4/IPv6 syscall and reached marker below remain required.
+        command = [sys.executable, "-I", "-S", str(Path(__file__).resolve()), "--action", "kill",
+                   "--receipt", str(receipt), "--", sys.executable, "-I", "-S", "-c", code]
         result = subprocess.run(command, capture_output=True, text=True, timeout=20,
                                 stdin=subprocess.DEVNULL, close_fds=True)
         (output / f"{name}.stdout").write_text(result.stdout)

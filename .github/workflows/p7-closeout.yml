@@ -67,6 +67,8 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/p7-closeout/semantic-config.log"
 
       - name: Original thirteen-checkpoint real stdio lifecycle
+        id: http_lifecycle
+        if: always()
         run: |
           set -o pipefail
           cargo build -p cc-server --bin codecortex --features semantic-http --locked \
@@ -119,6 +121,7 @@ jobs:
           PY_AFTER_LIFECYCLE
 
       - name: Three-seed real product retry, crash, deletion, recovery and automatic GC
+        if: always() && steps.http_lifecycle.outcome == 'success'
         run: |
           set -o pipefail
           python3 scripts/p7_fault_lifecycle_stdio.py \
@@ -128,6 +131,7 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/p7-closeout/fault-lifecycle.log"
 
       - name: Attributed resources and actual worker contention
+        if: always()
         env:
           CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR: ${{ runner.temp }}/p7-closeout/worker-contention
         run: |
@@ -362,7 +366,8 @@ jobs:
                           with path.open('rb') as stream:
                               data = stream.read(2 * 1024 * 1024 + 1)
                           for line in data[:2 * 1024 * 1024].decode('utf-8', 'replace').splitlines():
-                              if network.match(line) or line.startswith('+++ ') or 'SIGSYS' in line:
+                              event = re.sub(r'^\d+\.\d{6} ', '', line)
+                              if network.match(event) or event.startswith('+++ ') or 'SIGSYS' in event:
                                   emit({'file': relative, 'trace_diagnostic': quoted.sub('"<quoted>"', line)[:4096]})
                           if len(data) > 2 * 1024 * 1024:
                               emit({'file': relative, 'diagnostic_prefix_truncated': True})

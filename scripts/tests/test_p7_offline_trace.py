@@ -107,7 +107,8 @@ class TraceVerifierTests(unittest.TestCase):
 
     def test_only_successful_anonymous_stream_ipc_is_separately_accounted(self):
         self.write(10, exec_line(self.command)
-                   + '\nsocketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0, [3, 4]) = 0\n'
+                   + '\nsocketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0, '
+                   '[3<UNIX-STREAM:[101->102]>, 4<UNIX-STREAM:[102->101]>]) = 0\n'
                    + terminal())
         report = self.inspect()
         self.assertEqual(len(report['local_anonymous_ipc']), 1)
@@ -122,6 +123,89 @@ class TraceVerifierTests(unittest.TestCase):
             with self.subTest(call=call):
                 self.write(10, exec_line(self.command) + '\n' + call + '\n' + terminal())
                 self.assertTrue(self.inspect()['attempts'])
+
+    def test_seqpacket_receive_is_bound_to_the_actual_anonymous_pair_inode(self):
+        self.write(10, '100.000001 ' + exec_line(self.command)
+                   + '\n100.000002 socketpair(AF_UNIX, SOCK_SEQPACKET|SOCK_CLOEXEC, 0, '
+                   '[14<UNIX-SEQPACKET:[101->102]>, 15<UNIX-SEQPACKET:[102->101]>]) = 0\n'
+                   '100.000003 recvfrom(14<UNIX-SEQPACKET:[101]>, "", 8, 0, NULL, NULL) = 0\n'
+                   '100.000004 exit_group(0) = ?\n100.000005 +++ exited with 0 +++\n')
+        report = self.inspect()
+        self.assertEqual(report['attempts'], [])
+        self.assertEqual(len(report['local_anonymous_ipc']), 2)
+        receipt = report['local_anonymous_ipc'][1]
+        self.assertEqual(receipt['endpoint_inode'], 101)
+        self.assertEqual(receipt['pair_creator_pid'], 10)
+        self.assertEqual(receipt['pair_creation_line'], 2)
+
+    def test_inode_proof_survives_fork_and_fd_duplication_without_assuming_fd_numbers(self):
+        self.write(10, '100.000001 ' + exec_line(self.command)
+                   + '\n100.000002 socketpair(AF_UNIX, SOCK_SEQPACKET, 0, '
+                   '[3<UNIX:[101->102]>, 4<UNIX:[102->101]>]) = 0\n'
+                   '100.000003 fork() = 11\n100.000020 exit_group(0) = ?\n'
+                   '100.000021 +++ exited with 0 +++\n')
+        self.write(11, '100.000004 recvfrom(9<UNIX:[102->101]>, "12345678", 8, 0, NULL, NULL) = 8\n'
+                   '100.000005 exit_group(0) = ?\n100.000006 +++ exited with 0 +++\n')
+        report = self.inspect()
+        self.assertEqual(report['attempts'], [])
+        received = [row for row in report['local_anonymous_ipc'] if row.get('endpoint_inode')]
+        self.assertEqual(len(received), 1)
+        self.assertEqual(received[0]['pair_creator_pid'], 10)
+
+    def test_unknown_reused_future_or_addressed_pair_fds_never_become_zero_attempts(self):
+        base = ('100.000001 ' + exec_line(self.command)
+                + '\n100.000002 socketpair(AF_UNIX, SOCK_SEQPACKET, 0, '
+                '[3<UNIX:[101->102]>, 4<UNIX:[102->101]>]) = 0\n')
+        calls = (
+            'recvfrom(3, "", 8, 0, NULL, NULL) = 0',
+            'recvfrom(3<UNIX:[999->1000]>, "", 8, 0, NULL, NULL) = 0',
+            'recvfrom(3<TCP:[101]>, "", 8, 0, NULL, NULL) = 0',
+            'recvfrom(3<UNIX:[101->999]>, "", 8, 0, NULL, NULL) = 0',
+            'recvfrom(3<UNIX:[101->102,"/tmp/service"]>, "", 8, 0, NULL, NULL) = 0',
+            'recvfrom(3<UNIX:[101]>, "", 8, 0, {sa_family=AF_UNIX}, NULL) = 0',
+            'recvfrom(3<UNIX:[101]>, "", 8, MSG_DONTWAIT, NULL, NULL) = 0',
+            'recvfrom(3<UNIX:[101]>, "", 7, 0, NULL, NULL) = 0',
+            'sendto(3<UNIX:[101]>, "x", 1, 0, NULL, 0) = 1',
+            'recvmsg(3<UNIX:[101]>, {msg_control=[{cmsg_type=SCM_RIGHTS}]}, 0) = 1',
+            'pidfd_getfd(7, 3, 0) = 4',
+        )
+        for call in calls:
+            with self.subTest(call=call):
+                self.write(10, base + '100.000003 ' + call
+                           + '\n100.000004 exit_group(0) = ?\n100.000005 +++ exited with 0 +++\n')
+                self.assertTrue(self.inspect()['attempts'])
+        # A pair in an unrelated runner branch is not a product-tree witness.
+        self.write(10, '100.000003 ' + exec_line(self.command)
+                   + '\n100.000004 recvfrom(3<UNIX:[101]>, "", 8, 0, NULL, NULL) = 0\n'
+                   '100.000005 +++ exited with 0 +++\n')
+        self.write(1, '100.000001 socketpair(AF_UNIX, SOCK_SEQPACKET, 0, '
+                   '[3<UNIX:[101->102]>, 4<UNIX:[102->101]>]) = 0\n'
+                   '100.000002 fork() = 10\n100.000006 +++ exited with 0 +++\n')
+        self.assertTrue(self.inspect()['attempts'])
+
+    def test_pair_created_later_or_without_timestamp_is_not_a_receive_witness(self):
+        for timestamp in ('100.000009 ', ''):
+            with self.subTest(timestamp=timestamp):
+                self.write(10, '100.000001 ' + exec_line(self.command)
+                           + '\n100.000002 fork() = 11\n'
+                           + timestamp + 'socketpair(AF_UNIX, SOCK_SEQPACKET, 0, '
+                           '[3<UNIX:[101->102]>, 4<UNIX:[102->101]>]) = 0\n'
+                           '100.000010 +++ exited with 0 +++\n')
+                self.write(11, '100.000003 recvfrom(3<UNIX:[101]>, "", 8, 0, NULL, NULL) = 0\n'
+                           '100.000011 +++ exited with 0 +++\n')
+                self.assertTrue(self.inspect()['attempts'])
+
+    def test_production_trace_requires_timestamps_and_ambiguous_inode_reuse_is_rejected(self):
+        self.write(10, exec_line(self.command) + '\n' + terminal())
+        with self.assertRaisesRegex(ValueError, 'missing trace timestamp'):
+            trace.read_traces(self.prefix, require_timestamps=True)
+        pair = ('socketpair(AF_UNIX, SOCK_SEQPACKET, 0, '
+                '[3<UNIX:[101->102]>, 4<UNIX:[102->101]>]) = 0\n')
+        self.write(10, '100.000001 ' + exec_line(self.command)
+                   + '\n100.000002 ' + pair + '100.000003 ' + pair
+                   + '100.000004 +++ exited with 0 +++\n')
+        with self.assertRaisesRegex(ValueError, 'ambiguous socket inode'):
+            self.inspect()
 
     def synthetic_matrix(self):
         cases, root_trace = [], exec_line(['/fixture/runner']) + '\n'

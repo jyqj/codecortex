@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "review_type": "failure_diagnosis_and_fixture_fix_not_product_certification",
+  "failed_ci_source": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+  "run_id": 37721570545,
+  "jobs": {
+    "default": 113130175255,
+    "semantic": 113130175440
+  },
+  "archive": {
+    "artifact_id": 11526312176,
+    "size_bytes": 17718785,
+    "sha256": "d99eb5e9e34bd7e7fd39aaadebade38b4c6bdbe2d8c78f4119c843aab03db1cd",
+    "member_count": 41
+  },
+  "product_built": {
+    "binary_sha256": "2fc3b7733a599073e0d93eab139b6c24d4e392652f6c4c4a124d7abfc3aacff7",
+    "build_receipt_sha256": "97b3ef6a51bb64b956cf37a7cc806358cf357428158287612d92cdacf612af9d",
+    "source_before": {
+      "input_count": 794,
+      "manifest_sha256": "43f7e2a5184fd51c922b523d24c0ad059511a3badc313ff4c68b0562558e6802",
+      "source_commit": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+      "source_tree": "dd810a3eb69b29cc2f2111327a78b0a4c10b14fb"
+    },
+    "source_after": {
+      "input_count": 794,
+      "manifest_sha256": "43f7e2a5184fd51c922b523d24c0ad059511a3badc313ff4c68b0562558e6802",
+      "source_commit": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+      "source_tree": "dd810a3eb69b29cc2f2111327a78b0a4c10b14fb"
+    }
+  },
+  "runner_identity_sha256": "c691d5570e24d88570bb6ef92b655c91ed6fd10d9d774f6c5210050f3501ba08",
+  "actual_failure": {
+    "runner_thread": 10431,
+    "syscall": "recvfrom(14, buffer, 8, 0, NULL, NULL) = -1 EPERM",
+    "created_pair": "socketpair(AF_UNIX, SOCK_SEQPACKET|SOCK_CLOEXEC, 0, [14, 15]) = 0",
+    "panic": "Rust std process spawn CLOEXEC pipe failed",
+    "tools_completed": null,
+    "product_exec_observed": false,
+    "network_socket_attempts": null
+  },
+  "positive_probe_failure": {
+    "wrapper_parent_pid": 10432,
+    "probe_pid": 10433,
+    "pre_exec_helper_pid": 10434,
+    "helper": "/sbin/ldconfig then /sbin/ldconfig.real; exit 0",
+    "observed": "After successful exec of the controlled Python -c IPv4 program, its first AF_UNIX socket killed PID 10433 before the required IPv4 reached marker. No AF_INET syscall occurred in this probe.",
+    "inference": "Python site startup with only PATH in the environment may call user-home/pwd/NSS resolution; this trace has no call stacks, so exact NSS function attribution is not claimed."
+  },
+  "primary_implementation_sources": [
+    {
+      "url": "https://github.com/rust-lang/rust/blob/59807616e1fa2540724bfbac14d7976d7e4a3860/library/std/src/sys/process/unix/unix.rs",
+      "git_blob_sha": "82ff94fb1e03087c1906d1d579bec62afd058921",
+      "read_lines": [
+        50,
+        220
+      ],
+      "finding": "Linux spawn makes AF_UNIX SOCK_SEQPACKET pair and reads eight-byte exec-error messages or EOF."
+    },
+    {
+      "url": "https://github.com/rust-lang/rust/blob/59807616e1fa2540724bfbac14d7976d7e4a3860/library/std/src/sys/net/connection/socket/unix.rs",
+      "git_blob_sha": "5e20c0ffdfa6aa814305ca4eb50f72635d181c15",
+      "finding": "new_pair uses SOCK_CLOEXEC and protocol0; read delegates recv flags0, write uses ordinary FileDesc::write. No sendto exception is required."
+    },
+    {
+      "url": "https://github.com/strace/strace/blob/v6.8/tests/net-yy-unix.c",
+      "git_blob_sha": "378d9ff2771571d247958e94fb1755346918c594",
+      "finding": "Socket decoding records kernel inode, peer inode, protocol and any address/name; a named endpoint must not be accepted as anonymous."
+    }
+  ],
+  "fix": {
+    "kernel": "Existing AF_UNIX protocol0 anonymous pair boundary retained; only recvfrom(length8,flags0,NULL,NULL) is conditionally allowed. pidfd_getfd newly denied. Ordinary socket/bind/connect, sendto/sendmsg/recvmsg and io_uring remain denied.",
+    "verifier": "Every newly admitted STREAM/SEQPACKET pair must carry two reciprocal kernel peer inode identities. Every receive must match such an endpoint created earlier in that product tree. Unknown FD, unrelated/reused/future/named/mismatched inode, address, flags and size remain violations. -ttt timestamps required for actual trace runs; --decode-fds=socket captures kernel identities.",
+    "python_launcher": "-I -S affects only controlled launcher/probe interpreter startup; product argv and binary identity remain unchanged. All pre-exec descendants remain within product tree review."
+  },
+  "tests_only_commit": "536ec5a2162cede5578ed53ee6cdcf9b322d68ee",
+  "local_validation": {
+    "before": "3 test methods: four real anonymous-receive failures, one actual pidfd import-denial gap, and timestamp-format parser error retained in tests-before-fix.log.",
+    "after": "32 test methods passed (11 real per-process kernel launcher controls + 21 trace/parser falsification controls). No local ptrace/product run claimed.",
+    "before_log_sha256": "f0c343ee88295d4f0724279e46de075b0f66a097285654bb4f00c510b6d3832c",
+    "after_log_sha256": "6f11d63e8132e60acb2d16c903f5dba3a58f88ad59f15632446525510310fdb5"
+  },
+  "fixed_source_sha256": {
+    "scripts/p7_offline_network.py": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
+    "scripts/p7_offline_trace.py": "66f17363721e1186d3087ef3259919e2c9c7782cfba18cda9662fd0706ca17d1",
+    "scripts/tests/test_p7_offline_network.py": "a28cf04a6c64a6f1e9c04a99c5561506b632228bf4eaf2107ec0ee8493040995",
+    "scripts/tests/test_p7_offline_trace.py": "78b1fa64b5aeaf881bac1c86e908486bc42be2d209b5534f2546ab5c8a34c548",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "b26cdce5faa8d2e8a35c2b62062e9fd161754b8b639bb1e7344edb219bf1d9c2"
+  },
+  "preserved_raw_files": {
+    "network-controls.log": {
+      "sha256": "08b2d92672ad0129db8f9b63440c380e25f995e87cd9bdda192243d841fb3c67",
+      "bytes": 1454
+    },
+    "procfs-controls.log": {
+      "sha256": "abef1acb719c007d410fcfe3f1713ca1b18850a5903dfbaeddb6b29364437298",
+      "bytes": 815
+    },
+    "product/build-receipt.json": {
+      "sha256": "97b3ef6a51bb64b956cf37a7cc806358cf357428158287612d92cdacf612af9d",
+      "bytes": 4273
+    },
+    "runner-identity.json": {
+      "sha256": "c691d5570e24d88570bb6ef92b655c91ed6fd10d9d774f6c5210050f3501ba08",
+      "bytes": 1660
+    },
+    "trace-controls/child-socket-parent-zero/stdout.log": {
+      "sha256": "d2dca045ddcffdd9a414d02c6070d1be747503825182c109c51c2fd4ca74975f",
+      "bytes": 38
+    },
+    "trace-controls/child-socket-parent-zero/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "trace-controls/child-socket-parent-zero/syscalls.3009": {
+      "sha256": "3c308cb426ca5da72cada6ae1e17e6fcfc71f02b5e29e55006bbe40864ee116b",
+      "bytes": 1604
+    },
+    "trace-controls/child-socket-parent-zero/syscalls.3020": {
+      "sha256": "04a312769749ac98d976f1719f8672c9b2746b2659063a84be77a34b7f60bc9c",
+      "bytes": 244
+    },
+    "trace-controls/child-socket-parent-zero/syscalls.3021": {
+      "sha256": "929e21dbb0fe6966c1963b46de5868812c6bd053283d354bca502a98f8ad2492",
+      "bytes": 98
+    },
+    "trace-controls/child-socket-parent-zero/trace-run.json": {
+      "sha256": "381cd7122ed457fdfbdb17ff43eca0201d408a8b79bb1b674b58d287d45ac680",
+      "bytes": 1701
+    },
+    "trace-controls/child-socket-parent-zero.json": {
+      "sha256": "2f69d71851e554c7a21f42ddf1251071826a9ff73ff9f32f21d0f947de12eca6",
+      "bytes": 1783
+    },
+    "trace-controls/clean-child/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "trace-controls/clean-child/stdout.log": {
+      "sha256": "d2dca045ddcffdd9a414d02c6070d1be747503825182c109c51c2fd4ca74975f",
+      "bytes": 38
+    },
+    "trace-controls/clean-child/syscalls.2992": {
+      "sha256": "c9de3c64be6fc2c4bd4f97cb8d9592b0c581a39ba2b7fa95ddf66cf7e5e305d6",
+      "bytes": 2068
+    },
+    "trace-controls/clean-child/syscalls.2993": {
+      "sha256": "d6682cb916d8bac22c19ae2c3682bad82a15e27224cfa879ed3b770e9c970bb5",
+      "bytes": 244
+    },
+    "trace-controls/clean-child/syscalls.2999": {
+      "sha256": "5badad6a1583219d02cd8a5a31d166ac58859e991b7ab7d4427097cafa7b642f",
+      "bytes": 114
+    },
+    "trace-controls/clean-child/trace-run.json": {
+      "sha256": "00117b93e7a110c7c8c931e07803ec51fc1ee764ce1369f2c83e29aba62d6c53",
+      "bytes": 1926
+    },
+    "trace-controls/clean-child.json": {
+      "sha256": "9a4148e716d0cb72ffd410f044cd6d46f5646efc096035a1fff0713e0424e79c",
+      "bytes": 2034
+    },
+    "trace-controls/controls.json": {
+      "sha256": "618ce5e264627634b9c3f9e6e82ed2e7b1e93989e3029c90b55c4452735e828e",
+      "bytes": 3758
+    },
+    "trace-matrix/failure.json": {
+      "sha256": "a650266f6f4e96bf9aae869905824aa7fe6fbd180e4d96c38183e653d4ab4c7b",
+      "bytes": 145
+    },
+    "trace-matrix/trace/stderr.log": {
+      "sha256": "cb1cd085d192f8b12a3a3b02edf30005c2b9fd7c90c408a1ce635a5b33a60b31",
+      "bytes": 363
+    },
+    "trace-matrix/trace/stdout.log": {
+      "sha256": "ecb4b011f6cd604fd277e8cc834dfcb3b8f24e80b22e8a1a732290c376ec79a8",
+      "bytes": 275
+    },
+    "trace-matrix/parent-policy.json": {
+      "sha256": "8072881bbf47c92c56240bb28b4ec5ade1972f4afed1275224ded838cfec0f28",
+      "bytes": 1784
+    },
+    "trace-matrix/trace/syscalls.10429": {
+      "sha256": "9d6236ff37846ae31bea68ccb5154af40ed0e42e155c64c77f9185e5dabfcae3",
+      "bytes": 1579
+    },
+    "trace-matrix/trace/syscalls.10430": {
+      "sha256": "80191d4c3e9943c6e30e33c57770034fa9a8853d386f6314e90fbea339b74d72",
+      "bytes": 244
+    },
+    "trace-matrix/trace/syscalls.10431": {
+      "sha256": "846feac2f6671bf6196c675194a525ba621a36aa2edcd43b428b2088ae388981",
+      "bytes": 806
+    },
+    "trace-matrix/trace/syscalls.10432": {
+      "sha256": "bddd9b4b6d4431b1c6612c041928afef8145c6121195934f8a19e15080e46f8d",
+      "bytes": 3171
+    },
+    "trace-matrix/trace/syscalls.10433": {
+      "sha256": "592c696240b8613d8aa14a8a184e5d5b734c3dafd08764a87ae1b63a54561497",
+      "bytes": 1093
+    },
+    "trace-matrix/trace/syscalls.10434": {
+      "sha256": "ac339c5acfe5adc5382a4812de3482c236586185d38049cb746b8b88d99304ee",
+      "bytes": 244
+    },
+    "trace-matrix/trace/trace-run.json": {
+      "sha256": "c9b1c3674322ba4c4960133700eda12d3553ab37593857c6629b7f23a054039d",
+      "bytes": 1804
+    }
+  },
+  "acceptance_pending": [
+    "Independently reviewed fixed bytes integrated into next source guard",
+    "Actual GitHub strace clean IPC control and swallowed-child-SIGSYS control",
+    "Both original default and semantic products: four disjoint product trees each, original 14 tools, reopen, no semantic cache, exact build/runner identity",
+    "P7-016 predecessor and complete P7-017 acceptance"
+  ],
+  "task_ledger_modified": false,
+  "new_tasks_certified_by_this_report": 0
+}

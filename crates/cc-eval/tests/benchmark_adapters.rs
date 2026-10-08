@@ -244,6 +244,7 @@ mod p7_offline {
             let digest = file_digest(&launcher);
             let evidence = tempfile::tempdir().unwrap();
             let output = std::process::Command::new("python3")
+                .args(["-I", "-S"])
                 .arg(&launcher)
                 .arg("--verify-kill-policy")
                 .arg(evidence.path().join("probes"))
@@ -295,6 +296,7 @@ mod p7_offline {
                 assert_eq!(&file_digest(launcher), digest, "network launcher changed");
                 let mut command = tokio::process::Command::new("python3");
                 command
+                    .args(["-I", "-S"])
                     .arg(launcher)
                     .args(["--action", "kill", "--receipt"])
                     .arg(&receipt_path)

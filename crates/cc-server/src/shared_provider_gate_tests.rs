@@ -489,6 +489,22 @@ fn combined_queue(width: u32) {
     retired.close();
     let index = Arc::new(std::sync::RwLock::new(index));
     crate::handlers::core::build_index(index, true).unwrap();
+    // Only the overflow probe should exhaust its budget while HTTP is held.
+    // With the worker's same 1 s budget, its two earlier gate waiters time
+    // out before this later probe, introducing two unintended retry tasks.
+    // Keep the worker and neighbor budgets unchanged and use the production
+    // document factory with the same namespace and shared provider gate.
+    let mut overflow_config = cfg.semantic.clone();
+    overflow_config.acquire_timeout_ms = 20;
+    let overflow = from_config(
+        retired.db.clone(),
+        retired.subsystem.clone(),
+        Arc::new(QueryServices::default()),
+        &overflow_config,
+    )
+    .unwrap()
+    .unwrap();
+    let doc = overflow.resolve_provider().unwrap();
     let worker = from_config(
         retired.db.clone(),
         retired.subsystem.clone(),
@@ -497,7 +513,6 @@ fn combined_queue(width: u32) {
     )
     .unwrap()
     .unwrap();
-    let doc = worker.resolve_provider().unwrap();
     let query = query_provider(&worker);
     let mut explicit = cfg.clone();
     explicit.semantic.max_concurrent = 4;
@@ -537,8 +552,17 @@ fn combined_queue(width: u32) {
         assert_eq!(snap.max_concurrent_per_project, Some(2));
         assert_eq!(snap.in_flight, 4);
         assert!(snap.per_project_in_flight.values().all(|count| *count <= 2));
+        assert_eq!(
+            snap.waiting,
+            (local_width as usize).saturating_sub(actual_width)
+        );
         assert_eq!(call(doc.as_ref(), false), Err(ProviderError::Timeout));
         assert_eq!(server.hold.calls(), 4);
+        assert_eq!(
+            gate.snapshot().waiting,
+            snap.waiting,
+            "the overflow probe must leave the original worker waiters pending"
+        );
         server.hold.release();
         assert!(
             round.join().unwrap(),

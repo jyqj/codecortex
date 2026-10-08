@@ -1,6 +1,7 @@
 """Real per-process controls for the P7 offline launcher; no product claims."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import signal
 import subprocess
@@ -100,6 +101,60 @@ class NetworkGuardTests(unittest.TestCase):
                                         capture_output=True, text=True, timeout=20)
                 self.assertEqual(result.stdout.strip(), 'forbidden syscall reached')
                 self.assertEqual(result.returncode, -signal.SIGSYS, result.stderr)
+
+    def test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies(self):
+        # Rust 1.95's Linux Command::spawn uses this exact anonymous pair and
+        # recv(..., 8, 0), including an EOF after the child successfully execs.
+        setup = ("import ctypes,os,socket; libc=ctypes.CDLL(None,use_errno=True); "
+                 "libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]; "
+                 "libc.recvfrom.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_int,ctypes.c_void_p,ctypes.c_void_p]; "
+                 "fds=(ctypes.c_int*2)(); buf=ctypes.create_string_buffer(8); "
+                 "assert libc.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET|socket.SOCK_CLOEXEC,0,fds)==0; ")
+        for action in ('errno', 'kill'):
+            for eof in (False, True):
+                code = setup + ("os.close(fds[1]); expected=0; " if eof else
+                                "os.write(fds[1],b'\\x00\\x00\\x00\\x02NOEX'); expected=8; ")
+                code += "assert libc.recvfrom(fds[0],buf,8,0,None,None)==expected, ctypes.get_errno()"
+                with self.subTest(action=action, eof=eof), tempfile.TemporaryDirectory() as temporary:
+                    result = subprocess.run([sys.executable, '-I', '-S', str(SCRIPT), '--action', action,
+                                             '--receipt', str(Path(temporary) / 'ipc.json'), '--',
+                                             sys.executable, '-I', '-S', '-c', code],
+                                            capture_output=True, text=True, timeout=20)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_addressed_receives_wrong_flags_and_descriptor_import_remain_fatal(self):
+        setup = ("import ctypes,socket; libc=ctypes.CDLL(None,use_errno=True); "
+                 "fds=(ctypes.c_int*2)(); buf=ctypes.create_string_buffer(8); addr=ctypes.create_string_buffer(128); "
+                 "libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]; "
+                 "libc.recvfrom.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_int,ctypes.c_void_p,ctypes.c_void_p]; "
+                 "assert libc.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET,0,fds)==0; "
+                 "print('forbidden syscall reached',flush=True); ")
+        for attempt in ('libc.recvfrom(fds[0],buf,8,0,addr,None)',
+                        'libc.recvfrom(fds[0],buf,8,0,None,addr)',
+                        'libc.recvfrom(fds[0],buf,8,socket.MSG_DONTWAIT,None,None)',
+                        'libc.recvfrom(fds[0],buf,7,0,None,None)',
+                        'libc.sendmsg(fds[0],None,0)',
+                        'libc.recvmsg(fds[0],None,0)',
+                        'libc.syscall(438,-1,0,0)'):
+            with self.subTest(attempt=attempt), tempfile.TemporaryDirectory() as temporary:
+                result = subprocess.run([sys.executable, '-I', '-S', str(SCRIPT), '--action', 'kill',
+                                         '--receipt', str(Path(temporary) / 'denied.json'), '--',
+                                         sys.executable, '-I', '-S', '-c', setup + attempt],
+                                        capture_output=True, text=True, timeout=20)
+                self.assertEqual(result.stdout.strip(), 'forbidden syscall reached')
+                self.assertEqual(result.returncode, -signal.SIGSYS, result.stderr)
+
+    def test_probes_reach_explicit_ipv4_ipv6_syscalls_with_the_actual_empty_environment(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            result = subprocess.run([sys.executable, '-I', '-S', str(SCRIPT), '--verify-kill-policy',
+                                     str(Path(temporary) / 'probes')],
+                                    env={'PATH': os.environ['PATH']}, capture_output=True,
+                                    text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            for family in ('ipv4', 'ipv6'):
+                self.assertTrue(report['probes'][family]['reached_socket'])
+                self.assertEqual(report['probes'][family]['exit_code'], -signal.SIGSYS)
 
     def test_normal_exit_cannot_pass_the_kill_positive_control(self):
         with tempfile.TemporaryDirectory() as temporary, mock.patch.object(

@@ -19,14 +19,14 @@ import sys
 from p7_build_identity import file_sha256, json_bytes, source_snapshot
 
 
-TRACE_EXPRESSION = "%process,%network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns"
+TRACE_EXPRESSION = "%process,%network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns,pidfd_getfd"
 CREATION = {"clone", "clone3", "fork", "vfork"}
 # Anything selected by strace outside this explicit process set is treated as
 # a network/unknown attempt, never silently whitelisted as harmless.
 PROCESS = CREATION | {
     "execve", "execveat", "exit", "exit_group", "wait4", "waitid", "waitpid",
     "getpid", "getppid", "gettid", "kill", "tkill", "tgkill", "rt_sigqueueinfo",
-    "rt_tgsigqueueinfo", "pidfd_open", "pidfd_getfd", "pidfd_send_signal",
+    "rt_tgsigqueueinfo", "pidfd_open", "pidfd_send_signal",
     "unshare", "setns",
 }
 NETWORK = {
@@ -34,7 +34,7 @@ NETWORK = {
     "send", "recv", "sendto", "recvfrom", "sendmsg", "recvmsg", "sendmmsg",
     "recvmmsg", "recvmmsg_time64", "getsockname", "getpeername", "setsockopt",
     "getsockopt", "shutdown", "socketcall", "io_uring_setup", "io_uring_enter",
-    "io_uring_register",
+    "io_uring_register", "pidfd_getfd",
 }
 TOOLS = {"status", "index", "search", "context", "node", "explore", "trace",
          "relations", "impact", "architecture", "files", "graph_query",
@@ -43,6 +43,7 @@ CALL = re.compile(r"^([A-Za-z_][A-Za-z_0-9]*)\(")
 RESUMED = re.compile(r"^<\.\.\. ([A-Za-z_][A-Za-z_0-9]*) resumed>(.*)$")
 RESULT = re.compile(r"\)\s+=\s+(-?\d+)(?:\s|$)")
 QUOTED = r'"(?:[^"\\]|\\.)*"'
+UNIX_FD = r'(?P<fd>\d+)<(?P<protocol>UNIX(?:-STREAM|-SEQPACKET)?):\[(?P<inode>[1-9]\d*)(?:->(?P<peer>[1-9]\d*))?\]>'
 
 
 def require(condition, message):
@@ -55,12 +56,19 @@ def result_number(call):
     return int(match[1]) if match else None
 
 
-def parse_trace(path, pid):
-    calls, terminal, pending = [], None, None
+def parse_trace(path, pid, *, require_timestamps=False):
+    calls, terminal, pending, previous_at = [], None, None, None
     for number, raw in enumerate(path.read_text().splitlines(), 1):
         line = raw.strip()
         if not line:
             continue
+        timestamp = re.fullmatch(r"(\d+)\.(\d{6}) (.*)", line)
+        at = int(timestamp[1]) * 1_000_000 + int(timestamp[2]) if timestamp else None
+        if timestamp:
+            line = timestamp[3]
+            require(previous_at is None or at >= previous_at, f"trace clock moved backwards: {path}:{number}")
+            previous_at = at
+        require(not require_timestamps or timestamp, f"missing trace timestamp: {path}:{number}")
         require(terminal is None, f"PID reuse or trailing data: {path}:{number}")
         if line.startswith("--- ") and line.endswith(" ---"):
             continue
@@ -75,11 +83,13 @@ def parse_trace(path, pid):
             require(pending is not None and pending["name"] == resumed[1],
                     f"unmatched resumed syscall: {path}:{number}")
             pending["raw"] += resumed[2]
+            pending["completed_at_us"] = at
             pending = None
             continue
         match = CALL.match(line)
         require(match is not None and pending is None, f"unparsed trace: {path}:{number}: {line}")
-        call = {"name": match[1], "line": number, "raw": line}
+        call = {"name": match[1], "line": number, "raw": line, "at_us": at,
+                "completed_at_us": at}
         calls.append(call)
         if line.endswith("<unfinished ...>"):
             call["raw"] = line[:-len("<unfinished ...>")]
@@ -89,7 +99,7 @@ def parse_trace(path, pid):
             "calls": calls, "terminal": terminal}
 
 
-def read_traces(prefix):
+def read_traces(prefix, *, require_timestamps=False):
     traces = {}
     for path in sorted(prefix.parent.glob(prefix.name + ".*")):
         suffix = path.name[len(prefix.name) + 1:]
@@ -97,7 +107,7 @@ def read_traces(prefix):
                 f"unexpected trace filename: {path}")
         pid = int(suffix)
         require(pid not in traces, f"duplicate trace PID {pid}")
-        traces[pid] = parse_trace(path, pid)
+        traces[pid] = parse_trace(path, pid, require_timestamps=require_timestamps)
     require(traces, "no per-PID traces")
     parents = {}
     for pid, trace in traces.items():
@@ -171,16 +181,52 @@ def guard_root(guard, security=None, *, require_parent_policy=True):
     return nspid[-1]
 
 
-def anonymous_stream_pair(call):
+def unix_endpoint(text):
+    match = re.fullmatch(UNIX_FD, text)
+    if not match:
+        return None
+    return {"fd": int(match["fd"]), "protocol": match["protocol"],
+            "inode": int(match["inode"]), "peer": int(match["peer"]) if match["peer"] else None}
+
+
+def anonymous_pair(call):
     if call["name"] != "socketpair" or result_number(call) != 0:
-        return False
-    match = re.fullmatch(r"socketpair\(AF_UNIX, ([A-Z_|]+), 0, \[(\d+), (\d+)\]\)\s+=\s+0",
+        return None
+    match = re.fullmatch(r"socketpair\(AF_UNIX, ([A-Z_|]+), 0, \[(.+), (.+)\]\)\s+=\s+0",
                          call["raw"])
     if not match:
-        return False
+        return None
     flags = set(match[1].split("|"))
-    return ("SOCK_STREAM" in flags and flags <= {"SOCK_STREAM", "SOCK_NONBLOCK", "SOCK_CLOEXEC"}
-            and match[2] != match[3])
+    kinds = flags & {"SOCK_STREAM", "SOCK_SEQPACKET"}
+    if len(kinds) != 1 or not flags <= kinds | {"SOCK_NONBLOCK", "SOCK_CLOEXEC"}:
+        return None
+    kind = next(iter(kinds))
+    first, second = unix_endpoint(match[2]), unix_endpoint(match[3])
+    if (not first or not second or first["fd"] == second["fd"] or first["inode"] == second["inode"]
+            or first["peer"] != second["inode"] or second["peer"] != first["inode"]
+            or any(endpoint["protocol"] not in {"UNIX", "UNIX-" + kind.removeprefix("SOCK_")}
+                   for endpoint in (first, second))):
+        return None
+    return {"kind": kind, "endpoints": [first, second], "created_at_us": call["at_us"]}
+
+
+def anonymous_spawn_receive(call, endpoints, pid):
+    if call["name"] != "recvfrom":
+        return None
+    match = re.fullmatch(r"recvfrom\((.+), (?:" + QUOTED + r"|0x[0-9a-f]+|NULL), 8, 0, NULL, NULL\)\s+=\s+.*",
+                         call["raw"])
+    endpoint = unix_endpoint(match[1]) if match else None
+    if not endpoint or result_number(call) not in {0, 8, -1}:
+        return None
+    witness = endpoints.get(endpoint["inode"])
+    if (witness is None or endpoint["protocol"] not in {"UNIX", "UNIX-" + witness["kind"].removeprefix("SOCK_")}
+            or (endpoint["peer"] is not None and endpoint["peer"] != witness["peer_inode"])
+            or witness["created_at_us"] is None or call["at_us"] is None
+            or call["at_us"] < witness["created_at_us"]
+            or (pid == witness["pair_creator_pid"] and call["line"] <= witness["pair_creation_line"])):
+        return None
+    return {"endpoint_inode": endpoint["inode"], "fd_at_receive": endpoint["fd"],
+            **witness, "scope": "eight-byte no-address receive on this product tree's new anonymous pair"}
 
 
 def inspect_tree(traces, root, command):
@@ -189,7 +235,7 @@ def inspect_tree(traces, root, command):
                if call["name"] == "execve" and result_number(call) == 0
                and exec_command(call) == (command[0], command)]
     require(len(matches) == 1, f"expected exactly one successful exact product exec: PID {root}")
-    pending, members, attempts, local_ipc = [(root, matches[0])], {}, [], []
+    pending, members, attempts, local_ipc, calls = [(root, matches[0])], {}, [], [], []
     while pending:
         pid, begin = pending.pop()
         require(pid not in members, f"reused PID in product tree: {pid}")
@@ -198,19 +244,38 @@ def inspect_tree(traces, root, command):
                        if trace["calls"] else 1, "terminal": trace["terminal"]}
         if trace["terminal"].get("signal") == "SIGSYS":
             attempts.append({"pid": pid, "reason": "SIGSYS in guarded product tree"})
-        for call in trace["calls"][begin:]:
-            if anonymous_stream_pair(call):
-                local_ipc.append({"pid": pid, "line": call["line"], "raw": call["raw"],
-                                  "scope": "anonymous AF_UNIX SOCK_STREAM IPC; no external address"})
-            elif call["name"] not in PROCESS:
-                attempts.append({"pid": pid, "syscall": call["name"], "line": call["line"],
-                                 "raw": call["raw"], "known_network_syscall": call["name"] in NETWORK})
+        calls.extend((pid, call) for call in trace["calls"][begin:])
         # Include launcher children too, even if created before the product
         # exec. A pre-exec helper might outlive exec; it must not disappear
         # from the product's observed descendant set merely due to timing.
         for call in trace["calls"]:
             if call["name"] in CREATION and result_number(call) > 0:
                 pending.append((result_number(call), 0))
+    # Bind kernel inode identities, not mutable integer FD numbers. This also
+    # covers forked children, shared descriptor tables and dup, without treating
+    # a later unrelated socket reusing the same FD as the original local pair.
+    # A witness in the runner or another product tree cannot enter this map.
+    pairs, endpoints = {}, {}
+    for pid, call in calls:
+        pair = anonymous_pair(call)
+        if pair is None:
+            continue
+        pairs[(pid, call["line"])] = pair
+        for endpoint in pair["endpoints"]:
+            require(endpoint["inode"] not in endpoints, "reused or ambiguous socket inode in product trace")
+            endpoints[endpoint["inode"]] = {"pair_creator_pid": pid, "pair_creation_line": call["line"],
+                                            "kind": pair["kind"], "peer_inode": endpoint["peer"],
+                                            "created_at_us": pair["created_at_us"]}
+    for pid, call in calls:
+        pair = pairs.get((pid, call["line"]))
+        receive = anonymous_spawn_receive(call, endpoints, pid)
+        if pair is not None or receive is not None:
+            local_ipc.append({"pid": pid, "syscall": call["name"], "line": call["line"], "raw": call["raw"],
+                              **(receive if receive is not None else
+                                 {**pair, "scope": "anonymous AF_UNIX pair with reciprocal kernel peer inodes"})})
+        elif call["name"] not in PROCESS:
+            attempts.append({"pid": pid, "syscall": call["name"], "line": call["line"],
+                             "raw": call["raw"], "known_network_syscall": call["name"] in NETWORK})
     return {"root_pid": root, "exec_command": command, "processes_and_threads": members,
             "attempts": attempts, "local_anonymous_ipc": local_ipc,
             "root_terminal": traces[root]["terminal"]}
@@ -276,7 +341,7 @@ def run_trace(command, output, environment=None, timeout=300):
     require(executable is not None, "strace unavailable; full-tree certification is not run")
     version = subprocess.check_output([executable, "--version"], text=True).splitlines()[0]
     prefix = output / "syscalls"
-    argv = [executable, "-ff", "-s", "4096", "-e", "trace=" + TRACE_EXPRESSION,
+    argv = [executable, "-ff", "-ttt", "--decode-fds=socket", "-s", "4096", "-e", "trace=" + TRACE_EXPRESSION,
             "-o", str(prefix), "--", *command]
     record = {"schema_version": 1, "command": argv, "strace_version": version,
               "strace_sha256": file_sha256(executable), "trace_expression": TRACE_EXPRESSION,
@@ -297,7 +362,7 @@ def run_trace(command, output, environment=None, timeout=300):
     record["raw_files"] = {path.name: file_sha256(path) for path in sorted(output.iterdir()) if path.is_file()}
     (output / "trace-run.json").write_bytes(json_bytes(record))
     require(record["returncode"] == 0, f"traced process failed or trace unavailable: {record.get('returncode')}")
-    return read_traces(prefix), record
+    return read_traces(prefix, require_timestamps=True), record
 
 
 def real_controls(output):
@@ -313,16 +378,19 @@ def real_controls(output):
                 + (" socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n" if attack else
                    " libc=ctypes.CDLL(None,use_errno=True); fds=(ctypes.c_int*2)()\n"
                    " libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]\n"
-                   " assert libc.socketpair(socket.AF_UNIX,socket.SOCK_STREAM,0,fds)==0\n"
+                   " assert libc.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET,0,fds)==0\n"
                    " os.write(fds[0],b'ipc'); assert os.read(fds[1],3)==b'ipc'\n"
+                   " libc.recvfrom.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_int,ctypes.c_void_p,ctypes.c_void_p]\n"
+                   " os.write(fds[0],b'12345678'); buf=ctypes.create_string_buffer(8)\n"
+                   " assert libc.recvfrom(fds[1],buf,8,0,None,None)==8 and buf.raw==b'12345678'\n"
                    " os.close(fds[0]); os.close(fds[1])\n")
                 + " os._exit(0)\n"
                 "_,status=os.waitpid(child,0)\n"
                 + ("assert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\n"
                    if attack else "assert os.waitstatus_to_exitcode(status)==0\n")
                 + "print('owned child waited; parent exits zero',flush=True)\n")
-        product = [sys.executable, "-c", code]
-        traces, record = run_trace([sys.executable, str(guard), "--action", "kill", "--receipt",
+        product = [sys.executable, "-I", "-S", "-c", code]
+        traces, record = run_trace([sys.executable, "-I", "-S", str(guard), "--action", "kill", "--receipt",
                                    str(receipt), "--", *product], directory, timeout=30)
         pre_exec = json.loads(receipt.read_text())
         # These standalone controls install only their own kill filter. A
@@ -337,6 +405,8 @@ def real_controls(output):
                         for row in tree["attempts"]), "missing child's actual socket syscall")
         else:
             require(tree["local_anonymous_ipc"], "clean child did not exercise actual anonymous IPC")
+            require(any(row["syscall"] == "recvfrom" for row in tree["local_anonymous_ipc"]),
+                    "clean child did not prove an actual inode-bound anonymous spawn receive")
         reports.append({"attack": attack, "parent_returncode": record["returncode"], "tree": tree})
     report = {"schema_version": 1, "status": "passed", "controls": reports,
               "verifier_sha256": file_sha256(__file__), "guard_sha256": file_sha256(guard)}
@@ -371,7 +441,7 @@ def run_product(args):
                        P7_017_PACKAGE_KIND=args.package_kind,
                        P7_017_BUILD_RECEIPT=str(args.build_receipt.resolve()),
                        CODECORTEX_BENCH_OBSERVATIONS=str(output / "observations"))
-    command = [sys.executable, str(guard), "--receipt", str(output / "parent-policy.json"), "--",
+    command = [sys.executable, "-I", "-S", str(guard), "--receipt", str(output / "parent-policy.json"), "--",
                str(runner), "p7_offline::real_stdio_default_disabled_semantic_contract",
                "--ignored", "--exact", "--nocapture"]
     traces, raw = run_trace(command, output / "trace", environment)

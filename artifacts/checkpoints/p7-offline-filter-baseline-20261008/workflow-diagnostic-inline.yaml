@@ -57,7 +57,8 @@
                     with path.open('rb') as stream:
                         data = stream.read(2 * 1024 * 1024 + 1)
                     for line in data[:2 * 1024 * 1024].decode('utf-8', 'replace').splitlines():
-                        if network.match(line) or line.startswith('+++ ') or 'SIGSYS' in line:
+                        event = re.sub(r'^\d+\.\d{6} ', '', line)
+                        if network.match(event) or event.startswith('+++ ') or 'SIGSYS' in event:
                             emit({'file': relative, 'trace_diagnostic': quoted.sub('"<quoted>"', line)[:4096]})
                     if len(data) > 2 * 1024 * 1024:
                         emit({'file': relative, 'diagnostic_prefix_truncated': True})

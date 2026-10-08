@@ -1,4 +1,4 @@
-name: P7 fixed artifact preservation and reviewed task finalization
+name: P7 exact finalization output readback
 
 on:
   push:
@@ -13,50 +13,20 @@ env:
   PYTHONOPTIMIZE: "0"
 
 jobs:
-  preserve-and-generate:
+  export-completed-output:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3]
     steps:
-      - name: Resolve finalization directories
-        run: |
-          echo "P7_AUDIT_ZIP_ROOT=$RUNNER_TEMP/p7-preserve-downloads" >> "$GITHUB_ENV"
-          echo "P7_FINAL_OUTPUT=$RUNNER_TEMP/p7-final-deliverables" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
-          path: audit
-          sparse-checkout: artifacts/checkpoints/p7-final-acceptance-20261008
-      - uses: actions/checkout@v4
-        with:
-          path: candidate
-          ref: ffdc6f0f97db78cc25a6c026904e7c2adde05d14
-          fetch-depth: 0
-      - name: Download the exact accepted raw archives
-        id: inputs
+          sparse-checkout: artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit
+      - name: Export a bounded exact part of the successful finalization
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/inspect_fixed_artifacts.py \
-            --manifest audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/fixed-artifacts.json \
-            --downloads "$P7_AUDIT_ZIP_ROOT" \
-            --output "$RUNNER_TEMP/p7-preserve-preflight" \
-            --kinds engineering mechanism closeout
-      - name: Preserve selected original raw and generate reviewed original task views
-        id: finalization
-        run: |
-          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/stage_final_acceptance.py \
-            --audit-root audit --candidate candidate \
-            --downloads "$P7_AUDIT_ZIP_ROOT" --output "$P7_FINAL_OUTPUT"
-      - name: Export exact final files for connector readback
-        if: always() && steps.inputs.outcome == 'success'
-        run: |
-          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_audit_outputs.py \
-            --root "$P7_FINAL_OUTPUT" --prefix .
-      - name: Archive successful and failed finalization
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: p7-reviewed-finalization-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/p7-final-deliverables
-            ${{ runner.temp }}/p7-preserve-preflight
-          if-no-files-found: error
+          python3 artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_completed_finalization.py \
+            --part ${{ matrix.part }} --output "$RUNNER_TEMP/finalization-part-${{ matrix.part }}"

@@ -52,7 +52,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
 
 十类目标中的 `cross_language` 和 `file_exact_match` 尚无题；Rust、serde、vite 与 mixed monorepo 覆盖仍缺。语料实际题数、字符串标签和审阅层级分别报告，不能用重复执行次数、自己的 synthetic fixture 或已有 56 道 own-source/fixture 题来补足外部约 600 个审阅问题的目标。
 
-作者原始注记中 301 条 `review_status` 仍为 `pending`，历史独立回执另记录 301 条已接受的开发内容。本次保持这两个事实，不修改 gold 来回填审阅状态。工具验证回执及输入字节的绑定，**新增独立语义复核数为 0、正式验收的 600-family 数为 0**。因此 formal shortfall 仍报告 600；不能简单以 600 减去 301 宣称剩余 299 个正式独立问题。
+作者原始注记中 301 条 `review_status` 仍为 `pending`，历史独立回执另记录 301 条已接受的开发内容。本次保持这两个事实，不修改 gold 来回填审阅状态。工具验证回执及输入字节的绑定，**新增独立语义复核数为 0**；这不撤销历史已接受的 DEV 内容审阅。原 `09-BENCHMARK.md` D2 规划的是初始约 600 个经审阅问题，query_family 用于 split 和分层统计，并未另设 600 个独立 family 的硬门槛。继承脚本中的 `formal_family_target=600` / `formal_family_shortfall=600` 及旧报告保留为派生审计字段，不能作为原任务结项依据。当前缺口按原语言 / 仓库覆盖、实际 gold 复核和 V02 / V19 证据判断；详见 [本轮更正](../../../artifacts/checkpoints/p8-oracle-compat-20261008/corpus-target-correction/additive-correction.md)。
 
 源码是部分公开快照。Requests manifest 还含未索引的 LICENSE/NOTICE 元数据；Gin manifest 含被明确排除的测试、文档和未纳入许可范围的文件。工具仅将 suite 明确列出且有冻结 source pin 的 100 个文件计入本次源码域，不把 manifest 所有记录都当作被测输入，不声称重新验证了完整上游 checkout、依赖闭包或许可法律结论。
 

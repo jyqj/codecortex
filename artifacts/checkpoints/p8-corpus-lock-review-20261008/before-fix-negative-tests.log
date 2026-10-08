@@ -1,0 +1,210 @@
+test_duplicate_case_and_repetition_is_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_duplicate_case_and_repetition_is_rejected) ... FAIL
+test_duplicate_output_query_cannot_replace_another_locked_query (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_duplicate_output_query_cannot_replace_another_locked_query) ... FAIL
+test_exit_code_and_gate_status_must_both_match (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match) ... 
+  test_exit_code_and_gate_status_must_both_match (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match) (patch={'exit_code': False}) ... FAIL
+  test_exit_code_and_gate_status_must_both_match (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match) (patch={'status': 'gate_failed'}) ... FAIL
+test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case) ... FAIL
+test_missing_request_cannot_pass_with_smaller_metrics_denominator (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_missing_request_cannot_pass_with_smaller_metrics_denominator) ... ok
+test_original_locked_query_and_complete_request_matrix_are_accepted (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_original_locked_query_and_complete_request_matrix_are_accepted) ... ok
+test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) ... 
+  test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='-1') ... FAIL
+  test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='2') ... FAIL
+  test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='True') ... FAIL
+  test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='0.0') ... FAIL
+  test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition="'0'") ... FAIL
+test_pinned_backend_and_profile_cannot_be_relabelled (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled) ... 
+  test_pinned_backend_and_profile_cannot_be_relabelled (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled) (field='adapter') ... FAIL
+  test_pinned_backend_and_profile_cannot_be_relabelled (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled) (field='measurement_profile') ... FAIL
+test_raw_response_path_cannot_be_reused_for_distinct_requests (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_raw_response_path_cannot_be_reused_for_distinct_requests) ... FAIL
+test_same_count_query_identity_replacement_is_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_identity_replacement_is_rejected) ... FAIL
+test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) ... 
+  test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='query') ... FAIL
+  test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='expected_files') ... FAIL
+  test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='query_family') ... FAIL
+  test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='annotations') ... FAIL
+test_shuffled_complete_request_matrix_is_still_accepted (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_shuffled_complete_request_matrix_is_still_accepted) ... ok
+test_unknown_case_cannot_replace_missing_case_at_same_denominator (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_unknown_case_cannot_replace_missing_case_at_same_denominator) ... FAIL
+
+======================================================================
+FAIL: test_duplicate_case_and_repetition_is_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_duplicate_case_and_repetition_is_rejected)
+----------------------------------------------------------------------
+p8_release_evidence.Invalid: duplicate measured rows
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 303, in test_duplicate_case_and_repetition_is_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "request matrix" does not match "duplicate measured rows"
+
+======================================================================
+FAIL: test_duplicate_output_query_cannot_replace_another_locked_query (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_duplicate_output_query_cannot_replace_another_locked_query)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 288, in test_duplicate_output_query_cannot_replace_another_locked_query
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_exit_code_and_gate_status_must_both_match (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match) (patch={'exit_code': False})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 338, in test_exit_code_and_gate_status_must_both_match
+    with self.assertRaisesRegex(compat.Invalid, "process/gate"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_exit_code_and_gate_status_must_both_match (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match) (patch={'status': 'gate_failed'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 338, in test_exit_code_and_gate_status_must_both_match
+    with self.assertRaisesRegex(compat.Invalid, "process/gate"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 298, in test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='-1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 310, in test_out_of_range_and_wrongly_typed_repetitions_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 310, in test_out_of_range_and_wrongly_typed_repetitions_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='True')
+----------------------------------------------------------------------
+p8_release_evidence.Invalid: duplicate measured rows
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 310, in test_out_of_range_and_wrongly_typed_repetitions_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "request matrix" does not match "duplicate measured rows"
+
+======================================================================
+FAIL: test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition='0.0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 310, in test_out_of_range_and_wrongly_typed_repetitions_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_out_of_range_and_wrongly_typed_repetitions_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected) (repetition="'0'")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 310, in test_out_of_range_and_wrongly_typed_repetitions_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_pinned_backend_and_profile_cannot_be_relabelled (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled) (field='adapter')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 329, in test_pinned_backend_and_profile_cannot_be_relabelled
+    with self.assertRaisesRegex(compat.Invalid, "adapter or measurement profile"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_pinned_backend_and_profile_cannot_be_relabelled (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled) (field='measurement_profile')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 329, in test_pinned_backend_and_profile_cannot_be_relabelled
+    with self.assertRaisesRegex(compat.Invalid, "adapter or measurement profile"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_raw_response_path_cannot_be_reused_for_distinct_requests (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_raw_response_path_cannot_be_reused_for_distinct_requests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 321, in test_raw_response_path_cannot_be_reused_for_distinct_requests
+    with self.assertRaisesRegex(compat.Invalid, "raw response"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_same_count_query_identity_replacement_is_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_identity_replacement_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 271, in test_same_count_query_identity_replacement_is_rejected
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='query')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 282, in test_same_count_query_text_and_gold_changes_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='expected_files')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 282, in test_same_count_query_text_and_gold_changes_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='query_family')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 282, in test_same_count_query_text_and_gold_changes_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_same_count_query_text_and_gold_changes_are_rejected (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected) (field='annotations')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 282, in test_same_count_query_text_and_gold_changes_are_rejected
+    with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_unknown_case_cannot_replace_missing_case_at_same_denominator (scripts.tests.test_p8_compat.CompatRunIdentityTests.test_unknown_case_cannot_replace_missing_case_at_same_denominator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-corpus/scripts/tests/test_p8_compat.py", line 293, in test_unknown_case_cannot_replace_missing_case_at_same_denominator
+    with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Invalid not raised
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.092s
+
+FAILED (failures=19)

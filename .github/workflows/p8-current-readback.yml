@@ -1,0 +1,40 @@
+name: P8 exact corpus and product evidence readback
+on:
+  push:
+    branches: [work/p8-current-readback-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  exact-readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download the fixed original Actions archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$RUNNER_TEMP/p8-readback-v2"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533663988 > "$RUNNER_TEMP/p8-readback-v2/11533663988.json"
+          gh api repos/jyqj/codecortex/actions/runs/37741263704 > "$RUNNER_TEMP/p8-readback-v2/11533663988-run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533663988/zip > "$RUNNER_TEMP/p8-readback-v2/11533663988.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533376209 > "$RUNNER_TEMP/p8-readback-v2/11533376209.json"
+          gh api repos/jyqj/codecortex/actions/runs/37739154499 > "$RUNNER_TEMP/p8-readback-v2/11533376209-run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533376209/zip > "$RUNNER_TEMP/p8-readback-v2/11533376209.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533552468 > "$RUNNER_TEMP/p8-readback-v2/11533552468.json"
+          gh api repos/jyqj/codecortex/actions/runs/37740347846 > "$RUNNER_TEMP/p8-readback-v2/11533552468-run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533552468/zip > "$RUNNER_TEMP/p8-readback-v2/11533552468.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533204793 > "$RUNNER_TEMP/p8-readback-v2/11533204793.json"
+          gh api repos/jyqj/codecortex/actions/runs/37742080132 > "$RUNNER_TEMP/p8-readback-v2/11533204793-run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533204793/zip > "$RUNNER_TEMP/p8-readback-v2/11533204793.zip"
+      - name: Verify and export the complete original member inventory
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 artifacts/checkpoints/p8-output-readback-20261008/revision-2/readback.py --input "$RUNNER_TEMP/p8-readback-v2" --pins artifacts/checkpoints/p8-output-readback-20261008/revision-2/pins.json --part ${{ matrix.part }}

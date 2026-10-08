@@ -1,4 +1,4 @@
-name: P8 original synthetic artifact metadata
+name: P8 exact original synthetic evidence readback
 on:
   push:
     branches: [work/p8-temporal-readback-996727-20261008]
@@ -6,31 +6,28 @@ permissions:
   contents: read
   actions: read
 jobs:
-  inventory:
+  evidence:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - mode: synthetic-control
-            artifact: '11538793031'
+        part: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Download fixed original artifact and service responses
+      - name: Download exact completed original synthetic artifact
         env:
           GH_TOKEN: ${{ github.token }}
-          ARTIFACT_ID: ${{ matrix.artifact }}
         run: |
           mkdir "$RUNNER_TEMP/ptv2-readback"
-          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID" > "$RUNNER_TEMP/ptv2-readback/artifact.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11538793031 > "$RUNNER_TEMP/ptv2-readback/artifact.json"
           gh api repos/jyqj/codecortex/actions/runs/37752995462 > "$RUNNER_TEMP/ptv2-readback/run.json"
-          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/ptv2-readback/original.zip"
-      - name: Inspect original ZIP central-directory size without executing contents
+          gh api repos/jyqj/codecortex/actions/artifacts/11538793031/zip > "$RUNNER_TEMP/ptv2-readback/original.zip"
+      - name: Export retained original measurement and control evidence without execution
         env:
           READBACK_ROOT: ${{ runner.temp }}/ptv2-readback
-          READBACK_MODE: ${{ matrix.mode }}
+          READBACK_MODE: synthetic-control
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -I -S artifacts/checkpoints/p8-temporal-readback-20261008/inventory.py
+        run: python3 -I -S artifacts/checkpoints/p8-temporal-readback-20261008/export_original.py --part ${{ matrix.part }}

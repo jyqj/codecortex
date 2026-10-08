@@ -1,0 +1,33 @@
+   Compiling cc-index v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-index)
+    Finished `test` profile [unoptimized] target(s) in 11.79s
+     Running unittests src/lib.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/cc_index-20847ece5ef205f0)
+
+running 8 tests
+test scanner::scan_paths_tests::scan_paths_empty_input_short_circuits ... ok
+test scanner::scoped_scan_tests::scoped_scan_expands_directory_events ... ok
+test scanner::scoped_scan_tests::scoped_scan_matches_full_walk_admission ... ok
+test scanner::shared_walk_tests::manifest_signatures_match_walk_fallbacks ... ok
+test scanner::scan_paths_tests::scan_paths_payload_matches_full_scan ... ok
+test scanner::shared_walk_tests::manifest_coverage_and_indexable_filters ... ok
+test scanner::scan_paths_tests::scan_paths_matches_full_walk_filters ... ok
+test scanner::broad_source_config_contract_tests::all_source_option_combinations_preserve_config_signatures_and_tokens ... FAILED
+
+failures:
+
+---- scanner::broad_source_config_contract_tests::all_source_option_combinations_preserve_config_signatures_and_tokens stdout ----
+
+thread 'scanner::broad_source_config_contract_tests::all_source_option_combinations_preserve_config_signatures_and_tokens' (97) panicked at crates/cc-index/src/scanner.rs:1026:13:
+assertion failed: manifest.files.iter().any(|file|
+        file.rel_path == ".config/a/b/c/at_limit.yaml" &&
+            file.depth == CONFIG_WALK_MAX_DEPTH)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    scanner::broad_source_config_contract_tests::all_source_option_combinations_preserve_config_signatures_and_tokens
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 403 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p cc-index --lib`
+error: 1 target failed:
+    `-p cc-index --lib`

@@ -1,4 +1,4 @@
-# P8 第 4 轮：真实 DEV 语料、外部完整测量与 fresh holdout
+# P8 第 4–5 轮：真实 DEV 语料、外部测量、留出证据与合流验收
 
 本检查点承接已合并的 PR [#148](https://github.com/jyqj/codecortex/pull/148) 和 [#152](https://github.com/jyqj/codecortex/pull/152)。原始任务仍由 `docs/roadmap/code-index-v2/tasks.json` 管理；辅助脚本、审阅记录、测试和协调 issue 均不新增原始 TODO 完成数。
 
@@ -80,7 +80,7 @@ fresh holdout 由 `pr_audit` 在固定候选之后编写，由非作者 `build_v
 
 两个包都核验了每个成员的大小与哈希。external 包同时包含实际 F 产品、F evaluator 与 D evaluator 的三个固定二进制；完整题体、gold 和 raw 均保留在仓库外。来源投影不是完整 Git checkout，新严格运行需另取原固定公共提交。新增的封存后独立复核单独入库，没有重打包原 used holdout。
 
-## 最终集成验证
+## 第 4 轮原固定版本验证（历史结果保留）
 
 本轮独立审阅的 P 为 `615662bd0e651dc40a9d1d0d6757bc28646b900d`，R 为 `a359581e6eb2ce8acc997d9c27103edd082e51ed`，安装审阅常量后的 S 为 `d5dfebd4f9add3694ec678830e6195c8d38b96f3`。842 个源码输入、107 个验证输入完整绑定；v14 仅更新四个引用常量和相应登记表，BASE、VERSION、FROZEN、排除规则、CI 及原 174 个测试方法都未变。
 
@@ -92,4 +92,22 @@ fresh holdout 由 `pr_audit` 在固定候选之后编写，由非作者 `build_v
 
 PR #152 已在其固定 head 的 3 个 CI workflow 终态成功后合并为 `804e56fe1cb2e1e2b7b9a1e879f84bda048c0a1b`。首次 closeout 中原 cold-client cancellation 测试失败的日志保留；有证据的 Tokio ownership 竞争只做了一次失败 job 的有限重跑。没有修改断言或增加无条件重试；确定性测试同步修复另记 [issue #154](https://github.com/jyqj/codecortex/issues/154)。
 
-另有并行草稿 [PR #153](https://github.com/jyqj/codecortex/pull/153)，包含独立的 scanner 覆盖和输入身份工作。本轮未覆盖、合并或关闭它，其实现不冒称已进入本次固定 F 测量。旧 PR 的独立变更仍保留。
+第 4 轮归档时另有并行 [PR #153](https://github.com/jyqj/codecortex/pull/153)，包含独立的 scanner 覆盖和输入身份工作。当时尚未合流；第 5 轮已将其完整来源与证据作为真实第二父提交整合。其实现没有重标为固定 F 的测量。旧 PR 的独立变更仍保留。
+
+## 第 5 轮：最终合流与原任务收尾
+
+新产品 P 为 `1ed3c7df574db6d450f79ef29d5148f68556b3db`，独立审阅 R 为 `be8aabc0b35706f6403cc12961eb4149fda50f2c`，正常安装 S 为 `714264adc8e3d38f0f25de16669de3fd363adeaa`。新审阅完整覆盖 1,082 个源码输入和 110 个验证输入，原 BASE、VERSION、所有门禁函数、CI 和 174 个既有测试方法不变。只安装四个引用常量及相应完整登记表。原第 4 轮 P/R/S 与所有实际 F/D 执行身份均保留，新 P 的检索质量仍为 `not_run`。
+
+合流保留我方 600 题登记和 PR #153 的 327 题登记。它们共享 301 条历史题，唯一并集为 **626 native / 580 compat / 46 no-answer**，309 个来源文件；两个输入锁分别保留，没有新造合并套件。583 个 family 标签对应 561 个已声明关联组件，不能作为独立样本数。对两套已有入口实际执行的 32 次原 F validate 全部 exit 0，0 次新的 freeze 或 retrieval。详见 [完整数据独审](round5/corpus-coexistence/corpus-coexistence-independent.json) 和 [最终 P 数据身份](round5/corpus-coexistence/final-P-data-identity.json)。
+
+合流修复了共享扫描中 config 元数据与源码准入规则的冲突，以及诊断器对启用隐藏源码时的错误原因分类。另以真实临时 CLI 复现并修复打包路径的父符号链接和 `..` 绕过：原 8 个越界例会先创建空目录，修复后均在 mkdir 前拒绝；合法路径仍进入原构建验证。原失败、相同断言下的修复前后结果及非作者复核全部保留。
+
+最终 P 新编译的 default dev 产品完成 **13 项不同测试、0 ignored**：coverage 9、实际 stdio MCP 2、watcher 分类 2；原 `cargo clippy --workspace --all-targets --locked -- -D warnings` 通过。实际 binary、Cargo profile、7 个 `fresh=false` artifact、1,196 个执行观察输入的前后清单及原始日志见 [本地验证报告](round5/final-product-validation/final-validation-report.md)。它是 dev 功能验证，不是 release 性能或检索质量认证。此前 2d 的 19 项扫描/config 控制、12 项 profile/binding 控制、其他 Python 控制和旧 S 的 174 项，分别保留实际来源；不跨源混加测试数。
+
+P615 原本地 Rust 失败、#153 首次 CI 中 1.56 秒的 fixture 失败和随后由另一线程发起的成功 attempt 2 均保留。尚无受控 CPU/IO 比较，不能把首次失败认定为已证明的环境波动。最终 PR 使用原三套 CI 验证同一最终 head；终态、原 174 方法与 CLI、独立任务验收及合并事实以 [PR #156 的审阅记录](https://github.com/jyqj/codecortex/pull/156) 为准。原 PID namespace 缺陷继续由 #155 跟进。
+
+原 P8-002 / P8-003 / P8-004 的数据、完整执行和一次封存要求均有原件及独立审阅。第 5 轮起点为 160 完成 / 32 剩余；PR #153 已合入真实主线 `a1158866…`，P8-002/003 已完成，当前为 **162 完成 / 30 剩余，本会话累计完成 9 个原 TODO**。本 PR 对这两项追加完整证据，只将 P8-004 作为新的任务状态完成项；精确最终 head 门禁接受并合并后为 **163 完成 / 29 剩余，本会话累计 10 项**。逐轮记录见 [round-counts.json](round-counts.json)，下一项为 P8-005。
+
+原外部 F/D 1,200 条诊断仍为 exit 2，F 的一次 64 条留出仍为 exit 1，8 条 no-answer 全失败；full V19/G8、真实 provider、全规模与发行门没有转绿。fresh 与 DEV 零碰撞检查的已审分母仍为原 600，不能自动扩为 626。本文中“无题体发布”只指本检查点所选择的新增材料；并行 PR 已归档的另一套 public 导入有其自身来源与分发记录。
+
+最终安装 S 的原 v14 CLI 已单次实际执行通过：exit 0、154.672 秒，前后 1,197 个输入相同，原 v13 证明实际执行；没有在本地重跑 174 方法。见 [S guard 原始执行](round5/final-S-guard-validation/S-guard-summary.json)。最终 PR 同一 head 的原 174 方法仍由原 CI 执行。

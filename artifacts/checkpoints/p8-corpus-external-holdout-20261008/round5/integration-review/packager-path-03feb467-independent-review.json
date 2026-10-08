@@ -1,0 +1,328 @@
+{
+  "actual_remote_product": "1ed3c7df574db6d450f79ef29d5148f68556b3db",
+  "author": "/root in workspace031390cf22eb; original packager from concurrent PR153 workspace9967275fe9a7",
+  "base": "2d575c60040d852a7c02e2bf6fa68d21caecd62d",
+  "findings": [
+    "Both output and all source/build roots reject lexical parent traversal and every symlink ancestor before any mkdir/write; real input directories must exist and resolve to directories.",
+    "Canonical absolute paths still pass the original symmetric equality/ancestor/descendant disjoint checks and new-output condition.",
+    "All later source snapshots, complete actual optimized build artifact checks, helper/template pins, ZIP member/byte verification, final raw/build/source drift checks and false release certification flags are byte-identical.",
+    "No filename policy for holdout/.env or new external/manual approval gate was imported.",
+    "The test-only red failures are real crossings into the post-admission sentinel, not missing-new-helper AttributeErrors. The independent12-case CLI controls provide a separate unmocked check."
+  ],
+  "fixed_cli_scope": "All11 prohibited alias/traversal/overlap cases reject before new directory creation; the one legitimate disjoint case still reaches missing-build-receipt validation. All12 CLI process exits remain1 and are not presented as successful packages.",
+  "fixed_local_source": "03feb467a420a37d3a2398bcaed39d1e53a24d84",
+  "independent_cli_receipts": [
+    {
+      "actual_processes": 12,
+      "boundary_violation_cases": 8,
+      "logs": [
+        {
+          "boundary_violation": false,
+          "bytes": 2815,
+          "case": "disjoint_positive_path",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/disjoint_positive_path.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "direct_source_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-original/direct_source_negative.log",
+          "sha256": "70d3c7913606d2c826c592a270bb3e2f0b82f51774964fdef68569abf59c36fe"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "direct_product_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-original/direct_product_negative.log",
+          "sha256": "70d3c7913606d2c826c592a270bb3e2f0b82f51774964fdef68569abf59c36fe"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "output_ancestor_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_ancestor_negative.log",
+          "sha256": "70d3c7913606d2c826c592a270bb3e2f0b82f51774964fdef68569abf59c36fe"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "output_parent_symlink_to_source",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_parent_symlink_to_source.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "output_parent_symlink_to_product",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_parent_symlink_to_product.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "output_parent_symlink_to_runner",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_parent_symlink_to_runner.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "output_dotdot_into_source",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_dotdot_into_source.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "output_dotdot_into_product",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/output_dotdot_into_product.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 1959,
+          "case": "product_input_parent_alias",
+          "final_exception": "p8_release_evidence.Invalid: symlink path not allowed",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/product_input_parent_alias.log",
+          "sha256": "7c243f0e692a2b03887c8878b078b28c82cbc81800161193ba4cb92fbe7695d9"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 2815,
+          "case": "runner_input_parent_alias",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/runner_input_parent_alias.log",
+          "sha256": "43a59dc38c8e53f1bb72aaf773daf70832e8695c23c79cf7d2722008fb2f4b9e"
+        },
+        {
+          "boundary_violation": true,
+          "bytes": 1962,
+          "case": "product_input_dotdot",
+          "final_exception": "p8_release_evidence.Invalid: path traversal not allowed",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-original/product_input_dotdot.log",
+          "sha256": "3bb7899f860a2947bb528fe1f14ae3dd61a0f90a4a2cb00ed67e4a739cfb78de"
+        }
+      ],
+      "receipt": {
+        "bytes": 24542,
+        "path": "round5-corpus-coexistence/package-boundary-original/reproduction.json",
+        "sha256": "87c619fabbe1f02f03db2c302139e84316f2efa8903c87fc1b3c1515ac5f3d78"
+      },
+      "scope": "Actual CLI in disposable committed fixtures; no mocked validators, no successful build/package claim; positive disjoint path reaches missing build receipt.",
+      "source": "2d575c60040d852a7c02e2bf6fa68d21caecd62d"
+    },
+    {
+      "actual_processes": 12,
+      "boundary_violation_cases": 0,
+      "logs": [
+        {
+          "boundary_violation": false,
+          "bytes": 2816,
+          "case": "disjoint_positive_path",
+          "final_exception": "p8_release_evidence.Invalid: input path does not exist",
+          "new_directory_created": true,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/disjoint_positive_path.log",
+          "sha256": "d08307e47913564e2cd519a0ed604ffb682f76f47a108ca6bfe2bf54bd73b86a"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "direct_source_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/direct_source_negative.log",
+          "sha256": "b1f9515364b891b654f76f5acd57d579c8d44e73561739ba99c1ed15882aa925"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "direct_product_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/direct_product_negative.log",
+          "sha256": "b1f9515364b891b654f76f5acd57d579c8d44e73561739ba99c1ed15882aa925"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 846,
+          "case": "output_ancestor_negative",
+          "final_exception": "ValueError: new output must be disjoint from source/build evidence",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_ancestor_negative.log",
+          "sha256": "b1f9515364b891b654f76f5acd57d579c8d44e73561739ba99c1ed15882aa925"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1039,
+          "case": "output_parent_symlink_to_source",
+          "final_exception": "ValueError: symlink path not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_parent_symlink_to_source.log",
+          "sha256": "d929d0ad3dd751659d45592b8476096758e3714c2be51c1901241c2a904f7d0c"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1039,
+          "case": "output_parent_symlink_to_product",
+          "final_exception": "ValueError: symlink path not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_parent_symlink_to_product.log",
+          "sha256": "d929d0ad3dd751659d45592b8476096758e3714c2be51c1901241c2a904f7d0c"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1039,
+          "case": "output_parent_symlink_to_runner",
+          "final_exception": "ValueError: symlink path not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_parent_symlink_to_runner.log",
+          "sha256": "d929d0ad3dd751659d45592b8476096758e3714c2be51c1901241c2a904f7d0c"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1039,
+          "case": "output_dotdot_into_source",
+          "final_exception": "ValueError: path traversal not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_dotdot_into_source.log",
+          "sha256": "f9088bbbbbbb915c7d0f5d13d43d161feea358166be1e5c5fa295932924b9ebe"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1039,
+          "case": "output_dotdot_into_product",
+          "final_exception": "ValueError: path traversal not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/output_dotdot_into_product.log",
+          "sha256": "f9088bbbbbbb915c7d0f5d13d43d161feea358166be1e5c5fa295932924b9ebe"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1033,
+          "case": "product_input_parent_alias",
+          "final_exception": "ValueError: symlink path not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/product_input_parent_alias.log",
+          "sha256": "2ab0e68fdbab7b4d6c8526731827e878a4b7337e68c168f68c2c4e56a7a1e279"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1029,
+          "case": "runner_input_parent_alias",
+          "final_exception": "ValueError: symlink path not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/runner_input_parent_alias.log",
+          "sha256": "5f10dd8d1ebc03835264f3d4cc44883f34768ea9f3164bf10f05aec65ec8647c"
+        },
+        {
+          "boundary_violation": false,
+          "bytes": 1033,
+          "case": "product_input_dotdot",
+          "final_exception": "ValueError: path traversal not allowed",
+          "new_directory_created": false,
+          "path": "round5-corpus-coexistence/package-boundary-fixed/product_input_dotdot.log",
+          "sha256": "978fbbaf42fab220c7a5905f022b29d4cfa956d12702b9c74d267993388061db"
+        }
+      ],
+      "receipt": {
+        "bytes": 24845,
+        "path": "round5-corpus-coexistence/package-boundary-fixed/reproduction.json",
+        "sha256": "d7ea0d676b71040f0c03f5658ede36ce57ecd512d61ae56ba0efb62fd0ddebe9"
+      },
+      "scope": "Actual CLI in disposable committed fixtures; no mocked validators, no successful build/package claim; positive disjoint path reaches missing build receipt.",
+      "source": "03feb467a420a37d3a2398bcaed39d1e53a24d84"
+    }
+  ],
+  "limitations": [
+    "Stable local filesystem path validation; this does not claim OS-level exclusion of malicious concurrent path replacement.",
+    "New source review accepts the scoped implementation. Final actual-P source-integrity and CI execution remain separate gates.",
+    "F and D binaries, raw measurements, frozen gold and used holdout are unchanged; no retrieval, build or quality certification is performed by this review."
+  ],
+  "local_tests_are_not_relabelled_as_remote_commit_executions": true,
+  "paths": {
+    "scripts/p8_external_candidate.py": {
+      "before_sha256": "8acd1e456b77d986829531bcad9e4221dd43ec0b7f91272d7f900b5c284feece",
+      "bytes": 11720,
+      "sha256": "3bf04a43b33dd3e71b437162800a9a19e425b01a2c4a93e4eeb71d97e06fa189"
+    },
+    "scripts/tests/test_p8_external_candidate.py": {
+      "before_sha256": null,
+      "bytes": 5507,
+      "sha256": "46ca6394063f52ac3dd3fbd18e0c0b4828fcb3bcb1c15dadd9389cac4842a8aa"
+    }
+  },
+  "prior_failure_scope": "Eight original disposable cases created empty directories before later missing-build-receipt rejection; no existing file overwrite, successful build or full package was observed.",
+  "production_change": "Only add directory_path and replace the four directory argument conversions. Every old byte is recovered by deleting that helper and reverting those four expressions.",
+  "read_scope": "Complete original233-line helper, exact fix, entire new test; source/build/template/receipt/raw/ZIP control flow and independent original/fixed12-case CLI receipts.",
+  "reviewed_at_utc": "2026-10-08T10:24:22.208441+00:00",
+  "reviewer": "/root/pr_audit in workspace031390cf22eb; non-author of packager and new test",
+  "reviewer_product_runs": 0,
+  "reviewer_remote_mutations": 0,
+  "reviewer_source_edits": 0,
+  "same_assertions_red_source": "b77ef372778fd996e124c73eb8e3188b2aa9d66e",
+  "same_complete_tree": "d16aa044e56c9347e6b4ff75d783cc4317f15087",
+  "same_test_bytes_before_and_after": true,
+  "schema_version": 1,
+  "status": "accepted_scoped",
+  "unit_receipts": [
+    {
+      "elapsed_seconds": 1.2248997790011344,
+      "exit_code": 1,
+      "log": {
+        "bytes": 16014,
+        "path": "round5-review/packager-path-controls/red.log",
+        "sha256": "3a48017f10cf69071221e229dcb68cbe95dcfc195d52256999f6f7428bef2b5f"
+      },
+      "methods": 5,
+      "mock_scope": "Only __file__ fixture location and post-admission import sentinel; the real package preflight and filesystem/Git checks run.",
+      "receipt": {
+        "bytes": 657,
+        "path": "round5-review/packager-path-controls/red.json",
+        "sha256": "aa7d7dbb58f6d14cb1af4044f73d74de61fc0dc5ffca8f2dd86ae187dc8e84eb"
+      },
+      "source": "b77ef372778fd996e124c73eb8e3188b2aa9d66e",
+      "subcase_errors": 8
+    },
+    {
+      "elapsed_seconds": 1.560113674000604,
+      "exit_code": 0,
+      "log": {
+        "bytes": 971,
+        "path": "round5-review/packager-path-controls/green.log",
+        "sha256": "1f202ba2d6cbfe99fbace691e33854f61eba9b1eb1dac48de3daefdd3de1b059"
+      },
+      "methods": 5,
+      "mock_scope": "Only __file__ fixture location and post-admission import sentinel; the real package preflight and filesystem/Git checks run.",
+      "receipt": {
+        "bytes": 1247,
+        "path": "round5-review/packager-path-controls/green.json",
+        "sha256": "c2d0def101b5769926c420544e3587876d32393ec731811419f8bf6cea19de5c"
+      },
+      "source": "03feb467a420a37d3a2398bcaed39d1e53a24d84",
+      "subcase_errors": 0
+    }
+  ],
+  "unresolved_blockers": []
+}

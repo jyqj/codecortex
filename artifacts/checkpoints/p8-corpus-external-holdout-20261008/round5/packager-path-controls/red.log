@@ -1,0 +1,194 @@
+test_build_directory_aliases_are_rejected_before_new_output (test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output) ... 
+  test_build_directory_aliases_are_rejected_before_new_output (test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output) (role='product') ... ERROR
+  test_build_directory_aliases_are_rejected_before_new_output (test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output) (role='runner') ... ERROR
+test_disjoint_new_directory_reaches_build_validation (test_p8_external_candidate.ExternalCandidatePathTests.test_disjoint_new_directory_reaches_build_validation) ... ok
+test_existing_output_and_direct_overlaps_are_rejected (test_p8_external_candidate.ExternalCandidatePathTests.test_existing_output_and_direct_overlaps_are_rejected) ... ok
+test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) ... 
+  test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='source') ... ERROR
+  test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='product') ... ERROR
+  test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='runner') ... ERROR
+test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) ... 
+  test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='source') ... ERROR
+  test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='product') ... ERROR
+  test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='runner') ... ERROR
+
+======================================================================
+ERROR: test_build_directory_aliases_are_rejected_before_new_output (test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output) (role='product')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 85, in test_build_directory_aliases_are_rejected_before_new_output
+    self.invoke(output, **{role: alias})
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_build_directory_aliases_are_rejected_before_new_output (test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output) (role='runner')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 85, in test_build_directory_aliases_are_rejected_before_new_output
+    self.invoke(output, **{role: alias})
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='source')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 63, in test_output_parent_symlinks_are_rejected_before_any_creation
+    self.invoke(alias / "must-not-exist")
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='product')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 63, in test_output_parent_symlinks_are_rejected_before_any_creation
+    self.invoke(alias / "must-not-exist")
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_output_parent_symlinks_are_rejected_before_any_creation (test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation) (protected='runner')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 63, in test_output_parent_symlinks_are_rejected_before_any_creation
+    self.invoke(alias / "must-not-exist")
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='source')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 74, in test_parent_traversal_cannot_enter_source_or_build
+    self.invoke(output)
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='product')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 74, in test_parent_traversal_cannot_enter_source_or_build
+    self.invoke(output)
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+======================================================================
+ERROR: test_parent_traversal_cannot_enter_source_or_build (test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build) (protected='runner')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 74, in test_parent_traversal_cannot_enter_source_or_build
+    self.invoke(output)
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/tests/test_p8_external_candidate.py", line 55, in invoke
+    return packager.package(args)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/031390cf22eb/codecortex-closeout/scripts/p8_external_candidate.py", line 92, in package
+    candidate = importlib.import_module("p8_candidate_execution")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+test_p8_external_candidate.BuildValidationReached
+
+----------------------------------------------------------------------
+Ran 5 tests in 1.119s
+
+FAILED (errors=8)

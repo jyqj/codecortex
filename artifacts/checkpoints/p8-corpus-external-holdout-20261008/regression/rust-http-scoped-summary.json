@@ -1,0 +1,111 @@
+{
+  "source_commit": "615662bd0e651dc40a9d1d0d6757bc28646b900d",
+  "argv": [
+    "/workspace/scratch/031390cf22eb/toolchains/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "-p",
+    "cc-eval",
+    "--features",
+    "eval-http",
+    "--locked",
+    "--no-fail-fast",
+    "--lib",
+    "--test",
+    "benchmark_coverage_diagnostics",
+    "--test",
+    "benchmark_adapters"
+  ],
+  "exit_code": 101,
+  "original_log_sha256": "65809e648c73f190135285d6d1175271f07fb760cd817d8de7635b3d213cef6d",
+  "command_receipt_sha256": "db7062a36a748c958c5a0ec6b745052e2d3f18292723ae3fb799fbdb5eb2738f",
+  "source_unchanged": true,
+  "target_count": 3,
+  "totals": {
+    "passed": 69,
+    "failed": 1,
+    "ignored": 7,
+    "measured": 0,
+    "filtered_out": 0
+  },
+  "failures": [
+    {
+      "target": "unittests src/lib.rs",
+      "id": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears"
+    }
+  ],
+  "scope": "every selected target result from this complete command, no ignored or filtered tests counted as passing",
+  "targets": [
+    {
+      "target": "unittests src/lib.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/cc_eval-12174a1d180bc053",
+      "status": "FAILED",
+      "passed": 48,
+      "failed": 1,
+      "ignored": 5,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 10.56,
+      "failed_ids": [
+        "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears"
+      ],
+      "ignored_tests": [
+        {
+          "id": "tests::bench_incremental_dirty_closure",
+          "reason": "measures dirty-closure incremental rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::bench_incremental_noop",
+          "reason": "measures incremental no-op rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::bench_incremental_single_file",
+          "reason": "measures single-file incremental rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::benchmark_incremental_index_report_correctness",
+          "reason": "benchmarks incremental indexing report counters; run explicitly"
+        },
+        {
+          "id": "tests::benchmark_real_workspace",
+          "reason": "benchmarks the real workspace copy; run explicitly"
+        }
+      ]
+    },
+    {
+      "target": "tests/benchmark_adapters.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/benchmark_adapters-ce82400bb607627f",
+      "status": "ok",
+      "passed": 14,
+      "failed": 0,
+      "ignored": 2,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 0.2,
+      "failed_ids": [],
+      "ignored_tests": [
+        {
+          "id": "p7_offline::real_stdio_default_disabled_semantic_contract",
+          "reason": "explicit default/semantic product binary; run with --include-ignored, optionally under verified per-process network denial"
+        },
+        {
+          "id": "real_stdio_index_search_scope_and_tool_error",
+          "reason": "requires CODECORTEX_BENCH_BINARY pointing at an explicitly built product"
+        }
+      ]
+    },
+    {
+      "target": "tests/benchmark_coverage_diagnostics.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/benchmark_coverage_diagnostics-fc84c59ecc194fcb",
+      "status": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 0.06,
+      "failed_ids": [],
+      "ignored_tests": []
+    }
+  ],
+  "observer_sha256": "b5e494ae1f58ea256ae6b3533caf9b0ebd48efcd5d58aac5ad122728e4a6e9d4"
+}

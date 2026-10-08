@@ -1,0 +1,29 @@
+diff --git a/crates/cc-index/src/scanner.rs b/crates/cc-index/src/scanner.rs
+index d318ddd9..8e89915f 100644
+--- a/crates/cc-index/src/scanner.rs
++++ b/crates/cc-index/src/scanner.rs
+@@ -320,19 +320,16 @@ impl Scanner {
+                     .min(12),
+             );
+ 
+-        // Prune hidden subtrees beyond the config-linker depth budget: only
+-        // the config pass consumes hidden paths, and it never looked deeper.
++        // Preserve historical config/infra metadata observation independently
++        // of source admission. Only admitted hidden source needs to descend
++        // beyond the config budget; protected hidden subtrees keep that budget.
+         let root = self.project_path.clone();
+         let include_hidden_files = self.config.include_hidden_files;
+-        let broad_source_admission = include_hidden_files || self.config.include_text_files;
+         builder.filter_entry(move |entry| {
+             let rel = entry.path().strip_prefix(&root).unwrap_or(entry.path());
+-            if broad_source_admission
+-                && Self::protected_text_path(&rel.to_string_lossy().replace('\\', "/"))
++            if include_hidden_files
++                && !Self::protected_text_path(&rel.to_string_lossy().replace('\\', "/"))
+             {
+-                return false;
+-            }
+-            if include_hidden_files {
+                 return true;
+             }
+             let has_hidden = rel.components().any(|c| {

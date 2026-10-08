@@ -1,0 +1,122 @@
+{
+  "source_commit": "615662bd0e651dc40a9d1d0d6757bc28646b900d",
+  "argv": [
+    "/workspace/scratch/031390cf22eb/toolchains/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "-p",
+    "cc-eval",
+    "--features",
+    "semantic",
+    "--locked",
+    "--no-fail-fast",
+    "--lib",
+    "--test",
+    "p7_worker_contention",
+    "--test",
+    "semantic_lifecycle",
+    "--test",
+    "p7_strategy_ablation"
+  ],
+  "exit_code": 101,
+  "original_log_sha256": "c24031c030af31eaba5027117196907bd9aded9af61f2b033761e7dc899eef2c",
+  "command_receipt_sha256": "c6117f9ac7a09e887f949c46d929d437e018ecb7c6f9aa71e5e93f8d1eb53b22",
+  "source_unchanged": true,
+  "target_count": 4,
+  "totals": {
+    "passed": 58,
+    "failed": 1,
+    "ignored": 6,
+    "measured": 0,
+    "filtered_out": 0
+  },
+  "failures": [
+    {
+      "target": "unittests src/lib.rs",
+      "id": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears"
+    }
+  ],
+  "scope": "every selected target result from this complete command, no ignored or filtered tests counted as passing",
+  "targets": [
+    {
+      "target": "unittests src/lib.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/cc_eval-71b47c781bd217aa",
+      "status": "FAILED",
+      "passed": 48,
+      "failed": 1,
+      "ignored": 5,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 10.42,
+      "failed_ids": [
+        "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears"
+      ],
+      "ignored_tests": [
+        {
+          "id": "tests::bench_incremental_dirty_closure",
+          "reason": "measures dirty-closure incremental rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::bench_incremental_noop",
+          "reason": "measures incremental no-op rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::bench_incremental_single_file",
+          "reason": "measures single-file incremental rebuild latency; run explicitly"
+        },
+        {
+          "id": "tests::benchmark_incremental_index_report_correctness",
+          "reason": "benchmarks incremental indexing report counters; run explicitly"
+        },
+        {
+          "id": "tests::benchmark_real_workspace",
+          "reason": "benchmarks the real workspace copy; run explicitly"
+        }
+      ]
+    },
+    {
+      "target": "tests/p7_strategy_ablation.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/p7_strategy_ablation-0a7738a627fada78",
+      "status": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 0.01,
+      "failed_ids": [],
+      "ignored_tests": [
+        {
+          "id": "actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source",
+          "reason": "requires explicit current product path and SHA256; mechanism smoke, no quality certification"
+        }
+      ]
+    },
+    {
+      "target": "tests/p7_worker_contention.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/p7_worker_contention-0b2ed0af9e6c363b",
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 4.13,
+      "failed_ids": [],
+      "ignored_tests": []
+    },
+    {
+      "target": "tests/semantic_lifecycle.rs",
+      "executable": "/workspace/scratch/031390cf22eb/target-scale/debug/deps/semantic_lifecycle-a641bde1dad9be53",
+      "status": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "elapsed_seconds": 0.76,
+      "failed_ids": [],
+      "ignored_tests": []
+    }
+  ],
+  "observer_sha256": "b5e494ae1f58ea256ae6b3533caf9b0ebd48efcd5d58aac5ad122728e4a6e9d4"
+}

@@ -1,0 +1,50 @@
+   Compiling cc-index v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-index)
+    Finished `test` profile [unoptimized] target(s) in 9.88s
+     Running tests/explicit_text_admission.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/explicit_text_admission-554614fad1191bad)
+
+running 9 tests
+test explicit_text_cannot_read_an_environment_file_through_a_symlink_alias ... ok
+test explicit_text_rejects_binary_invalid_utf8_and_over_limit_on_every_entrypoint ... ok
+test default_source_options_preserve_shared_config_inputs ... ok
+test opt_in_full_directory_and_single_event_scans_share_admission ... ok
+test hidden_opt_in_preserves_shared_config_inputs ... FAILED
+test text_and_hidden_opt_ins_preserve_shared_config_inputs ... FAILED
+test defaults_and_the_two_opt_ins_remain_independent ... ok
+test text_opt_in_preserves_shared_config_inputs ... FAILED
+test real_generic_chunks_fts_updates_hidden_moves_and_deletes_stay_coherent ... ok
+
+failures:
+
+---- hidden_opt_in_preserves_shared_config_inputs stdout ----
+
+thread 'hidden_opt_in_preserves_shared_config_inputs' (113) panicked at crates/cc-index/tests/explicit_text_admission.rs:298:5:
+assertion `left == right` failed: text=false, hidden=true
+  left: {".docs/hidden.py", "a/b/c/d/e/f/deep.yaml", "guide.rst", "src/handlers.py"}
+ right: {".config/a/b/c/at_limit.yaml", ".config/settings.yaml", ".docs/hidden.py", ".env", ".ssh/key.py", "a/b/c/d/e/f/deep.yaml", "build/Dockerfile", "guide.rst", "src/handlers.py", "vendor/settings.ini"}
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text_and_hidden_opt_ins_preserve_shared_config_inputs stdout ----
+
+thread 'text_and_hidden_opt_ins_preserve_shared_config_inputs' (116) panicked at crates/cc-index/tests/explicit_text_admission.rs:298:5:
+assertion `left == right` failed: text=true, hidden=true
+  left: {".docs/hidden.py", "a/b/c/d/e/f/deep.yaml", "guide.rst", "src/handlers.py"}
+ right: {".config/a/b/c/at_limit.yaml", ".config/settings.yaml", ".docs/hidden.py", ".env", ".ssh/key.py", "a/b/c/d/e/f/deep.yaml", "build/Dockerfile", "guide.rst", "src/handlers.py", "vendor/settings.ini"}
+
+---- text_opt_in_preserves_shared_config_inputs stdout ----
+
+thread 'text_opt_in_preserves_shared_config_inputs' (181) panicked at crates/cc-index/tests/explicit_text_admission.rs:298:5:
+assertion `left == right` failed: text=true, hidden=false
+  left: {".docs/hidden.py", "a/b/c/d/e/f/deep.yaml", "guide.rst", "src/handlers.py"}
+ right: {".config/a/b/c/at_limit.yaml", ".config/settings.yaml", ".docs/hidden.py", ".env", ".ssh/key.py", "a/b/c/d/e/f/deep.yaml", "build/Dockerfile", "guide.rst", "src/handlers.py", "vendor/settings.ini"}
+
+
+failures:
+    hidden_opt_in_preserves_shared_config_inputs
+    text_and_hidden_opt_ins_preserve_shared_config_inputs
+    text_opt_in_preserves_shared_config_inputs
+
+test result: FAILED. 6 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `-p cc-index --test explicit_text_admission`
+error: 1 target failed:
+    `-p cc-index --test explicit_text_admission`

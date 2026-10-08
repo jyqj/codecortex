@@ -1,0 +1,1243 @@
+{
+  "actual_binding_checks": {
+    "actual_binaries": [
+      {
+        "bytes": 31287288,
+        "crc": 474067155,
+        "directory": false,
+        "git_blob": "176e8c08f27c855c354b2a551cea5da68bd63d76",
+        "path": "execution/package/builds/evaluator/cc-eval",
+        "sha256": "afdaf1ddbd28340f4ffbfbbef935194d563f3242d31ffb022b9bbd208e31537f",
+        "zip_mode": 33261
+      },
+      {
+        "bytes": 27045272,
+        "crc": 3336128549,
+        "directory": false,
+        "git_blob": "523dd4e539fb4f448d79ee47c5db2b6ef9f4fe7d",
+        "path": "execution/package/builds/product/codecortex",
+        "sha256": "f9337b0347727a31a7b147497763b9c0765a725f207c6245b3715cd4749f79f0",
+        "zip_mode": 33261
+      }
+    ],
+    "admitted_source_count": 113,
+    "archive": {
+      "bytes": 18801283,
+      "mode": 420,
+      "sha256": "acb16c6c8b34dc513569d4667b0dff721713f791eb7c7752791ad2430ed438f3"
+    },
+    "checks": {
+      "before_after_candidate": true,
+      "before_after_environment": true,
+      "before_after_helpers": true,
+      "before_after_python_dependency_closure": true
+    },
+    "dependency_fingerprint_sha256": "edcc5c77083a54673a16d84322f931e2416ea318d1559e94e4225386842ac531",
+    "environment": {
+      "actions": {
+        "GITHUB_JOB": "execute",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_RUN_ID": "37769636440",
+        "GITHUB_SHA": "b5146043fd57e3edd2655397b5775fdc0f1d2e52",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20260927.320.1"
+      },
+      "architecture": "x86_64",
+      "cargo": {
+        "path": "/home/runner/.cargo/bin/cargo",
+        "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n"
+      },
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "git": {
+        "bytes": 4576040,
+        "mode": 493,
+        "sha256": "d4d2ba562243015206d4248edfec871a74786499292d00ed072dbca2f5ae8073"
+      },
+      "git_version": "git version 2.55.0\n",
+      "kernel": "6.17.0-1022-azure",
+      "logical_cpus": 4,
+      "memory_limit": null,
+      "network_observation": "not_observed; no syscall-zero claim",
+      "python": "3.12.3",
+      "rg": {
+        "bytes": 5257872,
+        "mode": 493,
+        "sha256": "be2fbcdd985161603bfa268c7647eec670b9e94374f0e972da708d7de670a8fb"
+      },
+      "rg_version": "ripgrep 14.1.0\n\nfeatures:-simd-accel,+pcre2\nsimd(compile):+SSE2,-SSSE3,-AVX2\nsimd(runtime):+SSE2,+SSSE3,+AVX2\n\nPCRE2 10.42 is available (JIT is available)\n",
+      "rustc": {
+        "path": "/home/runner/.cargo/bin/rustc",
+        "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+      },
+      "system": "Linux",
+      "unicodedata": "15.0.0"
+    },
+    "helpers_count": 6,
+    "package_manifest": {
+      "bytes": 11015,
+      "mode": 420,
+      "sha256": "1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b"
+    },
+    "python_modules": 147,
+    "raw_inventory_entries": 323,
+    "raw_inventory_sha256": "95a37f0bc7d96cb4215bc6879e95bfc33acc6e04fe3acf79507b2bae6865caf9",
+    "sealed_data_count": 10,
+    "source_count": 1038,
+    "validation_count": 110
+  },
+  "actual_native_runtime_checks": {
+    "actions": {
+      "GITHUB_JOB": "execute",
+      "GITHUB_RUN_ATTEMPT": "1",
+      "GITHUB_RUN_ID": "37769636440",
+      "GITHUB_SHA": "b5146043fd57e3edd2655397b5775fdc0f1d2e52",
+      "ImageOS": "ubuntu24",
+      "ImageVersion": "20260927.320.1"
+    },
+    "native_validate_exit": 0,
+    "original_outer_helper_exit": 1,
+    "parent_child_rust_entrypoints_and_versions_equal": true,
+    "rust_tiny_exact": true,
+    "toolchains_actual_binary_sha_verified": true,
+    "zero_new_queries_by_reviewer": true
+  },
+  "actual_paired_bootstrap_reconstruction": [
+    {
+      "components": 10,
+      "independent_high": 0.38333333333333336,
+      "independent_low": 0.075,
+      "independent_mean": 0.2208333333333333,
+      "kind": "answerable",
+      "max_abs_difference": 5.551115123125783e-17,
+      "metric": "mrr10",
+      "recorded_high": 0.38333333333333336,
+      "recorded_low": 0.075,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.3425597563926427,
+      "independent_low": 0.062309015408263425,
+      "independent_mean": 0.18916292784156089,
+      "kind": "answerable",
+      "max_abs_difference": 6.938893903907228e-18,
+      "metric": "ndcg10",
+      "recorded_high": 0.3425597563926427,
+      "recorded_low": 0.06230901540826343,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.3375,
+      "independent_low": 0.0625,
+      "independent_mean": 0.18333333333333335,
+      "kind": "answerable",
+      "max_abs_difference": 2.7755575615628914e-17,
+      "metric": "recall10",
+      "recorded_high": 0.3375,
+      "recorded_low": 0.0625,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.3375,
+      "independent_low": 0.0625,
+      "independent_mean": 0.18333333333333335,
+      "kind": "answerable",
+      "max_abs_difference": 2.7755575615628914e-17,
+      "metric": "recall5",
+      "recorded_high": 0.3375,
+      "recorded_low": 0.0625,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.33708225638556033,
+      "independent_low": 0.057583071825437,
+      "independent_mean": 0.18593324930538752,
+      "kind": "answerable",
+      "max_abs_difference": 0,
+      "metric": "span_precision",
+      "recorded_high": 0.33708225638556033,
+      "recorded_low": 0.057583071825437,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.3572508974168179,
+      "independent_low": 0.06739937815731764,
+      "independent_mean": 0.19953800929769944,
+      "kind": "answerable",
+      "max_abs_difference": 5.551115123125783e-17,
+      "metric": "span_recall",
+      "recorded_high": 0.35725089741681787,
+      "recorded_low": 0.06739937815731764,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 10,
+      "independent_high": 0.35,
+      "independent_low": 0.025,
+      "independent_mean": 0.175,
+      "kind": "answerable",
+      "max_abs_difference": 0,
+      "metric": "top1",
+      "recorded_high": 0.35,
+      "recorded_low": 0.025,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 2,
+      "independent_high": -1,
+      "independent_low": -1,
+      "independent_mean": -1,
+      "kind": "no_answer",
+      "max_abs_difference": 0,
+      "metric": "no_answer_correct",
+      "recorded_high": -1,
+      "recorded_low": -1,
+      "replicates": 10000,
+      "seed": 20261003
+    },
+    {
+      "components": 2,
+      "independent_high": -1,
+      "independent_low": -1,
+      "independent_mean": -1,
+      "kind": "no_answer",
+      "max_abs_difference": 0,
+      "metric": "normalized_no_match_zero_hits",
+      "recorded_high": -1,
+      "recorded_low": -1,
+      "replicates": 10000,
+      "seed": 20261003
+    }
+  ],
+  "actual_read_inventory": {
+    "actual_binary_chunks": [
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute-rust",
+        "bytes": 1501,
+        "git_blob": "de96c3abe46642d613f3fc67420d349b04da6267",
+        "independently_verified": true,
+        "offset": 0,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute-rust/original-archive/part-000.bin",
+        "sha256": "3517b0863a4f4dcd0c5ecb47d0553359cfcfe5192498d8a703689ce3e220457b"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "67c696dceec35d300404a579e57c013482527b2c",
+        "independently_verified": true,
+        "offset": 0,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-000.bin",
+        "sha256": "46f8592a8b0726b25c6238cb3d2b1ae8d4bb39aa2779b9cbe75dfd91ccb4ce8a"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "6b1910765d90752fb09dabd8aaccd0795d1d6299",
+        "independently_verified": true,
+        "offset": 786432,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-001.bin",
+        "sha256": "cb49d976265839b3b752341defbe5cb20936f1ef36bdc5b5f3ec4745077561d4"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "e1d5336a0ad6f1ec2e50cc7ed1a13d36a58fc390",
+        "independently_verified": true,
+        "offset": 1572864,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-002.bin",
+        "sha256": "b40e0c39753b73b49477c82e37ba20ab994331e0db0dddecff2a4a45a03e2793"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "b153daaef189e00d94776f3d86129f8ada41a552",
+        "independently_verified": true,
+        "offset": 2359296,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-003.bin",
+        "sha256": "54f88917e018dcd2bbf23e61d7cf59c96ad996118c02fd003052220b6824ae39"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "07025ec79ed15b377ad5d5e25157b484dc6fd3a2",
+        "independently_verified": true,
+        "offset": 3145728,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-004.bin",
+        "sha256": "d7f0331509cab544c8f648268965c8c4ab406f0af0f1d3c0882276334c9269a0"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "237ead98d90efd881bea8ebd177125471a33f5c9",
+        "independently_verified": true,
+        "offset": 3932160,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-005.bin",
+        "sha256": "356569f508db8f8b5bf9ecee8978e8bd4cae25e5d6373692c58f67f69773b4ba"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "ad994dcd00f11c72ecb6127889990c4ec76d663c",
+        "independently_verified": true,
+        "offset": 4718592,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-006.bin",
+        "sha256": "5afb6542e7662dd004c50ad4c2f8ea580051bb8aa11a3443941be6a8e79f1a21"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "01769c4ec5b154d9440955bb17db48fe9967b7e4",
+        "independently_verified": true,
+        "offset": 5505024,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-007.bin",
+        "sha256": "abbddd270455cb3cf274f1aec971ace1c4ea41825ec3797f73ed5eb684ca27c9"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "a773a0fe848a2681101867305bb716e20d09676d",
+        "independently_verified": true,
+        "offset": 6291456,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-008.bin",
+        "sha256": "2297c6db8d9211e8fc1990778b6ac2e0c0ee0a13c7c8eb2fd9c2d93060926092"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "3460afdd54d554dc7a40566a106dff5866c68e17",
+        "independently_verified": true,
+        "offset": 7077888,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-009.bin",
+        "sha256": "40c65d3d2c22c31eae52aabe6c8ab95ffcfc681c9dea40d18424c11644e69124"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "60388249228985921df245e6f6c1c37219a41498",
+        "independently_verified": true,
+        "offset": 7864320,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-010.bin",
+        "sha256": "9844b6c139780b8dec15ccfb3f9de2f989f303296d8ee488a6087a063811a4a5"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "84e551235ff57e6308e47751a964b6880694e466",
+        "independently_verified": true,
+        "offset": 8650752,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-011.bin",
+        "sha256": "ce29fd1b27c9a176fb2a37e41e39916443de7d099ba5f9bdaa2e4f414c6ef1d8"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "84a479b59ff10ae62bce864defd4b2ba3f5f2d4c",
+        "independently_verified": true,
+        "offset": 9437184,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-012.bin",
+        "sha256": "e2ff9b86629f2b122133fd0d5c41a84d8dca291072271cb0d63e068b7d3deb78"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "9abfc1788a1dc81369bba4617543cb96111a3012",
+        "independently_verified": true,
+        "offset": 10223616,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-013.bin",
+        "sha256": "275a62f1af2fe825cc45062427b0ab2bbb303acdcf007ff64c91bf37e465400e"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "f9e0e814e5288568d5117c058c7fe2638c5ba606",
+        "independently_verified": true,
+        "offset": 11010048,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-014.bin",
+        "sha256": "307bdd62d405179aeaffec313d412095265a55b129213dbb00ed37b8ee162146"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "7d3d4e62cb1d76a1b57330c4a7e86518f3fc336b",
+        "independently_verified": true,
+        "offset": 11796480,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-015.bin",
+        "sha256": "f137e146a1373b3acb3d156d2cbfa8e186951d4d332776ac5321521326764156"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "c9f3b0016aaa7199d2c1314ab59797f542b42528",
+        "independently_verified": true,
+        "offset": 12582912,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-016.bin",
+        "sha256": "6c922b00fe5b3d6ef3d7ef85db127b7b1da6cf2b1b28a10225d33de716febfeb"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "bcb991cf2a166536a1ae4afa77efe79abdb28bef",
+        "independently_verified": true,
+        "offset": 13369344,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-017.bin",
+        "sha256": "70c2a8a31d11bb87ede406e4ed13a2db200fa5a8bd425277ba35f2d707939707"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "2af1a0ed7631d49799aa521d0bb902cb9446fc05",
+        "independently_verified": true,
+        "offset": 14155776,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-018.bin",
+        "sha256": "bb254b03992ffcc74b43be7a6a25b82fcd03a554c0b98e55c6d805c619fe1608"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "02e6d2a2460b4e16c053ff2d97ecd04a18a05acd",
+        "independently_verified": true,
+        "offset": 14942208,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-019.bin",
+        "sha256": "ef3dfebb4d2c5e4dcfd09404dabe8922536804f8d052471bee329212d0f5c5e4"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "88a67da01a63eafba73801b97c566dff4dba6b06",
+        "independently_verified": true,
+        "offset": 15728640,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-020.bin",
+        "sha256": "8de242d4b38a6d4b5bfebad67ee0b12f1949195493f794ce599a174e45f62ef6"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "25e0feef0669252a00be30812dc05b28dd5cca0d",
+        "independently_verified": true,
+        "offset": 16515072,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-021.bin",
+        "sha256": "1b36f4e76f849773fadf76d156e2074ba30ee3da5ca2e775f017bd0f8991746c"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "e648373a4ce754c21dcf2b869434cd27ad5d87b1",
+        "independently_verified": true,
+        "offset": 17301504,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-022.bin",
+        "sha256": "ee65433ef9c194f992f45755dcff466dbb52a999273cb428b59eb3dea5fb9407"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "53f9f98e67b7e0d56d5bef4e5152fe595e17ccb2",
+        "independently_verified": true,
+        "offset": 18087936,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-023.bin",
+        "sha256": "58d0f4aab44311cbe628cddd8af76bd3b99acc522441182aa30c1a9f267b4f90"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "f59829890f9a6da82977a5bec2ae5f7f32f95878",
+        "independently_verified": true,
+        "offset": 18874368,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-024.bin",
+        "sha256": "bc60f6ddc0a0c268db5a0c46478ca77fc4a540e7d880326863a62be23e767c34"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "fea6c1b71c503b46b8ffaf84056ad72459a8db55",
+        "independently_verified": true,
+        "offset": 19660800,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-025.bin",
+        "sha256": "66234c0f74a987e1c6f976724f6c572ff99ace714885701ba4b22043565ea71e"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "8f8d0e4af81c488459fa1ddd3df538cfa52b96e6",
+        "independently_verified": true,
+        "offset": 20447232,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-026.bin",
+        "sha256": "db1aed6ab7a21561a4005ed91c909430df40769c675c6dc24cc9e7c37cebccac"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "e39b773d6f7b5513fc802f5373439b839b2d73bc",
+        "independently_verified": true,
+        "offset": 21233664,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-027.bin",
+        "sha256": "cc146fea0875600cb1e39d55a79325ce6bb5e4ac7164388f19fb7b9a84649ac3"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 786432,
+        "git_blob": "e47a76f2fe69b6b9b518998937b1f3d3481762ef",
+        "independently_verified": true,
+        "offset": 22020096,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-028.bin",
+        "sha256": "11a93ee5cdb9a5d9b58aad4c1c6ae3d6dc1568a876858343e54492a3bf501814"
+      },
+      {
+        "actual_fetch_encoding": "base64",
+        "artifact": "execute",
+        "bytes": 286491,
+        "git_blob": "5f9cf653f8b2c91cda8df33ae382260853449d8f",
+        "independently_verified": true,
+        "offset": 22806528,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/execute/original-archive/part-029.bin",
+        "sha256": "1cf3a7426aafb50997dce1628883fbb21336737b17394cb0838630b30cf12e98"
+      }
+    ],
+    "archive_commit": "b35b45dc8ec1429322a50967ac9b7d5e64551ecd",
+    "export_manifest": "6c15cee370da4483794b8f623b27d23b3f1fcc93",
+    "full_member_inventory_blobs": [
+      "b283dd08fb9419bacebfc541b0e2290d1097e0a2",
+      "b92a0688becbcc3ed661831252902e18dddcd475"
+    ],
+    "utf8_member_access": "All1113 exact UTF8 member bodies decoded from independently inflated original ZIP bytes and each member compared to recorded SHA/CRC/bytes/mode; no protected external query bodies were accessed.",
+    "zip_verification_completed_utc": {
+      "current_time": "2026-10-08 11:46:45 UTC"
+    }
+  },
+  "actual_rows_and_family_reaggregation": {
+    "all288_schedule_verified": true,
+    "allRawReplayAndNineDerivedExact": true,
+    "all_original_scores_bound": true,
+    "details": [
+      {
+        "answerable_rows": 120,
+        "arm": "candidate_local_default",
+        "derived_original_bytes_equal": 9,
+        "gate_exit": 1,
+        "gate_status": "gate_failed",
+        "hits": 252,
+        "noanswer_correct": 0,
+        "noanswer_rows": 24,
+        "query_snapshot_original_UTF8_bytes_equal": false,
+        "query_snapshot_parsed_fields_equal": true,
+        "raw_drift_owned_copy_changes": 1,
+        "raw_drift_rejected_exit": 2,
+        "replay_inputs_original_bytes_equal": 3,
+        "replay_process_exit": 1,
+        "replay_raw_original_bytes_equal": 144,
+        "rows": 144,
+        "run_process_exit": 1,
+        "source_invalid_hits": 0,
+        "status_counts": {
+          "no_match": 3,
+          "partial": 141
+        },
+        "unique_cases": 48
+      },
+      {
+        "answerable_rows": 120,
+        "arm": "rg_baseline",
+        "derived_original_bytes_equal": 9,
+        "gate_exit": 0,
+        "gate_status": "baseline_recorded_not_quality_certified",
+        "hits": 0,
+        "noanswer_correct": 24,
+        "noanswer_rows": 24,
+        "query_snapshot_original_UTF8_bytes_equal": false,
+        "query_snapshot_parsed_fields_equal": true,
+        "raw_drift_owned_copy_changes": 1,
+        "raw_drift_rejected_exit": 2,
+        "replay_inputs_original_bytes_equal": 3,
+        "replay_process_exit": 0,
+        "replay_raw_original_bytes_equal": 144,
+        "rows": 144,
+        "run_process_exit": 0,
+        "source_invalid_hits": 0,
+        "status_counts": {
+          "no_match": 144
+        },
+        "unique_cases": 48
+      }
+    ],
+    "means": {
+      "candidate_local_default": {
+        "ptv2.boltons.f0001": {
+          "mrr10": 0.75,
+          "ndcg10": 0.75,
+          "recall10": 0.75,
+          "recall5": 0.75,
+          "span_precision": 0.6947338219708173,
+          "span_recall": 0.5775744098528909,
+          "top1": 0.75
+        },
+        "ptv2.boltons.f0002": {
+          "mrr10": 0.25,
+          "ndcg10": 0.14253516251847534,
+          "recall10": 0.08333333333333333,
+          "recall5": 0.08333333333333333,
+          "span_precision": 0.09883004926108374,
+          "span_recall": 0.16090225563909774,
+          "top1": 0.25
+        },
+        "ptv2.boltons.f0003": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0004": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0005": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0006": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0007": {
+          "mrr10": 0.08333333333333333,
+          "ndcg10": 0.14499900212301794,
+          "recall10": 0.25,
+          "recall5": 0.25,
+          "span_precision": 0.09080177040210163,
+          "span_recall": 0.09644670050761421,
+          "top1": 0
+        },
+        "ptv2.boltons.f0008": {
+          "mrr10": 0.5,
+          "ndcg10": 0.39804095548293256,
+          "recall10": 0.375,
+          "recall5": 0.375,
+          "span_precision": 0.4950823004029358,
+          "span_recall": 0.6782805429864255,
+          "top1": 0.25
+        },
+        "ptv2.boltons.f0009": {
+          "mrr10": 0.125,
+          "ndcg10": 0.11103071661219947,
+          "recall10": 0.125,
+          "recall5": 0.125,
+          "span_precision": 0.1764591439688716,
+          "span_recall": 0.19396920444824636,
+          "top1": 0
+        },
+        "ptv2.boltons.f0010": {
+          "mrr10": 0.5,
+          "ndcg10": 0.3450234416789835,
+          "recall10": 0.25,
+          "recall5": 0.25,
+          "span_precision": 0.30342540704806514,
+          "span_recall": 0.2882069795427196,
+          "top1": 0.5
+        },
+        "ptv2.boltons.f0011": {
+          "no_answer_correct": 0,
+          "normalized_no_match_zero_hits": 0
+        },
+        "ptv2.boltons.f0012": {
+          "no_answer_correct": 0,
+          "normalized_no_match_zero_hits": 0
+        }
+      },
+      "rg_baseline": {
+        "ptv2.boltons.f0001": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0002": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0003": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0004": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0005": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0006": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0007": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0008": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0009": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0010": {
+          "mrr10": 0,
+          "ndcg10": 0,
+          "recall10": 0,
+          "recall5": 0,
+          "span_precision": 0,
+          "span_recall": 0,
+          "top1": 0
+        },
+        "ptv2.boltons.f0011": {
+          "no_answer_correct": 1,
+          "normalized_no_match_zero_hits": 1
+        },
+        "ptv2.boltons.f0012": {
+          "no_answer_correct": 1,
+          "normalized_no_match_zero_hits": 1
+        }
+      }
+    },
+    "originalMetricsCases_recomputed": true
+  },
+  "actual_stratum_reaggregation": [
+    {
+      "arms": {
+        "candidate_local_default": 0.22083333333333335,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "mrr10",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.75,
+        "ptv2.boltons.f0002": 0.25,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.08333333333333333,
+        "ptv2.boltons.f0008": 0.5,
+        "ptv2.boltons.f0009": 0.125,
+        "ptv2.boltons.f0010": 0.5
+      },
+      "recorded_bootstrap": {
+        "high": 0.38333333333333336,
+        "independent_components": 10,
+        "low": 0.075,
+        "mean_candidate_minus_rg": 0.22083333333333335,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.18916292784156089,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "ndcg10",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.75,
+        "ptv2.boltons.f0002": 0.14253516251847534,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.14499900212301794,
+        "ptv2.boltons.f0008": 0.39804095548293256,
+        "ptv2.boltons.f0009": 0.11103071661219947,
+        "ptv2.boltons.f0010": 0.3450234416789835
+      },
+      "recorded_bootstrap": {
+        "high": 0.3425597563926427,
+        "independent_components": 10,
+        "low": 0.06230901540826343,
+        "mean_candidate_minus_rg": 0.18916292784156089,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.18333333333333332,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "recall10",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.75,
+        "ptv2.boltons.f0002": 0.08333333333333333,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.25,
+        "ptv2.boltons.f0008": 0.375,
+        "ptv2.boltons.f0009": 0.125,
+        "ptv2.boltons.f0010": 0.25
+      },
+      "recorded_bootstrap": {
+        "high": 0.3375,
+        "independent_components": 10,
+        "low": 0.0625,
+        "mean_candidate_minus_rg": 0.18333333333333332,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.18333333333333332,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "recall5",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.75,
+        "ptv2.boltons.f0002": 0.08333333333333333,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.25,
+        "ptv2.boltons.f0008": 0.375,
+        "ptv2.boltons.f0009": 0.125,
+        "ptv2.boltons.f0010": 0.25
+      },
+      "recorded_bootstrap": {
+        "high": 0.3375,
+        "independent_components": 10,
+        "low": 0.0625,
+        "mean_candidate_minus_rg": 0.18333333333333332,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.18593324930538752,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "span_precision",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.6947338219708173,
+        "ptv2.boltons.f0002": 0.09883004926108374,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.09080177040210163,
+        "ptv2.boltons.f0008": 0.4950823004029358,
+        "ptv2.boltons.f0009": 0.1764591439688716,
+        "ptv2.boltons.f0010": 0.30342540704806514
+      },
+      "recorded_bootstrap": {
+        "high": 0.33708225638556033,
+        "independent_components": 10,
+        "low": 0.057583071825437,
+        "mean_candidate_minus_rg": 0.18593324930538752,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.1995380092976994,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "span_recall",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.5775744098528909,
+        "ptv2.boltons.f0002": 0.16090225563909774,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0.09644670050761421,
+        "ptv2.boltons.f0008": 0.6782805429864255,
+        "ptv2.boltons.f0009": 0.19396920444824636,
+        "ptv2.boltons.f0010": 0.2882069795427196
+      },
+      "recorded_bootstrap": {
+        "high": 0.35725089741681787,
+        "independent_components": 10,
+        "low": 0.06739937815731764,
+        "mean_candidate_minus_rg": 0.1995380092976994,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0.175,
+        "rg_baseline": 0
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 10,
+          "planned_components": 10,
+          "planned_rows": 120
+        }
+      },
+      "kind": "answerable",
+      "metric": "top1",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0001": 0.75,
+        "ptv2.boltons.f0002": 0.25,
+        "ptv2.boltons.f0003": 0,
+        "ptv2.boltons.f0004": 0,
+        "ptv2.boltons.f0005": 0,
+        "ptv2.boltons.f0006": 0,
+        "ptv2.boltons.f0007": 0,
+        "ptv2.boltons.f0008": 0.25,
+        "ptv2.boltons.f0009": 0,
+        "ptv2.boltons.f0010": 0.5
+      },
+      "recorded_bootstrap": {
+        "high": 0.35,
+        "independent_components": 10,
+        "low": 0.025,
+        "mean_candidate_minus_rg": 0.175,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0,
+        "rg_baseline": 1
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 2,
+          "planned_components": 2,
+          "planned_rows": 24
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 2,
+          "planned_components": 2,
+          "planned_rows": 24
+        }
+      },
+      "kind": "no_answer",
+      "metric": "no_answer_correct",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0011": -1,
+        "ptv2.boltons.f0012": -1
+      },
+      "recorded_bootstrap": {
+        "high": -1,
+        "independent_components": 2,
+        "low": -1,
+        "mean_candidate_minus_rg": -1,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    },
+    {
+      "arms": {
+        "candidate_local_default": 0,
+        "rg_baseline": 1
+      },
+      "denominators": {
+        "candidate_local_default": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 2,
+          "planned_components": 2,
+          "planned_rows": 24
+        },
+        "rg_baseline": {
+          "aggregation": "all12 observations per component required; undefined stays null",
+          "defined_components": 2,
+          "planned_components": 2,
+          "planned_rows": 24
+        }
+      },
+      "kind": "no_answer",
+      "metric": "normalized_no_match_zero_hits",
+      "paired_component_deltas": {
+        "ptv2.boltons.f0011": -1,
+        "ptv2.boltons.f0012": -1
+      },
+      "recorded_bootstrap": {
+        "high": -1,
+        "independent_components": 2,
+        "low": -1,
+        "mean_candidate_minus_rg": -1,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      }
+    }
+  ],
+  "created_utc": "2026-10-08 11:56:19 UTC",
+  "kind": "formal_original_artifact_review_actual_appendix",
+  "main_review": {
+    "exact_readback": true,
+    "git_blob": "851aad9e08d5f9cee66f66c9e27eeb309cea46f5",
+    "sha256": "bd233a4d4c35e02dc68269d4a69f3049a48fcb4e2656a402cb785d5dca49a2ee",
+    "utf8_bytes": 15139
+  },
+  "review_only_executed_code": {
+    "bootstrap": "For each of9 complete family metric delta vectors, instantiate Python-compatibleMT19937(seed20261003),10,000 draws ofN families with replacement using getrandbits/rejection randrange(N), sort means, take indices249/9749; compare originalJSON within1e-14 to account JS/Python3.12 sum rounding. No candidate/scorer execution.",
+    "lossless_utf8_decoder": "function strictUtf8(a){let out=\"\",buf=[];function flush(){out+=String.fromCharCode(...buf);buf=[];}for(let i=0;i<a.length;){let b=a[i++],v=b,n=0,min=0;if(b<128){}else if(b>=194&&b<=223){v=b&31;n=1;min=128;}else if(b>=224&&b<=239){v=b&15;n=2;min=2048;}else if(b>=240&&b<=244){v=b&7;n=3;min=65536;}else throw Error(\"invalid UTF8 lead\");for(let j=0;j<n;j++){if(i>=a.length||(a[i]&192)!==128)throw Error(\"invalid UTF8 continuation\");v=(v<<6)|(a[i++]&63);}if(v<min||v>1114111||(v>=55296&&v<=57343))throw Error(\"invalid UTF8 scalar\");if(v<65536)buf.push(v);else{v-=65536;buf.push(55296+(v>>10),56320+(v&1023));}if(buf.length>4096)flush();}flush();return out;}",
+    "python_int_seed_mt19937_for_readonly_report_recomputation": "function pythonIntSeedRandom(seed){const mt=new Uint32Array(624);let idx=624;function init(s){mt[0]=s>>>0;for(let i=1;i<624;i++)mt[i]=(Math.imul(1812433253,mt[i-1]^(mt[i-1]>>>30))+i)>>>0;}init(19650218);let i=1,j=0;const key=[seed>>>0];for(let k=624;k;k--){mt[i]=((mt[i]^Math.imul(mt[i-1]^(mt[i-1]>>>30),1664525))+key[j]+j)>>>0;i++;j++;if(i>=624){mt[0]=mt[623];i=1;}if(j>=key.length)j=0;}for(let k=623;k;k--){mt[i]=((mt[i]^Math.imul(mt[i-1]^(mt[i-1]>>>30),1566083941))-i)>>>0;i++;if(i>=624){mt[0]=mt[623];i=1;}}mt[0]=0x80000000;function next(){if(idx>=624){for(let k=0;k<624;k++){const y=(mt[k]&0x80000000)|(mt[(k+1)%624]&0x7fffffff);mt[k]=(mt[(k+397)%624]^(y>>>1)^((y&1)?0x9908b0df:0))>>>0;}idx=0;}let y=mt[idx++];y^=y>>>11;y^=(y<<7)&0x9d2c5680;y^=(y<<15)&0xefc60000;y^=y>>>18;return y>>>0;}return{next,randrange(n){const bits=Math.floor(Math.log2(n))+1;let x;do{x=next()>>>(32-bits);}while(x>=n);return x;}};}",
+    "row_input_and_derived_byte_auditor": "function auditFormal(get,rowsByArm,scoresByArm,manifests,metrics,report,qs,schedule,source,suite,inventory,canonical,sealedQueryRaw){\nconst arms=[\"candidate_local_default\",\"rg_baseline\"],raw=get,read=p=>JSON.parse(raw(p)), byPath=new Map(inventory.map(f=>[f.path,f])),eq=(a,b)=>canonical(a)===canonical(b),need=(x,m)=>{if(!x)throw Error(m);},details=[],means={};\nconst deriv=[\"metrics.json\",\"scores.jsonl\",\"query-slices.json\",\"costs.jsonl\",\"latency-summary.json\",\"latency-strata.json\",\"resource-ledger.json\",\"gate.json\",\"report.md\"];\nfor(let ai=0;ai<2;ai++){const arm=arms[ai],pre=\"execution/runs/\"+arm+\"/\",rep=\"execution/replay/\"+arm+\"-original-scorer-replay/\",bad=\"execution/replay/\"+arm+\"-raw-drift-control/\",rows=rowsByArm[arm],scores=scoresByArm[arm],m=manifests[arm],gate=read(pre+\"gate.json\"),run=read(\"execution/execution.json\").runs[arm],cmd=read(\"execution/replay/\"+arm+\"-replay-command/receipt.json\"),neg=read(\"execution/replay/\"+arm+\"-raw-drift-command/receipt.json\");\nneed(eq(m.suite,suite)&&m.engine.engine_head_observed===\"2cd04485b0e0b23483f64671d56538bbaa47f442\"&&m.engine.dirty_observed===\"\"&&m.engine.eval_debug_assertions===false&&m.adapter_version===\"cc-eval-public-v7\"&&m.adapter===(ai===0?\"mcp-stdio\":\"rg-literal\")&&m.infrastructure_failure===null,\"manifest\");\nneed(eq(raw(pre+\"queries.jsonl\").trim().split(\"\\n\").map(JSON.parse),qs),\"query parsed exactfields\");need(rows.length===144&&scores.length===144,\"counts\");\nneed([0,1].includes(gate.exit_code)&&typeof gate.exit_code===\"number\"&&!cmd.timed_out&&cmd.process_exit_code===gate.exit_code&&cmd.effective_exit_code===gate.exit_code&&run.process_exit_code===gate.exit_code&&run.effective_exit_code===gate.exit_code&&!run.timed_out,\"originalexit\");\nfor(const n of [...deriv,\"manifest.json\",\"queries.jsonl\",\"normalized.jsonl\"])need(raw(pre+n)===raw(rep+n),\"derived/input replay \"+n);\nlet hitCount=0,nonanswer=0,noanswerCorrect=0,answerable=0;const counts={},familySamples={},perCase={};let rawNegativeChanged=0,rawReplayCount=0;\nfor(let i=0;i<rows.length;i++){const row=rows[i],score=scores[i],plan=schedule[ai*144+i],q=qs[plan.input_row_index],f=q.query_family;need(row.case_id===q.id&&row.repetition===plan.repetition&&row.raw_path===\"raw/\"+String(i).padStart(6,\"0\")+\".json\",\"schedule\");need([\"success\",\"no_match\",\"partial\",\"timeout\",\"tool_error\",\"protocol_error\",\"cancelled\"].includes(row.status),\"unknownstatus\");counts[row.status]=(counts[row.status]||0)+1;\nconst body=raw(pre+row.raw_path),rawPin=byPath.get(pre+row.raw_path);need(typeof body===\"string\"&&rawPin,\"actualraw\");need(body===raw(rep+row.raw_path),\"replayraw\");rawReplayCount++;const bd=raw(bad+row.raw_path);if(bd!==body){need(i===0&&bd===body+\"\\n\",\"negative altered otherraw\");rawNegativeChanged++;}\nconst obs=report.actual_result_schedule[ai*144+i];need(eq(obs,{...plan,case_id:row.case_id,raw_sha256:rawPin.sha256,elapsed_us:row.elapsed_us,status:row.status}),\"reported schedule\");\nneed(row.hits.every(h=>source[h.path]&&h.evidence_valid===true&&(q.path_prefix===null||h.path.startsWith(q.path_prefix))),\"source/evidence/scope\");hitCount+=row.hits.length;\nconst pr=report.per_row[ai*144+i];need(eq(pr.native_score,score)&&pr.arm===arm&&pr.case_id===q.id&&pr.repetition===row.repetition&&pr.family===f&&pr.category===q.category&&pr.variant===plan.variant,\"report original scorebinding\");\nconst ob=pr.raw_observation;need(ob.normalized_status===row.status&&ob.normalized_hits===row.hits.length&&ob.normalized_no_match_zero_hits===(row.status===\"no_match\"&&!row.hits.length)&&ob.raw_explicit_no_match===null,\"observationbinding\");\nconst payload=JSON.parse(body);let hits=null,shape=\"unsupported_shape\";if(Array.isArray(payload)){hits=payload;shape=\"symbol_array\";}else if(payload&&typeof payload===\"object\"){if(Array.isArray(payload.machine_pack?.hits)){hits=payload.machine_pack.hits;shape=\"machine_pack.hits\";}else if(Array.isArray(payload.nodes)){hits=payload.nodes.filter(n=>n&&n.node_type===\"SEARCH_HIT\");shape=\"nodes.SEARCH_HIT\";}}\nneed(ob.raw_shape===shape&&ob.raw_search_hit_count===(hits===null?null:hits.length),\"rawshape\");need(ob.complete_empty_under_original_normalizer===(Array.isArray(hits)&&hits.length===0&&!payload?.error_kind&&row.status===\"no_match\"&&row.hits.length===0),\"rawempty\");\nfamilySamples[f]??={};perCase[q.id]??=[];perCase[q.id].push(score);\nif(q.no_answer){need(typeof score.no_answer_correct===\"boolean\",\"noanswerscore\");nonanswer++;noanswerCorrect+=+score.no_answer_correct;for(const[k,v]of Object.entries({no_answer_correct:+score.no_answer_correct,normalized_no_match_zero_hits:+ob.normalized_no_match_zero_hits}))(familySamples[f][k]??=[]).push(v);}\nelse{answerable++;need(score.no_answer_correct===null,\"answerstratum\");for(const k of[\"top1\",\"ndcg10\",\"recall5\",\"recall10\",\"mrr10\",\"span_precision\",\"span_recall\"]){const v=score[k];need(v===null||(typeof v===\"number\"&&Number.isFinite(v)),\"metricfinite\");(familySamples[f][k]??=[]).push(v);}}\n}\nneed(rawReplayCount===144&&rawNegativeChanged===1,\"rawcopycounts\");need(neg.effective_exit_code===2&&neg.process_exit_code===2&&!neg.timed_out&&raw(\"execution/replay/\"+arm+\"-raw-drift-command/stderr.log\").includes(\"raw response drift\"),\"rawdrift rejection\");\nmeans[arm]={};for(const[f,ms]of Object.entries(familySamples)){means[arm][f]={};for(const[k,vs]of Object.entries(ms)){need(vs.length===12,\"family denominator\");means[arm][f][k]=vs.some(x=>x===null)?null:vs.reduce((x,y)=>x+y,0)/12;need(Math.abs((means[arm][f][k]??0)-(report.family_means[arm][f][k]??0))<1e-14&&(means[arm][f][k]===null)===(report.family_means[arm][f][k]===null),\"familymeans\");}}\nconst met=metrics[arm];need(met.queries===48&&met.measured_rows===144&&met.invalid_hits===0&&met.unverified_hits===0,\"metricscounts\");\nfor(const c of met.cases){const ss=perCase[c.id];need(ss?.length===3&&c.repetitions===3,\"case denom\");for(const k of[\"top1\",\"ndcg10\"])need(Math.abs(c[k]-ss.reduce((s,x)=>s+x[k],0)/3)<1e-14,\"original metrics cases\");}\nneed(eq(counts,report.row_status_counts[arm]),\"statuscounts\");\ndetails.push({arm,rows:rows.length,unique_cases:Object.keys(perCase).length,status_counts:counts,hits:hitCount,source_invalid_hits:0,answerable_rows:answerable,noanswer_rows:nonanswer,noanswer_correct:noanswerCorrect,gate_exit:gate.exit_code,gate_status:gate.status,run_process_exit:run.process_exit_code,replay_process_exit:cmd.process_exit_code,derived_original_bytes_equal:9,replay_inputs_original_bytes_equal:3,replay_raw_original_bytes_equal:144,raw_drift_owned_copy_changes:1,raw_drift_rejected_exit:2,query_snapshot_parsed_fields_equal:true,query_snapshot_original_UTF8_bytes_equal:raw(pre+\"queries.jsonl\")===sealedQueryRaw});\n}\nneed(report.actual_result_schedule.length===288&&report.per_row.length===288,\"fullreport288\");return{details,means,all288_schedule_verified:true,all_original_scores_bound:true,originalMetricsCases_recomputed:true,allRawReplayAndNineDerivedExact:true};\n}",
+    "schedule": "Fixed ARMS order,3 reps,48 row Rust xorshift u64 Fisher-Yates,seed20261003+rep; JS BigInt independently reconstructed before actual artifacts arrived."
+  },
+  "reviewer_initial_schema_or_equality_checks": [
+    {
+      "check": "source record equality",
+      "kind": "reviewer_projection_shape",
+      "result": "Initial reviewer direct equality compared admission provenance-rich records (git_blob/git_mode plus bytes/mode/SHA) with runtime file records (bytes/mode/SHA). Final comparison requires same113 paths and exact bytes/mode/SHA projections; all passed. Original assertions unchanged."
+    },
+    {
+      "check": "queries snapshot vs sealed query",
+      "kind": "reviewer_overstrong_byte_equality",
+      "result": "initial reviewer byte-equality rejected actual serde object-key reorder; parsed complete48 objects equal, original frozen operator intentionally checks parsed rows. No source/test assertion changed. Actual snapshots compared byte-exact to original scorer replay copies."
+    }
+  ],
+  "reviewer_numeric_roundoff_observations": [
+    {
+      "abs": 2.220446049250313e-16,
+      "family": "ptv2.boltons.f0008",
+      "independent": 0.6782805429864255,
+      "kind": "answerable",
+      "name": "span_recall",
+      "recorded": 0.6782805429864253
+    }
+  ],
+  "schema_version": 1,
+  "verification_limits": {
+    "all_original_failed_quality_retained": true,
+    "new_product_or_scorer_runs": 0,
+    "re_normalized_raw": false,
+    "recomputed_original_BLake3": false,
+    "score_mapping": "same position as verifiedcase/repetition schedule; native score rows do not embed IDs",
+    "whole_zip_verifier_source": "0793dd56ba29d142254ddb35689605dcab62e4f2"
+  }
+}

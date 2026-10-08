@@ -1,0 +1,37 @@
+function sha256Bytes(input){const a=Array.from(input);const N=a.length,K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2],H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],R=(x,n)=>(x>>>n)|(x<<(32-n));a.push(128);while(a.length%64!==56)a.push(0);const bits=N*8;for(let j=7;j>=0;j--)a.push(j>=4?Math.floor(bits/2**(j*8))&255:(bits>>>(j*8))&255);for(let i=0;i<a.length;i+=64){const w=[];for(let j=0;j<16;j++)w[j]=(a[i+j*4]<<24)|(a[i+j*4+1]<<16)|(a[i+j*4+2]<<8)|a[i+j*4+3];for(let j=16;j<64;j++){const x=w[j-15],y=w[j-2];w[j]=(w[j-16]+(R(x,7)^R(x,18)^(x>>>3))+w[j-7]+(R(y,17)^R(y,19)^(y>>>10)))|0;}let[a0,b,c,d,e,f,g,z]=H;for(let j=0;j<64;j++){const t1=(z+(R(e,6)^R(e,11)^R(e,25))+((e&f)^(~e&g))+K[j]+w[j])|0,t2=((R(a0,2)^R(a0,13)^R(a0,22))+((a0&b)^(a0&c)^(b&c)))|0;z=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a0;a0=(t1+t2)|0;}for(const[j,v]of[a0,b,c,d,e,f,g,z].entries())H[j]=(H[j]+v)|0;}return{sha256:H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join(""),utf8_bytes:N};}
+function fromBase64(s){if(typeof s!=="string"||s.length%4!==0||!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s))throw Error("badbase64");const abc="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",out=new Uint8Array(s.length/4*3-(s.endsWith("==")?2:s.endsWith("=")?1:0));let n=0;for(let i=0;i<s.length;i+=4){const a=abc.indexOf(s[i]),b=abc.indexOf(s[i+1]),c=s[i+2]==="="?0:abc.indexOf(s[i+2]),d=s[i+3]==="="?0:abc.indexOf(s[i+3]);const v=(a<<18)|(b<<12)|(c<<6)|d;for(let k=16;k>=0;k-=8)if(n<out.length)out[n++]=(v>>k)&255;}return out;}
+
+function inflateRaw(input,expected){
+ const out=new Uint8Array(expected);let ip=0,op=0,buf=0,bits=0;
+ function read(n){while(bits<n){if(ip>=input.length)throw Error("deflate truncated");buf|=input[ip++]<<bits;bits+=8;}const v=buf&((1<<n)-1);buf>>>=n;bits-=n;return v;}
+ function tree(lengths){const counts=new Uint32Array(16),next=new Uint32Array(16);let max=0;for(const l of lengths){if(l<0||l>15)throw Error("length");if(l){counts[l]++;max=Math.max(max,l);}}
+ let code=0;for(let i=1;i<16;i++){code=(code+counts[i-1])<<1;next[i]=code;if(code+counts[i]>(1<<i))throw Error("oversubscribed");}
+ if(!max)return {max:0,table:new Uint32Array(1)};
+ const tab=new Uint32Array(1<<max);for(let sym=0;sym<lengths.length;sym++){const len=lengths[sym];if(!len)continue;let c=next[len]++,rev=0;for(let i=0;i<len;i++){rev=(rev<<1)|(c&1);c>>>=1;}for(let i=rev;i<tab.length;i+=1<<len)tab[i]=(len<<16)|(sym+1);}
+ return {max,table:tab};}
+ function symbol(t){while(bits<t.max&&ip<input.length){buf|=input[ip++]<<bits;bits+=8;}const e=t.table[buf&((1<<t.max)-1)];const n=e>>>16;if(!n||n>bits)throw Error("bad symbol");buf>>>=n;bits-=n;return (e&65535)-1;}
+ const lb=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],le=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+ const db=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],de=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+ let final=0;do{final=read(1);const typ=read(2);if(typ===0){read(bits%8);const n=read(16),nn=read(16);if((n^nn)!==65535||op+n>expected)throw Error("stored");for(let i=0;i<n;i++)out[op++]=read(8);continue;}
+ let lit,dist;if(typ===1){lit=tree(Array.from({length:288},(_,i)=>i<144?8:i<256?9:i<280?7:8));dist=tree(Array(32).fill(5));}
+ else if(typ===2){const nl=read(5)+257,nd=read(5)+1,nc=read(4)+4,cl=Array(19).fill(0),order=[16,17,18,0,8,7,9,6,10,5,11,4,10,5];const ord=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];for(let i=0;i<nc;i++)cl[ord[i]]=read(3);
+ const ct=tree(cl),all=[];while(all.length<nl+nd){const s=symbol(ct);if(s<=15)all.push(s);else {let num,val=0;if(s===16){if(!all.length)throw Error("repeat");val=all[all.length-1];num=read(2)+3;}else if(s===17)num=read(3)+3;else if(s===18)num=read(7)+11;else throw Error("cl");if(all.length+num>nl+nd)throw Error("repeat overflow");while(num--)all.push(val);}}
+ if(all[256]===0)throw Error("noeob");lit=tree(all.slice(0,nl));dist=tree(all.slice(nl));}
+ else throw Error("reserved block");
+ while(true){const s=symbol(lit);if(s<256){if(op>=expected)throw Error("outoverflow");out[op++]=s;}else if(s===256)break;else {const k=s-257;if(k<0||k>=lb.length)throw Error("reserved len");const n=lb[k]+read(le[k]),ds=symbol(dist);if(ds>=db.length)throw Error("reserved dist");const d=db[ds]+read(de[ds]);if(d>op||op+n>expected)throw Error("bad backref");for(let j=0;j<n;j++){out[op]=out[op-d];op++;}}}
+ }while(!final);
+ if(op!==expected)throw Error("wrong inflated length");if(ip-Math.floor(bits/8)!==input.length)throw Error("unused compressed bytes");return out;
+}
+function crc32(a){let c=0xffffffff;const tab=new Uint32Array(256);for(let i=0;i<256;i++){let n=i;for(let b=0;b<8;b++)n=(n>>>1)^((n&1)?0xedb88320:0);tab[i]=n>>>0;}for(const b of a)c=(c>>>8)^tab[(c^b)&255];return (c^0xffffffff)>>>0;}
+function inspectZip(a,visitor){
+ const v=new DataView(a.buffer,a.byteOffset,a.byteLength),u16=o=>v.getUint16(o,true),u32=o=>v.getUint32(o,true);let e=-1;
+ for(let i=a.length-22;i>=Math.max(0,a.length-65557);i--)if(u32(i)===0x06054b50&&i+22+u16(i+20)===a.length){e=i;break;}if(e<0)throw Error("eocd");
+ if(u16(e+4)||u16(e+6)||u16(e+8)!==u16(e+10))throw Error("multidisk");const count=u16(e+10),size=u32(e+12),start=u32(e+16);if(start+size!==e)throw Error("central span");
+ let p=start;const rows=[],names=new Set;for(let n=0;n<count;n++){if(u32(p)!==0x02014b50)throw Error("central");const flags=u16(p+8),method=u16(p+10),crc=u32(p+16),cs=u32(p+20),bytes=u32(p+24),nl=u16(p+28),el=u16(p+30),cl=u16(p+32),offset=u32(p+42),mode=u32(p+38)>>>16;
+ const name=String.fromCharCode(...a.subarray(p+46,p+46+nl));if(names.has(name)||name.startsWith("/")||name.split("/").some(z=>z===".."||z===".")||name.includes("\\"))throw Error("path");names.add(name);
+ if(u32(offset)!==0x04034b50||u16(offset+6)!==flags||u16(offset+8)!==method)throw Error("local mismatch");const ln=u16(offset+26),lx=u16(offset+28);if(String.fromCharCode(...a.subarray(offset+30,offset+30+ln))!==name)throw Error("local name");const dataOffset=offset+30+ln+lx;if(dataOffset+cs>start||(flags&1))throw Error("compressed span or encryption");
+ const row={path:name,flags,method,crc,bytes,compressed_bytes:cs,zip_mode:mode,local_offset:offset,data_offset:dataOffset};visitor(row,a.subarray(dataOffset,dataOffset+cs));rows.push(row);p+=46+nl+el+cl;}
+ if(p!==e)throw Error("central count");return {member_count:count,total_member_bytes:rows.reduce((s,r)=>s+r.bytes,0),rows};
+}
+
+function canon(v){return Array.isArray(v)?v.map(canon):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canon(v[k])])):v;}function encoded(v){return JSON.stringify(canon(v),null,2)+"\n";}

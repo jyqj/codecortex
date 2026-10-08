@@ -26,8 +26,8 @@ async fn real_mcp_inventory_crosses_pages_and_preserves_exact_paths() {
     let d = project();
     let mut paths = Vec::new();
     for i in 0..137 {
-        let path = if i == 63 {
-            "f063'quoted.py".to_owned()
+        let path = if i == 62 || i == 63 {
+            format!("f{i:03}'quoted.py")
         } else {
             format!("f{i:03}.py")
         };
@@ -48,6 +48,12 @@ async fn real_mcp_inventory_crosses_pages_and_preserves_exact_paths() {
     assert_eq!(state.ready, 137);
     let observation = client.readiness_observation().unwrap();
     assert!(observation["pages"].as_array().unwrap().len() >= 3);
+    assert!(observation["pages"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|page| page["query"].as_str().unwrap().contains("\\'")));
+
     for file in &files {
         assert_eq!(
             observation["indexed_paths_and_bytes"][file.path.as_str()].as_u64(),

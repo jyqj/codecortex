@@ -1,0 +1,147 @@
+name: P8 prospective temporal preseal controls
+on:
+  push:
+    branches: [work/p8-temporal-preseal-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  preseal:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: synthetic-control
+            upstream_repository: ''
+            upstream_commit: ''
+          - mode: prepare-source
+            upstream_repository: mahmoud/boltons
+            upstream_commit: 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+      CANDIDATE_SOURCE: '2cd04485b0e0b23483f64671d56538bbaa47f442'
+      HELPER_MAP_SHA256: 'c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4'
+      REQUESTED_MODE: ${{ matrix.mode }}
+      PACKAGE_RUN_ID: '37749276827'
+      PACKAGE_MANIFEST_SHA256: '1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b'
+      UPSTREAM_REPOSITORY: ${{ matrix.upstream_repository }}
+      UPSTREAM_COMMIT: ${{ matrix.upstream_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 2cd04485b0e0b23483f64671d56538bbaa47f442
+          path: candidate
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Initialize isolated paths and validate non-body selection
+        run: |
+          python3 -I -S - <<'PY'
+          import os, re
+          from pathlib import Path
+          def need(value, message):
+              if not value:
+                  raise ValueError(message)
+          need(os.environ["REQUESTED_MODE"] in ("synthetic-control", "prepare-source"), "mode")
+          need(re.fullmatch("[0-9]+", os.environ["PACKAGE_RUN_ID"]), "fixed actual package run")
+          need(re.fullmatch("[0-9a-f]{64}", os.environ["PACKAGE_MANIFEST_SHA256"]), "package SHA")
+          need(re.fullmatch("[0-9a-f]{64}", os.environ["HELPER_MAP_SHA256"]), "pre-reviewed helper closure")
+          need(re.fullmatch("[0-9a-f]{40}", os.environ["CANDIDATE_SOURCE"]), "final immutable candidate source")
+          if os.environ["REQUESTED_MODE"] == "prepare-source":
+              need(re.fullmatch("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", os.environ["UPSTREAM_REPOSITORY"]), "public repo")
+              need(re.fullmatch("[0-9a-f]{40}", os.environ["UPSTREAM_COMMIT"]), "immutable public source")
+          else:
+              need(not os.environ["UPSTREAM_REPOSITORY"] and not os.environ["UPSTREAM_COMMIT"],
+                   "synthetic must not select real test repository")
+          with open(os.environ["GITHUB_ENV"], "a") as f:
+              f.write("PTV2_OUT=" + str(Path(os.environ["RUNNER_TEMP"]) / "ptv2-preseal-output") + "\n")
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-fresh-release-external-revision2
+          path: package-input
+          repository: jyqj/codecortex
+          run-id: ${{ env.PACKAGE_RUN_ID }}
+          github-token: ${{ github.token }}
+      - uses: actions/checkout@v4
+        if: matrix.mode == 'prepare-source'
+        with:
+          repository: ${{ matrix.upstream_repository }}
+          ref: ${{ matrix.upstream_commit }}
+          path: upstream
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Restore fixed Rust and prepare observable rg runtime
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal
+          if ! command -v rg >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes ripgrep
+          fi
+          test -x /usr/bin/rg
+          /usr/bin/rg --version
+          python3 -I -S --version
+      - name: Parse Python without writing source bytecode
+        run: |
+          python3 -I -S - <<'PY'
+          import ast, os
+          from pathlib import Path
+          p = Path(os.environ["GITHUB_WORKSPACE"]) / "utility/artifacts/benchmarks/prospective-temporal-v2/implementation/temporal.py"
+          ast.parse(p.read_bytes(), filename=str(p))
+          print("actual Python AST parse succeeded; not the actual two-arm run")
+          PY
+      - name: Actual invented controls or original source lock preparation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          helper="$GITHUB_WORKSPACE/utility/artifacts/benchmarks/prospective-temporal-v2/implementation/temporal.py"
+          package="$GITHUB_WORKSPACE/package-input/candidate-package"
+          args=(
+            "$REQUESTED_MODE"
+            --source-root "$GITHUB_WORKSPACE/candidate"
+            --expected-source "$CANDIDATE_SOURCE"
+            --package-manifest "$package/manifest.json"
+            --package-manifest-sha256 "$PACKAGE_MANIFEST_SHA256"
+            --archive "$package/candidate-tools.zip"
+            --helper-map-sha256 "$HELPER_MAP_SHA256"
+            --rg /usr/bin/rg
+            --output "$PTV2_OUT"
+          )
+          if [ "$REQUESTED_MODE" = prepare-source ]; then
+            args+=(--upstream-root "$GITHUB_WORKSPACE/upstream" --upstream-commit "$UPSTREAM_COMMIT")
+          fi
+          python3 -I -S "$helper" "${args[@]}"
+      - name: Record bounded actual outcome
+        if: always()
+        run: |
+          python3 -I -S - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ.get("PTV2_OUT", "/nonexistent"))
+          for name in ("failure.json", "result.json"):
+              p = root / name
+              if p.is_file():
+                  value = json.loads(p.read_bytes())
+                  keep = ("status", "error", "error_type", "synthetic_control_only",
+                          "actual_scheduled_results", "new_test_bodies", "scheduled_product_queries",
+                          "admitted", "excluded", "task_acceptance", "authoring_authorized")
+                  print(name + " " + json.dumps({k: value[k] for k in keep if k in value}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-prospective-temporal-preseal-${{ matrix.mode }}
+          path: ${{ runner.temp }}/ptv2-preseal-output
+          include-hidden-files: true
+          if-no-files-found: error

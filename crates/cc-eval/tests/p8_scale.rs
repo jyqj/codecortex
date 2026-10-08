@@ -2,7 +2,7 @@
 //! The measured 60-file fixture is not release or tail-latency certification.
 use cc_eval::benchmark::{
     mutation_case,
-    p8_scale::{self, Profile, ScalePlan, RELEASE_SCALES},
+    p8_scale::{self, CapacityProfile, Profile, ScalePlan, ScaleShard, RELEASE_SCALES},
 };
 use serde_json::{json, Value};
 use std::{collections::BTreeSet, path::Path};
@@ -28,6 +28,317 @@ fn matrix_and_release_admission_are_explicit_and_bounded() {
         plan.validate().is_err(),
         "one debug sample cannot certify release"
     );
+}
+
+#[test]
+fn named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure() {
+    let mut plan = ScalePlan::default();
+    assert!(plan.capacity_profile.is_none());
+    assert_eq!(plan.fanout_budgets(), (2, 64));
+    assert!(serde_json::to_value(&plan)
+        .unwrap()
+        .get("capacity_profile")
+        .is_none());
+    plan.capacity_profile = Some(CapacityProfile::ScaleCapacityV1);
+    plan.dirty_budget = 200;
+    plan.max_resume_builds = 1024;
+    assert_eq!(plan.fanout_budgets(), (8, 128));
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_capacity_v1 requires"));
+    plan.profile = Profile::Release;
+    plan.files = vec![1000];
+    plan.repetitions = 30;
+    plan.shard = Some(ScaleShard {
+        index: 0,
+        count: 30,
+    });
+    if cfg!(debug_assertions) {
+        assert!(plan
+            .validate()
+            .unwrap_err()
+            .to_string()
+            .contains("release eval build"));
+    } else {
+        plan.validate().unwrap();
+        assert_eq!(plan.repetition_range().unwrap(), 0..1);
+    }
+    plan.dirty_budget = 201;
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_capacity_v1 requires"));
+    plan.dirty_budget = 200;
+    plan.shard = Some(ScaleShard { index: 0, count: 6 });
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_capacity_v1 requires"));
+}
+
+#[test]
+fn shards_partition_registered_repetitions_without_lowering_release_admission() {
+    let mut plan = ScalePlan {
+        repetitions: 31,
+        ..ScalePlan::default()
+    };
+    let mut observed = Vec::new();
+    for index in 0..6 {
+        plan.shard = Some(ScaleShard { index, count: 6 });
+        observed.extend(plan.repetition_range().unwrap());
+    }
+    assert_eq!(observed, (0..31).collect::<Vec<_>>());
+    for shard in [
+        ScaleShard { index: 0, count: 0 },
+        ScaleShard { index: 6, count: 6 },
+        ScaleShard {
+            index: 0,
+            count: 32,
+        },
+    ] {
+        plan.shard = Some(shard);
+        assert!(plan.validate().is_err());
+    }
+    plan.files = vec![1000];
+    plan.profile = Profile::Release;
+    plan.repetitions = 29;
+    plan.shard = Some(ScaleShard { index: 0, count: 6 });
+    assert!(plan.validate().is_err());
+}
+
+#[test]
+fn native_evidence_hash_uses_all_file_bytes_without_running_a_profile() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("raw.jsonl");
+    let bytes = b"{\"event\":\"control\"}\n".repeat(10000);
+    std::fs::write(&path, &bytes).unwrap();
+    let output = std::process::Command::new(binary())
+        .arg("--hash-file")
+        .arg(&path)
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        blake3::hash(&bytes).to_hex().as_str()
+    );
+    assert!(!root.path().join("plan.json").exists());
+}
+
+#[test]
+fn bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity() {
+    use cc_eval::benchmark::{
+        mutation_case::{FactAssertion, MutationCase, Stage},
+        mutations::Mutation,
+        oracle,
+    };
+    use std::collections::BTreeMap;
+    let count = 48;
+    let mut initial = BTreeMap::from([(
+        "api.py".to_string(),
+        "def ping(x: int) -> int:\n    return x\n".to_string(),
+    )]);
+    let mut assertions = Vec::new();
+    for n in 0..count {
+        let next = (n + 1) % count;
+        let path = format!("file{n:03}.py");
+        initial.insert(path.clone(), format!(
+            "from file{next:03} import own{next}\nfrom api import ping\ndef own{n}(x: int) -> int:\n    return ping(x)\ndef run{n}(x: int) -> int:\n    return own{next}(x)\n"
+        ));
+        for (name, target) in [
+            ("ping".to_string(), "api.py".to_string()),
+            (format!("own{next}"), format!("file{next:03}.py")),
+        ] {
+            assertions.push(FactAssertion {
+                id: format!("caller_{n}_{name}"),
+                table: "call_edges".into(),
+                matches: BTreeMap::from([
+                    ("file_path".into(), json!(path)),
+                    ("callee_symbol".into(), json!(name)),
+                    ("target_file_path".into(), json!(target)),
+                ]),
+                count: 1,
+            });
+        }
+    }
+    let case = MutationCase {
+        schema_version: 1,
+        name: "p8-python-direct-target-dirty-resume".into(),
+        initial,
+        stages: vec![Stage {
+            mutation: Mutation::Write {
+                path: "api.py".into(),
+                content: "def ping(x: int, offset: int = 1) -> int:\n    return x + offset\n"
+                    .into(),
+            },
+            reopen: false,
+            settle: true,
+            assertions,
+        }],
+        dirty_budget: 8,
+        max_resume_builds: 128,
+    };
+    let result = mutation_case::evaluate(&case).unwrap();
+    assert_eq!(result["passed"], true, "{result}");
+    assert_eq!(
+        result["tables"].as_array().unwrap().len(),
+        oracle::tables().len()
+    );
+    assert_eq!(oracle::tables().len(), 15);
+    let checkpoint = &result["checkpoints"][0];
+    assert_eq!(checkpoint["status"], "compared");
+    assert_eq!(checkpoint["different_tables"], json!([]));
+    assert_eq!(checkpoint["truth"].as_array().unwrap().len(), 2 * count);
+    let reports = checkpoint["reports"].as_array().unwrap();
+    assert!(
+        reports.len() > 1,
+        "the actual eight-file dirty budget must overflow"
+    );
+    assert_eq!(reports[0]["resolution_freshness"]["complete"], false);
+    assert_eq!(
+        reports.last().unwrap()["resolution_freshness"]["complete"],
+        true
+    );
+    for report in reports {
+        assert_complete_build_timing(report, false);
+    }
+}
+
+fn assert_complete_build_timing(report: &Value, full: bool) {
+    let timing = &report["build_timing"];
+    assert_eq!(timing["schema_version"], 1);
+    let total = timing["total_us"].as_u64().unwrap();
+    let partition: u64 = [
+        "prepare_us",
+        "commit_write_us",
+        "postprocess_compute_us",
+        "postprocess_apply_us",
+        "between_stages_us",
+    ]
+    .iter()
+    .map(|key| timing[*key].as_u64().unwrap())
+    .sum();
+    assert!(
+        total >= partition && total - partition <= 6,
+        "complete function stages must conserve measured wall time: {timing}"
+    );
+    let prepare = timing["prepare_us"].as_u64().unwrap();
+    let snapshot = timing["prepare_snapshot_us"].as_u64().unwrap();
+    let staging = if full {
+        let duration = timing["full_staging_us"].as_u64().unwrap();
+        assert!(duration > 0, "actual SQLite full staging was timed");
+        duration
+    } else {
+        assert!(
+            timing["full_staging_us"].is_null(),
+            "an unexecuted full staging is not zero-cost work"
+        );
+        0
+    };
+    assert!(prepare >= snapshot + staging);
+    assert!(total >= report["elapsed_ms"].as_u64().unwrap() * 1000);
+    let old = report["phase_timing"].as_object().unwrap();
+    assert_eq!(
+        old.len(),
+        6,
+        "existing millisecond phase fields are unchanged"
+    );
+}
+
+#[test]
+fn complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging() {
+    use cc_server::engine::CodeIndex;
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(
+        root.path().join("api.ts"),
+        "export function ping(x:number):number{return x;}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.path().join("use.ts"),
+        "import {ping} from './api';\nexport function run(x:number):number{return ping(x);}\n",
+    )
+    .unwrap();
+    let mut index = CodeIndex::new(Some(root.path())).unwrap();
+    let inputs = index.build_inputs().unwrap();
+    let prepared = CodeIndex::prepare_build(&inputs, true, None).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(5));
+    let written = index
+        .commit_build_write(&inputs, true, None, prepared)
+        .unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(5));
+    let staged = CodeIndex::compute_postprocess(&inputs, true, None, written).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(5));
+    let full = serde_json::to_value(
+        index
+            .apply_postprocess(&inputs, true, None, staged)
+            .unwrap(),
+    )
+    .unwrap();
+    assert_complete_build_timing(&full, true);
+    assert!(
+        full["build_timing"]["between_stages_us"].as_u64().unwrap() >= 15_000,
+        "handoff time must remain observable instead of disappearing between phase clocks"
+    );
+    let incremental = serde_json::to_value(index.build_index(false).unwrap()).unwrap();
+    assert_complete_build_timing(&incremental, false);
+    assert_eq!(incremental["files_updated"], 0);
+    assert_eq!(incremental["resolution_freshness"]["complete"], true);
+}
+
+#[test]
+fn actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes() {
+    let root = tempfile::tempdir().unwrap();
+    let out = root.path().join("shard");
+    let plan = ScalePlan {
+        repetitions: 3,
+        shard: Some(ScaleShard { index: 2, count: 3 }),
+        batch_sizes: vec![60],
+        fanouts: vec![8],
+        deadline_ms: 300_000,
+        ..ScalePlan::default()
+    };
+    let report = p8_scale::run_supervised(&plan, &out, binary()).unwrap();
+    assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["shard_only"], true);
+    assert_eq!(report["registered_repetitions"], 3);
+    assert_eq!(
+        report["executed_repetition_range"],
+        json!({"start":2,"end":3})
+    );
+    assert_eq!(report["release_certification"], "not_run");
+    let raw: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    let input = raw.iter().find(|row| row["event"] == "input").unwrap();
+    assert_eq!(input["sample"], "scale-60/repetition-2");
+    let batch = raw
+        .iter()
+        .find(|row| row["event"] == "mutation" && row["label"] == "scale-60/repetition-2/batch_60")
+        .unwrap();
+    let paths: BTreeSet<_> = batch["operations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|op| op["path"].as_str().unwrap())
+        .collect();
+    assert_eq!(paths.len(), 60);
+    assert!(paths.iter().any(|p| p.ends_with(".yaml")));
+    assert!(paths.iter().any(|p| p.contains("routes_")));
+    assert!(!paths.contains("tsconfig.json"));
+    let fanout = raw
+        .iter()
+        .find(|row| row["event"] == "fanout_finished")
+        .unwrap();
+    assert_eq!(fanout["repetition"], 2);
+    assert_eq!(fanout["first_build_incomplete"], true);
+    assert_eq!(fanout["passed"], true);
 }
 
 #[test]

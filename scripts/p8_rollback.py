@@ -7,6 +7,7 @@ released format. Unknown-format cache reader and release-pair certification are
 reported separately from this executable, offline local drill.
 """
 import argparse
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -110,7 +111,7 @@ def source_manifest(project):
 
 def db_snapshot(path):
     require(Path(path).is_file() and not Path(path).is_symlink(), "owned database is absent or a symlink")
-    with sqlite3.connect(Path(path).as_uri() + "?mode=ro", uri=True, timeout=1) as connection:
+    with closing(sqlite3.connect(Path(path).as_uri() + "?mode=ro", uri=True, timeout=1)) as connection:
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         return dict(schema_version=connection.execute("PRAGMA user_version").fetchone()[0],
                     integrity=connection.execute("PRAGMA integrity_check").fetchone()[0],
@@ -131,8 +132,8 @@ def backup_database(source, destination, timeout_seconds=10):
         if time.monotonic() >= deadline:
             raise TimeoutError("SQLite backup exceeded its bounded deadline")
     try:
-        with sqlite3.connect(Path(source).as_uri() + "?mode=ro", uri=True, timeout=1) as old:
-            with sqlite3.connect(destination, timeout=1) as backup:
+        with closing(sqlite3.connect(Path(source).as_uri() + "?mode=ro", uri=True, timeout=1)) as old:
+            with closing(sqlite3.connect(destination, timeout=1)) as backup:
                 old.backup(backup, pages=128, progress=progress, sleep=0.05)
         require(db_snapshot(destination)["integrity"] == "ok", "database backup is not integral")
     except BaseException:
@@ -223,10 +224,7 @@ class Product:
         require(retrieval.get("semantic_state") == "not_configured", "disabled semantic state is dishonest")
         require(retrieval.get("dense_state") == "disabled", "disabled dense state is dishonest")
         search = self.tool("search", dict(query=MARKER, mode="symbol", top_k=5, project_path=str(self.project)))
-        # Assert the symbol is in a returned result, not merely an echoed query.
-        results = search.get("results", search.get("hits", [])) if isinstance(search, dict) else search
-        require(isinstance(results, list) and any(MARKER in json.dumps(hit) for hit in results),
-                f"local query did not return the authored symbol: {search}")
+        verify_fixture_search(self.project, search)
         result = dict(tool_count=tool_count, index=indexed, capabilities=capability, search=search)
         write_json(self.output / "local.json", result)
         return result
@@ -284,6 +282,151 @@ def exercise(identity, project, output, cache, wrapper, full=True):
         product.close()
 
 
+def product_schema_version(identity):
+    """Read the schema contract from bytes already bound by the build manifest."""
+    relative = "crates/cc-db/src/index_migrate.rs"
+    manifest = json.loads(Path(identity["source_manifest_path"]).read_text())
+    root = Path(identity["source"]["source_root"]).resolve(strict=True)
+    path = root / relative
+    require(path.is_file() and not path.is_symlink()
+            and digest(path) == manifest.get(relative), "schema source differs from the bound product manifest")
+    matches = re.findall(r"^pub const CURRENT_SCHEMA_VERSION: u32 = ([0-9]+);$", path.read_text(), re.MULTILINE)
+    require(len(matches) == 1, "one exact production schema version is required")
+    return int(matches[0])
+
+
+def version_pair_contract(current, previous):
+    require(current["source"]["source_commit"] != previous["source"]["source_commit"],
+            "version rollback requires two distinct actual source revisions")
+    current_version, previous_version = product_schema_version(current), product_schema_version(previous)
+    require(0 < previous_version < current_version, "previous product must have an actually older schema")
+    return dict(current=current_version, previous=previous_version)
+
+
+def verify_fixture_search(project, response):
+    require(isinstance(response, (list, dict)), "public query requires a structured result list")
+    rows = response if isinstance(response, list) else response.get("results", response.get("hits"))
+    require(isinstance(rows, list) and all(isinstance(row, dict) for row in rows),
+            "public query requires a structured result list")
+    hits = [row for row in rows if row.get("name") == MARKER or row.get("qname") == MARKER]
+    require(bool(hits), "public query has no exact authored symbol hit")
+    for hit in hits:
+        require(hit.get("file_path") == "src/lib.rs", "public symbol path differs from its authored file")
+        lines = (project / "src/lib.rs").read_text().splitlines()
+        start, end = hit.get("start_line"), hit.get("end_line")
+        require(type(start) is int and type(end) is int and 1 <= start <= end <= len(lines),
+                "public symbol source span is invalid")
+        require(f"fn {MARKER}(" in "\n".join(lines[start - 1:end]),
+                "public symbol span does not define the authored symbol")
+    return dict(matching_symbols=len(hits), file_path="src/lib.rs",
+                source_sha256=digest(project / "src/lib.rs"))
+
+
+def run_version_pair(current, previous, output):
+    """Open a real newer product's DB with an unmodified older source build.
+
+    Both database formats come from actual product executions. This does not
+    inject a schema number, publish a release, or relabel source commits as tags.
+    """
+    output = Path(output)
+    record = dict(schema_version=1, task="P8-016", status="failed", cases=[],
+                  products=dict(current=current, previous=previous), runner_sha256=digest(__file__),
+                  scope="actual public source revision rollback; no released-package certification",
+                  schema_fault_injection=False, released_version_pair=False, release_certified=False)
+    try:
+        versions = version_pair_contract(current, previous)
+        record["production_schema_versions"] = versions
+        for label, identity in record["products"].items():
+            witness = new_directory(output / f"{label}-product")
+            for source, name in ((identity["binary_path"], "codecortex"),
+                                 (identity["receipt_path"], "build-receipt.json"),
+                                 (identity["source_manifest_path"], "source-inputs.json")):
+                shutil.copy2(source, witness / name)
+            require(digest(witness / "codecortex") == identity["binary_sha256"],
+                    "retained version product differs from build identity")
+        project = new_directory(output / "fixture")
+        (project / "src").mkdir()
+        for name, contents in FIXTURE_FILES.items():
+            (project / name).write_text(contents)
+        config = project / ".codecortex.json"
+        write_json(config, {"auto_index": {"enabled": False}, "semantic": {"enabled": False}})
+        source_before, config_before = source_manifest(project), digest(config)
+        write_json(output / "source-before.json", source_before)
+        backups = new_directory(output / "backups")
+        shutil.copy2(config, backups / "config-original.json")
+        database = project / ".codecortex/index.sqlite3"
+
+        def observe(identity, label, expected_version, *, full=False, mismatch=False):
+            product = Product(identity, project, output / label, output / f"cache-{label}")
+            try:
+                product.initialize()
+                indexed = product.tool("index", {"path": str(project), "full": full}, timeout=120)
+                require(indexed.get("parse_errors") == [], "version-pair fixture parse errors or missing report")
+                capabilities = product.tool("status", {"aspect": "capabilities"})
+                require(capabilities.get("capabilities", {}).get("search") is True,
+                        "version-pair local search is not available")
+                retrieval = capabilities.get("retrieval", {})
+                require(retrieval.get("semantic_state") == "not_configured"
+                        and retrieval.get("dense_state") == "disabled", "version-pair semantic disable fallback failed")
+                search = product.tool("search", {"query": MARKER, "mode": "symbol", "top_k": 5})
+                result = dict(index=indexed, capabilities=capabilities, search=search,
+                              public_source=verify_fixture_search(project, search))
+                write_json(output / label / "local.json", result)
+            finally:
+                product.close()
+            state = db_snapshot(database)
+            require(state["schema_version"] == expected_version and state["integrity"] == "ok"
+                    and state["foreign_key_errors"] == 0 and state["indexed_files"] > 0,
+                    "version-pair database schema/integrity/local content differs")
+            stderr = output / label / "product-stderr.log"
+            mismatch_count = stderr.read_text().count("index schema version mismatch, rebuild required")
+            if mismatch:
+                require(mismatch_count > 0, "older/newer schema was not explicitly rejected before rebuilding")
+            require(source_manifest(project) == source_before and digest(config) == config_before,
+                    "version rollback changed authored source or original config")
+            return dict(database=state, database_sha256=digest(database), local=result,
+                        schema_mismatch_diagnostics=mismatch_count, stderr_sha256=digest(stderr))
+
+        first = observe(current, "01-current-build", versions["current"], full=True)
+        current_backup = backup_database(database, backups / "current-original.sqlite3")
+        record["current_database_backup"] = current_backup
+        # The old process receives exactly the database created above. No SQL,
+        # schema number, vector format, or source bytes are altered between them.
+        require(digest(database) == first["database_sha256"], "new product database changed before old open")
+        older = observe(previous, "02-previous-opens-current", versions["previous"], mismatch=True)
+        record["cases"].append(dict(id="actual_previous_binary_rebuilds_newer_schema", status="passed",
+                                     before=first, after=older, user_version_injection=False,
+                                     source_commit=previous["source"]["source_commit"]))
+        record["previous_database_backup"] = backup_database(database, backups / "previous-rebuilt.sqlite3")
+        newer = observe(current, "03-current-restored", versions["current"], mismatch=True)
+        record["cases"].append(dict(id="current_binary_restored_after_actual_downgrade", status="passed", result=newer))
+        record["current_rebuilt_backup"] = backup_database(database, backups / "current-rebuilt.sqlite3")
+        staging = database.parent / "restore-version-pair.sqlite3"
+        backup_database(backups / "current-original.sqlite3", staging)
+        for suffix in ("-wal", "-shm"):
+            sidecar = database.with_name(database.name + suffix)
+            require(not sidecar.is_symlink(), "owned version database sidecar became a symlink")
+            sidecar.unlink(missing_ok=True)
+        staging.replace(database)
+        restored = observe(current, "04-original-backup-restored", versions["current"])
+        require(digest(backups / "current-original.sqlite3") == current_backup["sha256"],
+                "original current database backup changed during downgrade/recovery")
+        require(digest(backups / "config-original.json") == config_before, "original configuration backup changed")
+        for identity in (current, previous):
+            require(digest(identity["binary_path"]) == identity["binary_sha256"], "actual version product changed")
+        record["cases"].append(dict(id="actual_current_database_backup_restore", status="passed",
+                                     original_backup_sha256=current_backup["sha256"], result=restored))
+        record.update(status="passed_actual_source_version_pair", source_files=source_before,
+                      source_unchanged=True, configuration_sha256=config_before)
+    except BaseException as error:
+        record["error"] = f"{type(error).__name__}: {error}"
+    finally:
+        record["evidence_files_sha256"] = {name: value for name, value in file_manifest(output).items()
+                                           if name != "version-pair.json" and not name.startswith("fixture/.codecortex/")}
+        write_json(output / "version-pair.json", record)
+    return record
+
+
 def run_drill(default, semantic, output, network_wrapper=None):
     record = dict(schema_version=1, task="P8-016", status="failed", runner_sha256=digest(__file__),
                   runner_dependencies_sha256={name: digest(Path(__file__).parent / name) for name in
@@ -335,10 +478,11 @@ def run_drill(default, semantic, output, network_wrapper=None):
         # Mutate only this owned, stopped database. Unsupported future schema
         # version + a sentinel make accidental old-format reuse observable.
         future_version = old_state["schema_version"] + 1000
-        with sqlite3.connect(database, timeout=1) as connection:
-            connection.execute(f"PRAGMA user_version={future_version}")
-            connection.execute("CREATE TABLE p8_future_only(value TEXT NOT NULL)")
-            connection.execute("INSERT INTO p8_future_only VALUES ('future rows must not be read as the old schema')")
+        with closing(sqlite3.connect(database, timeout=1)) as connection:
+            with connection:
+                connection.execute(f"PRAGMA user_version={future_version}")
+                connection.execute("CREATE TABLE p8_future_only(value TEXT NOT NULL)")
+                connection.execute("INSERT INTO p8_future_only VALUES ('future rows must not be read as the old schema')")
         future_state = db_snapshot(database)
         record["future_database"] = backup_database(database, backups / "index-future.sqlite3")
         candidate_config = json.loads(json.dumps(original_config))
@@ -410,15 +554,31 @@ def run_drill(default, semantic, output, network_wrapper=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version-pair", action="store_true")
     parser.add_argument("--default-binary", type=Path, required=True)
     parser.add_argument("--default-receipt", type=Path, required=True)
-    parser.add_argument("--semantic-binary", type=Path, required=True)
-    parser.add_argument("--semantic-receipt", type=Path, required=True)
+    parser.add_argument("--semantic-binary", type=Path)
+    parser.add_argument("--semantic-receipt", type=Path)
+    parser.add_argument("--previous-binary", type=Path)
+    parser.add_argument("--previous-receipt", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--deny-network-wrapper", type=Path)
     args = parser.parse_args(argv)
     try:
         default = binary_identity(args.default_binary, args.default_receipt, "default")
+        if args.version_pair:
+            if not args.previous_binary or not args.previous_receipt:
+                parser.error("version pair requires --previous-binary and --previous-receipt")
+            if args.deny_network_wrapper:
+                parser.error("version-pair mode uses disabled default products; syscall denial is not asserted")
+            previous = binary_identity(args.previous_binary, args.previous_receipt, "default")
+            output = new_directory(args.output_dir)
+            record = run_version_pair(default, previous, output)
+            print(json.dumps(dict(status=record["status"], error=record.get("error"),
+                                  receipt=str(output / "version-pair.json"))))
+            return 0 if record["status"] == "passed_actual_source_version_pair" else 1
+        if not args.semantic_binary or not args.semantic_receipt:
+            parser.error("injected-schema drill requires --semantic-binary and --semantic-receipt")
         semantic = binary_identity(args.semantic_binary, args.semantic_receipt, "semantic")
         output = new_directory(args.output_dir)
         record = run_drill(default, semantic, output, args.deny_network_wrapper)

@@ -159,8 +159,9 @@ impl Indexer {
             .collect();
         // A parsed, known surface with no forwards needs no forwarding lookup.
         // Its direct declarations remain in the catalog's by_export index.
-        // Unknown or persisted-only surfaces still consume the original load
-        // budget: discovering that they are leaves requires an actual read.
+        // Without an exact terminal-name proof, unknown or persisted-only
+        // surfaces still consume the original load budget: discovering that
+        // they are leaves requires an actual read.
         let needs_forwarding = |path: &str| {
             !current.get(path).is_some_and(|surface| {
                 surface.knowledge != cc_model::public_surface::SurfaceKnowledge::Unknown
@@ -170,10 +171,19 @@ impl Indexer {
         let mut pending = units
             .iter()
             .flat_map(|u| {
-                u.outcome
-                    .imports
-                    .iter()
-                    .filter_map(|i| i.resolved_path.clone())
+                u.outcome.imports.iter().filter_map(|i| {
+                    let path = i.resolved_path.as_ref()?;
+                    // The resolver stops at an existing direct declaration
+                    // for this exact imported name. Unrelated forwards on
+                    // that module cannot affect this binding; following
+                    // them would turn a plain Python import chain into an
+                    // artificial reexport-depth failure during dirty resume.
+                    let terminal = !i.is_namespace
+                        && i.imported_name.as_deref().is_some_and(|name| {
+                            name != "*" && catalog.has_direct_export(path, name)
+                        });
+                    (!terminal).then(|| path.clone())
+                })
             })
             .filter(|path| needs_forwarding(path))
             .collect::<BTreeSet<_>>();
@@ -231,8 +241,11 @@ impl Indexer {
                         } else {
                             f.imported_name.clone()
                         };
+                        let terminal = name != "*" && catalog.has_direct_export(&path, &name);
                         links.push((f.exported_name.clone(), path.clone(), name));
-                        pending.insert(path);
+                        if !terminal {
+                            pending.insert(path);
+                        }
                     }
                 }
                 links.sort();

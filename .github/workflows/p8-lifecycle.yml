@@ -1,0 +1,106 @@
+name: P8 lifecycle and resource observations
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p8-lifecycle-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: 2
+      RUSTC_WRAPPER: ''
+      RUSTC_WORKSPACE_WRAPPER: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Prepare locked dependencies
+        run: cargo fetch --locked
+      - name: Build one fixed release product with an actual receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/p8-lifecycle"
+          python3 scripts/p7_stdio_build_receipt.py --package-kind default --offline --release \
+            --output-dir "$RUNNER_TEMP/p8-lifecycle/product"
+      - name: Build and bind the original measurement replay owners
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --offline --locked --release -p cc-eval --bin p8-measurements \
+            --target-dir "$RUNNER_TEMP/p8-lifecycle/product/cargo-target" \
+            --message-format=json-render-diagnostics \
+            > "$RUNNER_TEMP/p8-lifecycle/replay-build.jsonl" \
+            2> "$RUNNER_TEMP/p8-lifecycle/replay-build.stderr"
+          python3 - <<'PY'
+          import json, os, pathlib, shutil, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import file_sha256, source_snapshot, verify_release_profile
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-lifecycle'
+          rows = [json.loads(line) for line in (root / 'replay-build.jsonl').read_text().splitlines()]
+          artifacts = [row for row in rows if row.get('reason') == 'compiler-artifact'
+                       and row.get('target', {}).get('name') == 'p8-measurements'
+                       and row.get('target', {}).get('kind') == ['bin']]
+          assert len(artifacts) == 1 and any(row.get('reason') == 'build-finished'
+                                            and row.get('success') is True for row in rows)
+          artifact = artifacts[0]
+          verify_release_profile(artifact['profile'])
+          after = source_snapshot(pathlib.Path.cwd())
+          product = json.loads((root / 'product/build-receipt.json').read_text())
+          assert {k:v for k,v in after.items() if k != 'inputs'} == product['source_after']
+          produced = pathlib.Path(artifact['executable']).resolve(strict=True)
+          assert (root / 'product/cargo-target').resolve() in produced.parents
+          source_sha256 = file_sha256(produced)
+          binary = root / 'p8-measurements'
+          shutil.copy2(produced, binary)
+          assert file_sha256(binary) == source_sha256
+          command = ['cargo', 'build', '--offline', '--locked', '--release', '-p', 'cc-eval',
+                     '--bin', 'p8-measurements', '--target-dir', str(root / 'product/cargo-target'),
+                     '--message-format=json-render-diagnostics']
+          receipt = {'schema_version': 1, 'build_exit_code': 0,
+                     'source_before': product['source_before'], 'source_after': product['source_after'],
+                     'artifact': artifact, 'build_command': command,
+                     'copy_source': {'path': str(produced), 'sha256': source_sha256},
+                     'binary_sha256': file_sha256(binary),
+                     'build_stdout': {'name': 'replay-build.jsonl', 'sha256': file_sha256(root / 'replay-build.jsonl')},
+                     'build_stderr': {'name': 'replay-build.stderr', 'sha256': file_sha256(root / 'replay-build.stderr')},
+                     'scope': 'actual release replay build and exact retained binary; not a performance gate'}
+          (root / 'replay-build-receipt.json').write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n')
+          PY
+      - name: Execute original cold, reopen, uncached and cache-hit strata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/p8_lifecycle.py \
+            --binary "$RUNNER_TEMP/p8-lifecycle/product/codecortex" \
+            --build-receipt "$RUNNER_TEMP/p8-lifecycle/product/build-receipt.json" \
+            --evaluator "$RUNNER_TEMP/p8-lifecycle/p8-measurements" \
+            --evaluator-build-receipt "$RUNNER_TEMP/p8-lifecycle/replay-build-receipt.json" \
+            --profile release --cold-samples 30 --query-samples 400 --files 32 \
+            --run-timeout-seconds 3600 --artifact-budget-bytes 536870912 \
+            --output-dir "$RUNNER_TEMP/p8-lifecycle/measurement"
+          python3 scripts/p8_lifecycle.py verify --output-dir "$RUNNER_TEMP/p8-lifecycle/measurement"
+      - name: Preserve the fixed candidate, all raw data and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-lifecycle-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-lifecycle
+            !${{ runner.temp }}/p8-lifecycle/product/cargo-target/**
+          include-hidden-files: true
+          retention-days: 21
+          if-no-files-found: error

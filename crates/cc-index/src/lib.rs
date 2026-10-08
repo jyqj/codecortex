@@ -27,6 +27,7 @@ pub mod module_resolution;
 pub(crate) mod pass_gate;
 pub mod project_model;
 pub(crate) mod resolver;
+mod resource_accounting;
 pub mod scanner;
 pub(crate) mod synthesis_pipeline;
 pub(crate) mod synthesis_symbol_resolver;
@@ -40,6 +41,9 @@ pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
 pub use indexer::{BuildScope, IndexReport, Indexer};
 pub use memory_budget::{process_rss_bytes, process_rss_bytes_opt};
+pub use resource_accounting::{
+    current_process_usage, high_water_bytes, CurrentProcessUsage, ProcessIo,
+};
 pub use scanner::{IgnoreRules, ScannedFile, Scanner};
 
 /// Test-only seeding support shared by this crate's unit-test fixtures.

@@ -73,6 +73,20 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     let legacy_b = oracle::canonical(b.path()).unwrap();
     assert_eq!(legacy_a, legacy_b);
     let report = compare(a.path(), b.path());
+    let capacity = oracle::compare_streaming_scale_capacity_v1(a.path(), b.path()).unwrap();
+    assert_eq!(capacity["tables"], report["tables"]);
+    assert_eq!(capacity["equal"], report["equal"]);
+    assert_eq!(capacity["canonical_bytes"], report["canonical_bytes"]);
+    assert_eq!(capacity["capacity_profile"], "scale_capacity_v1");
+    assert_eq!(
+        capacity["limits"]["max_canonical_bytes"],
+        16u64 * 1024 * 1024 * 1024
+    );
+    for limit in ["max_scratch_bytes", "max_rows_per_table", "max_row_bytes"] {
+        assert_eq!(capacity["limits"][limit], report["limits"][limit]);
+    }
+    assert_eq!(capacity["sorting_cache_kib"], 2048);
+    assert!(report["capacity_profile"].is_null());
     assert_eq!(report["equal"], true);
     for name in oracle::tables() {
         let row = table(&report, name);
@@ -87,6 +101,47 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
             manifest::digest(&serde_json::to_vec(&legacy_b[*name]).unwrap())
         );
     }
+}
+
+#[test]
+fn cached_canonical_order_matches_original_serialized_key_bytes() {
+    let root = fixture();
+    let mut db = open(root.path());
+    let tx = db.transaction().unwrap();
+    let mut expected = Vec::new();
+    {
+        let mut insert = tx
+            .prepare("INSERT INTO symbols(name,value,mtime,indexed_at,id) VALUES (?1,?2,0,0,0)")
+            .unwrap();
+        // Deliberately scrambled insertion order, repeated rows, escaped and
+        // non-ASCII keys, long common payload prefixes, and signed zeros.
+        // Construct the expected projection independently of project_row.
+        for n in 0..2048 {
+            let name = format!("é/中文\\\"{:04}", (n * 73) % 509);
+            let value = format!("{}:{:04}", "same\\\"prefix\n".repeat(32), n % 193);
+            insert.execute(params![name, value]).unwrap();
+            expected.push(json!({
+                "name": name, "value": value, "mtime": 0, "indexed_at": 0, "id": 0,
+            }));
+        }
+        for zero in [-0.0f64, 0.0f64, -0.0f64, 0.0f64] {
+            insert.execute(params!["zero", zero]).unwrap();
+            expected.push(json!({
+                "name": "zero", "value": zero, "mtime": 0, "indexed_at": 0, "id": 0,
+            }));
+        }
+    }
+    tx.commit().unwrap();
+    // Keep the former comparator here as an independent compatibility
+    // control. Compare serialized bytes as well as Values so signed-zero
+    // encodings and exact ordering cannot disappear behind Value equality.
+    expected.sort_by_key(|row| serde_json::to_string(row).unwrap());
+    let actual = oracle::canonical(root.path()).unwrap();
+    assert_eq!(actual["symbols"], expected);
+    assert_eq!(
+        serde_json::to_vec(&actual["symbols"]).unwrap(),
+        serde_json::to_vec(&expected).unwrap()
+    );
 }
 
 #[test]

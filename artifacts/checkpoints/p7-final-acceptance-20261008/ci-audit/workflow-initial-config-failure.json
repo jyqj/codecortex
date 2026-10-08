@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "author": "/root",
+  "failed_run": 37731707939,
+  "failed_head": "3a28f4689cbe59619111e3e164f9dafa3b15d397",
+  "observed": {
+    "run_conclusion": "failure",
+    "jobs": [],
+    "commit_check_runs": [],
+    "runtime_audits_executed": false
+  },
+  "diagnosis": "The utility workflow referenced runner.temp in workflow-level env, where the runner context is unavailable. GitHub's context-availability reference confirms workflow env only permits github/secrets/inputs/vars.",
+  "reference": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability",
+  "fix": "Resolve the two RUNNER_TEMP paths in an initial runtime step through GITHUB_ENV. Step-level runner.temp uses remain valid and unchanged.",
+  "unchanged": [
+    "product candidate ffdc",
+    "all five original ZIP pins",
+    "all auditor and adaptation bytes",
+    "all semantic assertions, fixed counts, budgets and source checks"
+  ],
+  "acceptance": "This is a failed utility-workflow configuration attempt, not a product-test failure and not a successful evidence audit."
+}

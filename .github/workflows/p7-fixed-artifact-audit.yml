@@ -12,8 +12,6 @@ env:
   PYTHONDONTWRITEBYTECODE: "1"
   PYTHONOPTIMIZE: "0"
   P7_AUDIT_SOURCE_ROOT: ${{ github.workspace }}/candidate
-  P7_AUDIT_ZIP_ROOT: ${{ runner.temp }}/p7-audit-downloads
-  P7_AUDIT_RESULTS_ROOT: ${{ runner.temp }}/p7-audit-results
   P7_AUDIT_EXPECTED_WORKER_PID: "12783"
   P7_AUDIT_EXPECTED_MECHANISM_MEMBERS: "4163"
   P7_AUDIT_EXPECTED_MECHANISM_EXPANDED_BYTES: "368834949"
@@ -23,6 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Resolve runtime audit directories
+        run: |
+          echo "P7_AUDIT_ZIP_ROOT=$RUNNER_TEMP/p7-audit-downloads" >> "$GITHUB_ENV"
+          echo "P7_AUDIT_RESULTS_ROOT=$RUNNER_TEMP/p7-audit-results" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           path: audit

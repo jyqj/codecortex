@@ -1,0 +1,36 @@
+name: P8 actual reviewed public dataset registration
+on:
+  push:
+    branches: [work/p8-corpus-register-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  register:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set runner output paths
+        run: |
+          printf 'P8_REGISTER_ROOT=%s/p8-register-actual\nP8_REGISTER_DOWNLOADS=%s/p8-register-downloads\n' "$RUNNER_TEMP" "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Download the fixed successful public corpus artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$P8_REGISTER_DOWNLOADS"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533204793 > "$P8_REGISTER_DOWNLOADS/artifact.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11533204793/zip > "$P8_REGISTER_DOWNLOADS/artifact.zip"
+      - name: Restore declared modes and register exact actually validated datasets
+        run: python3 artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/register_from_archive.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-actual-public-dataset-registration
+          path: ${{ runner.temp }}/p8-register-actual/public
+          include-hidden-files: true
+          if-no-files-found: error

@@ -1,0 +1,222 @@
+name: P8 fixed D0 complete scale study
+
+on:
+  push:
+    branches: [task/p8-fixed-d0-scale-20261008]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+  PYTHONDONTWRITEBYTECODE: "1"
+  RUSTFLAGS: ""
+  RUSTC_WRAPPER: ""
+  RUSTC_WORKSPACE_WRAPPER: ""
+  P8_REGISTRATION_SHA256: "4a56e31e9838f0db1d83a3efd4a10d0a51f8b443dbce4413e68253881740eebc"
+
+jobs:
+  build:
+    name: Receive and replay the fixed original D0 prerequisites
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Require the registered first workflow attempt
+        run: |
+          if [ "${GITHUB_RUN_ATTEMPT:-}" != "1" ]; then
+            echo "A later attempt cannot replace this registered study."
+            exit 2
+          fi
+      - name: Read the fixed controller and prospective registration
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Preserve controller inputs outside the measured checkout
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          root = pathlib.Path.cwd()
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          if commit != os.environ['GITHUB_SHA']:
+              raise SystemExit('controller checkout identity differs')
+          source = root / 'artifacts/checkpoints/p8-fixed-D0-scale-20261008'
+          raw = (source / 'registration.json').read_bytes()
+          if hashlib.sha256(raw).hexdigest() != os.environ['P8_REGISTRATION_SHA256']:
+              raise SystemExit('controller registration bytes differ')
+          registered = json.loads(raw)
+          script = (source / 'admit.py').read_bytes()
+          if hashlib.sha256(script).hexdigest() != registered['controller_script_sha256']:
+              raise SystemExit('controller admission script bytes differ')
+          target = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-d0-controller'
+          target.mkdir(exist_ok=False)
+          (target / 'registration.json').open('xb').write(raw)
+          (target / 'admit.py').open('xb').write(script)
+          (target / 'controller-inputs.json').open('x').write(json.dumps({
+              'source_commit': commit, 'registration_sha256': hashlib.sha256(raw).hexdigest(),
+              'script_sha256': hashlib.sha256(script).hexdigest(),
+              'measured_source': 'd0cb69c601e530dcef738af0c2dffb8d3b8bcf28',
+              'upstream_run': 37846370300, 'new_primary_measurements_started': False,
+          }, sort_keys=True, indent=2) + '\n')
+          PY
+      - name: Restore the exact original compiled source checkout
+        uses: actions/checkout@v4
+        with:
+          ref: d0cb69c601e530dcef738af0c2dffb8d3b8bcf28
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Verify the completed upstream run and fixed original artifacts
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 "$RUNNER_TEMP/p8-d0-controller/admit.py" metadata
+      - name: Receive the unchanged original D0 build bundle
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.upstream.outputs.build_artifact }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: jyqj/codecortex
+          run-id: 37846370300
+          path: ${{ runner.temp }}/p8-scale-build
+      - name: Receive all original controls, diagnostics and capacity observations
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.upstream.outputs.extra_artifacts }}
+          merge-multiple: false
+          github-token: ${{ github.token }}
+          repository: jyqj/codecortex
+          run-id: 37846370300
+          path: ${{ runner.temp }}/p8-d0-upstream
+      - name: Replay unchanged original validators at the D0 checkout
+        run: python3 "$RUNNER_TEMP/p8-d0-controller/admit.py" verify
+      - name: Preserve prerequisite admission and every received original
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-d0-study-admission-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p8-d0-controller
+            ${{ runner.temp }}/p8-d0-admission
+            ${{ runner.temp }}/p8-d0-upstream
+          if-no-files-found: error
+      - name: Preserve the unchanged original build and executable for this study
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-build
+          if-no-files-found: error
+
+  measure:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - name: Require the registered first workflow attempt
+        run: |
+          if [ "${GITHUB_RUN_ATTEMPT:-}" != "1" ]; then
+            echo "A later attempt cannot replace this registered study."
+            exit 2
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: d0cb69c601e530dcef738af0c2dffb8d3b8bcf28
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-scale-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-build
+      - name: Observe and prepare the original capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: d0cb69c601e530dcef738af0c2dffb8d3b8bcf28
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-scale-capacity-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations including unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-capacity-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-capacity-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute every original phase for this new registered repetition
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-scale-build/p8-scale"
+          python3 scripts/p8_scale_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-scale-build" \
+            --scale "$SCALE" --shard-index "$SHARD" --shard-count 30 --repetitions 30 \
+            --seed 12648430 --deadline-ms 18000000 --capacity-profile scale_capacity_v1 \
+            --output "$RUNNER_TEMP/p8-scale-shard-$SCALE-$SHARD"
+      - name: Preserve original shard including every unsuccessful measurement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-shard-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-shard-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  aggregate:
+    if: always() && needs.build.result == 'success'
+    needs: [build, measure]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Require the registered first workflow attempt
+        run: |
+          if [ "${GITHUB_RUN_ATTEMPT:-}" != "1" ]; then
+            echo "A later attempt cannot replace this registered study."
+            exit 2
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: d0cb69c601e530dcef738af0c2dffb8d3b8bcf28
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-scale-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: p8-scale-shard-*-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-shards
+      - name: Replay all new D0 raw and reject missing or incompatible cells
+        if: always() && github.run_attempt == 1
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          import p8_scale_matrix as matrix
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          binary = root / 'p8-scale-build/p8-scale'
+          if binary.exists():
+              binary.chmod(0o755)
+          inputs = sorted((root / 'p8-scale-shards').glob('p8-scale-shard-*'))
+          result = matrix.aggregate(root / 'p8-scale-build', inputs, root / 'p8-scale-matrix',
+                                    repetitions=30, shard_count=30, capacity_profile=matrix.CAPACITY_PROFILE)
+          print({key: result.get(key) for key in ('status', 'error', 'sample_count')})
+          sys.exit(0 if result.get('passed') is True else 1)
+          PY
+      - name: Preserve the original raw-only matrix review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-matrix-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-matrix
+          if-no-files-found: error

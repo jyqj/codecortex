@@ -1,0 +1,466 @@
+{
+  "author_id": "/root/temporal_author",
+  "component_count": 12,
+  "excluded_source_count": 0,
+  "family_component_evidence": [
+    {
+      "component_decision": "A path-component transformation task. It shares neither requested invariant nor implementing call chain with duration parsing, formatting, segmented reversal, mapping reassignment, data trimming, stream admission, atomic publication, module warnings or either absence task.",
+      "family": "ptv2.boltons.f0001",
+      "legitimate_alternatives": "No other implementation or alias for augpath was found in the inspected admitted implementation scope. Documentation references are not separate implementation answers.",
+      "source_task_signature": "augpath splits dirname/basename/extension, applies prefix/suffix and substitutes selected components. With multidot=True the first dot determines the full compound extension, so .tar.gz remains one extension when suffix text is inserted."
+    },
+    {
+      "component_decision": "Duration grammar and unit conversion are distinct from JSON-line error policy and netstring announced-size admission; there is no shared parser implementation among these tasks. parse_td is kept within this one component.",
+      "family": "ptv2.boltons.f0002",
+      "legitimate_alternatives": "The explicit parse_td alias is included. Source calls/docs name the same parse_timedelta implementation; the copied USTimeZone region is unrelated and not a primary task.",
+      "source_task_signature": "parse_timedelta recognizes signed/fractional quantities paired with week/day/hour/minute/second unit names or abbreviations, accumulates normalized unit totals and constructs datetime.timedelta. parse_td is the same callable by assignment."
+    },
+    {
+      "component_decision": "Cached deferred rendering and statistical-cache invalidation use different state, effects and implementations. cachedproperty is only a negative elsewhere and not a second deferred-rendering primary component.",
+      "family": "ptv2.boltons.f0003",
+      "legitimate_alternatives": "DV appears only as a documented local import alias example; it is not another repository implementation location. The complete DeferredValue class is the legitimate answer.",
+      "source_task_signature": "DeferredValue receives a zero-argument callable, stores an unset marker, evaluates through get_value on conversion/formatting and caches by default. Subsequent renderings normally reuse the first value; disabling cache_value causes fresh calls."
+    },
+    {
+      "component_decision": "Logical sequence order reversal is different from inverse-map synchronization. BList and BarrelList are one class alias, counted once; iterator __reversed__ is a nonmutating operation and not an alternative answer.",
+      "family": "ptv2.boltons.f0004",
+      "legitimate_alternatives": "No additional implementation is needed for BList because BList = BarrelList binds this same method. __reversed__ returns an iterator rather than mutating storage.",
+      "source_task_signature": "BarrelList.reverse mutates every stored segment with reverse, then reverses the outer segment list. These two operations reverse the logical sequence without constructing a flat intermediate."
+    },
+    {
+      "component_decision": "The task is the bijection invariant on assignment, not generic reversal or cached state. ManyToMany.__setitem__ retains other owners of a value; ManyToMany.replace renames a key across its current associations rather than enforcing destination exclusivity. Neither supplies this reassignment invariant.",
+      "family": "ptv2.boltons.f0005",
+      "legitimate_alternatives": "OneToOne.update delegates assignments to this __setitem__; it is not a different implementation. The inverse instance uses the same __delitem__ implementation. Embedded/imported OMD equivalence is acknowledged; OMD is only a negative, so no copied OMD task is counted independently.",
+      "source_task_signature": "OneToOne.__setitem__ first removes a key's prior inverse entry, then deletes the owner already associated with the new value via the inverse map, and writes the pair in both directions. The inverse deletion method and paired constructor prove that deletion reaches the original owner's forward entry."
+    },
+    {
+      "component_decision": "This is a statistical dataset mutation and dependent-cache invalidation task. It is distinct from deferred callable rendering despite cache terminology and from segmented reversal despite sequence storage.",
+      "family": "ptv2.boltons.f0006",
+      "legitimate_alternatives": "Generated module-level wrappers cover _StatsProperty statistics, not trim_relative. The same trim behavior is not implemented as a second module-level alias.",
+      "source_task_signature": "Stats.trim_relative validates the fraction, computes int(len(data)*fraction), returns before sorting/mutation if the count is zero, otherwise replaces data by the sorted middle slice and clears cached statistical properties."
+    },
+    {
+      "component_decision": "A deserialization-error configuration task with line iteration, not duration-unit parsing or netstring size-prefix admission. The normal __next__ alias remains one component with next.",
+      "family": "ptv2.boltons.f0007",
+      "legitimate_alternatives": "The Python __next__ alias is explicitly supplied; CLI construction of JSONLIterator invokes this same class. Reverse line ordering is a supporting iterator choice, not another implementation of malformed JSON handling.",
+      "source_task_signature": "JSONLIterator.next attempts json.loads on a nonblank line and handles deserialization exceptions by re-raising when ignore_errors is false or continuing to another line when true. The constructor defaults ignore_errors to false; __next__ aliases next."
+    },
+    {
+      "component_decision": "This task concerns incoming announced-size admission with a per-call override. It has different grammar, state and error path from JSON deserialization and duration parsing. The small arithmetic helper alone is not counted as an independent primary.",
+      "family": "ptv2.boltons.f0008",
+      "legitimate_alternatives": "Only the read_ns per-call branch and helper calculate/apply the requested explicit override. Instance constructor and setmaxsize are not alternatives to the per-call override. recv_until's enforcement body is outside the clarified calculation question.",
+      "source_task_signature": "For an explicit maxsize override, read_ns calls _calc_msgsize_maxsize to compute the prefix read bound, passes that to BufferedSocket.recv_until, converts the prefix to an integer, and rejects size > maxsize before recv_size. The helper returns len(str(maxsize))+1."
+    },
+    {
+      "component_decision": "This is successful file publication ordering and non-overwrite semantics. It is not a task on copied file-tree recipes or set_cloexec alone. AtomicSaver and its helper stages form one component.",
+      "family": "ptv2.boltons.f0009",
+      "legitimate_alternatives": "atomic_save only constructs AtomicSaver; the question begins at context exit. The Unix branch is the legitimate helper alternative region; Windows same-named functions are excluded by the explicit task condition.",
+      "source_task_signature": "On successful AtomicSaver context exit, buffered writes are flushed, fsynced and the part file is closed before atomic_rename is called. In the non-Windows branch with overwrite=False, atomic_rename uses os.link then os.unlink, refusing an existing destination through link semantics."
+    },
+    {
+      "component_decision": "Module deprecation registration and warning-on-read are one task across three stages. The cache descriptor remains only a negative. The source scan found no separate in-repository implementation or caller supplying another warning path for this task.",
+      "family": "ptv2.boltons.f0010",
+      "legitimate_alternatives": "The helper and class methods are all included. No tests/test_deprutils.py exists in the admitted inventory, so no deprecation test execution or test coverage is asserted; this decision is based on the full source implementation.",
+      "source_task_signature": "deprecate_module_member obtains the module, wraps it only if needed, and records a member warning message. DeprecatableModule.__init__ copies the namespace. Its __getattribute__ retrieves the existing member, emits DeprecationWarning for a registered message, then returns that value unchanged."
+    },
+    {
+      "component_decision": "The absence of asynchronous GC context support is not a negative paraphrase of any positive task. AtomicSaver concerns successful synchronous file publication and not GC suspension; sharing context-manager vocabulary does not merge these tasks.",
+      "family": "ptv2.boltons.f0011",
+      "legitimate_alternatives": "No in-file asynchronous wrapper, imported alias or generated async methods were found after full scope inspection. This is a scoped absence finding, not a claim about every package/version.",
+      "source_task_signature": "The entire pinned gcutils.py defines get_all and GCToggler with synchronous __enter__/__exit__, plus synchronous toggler instances. There is no async def, __aenter__ or __aexit__, and no imported/generated asynchronous context implementation in this file."
+    },
+    {
+      "component_decision": "No positive family requests gcd, integer number theory or this absent algorithm. It therefore is not a negative variant of a positive source task and is distinct from the asynchronous GC absence task.",
+      "family": "ptv2.boltons.f0012",
+      "legitimate_alternatives": "Full-file imports, class/function bodies and module-level statements contain no gcd implementation or in-scope alias. Nothing is inferred about math.gcd in external standard-library source or other repository versions.",
+      "source_task_signature": "The entire pinned mathutils.py implements clamp, option-aware ceil/floor and Bits conversions/bit operations. Imports expose ceil/floor, bisect and binascii; none provides a gcd implementation in this file. No Euclidean remainder loop exists."
+    }
+  ],
+  "global_components": [
+    "ptv2.boltons.f0001",
+    "ptv2.boltons.f0002",
+    "ptv2.boltons.f0003",
+    "ptv2.boltons.f0004",
+    "ptv2.boltons.f0005",
+    "ptv2.boltons.f0006",
+    "ptv2.boltons.f0007",
+    "ptv2.boltons.f0008",
+    "ptv2.boltons.f0009",
+    "ptv2.boltons.f0010",
+    "ptv2.boltons.f0011",
+    "ptv2.boltons.f0012"
+  ],
+  "independence_is_not_inferred_from_path_count": true,
+  "independent_acceptance": true,
+  "indexed_source_count": 113,
+  "old_unknown_body_relationships": "unknown",
+  "pairwise_basis": "Each pair was compared by requested behavior, inputs, state transition, invariants, actual implementing paths, alias/call relations and the two explicit absence capabilities. Complete per-family decisions and the closest shared-concept relations below support the accepted 12 components; file count and name-scan nonmatches are not novelty proof.",
+  "pairwise_reviewed_pairs": [
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0002"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0003"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0004"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0005"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0006"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0001",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0003"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0004"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0005"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0006"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0002",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0004"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0005"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0006"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0003",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0005"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0006"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0004",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0006"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0005",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0007"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0006",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0007",
+      "ptv2.boltons.f0008"
+    ],
+    [
+      "ptv2.boltons.f0007",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0007",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0007",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0007",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0008",
+      "ptv2.boltons.f0009"
+    ],
+    [
+      "ptv2.boltons.f0008",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0008",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0008",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0009",
+      "ptv2.boltons.f0010"
+    ],
+    [
+      "ptv2.boltons.f0009",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0009",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0010",
+      "ptv2.boltons.f0011"
+    ],
+    [
+      "ptv2.boltons.f0010",
+      "ptv2.boltons.f0012"
+    ],
+    [
+      "ptv2.boltons.f0011",
+      "ptv2.boltons.f0012"
+    ]
+  ],
+  "pretraining_absence": "not_claimed",
+  "product_queries": 0,
+  "protocol_id": "p8-004-prospective-temporal-v2",
+  "public_reference_body_allowlist": [],
+  "public_reference_body_comparison_by_fresh_reviewer": "not_performed_empty_allowlist",
+  "quarantined_families": [],
+  "related_concepts_reviewed": [
+    {
+      "basis": "Deferred callable evaluation and cached render reuse versus data-tail removal and dependent-statistic cache invalidation. The data, effect, invariant and implementation are different.",
+      "decision": "distinct",
+      "families": [
+        "ptv2.boltons.f0003",
+        "ptv2.boltons.f0006"
+      ]
+    },
+    {
+      "basis": "Mutating segmented sequence order versus preserving an exclusive owner/value inverse during reassignment. Shared reverse terminology is not shared task semantics.",
+      "decision": "distinct",
+      "families": [
+        "ptv2.boltons.f0004",
+        "ptv2.boltons.f0005"
+      ]
+    },
+    {
+      "basis": "Duration-unit conversion, malformed JSON-line skip/raise configuration, and incoming netstring size-override admission use different input grammars and control paths. No shared parser implementation performs these three requested behaviors.",
+      "decision": "distinct",
+      "families": [
+        "ptv2.boltons.f0002",
+        "ptv2.boltons.f0007",
+        "ptv2.boltons.f0008"
+      ]
+    },
+    {
+      "basis": "Actual successful Unix file publication under a synchronous context exit versus absence of async-with GC suspension under an exact other file/version scope. The absence is not a negative version of the file-publication task.",
+      "decision": "distinct",
+      "families": [
+        "ptv2.boltons.f0009",
+        "ptv2.boltons.f0011"
+      ]
+    },
+    {
+      "basis": "The OneToOne paired constructor, assignment and inverse deletion are required stages in one task. ManyToMany maintains multiple owners or renames keys; OMD.inverted returns a separate duplicate-preserving transposition. OMD's embedded/imported duplicate implementations occur only as a negative.",
+      "decision": "one_bijection_component",
+      "families": [
+        "ptv2.boltons.f0005"
+      ]
+    },
+    {
+      "basis": "Registration, module namespace copy and warning-on-read are three required call stages of one component. cachedproperty is a wrong negative and is not counted as another task.",
+      "decision": "one_deprecation_component",
+      "families": [
+        "ptv2.boltons.f0010"
+      ]
+    },
+    {
+      "basis": "Asynchronous garbage-collection context support versus Euclidean gcd implementation. Neither absent capability is requested by a positive family.",
+      "decision": "distinct_scoped_absences",
+      "families": [
+        "ptv2.boltons.f0011",
+        "ptv2.boltons.f0012"
+      ]
+    }
+  ],
+  "review_acceptance_clock": {
+    "current_time": "2026-10-08 10:42:34 UTC"
+  },
+  "reviewed_query_record": {
+    "blob": "a9ab505a98af892834f83d98cd5a9548ad9abd63",
+    "bytes": 48436,
+    "sha256": "aa58ad4c66d68a812f13fc827c4bfdbbafc7f5c186dbfd66ec5f8f2c81d525b5"
+  },
+  "reviewer_id": "/root/temporal_gold_review",
+  "root_public_reference_review": "pending_separate_root_receipt",
+  "same_task_merges": [],
+  "schema_version": 1,
+  "scope": "Independent intra-draft source-task, alias/call/shared-implementation and adopted provenance-policy review using only authorized pinned source and supplied metadata. Root's separate public-reference body review remains separate.",
+  "scorer_queries": 0,
+  "silent_top_up": 0,
+  "source_admission_unchanged": true,
+  "source_family_policy": {
+    "adoption_blob": "c19624196e6046886e8394efa007f348586f5a36",
+    "applied": true,
+    "concept_limit": "Shared concepts or general standard-library calls alone are not declared copied tasks; no zero-match result is used as proof of novelty.",
+    "internal_equivalence_respected": [
+      "urlutils and dictutils OrderedMultiDict embedded/imported code, only used as a negative",
+      "ecoutils and strutils copied shell escaping, no primary task"
+    ],
+    "policy_blob": "49a7805dcc2369cc42c1dd08489f7028602d79cf",
+    "primary_exclusions_respected": [
+      "urlutils urllib-derived unquote helpers and attributed URL regex",
+      "funcutils inspect_formatargspec",
+      "namedutils shared stdlib named-container construction portions",
+      "timeutils USTimeZone",
+      "cacheutils _HashedKey and make_cache_key",
+      "strutils args2sh and args2cmd",
+      "cacheutils MinIDMap attributed gist",
+      "strutils html2text attributed helper",
+      "funcutils _indent internal copy"
+    ],
+    "recipe_review": "The AtomicSaver task requires Boltons save completion and its selected publication helper; it is not a task answered solely by copy_tree or another copied primitive. No queue/iterator/named-container copied recipe alone was selected as a primary."
+  },
+  "status": "accepted_source_only_within_stated_scope"
+}

@@ -1,0 +1,666 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/pathutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 3,
+      "callers_added": 0,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 9,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 13,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15739
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 34,
+        "hydrate_requested": 34,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 154,
+            "sorts": 0,
+            "statements": 125,
+            "vm_steps": 5898
+          },
+          "text": {
+            "cache_hits": 31,
+            "legacy_auto_reads": 0,
+            "storage_reads": 3,
+            "utf8_bytes": 38168,
+            "zstd_decodes": 3
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 12,
+          "grep": 0,
+          "lexical": 24,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 17156
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 16132,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 1934,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 9165,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 12787,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 12,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 31
+          },
+          "elapsed_us": 8020,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "fix",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 1,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 34,
+      "intent": "fix",
+      "intent_facet_anchors": {
+        "implementation": "chunk:boltons/pathutils.py:2"
+      },
+      "limit_omitted": 24,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 38168,
+        "redundant_bytes": 0,
+        "unique_bytes": 38168
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 15673,
+        "redundant_bytes": 0,
+        "unique_bytes": 15673
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "test",
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 14,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 417339,
+      "scope": "disk_generation:v1",
+      "verified_hits": 34
+    }
+  },
+  "intent": "fix",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "augpath",
+        "chunk_id": "chunk:boltons/pathutils.py:2",
+        "end_line": 110,
+        "file_path": "boltons/pathutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.38332133440562166,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "89e1f75a75bc2ae3221fe6a68ac7658f63262afd0fc19e0d872a0d1c10a6e7ad",
+            "doc_version": "03a70b49a82d892802a1b19fbc071c4d001545e0fc9a06a3b8c0665bce9fe335",
+            "encoding_key": "4b225d3ca2a3dd176080ac959c07e853eb5bde40867aad05eaec34ff7f540ecf",
+            "entity_key": "3248012738602f3c337d8f9e02d6416e5868accb887e3736393efad27af4f006"
+          },
+          "evidence_priority": "intent_facet",
+          "qname": "augpath",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 4979,
+              "start": 2057
+            },
+            "signature": {
+              "end": 2163,
+              "start": 2057
+            },
+            "slice_digest": "25fe6a51ad42ee10183b40320194571cc6dd5e5e049011b3eeeec8ae79b31366",
+            "source": {
+              "byte_len": 6497,
+              "content_digest": "f0d05ce591c71e2e3b1c6a457d9720877688ceede74a47a2ed0329245f3d4b95",
+              "encoding": "utf8",
+              "snapshot_id": "35a8b5ff61eeab4ea7d7ed6d1657a8c72e3fefe5beeb52824c1e3f2adc6f3993"
+            },
+            "span": {
+              "end": 4308,
+              "start": 2054
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "path-token:path",
+          "symbol:augpath",
+          "preselect:fts-summary:+2.35",
+          "preselect:token-search:+3.40"
+        ],
+        "rerank_score": 0.6406928700202967,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.22399999999999998
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.23012784224762992
+          ],
+          [
+            "boost:graph-rerank",
+            0.1149964003216865
+          ]
+        ],
+        "source": "index",
+        "start_line": 50,
+        "symbol_kind": "function",
+        "symbol_name": "augpath",
+        "text": "\n\n\ndef augpath(path, suffix='', prefix='', ext=None, base=None, dpath=None,\n            multidot=False):\n    \"\"\"\n    Augment a path by modifying its components.\n\n    Creates a new path with a different extension, basename, directory, prefix,\n    and/or suffix.\n\n    A prefix is inserted before the basename. A suffix is inserted\n    between the basename and the extension. The basename and extension can be\n    replaced with a new one. Essentially a path is broken down into components\n    (dpath, base, ext), and then recombined as (dpath, prefix, base, suffix,\n    ext) after replacing any specified component.\n\n    Args:\n        path (str | PathLike): a path to augment\n        suffix (str, default=''): placed between the basename and extension\n        prefix (str, default=''): placed in front of the basename\n        ext (str, default=None): if specified, replaces the extension\n        base (str, default=None): if specified, replaces the basename without\n            extension\n        dpath (str | PathLike, default=None): if specified, replaces the\n            directory\n        multidot (bool, default=False): Allows extensions to contain multiple\n            dots. Specifically, if False, everything after the last dot in the\n            basename is the extension. If True, everything after the first dot\n            in the basename is the extension.\n\n    Returns:\n        str: augmented path\n\n    Example:\n        >>> path = 'foo.bar'\n        >>> suffix = '_suff'\n        >>> prefix = 'pref_'\n        >>> ext = '.baz'\n        >>> newpath = augpath(path, suffix, prefix, ext=ext, base='bar')\n        >>> print('newpath = %s' % (newpath,))\n        newpath = pref_bar_suff.baz\n\n    Example:\n        >>> augpath('foo.bar')\n        'foo.bar'\n        >>> augpath('foo.bar', ext='.BAZ')\n        'foo.BAZ'\n        >>> augpath('foo.bar', suffix='_')\n        'foo_.bar'\n        >>> augpath('foo.bar', prefix='_')\n        '_foo.bar'\n        >>> augpath('foo.bar', base='baz')\n        'baz.bar'\n        >>> augpath('foo.tar.gz', ext='.zip', multidot=True)\n        'foo.zip'\n        >>> augpath('foo.tar.gz', ext='.zip', multidot=False)\n        'foo.tar.zip'\n        >>> augpath('foo.tar.gz', suffix='_new', multidot=True)\n        'foo_new.tar.gz'\n    \"\"\""
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Find the path-building function that can add a basename prefix and suffix while treating a compound extension such as .tar.gz as one extension.",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/fileutils.py:38",
+        "document": {
+          "doc_key": "8f2ebeaab6342183a12ac83cbe14410737eaa4574128fc28cd4af5d925a71e55",
+          "doc_version": "96964c019f78e7626a0f767783a7749ccf4f249d48eb7ff60f90b8c5ea73ffd7",
+          "encoding_key": "5f4196845d3226bfc9c3fe6e1749d5d5761cb2edf0b93f8908c67f8dcc0bb2d4",
+          "entity_key": "28527f94f0b7a342f17eb71a613e905b4195fa627f9c419938a6adb157963e00"
+        },
+        "file_path": "boltons/fileutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:iter_find_files",
+          "symbol:from_path",
+          "symbol:path_to_unicode"
+        ],
+        "source_digest": "ded4b2ad41bc1a9e4bd3d2daf924a05b571904c88d77195314180f5da0c4a18f",
+        "source_span": {
+          "end": 20306,
+          "start": 17797
+        },
+        "symbol_kind": "function",
+        "symbol_name": "iter_find_files"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/urlutils.py:40",
+        "document": {
+          "doc_key": "ea66696592b5efb772e0baa9f52e513762ea9df586e4800eca82b643e769e432",
+          "doc_version": "d2c3a61b9fc98c3cc263af4e4841595e77c4005aee59bc5c03c72e9d966c3426",
+          "encoding_key": "13dd2509d3ba1e735bdeb792f64e6ce1a5472df9e7e89c8b004278570c0a9ed7",
+          "entity_key": "103fe0656e2e72b82ce46b6d0438c41b131dfcf33ebf18752057f49e6a4bd787"
+        },
+        "file_path": "boltons/urlutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:find_all_links",
+          "symbol:path",
+          "symbol:quote_path_part"
+        ],
+        "source_digest": "b1f182e4a494a56fe42809a4514e84ab7a131a5638d2306598cb582d4e1b37ce",
+        "source_span": {
+          "end": 21933,
+          "start": 21743
+        },
+        "symbol_kind": "method",
+        "symbol_name": "path"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/urlutils.py:41",
+        "document": {
+          "doc_key": "94c1cd35f4f7db84a2dfa068c0467f920048e5033afe8fc712a64fee0d793294",
+          "doc_version": "f3b128e786499e0092665cbec095cc2e9caa92bc91244628f304a1ddad1af0fd",
+          "encoding_key": "c7d7554fb415b01c0553c331e782fc5b7e0ee834d9af4304cd68664c41647378",
+          "entity_key": "f340f0a6f97fbbc90945d4d88425d235b6e7b7b082d346bef4274e7a46cf49b9"
+        },
+        "file_path": "boltons/urlutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:find_all_links",
+          "symbol:path",
+          "symbol:quote_path_part"
+        ],
+        "source_digest": "b1f182e4a494a56fe42809a4514e84ab7a131a5638d2306598cb582d4e1b37ce",
+        "source_span": {
+          "end": 22137,
+          "start": 21933
+        },
+        "symbol_kind": "method",
+        "symbol_name": "path"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/queueutils.py:12",
+        "document": {
+          "doc_key": "21a0c52aab1dd098659dab654b331cd7d12f13bf278dd8c054b3a2f977a96b6b",
+          "doc_version": "4bb8c01b01357a26076948be7c406d078d77ad221f44467015a3bfc8ed4cc465",
+          "encoding_key": "1d2330edf3d3d2af97fed3603369f58853b3c5ab1b29b7035e8934818030ddb1",
+          "entity_key": "c16747bebb768cfee6d1d98b03c03afb33edc0f75a33dae24c776a1c512527d7"
+        },
+        "file_path": "boltons/queueutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:add"
+        ],
+        "source_digest": "8998955216f5cd62785720a0bbf907c584133c7afc7a5608c74a5a052aff5e28",
+        "source_span": {
+          "end": 5088,
+          "start": 4426
+        },
+        "symbol_kind": "method",
+        "symbol_name": "add"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/pathutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:e494962287fc497f9715ef8f",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 115,
+      "text": "callee: augpath → fname.split (boltons/pathutils.py:115)",
+      "title": "Callee: fname.split",
+      "token_estimate": 14
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/urlutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:1e660624113f4f26a81242ff",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 169,
+      "text": "callee: find_all_links → to_unicode (boltons/urlutils.py:169)",
+      "title": "Callee: to_unicode",
+      "token_estimate": 15
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/urlutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:ddcab6109fe0126f5c696b1e",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 187,
+      "text": "callee: find_all_links → URL (boltons/urlutils.py:187)",
+      "title": "Callee: URL",
+      "token_estimate": 14
+    }
+  ],
+  "query": "Find the path-building function that can add a basename prefix and suffix while treating a compound extension such as .tar.gz as one extension.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Find the path-building function that can add a basename prefix and suffix while treating a compound extension such as .tar.gz as one extension.",
+  "token_budget": 4000,
+  "token_estimate": 3935
+}

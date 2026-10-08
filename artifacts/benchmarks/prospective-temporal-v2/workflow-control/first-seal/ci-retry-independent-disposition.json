@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "reviewer": {
+    "agent": "/root/pr_audit",
+    "workspace": "9967275fe9a7",
+    "role": "Independent read-only CI terminal review; no code, test, gate or retry initiated by this reviewer."
+  },
+  "scope": "Disposition of the single ordinary CI retry after a preserved performance-gate failure; not a future performance guarantee, task completion or formal heldout authorization.",
+  "decision": "regressions_accepted_with_prior_failure_preserved",
+  "source": {
+    "pr": 153,
+    "head": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+    "head_tree": "7fb8d5983edd8f61b06634faeb67a7320cf096fe",
+    "actual_checkout": "c5de9c0e966671cb8d2ebb3bc845fb5ccd90eac3",
+    "actual_checkout_tree": "7fb8d5983edd8f61b06634faeb67a7320cf096fe",
+    "actual_checkout_parents": [
+      "804e56fe1cb2e1e2b7b9a1e879f84bda048c0a1b",
+      "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229"
+    ],
+    "same_source_reference": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "unchanged_root_objects": [
+      {
+        "path": "crates",
+        "before": "afaa5ed25021b919094591a3d7c7021b589d065f",
+        "after": "afaa5ed25021b919094591a3d7c7021b589d065f"
+      },
+      {
+        "path": "scripts",
+        "before": "f7cb8cbb9fc3bf35dc091e9dc970326a06e76c1f",
+        "after": "f7cb8cbb9fc3bf35dc091e9dc970326a06e76c1f"
+      },
+      {
+        "path": "tests",
+        "before": "307dd6151d3b5e5624a74d1b5962c7874aee9dd9",
+        "after": "307dd6151d3b5e5624a74d1b5962c7874aee9dd9"
+      },
+      {
+        "path": ".github",
+        "before": "f8372174ff9c65e62f6deb1fb89d7e7e721e84f6",
+        "after": "f8372174ff9c65e62f6deb1fb89d7e7e721e84f6"
+      },
+      {
+        "path": "Cargo.toml",
+        "before": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "after": "c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      {
+        "path": "Cargo.lock",
+        "before": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+        "after": "c83b9a3dae16231117e3c3c12dc56479988e1b24"
+      }
+    ]
+  },
+  "workflow": {
+    "path": ".github/workflows/ci.yml",
+    "git_blob": "e12797976c4db8f8d600d92f1e4d56cb395cf600",
+    "sha256": "49ccb4135d5a4a826625ca31482aad6e1ade813d77abad07ceca572aef907fdd",
+    "run_id": 37756585680,
+    "run_url": "https://github.com/jyqj/codecortex/actions/runs/37756585680",
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "success",
+    "updated_at": "2026-10-08T10:09:45Z",
+    "jobs": [
+      {
+        "id": 113251059670,
+        "name": "check",
+        "run_attempt": 2,
+        "head_sha": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-08T09:48:09Z",
+        "completed_at": "2026-10-08T10:09:44Z",
+        "all_steps_success": true,
+        "step_count": 35
+      },
+      {
+        "id": 113251061610,
+        "name": "security",
+        "run_attempt": 2,
+        "head_sha": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-08T09:25:51Z",
+        "completed_at": "2026-10-08T09:29:17Z",
+        "all_steps_success": true,
+        "step_count": 5
+      },
+      {
+        "id": 113251106782,
+        "name": "msrv",
+        "run_attempt": 2,
+        "head_sha": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-08T09:25:51Z",
+        "completed_at": "2026-10-08T09:26:58Z",
+        "all_steps_success": true,
+        "step_count": 9
+      }
+    ]
+  },
+  "retry_boundary": {
+    "ordinary_retry_count_observed": 1,
+    "attempt2_job_scope": [
+      "check",
+      "security",
+      "msrv"
+    ],
+    "note": "The API shows new IDs for all three attempt2 jobs; this is recorded as a workflow attempt, not misdescribed as a check-only execution. No second retry is requested or authorized by this receipt."
+  },
+  "actual_success": {
+    "full_check_original_log": {
+      "git_blob": "50dd9fc12eb44fae50e0297e29f49d5385705e6c",
+      "sha256": "09070905a2ae94302318a756b044ba6a9aa059aeb50cb275a1b5fe8ca5b7a5ce",
+      "bytes": 1008528,
+      "exact_git_readback": true
+    },
+    "default_regression": {
+      "passed": 2661,
+      "failed": 0,
+      "ignored": 69,
+      "measured": 0,
+      "filtered_out": 0,
+      "scope": "Sum of actual Rust summaries within the original three-command default-regression workflow step; not a count of unique tasks or an all-feature fault-matrix claim."
+    },
+    "python": {
+      "resource_harness": {
+        "tests": 46,
+        "result": "OK",
+        "seconds": 2.655
+      },
+      "p8_script_tests": {
+        "tests": 228,
+        "result": "OK",
+        "seconds": 6.241
+      },
+      "source_integrity": {
+        "tests": 174,
+        "result": "OK",
+        "seconds": 371.063
+      }
+    },
+    "source_guard": {
+      "schema_version": 9,
+      "source_version": "p8-oracle-compat-source-20261008-v14",
+      "previous_source_version": "p7-closeout-source-20261008-v13",
+      "base_source": "9f6684ac81fa82f2bc99903ff42fb532478c2aaf",
+      "product_source": "3e3e7119ade9c16ccdabf8526ee73bd1077c645d",
+      "review_source": "438b80cc90ff3b4842a0efbe4057253e73c95c72",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1038,
+      "executed_previous_proof": "p7-closeout-source-20261008-v13"
+    },
+    "benchmark_fixture": {
+      "default_regression": "ok",
+      "eval_http": "ok",
+      "eval_http_library_summary": "54 passed; 0 failed; 5 ignored",
+      "gate_source": {
+        "path": "crates/cc-eval/src/lib.rs",
+        "git_blob": "3ca75bb7450cc21d0e64badb49c5e3059fea3fc1",
+        "assertion": "tb.warm_p95_us < 500_000",
+        "read_lines": [
+          850,
+          930
+        ]
+      },
+      "successful_numeric_p95": "not separately available in captured success output; no new numerical value inferred"
+    },
+    "later_original_steps": "All subsequent actual P0/P2/P3/P4/P5 real-MCP and contract steps, module oracles, historical corpus locks and P7 semantic-disabled stdio contract completed successfully. Final semantic adapter summary:11 passed,0 failed,0 ignored.",
+    "complete_command_comparison": {
+      "reference_log_git_blob": "e421c208c759d68b6fdb3f35a614afb5efd9b14d",
+      "reference_log_sha256": "61e553b3940ce1dfba49da47063a4c169ccf1db24428939a247ea7af28104369",
+      "reference_job": 113218075678,
+      "reference_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "command_groups_compared": 44,
+      "command_group_titles_exactly_equal": true,
+      "all_Rust_summary_counts_per_group_equal": true,
+      "normalization": "Only actual elapsed finished-in seconds are removed when comparing Rust summary lines; pass/fail/ignored/measured/filtered counts are kept."
+    },
+    "original_error_annotations": 0
+  },
+  "preserved_failure": {
+    "run_id": 37756585680,
+    "attempt": 1,
+    "job_id": 113242522059,
+    "head": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+    "actual_checkout": "c5de9c0e966671cb8d2ebb3bc845fb5ccd90eac3",
+    "job_conclusion": "failure",
+    "raw": {
+      "git_blob": "3fa893c715e90c5bdaf492a8a4cd9b4662ac60d8",
+      "sha256": "acd10108dc55db6d3d1a30079a030c8e901582e82f2f1bacf8a84da39138b5f8",
+      "bytes": 729755
+    },
+    "failed_step": "P0 benchmark optional HTTP contract tests",
+    "test": "tests::benchmark_fixture",
+    "actual_report": "index warm p95 = 1.56s (limit 500ms)",
+    "library_result": "53 passed;1 failed;5 ignored",
+    "command_exit": 101,
+    "source_location": "crates/cc-eval/src/lib.rs:915",
+    "original_default_leg": "benchmark_fixture passed in the same attempt before the eval-http failure.",
+    "disposition": "Retained as an actual original-gate failure. It is not relabelled a pass, erased or replaced by the retry.",
+    "earlier_same_source_observation": "The independently read original2cd log contains both default and eval-http benchmark_fixture passes; the attempt2 log also contains both passes.",
+    "cause": "Unproven. These observations establish a failure and a subsequent complete pass on unchanged source/gates, not a demonstrated resource, host-load, cache or scheduler cause."
+  },
+  "integrity_reasoning": [
+    "Direct Git tree comparison proves crates, scripts, tests, .github, Cargo.toml and Cargo.lock are identical between a8ea and2cd. The PR merge checkout tree equals a8ea exactly.",
+    "The original strict500ms assertion and original workflow selections were read. No source/test change, gate relaxation, test removal or new ignored marker produced this retry result.",
+    "All three latest jobs and every reported step succeeded; the complete check log independently contains the full174-test proof and1038-input schema9 success, both original benchmark passes and all subsequent regressions.",
+    "Accept the completed original regression requirement for this candidate with the failed observation explicitly attached. Do not infer stable latency or certify later scale/performance tasks from one successful retry."
+  ],
+  "evidence_api_capture": {
+    "git_blob": "60ddfe8111e3ae9947ce0b24c74191552bc5d602",
+    "sha256": "ef27587bedfc0d45877cca1305da04edb3807402a72138d40c56a4dabf51f32c",
+    "bytes": 57914,
+    "contents": [
+      "Original attempt1 and terminal attempt2 API responses",
+      "Complete jobs API for both attempts",
+      "Executed synthetic merge Git commit",
+      "Final head root tree"
+    ]
+  },
+  "authority_and_limits": {
+    "previous_specific_pending_CI_blocker_resolved": true,
+    "prior_probe_service_review": {
+      "git_blob": "13a356c515b764ab6ce550e631faaca6a12555a9",
+      "sha256": "dc655e60e1d29bb9fb4af80803691baae26969c8e68340aec90ccd008074a2ef"
+    },
+    "fresh_roles_or_firstseal_authorized_by_this_record": false,
+    "parent_still_owns": [
+      "PR merge and branch identity check",
+      "Concrete first-seal completeness/chronology and source/environment locks",
+      "Fresh role creation and later data-seal/run-specific permit"
+    ],
+    "other_workflow_results": "Engineering/closeout retain their separate independently observed evidence; this receipt does not re-fetch or re-execute them.",
+    "new_original_TODOs_closed": 0,
+    "remaining_original_TODOs": 30,
+    "downstream_performance_scale_or_G8_tasks_closed": false,
+    "formal_new_queries_dispatched_by_this_review": 0
+  }
+}

@@ -1,0 +1,36 @@
+name: P8 temporal service controls only
+on:
+  push:
+    branches: [work/p8-temporal-service-controls-996727-20261008]
+permissions:
+  contents: read
+jobs:
+  controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Actual AST and temporary Git controls without queries
+        run: |
+          mkdir "$RUNNER_TEMP/ptv2-service-control-logs"
+          set +e
+          python3 -I -S artifacts/benchmarks/prospective-temporal-v2/service-workflow-controls/controls.py > "$RUNNER_TEMP/ptv2-service-control-logs/stdout.log" 2> "$RUNNER_TEMP/ptv2-service-control-logs/stderr.log"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/ptv2-service-control-logs/stdout.log"
+          cat "$RUNNER_TEMP/ptv2-service-control-logs/stderr.log"
+          printf '%s\n' "$status" > "$RUNNER_TEMP/ptv2-service-control-logs/actual-process-exit-code.txt"
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-temporal-service-controls
+          path: |
+            ${{ runner.temp }}/ptv2-service-controls
+            ${{ runner.temp }}/ptv2-service-control-logs
+          include-hidden-files: true
+          if-no-files-found: error

@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "reviewed_at_utc": "2026-10-08T21:23:23.326255+00:00",
+  "status": "passed_actual_PINS3_full_proof_independent_readback",
+  "scope": "original receipts/logs and immutable identities only; no rerun",
+  "fixed_chain": {
+    "product": "362a8216537dd1df614077abc6b6e2f98ef8a054",
+    "review": "32f86004f823d21a3b2412f1e652bb3d581c9315",
+    "pins": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+    "pins_tree": "dc86b1a26bdbcc6541da1686ce17d6575164c110"
+  },
+  "static_identity_reports": {
+    "round7-review-metadata-independent-review.json": "7e409db63155f825c915350812b59123260c60f501f2acbf7dd893a8b8d89c2c",
+    "round7-published-review-pins-independent-review.json": "9da8c6b4b663f952412fd98d7c9c7b404d4a4bd973602bf9eea03f8cfdececa0",
+    "round7-published-pins-identity-independent-review.json": "6dbd6546f8f72ba4a248d049df58a498da9bcf796848ed700d07489ed231f5a3"
+  },
+  "attempts": [
+    {
+      "directory": "/workspace/scratch/28fef0db5e01/integration-validation/round7-publication-source-proof",
+      "receipt_sha256": "a8896aa3c6827586c4cb9698c1db2fce1e1a203e8fa62d99dc8d02fa66c29fb1",
+      "passed": false,
+      "started_at_utc": "2026-10-08T21:15:27.696279+00:00",
+      "finished_at_utc": "2026-10-08T21:15:37.383043+00:00",
+      "head_before": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+      "head_after": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+      "inputs_unchanged_and_equal_immutable_pins_blobs": true,
+      "commands": [
+        {
+          "file": "00.log",
+          "sha256": "f24a6bf6b72014528a00ab1c42ec8b0204802a059c08eee09cd5be78991d9cbd",
+          "bytes": 2066,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/verify_reviewed_source_v15.py",
+            "--source-version",
+            "p8-completion-source-20261009-v15"
+          ],
+          "exit_code": 1,
+          "elapsed_seconds": 9.49732095800573
+        },
+        {
+          "file": "01.log",
+          "sha256": "f89e30bd04896781879968f89b03a66f5f47271046cf377fe3c4e518e49ac159",
+          "bytes": 205,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/code_index_plan.py"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.0786533420032356
+        },
+        {
+          "file": "02.log",
+          "sha256": "7fba000395cc0acb4b44665e974b86756e9dab603c18cbd46243699c5b64fbfc",
+          "bytes": 2632,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_facts.py",
+            "--check"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.08188359600899275
+        },
+        {
+          "file": "03.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "argv": [
+            "git",
+            "diff",
+            "--check"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.016883662989130244
+        }
+      ]
+    },
+    {
+      "directory": "/workspace/scratch/28fef0db5e01/integration-validation/round7-publication-source-proof-restored",
+      "receipt_sha256": "b80e2010513ba4ca0d0cf27369a1e449aaebc9169f0130b30770f3bc4ae8bc06",
+      "passed": true,
+      "started_at_utc": "2026-10-08T21:18:38.289326+00:00",
+      "finished_at_utc": "2026-10-08T21:22:09.505785+00:00",
+      "head_before": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+      "head_after": "adfdfdfa9e668ff1ffb9d07de1a36ac7292d2a66",
+      "inputs_unchanged_and_equal_immutable_pins_blobs": true,
+      "commands": [
+        {
+          "file": "00.log",
+          "sha256": "564bb4839801ad990737980f2e14345d2fcaa43f323e2e5463336ad5a2fd1347",
+          "bytes": 1900,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/verify_reviewed_source_v15.py",
+            "--source-version",
+            "p8-completion-source-20261009-v15"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 211.00954358100716
+        },
+        {
+          "file": "01.log",
+          "sha256": "f89e30bd04896781879968f89b03a66f5f47271046cf377fe3c4e518e49ac159",
+          "bytes": 205,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/code_index_plan.py"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.10872592301166151
+        },
+        {
+          "file": "02.log",
+          "sha256": "7fba000395cc0acb4b44665e974b86756e9dab603c18cbd46243699c5b64fbfc",
+          "bytes": 2632,
+          "argv": [
+            "python3",
+            "-B",
+            "scripts/p8_facts.py",
+            "--check"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.06869783998990897
+        },
+        {
+          "file": "03.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0,
+          "argv": [
+            "git",
+            "diff",
+            "--check"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.023034557001665235
+        }
+      ]
+    }
+  ],
+  "first_attempt_failure": {
+    "retained_as_failed": true,
+    "cause_observed": "Unchanged v14 ensure_refs invoked git fetch for three original historical commits; origin pointed at a missing local repository and fetch exited128. Guard command exited1; no source mismatch was reported by that failure.",
+    "origin_repair_receipt_sha256": "113fd6ccca7911be373b3d84d574c68bdcd7b94c99bd547e315c7e80b18b94cd",
+    "guard_registry_review_task_inputs_byte_identical_across_attempts": true,
+    "same_four_commands_reexecuted_after_environment_repair": true
+  },
+  "restored_complete_guard_output": {
+    "schema_version": 10,
+    "source_version": "p8-completion-source-20261009-v15",
+    "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "product_source": "362a8216537dd1df614077abc6b6e2f98ef8a054",
+    "review_source": "32f86004f823d21a3b2412f1e652bb3d581c9315",
+    "scope": "independently_reviewed_source_and_validation_inputs",
+    "runtime_and_quality_claims": "require_separate_execution_evidence",
+    "status": "passed",
+    "complete_inputs": 1087,
+    "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+  },
+  "task_inventory": {
+    "status": "passed",
+    "task_count": 192,
+    "states": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "task_sha256": "a9b1e95e38ed207b6d1950d98ee68a8a51a706dd427559f2484290346e006bee",
+    "views": 4
+  },
+  "documentation_facts": {
+    "status": "passed",
+    "scope": "declared_documentation_facts_only",
+    "runtime_certified": false,
+    "input_hashes_verified_against_pins": 9
+  },
+  "diff_check_scope": "actual git diff --check command at run working tree; not a blanket historical-patch whitespace attestation",
+  "decision": "P3/R3/PINS3 chain and unchanged v15 source-admission proof are verified; no source or predicate edits were needed for the restore.",
+  "blocking_findings": [],
+  "acceptance_limit": "Controller/source admission only. Original roadmap remains192 total/163done/29remaining; no original TODO, Rust performance, scale, runtime workload, platform matrix or release certification granted."
+}

@@ -1,0 +1,27 @@
+fatal: '/workspace/scratch/a217aaae3bde/codecortex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+Traceback (most recent call last):
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/verify_reviewed_source_v15.py", line 245, in <module>
+    main()
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/verify_reviewed_source_v15.py", line 231, in main
+    expected = approved_union(load_registry())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/verify_reviewed_source_v15.py", line 203, in approved_union
+    inherited = history.approved_union(previous, root=root)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/v15_historical_context.py", line 212, in approved_union
+    return context.approved_union(previous, registry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/v15_historical_context.py", line 195, in approved_union
+    result = previous.approved_union(registry, root=self.root)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/verify_reviewed_source_v14.py", line 194, in approved_union
+    git.ensure_refs([BASE, PRODUCT, REVIEW])
+  File "/workspace/scratch/28fef0db5e01/codecortex/scripts/verify_current_source.py", line 51, in ensure_refs
+    subprocess.run(['git', 'fetch', '--no-tags', 'origin', *missing], cwd=ROOT, check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'fetch', '--no-tags', 'origin', '1ed3c7df574db6d450f79ef29d5148f68556b3db', '9f6684ac81fa82f2bc99903ff42fb532478c2aaf', 'be8aabc0b35706f6403cc12961eb4149fda50f2c']' returned non-zero exit status 128.

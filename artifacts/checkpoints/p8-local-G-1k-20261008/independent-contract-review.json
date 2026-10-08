@@ -1,0 +1,119 @@
+{
+  "schema": "p8-mixed-origin-independent-contract-review-v1",
+  "observed_utc": "2026-10-08T21:31:35.140451+00:00",
+  "reviewer": "/root/pr_audit",
+  "source_commit": "bb9a96d71622458c39a143055360cc97f0d11d78",
+  "source_tree": "bd7f0abc21650a1656783ddb26961c212aa1f2ae",
+  "status": "accepted_scoped_contract_pending_fixed_reservation",
+  "read_only": true,
+  "product_or_cargo_executed": false,
+  "source_blobs": {
+    "scripts/p8_scale_matrix.py": {
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "bytes": 65092,
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886"
+    },
+    "scripts/p7_build_identity.py": {
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "bytes": 5940,
+      "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e"
+    },
+    "docs/roadmap/code-index-v2/tasks.json": {
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "bytes": 802282,
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8"
+    },
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": {
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "bytes": 20488,
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+    },
+    ".github/workflows/p8-scale.yml": {
+      "sha256": "cb489c2f8f72f1d77f53295514f47943414fab8b9843d399df512afc6ec3af08",
+      "bytes": 5501,
+      "git_blob": "cf8dd204ef4fecc426dec9b68839a46e43b93f77"
+    }
+  },
+  "functions": {
+    "capacity_contract": {
+      "line": 45,
+      "end_line": 57,
+      "sha256": "87da3ca2c5b99c02fc502f43581f314dfc4c9093389fd30b1f227e1d94a19a7f"
+    },
+    "driver_snapshot": {
+      "line": 198,
+      "end_line": 216,
+      "sha256": "868afe62983bf3ab27eaa24b32c08bcbc589c97da915533c138262bf33768610"
+    },
+    "validate_build": {
+      "line": 311,
+      "end_line": 334,
+      "sha256": "6eaed116d0c951bdf85fb67913605328d11ab9ebffd173627f6fb775e57f3986"
+    },
+    "registered_plan": {
+      "line": 337,
+      "end_line": 355,
+      "sha256": "913dde353ed19ce1ce262c1762fe44fbf07b481660bcea906e73ac5428902e69"
+    },
+    "run_shard": {
+      "line": 375,
+      "end_line": 432,
+      "sha256": "1ac93b2119aecf5085406baba906c33dc44c9191a0109c086ae442bdefb67cca"
+    },
+    "inspect_raw": {
+      "line": 548,
+      "end_line": 751,
+      "sha256": "5200258dbc72e3f74e581c8438545dd01a5bf5ea8cc4fb0ed413400e091be254"
+    },
+    "validate_shard": {
+      "line": 754,
+      "end_line": 820,
+      "sha256": "0e4287e53d4419cb20c1ce3e23f727fcc55f864eb5e5aa2025a2e633bf7fd238"
+    },
+    "combine": {
+      "line": 861,
+      "end_line": 949,
+      "sha256": "ff9979eb28e3a7150c6e1792dc77e2224040baa1504d53e1e37dbd95a5b4e566"
+    },
+    "aggregate": {
+      "line": 952,
+      "end_line": 966,
+      "sha256": "cea60e02633abd39898f9a599ce6b5f6dbca6749d07acc287abc6420a4489a8f"
+    }
+  },
+  "original_contract_findings": [
+    "Origin label/local-versus-GitHub is not an equality predicate in validate_shard or combine. scale_capacity_v1 explicitly admits heterogeneous host/CPU/kernel strata while requiring the nine common engine fields.",
+    "validate_build binds the original successful Cargo receipt, full inventory/source snapshots, exact producer paths/command and executable copy chain; execution must consume the same original build.json and binary, not a new local build.",
+    "validate_shard validates complete sealed raw, registered plan, original 512MiB bound, 300min native deadline, source/driver/binary identity, capacity preflight, complete cold/incremental/full parity, unchanged work and every fanout truth witness.",
+    "combine requires all 150 unique(scale,index) keys, all 50 registered groups with 30 distinct global repetitions each (1500 measurements), same plan signature and per-scale input digest, and at least one genuine overbudget fanout first build.",
+    "Original tasks P8-005/P8-006 require fixed seed/release scales and attributable complete full parity; they do not require all workers to be GitHub hosted. 09-BENCHMARK reserves same-environment requirements for causal/performance comparisons; this capacity profile explicitly reports coverage with no pooled latency/causal/stable-tail claim."
+  ],
+  "required_fixed_reservation": [
+    "Unique new study ID plus immutable Git reservation object before any local measurement; disclose original G workflow37830173594 was already running and preserve its separate identity.",
+    "Explicit complete150-key origin map: all(1000,0..29) choose local; all four other scales0..29 choose originalG workflow fixed run/attempt. No post-outcome swaps, retries replacing primary, best-of, or silent omissions.",
+    "Retain each selected attempt, error/not_run/partial output and source-after where available. Local primary failure leaves the new study failed/incomplete and cannot be replaced by later successful same-ID Actions execution.",
+    "Same-ID later CI results remain separate additional observations with run/job/artifact/bundle digest lineage; they are not passed to this study combine as duplicates and remain part of the originalG full-workflow study.",
+    "Use exact G driver/helper and complete1087source at original compiled path; real Git HEAD/tree and source/driver snapshots exact. Do not rewrite engine raw or producer Cargo paths.",
+    "Use original scale_capacity_v1 profile, N30/shards30, seed12648430, dirty200/resume1024 plus fanout8/128, 18e6ms and536870912B; per-local-cell fresh native invocation/fixture and original immediate4.55GB disk preflight on actual output filesystem.",
+    "Record true local environment/host/kernel/CPU and each raw engine object. Nine common fields may not be normalized to fake equality. Local1k versus remote larger scales cannot support a same-environment scale-speed comparison.",
+    "Keep original GitHub receiver301mandatory-artifact expectation unchanged. New mixed-origin aggregate calls original validate_build/validate_shard/combine; validate all selected bundles and retain complete original bytes/ZIP hashes/capacity records and explicit origin map outside original schema."
+  ],
+  "nine_common_fields": [
+    "engine_head_observed",
+    "source_files_digest",
+    "cargo_lock_digest",
+    "binary_digest",
+    "eval_version",
+    "os",
+    "arch",
+    "rustflags",
+    "eval_debug_assertions"
+  ],
+  "limits": [
+    "This review approves compatibility of prospective origin allocation with the original aggregation contract; no local shard or full aggregate has been executed or accepted by this reviewer.",
+    "combine common_engine retains first-record fields beyond the nine equality predicates; those are first-record observations, not cross-host equality proofs. All per-shard raw must remain available.",
+    "Capacity estimate and free-space admission do not prove eventual workload success. No release/G8/quality or TODO closure follows from plan compatibility."
+  ],
+  "TODO_remaining": 29,
+  "TODO_newly_done": 0
+}

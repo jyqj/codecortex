@@ -46,7 +46,7 @@
     "unfinished_before": 39,
     "unfinished_after": 32,
     "new_done": 7,
-    "proposed_tasks_sha256": "61a7e9cd2d67c2370e22f94f6f533c1feb451f17ae7cd5171fa12672fb6f80d3",
+    "proposed_tasks_sha256": "b5a33e7827a6a1b60b71194348d61eb629385c48c1b970f434f330b2244a0812",
     "no_extra_tasks_created": true,
     "task_ledger_branch_unchanged": true
   },
@@ -138,7 +138,7 @@
         "P7-016"
       ],
       "conditional_dependencies": [],
-      "accepted_scope": "原default与semantic未启用工程合同完成：两真实私有构建包，每包4配置×14旧工具和4reopen断言，完整strace子进程树复核外部网络尝试0、semantic cache创建0；8个合法匿名IPC，原IPv4/6 SIGSYS及swallowed-child负控成立。",
+      "accepted_scope": "原default与semantic未启用工程合同完成：两真实私有构建包合计4配置×14旧工具和4次独立reopen断言（每包2配置，合计8个产品根进程），完整strace子进程树复核外部网络尝试0、semantic cache创建0；8个合法匿名IPC，原IPv4/6 SIGSYS及swallowed-child负控成立。",
       "limitations": [
         "default/semantic.enabled=false与零key范围；不认证任意第三方插件或live provider",
         "编译器/源码/二进制收据和实际CI执行证据，不构成远端硬件attestation"
@@ -354,5 +354,13 @@
     "Run original plan --write, plan check and p8_facts --check; assert only seven statuses and artifact/docs deltas.",
     "Exclude utility Actions workflow from final product branch tree; preserve all795 source and99 validation inputs.",
     "Latest PR-required CI must pass before expected-head merge."
+  ],
+  "correction_history": [
+    {
+      "previous_proposal_sha256": "cef44927cecefe89b5949c99dbd6dcc39007e06abed01e905be508059e3f79f6",
+      "reason": "Root prose overstated per-package offline matrix count; corrected to 4 full tool matrices total plus 4 separate reopens, 2 configs per package. Actual current audit results unchanged.",
+      "previous_proposal_commit": "f9676705c748429fa77e544f78b7a24f6affb64f",
+      "test_or_gate_change": false
+    }
   ]
 }

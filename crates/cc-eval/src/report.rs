@@ -1,3 +1,4 @@
+use crate::benchmark::statistics::nearest_rank;
 use crate::types::{EvalCaseResult, EvalReport, EvalSummary, ToolSummary};
 use std::collections::HashMap;
 
@@ -28,13 +29,7 @@ pub fn compute_summary(results: &[EvalCaseResult]) -> EvalSummary {
     let mut all_durations: Vec<u64> = results.iter().map(|r| r.duration_ms).collect();
     all_durations.sort_unstable();
     let max_duration_ms = all_durations.last().copied().unwrap_or(0);
-    let p95_duration_ms = if all_durations.is_empty() {
-        0
-    } else {
-        let idx = ((all_durations.len() as f64) * 0.95).ceil() as usize;
-        let idx = idx.min(all_durations.len()).saturating_sub(1);
-        all_durations[idx]
-    };
+    let p95_duration_ms = nearest_rank(&all_durations, 0.95).unwrap_or(0);
 
     let mut per_tool: HashMap<String, Vec<&EvalCaseResult>> = HashMap::new();
     for result in results {
@@ -60,13 +55,7 @@ pub fn compute_summary(results: &[EvalCaseResult]) -> EvalSummary {
             let mut tool_durations: Vec<u64> = group.iter().map(|r| r.duration_ms).collect();
             tool_durations.sort_unstable();
             let tool_max = tool_durations.last().copied().unwrap_or(0);
-            let tool_p95 = if tool_durations.is_empty() {
-                0
-            } else {
-                let idx = ((tool_durations.len() as f64) * 0.95).ceil() as usize;
-                let idx = idx.min(tool_durations.len()).saturating_sub(1);
-                tool_durations[idx]
-            };
+            let tool_p95 = nearest_rank(&tool_durations, 0.95).unwrap_or(0);
 
             (
                 tool,

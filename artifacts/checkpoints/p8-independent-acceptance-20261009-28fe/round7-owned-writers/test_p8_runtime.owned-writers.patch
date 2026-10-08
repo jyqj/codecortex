@@ -1,0 +1,337 @@
+--- a/scripts/tests/test_p8_runtime.py
++++ b/scripts/tests/test_p8_runtime.py
+@@ -394,5 +394,334 @@
+             self.assertEqual(json.loads(path.read_text())["status"], "error")
+ 
+ 
++# Independent owned-writer controls: real stdio processes, actual thread state,
++# and actual archive mutation. Timed joins alone are accelerated.
++from contextlib import ExitStack
++import hashlib
++import importlib
++import shutil
++import time
++
++def _owned_digest(path):
++    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
++
++
++def _owned_write(path, value):
++    Path(path).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
++
++
++def _owned_writer_control(case, evidence):
++    helper = RuntimeDriverControls()
++    args, identity = helper.prepare_control(0)
++    release, entered = threading.Event(), threading.Event()
++    captures, futures, raw_objects, seals, joins, after_close = [], [], [], [], [], []
++    real_product, real_raw = runtime.Product, runtime.Raw
++    real_diagnostics, real_tool = runtime.diagnostics, runtime.Product.tool
++    real_join, real_seal = threading.Thread.join, runtime.seal_output
++    rollback = importlib.import_module('p8_rollback')
++    transport_module = importlib.import_module('resource_harness.runtime')
++    real_exit, real_write = transport_module.StdioRPC._exit, rollback.write_json
++    target = 'full-product' if case.startswith('comparison_') else 'product'
++    child_release = args.binary.parent / 'descendant-release'
++    deadline_seconds = 15
++    fail_once = [False]
++
++    if case.endswith('reader_alive'):
++        child_code = ("import json,time;from pathlib import Path;"
++                      f"p=Path({str(child_release)!r});end=time.monotonic()+{deadline_seconds};"
++                      "\nwhile not p.exists() and time.monotonic()<end: time.sleep(.005)\n"
++                      "print(json.dumps({'jsonrpc':'2.0','method':'late-synthetic-notification'}),flush=True)\n")
++        project_name = 'fresh-full' if target == 'full-product' else 'project'
++        tail = ("\nfrom pathlib import Path\nimport subprocess\n"
++                f"if Path(sys.argv[-1]).name == {project_name!r}:\n"
++                f"    child=subprocess.Popen([sys.executable,'-c',{child_code!r}])\n"
++                f"    Path({str(args.binary.parent / 'descendant-pid')!r}).write_text(str(child.pid))\n")
++        with args.binary.open('a') as stream: stream.write(tail)
++    elif case == 'stopped_close_error':
++        with args.binary.open('a') as stream:
++            stream.write("\nfrom pathlib import Path\nif Path(sys.argv[-1]).name == 'project': raise SystemExit(3)\n")
++    identity['binary_sha256'] = runtime.digest(args.binary)
++
++    class CapturingProduct(real_product):
++        def __init__(self, *a, **kw):
++            captures.append(self)
++            super().__init__(*a, **kw)
++
++    class CapturingRaw(real_raw):
++        def __init__(self, *a, **kw):
++            super().__init__(*a, **kw)
++            raw_objects.append(self)
++        def emit(self, kind, **fields):
++            if self.stream.closed:
++                after_close.append(dict(kind=kind, thread=threading.current_thread().name))
++            return super().emit(kind, **fields)
++
++    class CapturingPool(ThreadPoolExecutor):
++        def submit(self, *a, **kw):
++            future = super().submit(*a, **kw)
++            futures.append(future)
++            return future
++
++    def belongs(thread, name):
++        return any(getattr(p, 'output', Path()).name == target
++                   and getattr(getattr(p, 'transport', None), name, None) is thread for p in captures)
++
++    def joined(thread, timeout=None):
++        held = ((case == 'sampler_alive' and thread.name == 'p8-runtime-self-samples')
++                or (case.endswith('reader_alive') and belongs(thread, 'reader'))
++                or (case.endswith('watcher_alive') and belongs(thread, 'exit_watcher')))
++        if held and not release.is_set() and timeout is not None:
++            joins.append(dict(thread=thread.name, requested_seconds=timeout,
++                              actual_control_seconds=.03, alive_before=thread.is_alive()))
++            return real_join(thread, .03)
++        return real_join(thread, timeout)
++
++    def diagnostics(product):
++        result = real_diagnostics(product)
++        if case == 'sampler_alive' and threading.current_thread().name == 'p8-runtime-self-samples':
++            entered.set()
++            if not release.wait(deadline_seconds): raise RuntimeError('synthetic sampler release deadline')
++        return result
++
++    def watcher(transport):
++        selected = any(getattr(p, 'output', Path()).name == target
++                       and getattr(p, 'process', None) is transport.process for p in captures)
++        if case.endswith('watcher_alive') and selected:
++            # The child actually exited; this real owned watcher has not yet
++            # emitted its real terminal event or returned from its thread.
++            transport.process.wait()
++            entered.set()
++            if not release.wait(deadline_seconds): raise RuntimeError('synthetic watcher release deadline')
++        return real_exit(transport)
++
++    def product_write(path, value):
++        if (case.endswith('construction_failure') and Path(path).parent.name == target
++                and Path(path).name == 'process.json' and not fail_once[0]):
++            fail_once[0] = True
++            raise OSError('synthetic process receipt failure after actual Popen and StdioRPC start')
++        return real_write(path, value)
++
++    def tool(product, name, arguments, timeout=45):
++        result = real_tool(product, name, arguments, timeout)
++        if (case == 'worker_unfinished' and product.output.name == 'product'
++                and (name == 'search' or (name == 'index' and not arguments.get('full')))):
++            entered.set()
++            if not release.wait(deadline_seconds): raise RuntimeError('synthetic worker release deadline')
++        return result
++
++    def waited(selected, timeout):
++        if case in ("worker_unfinished", "sampler_alive") and timeout == 180:
++            if not entered.wait(5):
++                raise RuntimeError("held real writer did not enter within control deadline")
++        if case == 'worker_unfinished':
++            return wait(selected, timeout=.03)
++        return wait(selected, timeout=timeout)
++
++    def states():
++        result = []
++        for p in captures:
++            process, transport = getattr(p, 'process', None), getattr(p, 'transport', None)
++            result.append(dict(output=str(getattr(p, 'output', 'not assigned')),
++                process_exit_code=process.poll() if process is not None else None,
++                process_created=process is not None,
++                reader_alive=transport.reader.is_alive() if transport is not None else None,
++                watcher_alive=transport.exit_watcher.is_alive() if transport is not None else None))
++        return dict(products=result, live_sampler_threads=[t.name for t in threading.enumerate()
++                    if t.name == 'p8-runtime-self-samples' and t.is_alive()],
++                    unfinished_futures=sum(not f.done() for f in futures),
++                    raw_closed=[r.stream.closed for r in raw_objects])
++
++    def seal(path):
++        seals.append(states())
++        return real_seal(path)
++
++    evidence.mkdir(parents=True, exist_ok=False)
++    report, run_error = None, None
++    try:
++        with ExitStack() as stack:
++            for obj, name, replacement in (
++                (runtime, 'verify_build', lambda *a, **kw: identity),
++                (runtime, 'verify_receipt', lambda *a, **kw: identity['build_identity']),
++                (runtime, 'Product', CapturingProduct), (runtime, 'Raw', CapturingRaw),
++                (runtime, 'ThreadPoolExecutor', CapturingPool),
++                (runtime, 'diagnostics', diagnostics), (runtime, 'wait', waited),
++                (runtime, 'seal_output', seal), (real_product, 'tool', tool),
++                (threading.Thread, 'join', joined), (transport_module.StdioRPC, '_exit', watcher),
++                (rollback, 'write_json', product_write)):
++                stack.enter_context(mock.patch.object(obj, name, replacement))
++            try: report = runtime.run(args)
++            except BaseException as error: run_error = f'{type(error).__name__}: {error}'
++            before = states()
++            rows = [json.loads(line) for line in (args.output / 'raw.jsonl').read_text().splitlines()]
++            operations = [r for r in rows if r['kind'] == 'operation']
++            verification_before = None
++            if (args.output / 'seal.json').exists():
++                try: runtime.verify_output(args.output); verification_before = 'verified'
++                except Exception as error: verification_before = f'{type(error).__name__}: {error}'
++            shutil.copytree(args.output, evidence / 'before-release')
++            release.set()
++            child_release.write_text('release only this control descendant\n')
++            wait(futures, timeout=3)
++            # Collect the actual held writers before closing any streams. This
++            # cleanup is test ownership, after the observed run() returned.
++            for p in captures:
++                process = getattr(p, 'process', None)
++                if process is not None and process.poll() is None:
++                    try: process.stdin.close()
++                    except Exception: pass
++                    try: process.wait(timeout=3)
++                    except Exception: process.kill(); process.wait(timeout=3)
++                transport = getattr(p, 'transport', None)
++                if transport is not None:
++                    real_join(transport.reader, 3); real_join(transport.exit_watcher, 3)
++            for t in threading.enumerate():
++                if t.name == 'p8-runtime-self-samples': real_join(t, 3)
++            after = states()
++            verification_after = None
++            if (args.output / 'seal.json').exists():
++                try: runtime.verify_output(args.output); verification_after = 'verified'
++                except Exception as error: verification_after = f'{type(error).__name__}: {error}'
++            shutil.copytree(args.output, evidence / 'after-release')
++            before_files = {str(p.relative_to(evidence / 'before-release')): _owned_digest(p)
++                for p in (evidence / 'before-release').rglob('*') if p.is_file()}
++            after_files = {str(p.relative_to(evidence / 'after-release')): _owned_digest(p)
++                for p in (evidence / 'after-release').rglob('*') if p.is_file()}
++            changed = [p for p in before_files if before_files[p] != after_files.get(p)]
++            sealed = (args.output / 'seal.json').exists()
++            expected_seal = case in ('all_stopped', 'stopped_close_error')
++            result = dict(case=case, synthetic_control_only=True, original_todo_certification=False,
++                requested_operations=args.operations, submitted_futures=len(futures),
++                raw_terminal_operations=len(operations), terminal_ids=sorted(r['id'] for r in operations),
++                all_submitted_futures_terminal_at_return=before['unfinished_futures'] == 0,
++                report=report, run_error=run_error, states_at_return=before, states_after_release=after,
++                seal_call_states=seals, seal_exists=sealed, expected_seal=expected_seal,
++                safety_expectation_met=(sealed == expected_seal and run_error is None),
++                verify_before_release=verification_before, verify_after_release=verification_after,
++                files_changed_after_return=changed, accelerated_real_joins=joins,
++                emit_attempts_after_raw_close=after_close, held_thread_entered=entered.is_set(),
++                construction_failure_triggered=fail_once[0])
++            _owned_write(evidence / 'observation.json', result)
++            _owned_write(evidence / 'before-release-sha256.json', before_files)
++            _owned_write(evidence / 'after-release-sha256.json', after_files)
++            return result
++    finally:
++        release.set()
++        child_release.write_text('finally release own descendant\n')
++        for p in captures:
++            process = getattr(p, 'process', None)
++            if process is not None and process.poll() is None:
++                process.kill(); process.wait(timeout=3)
++            transport = getattr(p, 'transport', None)
++            if transport is not None:
++                real_join(transport.reader, 3); real_join(transport.exit_watcher, 3)
++                if not transport.reader.is_alive() and not transport.exit_watcher.is_alive():
++                    p.raw.close(); p.stderr.close(); process.stdout.close()
++        wait(futures, timeout=3)
++        for raw in raw_objects:
++            raw.close()
++        helper.doCleanups()
++
++
++class OwnedWriterSealControls(unittest.TestCase):
++    def check_owned_writer_case(self, case):
++        with tempfile.TemporaryDirectory() as directory:
++            evidence = Path(directory) / case
++            value = _owned_writer_control(case, evidence)
++            self.assertIsNone(value["run_error"])
++            self.assertEqual(value["seal_exists"], value["expected_seal"])
++            report, state = value["report"], value["states_at_return"]
++            self.assertIs(report["task_complete"], False)
++            expected_terminals = 0 if case == "main_construction_failure" else (59 if case == "worker_unfinished" else 60)
++            self.assertEqual(value["raw_terminal_operations"], expected_terminals)
++            if expected_terminals == 60:
++                self.assertEqual(value["terminal_ids"], list(range(60)))
++            self.assertEqual(state["raw_closed"], [value["expected_seal"]])
++            if value["expected_seal"]:
++                self.assertEqual(report["artifact_seal_status"], "sealed")
++                self.assertEqual(report["artifact_seal"], "seal.json")
++                self.assertEqual(value["verify_before_release"], "verified")
++                self.assertEqual(value["verify_after_release"], "verified")
++                self.assertEqual(value["files_changed_after_return"], [])
++                self.assertEqual(len(value["seal_call_states"]), 1)
++                self.assertEqual(report["exit_code"], 0 if case == "all_stopped" else 2)
++                if case == "stopped_close_error":
++                    self.assertEqual(report["status"], "failed")
++                    self.assertEqual(state["products"][0]["process_exit_code"], 3)
++            else:
++                self.assertEqual(report["exit_code"], 2)
++                self.assertEqual(report["status"], "failed")
++                self.assertEqual(report["artifact_seal_status"], "unsealed_owned_writers")
++                self.assertIsNone(report["artifact_seal"])
++                self.assertIsNone(report["raw_sha256"])
++                self.assertEqual(value["seal_call_states"], [])
++                self.assertEqual(value["emit_attempts_after_raw_close"], [])
++            cleanup = report["owned_cleanup"]
++            if case == "sampler_alive":
++                self.assertTrue(value["held_thread_entered"])
++                self.assertEqual(state["live_sampler_threads"], ["p8-runtime-self-samples"])
++                self.assertIs(cleanup["sampler_stopped"], False)
++                self.assertIn("raw.jsonl", value["files_changed_after_return"])
++            if case.endswith(("reader_alive", "watcher_alive")):
++                target = "full-product" if case.startswith("comparison_") else "product"
++                p = next(p for p in state["products"] if Path(p["output"]).name == target)
++                self.assertEqual(p["process_exit_code"], 0)
++                self.assertTrue(p["reader_alive" if case.endswith("reader_alive") else "watcher_alive"])
++                self.assertIs(cleanup["comparison_product_stopped" if target == "full-product" else "product_stopped"], False)
++                self.assertIn(target + "/rpc.jsonl", value["files_changed_after_return"])
++            if case.endswith("construction_failure"):
++                self.assertTrue(value["construction_failure_triggered"])
++                target = "full-product" if case.startswith("comparison_") else "product"
++                p = next(p for p in state["products"] if Path(p["output"]).name == target)
++                self.assertTrue(p["process_created"])
++                self.assertIsNone(p["process_exit_code"])
++                self.assertTrue(p["reader_alive"])
++                self.assertTrue(p["watcher_alive"])
++                self.assertIs(cleanup["comparison_product_construction_pending" if target == "full-product" else "product_construction_pending"], True)
++                self.assertEqual(value["submitted_futures"], expected_terminals)
++            if case == "worker_unfinished":
++                self.assertEqual(state["unfinished_futures"], 1)
++                self.assertEqual(cleanup["unfinished_work"], 1)
++                rows = [json.loads(line) for line in (evidence / "after-release/raw.jsonl").read_text().splitlines()]
++                self.assertEqual(sorted(r["id"] for r in rows if r["kind"] == "operation"), list(range(60)))
++                self.assertIn("raw.jsonl", value["files_changed_after_return"])
++            after = value["states_after_release"]
++            self.assertEqual(after["live_sampler_threads"], [])
++            self.assertEqual(after["unfinished_futures"], 0)
++            for p in after["products"]:
++                self.assertIsNotNone(p["process_exit_code"])
++                self.assertIs(p["reader_alive"], False)
++                self.assertIs(p["watcher_alive"], False)
++
++    def test_all_stopped_seal_contract(self):
++        self.check_owned_writer_case('all_stopped')
++
++    def test_sampler_alive_seal_contract(self):
++        self.check_owned_writer_case('sampler_alive')
++
++    def test_main_reader_alive_seal_contract(self):
++        self.check_owned_writer_case('main_reader_alive')
++
++    def test_comparison_reader_alive_seal_contract(self):
++        self.check_owned_writer_case('comparison_reader_alive')
++
++    def test_main_watcher_alive_seal_contract(self):
++        self.check_owned_writer_case('main_watcher_alive')
++
++    def test_comparison_watcher_alive_seal_contract(self):
++        self.check_owned_writer_case('comparison_watcher_alive')
++
++    def test_stopped_close_error_seal_contract(self):
++        self.check_owned_writer_case('stopped_close_error')
++
++    def test_main_construction_failure_seal_contract(self):
++        self.check_owned_writer_case('main_construction_failure')
++
++    def test_comparison_construction_failure_seal_contract(self):
++        self.check_owned_writer_case('comparison_construction_failure')
++
++    def test_worker_unfinished_seal_contract(self):
++        self.check_owned_writer_case('worker_unfinished')
++
++
+ if __name__ == "__main__":
+     unittest.main()

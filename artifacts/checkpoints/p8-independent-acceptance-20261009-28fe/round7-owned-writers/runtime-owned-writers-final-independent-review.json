@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "reviewed_at_utc": "2026-10-08T21:09:28.679895+00:00",
+  "status": "approved_scoped_fixed_product_source_and_tests",
+  "author_of_product_patch": false,
+  "author_of_repository_tests": false,
+  "scope": "runtime owned-writer finalization guard and ten regression controls; no original TODO certification",
+  "product": {
+    "sha": "362a8216537dd1df614077abc6b6e2f98ef8a054",
+    "tree": "caf479a6dc3800262d8b42fd92b7de337025b38d",
+    "parents": [
+      "44f3c06b1d57709daeaa8bfcc8879f4a15b02570"
+    ],
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/362a8216537dd1df614077abc6b6e2f98ef8a054",
+    "files_sha256": {
+      "scripts/p8_runtime.py": "a78880dfc50faf4ed86bda962cc6cbd7ac0252a493cfe69741c02ee49445847b",
+      "scripts/tests/test_p8_runtime.py": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c"
+    },
+    "local_raw_commit_and_tree_object_sha1_recomputed": true,
+    "actual_GitHub_object_independently_fetched": true,
+    "only_two_paths_differ_from_parent": true,
+    "product_blobs_equal_tested_candidate_bytes": true
+  },
+  "design_verification": [
+    "Only run top-level AST changed.",
+    "record_operation, sample, operation, admitted_operation ASTs exactly preserved.",
+    "Both constructors set pending before call and clear after returned-object assignment.",
+    "Both product objects retained; successful main close is tracked separately to avoid duplicate close.",
+    "Normal raw replay requires stopped process/reader/exit_watcher of both products after sampler drain.",
+    "Finally requires no unfinished future, sampler stopped, both products stopped and neither construction pending.",
+    "Final raw close, raw hash, seal_output and verify_output share writers_stopped guard.",
+    "Unstopped/unknown writers receive failed status, raw_sha256 null, artifact_seal null, unsealed_owned_writers.",
+    "Original unfinished_work failure and terminal-retention file retained.",
+    "Cleanup failure after actual writer termination can seal failed artifacts."
+  ],
+  "test_review": {
+    "old_RuntimeDriverControls_and_RuntimeEvidenceTests_AST_exact": true,
+    "ten_added_cases": [
+      "all_stopped",
+      "sampler_alive",
+      "main_reader_alive",
+      "comparison_reader_alive",
+      "main_watcher_alive",
+      "comparison_watcher_alive",
+      "stopped_close_error",
+      "main_construction_failure",
+      "comparison_construction_failure",
+      "worker_unfinished"
+    ],
+    "assertions": "actual child/thread liveness and constructor timing; no raw close/digest/seal while live; failed immutable archive retained on exit3; released late writers change actual raw/RPC files; every owned test thread/process collected after observation",
+    "stability": "sampler and unfinished-worker controls wait for actual fault entry before simulated drain; production deadlines unchanged"
+  },
+  "independent_dynamic_evidence": {
+    "executed_by": "acceptance_review",
+    "readback_by": "pr_audit",
+    "control_sha256": "baf9ac9eb09f0eac1c8ae85aabddb30c118b63c30e1d0dcdfe2d4b03e315e1cf",
+    "before_sha256": "e17199fbce0f68c34981eefec1855969d4618197d2a059192f380a3ab9f6a6af",
+    "after_sha256": "1df99c6a26334d64053ff9ea614ed32bc7b54427edcd339cc603599ead1ed472",
+    "old_false_seals": 7,
+    "old_sealed_archives_mutated_after_return": 6,
+    "candidate_cases_meeting_expectation": 10,
+    "case_observation_and_result_equality_checks": 20,
+    "retained_files_rehashed": 4450,
+    "detail_report_sha256": "451932c042e9644639228a15ba114d47c64aef2971a2526fe8037ffc9cfd668e"
+  },
+  "execution_provenance_clarification": {
+    "appendix_sha256": "da2c7509107240d8f6efd1285ff279f5cc2e4a76cde041207fc0d0df405f18cf",
+    "retrospective_helper_identity_declaration": true,
+    "original_results_capture_runtime_and_control_hash_only": true,
+    "prior_readback_report_observed_later_temporary_tests_added_snapshot": true,
+    "prior_readback_source_changes_list_is_inspection_state_not_execution_capture": true,
+    "prior_report_unchanged": true,
+    "all_six_retained_prepare_control_versions_independently_byte_and_AST_verified": [
+      {
+        "file": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/fixed-m/scripts/tests/test_p8_runtime.py",
+        "sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      },
+      {
+        "file": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/candidate-root/scripts/tests/test_p8_runtime.py",
+        "sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      },
+      {
+        "file": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/test_p8_runtime.first-candidate.py",
+        "sha256": "e44dce9d630488051c33e0e54e7d8230b45ca7d830dab34dd3809859633bb19d",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      },
+      {
+        "file": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/test_p8_runtime.candidate.py",
+        "sha256": "f701aff8727501923c246c089370558f58781eeaa84fcba83c1838fdd7a26b58",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      },
+      {
+        "file": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/candidate-with-tests/scripts/tests/test_p8_runtime.py",
+        "sha256": "f701aff8727501923c246c089370558f58781eeaa84fcba83c1838fdd7a26b58",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      },
+      {
+        "file": "/workspace/scratch/28fef0db5e01/codecortex/scripts/tests/test_p8_runtime.py",
+        "sha256": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c",
+        "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305",
+        "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822"
+      }
+    ]
+  },
+  "complete_P8_python_run": {
+    "receipt_path": "/workspace/scratch/28fef0db5e01/integration-validation/round7-p8-controls/receipt.json",
+    "receipt_sha256": "8ec4248c55bf09147715e735b258cf3c15e113eda939f476ee930b0fa382831f",
+    "log_path": "/workspace/scratch/28fef0db5e01/integration-validation/round7-p8-controls/all-p8.log",
+    "log_sha256": "a373c541799f3d0a473ed8410452d1c0fac91584bdad4105d5bd91718a9c088a",
+    "log_bytes": 63314,
+    "tests": 381,
+    "individual_ok_lines_verified": 381,
+    "exit_code": 0,
+    "elapsed_seconds": 69.1779630480014,
+    "started_at_utc": "2026-10-08T21:05:59.027088+00:00",
+    "finished_at_utc": "2026-10-08T21:07:08.205069+00:00",
+    "source_before_after_unchanged": true,
+    "execution_identity": "uncommitted two-file candidate on HEAD44f; same two exact blobs later published in P3, original execution identity unchanged",
+    "rerun_by_reviewer": false
+  },
+  "blocking_findings": [],
+  "limits": [
+    "Constructor pending prevents a completed seal when object assignment failed; orphan-process reclamation is not claimed.",
+    "Independent controls use synthetic executable processes, mocked build admission and accelerated joins of held real threads; not Rust performance or workload certification.",
+    "Original review/guard approval chain must now be rebound separately to P3 before source proof can admit its new validation bytes.",
+    "No original TODO closes from these controls; original remaining count 29."
+  ]
+}

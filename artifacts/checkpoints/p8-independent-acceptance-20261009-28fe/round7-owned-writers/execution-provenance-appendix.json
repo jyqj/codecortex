@@ -1,0 +1,88 @@
+{
+  "chronology": [
+    "Exported 94 original M Python files into fixed-m with SHA manifest; original test file 52f52bd... and prepare_control were unchanged.",
+    "Ran immutable reproduce_owned_writers.py against fixed-m to produce before-m. No added tests existed in that source snapshot.",
+    "Copied fixed-m to candidate-root, replaced only p8_runtime.py with root a78880df..., and ran the identical reproduce script to produce after-candidate. The imported test file was still 52f52bd..., same original helper.",
+    "After after-candidate execution completed, temporarily replaced candidate-root test file with first-candidate e44dce9d..., which appends OwnedWriterSealControls without modifying RuntimeDriverControls.prepare_control. Ran first 25-test suite; retained candidate-tests.*.",
+    "Copied that complete tested source to candidate-with-tests, then restored candidate-root test to original 52f52bd... and updated its manifest to describe the restored snapshot. The manifest currently in candidate-root was rewritten after this restoration; it is not presented as a contemporaneous automated before/after capture.",
+    "Added only the entered.wait(5) first-drain guard for the held sampler/worker in final test candidate f701aff... and candidate-with-tests. Ran final 25-test suite; retained candidate-tests-final.*. Original reproduce, before-m and after-candidate bytes were never changed.",
+    "Root later moved added imports to file top when integrating repo test e9eb3bd...; this is a separate root full-suite identity, not substituted for the independently run f701aff... candidate."
+  ],
+  "evidence_limits": [
+    "Original results.json directly records runtime and reproduce-script SHA; it does not contain a captured full test-module SHA. The helper identity above is a retrospective execution provenance declaration based on the exact copy/update sequence, corroborated by byte-identical prepare_control across all retained versions.",
+    "No restored source-manifest is claimed to have been automatically recorded at the earlier run instant.",
+    "The first 25-test snapshot used candidate-root temporarily; candidate-with-tests now retains the final stability-adjusted test source. First-candidate full test bytes and patch are separately retained."
+  ],
+  "final_test_candidates": {
+    "file": "test_p8_runtime.candidate.py",
+    "final_test_log": "candidate-tests-final.stderr",
+    "patch": "test_p8_runtime.owned-writers.patch",
+    "snapshot": "candidate-with-tests"
+  },
+  "helper_comparison": [
+    {
+      "file_sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+      "first_line": 23,
+      "last_line": 90,
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/fixed-m/scripts/tests/test_p8_runtime.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    },
+    {
+      "file_sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+      "first_line": 23,
+      "last_line": 90,
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/candidate-root/scripts/tests/test_p8_runtime.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    },
+    {
+      "file_sha256": "e44dce9d630488051c33e0e54e7d8230b45ca7d830dab34dd3809859633bb19d",
+      "first_line": 23,
+      "last_line": 90,
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/test_p8_runtime.first-candidate.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    },
+    {
+      "file_sha256": "f701aff8727501923c246c089370558f58781eeaa84fcba83c1838fdd7a26b58",
+      "first_line": 23,
+      "last_line": 90,
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/test_p8_runtime.candidate.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    },
+    {
+      "file_sha256": "f701aff8727501923c246c089370558f58781eeaa84fcba83c1838fdd7a26b58",
+      "first_line": 23,
+      "last_line": 90,
+      "path": "/workspace/scratch/28fef0db5e01/acceptance-review/round7-owned-writers/candidate-with-tests/scripts/tests/test_p8_runtime.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    },
+    {
+      "file_sha256": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c",
+      "first_line": 28,
+      "last_line": 95,
+      "path": "/workspace/scratch/28fef0db5e01/codecortex/scripts/tests/test_p8_runtime.py",
+      "prepare_control_ast_sha256": "1f005767212d56f99cba7c77658f890a2f3c8265d0ad1c6a28a032a144662822",
+      "prepare_control_byte_sha256": "b42309122d8f12151a761e443e875a5ac304cb9803324150ca20a444c5a8c305"
+    }
+  ],
+  "original_reproduce_imported_helper_sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+  "original_reproducer_sha256": "baf9ac9eb09f0eac1c8ae85aabddb30c118b63c30e1d0dcdfe2d4b03e315e1cf",
+  "original_result_sha256": {
+    "after-candidate/results.json": "1df99c6a26334d64053ff9ea614ed32bc7b54427edcd339cc603599ead1ed472",
+    "before-m/results.json": "e17199fbce0f68c34981eefec1855969d4618197d2a059192f380a3ab9f6a6af",
+    "reproduce_owned_writers.py": "baf9ac9eb09f0eac1c8ae85aabddb30c118b63c30e1d0dcdfe2d4b03e315e1cf"
+  },
+  "prior_reports_unchanged": [
+    "independent-owned-writers-review.json",
+    "before-m/results.json",
+    "after-candidate/results.json",
+    "control-file-receipts.json"
+  ],
+  "record_type": "append_only_execution_provenance_clarification",
+  "schema_version": 1,
+  "scope": "synthetic control helper provenance; no new product or TODO certification"
+}

@@ -1100,40 +1100,27 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "followup_validation": {
-    "elapsed_seconds": 69.1779630480014,
-    "exit_code": 0,
-    "head_after": "44f3c06b1d57709daeaa8bfcc8879f4a15b02570",
-    "input_sha256_after": {
-      "scripts/p8_runtime.py": "a78880dfc50faf4ed86bda962cc6cbd7ac0252a493cfe69741c02ee49445847b",
-      "scripts/tests/test_p8_runtime.py": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c"
-    },
-    "input_sha256_before": {
-      "scripts/p8_runtime.py": "a78880dfc50faf4ed86bda962cc6cbd7ac0252a493cfe69741c02ee49445847b",
-      "scripts/tests/test_p8_runtime.py": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c"
-    },
-    "log": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round7-owned-writers/all-p8.log",
-    "log_sha256": "a373c541799f3d0a473ed8410452d1c0fac91584bdad4105d5bd91718a9c088a",
-    "receipt": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round7-owned-writers/receipt.json",
-    "source_head_at_execution": "44f3c06b1d57709daeaa8bfcc8879f4a15b02570",
-    "task_status_changes": [],
-    "tests": 381
-  },
   "incremental_review": {
     "exact_followup_source_changes": [],
     "exact_followup_validation_changes": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
       "scripts/p8_runtime.py",
+      "scripts/tests/test_p8_platform.py",
+      "scripts/tests/test_p8_recovery.py",
       "scripts/tests/test_p8_runtime.py"
     ],
-    "execution_claims": "Scoped implementation and controller regression acceptance only; original task dependencies, full scale, actual runtime and release acceptance remain separate.",
-    "followup_product_source": "362a8216537dd1df614077abc6b6e2f98ef8a054",
-    "original_execution_identity": "The 381-control run executed the fixed two-file working tree while HEAD was 44f3c06b1d57709daeaa8bfcc8879f4a15b02570. The receipt records separate before/after input hashes and unchanged HEAD. These bytes exactly match the subsequent published product. Earlier reproductions retain their own runtime/script hashes and an explicitly retrospective helper-provenance appendix; no original execution is relabeled.",
-    "parent_source": "44f3c06b1d57709daeaa8bfcc8879f4a15b02570",
-    "preserved_prior_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-5b7fe1a-independent-source-review.json",
-    "prior_product_source": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
-    "prior_review_source": "5b7fe1a980c130a73739a15105a0343392585cc8",
-    "product_tree": "caf479a6dc3800262d8b42fd92b7de337025b38d",
-    "scope": "The runtime controller requires every owned workload, sampler, product process and stdio writer to stop before closing raw evidence, hashing it, sealing or verifying a complete archive. Unknown partial Product construction remains explicitly unsealed. Ten additional real process/thread controls preserve successful and failed-but-stopped archive behavior. All 1087 Rust/Cargo inputs and the other 134 validation inputs are unchanged."
+    "execution_claims": "Source and regression review only; no original task, scale, provider, platform-matrix or release acceptance.",
+    "followup_product_source": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+    "merge_parents": [
+      "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "599a7050e7d52b5b7b93975c419138e175b3f754"
+    ],
+    "original_execution_identity": "The 371-control run tested the fixed uncommitted merge candidate while HEAD was 3f7da3b and MERGE_HEAD was 599a705. Its six recorded file hashes and independent byte readback exactly match the published merge product. Earlier logs and executions retain their own original identities.",
+    "prior_candidate_product_source": "b5700f9a1a3dfb91a3448ebdb311ffd438297442",
+    "product_tree": "5173ebb5ffdb96ddc71bfcd9bac8099cd40efc05",
+    "scope": "Merge the two reviewed parents: all 1087 Rust/Cargo inputs and 130 validation inputs are byte-identical to the current owner candidate; six existing validation inputs incorporate the independently reviewed supplement. Three are unchanged supplement blobs and three are independently reviewed conflict resolutions.",
+    "supplement_product_source": "b592d57756adf20361e18a2b54045aedfb056cd8"
   },
   "incremental_review_records": {
     "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/acceptance-review/runtime-independent-review.json": {
@@ -1178,22 +1165,6 @@
       "bytes": 2015,
       "reviewer": "/root",
       "sha256": "1d05987db596477ed646364ed1e49b37bf5da71cdabbd0b9d8cf21a66da0caf8",
-      "workspace": "28fef0db5e01"
-    },
-    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round7-owned-writers/independent-owned-writers-review.json": {
-      "author": "/root",
-      "bytes": 29713,
-      "reviewer": "/root/acceptance_review",
-      "scope": "Independent real process/thread counterexamples against M and the corrected controller; original outcomes preserved with bounded test-owned cleanup.",
-      "sha256": "7ee1d21d9ffd6f768bae98925273dac3069464101b5158e0354f0bd9598a846d",
-      "workspace": "28fef0db5e01"
-    },
-    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round7-owned-writers/runtime-owned-writers-final-independent-review.json": {
-      "author": "/root (production); /root/acceptance_review (new controls)",
-      "bytes": 8297,
-      "reviewer": "/root/pr_audit",
-      "scope": "Fixed GitHub product/whole-tree/parent and two modified blob verification; independent source, real lifecycle evidence, final 381-control log and receipt review.",
-      "sha256": "b7d574a2d34f11ef6eccaabbd59c628928a136cdeaf6a09e383eb40cdff9afc9",
       "workspace": "28fef0db5e01"
     }
   },
@@ -1412,32 +1383,6 @@
         "scope": "Six independently reviewed Python controller and regression inputs; all 1087 Rust/Cargo product inputs and the other 129 validation inputs are byte-identical to the prior accepted product.",
         "workspace": "28fef0db5e01"
       }
-    },
-    {
-      "original_core_path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-5b7fe1a-independent-source-review.json",
-      "original_core_sha256": "f85564c69fc8c8adb9b4cd137c19035d57ec6f22384e6aaab6bf0931da59b7b0",
-      "record": {
-        "exact_followup_source_changes": [],
-        "exact_followup_validation_changes": [
-          "scripts/p8_cold_build.py",
-          "scripts/p8_rollback.py",
-          "scripts/p8_runtime.py",
-          "scripts/tests/test_p8_platform.py",
-          "scripts/tests/test_p8_recovery.py",
-          "scripts/tests/test_p8_runtime.py"
-        ],
-        "execution_claims": "Source and regression review only; no original task, scale, provider, platform-matrix or release acceptance.",
-        "followup_product_source": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
-        "merge_parents": [
-          "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
-          "599a7050e7d52b5b7b93975c419138e175b3f754"
-        ],
-        "original_execution_identity": "The 371-control run tested the fixed uncommitted merge candidate while HEAD was 3f7da3b and MERGE_HEAD was 599a705. Its six recorded file hashes and independent byte readback exactly match the published merge product. Earlier logs and executions retain their own original identities.",
-        "prior_candidate_product_source": "b5700f9a1a3dfb91a3448ebdb311ffd438297442",
-        "product_tree": "5173ebb5ffdb96ddc71bfcd9bac8099cd40efc05",
-        "scope": "Merge the two reviewed parents: all 1087 Rust/Cargo inputs and 130 validation inputs are byte-identical to the current owner candidate; six existing validation inputs incorporate the independently reviewed supplement. Three are unchanged supplement blobs and three are independently reviewed conflict resolutions.",
-        "supplement_product_source": "b592d57756adf20361e18a2b54045aedfb056cd8"
-      }
     }
   ],
   "review_records": {
@@ -1502,10 +1447,10 @@
       "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
     }
   },
-  "reviewed_at_utc": "2026-10-08T21:10:31.684677+00:00",
+  "reviewed_at_utc": "2026-10-08T20:16:48.803600+00:00",
   "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source": "362a8216537dd1df614077abc6b6e2f98ef8a054",
+  "source": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
   "source_path_reviewers": {
     "crates/cc-db/src/index_migrate.rs": [
       "/root",
@@ -1602,7 +1547,7 @@
       "/root/pr_audit"
     ]
   },
-  "tree": "caf479a6dc3800262d8b42fd92b7de337025b38d",
+  "tree": "5173ebb5ffdb96ddc71bfcd9bac8099cd40efc05",
   "unresolved_blockers": [],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
@@ -1651,7 +1596,7 @@
     "scripts/p8_resources.py": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1",
     "scripts/p8_rollback.py": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
     "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
-    "scripts/p8_runtime.py": "a78880dfc50faf4ed86bda962cc6cbd7ac0252a493cfe69741c02ee49445847b",
+    "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
     "scripts/p8_runtime_build.py": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
     "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
     "scripts/p8_semantic_certification.py": "42dd72cbb08dd398239cd41b927f2a94bedbc8b813583b175191c87f291a72c4",
@@ -1703,7 +1648,7 @@
     "scripts/tests/test_p8_release_review.py": "c4e01032ea7f85d7cf0bdf0430b6c159112f25425d433eff8deb3bca7bd3544e",
     "scripts/tests/test_p8_resources.py": "992b6feecb4a40d6da15bddd2b89c7d4367bbb867108102182315362c16b7952",
     "scripts/tests/test_p8_runner_capacity.py": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
-    "scripts/tests/test_p8_runtime.py": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c",
+    "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
     "scripts/tests/test_p8_runtime_evidence.py": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
     "scripts/tests/test_p8_scale_matrix.py": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
     "scripts/tests/test_p8_semantic_certification.py": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8",

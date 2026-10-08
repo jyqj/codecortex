@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "scope": "independent static review and original dynamic evidence readback; no rerun",
+  "M": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+  "source_checks": {
+    "fixed-m": {
+      "count": 94,
+      "changed_from_M": []
+    },
+    "candidate-root": {
+      "count": 94,
+      "changed_from_M": [
+        "scripts/p8_runtime.py",
+        "scripts/tests/test_p8_runtime.py"
+      ]
+    }
+  },
+  "control_sha256": "baf9ac9eb09f0eac1c8ae85aabddb30c118b63c30e1d0dcdfe2d4b03e315e1cf",
+  "results_sha256": {
+    "before-m": "e17199fbce0f68c34981eefec1855969d4618197d2a059192f380a3ab9f6a6af",
+    "after-candidate": "1df99c6a26334d64053ff9ea614ed32bc7b54427edcd339cc603599ead1ed472"
+  },
+  "all_20_observations_equal_results": true,
+  "inventory_files_rehashed": 4450,
+  "all_before_after_indexes_exact": true,
+  "candidate_negative_predicate_fields_and_no_raw_close_verified": true,
+  "cases": [
+    {
+      "set": "before-m",
+      "case": "all_stopped",
+      "safety_expectation_met": true,
+      "seal_exists": true,
+      "late_changed": [],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "sampler_alive",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "main_reader_alive",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "comparison_reader_alive",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "main_watcher_alive",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "comparison_watcher_alive",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "stopped_close_error",
+      "safety_expectation_met": true,
+      "seal_exists": true,
+      "late_changed": [],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "main_construction_failure",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 0,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "comparison_construction_failure",
+      "safety_expectation_met": false,
+      "seal_exists": true,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "before-m",
+      "case": "worker_unfinished",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [],
+      "terminal_rows": 59,
+      "unfinished_at_return": 1
+    },
+    {
+      "set": "after-candidate",
+      "case": "all_stopped",
+      "safety_expectation_met": true,
+      "seal_exists": true,
+      "late_changed": [],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "sampler_alive",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "raw.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "main_reader_alive",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "comparison_reader_alive",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "main_watcher_alive",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "comparison_watcher_alive",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "stopped_close_error",
+      "safety_expectation_met": true,
+      "seal_exists": true,
+      "late_changed": [],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "main_construction_failure",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "product/rpc.jsonl"
+      ],
+      "terminal_rows": 0,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "comparison_construction_failure",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "full-product/rpc.jsonl"
+      ],
+      "terminal_rows": 60,
+      "unfinished_at_return": 0
+    },
+    {
+      "set": "after-candidate",
+      "case": "worker_unfinished",
+      "safety_expectation_met": true,
+      "seal_exists": false,
+      "late_changed": [
+        "raw.jsonl"
+      ],
+      "terminal_rows": 59,
+      "unfinished_at_return": 1
+    }
+  ],
+  "assessment": "candidate runtime a78880df satisfies all ten independently exercised boundaries; final repository test delta review pending",
+  "limits": [
+    "Synthetic small executable controls with build admission mocked.",
+    "Injected join deadlines are accelerated for held real threads; real liveness and seal verification are not faked.",
+    "Constructor-failure leaked ownership is reclaimed by test after run; driver is credited only with refusing seal.",
+    "No Rust scale, lifecycle or original TODO certification."
+  ]
+}

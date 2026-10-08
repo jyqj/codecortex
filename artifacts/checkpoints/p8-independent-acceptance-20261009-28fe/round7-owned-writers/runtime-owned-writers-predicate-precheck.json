@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-08T20:58:07.207664+00:00",
+  "reviewer": "pr_audit",
+  "scope": "read-only owned-writer seal predicate diagnosis; no product execution or TODO certification",
+  "product_commit": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+  "product_files_sha256": {
+    "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+    "scripts/p8_rollback.py": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+  },
+  "comparison": {
+    "commit": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+    "path": "scripts/p8_runtime.py",
+    "sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+    "method": "independent official GitHub contents fetch at exact ref; decoded bytes equal retained remote160 copy"
+  },
+  "blocking_findings": [
+    {
+      "claim": "M finalization checks unfinished futures only; sampler timeout or live product/comparison RPC thread can coexist with seal",
+      "source": [
+        "scripts/p8_runtime.py:554",
+        "scripts/p8_runtime.py:568",
+        "scripts/p8_runtime.py:581",
+        "scripts/p8_runtime.py:586"
+      ]
+    },
+    {
+      "claim": "Product constructor may launch child then fail in StdioRPC/process receipt before run assignment completes; None does not imply no writer",
+      "source": [
+        "scripts/p8_rollback.py:212",
+        "scripts/p8_rollback.py:220",
+        "scripts/p8_rollback.py:221"
+      ]
+    }
+  ],
+  "required_predicate": [
+    "all tracked futures done",
+    "sampler absent or stopped",
+    "main and comparison process exited and reader/exit_watcher stopped",
+    "both construction pending flags false"
+  ],
+  "required_gates": [
+    "final raw close",
+    "raw digest",
+    "seal_output",
+    "verify_output"
+  ],
+  "boundaries": [
+    "Set construction pending before Product call, clear only after successful object assignment. A pending constructor conservatively prevents sealing; this does not reclaim an orphan process.",
+    "None is safe only for not-yet-started or successfully closed product. Retain comparison object after close failure.",
+    "An error from close alone must not forbid sealing: exited process/stopped threads allow an immutable failed archive.",
+    "Unstopped or indeterminate writers: failed status, unsealed_owned_writers, raw_sha256 null, artifact_seal null.",
+    "Keep unfinished_work, admission latch, KeyboardInterrupt and terminal-retention diagnostics unchanged.",
+    "Normal-path early raw close follows sampler drain and both successful Product.close calls.",
+    "Tracked futures finish after terminal retention/slot release; rejected queued admission callbacks cannot write."
+  ],
+  "verification_limit": "Static diagnosis only; implementation and independent dynamic review pending. Git M helper runtime blob unavailable through current alternate object path; no immutable helper-byte claim made.",
+  "original_todo_remaining": 29
+}

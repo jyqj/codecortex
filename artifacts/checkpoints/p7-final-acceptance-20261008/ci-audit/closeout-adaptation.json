@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "status": "prepared_not_executed_not_acceptance",
+  "author": "/root/todo_acceptance",
+  "original_source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "original_path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/ci9ebe_review_closeout.py",
+  "original_git_blob": "3e452c01227baed4ad78efc1fb6265dea2e5b9f8",
+  "original_sha256": "f0b3861694229a3fc1e87c0040eec2f01f12fb2c0eeaa64f6c3811aba8b668c6",
+  "new_path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/review_closeout_ffdc.py",
+  "new_sha256": "cb20d1c66a257860ddb2dcc7f9cf0347cbbea2f710cf9f4b3b166c7aac6b5d06",
+  "replacements": [
+    {
+      "from": "import json\n",
+      "to": "import json\nimport os\n"
+    },
+    {
+      "from": "ROOT = Path('/dev/shm/codecortex-closeout-996727/codecortex-root')",
+      "to": "ROOT = Path(os.environ['SOURCE_ROOT']).resolve()"
+    },
+    {
+      "from": "BASE = Path('/dev/shm/codecortex-closeout-996727/validation')\n",
+      "to": ""
+    },
+    {
+      "from": "ARCHIVE = Path('/workspace/scratch/9967275fe9a7/ci-import/github-actions-artifact-11527032696.zip')",
+      "to": "ARCHIVE = Path(os.environ['CLOSEOUT_ZIP']).resolve()"
+    },
+    {
+      "from": "COMMIT = '9ebe1f619a298b9955d576d9d8250368259924d2'",
+      "to": "COMMIT = 'ffdc6f0f97db78cc25a6c026904e7c2adde05d14'"
+    },
+    {
+      "from": "ZIP_SHA = 'f36717d46ba1377b0779550012d497080ffea9d0323eae28fe423381212e763d'",
+      "to": "ZIP_SHA = '1bef831e4dbce560987c09a5745b82708b4f9cf5b0fd8efb426af07f7f9ede23'"
+    },
+    {
+      "from": "parser.add_argument('--output', type=Path, default=BASE / 'ci9ebe-p7-016-final-review.json')",
+      "to": "parser.add_argument('--output', type=Path, required=True)\nparser.add_argument('--expected-members', type=int, required=True)\nparser.add_argument('--expected-events', type=int, required=True)\nparser.add_argument('--expected-mcp-pairs', type=int, required=True)\nparser.add_argument('--expected-original-rpcs', type=int, required=True)"
+    },
+    {
+      "from": "assert ARCHIVE.stat().st_size == 20097925",
+      "to": "assert ARCHIVE.stat().st_size == 20094853"
+    },
+    {
+      "from": "assert len(members) == len(set(members)) == 89",
+      "to": "assert len(members) == len(set(members)) == args.expected_members"
+    },
+    {
+      "from": "assert before['input_count'] == len(before['inputs']) == 794",
+      "to": "assert before['input_count'] == len(before['inputs']) == 795"
+    },
+    {
+      "from": "assert [r['sequence'] for r in stdio] == list(range(len(stdio)))",
+      "to": "assert [r['sequence'] for r in stdio] == list(range(len(stdio)))\n    assert len([r for r in stdio if r['kind'] == 'rpc']) == args.expected_original_rpcs"
+    },
+    {
+      "from": "assert len(events) == 676",
+      "to": "assert len(events) == args.expected_events"
+    },
+    {
+      "from": "assert len([e for e in events if e['kind']=='mcp_request']) == 290",
+      "to": "assert len([e for e in events if e['kind']=='mcp_request']) == args.expected_mcp_pairs"
+    },
+    {
+      "from": "'verified_source_inputs':794,'workflow_run_id':37724421493,'job_id':113139222728,'artifact_id':11527032696",
+      "to": "'verified_source_inputs':795,'workflow_run_id':37729686665,'job_id':113155755227,'artifact_id':11529028468"
+    },
+    {
+      "from": "'mcp_rpc_count':105",
+      "to": "'mcp_rpc_count':args.expected_original_rpcs"
+    },
+    {
+      "from": "'mcp_request_response_pairs':290",
+      "to": "'mcp_request_response_pairs':args.expected_mcp_pairs"
+    },
+    {
+      "from": "'task_ledger_changed':False,'required_raw_members'",
+      "to": "'task_ledger_changed':False,'audit_scope_only':True,'expected_observation_counts':{'members':args.expected_members,'l3_events':args.expected_events,'l3_mcp_pairs':args.expected_mcp_pairs,'original_mcp_rpcs':args.expected_original_rpcs},'required_raw_members'"
+    }
+  ],
+  "exact_inverse_replacements_restore_original": true,
+  "new_original_rpc_assertion": "The old report asserted 105 only as metadata; the new version additionally checks the original RPC count against an explicit preflight-reviewed expected count.",
+  "observation_counts": "All three original exact count assertions retained as mandatory explicit CLI inputs; no self-derived len values are supplied by this script. Root runs a separate non-accepting preflight, reviews counts, then supplies literal expected counts.",
+  "semantic_assertions_unchanged": true,
+  "real_product_exit_requirement": "held_before_sigkill.unix_time <= actual product_exit.unix_time < claimed.lease_expires_at; kill_time alone does not satisfy acceptance",
+  "driver_byte_comparison": [
+    {
+      "path": "artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py",
+      "same_content": true,
+      "same_encoding": true,
+      "original_git_blob": "c5c92ab8746eebc992335bef18ef05e6b5d5e9ad",
+      "new_git_blob": "c5c92ab8746eebc992335bef18ef05e6b5d5e9ad"
+    },
+    {
+      "path": "scripts/p7_fault_lifecycle_stdio.py",
+      "same_content": true,
+      "same_encoding": true,
+      "original_git_blob": "1fb4637ae3d1cde3b401332ca61caf8e96fdb81c",
+      "new_git_blob": "1fb4637ae3d1cde3b401332ca61caf8e96fdb81c"
+    }
+  ],
+  "workflow": {
+    "run_id": 37729686665,
+    "job_id": 113155755227,
+    "artifact_id": 11529028468,
+    "archive_bytes": 20094853,
+    "archive_sha256": "1bef831e4dbce560987c09a5745b82708b4f9cf5b0fd8efb426af07f7f9ede23",
+    "source_inputs_required": 795
+  },
+  "raw_job_log": {
+    "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/closeout-job.log",
+    "bytes": 1895508,
+    "sha256": "fb4fa22160300e168e94685aac0d79c2046e4838e05de3ae9ae6bfbc52379300",
+    "first_unicode_codepoint": 65279,
+    "last_newline_preserved": true,
+    "kind": "original GitHub job log decoded text; never truncated or normalized"
+  },
+  "dependencies": [
+    "Python 3 standard library: ast,argparse,collections,datetime,hashlib,json,os,pathlib,re,subprocess,zipfile",
+    "Git executable with complete ffdc source blobs"
+  ],
+  "mutations": {
+    "task_ledger": false,
+    "source_checkout": false,
+    "product": false,
+    "git_branch_or_commit_created": false
+  },
+  "output_scope": "Audit of original13 + representative P7-016 data only; no automatic task closure, live quality, P8 scoring or release certification."
+}

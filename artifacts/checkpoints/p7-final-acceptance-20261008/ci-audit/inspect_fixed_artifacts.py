@@ -84,7 +84,27 @@ def inspect_archive(path, expected, output):
             if candidate in names:
                 value = json.loads(archive.read(candidate))
                 result[candidate] = {k:v for k,v in value.items() if k != "inputs"}
+        if expected["kind"] == "engineering":
+            owners = []
+            def visit(value, path):
+                if isinstance(value, dict):
+                    owner = value.get("shared_process_owner")
+                    if isinstance(owner, dict) and isinstance(owner.get("usage"), dict):
+                        owners.append({"member":path, "stage":value.get("stage"),
+                                       "pid":owner["usage"].get("pid")})
+                    for child in value.values():
+                        visit(child, path)
+                elif isinstance(value, list):
+                    for child in value:
+                        visit(child, path)
+            for name in names:
+                if name.startswith("worker-contention/") and name.endswith(".json"):
+                    visit(json.loads(archive.read(name)), name)
+            result["resource_owner_observations"] = owners
+            result["resource_owner_pids"] = sorted({item["pid"] for item in owners})
         if expected["kind"] == "closeout":
+            original_stdio = json.loads(archive.read("lifecycle/stdio-raw.json"))
+            result["original_stdio_rpc_count"] = sum(row["kind"] == "rpc" for row in original_stdio)
             events = [json.loads(line) for line in archive.read("fault-lifecycle/events.jsonl").splitlines()]
             result["event_count"] = len(events)
             result["event_kinds"] = dict(Counter(e["kind"] for e in events))
@@ -123,7 +143,8 @@ def main():
         if expected["kind"] not in selected:
             continue
         api = "https://api.github.com/repos/" + manifest["repository"] + "/actions/artifacts/" + str(expected["id"])
-        with urllib.request.urlopen(authenticated(api, token), timeout=60) as response:
+        with urllib.request.build_opener(NoRedirect()).open(authenticated(api, token), timeout=60) as response:
+            assert response.status == 200, "artifact metadata response must be 200"
             metadata = json.load(response)
         assert metadata["id"] == expected["id"] and metadata["name"] == expected["name"]
         assert metadata["size_in_bytes"] == expected["bytes"]

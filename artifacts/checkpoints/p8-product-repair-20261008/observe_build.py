@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import hashlib,json,os,pathlib,shutil,subprocess,time
+import hashlib,json,os,pathlib,re,shutil,subprocess,time
 ROOT=pathlib.Path.cwd()
 OUT=ROOT/"artifacts/checkpoints/p8-product-repair-20261008/build-observation"
 OUT.mkdir(parents=True,exist_ok=True)
-SOURCE="ea6cc7e02ba5f0649f93dd03176fb36cfa797743"
+SOURCE="fc38e8870ce2b0af2a125fb0083c4aae02659edf"
 subprocess.run(["git","diff","--exit-code",SOURCE,"--","crates","Cargo.toml","Cargo.lock"],check=True,stdout=subprocess.PIPE)
 def digest(b):
     return {"bytes":len(b),"sha256":hashlib.sha256(b).hexdigest()}
@@ -31,7 +31,7 @@ def run(name,args,timeout=1200,extra_env=None):
     r=subprocess.run(args,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=timeout,env=env)
     log=OUT/(name+".log")
     log.write_bytes(r.stdout)
-    text=r.stdout.decode("utf-8","replace")
+    text=re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", r.stdout.decode("utf-8","replace"))
     row={"name":name,"argv":args,"returncode":r.returncode,"duration_s":time.monotonic()-started,"log":log.name,**digest(r.stdout),"summaries":[line for line in text.splitlines() if line.startswith("test result:") or line.startswith("error") or line.startswith("warning:") or "panicked at" in line]}
     receipt["commands"].append(row)
     print("P8_BUILD_COMMAND "+json.dumps(row,separators=(",",":")),flush=True)

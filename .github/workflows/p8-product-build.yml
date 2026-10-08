@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   candidate:
     runs-on: ubuntu-latest
@@ -17,6 +18,8 @@ jobs:
         with:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
       - name: Test exact candidate and build optimized local binaries
         run: python3 artifacts/checkpoints/p8-product-repair-20261008/observe_build.py
       - uses: actions/upload-artifact@v4
@@ -26,3 +29,49 @@ jobs:
           path: artifacts/checkpoints/p8-product-repair-20261008/build-observation
           if-no-files-found: error
           include-hidden-files: true
+  counterexample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+      - uses: actions/checkout@v4
+        with:
+          ref: 1247e98e5b08da9ddffd3c5ca2416b0d2caf5146
+          path: tests-only
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tests-only
+          cache-on-failure: true
+      - name: Observe original runtime failure after fixture import correction
+        working-directory: tests-only
+        run: python3 ../utility/artifacts/checkpoints/p8-product-repair-20261008/observe_counterexample.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-original-admission-counterexample
+          path: tests-only/artifacts/checkpoints/p8-product-repair-20261008/counterexample
+          if-no-files-found: error
+          include-hidden-files: true
+  preserve-early-runs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download exact original bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$RUNNER_TEMP/p8-early"
+          gh api repos/jyqj/codecortex/actions/artifacts/11532707375 > "$RUNNER_TEMP/p8-early/format.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11532707375/zip > "$RUNNER_TEMP/p8-early/format.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531779746 > "$RUNNER_TEMP/p8-early/counterexample.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11531779746/zip > "$RUNNER_TEMP/p8-early/counterexample.zip"
+          gh api repos/jyqj/codecortex/actions/artifacts/11532703247 > "$RUNNER_TEMP/p8-early/build.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11532703247/zip > "$RUNNER_TEMP/p8-early/build.zip"
+      - name: Verify and export all original members
+        run: python3 artifacts/checkpoints/p8-product-repair-20261008/read_early_artifacts.py --input "$RUNNER_TEMP/p8-early"

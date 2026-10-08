@@ -1,4 +1,4 @@
-name: P8 lossless original release evidence readback
+name: P8 original release report readback
 on:
   push:
     branches: [work/p8-release-readback-996727-20261008]
@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        part: [0, 1, 2, 3, 4, 5]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -25,8 +25,8 @@ jobs:
           gh api repos/jyqj/codecortex/actions/artifacts/11536828205 > "$RUNNER_TEMP/p8-release-readback/artifact.json"
           gh api repos/jyqj/codecortex/actions/runs/37746625347 > "$RUNNER_TEMP/p8-release-readback/run.json"
           gh api repos/jyqj/codecortex/actions/artifacts/11536828205/zip > "$RUNNER_TEMP/p8-release-readback/original.zip"
-      - name: Export exact archive chunks and original metadata without executing the candidate
+      - name: Export existing reports and body-free raw fragments without new evaluation
         env:
           READBACK_ROOT: ${{ runner.temp }}/p8-release-readback
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -I -S artifacts/checkpoints/p8-release-readback-20261008/export.py --part ${{ matrix.part }}
+        run: python3 -I -S artifacts/checkpoints/p8-release-readback-20261008/reports.py --part ${{ matrix.part }}

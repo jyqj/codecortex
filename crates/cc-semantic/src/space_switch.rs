@@ -103,7 +103,8 @@ pub struct RevocationDrainReport {
 }
 
 /// 三段之第 3 段（撤销）：显式驱动一个（通常已 `revoked` 的）空间的 revoke
-/// 任务直到批界或队列耗尽。每任务：reclaim 过期 lease → 按空间认领 →
+/// 任务直到批界或队列耗尽。先对目标空间 reclaim 一页过期 lease（最多
+/// `min(max_batch, 64)` 行），余量由后续显式 drain 收敛；每任务：按空间认领 →
 /// pre-work renew（活性门）→ fenced 消费（own-space manifest 删除 + ack +
 /// 删行才 bump，全在一个 `IMMEDIATE` 事务）。 Auxiliary 之外唯一可能的
 /// epoch 运动在消费事务内、且只由实际删行声明（Q4 口径）。
@@ -130,8 +131,11 @@ pub fn drain_space_revocations(
         ));
     }
     let mut report = RevocationDrainReport::default();
+    db.reclaim_expired_semantic_space_bounded(
+        space_id,
+        max_batch.min(crate::queue::OPPORTUNISTIC_RECLAIM_LIMIT),
+    )?;
     for _ in 0..max_batch {
-        db.reclaim_expired_semantic()?;
         let Some(task) = db.claim_semantic_space(space_id, owner, lease_secs)? else {
             break;
         };

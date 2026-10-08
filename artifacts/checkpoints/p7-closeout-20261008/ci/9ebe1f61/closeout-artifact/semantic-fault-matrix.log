@@ -1,0 +1,562 @@
+   Compiling bitflags v2.11.0
+   Compiling rusqlite v0.40.1
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)
+    Finished `test` profile [unoptimized] target(s) in 8.32s
+     Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_semantic-3358fe9e174616a0)
+
+running 237 tests
+test admission::policy_adoption_tests::busy_adoption_refuses_and_old_permit_releases_before_retry ... ok
+test admission::policy_adoption_tests::residual_waiters_grants_and_project_counts_each_prevent_adoption ... ok
+test admission::policy_adoption_tests::concurrent_explicit_init_equal_caps_succeed_and_different_caps_conflict ... ok
+test admission::policy_adoption_tests::idle_adoption_keeps_core_cooldown_and_policy_is_once_only ... ok
+test admission::tests::adapter_receives_planned_batches_unsplit_in_request_order ... ok
+test admission::tests::aggregate_splits_by_space_and_time_window ... ok
+test admission::tests::aggregation_sums_outcomes_costs_and_tokens ... ok
+test admission::tests::budget_construction_from_capability_rejects_zero_bytes_bound ... ok
+test admission::tests::cache_reuse_hits_are_counted_and_bill_nothing ... ok
+test admission::tests::cost_budget_refuses_at_the_cap_before_any_call ... ok
+test admission::tests::degenerate_gate_limits_are_rejected_with_named_reasons ... ok
+test admission::tests::digest_binding_and_provider_order_survive_planning ... ok
+test admission::tests::duplicate_risk_needs_a_retry_and_unknown_reported_usage ... ok
+test admission::tests::empty_input_is_skipped_explicitly ... ok
+test admission::tests::empty_project_identity_is_refused ... ok
+test admission::tests::empty_set_yields_nothing_and_single_item_yields_one_batch ... ok
+test admission::tests::estimator_matches_the_declared_bytes_div_ceil_4_v1 ... ok
+test admission::tests::every_planned_batch_respects_every_budget_bound ... ok
+test admission::tests::exact_limits_pass_and_one_over_is_skipped ... ok
+test admission::policy_adoption_tests::concurrent_adoption_and_acquire_have_one_linearization_boundary ... ok
+test admission::tests::foreign_tokenizer_is_refused_not_approximated_silently ... ok
+test admission::tests::acquire_times_out_explicitly_when_capacity_is_held ... ok
+test admission::tests::from_capability_bounds_flow_through_planning ... ok
+test admission::tests::from_provider_config_maps_the_semantic_keys ... ok
+test admission::tests::admission_wait_never_spans_a_db_transaction ... ok
+test admission::tests::frozen_input_byte_bound_is_a_backstop_against_a_loose_budget ... ok
+test admission::tests::fresh_callers_cannot_barge_ahead_of_the_waiting_queue ... ok
+test admission::tests::fair_queue_serves_fifo_and_skips_a_blocked_head ... ok
+test admission::tests::greedy_fill_matches_the_hand_computed_plan_and_preserves_order ... ok
+test admission::tests::ledger_is_bounded_evicts_oldest_but_keeps_lifetime_totals ... ok
+test admission::tests::missing_usage_is_unknown_and_never_zero_filled ... ok
+test admission::tests::gate_is_send_sync_and_shareable_across_threads ... ok
+test admission::tests::permissive_gate_never_makes_anyone_wait ... ok
+test admission::tests::planning_is_deterministic_same_input_same_cut ... ok
+test admission::tests::query_path_plans_query_inputs_with_the_same_cut ... ok
+test admission::tests::per_project_cap_binds_independently_of_global_capacity ... ok
+test admission::tests::global_cap_bounds_total_concurrent_permits_across_projects ... ok
+test admission::tests::single_project_cannot_starve_the_others ... ok
+test admission::tests::skipped_items_never_reach_batches_and_carry_structured_reasons ... ok
+test admission::tests::snapshot_reflects_liveness_fairness_and_pause ... ok
+test admission::tests::zero_bound_budgets_are_rejected ... ok
+test cache::cache_read_bounds_tests::bounded_reader_never_waits_for_unbounded_stream_eof ... ok
+test admission::tests::gated_batch_flow_limits_global_concurrency_and_keeps_projects_moving ... ok
+test cache::cache_read_bounds_tests::enormous_sparse_files_and_untrusted_dimension_are_corrupt ... ok
+test cache::cache_read_bounds_tests::file_growth_after_first_read_is_bounded_without_a_stat_assumption ... ok
+test cache::cache_read_bounds_tests::metadata_budget_boundary_and_one_extra_byte ... ok
+test cache::cache_read_bounds_tests::incomplete_objects_remain_misses_even_if_the_other_file_is_oversized ... ok
+test cache::cache_read_bounds_tests::short_reads_interruption_and_io_errors_keep_their_meaning ... ok
+test cache::cache_read_bounds_tests::payload_extra_byte_and_every_truncation_are_corrupt ... ok
+test cache::decoding_boundary_tests::little_endian_bits_and_partial_payload_rejection_are_preserved ... ok
+test capability::tests::a_verdict_cannot_be_filed_under_a_foreign_space ... ok
+test capability::tests::adapter_embeds_after_capability_probe_over_the_same_mock_chain ... ok
+test cache::cache_read_bounds_tests::valid_maximum_dimension_and_worst_json_escaped_model_round_trip ... ok
+test capability::tests::batch_items_outside_the_probe_protocol_bound_are_rejected ... ok
+test capability::tests::batch_count_mismatch_is_unavailable_not_a_mismatch ... ok
+test capability::tests::capability_dimension_mismatch_is_a_config_error ... ok
+test capability::tests::capability_matching_space_and_specs_passes ... ok
+test capability::tests::capability_model_mismatch_is_a_config_error ... ok
+test capability::tests::cached_verdicts_avoid_the_transport_and_failures_are_never_cached ... ok
+test capability::tests::dimension_probe_configurable_sends_the_dimensions_field ... ok
+test capability::tests::dimensions_unsupported_maps_to_the_typed_verdict_via_the_control_probe ... ok
+test capability::tests::disabled_config_is_rejected_by_resolve ... ok
+test capability::tests::instruction_without_support_is_rejected_on_both_paths ... ok
+test capability::tests::missing_float_encoding_support_is_a_config_error ... ok
+test capability::tests::fixed_mode_probe_omits_the_dimensions_field ... ok
+test capability::tests::missing_required_fields_name_their_config_keys ... ok
+test capability::tests::model_echo_mismatch_is_a_mismatch ... ok
+test capability::tests::probe_errors_never_leak_the_api_key ... ok
+test capability::tests::prober_rejects_bad_endpoints_as_config_errors ... ok
+test capability::tests::resolve_provider_builds_a_space_with_the_frozen_identity ... ok
+test capability::tests::spec_max_tokens_above_the_model_limit_is_rejected_on_both_paths ... ok
+test capability::tests::probe_request_bodies_are_exactly_the_declared_egress_surface ... ok
+test capability::tests::specs_bound_to_a_foreign_space_are_rejected ... ok
+test capability::tests::transport_failures_map_to_unavailable_with_the_provider_taxonomy ... ok
+test capability::tests::unknown_metric_mode_and_format_strings_are_rejected_not_swallowed ... ok
+test degrade::tests::budgeted_provider_gates_reembeds_and_never_calls_through_when_exhausted ... ok
+test capability::tests::wrong_dimension_in_the_response_is_a_mismatch ... ok
+test degrade::tests::ledger_tracks_corruption_budget_and_visibility ... ok
+test degrade::tests::quarantine_is_none_when_the_object_is_already_gone ... ok
+test error::tests::invalid_input_maps_to_invalid_params ... ok
+test degrade::tests::quarantine_moves_both_halves_and_writes_a_diagnostic_report ... ok
+test gc::concurrency_tests::mutation_child ... ignored, child entry; executed by the owning process with a private fixture
+test gc::concurrency_tests::killed_mutation_owner_releases_cross_process_lock ... ok
+test gc::concurrency_tests::publisher_keeps_namespace_lease_between_verified_bytes_and_manifest_cas ... ok
+test policy::tests::a_missing_body_field_fails_the_audit ... ok
+
+thread 'policy::tests::adapter_constructor_refuses_transport_without_network_opt_in' (5153) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:369:13:
+OpenAiCompatibleConfig: a transport may not be assembled without the explicit network opt-in (semantic.network_opt_in, P7-007 default no-network)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test policy::tests::adapter_constructor_refuses_transport_without_network_opt_in ... ok
+test policy::tests::an_extra_body_field_fails_the_audit_and_names_the_field ... ok
+test policy::tests::audit_rejects_a_zero_timeout ... ok
+test policy::tests::audit_rejects_http_destinations_unless_http_is_opted_in ... ok
+test policy::tests::credential_material_may_only_travel_in_the_authorization_header ... ok
+test policy::tests::disabled_default_provider_still_constructs_and_fails_closed ... ok
+test policy::tests::embed_request_egress_surface_is_exactly_the_declaration ... ok
+test policy::tests::env_reference_resolves_from_the_lookup_and_debug_stays_redacted ... ok
+test policy::tests::errors_that_embed_a_key_value_are_redacted_by_redact_for_log ... ok
+test policy::tests::every_resolution_failure_names_the_reference_and_never_echoes_values ... ok
+test policy::tests::file_reference_resolves_and_trims_trailing_newlines ... ok
+test policy::tests::gate_refuses_opted_in_but_missing_transport ... ok
+test policy::tests::gate_refuses_transport_assembly_without_network_opt_in ... ok
+test policy::tests::gate_rejects_http_endpoints_unless_allow_http_is_set ... ok
+test policy::tests::gate_with_default_policy_and_no_transport_is_the_normal_disabled_path ... ok
+test policy::tests::guard_passes_https_2xx_through_unchanged ... ok
+test policy::tests::guard_rejects_a_zero_timeout_before_the_inner_transport_is_touched ... ok
+test policy::tests::guard_rejects_http_requests_before_the_inner_transport_is_touched ... ok
+test policy::tests::the_header_surface_is_audited ... ok
+test ports::tests::embed_documents_preserves_batch_order_and_count ... ok
+test ports::tests::embed_queries_maps_one_output_per_query ... ok
+test ports::tests::input_constructors_bind_digest_to_exact_bytes ... ok
+test ports::tests::port_is_object_safe_and_send_sync ... ok
+test ports::tests::provider_error_variants_are_distinguishable ... ok
+test providers::fake::tests::armed_fault_without_error_defaults_to_server_error ... ok
+test providers::fake::tests::batch_order_is_preserved_on_both_paths ... ok
+test providers::fake::tests::config_defaults_are_naturally_successful ... ok
+test admission::tests::rate_limited_pause_fails_fast_then_expires ... ok
+test providers::fake::tests::different_digests_yield_different_vectors ... ok
+test providers::fake::tests::document_and_query_paths_are_domain_separated ... ok
+test providers::fake::tests::embed_put_get_roundtrip_is_bitwise_lossless ... ok
+test providers::fake::tests::empty_batch_returns_empty_success ... ok
+test providers::fake::tests::fault_fires_after_n_calls_with_the_configured_error ... ok
+test providers::fake::tests::full_provider_error_matrix_is_injectable_and_distinguishable ... ok
+test providers::fake::tests::minimum_and_odd_dimensions_preserve_complete_v1_golden_bits ... ok
+test providers::fake::tests::model_id_and_dimension_are_part_of_the_derivation ... ok
+test providers::fake::tests::same_digest_yields_bit_identical_vectors_across_calls_and_instances ... ok
+test providers::fake::tests::delay_is_applied_per_call ... ok
+test providers::fake::tests::space_contract_dimension_and_identity_hold ... ok
+test providers::fake::tests::v1_pipeline_is_bitwise_reproducible_golden ... ok
+test providers::fake::tests::vectors_are_unit_length_for_the_frozen_cosine_metric ... ok
+test providers::fake::tests::zero_vector_injection_is_rejected_by_the_output_gate ... ok
+test providers::openai_compatible::tests::a_suspended_gate_stops_the_loop_instead_of_parking ... ok
+test providers::openai_compatible::tests::api_key_is_redacted_in_debug_and_never_in_error_messages ... ok
+test providers::openai_compatible::tests::auth_error_is_not_retried_and_trips_the_long_open_window ... ok
+test providers::openai_compatible::tests::backoff_is_exponential_capped_and_jitter_only_shrinks ... ok
+test providers::openai_compatible::tests::breadth_bomb_dies_at_the_count_gate_before_decoding_entries ... ok
+test providers::openai_compatible::tests::breaker_and_retrying_provider_are_send_sync_shareable ... ok
+test providers::openai_compatible::tests::breaker_rejection_records_an_uncertain_receipt_without_provider_contact ... ok
+test providers::openai_compatible::tests::budget_admission_boundary_is_visible_in_the_receipt_chain ... ok
+test providers::openai_compatible::tests::consecutive_failures_open_the_circuit_which_fails_fast_without_provider_contact ... ok
+test providers::openai_compatible::tests::cost_budget_refuses_before_the_call_and_records_the_refusal ... ok
+test providers::openai_compatible::tests::cost_cap_ends_the_sequence ... ok
+test providers::openai_compatible::tests::count_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::deeply_nested_json_is_rejected_by_the_depth_limit ... ok
+test providers::openai_compatible::tests::dimension_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::disabled_breaker_never_opens_and_neutral_outcomes_change_nothing ... ok
+test providers::openai_compatible::tests::disabled_policy_makes_exactly_one_attempt ... ok
+test providers::openai_compatible::tests::duplicate_index_is_rejected ... ok
+test providers::openai_compatible::tests::each_call_gets_a_fresh_sequence_budget_layering ... ok
+test providers::openai_compatible::tests::embedding_must_be_a_numeric_array_not_a_string_or_object ... ok
+test providers::openai_compatible::tests::empty_batch_is_a_no_op_without_attempts_or_breaker_contact ... ok
+test providers::openai_compatible::tests::empty_batch_records_no_receipt ... ok
+test providers::openai_compatible::tests::empty_batch_short_circuits_without_transport_or_disabled_error ... ok
+test providers::openai_compatible::tests::empty_success_response_is_rejected_when_batch_is_nonempty ... ok
+test providers::openai_compatible::tests::adapter_is_interchangeable_with_fake_provider_on_the_port_and_in_the_cache_loop ... ok
+test providers::openai_compatible::tests::every_attempt_of_a_retry_sequence_leaves_a_complete_receipt ... ok
+test providers::openai_compatible::tests::fractional_negative_and_string_indices_are_rejected ... ok
+test providers::openai_compatible::tests::half_open_probe_failure_reopens_for_a_fresh_window ... ok
+test providers::openai_compatible::tests::half_open_probe_meeting_a_budget_refusal_does_not_retain_the_probe_slot ... ok
+test providers::openai_compatible::tests::http_401_and_403_map_to_auth_error ... ok
+test providers::openai_compatible::tests::http_429_maps_to_rate_limited_with_retry_after ... ok
+test providers::openai_compatible::tests::http_429_without_retry_after_uses_the_fallback ... ok
+test providers::openai_compatible::tests::http_5xx_maps_to_server_error ... ok
+
+thread 'providers::openai_compatible::tests::invalid_endpoint_is_rejected_eagerly' (5227) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:359:9:
+OpenAiCompatibleConfig endpoint must be an http(s) URL
+test providers::openai_compatible::tests::invalid_endpoint_is_rejected_eagerly ... ok
+test providers::openai_compatible::tests::invalid_policy_combinations_are_rejected_with_named_reasons ... ok
+test providers::openai_compatible::tests::missing_data_array_and_malformed_json_are_rejected ... ok
+test providers::openai_compatible::tests::model_echo_is_required_and_must_be_a_string ... ok
+test providers::openai_compatible::tests::model_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::negative_zero_vector_is_rejected ... ok
+test providers::openai_compatible::tests::no_transport_is_fail_closed_disabled ... ok
+test providers::openai_compatible::tests::non_numeric_component_is_rejected ... ok
+test providers::openai_compatible::tests::non_retryable_errors_pass_through_without_a_second_call ... ok
+test providers::openai_compatible::tests::non_utf8_input_is_rejected_before_any_transport_call ... ok
+test providers::openai_compatible::tests::norm_policy_accept_is_the_default_and_admits_unnormalized_vectors ... ok
+
+thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5238) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [1, 0.5]")
+
+thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5238) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [-1, 1]")
+
+thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5238) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [0, NaN]")
+test providers::openai_compatible::tests::error_vectors_never_reach_the_artifact_cache ... ok
+test providers::openai_compatible::tests::norm_policy_is_validated_eagerly ... ok
+test providers::openai_compatible::tests::norm_policy_rejects_vectors_outside_the_configured_range ... ok
+test providers::openai_compatible::tests::open_window_elapsed_lazily_becomes_half_open_with_a_single_probe_slot ... ok
+test providers::openai_compatible::tests::other_http_4xx_maps_to_non_retryable_invalid_input_without_body_echo ... ok
+test providers::openai_compatible::tests::oversized_response_body_is_rejected_before_json_parsing ... ok
+test providers::openai_compatible::tests::query_path_uses_the_same_request_shape ... ok
+test providers::openai_compatible::tests::provider_error_envelope_diagnostics_exclude_the_free_form_message ... ok
+test providers::openai_compatible::tests::receipt_duration_is_measured_on_the_injected_clock ... ok
+test providers::openai_compatible::tests::receipts_never_contain_input_text_or_credentials ... ok
+test providers::openai_compatible::tests::redirect_informational_and_unknown_statuses_follow_http_semantics ... ok
+test providers::openai_compatible::tests::request_carries_model_input_order_and_bearer_auth ... ok
+test providers::openai_compatible::tests::response_vectors_are_reordered_by_index_to_batch_order ... ok
+test providers::openai_compatible::tests::retry_budget_exhaustion_returns_the_last_error ... ok
+test providers::openai_compatible::tests::retryable_server_errors_are_retried_within_the_bound ... ok
+test providers::openai_compatible::tests::success_resets_the_consecutive_failure_count ... ok
+test providers::openai_compatible::tests::success_responses_require_a_json_content_type ... ok
+test providers::openai_compatible::tests::timeout_attempts_carry_the_uncertain_marker_and_duplicate_risk ... ok
+test providers::openai_compatible::tests::total_deadline_ends_the_sequence_before_the_attempt_bound ... ok
+test providers::openai_compatible::tests::trailing_slash_on_endpoint_is_trimmed ... ok
+test providers::openai_compatible::tests::transport_errors_map_to_timeout_cancelled_and_server_error ... ok
+test providers::openai_compatible::tests::usage_field_must_be_an_object_when_present ... ok
+test providers::openai_compatible::tests::validation_errors_never_carry_request_or_response_payloads ... ok
+test providers::openai_compatible::tests::without_respecting_retry_after_the_backoff_is_exponential ... ok
+test providers::openai_compatible::tests::zero_vector_and_nan_responses_are_rejected ... ok
+test space_switch::tests::spec_json_digest_pairing_is_stable_across_reconstruction ... ok
+test space_switch::tests::spec_json_is_canonical_struct_serialization_and_stable ... ok
+test spec::tests::bad_encoding_spec_fields_are_rejected ... ok
+test spec::tests::bad_model_ids_are_rejected ... ok
+test spec::tests::cosine_is_the_only_admitted_metric ... ok
+test spec::tests::digest_is_stable_across_reconstruction ... ok
+test spec::tests::digests_are_opaque_and_distinct_by_construction ... ok
+test spec::tests::foreign_spec_versions_are_rejected ... ok
+test spec::tests::invalid_input_bytes_are_rejected ... ok
+test spec::tests::query_only_change_never_touches_the_document_spec_digest ... ok
+test spec::tests::same_dimension_different_model_is_a_different_space ... ok
+test spec::tests::same_model_same_dimension_is_same_space ... ok
+test spec::tests::valid_boundary_values_pass ... ok
+test spec::tests::zero_and_oversized_dimensions_are_rejected ... ok
+test tests::handle_is_a_zero_sized_marker ... ok
+test types::tests::digest_display_matches_inner_string ... ok
+test types::tests::input_digests_are_deterministic_and_distinct ... ok
+test types::tests::input_digests_reject_invalid_bytes ... ok
+test admission::tests::repeated_rate_limit_reports_extend_the_pause_never_shorten_it ... ok
+test vector::exact::tests::controlled_scan_discards_accumulated_top_k_on_cancellation ... ok
+test vector::exact::tests::batch_loads_never_exceed_the_bounded_batch_knob ... ok
+test providers::openai_compatible::tests::rate_limited_waits_retry_after_feeds_the_gate_and_resumes_after_expiry ... ok
+test vector::exact::tests::controlled_scan_rejects_cancelled_and_expired_requests_before_loading ... ok
+test vector::exact::tests::controlled_scan_preserves_legacy_filter_top_k_and_score_bits ... ok
+test vector::exact::tests::deleted_or_corrupt_cache_objects_degrade_without_failing ... ok
+test vector::exact::tests::degenerate_inputs_are_rejected_or_yield_empty ... ok
+test vector::exact::tests::empty_and_single_element_boundaries ... ok
+test vector::exact::tests::equal_scores_tie_break_on_doc_key_ascending ... ok
+test vector::exact::tests::fake_provider_embed_cache_search_hits_its_own_documents ... ok
+test vector::exact::tests::foreign_space_and_foreign_ref_rows_never_score ... ok
+test vector::exact::tests::filter_none_admits_every_candidate ... ok
+test vector::exact::tests::hand_computed_cosine_gold_and_ordering ... ok
+test vector::exact::tests::metric_dispatch_is_cosine_per_the_frozen_spec ... ok
+test vector::exact::tests::missing_language_row_matches_no_language_filter ... ok
+test vector::exact::tests::prefix_file_paths_and_languages_intersect_before_top_k ... ok
+test gc::concurrency_tests::namespace_lock_spans_mark_and_unlink_before_concurrent_publish ... ok
+test vector::exact::tests::read_coverage_counts_eligible_gaps_and_resets_for_excluded_rows ... ok
+test vector::exact::tests::result_is_independent_of_batch_splitting ... ok
+test vector::exact::tests::some_empty_scope_short_circuits_without_loading_candidates ... ok
+test vector::exact::tests::repeated_runs_are_bitwise_deterministic ... ok
+test vector::exact::tests::knn_matches_naive_reference_on_deterministic_corpus ... ok
+test vector::exact::tests::controlled_scan_observes_deadline_after_an_uninterruptible_batch_read ... ok
+
+test result: ok. 236 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+     Running tests/artifact_cache.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/artifact_cache-01d3e549f6ceb24f)
+
+running 17 tests
+test cache_root_resolution_branches ... ok
+test different_spaces_never_cross_hit ... ok
+test invalid_vectors_are_rejected_before_touching_the_cache ... ok
+test corrupt_payload_is_detected_and_discard_degrades_to_miss ... ok
+test meta_contains_only_the_documented_fields ... ok
+test namespace_key_is_stable_distinct_and_path_safe ... ok
+test namespace_validation_rejects_unsafe_names ... ok
+test namespaces_are_isolated ... ok
+test open_creates_nothing_and_put_lays_out_the_brief_layout ... ok
+test process_env_override_reaches_resolve_cache_root ... ok
+test meta_tampering_is_detected_as_corrupt ... ok
+test artifact_ref_is_stable_and_content_scoped ... ok
+test read_write_roundtrip_is_lossless ... ok
+test same_input_hits_across_independent_cache_instances ... ok
+test rewrite_of_existing_object_is_idempotent_and_stable ... ok
+test spec_change_routes_to_a_new_object ... ok
+test concurrent_puts_of_the_same_key_race_safely ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/attempt_lease_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/attempt_lease_contract-4054cbbad720cca8)
+
+running 1 test
+TOKEN_ORACLE width=4 mode=expired-unreclaimed old_published=4 old_lease_lost=0 replacements_published=0
+TOKEN_ORACLE width=4 mode=reclaimed old_published=0 old_lease_lost=4 replacements_published=0
+TOKEN_ORACLE width=4 mode=replacement-token old_published=0 old_lease_lost=4 replacements_published=4
+test expiry_reclaim_and_replacement_token_publication_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/bounded_parallel.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/bounded_parallel-4b92edd868e5d949)
+
+running 13 tests
+test frozen_input_byte_budget_is_not_increased_by_pipeline ... ok
+test closed_lifecycle_during_handled_retry_still_stops_claims ... ok
+bounded partial drain initial_ready=1 normal_enqueued=1 claimed=2 completed=2 ready_stranded=0 empty_claim_budget=0
+test normal_enqueue_during_one_inflight_attempt_is_drained_despite_peer_empty_claim ... ok
+test all_four_parallel_errors_propagate_after_join_and_retry_each_independent_token ... ok
+close joined=4 provider_peak=4 started_attempts=4 subsequent_claims=0
+test ordinary_document_edit_fences_old_attempt_while_neighbor_publishes ... ok
+test close_joins_four_started_attempts_and_restores_pending_with_spent_attempts ... ok
+retry progress width=0 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+test ordinary_provider_failure_retries_within_the_shared_finite_budget ... ok
+test slow_provider_beyond_lease_cannot_publish_and_old_tokens_cannot_ack ... ignored, parent ruling: stronger strict-clock policy is not the existing token-fencing contract; original failed result retained in checkpoint
+test ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space ... ok
+test pipeline_width_is_capped_by_small_claim_budget ... ok
+test unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls ... ok
+retry progress width=1 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+bounded width=0 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+retry progress width=2 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+bounded width=1 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+retry progress width=4 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+test handled_retry_keeps_shared_budget_and_independent_tokens ... ok
+bounded width=2 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+bounded width=4 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+bounded width=18446744073709551615 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+test width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.58s
+
+     Running tests/crash_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98)
+
+running 2 tests
+test independent_child ... ignored, child entry; invoked only by the owning parent with an isolated directory
+test independently_observed_sigkill_boundaries ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 45.83s
+
+     Running tests/gc_concurrent_replacement.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/gc_concurrent_replacement-2aa68c3dac610dc6)
+
+running 3 tests
+test nonexistent_namespace_gc_remains_side_effect_free ... ok
+test collected_old_timestamp_cannot_delete_a_fresh_reput ... ok
+test collected_old_checksum_cannot_delete_current_manifest_reference ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/gc_unlink_accounting.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/gc_unlink_accounting-ed8ea13ca2ad3bdb)
+
+running 5 tests
+test failed_second_object_unlink_exposes_partial_deletion_and_retries_as_half ... ok
+test failed_first_object_unlink_preserves_counterpart_and_retries ... ok
+test failed_half_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test failed_temp_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test already_absent_halves_are_idempotent_and_never_count_as_unlinks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/manifest_exact_integration.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/manifest_exact_integration-165d1cf325c0114b)
+
+running 4 tests
+test cascaded_deletion_removes_the_candidate_structurally ... ok
+test hard_scope_language_filter_applies_on_the_real_read_path ... ok
+test sql_scan_is_space_isolated_and_keyset_paginated ... ok
+test published_rows_round_trip_through_manifest_scan_and_cache ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/p7_cache_allocation_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_cache_allocation_independent_review-9ee6440f195137fa)
+
+running 7 tests
+INDEPENDENT_ALLOC {"case":"growth-or-replacement","max_request_bytes":4097,"total_requested_bytes":8184,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"legal-extreme","max_request_bytes":4097,"total_requested_bytes":17951,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"metadata-bound-plus-one","max_request_bytes":4097,"total_requested_bytes":15802,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"forged-meta-dimension","max_request_bytes":4097,"total_requested_bytes":8171,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"incomplete-large-object","max_request_bytes":492,"total_requested_bytes":3418,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"growth-or-replacement","max_request_bytes":4097,"total_requested_bytes":8529,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"incomplete-large-object","max_request_bytes":492,"total_requested_bytes":3418,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"forged-meta-dimension","max_request_bytes":4097,"total_requested_bytes":8171,"max_request_bound":4097}
+test actual_get_growth_after_open_and_atomic_replacement_do_not_bypass_budget ... ok
+INDEPENDENT_ALLOC {"case":"payload-io-error","max_request_bytes":4097,"total_requested_bytes":7801,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"in-budget-long-unknown-field","max_request_bytes":8516,"total_requested_bytes":37373,"max_request_bound":16384}
+INDEPENDENT_ALLOC {"case":"forged-meta-dimension","max_request_bytes":4097,"total_requested_bytes":8171,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"invalid-sidecar","max_request_bytes":4097,"total_requested_bytes":8122,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"invalid-sidecar","max_request_bytes":4097,"total_requested_bytes":9069,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"in-budget-invalid-long-model","max_request_bytes":4097,"total_requested_bytes":11649,"max_request_bound":16384}
+test incomplete_corrupt_and_io_error_semantics_are_distinct ... ok
+INDEPENDENT_ALLOC {"case":"forged-meta-dimension","max_request_bytes":4097,"total_requested_bytes":8579,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"invalid-requested-dimension","max_request_bytes":48,"total_requested_bytes":57,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"invalid-requested-dimension","max_request_bytes":48,"total_requested_bytes":57,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"invalid-requested-dimension","max_request_bytes":48,"total_requested_bytes":57,"max_request_bound":4097}
+test maximum_in_budget_json_diagnostics_remain_proportional_to_format_cap ... ok
+INDEPENDENT_ALLOC {"case":"eight-gib-sparse","max_request_bytes":4097,"total_requested_bytes":8188,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"growing-sidecar-stream","max_request_bytes":4097,"total_requested_bytes":7866,"max_request_bound":4097}
+test metadata_stream_extra_probe_and_error_before_eof_are_bounded ... INDEPENDENT_ALLOC {"case":"short-then-growing-payload","max_request_bytes":4097ok,"total_requested_bytes":8191
+,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"eight-gib-sparse","max_request_bytes":4097,"total_requested_bytes":7866,"max_request_bound":4097}
+test public_get_short_read_then_growing_payload_consumes_only_budget_plus_probe ... ok
+INDEPENDENT_ALLOC {"case":"legal-extreme","max_request_bytes":262145,"total_requested_bytes":542231,"max_request_bound":262145}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"metadata-bound-plus-one","max_request_bytes":4097,"total_requested_bytes":15802,"max_request_bound":4097}
+test legal_writer_extremes_and_exact_read_bound_preserve_f32_bits ... ok
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8291,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8533,"max_request_bound":4097}
+INDEPENDENT_ALLOC {"case":"self-checksummed-length","max_request_bytes":4097,"total_requested_bytes":8188,"max_request_bound":4097}
+test forged_dimensions_overflow_sparse_lengths_and_truncation_remain_bounded ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/p7_crash_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_crash_preparation-b2cdcf6a26d4d147)
+
+running 2 tests
+test crash_child ... ignored, child entry; invoked only by the owning parent with an isolated directory
+test isolated_sigkill_reopen_replay_preparation ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 18.98s
+
+     Running tests/p7_staging_gc_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_staging_gc_preparation-33359eea448fe665)
+
+running 2 tests
+test staging_gc_child ... ignored, owned subprocess entry
+test staging_and_gc_interprocess_preparation ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 10.67s
+
+     Running tests/publish_cas.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/publish_cas-0dda16a375644992)
+
+running 4 tests
+test unverifiable_artifact_refuses_the_publish_before_touching_the_db ... ok
+test swapped_incarnation_rejects_the_publish ... ok
+test expired_reclaimed_lease_cannot_publish_but_successor_can ... ok
+test published_document_is_retrievable_and_duplicate_ack_does_not_bump ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/query_cache.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/query_cache-70244fa19b680d51)
+
+running 17 tests
+test encode_queries_empty_input_is_a_provider_free_no_op ... ok
+test encode_queries_maps_provider_failures_and_caches_nothing ... ok
+test encode_queries_never_reuses_vectors_across_specs_or_spaces ... ok
+test encode_queries_rebatches_only_misses_inside_one_planned_batch ... ok
+test encode_queries_rejects_invalid_vectors_and_caches_nothing ... ok
+test encode_queries_leaks_no_query_text_anywhere ... ok
+test encode_queries_second_pass_hits_cache_without_provider_contact ... ok
+test encode_queries_returns_vectors_in_input_order_across_batches ... ok
+test encode_queries_skips_oversized_queries_and_never_sends_them ... ok
+test query_cache_evicts_lru_within_both_bounds ... ok
+test query_cache_key_distinguishes_namespace_spec_and_text ... ok
+test query_cache_concurrent_access_stays_bounded ... ok
+test query_cache_key_debug_carries_no_query_text ... ok
+test query_cache_rejects_invalid_vectors_on_put ... ok
+test query_cache_skips_entries_that_cannot_fit ... ok
+test query_cache_round_trips_and_reports_bounds ... ok
+test query_path_never_touches_the_document_cache ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/queue_worker.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/queue_worker-4851c18260aa03dd)
+
+running 9 tests
+test drop_of_undisposed_lease_leaves_the_claim_recoverable ... ok
+test drain_publishes_end_to_end_through_the_fake_provider ... ok
+test retry_budget_exhaustion_dead_letters_without_further_claims ... ok
+test drain_claim_order_defaults_to_fifo_and_rotation_is_opt_in ... ok
+test one_drain_claims_at_most_max_batch ... ok
+test worker_limits_reject_structurally_meaningless_bounds ... ok
+test superseded_mid_flight_claim_never_publishes_the_old_version ... ok
+test three_rapid_edits_coalesce_into_one_task_and_one_embed ... ok
+test expired_and_reclaimed_lease_cannot_renew_but_the_successor_publishes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/reconcile_rebuild.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/reconcile_rebuild-2a86ddc9ac7aec8b)
+
+running 3 tests
+test rebuild_reconcile_reuses_paid_vectors_with_zero_provider_calls ... ok
+test pre_swap_process_is_fenced_and_the_successor_recovers_from_cache ... ok
+test cache_miss_inputs_are_left_pending_and_embedded_once_by_the_worker ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/retry_worker_layering.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/retry_worker_layering-9d74a4523ce971d1)
+
+running 5 tests
+test planned_batches_keep_fresh_retry_budgets_and_the_gate_wired ... ok
+test tripped_breaker_fails_fast_in_the_drain_without_provider_or_attempt_cost ... ok
+test retry_waits_hold_no_db_lock_and_the_fenced_write_still_lands ... ok
+test call_layer_retry_publishes_within_a_single_db_attempt ... ok
+test call_layer_exhaustion_hands_back_and_the_db_budget_dead_letters ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/semantic_degrade.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_degrade-2902aba68dc879cf)
+
+running 6 tests
+{"case":"delayed-corrupt-report-after-republish","document_provider_calls":2,"original_corrupt_reason":"payload checksum mismatch: meta 2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e vs actual bb1b92d3d45c8c751de242466a45d5981f04821b5ece5c6191b74abf88656e5a","quarantined_current_object":false,"republished_artifact_ref":"cas.v1:ns-delayed-quarantine-223:07907862b46c51d6fc209714cb5d27f880e828d4f75f6b9f616f68c091f2ffac:895e620126a1be975751576e38e2d7e27d6897fae4eb8a6aa3678b5e64891645:a4264561d5575d7832097b57bbf43975cf8192c9d84da1cc7913a479a94caedf:2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e","seed":223}
+test corrupt_quarantine_reembed_republish_self_heals_the_visible_set ... ok
+test claimed_task_degrade_hands_back_without_consuming_the_attempt_budget ... ok
+test exhausted_budget_dead_letters_the_task_with_reason_and_stops_the_spend ... ok
+test gc_passes_never_touch_the_quarantine_directory ... ok
+{"case":"delayed-corrupt-report-after-republish","document_provider_calls":2,"original_corrupt_reason":"payload checksum mismatch: meta 2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e vs actual bb1b92d3d45c8c751de242466a45d5981f04821b5ece5c6191b74abf88656e5a","quarantined_current_object":false,"republished_artifact_ref":"cas.v1:ns-delayed-quarantine-227:07907862b46c51d6fc209714cb5d27f880e828d4f75f6b9f616f68c091f2ffac:895e620126a1be975751576e38e2d7e27d6897fae4eb8a6aa3678b5e64891645:a4264561d5575d7832097b57bbf43975cf8192c9d84da1cc7913a479a94caedf:2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e","seed":227}
+test retrieval_degradation_matrix_skips_miss_and_corrupt_serves_the_healthy ... ok
+{"case":"delayed-corrupt-report-after-republish","document_provider_calls":2,"original_corrupt_reason":"payload checksum mismatch: meta 2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e vs actual bb1b92d3d45c8c751de242466a45d5981f04821b5ece5c6191b74abf88656e5a","quarantined_current_object":false,"republished_artifact_ref":"cas.v1:ns-delayed-quarantine-229:07907862b46c51d6fc209714cb5d27f880e828d4f75f6b9f616f68c091f2ffac:895e620126a1be975751576e38e2d7e27d6897fae4eb8a6aa3678b5e64891645:a4264561d5575d7832097b57bbf43975cf8192c9d84da1cc7913a479a94caedf:2848f46950f6b88994f1ebafcb42d7efb4972daa7ae961af9fbb774ccb2e5a6e","seed":229}
+test delayed_corrupt_report_never_quarantines_a_republished_healthy_object ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/semantic_gc.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_gc-4c47f2f4e2b6c895)
+
+running 8 tests
+test manifest_referenced_object_is_never_swept ... ok
+test fresh_unpublished_object_is_graced_then_reclaimed ... ok
+test corrupt_object_is_swept_after_grace_and_reads_miss_like_discard ... ok
+test bounded_backlog_converges_over_rounds_and_reference_survives_every_round ... ok
+test publish_committing_after_the_sweep_is_covered_by_the_grace ... ok
+test revoked_space_object_stays_protected_by_its_manifest_row ... ok
+test publish_committing_between_collect_and_sweep_is_protected_by_the_snapshot ... ok
+test temps_and_halves_are_swept_and_emptied_dirs_pruned_without_touching_quarantine ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/semantic_recovery.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_recovery-a04678d8f00017a6)
+
+running 6 tests
+test dead_letters_are_counted_but_never_resurrected ... ok
+test cache_miss_hand_back_spends_no_attempt_budget ... ok
+test crash_after_artifact_put_recovery_replays_publish_and_absorbs_duplicates ... ok
+test killed_worker_leases_reclaim_bounded_and_converge_without_paying ... ok
+test interrupted_reconcile_is_completed_by_recovery ... ok
+test recovery_fences_the_pre_swap_ghost_with_zero_writes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests/space_switch.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/space_switch-903e0dad34ce1cbb)
+
+running 2 tests
+test revoked_space_objects_become_gc_eligible_after_revoke_drain ... ok
+test switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollback_reuses ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/staging_gc_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/staging_gc_independent_review-bc3eb9aab37277fa)
+
+running 2 tests
+test independent_staging_gc_child ... ignored, owned subprocess entry
+test independently_observed_staging_gc_boundaries ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 16.66s
+

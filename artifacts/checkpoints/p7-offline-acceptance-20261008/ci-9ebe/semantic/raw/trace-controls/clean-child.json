@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "action": "kill",
+  "scope": "inherited process-local seccomp; no namespace or system settings changed",
+  "wrapper_sha256": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
+  "exec_command": [
+    "/usr/bin/python3",
+    "-I",
+    "-S",
+    "-c",
+    "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n libc=ctypes.CDLL(None,use_errno=True); fds=(ctypes.c_int*2)()\n libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]\n assert libc.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET,0,fds)==0\n os.write(fds[0],b'ipc'); assert os.read(fds[1],3)==b'ipc'\n libc.recvfrom.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_int,ctypes.c_void_p,ctypes.c_void_p]\n os.write(fds[0],b'12345678'); buf=ctypes.create_string_buffer(8)\n assert libc.recvfrom(fds[1],buf,8,0,None,None)==8 and buf.raw==b'12345678'\n os.close(fds[0]); os.close(fds[1])\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.waitstatus_to_exitcode(status)==0\nprint('owned child waited; parent exits zero',flush=True)\n"
+  ],
+  "launcher_python": "/usr/bin/python3",
+  "launcher_python_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+  "exec_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+  "before": {
+    "Pid": "3874",
+    "PPid": "3871",
+    "NSpid": "3874",
+    "NoNewPrivs": "0",
+    "Seccomp": "0",
+    "Seccomp_filters": "0"
+  },
+  "closed_socket_fds": [],
+  "denied_syscalls": [
+    "socket",
+    "connect",
+    "bind",
+    "listen",
+    "accept",
+    "accept4",
+    "sendto",
+    "sendmsg",
+    "recvmsg",
+    "sendmmsg",
+    "recvmmsg",
+    "getsockname",
+    "getpeername",
+    "setsockopt",
+    "getsockopt",
+    "shutdown",
+    "io_uring_setup",
+    "io_uring_enter",
+    "io_uring_register",
+    "pidfd_getfd"
+  ],
+  "unavailable_syscalls": [
+    "socketcall"
+  ],
+  "local_ipc_policy": {
+    "syscall": "socketpair",
+    "family": "AF_UNIX",
+    "protocol": 0,
+    "trace_admitted_types": [
+      "SOCK_STREAM",
+      "SOCK_SEQPACKET"
+    ],
+    "receive": {
+      "syscall": "recvfrom",
+      "length": 8,
+      "flags": 0,
+      "address": "NULL",
+      "address_length": "NULL",
+      "requires_new_pair_inode_trace_witness": true
+    },
+    "scope": "anonymous local IPC only; no socket/bind/connect/sendmsg/recvmsg exception"
+  },
+  "after": {
+    "Pid": "3874",
+    "PPid": "3871",
+    "NSpid": "3874",
+    "NoNewPrivs": "1",
+    "Seccomp": "2",
+    "Seccomp_filters": "1"
+  },
+  "socket_fds_before_exec": [],
+  "result": "filter_loaded_before_exec"
+}

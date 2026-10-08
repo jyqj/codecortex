@@ -1,0 +1,272 @@
+{
+  "actual_build_profile": "dev",
+  "actual_features": [],
+  "build_receipts": {
+    "product": "f43509caf1601d2412317e4aeb0386aac638d42c9ec0791a9d0c9fdbb1b2143d",
+    "runner": "80c0293dfae6266d373f586fc9503a16855591a40a22ba46a4ee9f0ee832165e"
+  },
+  "candidate_sha256": "0b2765bbf6994b708e729a0e48e02c03d5272c87271d5de3b49ad24c59a7076d",
+  "drift_controls": [
+    {
+      "after_sha256": "5b97fcc52fe2959ccaa9cf71b057ded3f5168b5ae5219ed3566ea9864dcc9126",
+      "before_sha256": "2fc3b7733a599073e0d93eab139b6c24d4e392652f6c4c4a124d7abfc3aacff7",
+      "case": "binary",
+      "changed_path": "inputs/binary",
+      "error": "candidate input checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "df3714df0a202a81ca29c7d776e1cc0adeb301a96d6285dabdffe60b3d4ee5dc",
+      "before_sha256": "1a83bfd83bf2b551703cf2a831ad93f4130c9e3afa4d4045747cf3cad6dedb56",
+      "case": "config",
+      "changed_path": "inputs/config",
+      "error": "candidate input checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "ef99591bb320abd715232f4d675d3b2812943368d27109618770da08b3048e9e",
+      "before_sha256": "5e649b67be0676608c4a4b1c47581fac3ade8cab8c18741f4b2506aabb5b11be",
+      "case": "scoring",
+      "changed_path": "inputs/scoring",
+      "error": "candidate input checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "bd9557636444d027f0eb1a0fd5fedf7209ef221f10a0a16af1ad80d6087a4e2b",
+      "before_sha256": "55925e692b8480786f9b08d52196eaf5075914f1bb4cb2ef70ab3dd5dbc6f554",
+      "case": "model",
+      "changed_path": "inputs/model",
+      "error": "candidate input checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "d698cce1f0c676fc8c0ad10c7c6bba9ec7a10f3bc7df6d38f165206b6afcc336",
+      "before_sha256": "732e45a55b1ddbdb394f4a279eba051e58721ea6dd9286903c89e00d8a213ee9",
+      "case": "source",
+      "changed_path": "source/crates/cc-db/src/capability_read.rs",
+      "error": "candidate source checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "0fce144bcf6a72d60702afaf77d60a6ab1d5758dbe4978dbde693316f282d614",
+      "before_sha256": "4e721f4224f9093c29b2a947abe8cbd1710b2556dff7b37cabd9212fa7674735",
+      "case": "query-and-embedded-gold",
+      "changed_path": "corpus/crates/cc-eval/benchmarks/native/p0-rust-api.jsonl",
+      "error": "candidate corpus checksum mismatch",
+      "rejected": true
+    },
+    {
+      "after_sha256": "c384b3bca0d39a031deacfe5941fdab94803d4c2f46bff885ac11f47a5d5bcb5",
+      "before_sha256": "a85af2a200a838df5452074b610af616e9cd5d67649b77169e030fd1c48f11d5",
+      "case": "corpus-source",
+      "changed_path": "corpus/crates/cc-eval/fixtures/index-v2/rust-api/provider.rs",
+      "error": "candidate corpus checksum mismatch",
+      "rejected": true
+    }
+  ],
+  "environment": {
+    "architecture": "x86_64",
+    "capture_policy": "explicit noncredential variables and hardware fields only",
+    "cgroup_cpu_max": null,
+    "cgroup_memory_max": null,
+    "cpu_model": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "host_memory_bytes": 16765374464,
+    "kernel": "6.17.0-1022-azure",
+    "logical_cpu_count": 4,
+    "provider": {
+      "live_cost": null,
+      "live_quality_certification": "not_run",
+      "mode": "disabled"
+    },
+    "python": {
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "version": "3.12.3"
+    },
+    "system": "Linux",
+    "variables": {
+      "AR": null,
+      "CARGO_BUILD_BUILD_DIR": null,
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_TARGET_DIR": null,
+      "CC": null,
+      "CFLAGS": null,
+      "CODECORTEX_BENCH_PROCESS_PROBE": null,
+      "LANG": "C.UTF-8",
+      "LC_ALL": null,
+      "RAYON_NUM_THREADS": null,
+      "RUSTDOCFLAGS": null,
+      "RUSTFLAGS": "-D warnings",
+      "RUSTUP_TOOLCHAIN": null,
+      "SDKROOT": null,
+      "TZ": null
+    }
+  },
+  "measured_rows": 1,
+  "measurement_execution": {
+    "command": [
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/evidence/builds/runner/cc-eval",
+      "run",
+      "--backend",
+      "mcp-stdio",
+      "--binary",
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/candidate/inputs/binary",
+      "--suite",
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/candidate/corpus/crates/cc-eval/benchmarks/manifests/p0-rust-api.json",
+      "--output",
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/evidence/measurement",
+      "--profile",
+      "smoke"
+    ],
+    "cwd": "/home/runner/work/codecortex/codecortex",
+    "elapsed_seconds": 1.1351419540000052,
+    "executable_sha256": "e735402876bd985b7adcd9c15b348711a624063ab3dbd6932505aa503d873aea",
+    "exit_code": 0,
+    "pid": 12753,
+    "raw_files": {
+      "stderr.log": "4c4beb9265569186b1ce97048a2f670d059aa79a155ed0714e64e12e5fae5f1c",
+      "stdout.log": "43575a796d70cdc2bad9e634bd794b2a58d77fdd15554187d8647047bcf435ca"
+    },
+    "started_at_utc": "2026-10-08T03:51:48.619327+00:00",
+    "timeout_seconds": 180
+  },
+  "original_gate": {
+    "exit_code": 0,
+    "reasons": [],
+    "status": "baseline_recorded_not_quality_certified"
+  },
+  "original_measurement_files": {
+    "costs.jsonl": {
+      "bytes": 1415,
+      "executable": false,
+      "sha256": "92e86dbfd8be51a3344e8a23af71ed9ea6f04b82783abc80b7d05c44dd462019"
+    },
+    "failures.jsonl": {
+      "bytes": 0,
+      "executable": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "gate.json": {
+      "bytes": 92,
+      "executable": false,
+      "sha256": "779825fc68c18607bbe86514e8553dec6c258a854848df948ba0646bc4d8a878"
+    },
+    "latency-strata.json": {
+      "bytes": 4533,
+      "executable": false,
+      "sha256": "3ed5b2698a65292c8eb6fa999214e1badaf4a6033e0b647f5ee95cd3717fe3fa"
+    },
+    "latency-summary.json": {
+      "bytes": 122,
+      "executable": false,
+      "sha256": "f5fc636d00935cdda15f082c905fe499a8af090f433ec241cbb5f256fbec6181"
+    },
+    "latency.jsonl": {
+      "bytes": 71,
+      "executable": false,
+      "sha256": "90aba5b5a9304473993017b534dd3fa011a0d0d0cc0f21b72dd31ebfe5e07554"
+    },
+    "manifest.json": {
+      "bytes": 2660,
+      "executable": false,
+      "sha256": "4af1b1ecf3e1e326516476093532e06cba4179822d96becf0e685e107026593b"
+    },
+    "metrics.json": {
+      "bytes": 488,
+      "executable": false,
+      "sha256": "ade9abe3c5b9e3d2e8a0f57a2b13021ab16df34e7834f8a54cb96a6e306dca48"
+    },
+    "normalized.jsonl": {
+      "bytes": 2085,
+      "executable": false,
+      "sha256": "7a7135cd57a1ca9075e255350872a0ea3f715d4a9ab236a9120f57b9e5b7146d"
+    },
+    "prepare.json": {
+      "bytes": 3243,
+      "executable": false,
+      "sha256": "26c4ea1e3eafd88c70fe3d8ba42ef4644a29847e3ae8d0ca5f6713629bb5863b"
+    },
+    "queries.jsonl": {
+      "bytes": 442,
+      "executable": false,
+      "sha256": "4e721f4224f9093c29b2a947abe8cbd1710b2556dff7b37cabd9212fa7674735"
+    },
+    "query-slices.json": {
+      "bytes": 416,
+      "executable": false,
+      "sha256": "3be5c95cb132ba068bb6f93e834059f8981bffd3aea8eb6e8d3544256e6696bf"
+    },
+    "raw/000000.json": {
+      "bytes": 23043,
+      "executable": false,
+      "sha256": "53b6ba0357a2d29b0cadda1b0496e22eb6756c1aef693cb2186ead786bea3d4c"
+    },
+    "readiness.json": {
+      "bytes": 97,
+      "executable": false,
+      "sha256": "b6c5c499d1f81fd7781a1bb7bf7c3fb61efaef326ad15e07a953170e95ccd70f"
+    },
+    "report.md": {
+      "bytes": 1440,
+      "executable": false,
+      "sha256": "82b13b566dd99cfd3a4b0691d3ab44410b964b160b9019de712180e76fc1e44f"
+    },
+    "resource-ledger.json": {
+      "bytes": 2768,
+      "executable": false,
+      "sha256": "a27b63d6a5847bf17af1e8d4b531760bd4937d8f79998c890ea9f8afb4f5b684"
+    },
+    "resources.jsonl": {
+      "bytes": 1061,
+      "executable": false,
+      "sha256": "d81a215a905459d84d97f8e79e39d6c62d0dbe8df080b095e1093366d2412b07"
+    },
+    "scores.jsonl": {
+      "bytes": 133,
+      "executable": false,
+      "sha256": "12aea69de273a1898711edd09171b7ed558ef82b1ec49dceed08ae8a49145c96"
+    }
+  },
+  "product_sha256": "2fc3b7733a599073e0d93eab139b6c24d4e392652f6c4c4a124d7abfc3aacff7",
+  "release_certified": false,
+  "replay_execution": {
+    "command": [
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/evidence/builds/runner/cc-eval",
+      "replay",
+      "--run",
+      "/home/runner/work/_temp/p7-offline/p8-candidate-execution/evidence/replay"
+    ],
+    "cwd": "/home/runner/work/codecortex/codecortex",
+    "elapsed_seconds": 0.0762470749999693,
+    "executable_sha256": "e735402876bd985b7adcd9c15b348711a624063ab3dbd6932505aa503d873aea",
+    "exit_code": 0,
+    "pid": 12857,
+    "raw_files": {
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout.log": "3f2f4ba0c5be68ebd292922d91a1dbff65238d9859d4dadc71f83770570d85f3"
+    },
+    "started_at_utc": "2026-10-08T03:51:50.718215+00:00",
+    "timeout_seconds": 180
+  },
+  "runner_sha256": "e735402876bd985b7adcd9c15b348711a624063ab3dbd6932505aa503d873aea",
+  "schema_version": 1,
+  "scope": "actual default local MCP execution and unchanged native scorer replay; input identity only",
+  "source": {
+    "input_count": 794,
+    "manifest_sha256": "23ea8ef6558b4054d13d12dfdad138fef0a8ac6bf0d91d3499094db1c115eb2a",
+    "source_commit": "9ebe1f619a298b9955d576d9d8250368259924d2",
+    "source_tree": "bd14c262bc8d029a64f28e05c29e611ec645f929"
+  },
+  "status": "executed_frozen_candidate",
+  "unexecuted_certifications": [
+    "P8-002 corpus certification",
+    "holdout",
+    "100k",
+    "soak",
+    "live provider quality",
+    "optimized release/platform certification",
+    "G8"
+  ]
+}

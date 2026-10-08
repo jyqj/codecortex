@@ -1,0 +1,792 @@
+{
+  "seed": 199,
+  "passed": true,
+  "configuration": {
+    "auto_index": {
+      "enabled": false
+    },
+    "query": {
+      "strategy": "local"
+    },
+    "semantic": {
+      "enabled": true,
+      "network_opt_in": true,
+      "allow_query_network": false,
+      "allow_http": true,
+      "endpoint": "http://127.0.0.1:39749/v1",
+      "model_id": "fake/p7-faults/199",
+      "dimensions": 2,
+      "max_input_tokens": 8192,
+      "max_batch_items": 16,
+      "api_key_ref": "env:P7_FAULTS_DUMMY",
+      "breaker_failure_threshold": 100,
+      "retry_max_attempts": 1,
+      "worker_lease_secs": 2,
+      "gc_min_retention_secs": 1
+    }
+  },
+  "checkpoints": [
+    {
+      "phase": "initial_ready",
+      "status": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_desired": 2,
+        "dense_published": 2,
+        "dense_reason": null,
+        "dense_state": "ready",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 0,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 0,
+          "incarnation": [
+            85,
+            234,
+            210,
+            88,
+            32,
+            43,
+            212,
+            17,
+            204,
+            200,
+            117,
+            154,
+            149,
+            26,
+            51,
+            191
+          ],
+          "index_epoch": 6,
+          "semantic_epoch": 3
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "query_network_opt_in_required",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 6,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+        "semantic_failed": 0,
+        "semantic_pending": 0,
+        "semantic_state": "ready",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "observed_document_posts": 2,
+      "cache": {
+        "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/4cb0c746822bd0dfb3b4c416fc94e60bd074bec40647bdaf3430a9ea97c50760/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+          "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+          "bytes": 8
+        },
+        "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/72896e723dc4d0a856a4f38c8c11f1a8685036ee241114e8658a4e12a960605f/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+          "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+          "bytes": 8
+        }
+      }
+    },
+    {
+      "phase": "clean_restart_zero_document_calls",
+      "status": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_desired": 2,
+        "dense_published": 2,
+        "dense_reason": null,
+        "dense_state": "ready",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 0,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 0,
+          "incarnation": [
+            85,
+            234,
+            210,
+            88,
+            32,
+            43,
+            212,
+            17,
+            204,
+            200,
+            117,
+            154,
+            149,
+            26,
+            51,
+            191
+          ],
+          "index_epoch": 6,
+          "semantic_epoch": 3
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "query_network_opt_in_required",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 6,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+        "semantic_failed": 0,
+        "semantic_pending": 0,
+        "semantic_state": "ready",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "observed_document_posts": 2,
+      "document_posts_delta": 0
+    },
+    {
+      "phase": "rebuild_delete_http500_pending_and_automatic_gc",
+      "status": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_desired": 1,
+        "dense_published": 0,
+        "dense_reason": "semantic_coverage_uncovered",
+        "dense_state": "partial",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 12,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 1,
+          "incarnation": [
+            77,
+            104,
+            239,
+            42,
+            128,
+            220,
+            128,
+            195,
+            54,
+            45,
+            48,
+            28,
+            190,
+            140,
+            218,
+            75
+          ],
+          "index_epoch": 11,
+          "semantic_epoch": 1
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "query_network_opt_in_required",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 11,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+        "semantic_failed": 0,
+        "semantic_pending": 1,
+        "semantic_state": "backfilling",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "observed_document_posts": 3,
+      "outbox": [
+        {
+          "task_id": 1,
+          "doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e",
+          "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07",
+          "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d",
+          "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+          "op": "embed",
+          "state": "pending",
+          "attempt_count": 1,
+          "lease_token": null,
+          "lease_expires_at": null,
+          "claim_owner": null,
+          "available_at": 1791431776.2900894,
+          "last_error": "provider server error",
+          "created_at": "2026-10-08T03:55:46.287074089+00:00",
+          "updated_at": "2026-10-08T03:55:46.290089369+00:00"
+        }
+      ],
+      "original_cache_removed": [
+        "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/4cb0c746822bd0dfb3b4c416fc94e60bd074bec40647bdaf3430a9ea97c50760/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin",
+        "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/72896e723dc4d0a856a4f38c8c11f1a8685036ee241114e8658a4e12a960605f/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin"
+      ],
+      "cache_after_gc": {},
+      "retry_at": 1791431776.2900894
+    },
+    {
+      "phase": "sigkill_lease_reclaimed_ready",
+      "status": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_desired": 1,
+        "dense_published": 1,
+        "dense_reason": null,
+        "dense_state": "ready",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 12,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 1,
+          "incarnation": [
+            77,
+            104,
+            239,
+            42,
+            128,
+            220,
+            128,
+            195,
+            54,
+            45,
+            48,
+            28,
+            190,
+            140,
+            218,
+            75
+          ],
+          "index_epoch": 11,
+          "semantic_epoch": 2
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "query_network_opt_in_required",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 11,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+        "semantic_failed": 0,
+        "semantic_pending": 0,
+        "semantic_state": "ready",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "observed_document_posts": 5,
+      "kill_time": 1791431776.373155,
+      "lease_deadline": 1791431778.351919,
+      "document_posts_delta": 1,
+      "crash_attempt_billing": "unknown; response had not been consumed",
+      "outbox": {
+        "outbox": [
+          {
+            "task_id": 1,
+            "doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e",
+            "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07",
+            "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d",
+            "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+            "op": "embed",
+            "state": "done",
+            "attempt_count": 3,
+            "lease_token": "67276bc51ff6e1968449a5418ee4a5b7",
+            "lease_expires_at": 1791431780.4274864,
+            "claim_owner": "post-index",
+            "available_at": 1791431778.4270062,
+            "last_error": null,
+            "created_at": "2026-10-08T03:55:46.287074089+00:00",
+            "updated_at": "2026-10-08T03:56:18+00:00"
+          }
+        ],
+        "manifest": [
+          {
+            "doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e",
+            "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07",
+            "file_path": "keep.rs",
+            "encoding_key": "ea75602918e001a45fd13ed10d2428661f42e95d2af75c1f7b1108ecd74cc4eb",
+            "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d",
+            "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+            "artifact_ref": "cas.v1:d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80:4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477:0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d:9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4:c3e45a3480d5b57ee4201f473659669f83ccec77851a5243a927aafcd139f2f3",
+            "published_at": "2026-10-08T03:56:18+00:00",
+            "published_incarnation": "4d68ef2a80dc80c3362d301cbe8cda4b"
+          }
+        ]
+      }
+    },
+    {
+      "phase": "final_restart_cache_reuse_and_read_only_status",
+      "status": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_desired": 1,
+        "dense_published": 1,
+        "dense_reason": null,
+        "dense_state": "ready",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 12,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 1,
+          "incarnation": [
+            77,
+            104,
+            239,
+            42,
+            128,
+            220,
+            128,
+            195,
+            54,
+            45,
+            48,
+            28,
+            190,
+            140,
+            218,
+            75
+          ],
+          "index_epoch": 11,
+          "semantic_epoch": 2
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "query_network_opt_in_required",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 11,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477",
+        "semantic_failed": 0,
+        "semantic_pending": 0,
+        "semantic_state": "ready",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "observed_document_posts": 5,
+      "document_posts_delta": 0,
+      "cache": {
+        "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+          "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+          "bytes": 8
+        }
+      }
+    }
+  ],
+  "cache_initial": {
+    "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/4cb0c746822bd0dfb3b4c416fc94e60bd074bec40647bdaf3430a9ea97c50760/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+      "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+      "bytes": 8
+    },
+    "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/72896e723dc4d0a856a4f38c8c11f1a8685036ee241114e8658a4e12a960605f/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+      "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+      "bytes": 8
+    }
+  },
+  "cache_final": {
+    "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {
+      "sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822",
+      "bytes": 8
+    }
+  },
+  "observed_document_posts": 5,
+  "observed_document_inputs": 5,
+  "observed_sigkill_count": 1,
+  "paid_cost": null,
+  "billing_unknown_after_crash": true,
+  "manual_database_or_clock_changes": false,
+  "scope": "representative combined L3 recovery, synthetic vectors only",
+  "http": [
+    {
+      "request_number": 1,
+      "seed": 199,
+      "phase": "initial",
+      "mode": "success",
+      "request": {
+        "encoding_format": "float",
+        "input": [
+          "CODECORTEX_EMBED_V1\nmetadata: {\"language\":\"rust\",\"metadata_truncated\":false,\"parent\":\"survivor_199\",\"path\":\"keep.rs\",\"signature\":\"pub fn survivor_199() -> u32 \",\"source_span\":{\"end\":37,\"start\":0}}\nsource:\npub fn survivor_199() -> u32 { 199 }\n"
+        ],
+        "model": "fake/p7-faults/199"
+      },
+      "received_at": 1791431744.777736,
+      "document_inputs": 1,
+      "response_status": 200,
+      "response_write_completed": true,
+      "product_response_consumption": "unknown",
+      "actual_paid_cost": null,
+      "response_finished_at": 1791431744.777902,
+      "response": {
+        "model": "fake/p7-faults/199",
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1.0,
+              0.0
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1,
+          "total_tokens": 1
+        }
+      }
+    },
+    {
+      "request_number": 2,
+      "seed": 199,
+      "phase": "initial",
+      "mode": "success",
+      "request": {
+        "encoding_format": "float",
+        "input": [
+          "CODECORTEX_EMBED_V1\nmetadata: {\"language\":\"rust\",\"metadata_truncated\":false,\"parent\":\"removed_199\",\"path\":\"remove.rs\",\"signature\":\"pub fn removed_199() -> u32 \",\"source_span\":{\"end\":36,\"start\":0}}\nsource:\npub fn removed_199() -> u32 { 200 }\n"
+        ],
+        "model": "fake/p7-faults/199"
+      },
+      "received_at": 1791431744.820317,
+      "document_inputs": 1,
+      "response_status": 200,
+      "response_write_completed": true,
+      "product_response_consumption": "unknown",
+      "actual_paid_cost": null,
+      "response_finished_at": 1791431744.8205373,
+      "response": {
+        "model": "fake/p7-faults/199",
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1.0,
+              0.0
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1,
+          "total_tokens": 1
+        }
+      }
+    },
+    {
+      "request_number": 3,
+      "seed": 199,
+      "phase": "rebuilt-provider-500",
+      "mode": "fail_once",
+      "request": {
+        "encoding_format": "float",
+        "input": [
+          "CODECORTEX_EMBED_V1\nmetadata: {\"language\":\"rust\",\"metadata_truncated\":false,\"parent\":\"survivor_199\",\"path\":\"keep.rs\",\"signature\":\"pub fn survivor_199() -> u32 \",\"source_span\":{\"end\":38,\"start\":0}}\nsource:\npub fn survivor_199() -> u32 { 1199 }\n"
+        ],
+        "model": "fake/p7-faults/199"
+      },
+      "received_at": 1791431746.2896445,
+      "document_inputs": 1,
+      "response_status": 500,
+      "response_write_completed": true,
+      "product_response_consumption": "unknown",
+      "actual_paid_cost": null,
+      "response_finished_at": 1791431746.2899187,
+      "response": {
+        "error": {
+          "message": "synthetic fixed-seed retry failure",
+          "type": "server_error"
+        }
+      }
+    },
+    {
+      "request_number": 4,
+      "seed": 199,
+      "phase": "held_retry_before_sigkill",
+      "mode": "hold",
+      "request": {
+        "encoding_format": "float",
+        "input": [
+          "CODECORTEX_EMBED_V1\nmetadata: {\"language\":\"rust\",\"metadata_truncated\":false,\"parent\":\"survivor_199\",\"path\":\"keep.rs\",\"signature\":\"pub fn survivor_199() -> u32 \",\"source_span\":{\"end\":38,\"start\":0}}\nsource:\npub fn survivor_199() -> u32 { 1199 }\n"
+        ],
+        "model": "fake/p7-faults/199"
+      },
+      "received_at": 1791431776.352973,
+      "document_inputs": 1,
+      "response_status": 200,
+      "response_write_completed": false,
+      "product_response_consumption": "unknown",
+      "actual_paid_cost": null,
+      "disconnect": "BrokenPipeError",
+      "response_finished_at": 1791431776.3767543,
+      "response": {
+        "model": "fake/p7-faults/199",
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1.0,
+              0.0
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1,
+          "total_tokens": 1
+        }
+      }
+    },
+    {
+      "request_number": 5,
+      "seed": 199,
+      "phase": "recovered_after_sigkill",
+      "mode": "success",
+      "request": {
+        "encoding_format": "float",
+        "input": [
+          "CODECORTEX_EMBED_V1\nmetadata: {\"language\":\"rust\",\"metadata_truncated\":false,\"parent\":\"survivor_199\",\"path\":\"keep.rs\",\"signature\":\"pub fn survivor_199() -> u32 \",\"source_span\":{\"end\":38,\"start\":0}}\nsource:\npub fn survivor_199() -> u32 { 1199 }\n"
+        ],
+        "model": "fake/p7-faults/199"
+      },
+      "received_at": 1791431778.4284713,
+      "document_inputs": 1,
+      "response_status": 200,
+      "response_write_completed": true,
+      "product_response_consumption": "unknown",
+      "actual_paid_cost": null,
+      "response_finished_at": 1791431778.4286654,
+      "response": {
+        "model": "fake/p7-faults/199",
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1.0,
+              0.0
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1,
+          "total_tokens": 1
+        }
+      }
+    }
+  ],
+  "exits": [
+    {
+      "session": "seed-199-initial",
+      "exit_code": 0,
+      "requested_sigkill": false,
+      "cleanup": false,
+      "stderr_sha256": "294f46148ccfd638f791f7699389c3c2b3373f49b534972b79af90726bdf7aab"
+    },
+    {
+      "session": "seed-199-warm-restart",
+      "exit_code": -9,
+      "requested_sigkill": true,
+      "cleanup": false,
+      "stderr_sha256": "ff32d6d15c244b47642603b597f48acd03e742caa4db702fb68ed982052e9a17"
+    },
+    {
+      "session": "seed-199-crash-recovery",
+      "exit_code": 0,
+      "requested_sigkill": false,
+      "cleanup": false,
+      "stderr_sha256": "ea694a8f307654532cef38f0a5dceaaafed3d000e0ea4c26d6b2ad00ddb2d8e7"
+    },
+    {
+      "session": "seed-199-final-cache-reuse",
+      "exit_code": 0,
+      "requested_sigkill": false,
+      "cleanup": false,
+      "stderr_sha256": "797a489280cbbeabd9e572469245350e83bfe462a30898ebc29a14b483005913"
+    }
+  ]
+}

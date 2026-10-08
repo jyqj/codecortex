@@ -1,0 +1,815 @@
+{
+  "evidence_summary": {
+    "files": [
+      "lib.rs",
+      "provider.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 1,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "omitted_hits": 0,
+      "omitted_nodes": 0,
+      "original_hits": 3,
+      "original_nodes": 5,
+      "partial": false,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 14503
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 3,
+        "hydrate_requested": 3,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 11,
+            "sorts": 0,
+            "statements": 10,
+            "vm_steps": 455
+          },
+          "text": {
+            "cache_hits": 3,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 138,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 1,
+          "graph": 2,
+          "grep": 3,
+          "lexical": 3,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 3,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 80
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 0,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 4,
+        "skipped_duplicates": 7,
+        "soft_scanned": 4,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 4,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 67
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 4,
+                "utf8_bytes": 151,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 3,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 80
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 3,
+                "rows": 4,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 39
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 504,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 671,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 3,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 3
+          },
+          "elapsed_us": 680,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 3,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 4,
+            "scope": "hard_scope",
+            "total_lower_bound": 3
+          },
+          "elapsed_us": 3686,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 2,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 2
+          },
+          "elapsed_us": 1458,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 2,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 3
+      },
+      "input_candidates": 3,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 0,
+      "original_ranks": [
+        1,
+        2,
+        3
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 138,
+        "redundant_bytes": 0,
+        "unique_bytes": 138
+      },
+      "requested_limit": 10,
+      "selected": 3,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 138,
+        "redundant_bytes": 0,
+        "unique_bytes": 138
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 2,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          190,
+          132,
+          22,
+          251,
+          210,
+          31,
+          244,
+          156,
+          88,
+          2,
+          10,
+          165,
+          72,
+          61,
+          151,
+          179
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 151,
+      "scope": "disk_generation:v1",
+      "validation_work": {
+        "candidate_projection_sql": {
+          "fullscan_steps": 0,
+          "rows": 3,
+          "sorts": 0,
+          "statements": 1,
+          "vm_steps": 106
+        },
+        "coverage": "current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost",
+        "schema_version": 1,
+        "source_records_sql": {
+          "fullscan_steps": 0,
+          "rows": 11,
+          "sorts": 0,
+          "statements": 10,
+          "vm_steps": 314
+        }
+      },
+      "verified_hits": 3
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "transform",
+        "chunk_id": "chunk:provider.rs:0",
+        "end_line": 3,
+        "file_path": "provider.rs",
+        "fused_score": 0.07058823529411765,
+        "graph_score": 0.07931471805599452,
+        "grep_score": 1.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "5d9828c5680a74b12c0fa37d98e4b0c28219f6dd82e1095ff96aee55fff043a1",
+            "doc_version": "453e64d47d209e1ffb02e94b8b7f32f7438da26b4d7ee984aeeffe0a967d28de",
+            "encoding_key": "1007d7879acf3407bd61f777f3f563ef92cad254ffce4cb30de05c3bc0157aa2",
+            "entity_key": "ed977262793fda1ad708f7352132a03b97d4ce53a815c6ee903d08e0f5679aa9"
+          },
+          "qname": "transform",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 53,
+              "start": 0
+            },
+            "signature": {
+              "end": 36,
+              "start": 0
+            },
+            "slice_digest": "3f37f766045fcfae1746587cf47a0b7b25286fe57b0ab88c05dd16e8b4fe1188",
+            "source": {
+              "byte_len": 54,
+              "content_digest": "3f37f766045fcfae1746587cf47a0b7b25286fe57b0ab88c05dd16e8b4fe1188",
+              "encoding": "utf8",
+              "snapshot_id": "beab7d821847fac8f27fcc228d9a8e897f0d282d4958b0e3dad41f3aea1efd88"
+            },
+            "span": {
+              "end": 54,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "exact-target",
+          "exact_symbol@1",
+          "lexical@1",
+          "grep@1",
+          "symbol-exact",
+          "fts-summary",
+          "symbol:transform",
+          "preselect:fts-summary:+1.40",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.7603826931936295,
+        "score_trace": [
+          [
+            "rrf:exact_symbol",
+            0.021568627450980395
+          ],
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "rrf:grep",
+            0.01568627450980392
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:stage-a",
+            0.1360000424827135
+          ],
+          [
+            "boost:graph-rerank",
+            0.023794415416798356
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": "function",
+        "symbol_name": "transform",
+        "text": "pub fn transform(value: i32) -> i32 {\n    value + 1\n}\n"
+      },
+      {
+        "breadcrumb": "entry",
+        "chunk_id": "chunk:lib.rs:2",
+        "end_line": 6,
+        "file_path": "lib.rs",
+        "fused_score": 0.047677793904209,
+        "graph_score": 0.06931471805599453,
+        "grep_score": 0.5,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.3333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "70c6913ff0aabce38abc404122947cde174656f097b16b74f76a4893f4185937",
+            "doc_version": "dae9fbb977c683c8daeaefa214641b4b0422bdedddde8353b8ef85eb12267a26",
+            "encoding_key": "f620607a2bec5cedc9780488ca0f747e7c56cac84c95d8862fb09d7e71b9968a",
+            "entity_key": "bd37a3caeee151f693249beb0f5e638a1d487c43507fff3ebd84930315bb43d7"
+          },
+          "qname": "entry",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 96,
+              "start": 40
+            },
+            "signature": {
+              "end": 72,
+              "start": 40
+            },
+            "slice_digest": "51afddaf21fff7d106afae65cb4e29a41a85935bc8f9bb7d8ea52ae728d954d2",
+            "source": {
+              "byte_len": 97,
+              "content_digest": "f0e89df453b3c4e33f3f2dbc000fedeea40ac9c86abbd94fd9a3bbd5e096570d",
+              "encoding": "utf8",
+              "snapshot_id": "1fb19342f8b0f8a0d11f86cc5cd6f45a72660f8fdb2e19a0bbd6270c4fea7874"
+            },
+            "span": {
+              "end": 97,
+              "start": 40
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@3",
+          "grep@2",
+          "fts-summary",
+          "preselect:fts-summary:+1.40"
+        ],
+        "rerank_score": 0.4640750544880748,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.020754716981132078
+          ],
+          [
+            "rrf:grep",
+            0.015384615384615385
+          ],
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.05600005287546658
+          ],
+          [
+            "boost:graph-rerank",
+            0.010397207708399178
+          ]
+        ],
+        "source": "index",
+        "start_line": 4,
+        "symbol_kind": "function",
+        "symbol_name": "entry",
+        "text": "pub fn entry(value: i32) -> i32 {\n    transform(value)\n}\n"
+      },
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:lib.rs:1",
+        "end_line": 3,
+        "file_path": "lib.rs",
+        "fused_score": 0.03624818577648767,
+        "graph_score": 0.0,
+        "grep_score": 0.3333333333333333,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "49642f4abb45b6d838d277850b45f243ce5554650685e4f07950280ffd869d2f",
+            "doc_version": "7f256778039ef14ac0c6c6274c03dd9d168b0c5724e0b465a7483a1157497674",
+            "encoding_key": "1e6401e9792f85cf7ceea664665147ee03aa0f856bb0cdbc2ae0ea00cecd183c",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "bounded_fallback",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "ae1618c38e4125de70d7e7f57067611d621db50103f6b9915da96dd1360167aa",
+            "source": {
+              "byte_len": 97,
+              "content_digest": "f0e89df453b3c4e33f3f2dbc000fedeea40ac9c86abbd94fd9a3bbd5e096570d",
+              "encoding": "utf8",
+              "snapshot_id": "1fb19342f8b0f8a0d11f86cc5cd6f45a72660f8fdb2e19a0bbd6270c4fea7874"
+            },
+            "span": {
+              "end": 40,
+              "start": 13
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "grep@3",
+          "fts-summary",
+          "preselect:fts-summary:+1.40"
+        ],
+        "rerank_score": 0.4422482386519543,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "rrf:grep",
+            0.01509433962264151
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.05600005287546658
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "\nuse provider::transform;\n\n"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "transform",
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": "provider.rs",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 3,
+      "file_path": "provider.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": {
+        "representation": "machine_hit_reference"
+      },
+      "node_id": "search:chunk:provider.rs:0",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "primary",
+      "score": 0.7603826931936295,
+      "source": "index",
+      "source_end_line": 3,
+      "source_start_line": 1,
+      "span_kind": "reference",
+      "start_line": 1,
+      "text": "",
+      "title": "provider.rs transform:1-3",
+      "token_estimate": 0
+    },
+    {
+      "backing_file_path": "lib.rs",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 6,
+      "file_path": "lib.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": {
+        "representation": "machine_hit_reference"
+      },
+      "node_id": "search:chunk:lib.rs:2",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "primary",
+      "score": 0.4640750544880748,
+      "source": "index",
+      "source_end_line": 6,
+      "source_start_line": 4,
+      "span_kind": "reference",
+      "start_line": 4,
+      "text": "",
+      "title": "lib.rs entry:4-6",
+      "token_estimate": 0
+    },
+    {
+      "backing_file_path": "lib.rs",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 3,
+      "file_path": "lib.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": {
+        "representation": "machine_hit_reference"
+      },
+      "node_id": "search:chunk:lib.rs:1",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "primary",
+      "score": 0.4422482386519543,
+      "source": "index",
+      "source_end_line": 3,
+      "source_start_line": 1,
+      "span_kind": "reference",
+      "start_line": 1,
+      "text": "",
+      "title": "lib.rs :1-3",
+      "token_estimate": 0
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.85,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "lib.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:41c0e0270eb3cf9c2e86cc36",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 5,
+      "text": "caller: entry → transform (lib.rs:5)",
+      "title": "Caller: entry",
+      "token_estimate": 10
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.85,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "lib.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:19ca961f5cf34776634255c7",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 5,
+      "text": "callee: entry → transform (lib.rs:5)",
+      "title": "Callee: transform",
+      "token_estimate": 10
+    }
+  ],
+  "query": "transform",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [
+    {
+      "end_line": 3,
+      "file_path": "provider.rs",
+      "label": "transform",
+      "node_id": "search:chunk:provider.rs:0",
+      "start_line": 1
+    },
+    {
+      "end_line": 6,
+      "file_path": "lib.rs",
+      "label": "entry",
+      "node_id": "search:chunk:lib.rs:2",
+      "start_line": 4
+    },
+    {
+      "end_line": 3,
+      "file_path": "lib.rs",
+      "label": "",
+      "node_id": "search:chunk:lib.rs:1",
+      "start_line": 1
+    }
+  ],
+  "summary": "Found 3 indexed code result(s) across 2 file(s) for `transform`.",
+  "task": "transform",
+  "token_budget": 4000,
+  "token_estimate": 3626
+}

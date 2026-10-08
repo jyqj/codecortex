@@ -71,6 +71,11 @@ use cc_model::{CcError, CcResult};
 use crate::ports::{DocumentInput, EmbeddingProvider, ProviderError};
 use crate::publish::{PublishVerdict, Publisher};
 
+/// Maximum expired-lease row mutations at the start of ONE worker/revocation
+/// drain. Claims retain their own `max_batch` budget. This is opportunistic
+/// target-space maintenance; explicit global recovery has its own page budget.
+pub(crate) const OPPORTUNISTIC_RECLAIM_LIMIT: usize = 64;
+
 /// Admission and resource bounds of one worker (P6-013). Validated by
 /// [`WorkerLimits::validated`] before use.
 #[derive(Debug, Clone, PartialEq)]
@@ -255,9 +260,10 @@ fn hand_back(
 /// batch is exhausted or the queue reports nothing ready. Auxiliary end to
 /// end: claim/renew/retry move no clock; only the handler's publish CAS can.
 ///
-/// Per task: reclaim expired leases (so tasks stranded by a crashed worker
-/// are not stuck behind their lease; P6-015 owns the periodic bounded scan)
-/// → claim → renew (heartbeat + liveness gate; lost → skip) → `handler` →
+/// Before claims: reclaim one active-space page of at most `min(max_batch, 64)`
+/// expired leases. Other spaces cannot consume that page; a larger stranded
+/// backlog converges over subsequent explicit drains. Per task: claim →
+/// renew (heartbeat + liveness gate; lost → skip) → `handler` →
 /// `Disposed` (done) / `NeedsRetry` or `Err` (fenced retry with
 /// `limits.backoff_secs`, dead-letter at `limits.max_attempts`). A retry on
 /// a lost lease is a no-op by fencing — `retried` only counts real hand-backs.
@@ -282,11 +288,20 @@ pub fn drain_pending_with_lifecycle(
         "unvalidated WorkerLimits"
     );
     let mut report = BatchReport::default();
+    if lifecycle.is_some_and(|fence| !fence.is_open()) {
+        return Ok(report);
+    }
+    let Some(space_id) = db.semantic_active_space()? else {
+        return Ok(report);
+    };
+    db.reclaim_expired_semantic_space_bounded(
+        &space_id,
+        limits.max_batch.min(OPPORTUNISTIC_RECLAIM_LIMIT),
+    )?;
     for _ in 0..limits.max_batch {
         if lifecycle.is_some_and(|fence| !fence.is_open()) {
             break;
         }
-        db.reclaim_expired_semantic()?;
         let Some(task) = db.claim_semantic_with_lifecycle(
             owner,
             limits.lease_secs,
@@ -396,7 +411,18 @@ pub fn drain_pending_parallel_with_lifecycle(
         1
     }
     .min(limits.max_batch);
+    if lifecycle.is_some_and(|fence| !fence.is_open()) {
+        return Ok(BatchReport::default());
+    }
     let initial_space = db.semantic_active_space()?;
+    let Some(space_id) = initial_space.as_deref() else {
+        return Ok(BatchReport::default());
+    };
+    // One shared page before workers start, never one page per worker or claim.
+    db.reclaim_expired_semantic_space_bounded(
+        space_id,
+        limits.max_batch.min(OPPORTUNISTIC_RECLAIM_LIMIT),
+    )?;
     let admitted = Mutex::new(0usize);
     let stopped = AtomicBool::new(false);
     let cancelled = || stopped.load(Ordering::Acquire) || lifecycle.is_some_and(|f| !f.is_open());
@@ -415,7 +441,6 @@ pub fn drain_pending_parallel_with_lifecycle(
                     if *count >= limits.max_batch {
                         break;
                     }
-                    db.reclaim_expired_semantic()?;
                     let Some(task) = db.claim_semantic_with_lifecycle(
                         owner,
                         limits.lease_secs,

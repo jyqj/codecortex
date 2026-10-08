@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "author": "root",
+  "review_status": "pending_independent_review",
+  "base_source": "9ebe1f619a298b9955d576d9d8250368259924d2",
+  "original_wiring_item": 9,
+  "original_task": "P7-016",
+  "new_tasks_closed": 0,
+  "remaining_original_tasks": 39,
+  "implementation": {
+    "all_three_production_opportunistic_paths": "one target-space page before claims; no per-claim reclaim",
+    "row_limit": "min(max_batch,64) per entire drain, including all parallel workers",
+    "foreign_space_policy": "out of scope of that consumer; cannot consume target page",
+    "old_explicit_global_bounded_and_unbounded_apis": "preserved",
+    "mutation_semantics": "claimed to pending, clear lease, preserve attempts, Auxiliary/no epoch",
+    "sql_scan_time_bound": "not claimed",
+    "progress": "repeated explicit drains consume target backlog; no resident daemon or query/status mutation"
+  },
+  "paths": {
+    "crates/cc-db/src/semantic_recovery.rs": {
+      "before_sha256": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9",
+      "sha256": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e"
+    },
+    "crates/cc-semantic/src/queue.rs": {
+      "before_sha256": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d",
+      "sha256": "3ef3d0b90260bfb4f3fed94703ed37e6e02324299996a60a64eb560fc9e9a349"
+    },
+    "crates/cc-semantic/src/space_switch.rs": {
+      "before_sha256": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b",
+      "sha256": "f09dde979b3aa1c6aefded96e0cfe5629c9835b88ea344979c69015375d5fb9b"
+    },
+    "crates/cc-semantic/tests/opportunistic_reclaim.rs": {
+      "before_sha256": null,
+      "sha256": "0718d3a869c0ad17ff486e5f363cc0f2fb980752161934337b7459548d9d5999"
+    }
+  },
+  "validation": {
+    "new_tests": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "log": "opportunistic-reclaim-run.log"
+    },
+    "old_contracts": {
+      "passed": 29,
+      "failed": 0,
+      "ignored": 1,
+      "log": "opportunistic-reclaim-old-contracts.log",
+      "existing_ignore_unchanged": true
+    },
+    "negative_controls": [
+      "193 older foreign expired rows; target still progresses",
+      "137 target expired rows recover 64/64/9/0",
+      "small max_batch=3",
+      "3 unexpired leases and 2 future tasks, failed/superseded unchanged",
+      "SQL trigger observes actual reclaim counts and same attempts",
+      "closed lifecycle and no active space perform zero reclaim",
+      "mid-page SQL abort rolls back all rows/audit and connection remains usable",
+      "zero or overflow limit rejected",
+      "real-clock positive lease before expiry and recovery after actual deadline"
+    ],
+    "synthetic_fixture_scope": "aged rows are explicit test data, not actual crash evidence; unchanged L3 CI remains the real process/clock experiment",
+    "first_compile_failure_preserved": "test used private now_unix and usize FromSql; fixed test via local SystemTime and checked i64 conversion, no product assertion removed"
+  },
+  "evidence_files": {
+    "opportunistic-reclaim-first-run.json": {
+      "bytes": 470,
+      "sha256": "e9b311c179ba4811f304af14c229ed175ecfdc30298470ba788f1f9eb7a4b4d2"
+    },
+    "opportunistic-reclaim-first-run.log": {
+      "bytes": 6443,
+      "sha256": "ac76e38c7ea12deefed26fc60901e2f365e820d879f024a6c090d09f46a5e4e5"
+    },
+    "opportunistic-reclaim-first-test-source.rs.txt": {
+      "bytes": 14515,
+      "sha256": "b91d4ae89993a66e38c5f6d87ae37995ee7e75e63477611fc62ffa6152b484a5"
+    },
+    "opportunistic-reclaim-old-contracts.json": {
+      "bytes": 574,
+      "sha256": "96d4248ad1e62acba65afed70fbd806d507549fced92b37ef35a366dd2754d87"
+    },
+    "opportunistic-reclaim-old-contracts.log": {
+      "bytes": 4448,
+      "sha256": "92bfd69a3d96409a7bae1f36688815ae060a1faba908b7373b31e3e95c40a580"
+    },
+    "opportunistic-reclaim-run.json": {
+      "bytes": 462,
+      "sha256": "6a04e419aad10aac72cb2c90b0f76733941325d51ce1392c37b432310ab527ca"
+    },
+    "opportunistic-reclaim-run.log": {
+      "bytes": 2419,
+      "sha256": "359245d2b1ccb44e0933da794eec391ce4874ce0954794330fa7e5123d8fc339"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+   Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+    Finished `test` profile [unoptimized] target(s) in 3.76s
+     Running tests/semantic_lease.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_lease-676a1229dc1a789c)
+
+running 9 tests
+test claim_skips_future_and_serves_oldest_with_identity ... ok
+test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+test retry_exhaustion_dead_letters_to_failed ... ok
+test superseded_task_unclaimable_and_unackable ... ok
+test wrong_token_and_owner_mismatch_are_fenced ... ok
+test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+test concurrent_claim_exactly_one_winner ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/semantic_publish.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_publish-6f82743710f49e35)
+
+running 11 tests
+test deleted_document_is_fenced_out ... ok
+test expired_reclaimed_lease_fences_the_old_publish ... ok
+test lost_lease_is_fenced_out_without_touching_anything ... ok
+test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+test input_digest_mismatch_is_fenced_out ... ok
+test non_active_space_is_fenced_out ... ok
+test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+test stale_incarnation_is_fenced_out ... ok
+test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/semantic_queue.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_queue-96d8a3edb7135e72)
+
+running 3 tests
+test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/semantic_rebuild.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_rebuild-94800efd5648e559)
+
+running 3 tests
+test enqueue_semantic_rebuild_plan_requeues_desired_set_and_bumps_semantic_once_per_change ... ok
+test rebuild_epoch_vector_advances_and_semantic_epoch_starts_absent ... ok
+test pre_swap_process_is_fenced_out_of_publish_and_claim_after_the_swap ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/semantic_recovery.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_recovery-b63d07614d786d93)
+
+running 4 tests
+test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok
+test bounded_reclaim_pages_through_expired_leases_and_reports_exhaustion ... ok
+test desired_set_bounded_keyset_pagination_matches_the_unbounded_projection ... ok
+test dead_letter_census_counts_only_the_active_space_failures ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+

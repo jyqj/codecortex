@@ -917,3 +917,56 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod explicit_text_admission_tests {
+    use super::*;
+
+    #[test]
+    fn opted_hidden_source_create_change_and_remove_reach_real_event_classification() {
+        use notify::event::{CreateKind, ModifyKind, RemoveKind};
+        let root = tempfile::tempdir().unwrap();
+        let config = serde_json::from_value(serde_json::json!({
+            "include_text_files": true,
+            "include_hidden_files": true
+        }))
+        .unwrap();
+        let rules = cc_index::IgnoreRules::load(root.path(), &config);
+        let hidden = ".docs/guide.rst";
+        std::fs::create_dir(root.path().join(".docs")).unwrap();
+        std::fs::write(root.path().join(hidden), "text source").unwrap();
+        for kind in [EventKind::Create(CreateKind::File), EventKind::Modify(ModifyKind::Data(notify::event::DataChange::Content))] {
+            let event = Event::new(kind).add_path(root.path().join(hidden));
+            let classified = classify_notification(root.path(), &Ok(event), &rules);
+            assert_eq!(classified.changed, vec![hidden]);
+            assert!(classified.removed.is_empty());
+        }
+        std::fs::remove_file(root.path().join(hidden)).unwrap();
+        let event = Event::new(EventKind::Remove(RemoveKind::File)).add_path(root.path().join(hidden));
+        let classified = classify_notification(root.path(), &Ok(event), &rules);
+        assert_eq!(classified.removed, vec![hidden]);
+        assert!(classified.changed.is_empty());
+        let defaults = cc_index::IgnoreRules::load(root.path(), &Default::default());
+        assert!(!should_track_input(hidden, &defaults));
+    }
+
+    #[test]
+    fn explicit_hidden_source_does_not_admit_secret_cache_or_user_ignored_events() {
+        let root = tempfile::tempdir().unwrap();
+        let config = serde_json::from_value(serde_json::json!({
+            "include_text_files": true,
+            "include_hidden_files": true,
+            "ignore": [".docs/ignored/**"]
+        }))
+        .unwrap();
+        let rules = cc_index::IgnoreRules::load(root.path(), &config);
+        for path in [
+            ".env", "nested/.env.local", ".codecortex/index.db", ".git/objects/a",
+            ".cache/a.txt", ".ssh/id_rsa", "target/a.txt", ".docs/.DS_Store",
+            ".docs/ignored/a.rst",
+        ] {
+            assert!(!should_track_input(path, &rules), "{path}");
+        }
+        assert!(should_track_input(".docs/allowed.rst", &rules));
+    }
+}

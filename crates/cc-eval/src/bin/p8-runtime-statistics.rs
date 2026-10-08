@@ -359,7 +359,7 @@ mod tests {
     }
 
     fn row(id: usize) -> Row {
-        let build = id % 3 == 0;
+        let build = id.is_multiple_of(3);
         serde_json::from_value(json!({
             "id":id,"operation":if build {"build"} else {"read"},"status":"success",
             "scheduled_ns":0,"offered_ns":1000,"started_ns":2000,"call_started_ns":3000,

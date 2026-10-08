@@ -12,9 +12,10 @@ jobs:
     timeout-minutes: 35
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      P8_REPLAY_OUT: ${{ runner.temp }}/p8-public-replay
-      P8_REPLAY_DOWNLOADS: ${{ runner.temp }}/p8-public-downloads
     steps:
+      - name: Set absolute runtime output paths
+        run: |
+          printf 'P8_REPLAY_OUT=%s/p8-public-replay\nP8_REPLAY_DOWNLOADS=%s/p8-public-downloads\n' "$RUNNER_TEMP" "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

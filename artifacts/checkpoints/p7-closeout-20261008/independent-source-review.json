@@ -1,11 +1,48 @@
 {
-  "schema_version": 1,
-  "source": "e7b165b1b121a9b477fe98635000437b8c6e6f24",
   "base": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
-  "verdict": "accepted_scoped",
-  "source_tree": "351c6d5df22906ce88eb673e240188b071505b53",
-  "local_same_tree_review_source": "3b87cca922f53824f861a875ccef148213852998",
-  "scope": "Exact source and validation inputs for P7 engineering closeout and P8-001 execution mechanism. This review permits fixed source verification only; it does not approve tasks, real semantic quality, release platforms, custody or final runtime evidence.",
+  "complete_source_input_count": 794,
+  "execution_evidence_boundary": {
+    "latest_independent_local_execution": "32 revised offline parser/seccomp controls passed; hashes before and after identical",
+    "new_tasks_closed": 0,
+    "old_approval_execution": "Historical 2313 main CI ran all 139 source-integrity tests and the v13 CLI, executing both complete inherited approval chains.",
+    "pending": [
+      "all full final-source CI jobs",
+      "original 13-checkpoint MCP execution",
+      "three-seed real L3 lifecycle",
+      "both complete offline product matrices and full trace closure",
+      "actual P8 default MCP execution, replay and archive"
+    ],
+    "prior_actual_ci_source": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+    "prior_ci_failed": [
+      "HTTP shared-provider fixture: two earlier queued workers exhausted their original timeout while the separate overflow call waited",
+      "both offline matrices: actual Rust spawn recvfrom denied before the product gate"
+    ],
+    "prior_ci_passed": [
+      "main CI (check/MSRV/security)",
+      "P7 engineering original suite and all 384 measured query requests",
+      "four-source/binary mechanism build and actual 36-query/negative-control execution"
+    ],
+    "prior_ci_skipped": [
+      "original 13-checkpoint HTTP driver",
+      "three-seed L3 lifecycle",
+      "P8 candidate execution under fatal network denial"
+    ],
+    "prior_failures_preserved": true,
+    "prior_main_and_engineering_execution_source": "1cfa17a2548c2ebcf1b207c99dd4734d9be612cb",
+    "prior_main_and_engineering_tree_equal_to_pr_head": true,
+    "remaining_original_tasks": 39,
+    "task_ledger_modified": false
+  },
+  "guard_review": {
+    "final_current_ci_selector_change": "exactly v12 selector to v13; original CI and p7-engineering assertions remain",
+    "normalized_template_sha256": "e6c98069a125a8990d458087b8f61aaed77a061c565b1a2edb7281ac127a08e6",
+    "old_guards_registries_and_tests": "unchanged; v13 executes both complete inherited approval chains",
+    "pin_installation_only": [
+      "PRODUCT",
+      "REVIEW",
+      "REGISTRY_SHA256"
+    ]
+  },
   "independent_reviewers": [
     {
       "id": "root",
@@ -24,7 +61,41 @@
       "role": "Independent reviewer of offline seccomp baseline and parser controls; author of GC/WAL/L3/P8 execution, independently reviewed by pr_audit and root."
     }
   ],
-  "unresolved_blockers": [],
+  "local_same_tree_review_source": "2d7a7f61f7e959632a0637f14b7ea21c821ef15d",
+  "offline_evidence_records": [
+    {
+      "path": "artifacts/checkpoints/p7-offline-runner-20261008/validation-summary.json",
+      "sha256": "98672b2969c00926be6c73f44540b512bd09ede6ade3fc28574176a225873b70"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-offline-child-tree-20261008/validation-summary.json",
+      "sha256": "a2996e7c2e475634dfe7675ddee26c905f86d3838ce3e3e5f9c0b4a56f539648"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-offline-probe-binding-20261008/validation-summary.json",
+      "sha256": "5acbec38f1aa7af568a93c2f81adac8808c8bc732426007b4e13cf07ed03891e"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-offline-local-ipc-20261008/validation-summary.json",
+      "sha256": "513fb55128d50835aee5680e3c0e88c3c33ef4fa7fcf4962823b6618313d06b0"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-offline-filter-baseline-20261008/validation-summary.json",
+      "sha256": "9089baeecc043a93cdbe6396a9157525378fa1795465fac4922facfe61033cf9"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-offline-ipc-20261008/failure-diagnosis.json",
+      "sha256": "742f7510543a83fe5c962ed003749bb01d457e1a13ca6d14641fa9fdaab6508b"
+    }
+  ],
+  "offline_independent_scope": [
+    "Root inspected the actual ptrace lineage/root exec verification, fatal syscall policy, exact AF_UNIX anonymous IPC exception and IPv4/IPv6 probe disjoint binding; todo_acceptance independently ran the preserved parser/negative controls.",
+    "The standalone host control baseline admits 0 to 1 filters only when inherited-parent enforcement is explicitly disabled for that control. Every actual product and protocol probe still requires inherited parent enforcement, same PID/NSpid and exactly one added fatal filter.",
+    "No absence of observable trace is treated as zero traffic. Unknown remains null, killed child processes cannot be hidden by a successful parent, and failure diagnostic output never grants acceptance.",
+    "The revised Rust spawn IPC exception admits only an 8-byte, flags-zero, address-NULL recvfrom after the complete product trace proves a unique anonymous reciprocal-peer AF_UNIX pair was created earlier in that tree; missing or ambiguous inode provenance rejects acceptance.",
+    "pidfd_getfd and ancillary message operations remain denied, eliminating imported socket descriptors from the local IPC proof. Ordinary socket, connect, bind, send and io_uring remain denied. IPv4 and IPv6 must reach their exact-family attempted syscall and terminate with SIGSYS.",
+    "Controlled Python launches use -I -S; the archived prior AF_UNIX probe failure has no call stack and is not assigned a proven Python site/NSS cause. New default and semantic fatal-network product gates have not yet executed."
+  ],
   "paths": {
     "crates/cc-db/src/index_db.rs": {
       "before_sha256": "d6aaf6db6cc94ab3f8dd454940593de57b2a50dc1aa8fe364d917f5c05161d1d",
@@ -72,7 +143,7 @@
     },
     "crates/cc-eval/tests/benchmark_adapters.rs": {
       "before_sha256": "0d47366fa35cec4a48c44175e3da6cdcbbcbf5f2bda39a780bedef4c8064fcbe",
-      "sha256": "70e189b75cb4045bb8a77eaea3fb4e0d23a2820e7d5264b5bcb225ac625d76eb"
+      "sha256": "b26cdce5faa8d2e8a35c2b62062e9fd161754b8b639bb1e7344edb219bf1d9c2"
     },
     "crates/cc-eval/tests/p7_mechanism_stdio.rs": {
       "before_sha256": null,
@@ -145,11 +216,111 @@
     "crates/cc-server/src/service_factory.rs": {
       "before_sha256": "119ee428388ac715bef95e881620685c4d450f51263d6f5541f1d7c9b4e94080",
       "sha256": "c05a251999bb92fb273958566cfcdc7a8121ee5a5e2bc9f42e6ce0fc25388836"
+    },
+    "crates/cc-server/src/shared_provider_gate_tests.rs": {
+      "before_sha256": "cc6d0518028d6c5395d00b760eae134abc68bb2cd919f47e756ab8526e41b03b",
+      "sha256": "eb29f040b5e91bc52eae9e07993814f7440fbf6eeb5680254a89deee36eb0dfc"
     }
   },
-  "complete_source_input_count": 794,
+  "review_records": [
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+      "reviewer": "root",
+      "scope": "P7-014 runtime and original conditional wiring dispositions; final failure diagnostic workflow with p7_wiring cross-review",
+      "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+    },
+    {
+      "path": "artifacts/benchmarks/p7-014-closeout-20261008/p7-015-resource-independent-review.json",
+      "reviewer": "p7_wiring",
+      "scope": "P7-015 resource sampler and actual owner attribution",
+      "sha256": "2428ee3ce29fc9fbb71d3438620e9788bbb5f59792e9859ae952d243adaec774"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-gc-wal-independent-20261008/review.json",
+      "reviewer": "pr_audit",
+      "scope": "GC and WAL correctness, genuine failure-before logs and fixed 17-file review",
+      "sha256": "ad60162a42293a9333675546c974fbeb2fcd135c64814e7cf73c63a391cf2cd9"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-gc-wal-independent-20261008/gc-reference-precedence-review.json",
+      "reviewer": "pr_audit",
+      "scope": "Latest GC source and unchanged original 8-test acceptance",
+      "sha256": "73d40608101ad4e166add6483cf30392224863e3cc7bde3e82cea5322a064fa3"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-019-independent-review-initial.json",
+      "reviewer": "root",
+      "scope": "Mechanism source/binary isolation, actual preceding CI and discovered source-commit relabeling issue",
+      "sha256": "01fe22e2eb14af20d9a3e6284da604b8f650074ece06924f876080228b21276b"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-019-independent-review-final.json",
+      "reviewer": "root",
+      "scope": "Top-level source-commit binding repair and actual-build negative control",
+      "sha256": "eb8c77a9116f70459ba263646624253a7c3f3fbcf5a2567406fd58c2dbaf33f5"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-candidate-independent-20261008/review.json",
+      "reviewer": "pr_audit",
+      "scope": "P8-001 frozen candidate execution, original scorer replay and seven drift copies; 8 new plus 39 original tests",
+      "sha256": "fe547d38b2e84535aaba22c0464b32413da99573ecb611442f6fca85865b5244"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/independent-v13-guard/review.json",
+      "reviewer": "p7_wiring",
+      "scope": "Guard structure, immutable input/digest checks and actual complete old approval proof",
+      "sha256": "48214b37c7bf2c5e2418252693de1469d8524638d3a8e0438cb5317e4c438f72"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/v13-adapter-independent-review.json",
+      "reviewer": "root",
+      "scope": "Independent review of v13 tests and explicit historical CI context adapter; original method bodies preserved",
+      "sha256": "ee7f4f420042446ee9dcec5b9ce87c98f4206e05850cd0b40bd89763ca6da7fb"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/independent-v13-guard/workflow-p8-append-review.json",
+      "reviewer": "p7_wiring",
+      "scope": "Default-only P8 steps, genuine build/execution CLI and unchanged preceding gates",
+      "sha256": "46d309045450b20a5df185bb9364ea2e451d34a2a30ce9ef513d005511786a9d"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/ci/2313b808/failure-repair-review.json",
+      "reviewer": "todo_acceptance",
+      "scope": "Independent review of the queue fixture timeout separation with all 75 original assertions preserved, and root-authored diagnostic continuation workflow.",
+      "sha256": "c2afe3c38e839a8f65bbdaad242713d4b9d74d76383b373c526ebb4748913d81"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/ci/2313b808/offline12092-independent-controls.json",
+      "reviewer": "todo_acceptance",
+      "scope": "Actual independent 32-control execution on exact revised IPC and trace sources with unchanged before/after hashes; product matrix requires new CI.",
+      "sha256": "793b97baca590875d5b2293a62dfce638b97016da9e75bf138816fca52e305be"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/ci/2313b808/ci2313-engineering-independent-receipt.json",
+      "reviewer": "p7_wiring",
+      "scope": "Independent reconstruction of all 384 actual queries, percentiles, budgets and resource ownership at historical 2313.",
+      "sha256": "0b43d6262b20c1f5ffb534239bf3fe3486eb6227430d4a148935729c866d5d52"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/ci/2313b808/ci2313-mechanism-independent-receipt.json",
+      "reviewer": "p7_wiring",
+      "scope": "All four complete source inventories and streamed binary hashes, 36 actual requests, paired scores and four negative controls at historical 2313.",
+      "sha256": "0f77886e623a448dcda5abacc9f54524ce1134a092a718b99e58c7f3bf054955"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-closeout-20261008/ci/2313b808/ci2313-main-check-job.summary.json",
+      "reviewer": "pr_audit",
+      "scope": "Full historical main CI extraction including 2635 workspace passes and 139 source-integrity controls; actual equal-tree synthetic merge 1cfa17a.",
+      "sha256": "a3010ba281c3dd4a43a1ead722402fdd2be8c242f0103c0a671aa34396604e44"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Exact source and validation inputs for P7 engineering closeout and P8-001 execution mechanism. This review permits fixed source verification only; it does not approve tasks, real semantic quality, release platforms, custody or final runtime evidence.",
+  "source": "832dc4cbf0469ee4964bb3e4d2a1d085a9d749b1",
+  "source_tree": "8f326276af01c836f7550fb4140a12dc69d3f892",
+  "unresolved_blockers": [],
   "validation_inputs": {
-    ".github/workflows/p7-closeout.yml": "7ea70f862bd30c264edaccb001aad30dab92f33a757058add87abd2b3b1f5f85",
+    ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
     "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
     "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
@@ -166,8 +337,8 @@
     "scripts/p7_fault_lifecycle_stdio.py": "ff2c39c2c265db6c2b93e738777260961469211933c11757d8e93ac544a1e9a5",
     "scripts/p7_gate_report.py": "772060b45bd26e787e4d4a7d011df1f24e554506cc97bbbcad0bb642acdd8afb",
     "scripts/p7_mechanism_build.py": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76",
-    "scripts/p7_offline_network.py": "9ca7d37e3e827ad62ffe44d87ebff5cc35dac7ba26cf8c4b9c537888b7c69ac1",
-    "scripts/p7_offline_trace.py": "c3cdcc8d5a95b572514f25f3c46fbc02e7a618a379242bfe82b8c6427e0aba5a",
+    "scripts/p7_offline_network.py": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
+    "scripts/p7_offline_trace.py": "66f17363721e1186d3087ef3259919e2c9c7782cfba18cda9662fd0706ca17d1",
     "scripts/p7_release_hotspot_diagnosis.py": "06554f2f1516fd833439114701ff51b627b055fc7edcebe27d43762fc5ea3e5f",
     "scripts/p7_release_resource_preparation.py": "a76865a466252f5863c8e0ad278c4c6814093d4a4a629a9409acf2e6b916901b",
     "scripts/p7_resource_preparation.py": "1aa3674bf3bb6e5a68dc6a887588de0e17dfe43a88a6c0cd919d03571cc48323",
@@ -211,8 +382,8 @@
     "scripts/source_snapshots/v12_ci/.github/workflows/ci.yml": "4036528d196d6c65be3566cdc33d4118c48deda776424d9f06b84dff6f2f1921",
     "scripts/source_snapshots/v12_ci/.github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
     "scripts/tests/test_p7_ci_architecture_guards.py": "c691a461251f21fc7705cc513fbd21d313b122a82e84ba1fd3dd463fde96bf99",
-    "scripts/tests/test_p7_offline_network.py": "6c774b7f61b28839bc5e2ef8a5129a11d718421d44733d24afcc0246d1dae725",
-    "scripts/tests/test_p7_offline_trace.py": "26dcdab785e690b383ee19e9c529a5c434a1f72e1235b7ca2dad573f8c47817e",
+    "scripts/tests/test_p7_offline_network.py": "a28cf04a6c64a6f1e9c04a99c5561506b632228bf4eaf2107ec0ee8493040995",
+    "scripts/tests/test_p7_offline_trace.py": "78b1fa64b5aeaf881bac1c86e908486bc42be2d209b5534f2546ab5c8a34c548",
     "scripts/tests/test_p8_candidate_execution.py": "a057cca1304fa5980ffb786d890cd71067c6a2087bce77eb2d4c63eb4a18fa15",
     "scripts/tests/test_p8_compat.py": "ff2c1c50ca468bdaae8bbbbb65421d38cc29fb8ddb92577ea6576a769beb0193",
     "scripts/tests/test_p8_corpus_audit.py": "0a058f5e59b3b3c0c546632eec1fc114f93b0873343b6a5cd3f85a6eda7ffa79",
@@ -249,120 +420,5 @@
     "tests/source_integrity/test_reviewed_source_v13.py": "a42075de17b4658204cfad1a7adc9fdc3af43d61e41345b7c82b2dee96dcdce4",
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a"
   },
-  "review_records": [
-    {
-      "reviewer": "root",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
-      "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14",
-      "scope": "P7-014 runtime and original conditional wiring dispositions; final failure diagnostic workflow with p7_wiring cross-review"
-    },
-    {
-      "reviewer": "p7_wiring",
-      "path": "artifacts/benchmarks/p7-014-closeout-20261008/p7-015-resource-independent-review.json",
-      "sha256": "2428ee3ce29fc9fbb71d3438620e9788bbb5f59792e9859ae952d243adaec774",
-      "scope": "P7-015 resource sampler and actual owner attribution"
-    },
-    {
-      "reviewer": "pr_audit",
-      "path": "artifacts/checkpoints/p7-gc-wal-independent-20261008/review.json",
-      "sha256": "ad60162a42293a9333675546c974fbeb2fcd135c64814e7cf73c63a391cf2cd9",
-      "scope": "GC and WAL correctness, genuine failure-before logs and fixed 17-file review"
-    },
-    {
-      "reviewer": "pr_audit",
-      "path": "artifacts/checkpoints/p7-gc-wal-independent-20261008/gc-reference-precedence-review.json",
-      "sha256": "73d40608101ad4e166add6483cf30392224863e3cc7bde3e82cea5322a064fa3",
-      "scope": "Latest GC source and unchanged original 8-test acceptance"
-    },
-    {
-      "reviewer": "root",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-019-independent-review-initial.json",
-      "sha256": "01fe22e2eb14af20d9a3e6284da604b8f650074ece06924f876080228b21276b",
-      "scope": "Mechanism source/binary isolation, actual preceding CI and discovered source-commit relabeling issue"
-    },
-    {
-      "reviewer": "root",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/p7-019-independent-review-final.json",
-      "sha256": "eb8c77a9116f70459ba263646624253a7c3f3fbcf5a2567406fd58c2dbaf33f5",
-      "scope": "Top-level source-commit binding repair and actual-build negative control"
-    },
-    {
-      "reviewer": "pr_audit",
-      "path": "artifacts/checkpoints/p8-candidate-independent-20261008/review.json",
-      "sha256": "fe547d38b2e84535aaba22c0464b32413da99573ecb611442f6fca85865b5244",
-      "scope": "P8-001 frozen candidate execution, original scorer replay and seven drift copies; 8 new plus 39 original tests"
-    },
-    {
-      "reviewer": "p7_wiring",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/independent-v13-guard/review.json",
-      "sha256": "48214b37c7bf2c5e2418252693de1469d8524638d3a8e0438cb5317e4c438f72",
-      "scope": "Guard structure, immutable input/digest checks and actual complete old approval proof"
-    },
-    {
-      "reviewer": "root",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/v13-adapter-independent-review.json",
-      "sha256": "ee7f4f420042446ee9dcec5b9ce87c98f4206e05850cd0b40bd89763ca6da7fb",
-      "scope": "Independent review of v13 tests and explicit historical CI context adapter; original method bodies preserved"
-    },
-    {
-      "reviewer": "p7_wiring",
-      "path": "artifacts/checkpoints/p7-closeout-20261008/independent-v13-guard/workflow-p8-append-review.json",
-      "sha256": "46d309045450b20a5df185bb9364ea2e451d34a2a30ce9ef513d005511786a9d",
-      "scope": "Default-only P8 steps, genuine build/execution CLI and unchanged preceding gates"
-    }
-  ],
-  "offline_evidence_records": [
-    {
-      "path": "artifacts/checkpoints/p7-offline-runner-20261008/validation-summary.json",
-      "sha256": "98672b2969c00926be6c73f44540b512bd09ede6ade3fc28574176a225873b70"
-    },
-    {
-      "path": "artifacts/checkpoints/p7-offline-child-tree-20261008/validation-summary.json",
-      "sha256": "a2996e7c2e475634dfe7675ddee26c905f86d3838ce3e3e5f9c0b4a56f539648"
-    },
-    {
-      "path": "artifacts/checkpoints/p7-offline-probe-binding-20261008/validation-summary.json",
-      "sha256": "5acbec38f1aa7af568a93c2f81adac8808c8bc732426007b4e13cf07ed03891e"
-    },
-    {
-      "path": "artifacts/checkpoints/p7-offline-local-ipc-20261008/validation-summary.json",
-      "sha256": "513fb55128d50835aee5680e3c0e88c3c33ef4fa7fcf4962823b6618313d06b0"
-    },
-    {
-      "path": "artifacts/checkpoints/p7-offline-filter-baseline-20261008/validation-summary.json",
-      "sha256": "9089baeecc043a93cdbe6396a9157525378fa1795465fac4922facfe61033cf9"
-    }
-  ],
-  "offline_independent_scope": [
-    "Root inspected the actual ptrace lineage/root exec verification, fatal syscall policy, exact AF_UNIX anonymous IPC exception and IPv4/IPv6 probe disjoint binding; todo_acceptance independently ran the preserved parser/negative controls.",
-    "The standalone host control baseline admits 0 to 1 filters only when inherited-parent enforcement is explicitly disabled for that control. Every actual product and protocol probe still requires inherited parent enforcement, same PID/NSpid and exactly one added fatal filter.",
-    "No absence of observable trace is treated as zero traffic. Unknown remains null, killed child processes cannot be hidden by a successful parent, and failure diagnostic output never grants acceptance."
-  ],
-  "guard_review": {
-    "pin_installation_only": [
-      "PRODUCT",
-      "REVIEW",
-      "REGISTRY_SHA256"
-    ],
-    "normalized_template_sha256": "e6c98069a125a8990d458087b8f61aaed77a061c565b1a2edb7281ac127a08e6",
-    "old_guards_registries_and_tests": "unchanged; v13 executes both complete inherited approval chains",
-    "final_current_ci_selector_change": "exactly v12 selector to v13; original CI and p7-engineering assertions remain"
-  },
-  "execution_evidence_boundary": {
-    "prior_actual_ci_source": "6d48f2e723030188e273cc787154e6b53c111e9f",
-    "prior_failures_preserved": true,
-    "local_latest_gc_original_tests": "16 passed; full raw log and receipt committed",
-    "old_approval_execution": "9 distinct approved_union functions, 15 calls/15 returns, 785 historical inputs; independently executed without replacing proof bodies",
-    "pending": [
-      "full final-source CI",
-      "original 13-checkpoint MCP execution",
-      "three-seed real L3 lifecycle",
-      "both complete offline product matrices and full trace closure",
-      "post-fix four-arm mechanism source receipt controls",
-      "actual P8 default MCP execution, replay and archive"
-    ],
-    "new_tasks_closed": 0,
-    "task_ledger_modified": false,
-    "remaining_original_tasks": 39
-  }
+  "verdict": "accepted_scoped"
 }

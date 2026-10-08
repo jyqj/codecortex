@@ -1,0 +1,176 @@
+{
+  "engineering_parent": "728e795a572d355c283be69653e8828138a57dd5",
+  "independent_reviews": [
+    {
+      "path": "/dev/shm/p8-oracle-batch-independent-acceptance/review.json",
+      "sha256": "630492440aac428b096843ede65a6d342533a9067f29ab42a7d7a371cd077c42"
+    },
+    {
+      "path": "/dev/shm/p8-oracle-batch-independent-pr-audit/audit.json",
+      "sha256": "ad0f97754f7a8cfef7c64c25c01a5f628363cf7a21e87d69e62421737e7a3a8d"
+    }
+  ],
+  "limits": [
+    "Retains original 15-table canonical/Value equality and source/row/canonical/scratch limits. No original scale samples, timeouts, raw limits, release admission or CI/source guards change.",
+    "At most 64 pending canonical rows and 64KiB pending body bytes; valid larger rows use the original single-row path. This is not a process memory bound.",
+    "Batching delays SQLite writes, so competing faults can change the first reported error and failed internal byte count. Every encountered SQL error exits without certifying equality. No physical rollback guarantee is added to journal_mode=OFF.",
+    "Engineering 1k/10k diagnostics remain repetition 0 only under original 30-repetition partition parameters; they cannot certify the full N30 matrix.",
+    "The separate PR160 G3 cache/source proof and original G scale run remain untouched."
+  ],
+  "oracle_git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+  "oracle_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+  "oracle_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+  "performance_measured_here": false,
+  "required_commands": [
+    [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-db",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "indexer_phases::reconcile::dependency_window_tests",
+      "--",
+      "--nocapture"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "p2d_dependency_cost",
+      "p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "ci_schema_guard_contract"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p2c_reconcile"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p2d_mutations",
+      "pending_changes_rebase_and_shrinker_cannot_certify_incomplete",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale",
+      "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--lib",
+      "benchmark::oracle::streaming::tests::",
+      "--",
+      "--nocapture"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "benchmark_oracle_streaming"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale"
+    ]
+  ],
+  "reviewed_source": "bf5be9f14000cc746e0fdcd59739ee953616fe61",
+  "reviewed_source_base": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "rust_tests_executed_here": false,
+  "schema_version": 1,
+  "scope": "Isolated engineering CI admission; no source-gate or TODO acceptance",
+  "source_code_authored_by": "/root/scale_engineering",
+  "todo_closed": 0,
+  "todo_remaining": 29,
+  "workflow_adaptation_by": "/root",
+  "workflow_before_sha256": "fdf3d3bffb674e0c9be5fb59b095a03e80d11425ff7048b23a8f54d0185cac22",
+  "workflow_difference": "Append exactly three original/new oracle and whole integration commands; all previous commands and workload parameters are byte-identical",
+  "workflow_sha256": "a7ded6cb32197f1809ea924dec3d713061220d50b5ae2ad84f3847887886f47f"
+}

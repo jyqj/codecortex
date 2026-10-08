@@ -64,6 +64,9 @@ jobs:
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2c_reconcile'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2d_mutations', 'pending_changes_rebase_and_shrinker_cannot_certify_incomplete', '--', '--exact'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p8_scale', 'bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity', '--', '--exact'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--lib', 'benchmark::oracle::streaming::tests::', '--', '--nocapture'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'benchmark_oracle_streaming'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p8_scale'],
           ]
           record = {
               'schema_version': 1,

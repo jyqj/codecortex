@@ -1,0 +1,99 @@
+{
+  "schema": "p8-oracle-batch-independent-static-review-v1",
+  "reviewer": "/root/acceptance_audit",
+  "non_author": true,
+  "status": "accepted_scoped_for_engineering_CI_admission",
+  "source_commit": "bf5be9f14000cc746e0fdcd59739ee953616fe61",
+  "base_source": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "tree": "e913303dee24e20fd4d9789ce12a3ddbe619697e",
+  "changed_paths": {
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+      "bytes": 29842,
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61"
+    }
+  },
+  "independent_executed_checks": {
+    "head_parent_and_tree_identity": true,
+    "only_one_changed_path": true,
+    "worktree_bytes_equal_fixed_blob": true,
+    "pre_spool_original_helpers_verbatim": true,
+    "post_spool_production_and_limits_verbatim": true,
+    "both_original_unit_tests_verbatim": true,
+    "new_reference_spool_equals_original_source_verbatim_after_indent_and_name_normalization": true,
+    "spool_only_factory_push_and_final_flush_changes": true,
+    "git_diff_check_exit": 0
+  },
+  "unchanged_dependencies": {
+    "Cargo.toml": {
+      "git_blob": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+      "bytes": 1594,
+      "sha256": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+      "unchanged_from_G2": true
+    },
+    "Cargo.lock": {
+      "git_blob": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+      "bytes": 82687,
+      "sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
+      "unchanged_from_G2": true
+    },
+    "crates/cc-eval/src/benchmark/oracle.rs": {
+      "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "bytes": 8780,
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "unchanged_from_G2": true
+    },
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": {
+      "git_blob": "5218ff2957289b7b4eff542ecfddff65be5d056e",
+      "bytes": 11788,
+      "sha256": "0102afe7ab68810531b3bff6df57484c5c69e8f680972f0cc23f263a2b00f8b6",
+      "unchanged_from_G2": true
+    },
+    "crates/cc-eval/tests/p8_scale.rs": {
+      "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+      "bytes": 19815,
+      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d",
+      "unchanged_from_G2": true
+    }
+  },
+  "manual_review": {
+    "batch_parameters": "Each exact 64/8/1 tier overwrites every side/value/ordinal parameter; SQLite SQL parameter indexing is one based. Ordinal remains checked i64 and same source-row order. rusqlite 0.40.1 raw_execute implementation steps then resets; complete rebinding prevents stale values.",
+    "bounds": "Pending <=64 rows and sum of serialized String lengths <=65536; a larger otherwise legal row flushes pending and uses original single-row path. Pending is an allowance, not a process-RSS claim; current row and SQLite bound value copies are separate bounded storage. All prior admitted row/table/canonical/scratch limits and scale-capacity entry unchanged.",
+    "comparison": "Original projected canonical strings, source snapshots, all 15 tables, binary ordering, duplicate-preserving ordinal key, parsed Value equality including signed zero, and digests all unchanged. No equality derived from only hashes.",
+    "failure": "Every prepare/bind/execute/flush error propagates before a comparison report. Final flush must succeed before transaction commit; partial or failed scratch never yields equality and is owned by disposable directory. journal_mode=OFF does not guarantee physical rollback after spill/disk faults; no scratch reuse is introduced.",
+    "tests_reviewed": "Four new unit tests cover tier/byte boundaries, non-ASCII/NUL/escaped/blob/numeric/duplicate projections versus original spool, exact ordinal coverage, actual statement tiers, independent budget errors and SQLite full failure; two preexisting units and full integration inputs unchanged."
+  },
+  "limitations": [
+    "No Rust compilation, unit, integration, Clippy, or product/performance run performed by this review. Existing author Python SQLite control is not Rust execution.",
+    "Batching defers SQLite writes. If a pending row would fail physically and a later source row hits a budget first, the first error kind and internal failed canonical-byte count can differ from original per-row execution. Source-row budget-check relative order and immediate propagation of encountered SQL errors remain intact; separate-fault compatibility tests do not prove competing-fault precedence.",
+    "No end-to-end speedup or scale acceptance asserted; actual compiled controls and full scale acceptance remain required."
+  ],
+  "required_actual_commands": [
+    "cargo test --locked -p cc-eval --lib benchmark::oracle::streaming::tests:: -- --nocapture",
+    "cargo test --locked -p cc-eval --test benchmark_oracle_streaming",
+    "cargo test --locked -p cc-eval --test p8_scale"
+  ],
+  "todo_closed": 0,
+  "formal_remaining": 29,
+  "output_storage": "owned /dev/shm only; no root-volume writes, no source mutations, no Cargo or product loads",
+  "free_before_bytes": 1325559808,
+  "source_after_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+  "artifacts": {
+    "diff-check.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diff-check.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "reviewed-delta.patch": {
+      "bytes": 17493,
+      "sha256": "c181ec4c5d74fd756c5da81ed12c80a27f905a31a77e0eb698e800a64298ba11"
+    },
+    "reviewed-streaming.rs": {
+      "bytes": 29842,
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "author": false,
+  "conclusion": "accepted_scoped_static_for_engineering_CI_admission",
+  "blockers": [],
+  "source_commit": "bf5be9f14000cc746e0fdcd59739ee953616fe61",
+  "base_source": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "tree": "e913303dee24e20fd4d9789ce12a3ddbe619697e",
+  "changed_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+  "new_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+  "new_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+  "new_bytes": 29842,
+  "exact_base_equals_shared_G2_blob": true,
+  "entire_tree_diff_single_path": true,
+  "findings": [
+    {
+      "topic": "binding_and_order",
+      "result": "All64/8/1 statement placeholders bind side,value,i64 ordinal for every submitted row. Side-local ordinal is generated in the unchanged source cursor order; duplicates remain distinct under unchanged(side,value,ordinal) primary key. Pending buffer preserves submission order and always flushes before final commit."
+    },
+    {
+      "topic": "bounded_memory",
+      "result": "At most64 pending serialized strings and at most65536 summed string bytes. This is a bound on pending serialized payload, not total allocator/SQLite memory. Legal rows over65536 bytes flush prior pending rows and execute the original single-row SQL; existing per-row limit remains authoritative."
+    },
+    {
+      "topic": "limits_and_values",
+      "result": "All pre-spool original helpers, full post-spool production code, default4GiB/general8GiB/capacity16GiB canonical allowances, default8GiB scratch limit,2MiB SQLite cache,15-table projection,WITHOUTROWID layout,collation,Value comparison,signed-zero semantics and digest sequencing are byte-identical."
+    },
+    {
+      "topic": "budget_error_order",
+      "result": "Row count,input-byte,project_row,serialized-byte,aggregate canonical-byte and checked ordinal validation remain in original per-row relative order before enqueue. Batching necessarily delays physical SQL execution; no promise that the earliest observed error among multiple simultaneous budget/storage faults has the old single-row timing/category."
+    },
+    {
+      "topic": "error_scope",
+      "result": "Any source,bind,execute,flush or commit error propagates; no failed partial result is reported equal. The same30 per-table/per-side transactions remain. Original journal_mode=OFF is unchanged; errors abandon private scratch rather than promise physical rollback after disk spill. No cross-prepare or product-DB cache introduced."
+    },
+    {
+      "topic": "controls",
+      "result": "Both original unit tests remain verbatim. Four new controls compare exact original reference spool across0/1/7/8/9/63/64/65/127/128/129 rows,types/duplicate/signed-zero/Unicode/blob,byte thresholds and oversized legal rows; checkactual successful73-row execution tiers64/8/1; compare isolated budget failures; reject scratch-full. Reference spool independently matches old production body modulo whitespace/name."
+    },
+    {
+      "topic": "performance",
+      "result": "Static review supports fewer SQLite statement executions for small canonical rows; 73-to3 count is a written control expectation pending Rust execution. No end-to-end latency or100k deadline success is claimed."
+    }
+  ],
+  "actual_validation": {
+    "cargo_compile_or_test": false,
+    "reviewer_git_diff_check_exit_code": 0,
+    "author_rustfmt_not_relabelled_as_reviewer_execution": true
+  },
+  "required_existing_next_checks": [
+    "cargo test --locked -p cc-eval --lib benchmark::oracle::streaming::tests:: -- --nocapture",
+    "cargo test --locked -p cc-eval --test benchmark_oracle_streaming",
+    "cargo test --locked -p cc-eval --test p8_scale",
+    "Original applicable Clippy/format gates on the adopted engineering source"
+  ],
+  "limits": [
+    "Engineering CI admission only; original scale gates/resource limits/N1500/deadlines remain binding.",
+    "No library/public source approval or TODO closure before actual implementation checks and final fixed-source review.",
+    "Readonly review; no heldout corpus body read, no source edit, no Cargo execution."
+  ],
+  "todo_remaining": 29,
+  "todo_closed": 0,
+  "artifacts": {
+    "diff-check.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "diff-check.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fixed.diff": {
+      "bytes": 17493,
+      "sha256": "c181ec4c5d74fd756c5da81ed12c80a27f905a31a77e0eb698e800a64298ba11"
+    },
+    "after-streaming.rs": {
+      "bytes": 29842,
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    },
+    "before-streaming.rs": {
+      "bytes": 14546,
+      "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2"
+    }
+  }
+}

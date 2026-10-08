@@ -1,0 +1,44 @@
+{
+  "schema": "p8-oracle-batch-author-review-v1",
+  "scope": "Implementation and static checks only; no Rust build/test execution or performance certification",
+  "base_source": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "source_commit": "bf5be9f14000cc746e0fdcd59739ee953616fe61",
+  "tree": "e913303dee24e20fd4d9789ce12a3ddbe619697e",
+  "changed_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+  "blob": "3c05342f976f534861347c098c3229ce988dfb61",
+  "bytes": 29842,
+  "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+  "patch_sha256": "c181ec4c5d74fd756c5da81ed12c80a27f905a31a77e0eb698e800a64298ba11",
+  "checks": {
+    "rustfmt_1_95": true,
+    "git_diff_check": true,
+    "all_pre_spool_original_helpers_unchanged": true,
+    "all_post_spool_production_original_code_unchanged": true,
+    "both_original_unit_tests_retained_verbatim": true,
+    "changed_paths": [
+      "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+    ]
+  },
+  "new_tests": [
+    "batched_spool_matches_original_at_tier_and_byte_boundaries",
+    "batch_inserts_reduce_actual_statements_with_bounded_pending_bytes",
+    "batched_spool_budget_errors_match_original_and_never_commit_pending_rows",
+    "batched_spool_scratch_exhaustion_remains_an_error"
+  ],
+  "required_actual_commands": [
+    "cargo test --locked -p cc-eval --lib benchmark::oracle::streaming::tests:: -- --nocapture",
+    "cargo test --locked -p cc-eval --test benchmark_oracle_streaming",
+    "cargo test --locked -p cc-eval --test p8_scale"
+  ],
+  "tiny_fixture_check": {
+    "kind": "Python SQLite-only journal-OFF 64-small-row rollback fixture check; not Rust product execution",
+    "sqlite_version": "3.53.1",
+    "rows_after_rollback": 0,
+    "autocommit": true
+  },
+  "limitations": [
+    "Rust tests and Clippy not executed locally; scheduled engineering CI required.",
+    "Canonical row batches reduce statement calls; end-to-end speedup unmeasured.",
+    "Scratch journal-OFF spill/disk failures discard the private scratch; no new physical rollback guarantee."
+  ]
+}

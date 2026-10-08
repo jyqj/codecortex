@@ -1,0 +1,443 @@
+diff --git a/crates/cc-eval/src/benchmark/oracle/streaming.rs b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+index be174b61..3c05342f 100644
+--- a/crates/cc-eval/src/benchmark/oracle/streaming.rs
++++ b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+@@ -61,6 +61,105 @@ fn check_row_size(row: &rusqlite::Row<'_>, cols: &[String], limit: usize) -> Res
+     Ok(())
+ }
+ 
++const INSERT_TIERS: [usize; 3] = [64, 8, 1];
++const PENDING_BYTES: usize = 64 * 1024;
++
++/// Bounded insertion batching only: preserve the original canonical bytes and
++/// side-local ordinal order. The SQLite primary tree still does all sorting.
++struct CanonicalInsert<'a> {
++    statements: [rusqlite::Statement<'a>; 3],
++    side: u8,
++    pending: Vec<(String, i64)>,
++    pending_bytes: usize,
++    #[cfg(test)]
++    executed_tiers: Vec<usize>,
++}
++
++impl<'a> CanonicalInsert<'a> {
++    fn new(transaction: &'a rusqlite::Transaction<'_>, side: u8) -> Result<Self> {
++        let prepare = |rows: usize| {
++            let values = vec!["(?, ?, ?)"; rows].join(", ");
++            transaction
++                .prepare(&format!(
++                    "INSERT INTO canonical_rows(side, value, ordinal) VALUES {values}"
++                ))
++                .map_err(db_error)
++        };
++        Ok(Self {
++            statements: [
++                prepare(64)?,
++                prepare(8)?,
++                transaction
++                    .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
++                    .map_err(db_error)?,
++            ],
++            side,
++            pending: Vec::with_capacity(INSERT_TIERS[0]),
++            pending_bytes: 0,
++            #[cfg(test)]
++            executed_tiers: Vec::new(),
++        })
++    }
++
++    fn execute(
++        statement: &mut rusqlite::Statement<'_>,
++        side: u8,
++        rows: &[(String, i64)],
++    ) -> Result<()> {
++        for (index, (value, ordinal)) in rows.iter().enumerate() {
++            let base = index * 3;
++            statement
++                .raw_bind_parameter(base + 1, side)
++                .map_err(db_error)?;
++            statement
++                .raw_bind_parameter(base + 2, value)
++                .map_err(db_error)?;
++            statement
++                .raw_bind_parameter(base + 3, ordinal)
++                .map_err(db_error)?;
++        }
++        statement.raw_execute().map_err(db_error)?;
++        Ok(())
++    }
++
++    fn flush(&mut self) -> Result<()> {
++        let mut rest = self.pending.as_slice();
++        for (tier, statement) in INSERT_TIERS.into_iter().zip(&mut self.statements) {
++            while rest.len() >= tier {
++                let (rows, tail) = rest.split_at(tier);
++                Self::execute(statement, self.side, rows)?;
++                #[cfg(test)]
++                self.executed_tiers.push(tier);
++                rest = tail;
++            }
++        }
++        self.pending.clear();
++        self.pending_bytes = 0;
++        Ok(())
++    }
++
++    fn push(&mut self, value: String, ordinal: i64) -> Result<()> {
++        // A legal row larger than the batch allowance retains the original
++        // single-row path. It is never rejected by this new buffer bound.
++        if value.len() > PENDING_BYTES {
++            self.flush()?;
++            self.statements[2]
++                .execute((self.side, value, ordinal))
++                .map_err(db_error)?;
++            #[cfg(test)]
++            self.executed_tiers.push(1);
++            return Ok(());
++        }
++        if self.pending.len() == INSERT_TIERS[0] || self.pending_bytes + value.len() > PENDING_BYTES
++        {
++            self.flush()?;
++        }
++        self.pending_bytes += value.len();
++        self.pending.push((value, ordinal));
++        Ok(())
++    }
++}
++
+ fn spool(
+     source: &Connection,
+     scratch: &mut Connection,
+@@ -78,9 +177,7 @@ fn spool(
+         .map_err(db_error)?;
+     let mut cursor = statement.query([]).map_err(db_error)?;
+     let transaction = scratch.transaction().map_err(db_error)?;
+-    let mut insert = transaction
+-        .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
+-        .map_err(db_error)?;
++    let mut insert = CanonicalInsert::new(&transaction, side)?;
+     let mut count = 0;
+     while let Some(row) = cursor.next().map_err(db_error)? {
+         if count >= limits.max_rows_per_table {
+@@ -103,11 +200,10 @@ fn spool(
+         }
+         let ordinal = i64::try_from(count)
+             .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
+-        insert
+-            .execute((side, serialized, ordinal))
+-            .map_err(db_error)?;
++        insert.push(serialized, ordinal)?;
+         count += 1;
+     }
++    insert.flush()?;
+     drop(insert);
+     transaction.commit().map_err(db_error)?;
+     Ok(count)
+@@ -301,6 +397,307 @@ fn compare_with_validated_limits(
+ mod tests {
+     use super::*;
+ 
++    // Original single-row implementation, retained independently of batching.
++    fn reference_spool(
++        source: &Connection,
++        scratch: &mut Connection,
++        table: &str,
++        side: u8,
++        limits: StreamingLimits,
++        canonical_bytes: &mut u64,
++    ) -> Result<u64> {
++        let cols = columns(source, table)?;
++        let mut statement = source
++            .prepare(&format!(
++                "SELECT {} FROM \"{table}\"",
++                select_columns(&cols)
++            ))
++            .map_err(db_error)?;
++        let mut cursor = statement.query([]).map_err(db_error)?;
++        let transaction = scratch.transaction().map_err(db_error)?;
++        let mut insert = transaction
++            .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
++            .map_err(db_error)?;
++        let mut count = 0;
++        while let Some(row) = cursor.next().map_err(db_error)? {
++            if count >= limits.max_rows_per_table {
++                return Err(invalid(format!(
++                    "streaming oracle row budget exceeded: {table} side {side}"
++                )));
++            }
++            check_row_size(row, &cols, limits.max_row_bytes)?;
++            let serialized = serde_json::to_string(&project_row(row, &cols)?)?;
++            if serialized.len() > limits.max_row_bytes {
++                return Err(invalid(
++                    "streaming oracle serialized row byte budget exceeded",
++                ));
++            }
++            *canonical_bytes = canonical_bytes
++                .checked_add(serialized.len() as u64)
++                .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
++            if *canonical_bytes > limits.max_canonical_bytes {
++                return Err(invalid("streaming oracle canonical byte budget exceeded"));
++            }
++            let ordinal = i64::try_from(count)
++                .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
++            insert
++                .execute((side, serialized, ordinal))
++                .map_err(db_error)?;
++            count += 1;
++        }
++        drop(insert);
++        transaction.commit().map_err(db_error)?;
++        Ok(count)
++    }
++
++    fn source_rows(values: &[rusqlite::types::Value]) -> Connection {
++        let source = Connection::open_in_memory().unwrap();
++        source
++            .execute_batch("CREATE TABLE symbols(name TEXT, value);")
++            .unwrap();
++        for value in values {
++            source
++                .execute("INSERT INTO symbols VALUES('same',?1)", [value])
++                .unwrap();
++        }
++        source
++    }
++
++    fn ordered_rows(scratch: &Connection, side: u8) -> Vec<String> {
++        scratch
++            .prepare(SORTED_ROWS_SQL)
++            .unwrap()
++            .query_map([side], |row| row.get(0))
++            .unwrap()
++            .collect::<rusqlite::Result<_>>()
++            .unwrap()
++    }
++
++    #[test]
++    fn batched_spool_matches_original_at_tier_and_byte_boundaries() {
++        use rusqlite::types::Value as SqlValue;
++        let seed = [
++            SqlValue::Null,
++            SqlValue::Integer(1),
++            SqlValue::Real(1.0),
++            SqlValue::Real(-0.0),
++            SqlValue::Real(0.0),
++            SqlValue::Text("é/中文\0\n\"".into()),
++            SqlValue::Blob(vec![0, 255, 128]),
++            SqlValue::Text("duplicate".into()),
++            SqlValue::Text("duplicate".into()),
++        ];
++        for count in [0, 1, 7, 8, 9, 63, 64, 65, 127, 128, 129] {
++            let values: Vec<_> = (0..count).map(|n| seed[n % seed.len()].clone()).collect();
++            assert_spool_matches_reference(&values);
++        }
++        // The first two serialized rows cross the byte bound without reaching
++        // 64 rows; the third is legal under the original row limit but cannot
++        // fit in a batch. A trailing short row still has to be flushed.
++        assert_spool_matches_reference(&[
++            SqlValue::Text("x".repeat(PENDING_BYTES / 2)),
++            SqlValue::Text("y".repeat(PENDING_BYTES / 2)),
++            SqlValue::Text("z".repeat(PENDING_BYTES + 1)),
++            SqlValue::Integer(17),
++        ]);
++    }
++
++    fn assert_spool_matches_reference(values: &[rusqlite::types::Value]) {
++        let directory = tempfile::tempdir().unwrap();
++        let limits = StreamingLimits::default();
++        let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++        let mut reference =
++            open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++        let mut actual_bytes = 0;
++        let mut expected_bytes = 0;
++        for side in 0..2 {
++            let mut input = values.to_vec();
++            if side == 1 {
++                input.reverse();
++            }
++            let source = source_rows(&input);
++            assert_eq!(
++                spool(
++                    &source,
++                    &mut batch,
++                    "symbols",
++                    side,
++                    limits,
++                    &mut actual_bytes
++                )
++                .unwrap(),
++                reference_spool(
++                    &source,
++                    &mut reference,
++                    "symbols",
++                    side,
++                    limits,
++                    &mut expected_bytes
++                )
++                .unwrap()
++            );
++            assert_eq!(actual_bytes, expected_bytes);
++            let actual = ordered_rows(&batch, side);
++            let expected = ordered_rows(&reference, side);
++            assert_eq!(actual, expected);
++            assert_eq!(
++                manifest::digest(&serde_json::to_vec(&actual).unwrap()),
++                manifest::digest(&serde_json::to_vec(&expected).unwrap())
++            );
++            let ordinals: Vec<i64> = batch
++                .prepare("SELECT ordinal FROM canonical_rows WHERE side=?1 ORDER BY ordinal")
++                .unwrap()
++                .query_map([side], |row| row.get(0))
++                .unwrap()
++                .collect::<rusqlite::Result<_>>()
++                .unwrap();
++            assert_eq!(
++                ordinals,
++                (0..i64::try_from(input.len()).unwrap()).collect::<Vec<_>>()
++            );
++        }
++        assert_eq!(ordered_rows(&batch, 0), ordered_rows(&batch, 1));
++    }
++
++    #[test]
++    fn batch_inserts_reduce_actual_statements_with_bounded_pending_bytes() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut scratch = open_scratch(
++            &directory.path().join("scratch.sqlite3"),
++            StreamingLimits::default(),
++        )
++        .unwrap();
++        let tx = scratch.transaction().unwrap();
++        let mut insert = CanonicalInsert::new(&tx, 0).unwrap();
++        for ordinal in 0..73 {
++            insert.push(ordinal.to_string(), ordinal).unwrap();
++            assert!(insert.pending.len() <= 64);
++            assert!(insert.pending_bytes <= PENDING_BYTES);
++        }
++        insert.flush().unwrap();
++        assert_eq!(insert.executed_tiers, [64, 8, 1]);
++        assert_eq!(insert.pending_bytes, 0);
++        assert!(insert.pending.is_empty());
++        drop(insert);
++        let mut insert = CanonicalInsert::new(&tx, 1).unwrap();
++        insert
++            .push(format!("\"{}\"", "x".repeat(PENDING_BYTES - 2)), 0)
++            .unwrap();
++        assert_eq!(insert.pending_bytes, PENDING_BYTES);
++        insert.push("1".into(), 1).unwrap();
++        assert_eq!(insert.pending_bytes, 1);
++        insert
++            .push(format!("\"{}\"", "y".repeat(PENDING_BYTES - 1)), 2)
++            .unwrap();
++        assert_eq!(insert.pending_bytes, 0);
++        insert.push("2".into(), 3).unwrap();
++        insert.flush().unwrap();
++        assert_eq!(insert.executed_tiers, [1, 1, 1, 1]);
++        drop(insert);
++        tx.commit().unwrap();
++        assert_eq!(ordered_rows(&scratch, 0).len(), 73);
++        assert_eq!(ordered_rows(&scratch, 1).len(), 4);
++    }
++
++    #[test]
++    fn batched_spool_budget_errors_match_original_and_never_commit_pending_rows() {
++        use rusqlite::types::Value as SqlValue;
++        let mut cases = Vec::new();
++        let short = vec![SqlValue::Integer(1); 67];
++        cases.push((
++            short.clone(),
++            StreamingLimits {
++                max_rows_per_table: 65,
++                ..StreamingLimits::default()
++            },
++            "row budget",
++        ));
++        let serialized_bytes = serde_json::to_string(&json!({"name":"same", "value":1}))
++            .unwrap()
++            .len() as u64;
++        cases.push((
++            short.clone(),
++            StreamingLimits {
++                max_canonical_bytes: serialized_bytes * 65,
++                ..StreamingLimits::default()
++            },
++            "canonical byte budget",
++        ));
++        let mut long_tail = short[..65].to_vec();
++        long_tail.push(SqlValue::Text("x".repeat(1024)));
++        cases.push((
++            long_tail,
++            StreamingLimits {
++                max_row_bytes: 128,
++                ..StreamingLimits::default()
++            },
++            "input row byte budget",
++        ));
++        // Escaping expands a valid input row beyond its serialized byte cap.
++        let mut escaped_tail = short[..65].to_vec();
++        escaped_tail.push(SqlValue::Text("\n".repeat(70)));
++        cases.push((
++            escaped_tail,
++            StreamingLimits {
++                max_row_bytes: 128,
++                ..StreamingLimits::default()
++            },
++            "serialized row byte budget",
++        ));
++        for (case, (values, limits, error_kind)) in cases.into_iter().enumerate() {
++            let directory = tempfile::tempdir().unwrap();
++            let source = source_rows(&values);
++            let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++            let mut reference =
++                open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++            let mut actual_bytes = 0;
++            let mut expected_bytes = 0;
++            let actual =
++                spool(&source, &mut batch, "symbols", 0, limits, &mut actual_bytes).unwrap_err();
++            let expected = reference_spool(
++                &source,
++                &mut reference,
++                "symbols",
++                0,
++                limits,
++                &mut expected_bytes,
++            )
++            .unwrap_err();
++            assert_eq!(actual.to_string(), expected.to_string(), "case {case}");
++            assert!(actual.to_string().contains(error_kind));
++            assert_eq!(actual_bytes, expected_bytes);
++            assert!(batch.is_autocommit() && reference.is_autocommit());
++            // These bounded fixtures fit in the existing cache. On actual
++            // disk/page failures the journal-OFF scratch is discarded, never
++            // reused or interpreted as a successfully compared partial table.
++            assert!(ordered_rows(&batch, 0).is_empty());
++            assert!(ordered_rows(&reference, 0).is_empty());
++        }
++    }
++
++    #[test]
++    fn batched_spool_scratch_exhaustion_remains_an_error() {
++        let directory = tempfile::tempdir().unwrap();
++        let values = vec![rusqlite::types::Value::Text("x".repeat(4096)); 100];
++        let source = source_rows(&values);
++        let limits = StreamingLimits {
++            max_scratch_bytes: 64 * 1024,
++            ..StreamingLimits::default()
++        };
++        let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++        let mut reference =
++            open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++        let actual = spool(&source, &mut batch, "symbols", 0, limits, &mut 0).unwrap_err();
++        let expected =
++            reference_spool(&source, &mut reference, "symbols", 0, limits, &mut 0).unwrap_err();
++        assert_eq!(actual.to_string(), expected.to_string());
++        assert!(actual.to_string().contains("full"));
++        assert!(batch.is_autocommit() && reference.is_autocommit());
++        drop(batch);
++        drop(reference);
++        directory.close().unwrap();
++    }
++
+     #[test]
+     fn sole_primary_tree_preserves_duplicate_order_without_external_sorting() {
+         let directory = tempfile::tempdir().unwrap();

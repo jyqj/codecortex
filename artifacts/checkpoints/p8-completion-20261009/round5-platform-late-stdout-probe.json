@@ -1,0 +1,63 @@
+{
+  "scope": "synthetic protocol counterexamples and actual loaded-observer snapshot; not product measurement",
+  "source": "227e896c36a50a614d1155d49d0ef430e5c33649",
+  "cases": [
+    {
+      "case": "clean_eof",
+      "synthetic_only": true,
+      "expected_accepted": true,
+      "accepted": true,
+      "exit_code": 0,
+      "raw_tail_preserved": true,
+      "reader_joined": true,
+      "error": null
+    },
+    {
+      "case": "late_bad_utf8",
+      "synthetic_only": true,
+      "expected_accepted": false,
+      "accepted": false,
+      "exit_code": 0,
+      "raw_tail_preserved": true,
+      "reader_joined": true,
+      "error": "product stdout tail must be valid and fully drained: {'session': 'late_bad_utf8', 'exit_code': 0, 'requested_sigkill': False, 'cleanup': False, 'stderr_sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'stdout_reader_joined': True, 'stdout_sha256': 'da86e3085a0c4f083889186b9ec370fb736cfbc32fe16c23ade259d06419e5ff', 'stdout_errors': [\"UnicodeDecodeError('utf-8', b'\\\\xff\\\\n', 0, 1, 'invalid start byte')\", 'unexpected terminal stdout: {\\'reader_error\\': \"UnicodeDecodeError(\\'utf-8\\', b\\'\\\\\\\\xff\\\\\\\\n\\', 0, 1, \\'invalid start byte\\')\"}'], 'terminal_notifications': None, 'stdout_policy': 'complete JSON and no unmatched response'}"
+    },
+    {
+      "case": "late_duplicate",
+      "synthetic_only": true,
+      "expected_accepted": false,
+      "accepted": false,
+      "exit_code": 0,
+      "raw_tail_preserved": true,
+      "reader_joined": true,
+      "error": "product stdout tail must be valid and fully drained: {'session': 'late_duplicate', 'exit_code': 0, 'requested_sigkill': False, 'cleanup': False, 'stderr_sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'stdout_reader_joined': True, 'stdout_sha256': 'ea72caee26a1430619002934e5ba73ce9d024dbc9f12dc3aba37b6331dc54a34', 'stdout_errors': [\"unexpected terminal stdout: {'jsonrpc': '2.0', 'id': 2, 'result': {}}\"], 'terminal_notifications': None, 'stdout_policy': 'complete JSON and no unmatched response'}"
+    },
+    {
+      "case": "late_notification",
+      "synthetic_only": true,
+      "expected_accepted": true,
+      "accepted": true,
+      "exit_code": 0,
+      "raw_tail_preserved": true,
+      "reader_joined": true,
+      "error": null
+    }
+  ],
+  "actual_loaded_observer_snapshots": {
+    "cold": {
+      "source_commit": "227e896c36a50a614d1155d49d0ef430e5c33649",
+      "inputs": 4,
+      "manifest_sha256": "d87e3adc524d3b80721b0601c3f657f46c67681c630299b4d97d17bafb4e8467"
+    },
+    "rollback": {
+      "source_commit": "227e896c36a50a614d1155d49d0ef430e5c33649",
+      "inputs": 4,
+      "manifest_sha256": "d87e3adc524d3b80721b0601c3f657f46c67681c630299b4d97d17bafb4e8467"
+    },
+    "full": {
+      "source_commit": "227e896c36a50a614d1155d49d0ef430e5c33649",
+      "inputs": 7,
+      "manifest_sha256": "d6620f2d5817bcc38471524487b967498e04ee9504c0c12631e1df6d414570f5"
+    }
+  }
+}

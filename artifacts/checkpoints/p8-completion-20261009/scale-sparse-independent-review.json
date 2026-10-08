@@ -1,0 +1,103 @@
+{
+  "actual_sparse_checkout": {
+    "all_other_tracked_files_present": true,
+    "cone_mode": false,
+    "fixed_driver": {
+      "inputs": {
+        "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+        "scripts/p8_scale_matrix.py": "c97dfcba5db12669c6d87650360caea61dfeea6ba046a7bd882516666949092f"
+      },
+      "manifest_sha256": "c67f9d1858432ad8533075fdeb431400248fd508bc44e9594bbde8a48b029230",
+      "source_commit": "743f9d5172d249606cd68abe247c68809bb44e04"
+    },
+    "patterns": [
+      "/*",
+      "!/artifacts/"
+    ],
+    "retained_tracked_files": 1647,
+    "root": "/dev/shm/a217aaae3bde/runtime-review/scale-sparse-checkout",
+    "root_artifacts_absent": true,
+    "strict_source_snapshot_input_count": 1087,
+    "strict_source_snapshot_manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59"
+  },
+  "change": "exactly four checkout sparse fields added; removing those 16 lines reproduces every prior workflow byte",
+  "commit": "743f9d5172d249606cd68abe247c68809bb44e04",
+  "controls": {
+    "actual_execution": "35 matrix tests and 8 runner-capacity tests passed independently; these test/script bytes are unchanged in this workflow-only commit",
+    "logs": {
+      "runner-capacity-controls.log": {
+        "last_lines": [
+          "",
+          "----------------------------------------------------------------------",
+          "Ran 8 tests in 2.315s",
+          "",
+          "OK"
+        ],
+        "sha256": "9d90f820bf8a9e85ffdd2d85bef98de06fa0d7cc283349ea152f170c8159a205"
+      },
+      "scale-matrix-controls.log": {
+        "last_lines": [
+          "",
+          "----------------------------------------------------------------------",
+          "Ran 35 tests in 1.213s",
+          "",
+          "OK"
+        ],
+        "sha256": "72f08b48fb12bac88c5b910776bc2eee2e550559786224d21f172a499a5fc8f5"
+      }
+    },
+    "matrix": "same 5 scales, 30 repetitions, preflight5+remaining145 shards, measure max-parallel10, all samples/deadlines/budgets/always uploads unchanged",
+    "yaml_structural_comparison": "equal to parent after deleting exactly new checkout fields"
+  },
+  "final_product_same_crate_cargo_scripts_and_workflow_bytes": true,
+  "final_product_source": "c0e4e255702cd951aeea0ee007259b1b4b8b7862",
+  "final_product_tree": "f1ebbcfc3fa6764b1010bfa8d91e86755edc2d46",
+  "jobs": [
+    "build",
+    "preflight",
+    "measure",
+    "aggregate"
+  ],
+  "official_action_metadata": {
+    "blob": "24e73e5a12126edc2adb9e5cd1bf245ce85bde56",
+    "path": "action.yml",
+    "ref": "v4",
+    "repository": "actions/checkout",
+    "supported_inputs": [
+      "sparse-checkout",
+      "sparse-checkout-cone-mode"
+    ],
+    "url": "https://github.com/actions/checkout/blob/v4/action.yml"
+  },
+  "parent": "9d3a0865e59379b496cf80651fdf3086e922fea7",
+  "required_input_review": {
+    "aggregate": "current-run downloaded build and all raw shard files in RUNNER_TEMP; original native replay and exact driver/source admission retained",
+    "broader_repository_boundary": "Some Rust tests and historical source-approval proofs require top-level artifacts. This change is only p8-scale.yml, whose build does not compile tests; all five cc-search root-artifact include_str references are under cfg(test); cc-server artifacts imports are integration tests. No universal artifact-free repo claim.",
+    "build": "complete crates/** plus Cargo.toml/Cargo.lock, default cc-eval p8-scale binary, exact scripts/p8_scale_matrix.py and p7_build_identity.py driver Git blobs",
+    "not_required_for_this_workflow": "top-level historical artifacts/",
+    "run": "same fixed checkout+downloaded build in RUNNER_TEMP; generated synthetic fixtures owned by native tempdir; registered capacity helper remains present"
+  },
+  "reviewed_inputs": {
+    "crates/cc-eval/src/benchmark/oracle.rs": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
+    "crates/cc-eval/src/benchmark/p8_scale.rs": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+    "crates/cc-eval/src/bin/p8-scale.rs": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90",
+    "crates/cc-eval/src/synth.rs": "7af80327ba392c3e067300b4ae090d2dbb779e98e581309b0048103727a4ed86",
+    "crates/cc-search/src/query_target.rs": "da97c1de15dd24acf1b863db4b06d1c2a82fd362d05b5e193f7211df186b9a6a",
+    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+    "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+    "scripts/p8_scale_matrix.py": "c97dfcba5db12669c6d87650360caea61dfeea6ba046a7bd882516666949092f",
+    "scripts/tests/test_p8_runner_capacity.py": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
+    "scripts/tests/test_p8_scale_matrix.py": "5bf621dfe3133c453d759b3f8d0932d19e67115f67982a8db5c837ad4a3fc755"
+  },
+  "reviewed_path": ".github/workflows/p8-scale.yml",
+  "scope_limits": [
+    "No compilation or new performance observation during this review",
+    "Existing actions/checkout@v4 ref unchanged; review does not introduce or certify third-party action pins",
+    "Build identity still describes complete crate/Cargo and exact drivers; no claim of a hermetic build",
+    "No TODO completion, benchmark success or release approval from sparse checkout alone"
+  ],
+  "unresolved_blockers": [],
+  "verdict": "accepted_scoped",
+  "workflow_sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+}

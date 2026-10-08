@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "assessment": "accepted_scoped_execution_evidence",
+  "created_at_utc": "2026-10-08T19:16:36.610625+00:00",
+  "execution_source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+  "previous_source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+  "artifact_id": 11570044727,
+  "artifact_root": "/workspace/scratch/a217aaae3bde/ci-artifacts/11570044727/extracted/p8-full-recovery",
+  "scope": [
+    "P8-016 actual public-source schema version rollback",
+    "P8-016 active cache-format, vector-space and namespace isolation",
+    "original seven production fault-test source/build/executable/result bindings"
+  ],
+  "integrity": {
+    "full_manifest_files": 488,
+    "manifest_exact_match": true,
+    "all_original_files_unchanged_after_review": true,
+    "full_recovery_json_sha256": "c3e5a51dcc75be887691284a44a93edb7c24cdcf246cf1de0e7144582a74c3ed",
+    "source_inputs_rehashed_against_git": {
+      "6e3eb4fd97edcf238774e74b88d397e059337bac": 1087,
+      "277f2490fad3fa30f2812b5547bad033867c9ea5": 704
+    }
+  },
+  "products": {
+    "default": {
+      "commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "binary_sha256": "033cf60e24e057ccd76cac369c84d2a1250f8bde9f75ed6e023dd85c00f177f3",
+      "schema": 25,
+      "source_manifest_sha256": "58fb5cc69de8054d4ce196a568f3d4d2ed1d6b28e122da3f838590b794d6aa7a",
+      "input_count": 1087,
+      "build_profile": "dev"
+    },
+    "semantic": {
+      "commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "binary_sha256": "9dc3edc0779b6e8c9ca3e7097b45c2027145d21b820dcef5787d3543a51c0c1b",
+      "schema": 25,
+      "source_manifest_sha256": "58fb5cc69de8054d4ce196a568f3d4d2ed1d6b28e122da3f838590b794d6aa7a",
+      "input_count": 1087,
+      "build_profile": "dev"
+    },
+    "semantic-http": {
+      "commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "binary_sha256": "d4cfe96d44bc8b41f0d93ad807e63061c8d029bfc25313316ddef2b17e298829",
+      "schema": 25,
+      "source_manifest_sha256": "58fb5cc69de8054d4ce196a568f3d4d2ed1d6b28e122da3f838590b794d6aa7a",
+      "input_count": 1087,
+      "build_profile": "dev"
+    },
+    "previous": {
+      "commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "binary_sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6",
+      "schema": 24,
+      "source_manifest_sha256": "aa075bde61e9aca29b43492bdf5d69009a7abc4fbde302eb7b48c40fa38d83a9",
+      "input_count": 704,
+      "build_profile": "dev"
+    }
+  },
+  "version_stages": [
+    {
+      "stage": "01-current-build",
+      "schema": 25,
+      "binary_sha256": "033cf60e24e057ccd76cac369c84d2a1250f8bde9f75ed6e023dd85c00f177f3",
+      "source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "schema_mismatch_diagnostics": 0,
+      "requests": 5,
+      "raw_wire_verified": true,
+      "cleanup": "completed",
+      "exit_code": 0
+    },
+    {
+      "stage": "02-previous-opens-current",
+      "schema": 24,
+      "binary_sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6",
+      "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "schema_mismatch_diagnostics": 1,
+      "requests": 5,
+      "raw_wire_verified": true,
+      "cleanup": "completed",
+      "exit_code": 0
+    },
+    {
+      "stage": "03-current-restored",
+      "schema": 25,
+      "binary_sha256": "033cf60e24e057ccd76cac369c84d2a1250f8bde9f75ed6e023dd85c00f177f3",
+      "source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "schema_mismatch_diagnostics": 1,
+      "requests": 5,
+      "raw_wire_verified": true,
+      "cleanup": "completed",
+      "exit_code": 0
+    },
+    {
+      "stage": "04-original-backup-restored",
+      "schema": 25,
+      "binary_sha256": "033cf60e24e057ccd76cac369c84d2a1250f8bde9f75ed6e023dd85c00f177f3",
+      "source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+      "schema_mismatch_diagnostics": 0,
+      "requests": 5,
+      "raw_wire_verified": true,
+      "cleanup": "completed",
+      "exit_code": 0
+    }
+  ],
+  "retained_database_snapshots": [
+    {
+      "path": "actual-version-pair/backups/current-original.sqlite3",
+      "sha256": "05e435b0c96c3b8b4c247eceda43a77166fc2564a8bc23aaaa5012b5af48f795",
+      "schema_version": 25,
+      "integrity": "ok",
+      "foreign_key_errors": 0,
+      "indexed_files": 2
+    },
+    {
+      "path": "actual-version-pair/backups/previous-rebuilt.sqlite3",
+      "sha256": "39135c49b1561fff2106becf3fcba7bfaf8397d0e3a6a489e4617e0a2ad01c92",
+      "schema_version": 24,
+      "integrity": "ok",
+      "foreign_key_errors": 0,
+      "indexed_files": 2
+    },
+    {
+      "path": "actual-version-pair/backups/current-rebuilt.sqlite3",
+      "sha256": "8e557669addf092f3c846ebe86ea2dafd45fe7cf198555984b0f44fccb66877c",
+      "schema_version": 25,
+      "integrity": "ok",
+      "foreign_key_errors": 0,
+      "indexed_files": 2
+    },
+    {
+      "path": "actual-version-pair/fixture/.codecortex/index.sqlite3",
+      "sha256": "51c9a5afe0dfe51cf4ef1c9bfb51b9a945f35bccb957c0e0440b9cd9c08e753d",
+      "schema_version": 25,
+      "integrity": "ok",
+      "foreign_key_errors": 0,
+      "indexed_files": 2
+    }
+  ],
+  "source_and_configuration_unchanged": true,
+  "cache_scope_resolution": {
+    "original_limited_drill_status": "not_run",
+    "original_record_preserved": true,
+    "format_gate": {
+      "case": "fault-test-04",
+      "test": "meta_tampering_is_detected_as_corrupt",
+      "source": "crates/cc-semantic/tests/artifact_cache.rs:250",
+      "specific_assertion": "format_version=99; CacheRead::Corrupt reason contains format_version",
+      "result": "1 passed; 0 failed; 0 ignored"
+    },
+    "space_isolation": {
+      "case": "fault-test-05",
+      "test": "different_spaces_never_cross_hit"
+    },
+    "namespace_isolation": {
+      "case": "fault-test-06",
+      "test": "namespaces_are_isolated"
+    },
+    "enabled_product_format_gates": [
+      {
+        "seed": 223,
+        "injected_format": 999,
+        "original_format": 1,
+        "rejection_status": "partial",
+        "rejection_reason": "semantic_artifact_unavailable",
+        "restored_status": "complete",
+        "raw_response_match": true,
+        "binary_sha256": "d4cfe96d44bc8b41f0d93ad807e63061c8d029bfc25313316ddef2b17e298829",
+        "observed_provider_requests": 6,
+        "paid_cost": null
+      },
+      {
+        "seed": 227,
+        "injected_format": 999,
+        "original_format": 1,
+        "rejection_status": "partial",
+        "rejection_reason": "semantic_artifact_unavailable",
+        "restored_status": "complete",
+        "raw_response_match": true,
+        "binary_sha256": "d4cfe96d44bc8b41f0d93ad807e63061c8d029bfc25313316ddef2b17e298829",
+        "observed_provider_requests": 6,
+        "paid_cost": null
+      },
+      {
+        "seed": 229,
+        "injected_format": 999,
+        "original_format": 1,
+        "rejection_status": "partial",
+        "rejection_reason": "semantic_artifact_unavailable",
+        "restored_status": "complete",
+        "raw_response_match": true,
+        "binary_sha256": "d4cfe96d44bc8b41f0d93ad807e63061c8d029bfc25313316ddef2b17e298829",
+        "observed_provider_requests": 6,
+        "paid_cost": null
+      }
+    ],
+    "conclusion": "Limited rollback's missing active-reader subcase is explicitly covered by the actual original cache tests and three enabled-product stdio seeds at the same source; no evidence gap in this scoped cache gate."
+  },
+  "original_fault_tests": [
+    {
+      "case": "fault-test-00",
+      "name": "isolated_sigkill_reopen_replay_preparation",
+      "package": "cc-semantic",
+      "target": "p7_crash_preparation",
+      "executable_sha256": "b9cff3b32c6f62af2dd8f4b953db50117b780e777647732a0c2b08151599a853",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-00/fault-test",
+        "--exact",
+        "isolated_sigkill_reopen_replay_preparation",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest isolated_sigkill_reopen_replay_preparation ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 18.72s"
+    },
+    {
+      "case": "fault-test-01",
+      "name": "independently_observed_sigkill_boundaries",
+      "package": "cc-semantic",
+      "target": "crash_independent_review",
+      "executable_sha256": "3b4abcbf5cbcbe5be526fbbf6ea62bf1406ce010bac1bb4342053086c37a5f26",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-01/fault-test",
+        "--exact",
+        "independently_observed_sigkill_boundaries",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest independently_observed_sigkill_boundaries ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 45.96s"
+    },
+    {
+      "case": "fault-test-02",
+      "name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+      "package": "cc-db",
+      "target": null,
+      "executable_sha256": "ecedaafd20b0cbc3c1615337d6e5cebd013c0d0c48585e8fabfe57eeae9f71cc",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-02/fault-test",
+        "--exact",
+        "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 192 filtered out; finished in 0.88s"
+    },
+    {
+      "case": "fault-test-03",
+      "name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+      "package": "cc-db",
+      "target": null,
+      "executable_sha256": "ecedaafd20b0cbc3c1615337d6e5cebd013c0d0c48585e8fabfe57eeae9f71cc",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-03/fault-test",
+        "--exact",
+        "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 192 filtered out; finished in 0.14s"
+    },
+    {
+      "case": "fault-test-04",
+      "name": "meta_tampering_is_detected_as_corrupt",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-04/fault-test",
+        "--exact",
+        "meta_tampering_is_detected_as_corrupt",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest meta_tampering_is_detected_as_corrupt ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.01s"
+    },
+    {
+      "case": "fault-test-05",
+      "name": "different_spaces_never_cross_hit",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-05/fault-test",
+        "--exact",
+        "different_spaces_never_cross_hit",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest different_spaces_never_cross_hit ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s"
+    },
+    {
+      "case": "fault-test-06",
+      "name": "namespaces_are_isolated",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-06/fault-test",
+        "--exact",
+        "namespaces_are_isolated",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest namespaces_are_isolated ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s"
+    }
+  ],
+  "unresolved_blockers_in_reviewed_scope": [],
+  "limits": [
+    "No product rebuild, new fault execution, or writable database operation was performed during this review.",
+    "Actual builds used dev profile as declared; this is recovery/correctness evidence, not cold release performance evidence.",
+    "Two public source revisions are not relabelled as released package versions; paid-provider, arbitrary power-loss and physical-device claims remain excluded.",
+    "This review certifies only the named original 6e3 execution scope, not later heads.",
+    "P8-016 and related tasks retain their original hard dependencies; this file closes zero tasks and does not change the remaining total of 29."
+  ],
+  "task_completion_certified": false
+}

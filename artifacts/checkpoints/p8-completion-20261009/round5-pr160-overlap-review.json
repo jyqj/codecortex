@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "scope": "read-only exact-source PR relationship audit; targeted synthetic controls; no remote mutations or task closure",
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "pr159": {
+    "number": 159,
+    "url": "https://github.com/jyqj/codecortex/pull/159",
+    "observed_head": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "branch": "task/p8-complete-a217-20261009",
+    "github_author": "jyqj",
+    "draft": true
+  },
+  "pr160": {
+    "number": 160,
+    "url": "https://github.com/jyqj/codecortex/pull/160",
+    "observed_head": "bb9a96d71622458c39a143055360cc97f0d11d78",
+    "branch": "task/p8-completion-20261009",
+    "github_author": "jyqj",
+    "draft": true,
+    "created_at": "2026-10-08T19:12:09Z",
+    "commits": [
+      {
+        "sha": "4b2e4267dc294aa5844c7d437d3f385a89bd15aa",
+        "subject": "Advance P8 scale, runtime, recovery and platform acceptance infrastructure",
+        "author_name": "金亦求金",
+        "committer_name": "金亦求金"
+      },
+      {
+        "sha": "7e4e4fefb8a5302b90579a41f4d334fe176aeb3f",
+        "subject": "Complete P8 implementation and provenance controls for formal acceptance",
+        "author_name": "金亦求金",
+        "committer_name": "金亦求金"
+      },
+      {
+        "sha": "32674879181b5fd6e8117167eab38922a7f1187d",
+        "subject": "Record independent review of fixed P8 source and validation inputs",
+        "author_name": "金亦求金",
+        "committer_name": "金亦求金"
+      },
+      {
+        "sha": "bb9a96d71622458c39a143055360cc97f0d11d78",
+        "subject": "Pin independently reviewed P8 source and preserve original engineering evidence",
+        "author_name": "金亦求金",
+        "committer_name": "金亦求金"
+      }
+    ]
+  },
+  "relationship": {
+    "status": "diverged",
+    "pr160_ahead": 4,
+    "pr160_behind": 10,
+    "source_guard_collision": "Both introduce identical v15 source-version and same registry/verifier/review-path names but different exact PRODUCT/REVIEW/registry hashes. Do not merge approval metadata blindly. The account and commit author do not identify the originating human or agent session."
+  },
+  "task_ledger": {
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "exact_159_160_equal": true,
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "original_ten_status": "all in_progress"
+  },
+  "unique_fixes_recommended": [
+    {
+      "scope": "platform portable verifier + loaded observer binding",
+      "files": [
+        "scripts/p8_cold_build.py",
+        "scripts/p8_recovery.py",
+        "scripts/p8_rollback.py",
+        ".github/workflows/p8-platform.yml",
+        "scripts/tests/test_p8_platform.py",
+        "scripts/tests/test_p8_platform_independent_review.py"
+      ],
+      "classification": "Reproducible acceptance validator defects, not additional task thresholds; actual raw already reviewed is not retroactively invalidated."
+    },
+    {
+      "scope": "active fault stdio complete output and SQLite connection cleanup",
+      "files": [
+        "scripts/p7_fault_lifecycle_stdio.py"
+      ],
+      "classification": "Old normal exit can discard malformed or duplicate terminal output; explicit close fixes an observer resource leak."
+    },
+    {
+      "scope": "scale producer command/original-copy origin",
+      "files": [
+        "scripts/p8_scale_matrix.py",
+        "scripts/tests/test_p8_scale_matrix.py"
+      ],
+      "classification": "Replay semantic origin binding gap; separately reviewed by scale agent."
+    }
+  ],
+  "preserve_159_deltas": [
+    "runtime/backfill new private Cargo target, original compiler/toolchain and fresh artifact binding",
+    "backfill --no-default-features with exact semantic feature contract and seal controls",
+    "shared nearest-rank implementation and corresponding tests",
+    "project_session deterministic worker handshake fix",
+    "new doc_key FK child index maintenance",
+    "registered scale preflight orchestration"
+  ],
+  "source_comparison": {
+    "downloaded_core_paths": 56,
+    "all_22_pr160_rust_delta_paths_compared": true,
+    "identical_159_rust_delta_paths": 21,
+    "remaining_rust_difference": "p8_scale.rs !is_some_and(s.count == repetitions) vs is_none_or(s.count != repetitions), logically equivalent; do not port solely for parity"
+  },
+  "targeted_transfer": {
+    "platform_commit": "3805dd23b12153d77326e69f22e7eb4b6881e74a",
+    "local_base": "9d3a0865e59379b496cf80651fdf3086e922fea7",
+    "repository": "/dev/shm/a217aaae3bde/codecortex-platform-port",
+    "patch": "/dev/shm/a217aaae3bde/platform-review/pr-160-platform-required.patch",
+    "original_exact_source": "bb9a96d71622458c39a143055360cc97f0d11d78",
+    "preserved_guard_runtime_rust": true,
+    "scale_commit": "227e896c36a50a614d1155d49d0ef430e5c33649",
+    "scale_patch": "/dev/shm/a217aaae3bde/platform-review/pr-160-scale-origin-commit.patch",
+    "scale_independent_review": "/dev/shm/a217aaae3bde/scale-pr160-review/source-independent-review.json",
+    "platform_independent_review": "pending runtime_closeout review of 3805dd23b12153d77326e69f22e7eb4b6881e74a"
+  },
+  "controls": {
+    "ported_platform": {
+      "passed": 55,
+      "failed": 0,
+      "log": "/dev/shm/a217aaae3bde/platform-review/pr-160-port-platform-controls.log"
+    },
+    "ported_recovery": {
+      "passed": 24,
+      "failed": 0,
+      "log": "/dev/shm/a217aaae3bde/platform-review/pr-160-port-recovery-controls.log"
+    },
+    "historical_synthetic_counterexamples": "/dev/shm/a217aaae3bde/platform-review/pr-160-old-acceptance-probe.json",
+    "scale": {
+      "passed": 39,
+      "failed": 0,
+      "executor": "scale_closeout",
+      "additional_control": "conflicting compiler-artifact candidate accepted by historical validator, rejected by selected validator"
+    }
+  },
+  "recommendation": [
+    "Retain both drafts while extracting unique changes; no close or merge was performed.",
+    "Continue #159 integration with the minimal independently reviewed platform/recovery and scale commits. Preserve #160 engineering originals with their own source identities.",
+    "Create one new fixed product/review/guard chain for the integrated source, then bind new formal executions to that exact source. Do not transplant either old approval record or relabel earlier measurements.",
+    "Close a superseded PR only after its unique code and original evidence have been mapped and accounted for; tasks remain 29 until original acceptance plus hard dependencies are satisfied."
+  ],
+  "evidence_sha256": {
+    "pr-160-remote-inputs-v2.json": "e83bd75581b5ffa826d48492d62b0fe3389768d87419956e52b57304fc35c97f",
+    "pr-160-path-comparison.json": "c0e3f70ca6d88b288f392bef4540e396b0ec312c97703df3c5fdf8241cbd57bf",
+    "pr-160-old-acceptance-probe.json": "3a08566a484ef1bd2f8b02073dbaba5867726f13aa7b3f43d7c3f14a40bb6969",
+    "pr-160-port-platform-controls.log": "c9ce741dfea1ac1619d4cc88ed22c4fc3d0b187cdab1880f0a7772293b24c73c",
+    "pr-160-port-recovery-controls.log": "f89a345b3f87e63af7045edf931a66d3b91bfa2d80034d6c39b880b0da278032"
+  }
+}

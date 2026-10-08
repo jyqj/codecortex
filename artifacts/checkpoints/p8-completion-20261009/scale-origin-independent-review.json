@@ -1,0 +1,94 @@
+{
+  "schema": "p8-scale-producer-origin-independent-review-v1",
+  "reviewed_utc": "2026-10-08T19:38:48.176231+00:00",
+  "reviewer": "/root/scale_closeout",
+  "candidate_pr": 160,
+  "candidate_source_commit": "bb9a96d71622458c39a143055360cc97f0d11d78",
+  "comparison_commit": "743f9d5172d249606cd68abe247c68809bb44e04",
+  "decision": "approved_minimal_two_file_port",
+  "files": {
+    "scripts/p8_scale_matrix.py": {
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "bytes": 65092
+    },
+    "scripts/tests/test_p8_scale_matrix.py": {
+      "git_blob": "cb9fc9972fa3068c026e2e549cc40089f6de310a",
+      "sha256": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
+      "bytes": 34929
+    }
+  },
+  "scope": "Only the two producer-origin scale Python blobs; this is not an approval of all PR 160 changes or formal product acceptance.",
+  "changed_functions": [
+    "build",
+    "validate_build"
+  ],
+  "added_functions": [
+    "build_command",
+    "producer_path",
+    "verify_build_origin"
+  ],
+  "non_function_module_content_unchanged": true,
+  "critical_protocol_functions_byte_identical": [
+    "registered_plan",
+    "capacity_contract",
+    "run_shard",
+    "check_parity",
+    "check_build_report",
+    "inspect_raw",
+    "validate_shard",
+    "summarize_group",
+    "combine",
+    "aggregate"
+  ],
+  "all_prior_test_definitions_byte_identical": true,
+  "new_test_class": [
+    "PortableBuildOriginControls"
+  ],
+  "controls": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s /dev/shm/a217aaae3bde/scale-pr160-review/scripts/tests -p 'test_p8_scale_matrix.py'",
+      "passed": 39,
+      "failed": 0,
+      "scope": "Synthetic protocol controls; source/origin tests do not compile a native executable."
+    },
+    {
+      "file": "legacy-origin-negative-controls.json",
+      "result": "Original 6e3 baseline accepted; three deliberately resealed local inconsistencies also accepted by legacy validator; all original files unchanged."
+    },
+    {
+      "file": "new-conflicting-candidate-control.json",
+      "result": "The new validator rejects an additional conflicting same-name Cargo artifact."
+    }
+  ],
+  "actual_original_evidence": {
+    "run_id": 37824742267,
+    "source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+    "artifact_id": 11569994871,
+    "status": "Authentic preserved original still passes its exact legacy validator; no contradictory Cargo path or additional candidate observed.",
+    "missing_new_fields": [
+      "build_root",
+      "target_directory",
+      "copy_source",
+      "binary_bytes"
+    ],
+    "no_backfill": true,
+    "scope": "Original builder did enforce live root/target at production time. New copied-source hash/size was not recorded historically and cannot be reconstructed as an original observation."
+  },
+  "compatibility": {
+    "matrix_cells": 150,
+    "repetitions_per_group": 30,
+    "sample_count": 1500,
+    "all_budgets_thresholds_populations_and_oracle_controls_unchanged": true,
+    "portable_replay": "Producer paths are compared lexically against preserved absolute roots, without resolving or requiring the prior VM filesystem.",
+    "source_freeze": "A fresh exact-source build and all 150 slices are required after the new driver is admitted. Historical driver-bound receipts remain separate.",
+    "workflow": "Port only the two files; retain the existing two-stage sparse workflow and max-parallel 5/10."
+  },
+  "limitations": [
+    "Receipt consistency and observed trusted build-chain validation do not constitute an independently signed or hermetic build attestation.",
+    "No native performance or full matrix execution was performed by these protocol controls."
+  ],
+  "blockers": [],
+  "task_statuses_changed": false,
+  "remaining_todos": 29
+}

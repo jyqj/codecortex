@@ -72,3 +72,16 @@ The original task baseline remains 192 total, 163 complete, 29 outstanding
 until the requested full acceptance evidence is available.
 `pr-triage-applied.json` records the subsequent exact-head recheck and additive
 labels: 43 `needs-review`, 11 `needs-ci-fix`, and one `needs-rebase`.
+
+## Round 4: real executions and follow-up source review
+
+The original task ledger is still **163/192 done; 29 remaining**. No original TODO is closed by a source review, a partial scale matrix, or a successful subordinate execution.
+
+- The `6e3eb4fd97edcf238774e74b88d397e059337bac` scale run retained three accepted rep-0 shards (1k/5k/10k): 32 of 1,500 registered samples. Its 50k and 100k observations were still running at this checkpoint. All original ZIPs and execution identities remain intact.
+- The corrected backfill at `f8ca8070592a1bc03cedc2df4e27e1382a3077a7` passed actual execution and independent raw review: 768 unique complete requests, three seeds, two worker states and C1/4/8/16. Its source, observer files, exact semantic-only fresh release build, original request-level percentiles, writer control, stale-publication fence and resource measurements were verified. See `round4-backfill-f8-independent-review.json`.
+- Recovery at `6e3eb4fd97edcf238774e74b88d397e059337bac` passed scoped independent review of 488 original sealed files, seven exact fault tests and real public-source binary schema transitions 25 → 24 → 25. See `round4-recovery-6e3-independent-review.json`; its explicitly unrun scenario remains unrun.
+- A missing child-key index caused SQLite to scan `chunk_symbol_identity` for parent document deletions. The follow-up adds a non-unique index to fresh schema and normal schema-25 maintenance. Root executed all five Rust schema-guard tests successfully; an independent reviewer also checked the exact source and SQLite access-path negative control. See the `doc-key-index-*` review records. This is not a performance certification.
+- The earlier HTTP benchmark failure (528.02 ms versus the unchanged 500 ms limit) remains recorded. The same test later passed at `f8ca807`, before the new child-key index was present, so that success is not attributed to the index patch.
+- Scale checkout omits only root historical `artifacts/`; the complete 1,087 product inputs, 135 validation inputs, all registered phases, 150 shards, 1,500 samples and original budgets remain required. The independent sparse-checkout review is scoped specifically to the scale workflow.
+
+All prior observations retain their original source and outcome. They are not reissued as observations of a later candidate. The next source admission and complete executions are required before task transitions.

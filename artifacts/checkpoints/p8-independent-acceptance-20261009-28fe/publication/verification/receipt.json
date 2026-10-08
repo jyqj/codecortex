@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "scope": "Actual source-admission verification after publication-identity rebinding; original local controls and their original identities are preserved separately; no original task acceptance",
+  "product": "b592d57756adf20361e18a2b54045aedfb056cd8",
+  "review": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+  "head_at_verification_start": "88f864b59320dc24c0db549551ac695667cbe247",
+  "started_utc": "2026-10-08T19:55:55.904429+00:00",
+  "guard_sha256": "4a05212b5425b4880cfa1778a96439e7c6d6d42e255cb8f3a0d37fef617997a4",
+  "registry_sha256": "240cb049bff8fa1d40910383d7e240e3838828ffce0fd5df8ba0cd4265d46614",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 186.9564305150052,
+      "log": "published-proof-00.log",
+      "log_sha256": "df3fe5bfdaa64ae3f6ba13c00a45549f00b5f94dcc9366cf6dbfa2e2f145e4b1"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.091155564005021,
+      "log": "published-proof-01.log",
+      "log_sha256": "f89e30bd04896781879968f89b03a66f5f47271046cf377fe3c4e518e49ac159"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "scripts/p8_facts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.08612350100156618,
+      "log": "published-proof-02.log",
+      "log_sha256": "babfeffa791f652b292238b130e5bfe3fcd59b8ba6a4117636353533024e320b"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.032667436003976036,
+      "log": "published-proof-03.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "completed_utc": "2026-10-08T19:59:03.075598+00:00",
+  "passed": true
+}

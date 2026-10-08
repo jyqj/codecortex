@@ -292,6 +292,9 @@ pub fn recover_scan(
             continue;
         }
         let input = InputDigest::new(task.input_digest.clone());
+        // A replay can publish an aged object without a re-put. Protect the
+        // verified read through CAS, not merely a freshness timestamp.
+        let _mutation = cache.lock_mutation()?;
         match cache.get(space, &input, doc_spec)? {
             CacheRead::Hit(hit) => {
                 let outcome = publish_replay(

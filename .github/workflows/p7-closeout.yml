@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: dtolnay/rust-toolchain@1.95.0
       - name: Bind current source and isolated build
         run: |
@@ -34,6 +36,64 @@ jobs:
           out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'
           (out / 'source-before.json').write_bytes(json_bytes(source_snapshot(pathlib.Path.cwd())))
           PY
+
+      - name: Actual cache races, process faults and WAL recovery
+        run: |
+          set -o pipefail
+          cargo test -p cc-db --locked --lib -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/db-rebuild-faults.log"
+          cargo test -p cc-db --locked --test semantic_rebuild --test semantic_recovery \
+            --test semantic_publish --test semantic_lease --test semantic_queue -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/db-lifecycle.log"
+          cargo test -p cc-semantic --locked --all-targets -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/semantic-fault-matrix.log"
+
+      - name: Original default, semantic and HTTP wiring contracts
+        run: |
+          set -o pipefail
+          cargo test -p cc-server --locked --test p7_v18_parameter_contract --test mcp_stdio \
+            -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-closeout/default-wiring.log"
+          cargo test -p cc-server --locked --features semantic --test p7_v18_parameter_contract \
+            --test p7_gc_retention_config --test p7_runtime_independent_review -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/semantic-wiring.log"
+          cargo test -p cc-server --locked --features semantic-http --lib -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/http-runtime.log"
+          cargo test -p cc-server --locked --features semantic-http --test p7_v18_parameter_contract \
+            --test p7_v18_fault_contract --test p7_runtime_independent_review \
+            --test p7_gc_retention_config --test mcp_stdio -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/http-wiring.log"
+          cargo test -p cc-model --locked --lib semantic_ -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/semantic-config.log"
+
+      - name: Original thirteen-checkpoint real stdio lifecycle
+        run: |
+          set -o pipefail
+          cargo build -p cc-server --bin codecortex --features semantic-http --locked \
+            --message-format=json-render-diagnostics \
+            > "$RUNNER_TEMP/p7-closeout/http-product-build.jsonl" \
+            2> "$RUNNER_TEMP/p7-closeout/http-product-build.stderr.log"
+          sha256sum "$CARGO_TARGET_DIR/debug/codecortex" > "$RUNNER_TEMP/p7-closeout/http-product.sha256"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'
+          rows = [json.loads(x) for x in (out / 'http-product-build.jsonl').read_text().splitlines()]
+          rows = [x for x in rows if x.get('reason') == 'compiler-artifact'
+                  and x.get('target', {}).get('name') == 'codecortex'
+                  and x.get('target', {}).get('kind') == ['bin'] and x.get('executable')]
+          assert len(rows) == 1 and 'semantic-http' in rows[0]['features'], rows
+          binary = out / 'http-codecortex'
+          shutil.copy2(rows[0]['executable'], binary)
+          digest = hashlib.sha256(binary.read_bytes()).hexdigest()
+          assert digest == hashlib.sha256(pathlib.Path(rows[0]['executable']).read_bytes()).hexdigest()
+          receipt = {'binary_path': str(binary), 'binary_sha256': digest,
+                     'build_exit_code': 0, 'cargo_artifact': rows[0],
+                     'source_before': json.loads((out / 'source-before.json').read_text()),
+                     'cargo_log_sha256': hashlib.sha256((out / 'http-product-build.jsonl').read_bytes()).hexdigest()}
+          (out / 'http-build-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
+          python3 artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py \
+            "$RUNNER_TEMP/p7-closeout/http-codecortex" "$RUNNER_TEMP/p7-closeout/lifecycle" \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/lifecycle.log"
 
       - name: Attributed resources and actual worker contention
         env:
@@ -66,4 +126,75 @@ jobs:
         with:
           name: p7-closeout-${{ github.sha }}
           path: ${{ runner.temp }}/p7-closeout
+          if-no-files-found: error
+
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [default, semantic]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Check process identity and real network negative controls
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/p7-offline"
+          python3 -m unittest discover -s scripts/tests -p test_p7_offline_network.py -v \
+            2>&1 | tee "$RUNNER_TEMP/p7-offline/network-controls.log"
+          rustc --edition 2021 --test crates/cc-eval/tests/support/p7_procfs.rs \
+            -o "$RUNNER_TEMP/p7-offline/procfs-controls"
+          "$RUNNER_TEMP/p7-offline/procfs-controls" --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-offline/procfs-controls.log"
+      - name: Build exact package with original private target receipt
+        run: |
+          python3 scripts/p7_stdio_build_receipt.py --package-kind '${{ matrix.package }}' \
+            --output-dir "$RUNNER_TEMP/p7-offline/product" \
+            > "$RUNNER_TEMP/p7-offline/product-build-summary.json"
+      - name: Build committed adapter test runner
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p7-offline-runner-target
+        run: |
+          cargo test -p cc-eval --test benchmark_adapters --locked --no-run \
+            --message-format=json-render-diagnostics \
+            > "$RUNNER_TEMP/p7-offline/runner-build.jsonl" \
+            2> "$RUNNER_TEMP/p7-offline/runner-build.stderr.log"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-offline'
+          rows = [json.loads(line) for line in (out / 'runner-build.jsonl').read_text().splitlines()]
+          artifacts = [x for x in rows if x.get('reason') == 'compiler-artifact'
+                       and x.get('target', {}).get('name') == 'benchmark_adapters'
+                       and x.get('executable')]
+          assert len(artifacts) == 1, artifacts
+          binary = pathlib.Path(artifacts[0]['executable'])
+          receipt = {'cargo_artifact': artifacts[0],
+                     'sha256': hashlib.sha256(binary.read_bytes()).hexdigest()}
+          (out / 'runner-identity.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('P7_OFFLINE_RUNNER=' + str(binary) + '\n')
+          PY
+      - name: Original fourteen tools, initial run and reopen, under fatal network guard
+        env:
+          CODECORTEX_BENCH_BINARY: ${{ runner.temp }}/p7-offline/product/codecortex
+          P7_017_PACKAGE_KIND: ${{ matrix.package }}
+          P7_017_BUILD_RECEIPT: ${{ runner.temp }}/p7-offline/product/build-receipt.json
+          CODECORTEX_BENCH_OBSERVATIONS: ${{ runner.temp }}/p7-offline/observations.jsonl
+        run: |
+          set -o pipefail
+          python3 scripts/p7_offline_network.py --receipt "$RUNNER_TEMP/p7-offline/parent-policy.json" -- \
+            "$P7_OFFLINE_RUNNER" p7_offline::real_stdio_default_disabled_semantic_contract \
+            --ignored --exact --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-offline/product-matrix.log"
+      - name: Archive package, commands, identities and raw observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-offline-${{ matrix.package }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p7-offline
+            !${{ runner.temp }}/p7-offline/product/cargo-target
           if-no-files-found: error

@@ -224,6 +224,9 @@ pub fn reconcile_after_rebuild(
             continue;
         }
         let input = InputDigest::new(task.input_digest.clone());
+        // Reuse has no put, but its verified read and CAS need the same GC
+        // exclusion as Publisher. No provider call holds this lease.
+        let _mutation = cache.lock_mutation()?;
         match cache.get(space, &input, doc_spec)? {
             CacheRead::Hit(hit) => {
                 let outcome = publish_cached(

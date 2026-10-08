@@ -198,7 +198,8 @@ fn resources(stage: &str) -> Value {
         "stage":stage,"topology":"runner, CodeIndex and fake provider share one process",
         "shared_process_owner":{"components":["test_runner","CodeIndex","fake_provider"],"usage":usage},
         "server":{"separate_pid":null,"status":"included in shared_process_owner; not separately summed"},
-        "server_tree":{"separate_processes":false,"status":"fixture creates threads, no child server or provider processes"},
+        "server_tree":{"separate_server_or_provider_process":false,
+            "child_process_usage":null,"status":"server/provider share caller; transient git/probe children are not measured by RUSAGE_SELF"},
         "raw_sampler":raw,"raw_process_snapshot":snapshot,
         "current_executable":std::env::current_exe().ok(),
         "proc_executable":std::fs::read_link(format!("/proc/{pid}/exe")).ok(),
@@ -308,7 +309,8 @@ async fn run(seed: u64) {
         "worker_local_attempt_width":LOCAL_ATTEMPT_WIDTH,"worker_claim_round_cap":16,
         "operations":["ready backfill","quiet local queries","hold actual provider calls after changed build",
                       "held local queries and DB transaction control","write/delete","retire model","release and drain"],
-        "performance_sla":null,"resource_method":"direct kernel SELF CPU and lifetime RSS high-water; combined in-process owner", "full_task_acceptance":"independent closeout review required"}),
+        "performance_sla":null,"resource_method":"direct kernel SELF CPU and lifetime RSS high-water; combined in-process owner",
+        "full_task_acceptance":false,"review_status":"independent closeout review required"}),
     );
     let root = tempfile::tempdir().unwrap();
     let mut config = ProjectConfig::default();
@@ -516,7 +518,7 @@ async fn run(seed: u64) {
             "fixed_watchdogs":{"local_query_ms":2000,"progress_ms":5000},
             "performance_delta_gate":"not evaluated: no new SLA, stable-device baseline or confidence interval invented",
             "resource_attribution_gate":after_resources["resource_gate"],
-            "full_p7_015_complete":"independent closeout review required",
+            "full_p7_015_complete":false,"review_status":"independent closeout review required",
             "scope":"actual CodeIndex/post-index worker; synthetic vectors; existing HTTP fairness and original lifecycle tests are separate controls",
         }),
     );

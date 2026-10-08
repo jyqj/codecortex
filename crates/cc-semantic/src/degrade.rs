@@ -126,6 +126,10 @@ pub fn quarantine_object(
 ) -> CcResult<Option<QuarantineRecord>> {
     space.validate()?;
     let space_digest = space.digest()?;
+    if !cache.namespace_dir().try_exists()? {
+        return Ok(None);
+    }
+    let _mutation = cache.lock_mutation()?;
     let dir = cache
         .root()
         .join(format!("{NAMESPACE_DIR_PREFIX}{}", cache.namespace()))

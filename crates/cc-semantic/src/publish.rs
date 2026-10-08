@@ -116,17 +116,39 @@ impl<'a> Publisher<'a> {
         vector: &[f32],
         now_unix: i64,
     ) -> CcResult<PublishVerdict> {
+        self.publish_embedding_with_verify_hook(task, vector, now_unix, || {})
+    }
+
+    pub(crate) fn publish_embedding_with_verify_hook(
+        &self,
+        task: &ClaimedTask,
+        vector: &[f32],
+        now_unix: i64,
+        after_verify: impl FnOnce(),
+    ) -> CcResult<PublishVerdict> {
         let input = InputDigest::new(task.input_digest.clone());
+        if let Err(e) = crate::cache::validate_vector(self.space, vector) {
+            return Ok(PublishVerdict::ArtifactNotVerified {
+                reason: format!("cache put failed: {e}"),
+            });
+        }
+        // Lock order is cache namespace → DB. No network call occurs while
+        // this lease is held; GC cannot unlink between verified put and CAS.
+        let mutation = match self.cache.lock_mutation() {
+            Ok(mutation) => mutation,
+            Err(e) => {
+                return Ok(PublishVerdict::ArtifactNotVerified {
+                    reason: format!("cache mutation lock failed: {e}"),
+                });
+            }
+        };
 
         // 1. artifact durable FIRST (idempotent: same tuple converges to the
         //    same ref, so a crash-replay re-put is a no-op overwrite). A put
         //    failure (dimension mismatch, NaN/Inf payload, I/O) ends the
         //    attempt before the database is touched.
         let artifact_ref: ArtifactRef =
-            match self
-                .cache
-                .put(self.space, &input, self.doc_spec, vector, now_unix)
-            {
+            match mutation.put(self.space, &input, self.doc_spec, vector, now_unix) {
                 Ok(reference) => reference,
                 Err(e) => {
                     return Ok(PublishVerdict::ArtifactNotVerified {
@@ -162,6 +184,7 @@ impl<'a> Publisher<'a> {
 
         // 3. manifest CAS (five-way fencing + Q4 visible-set diff + fenced
         //    ack, one transaction inside cc-db).
+        after_verify();
         let request = PublishRequest {
             task_id: task.task_id,
             lease_token: task.token.as_str(),

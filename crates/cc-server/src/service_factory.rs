@@ -160,10 +160,15 @@ impl SemanticWorkerStatus {
     pub(crate) fn round_failed(&self) {
         self.0.store(2, Ordering::Release);
     }
+    #[cfg(feature = "semantic")]
+    pub(crate) fn gc_failed(&self) {
+        self.0.store(3, Ordering::Release);
+    }
     pub fn failure_reason(&self) -> Option<&'static str> {
         match self.0.load(Ordering::Acquire) {
             1 => Some("semantic_provider_assembly_failed"),
             2 => Some("semantic_worker_round_failed"),
+            3 => Some("semantic_worker_gc_failed"),
             _ => None,
         }
     }

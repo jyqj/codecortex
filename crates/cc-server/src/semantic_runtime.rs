@@ -11,6 +11,10 @@ use std::sync::{
     Arc, Mutex, OnceLock,
 };
 
+#[cfg(test)]
+#[path = "semantic_runtime_maintenance_tests.rs"]
+mod maintenance_tests;
+
 /// Apply the query absolute deadline and cancellation to an injected HTTP
 /// transport before provider assembly. Wrapping performs no network I/O.
 pub fn query_transport_with_budget(
@@ -35,6 +39,9 @@ pub struct SemanticRuntime {
     requested: AtomicBool,
     backfill_cursor: Mutex<Option<String>>,
     configured_transition: Mutex<Option<String>>,
+    // One GC page per authorized finite job. More cache entries never start
+    // another job: the next explicit/post-index request resumes this cursor.
+    gc_cursor: Mutex<Option<cc_semantic::gc::GcPosition>>,
 }
 type ProviderFactory = dyn Fn(tokio_util::sync::CancellationToken) -> CcResult<Arc<dyn EmbeddingProvider>>
     + Send
@@ -87,6 +94,7 @@ impl SemanticRuntime {
             // Reopening an active index must also reconcile missing desired rows.
             backfill_cursor: Mutex::new(Some(String::new())),
             configured_transition: Mutex::new(None),
+            gc_cursor: Mutex::new(None),
         }))
     }
     /// Lazy factory seam: the factory runs once per finite blocking job, and
@@ -203,6 +211,7 @@ impl SemanticRuntime {
                 }
             };
             let mut continue_work = false;
+            let mut completed_round = false;
             for _ in 0..64 {
                 let Some(provider) = provider.as_ref() else {
                     break;
@@ -211,6 +220,7 @@ impl SemanticRuntime {
                 match running.0.run_round_with(provider.as_ref()) {
                     Ok(more) => {
                         continue_work = more;
+                        completed_round = true;
                         running.0.status.clear();
                         if !more && !running.0.requested.load(Ordering::Acquire) {
                             break;
@@ -218,6 +228,7 @@ impl SemanticRuntime {
                     }
                     Err(error) => {
                         continue_work = false;
+                        completed_round = false;
                         running.0.status.round_failed();
                         tracing::warn!(%error, "semantic worker round failed");
                         break;
@@ -230,6 +241,12 @@ impl SemanticRuntime {
             // reqwest blocking client destruction must stay outside async execution.
             drop(provider);
             let worker = running.0.clone();
+            if completed_round {
+                if let Err(error) = worker.collect_cache_page() {
+                    worker.status.gc_failed();
+                    tracing::warn!(%error, "semantic worker GC failed; cursor retained for the next explicit request");
+                }
+            }
             drop(permit);
             drop(running);
             // Do not lose a build request arriving during the final round.
@@ -239,6 +256,45 @@ impl SemanticRuntime {
             });
         });
         true
+    }
+    /// Run maintenance only after a successful caller-driven job, outside
+    /// provider calls, CodeIndex locks and database transactions. Recovery is
+    /// already part of the fenced drain (expired leases + verified cache
+    /// reuse); collection is one bounded page and cannot create a timer loop.
+    fn collect_cache_page(&self) -> CcResult<()> {
+        if self.closed.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let incarnation = self.db.reads().read_generation()?.incarnation;
+        if matches!(
+            self.db.semantic_incarnation_freshness(incarnation)?,
+            cc_db::semantic_rebuild::IncarnationFreshness::Stale { .. }
+        ) {
+            return Ok(());
+        }
+        let mut cursor = self
+            .gc_cursor
+            .lock()
+            .map_err(|_| cc_model::CcError::Other("semantic GC cursor poisoned".into()))?;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as i64;
+        let (counters, resume, exhausted) =
+            semantic_wiring::run_gc_page(&self.db, &self.subsystem, now, cursor.as_ref())?;
+        *cursor = resume;
+        tracing::info!(
+            kept_fresh = counters.kept_fresh,
+            kept_referenced = counters.kept_referenced,
+            kept_live_task = counters.kept_live_task,
+            deleted_objects = counters.deleted_objects,
+            deleted_halves = counters.deleted_halves,
+            deleted_temps = counters.deleted_temps,
+            pruned_dirs = counters.pruned_dirs,
+            exhausted,
+            "semantic worker GC page completed"
+        );
+        Ok(())
     }
     #[cfg(test)]
     fn run_round(&self) -> CcResult<bool> {

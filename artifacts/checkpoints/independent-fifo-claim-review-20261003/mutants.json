@@ -1,0 +1,104 @@
+{
+  "python_sqlite": "3.53.1",
+  "actual_sql_sha256": "129c75848c06385ea6c8f7e2b960f78fb3646b74993765bbf7a2012091adbd26",
+  "two_row_cases": 324,
+  "killed": {
+    "reverse_fifo": {
+      "rows": [
+        [
+          "pending",
+          "active",
+          99.0
+        ],
+        [
+          "pending",
+          "active",
+          99.0
+        ]
+      ],
+      "expected": 1,
+      "got": 2
+    },
+    "strict_readiness": {
+      "rows": [
+        [
+          "pending",
+          "active",
+          100.0
+        ],
+        [
+          "pending",
+          "active",
+          99.0
+        ]
+      ],
+      "expected": 1,
+      "got": 2
+    },
+    "ready_time_order": {
+      "rows": [
+        [
+          "pending",
+          "active",
+          100.0
+        ],
+        [
+          "pending",
+          "active",
+          99.0
+        ]
+      ],
+      "expected": 1,
+      "got": 2
+    },
+    "unfenced_space": {
+      "rows": [
+        [
+          "pending",
+          "active",
+          101.0
+        ],
+        [
+          "pending",
+          "other",
+          99.0
+        ]
+      ],
+      "expected": null,
+      "got": 2
+    },
+    "include_terminal": {
+      "rows": [
+        [
+          "done",
+          "active",
+          99.0
+        ],
+        [
+          "pending",
+          "active",
+          99.0
+        ]
+      ],
+      "expected": 2,
+      "got": 1
+    },
+    "guard_false": {
+      "rows": [
+        [
+          "pending",
+          "active",
+          99.0
+        ],
+        [
+          "pending",
+          "active",
+          99.0
+        ]
+      ],
+      "expected": 1,
+      "got": null
+    }
+  },
+  "scope": "synthetic SQL mutation sensitivity only; production claims tested by Rust bundled SQLite separately"
+}

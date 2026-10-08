@@ -11,25 +11,100 @@ permissions:
 env:
   PYTHONDONTWRITEBYTECODE: "1"
   PYTHONOPTIMIZE: "0"
+  P7_AUDIT_SOURCE_ROOT: ${{ github.workspace }}/candidate
+  P7_AUDIT_ZIP_ROOT: ${{ runner.temp }}/p7-audit-downloads
+  P7_AUDIT_RESULTS_ROOT: ${{ runner.temp }}/p7-audit-results
+  P7_AUDIT_EXPECTED_WORKER_PID: "12783"
+  P7_AUDIT_EXPECTED_MECHANISM_MEMBERS: "4163"
+  P7_AUDIT_EXPECTED_MECHANISM_EXPANDED_BYTES: "368834949"
 
 jobs:
-  preflight:
+  independent-artifact-replay:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Download and hash the five exact completed-run archives
+        with:
+          path: audit
+          sparse-checkout: artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          ref: ffdc6f0f97db78cc25a6c026904e7c2adde05d14
+          fetch-depth: 0
+      - name: Retain the actual same-tree synthetic merge object
+        run: git -C candidate fetch --no-tags origin 683d8882c108e4e9be68ebac127f3c709e329711
+      - name: Download and recheck the five fixed original archives
+        id: inputs
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/inspect_fixed_artifacts.py \
-            --manifest artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/fixed-artifacts.json \
-            --downloads "$RUNNER_TEMP/p7-audit-downloads" \
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/inspect_fixed_artifacts.py \
+            --manifest audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/fixed-artifacts.json \
+            --downloads "$P7_AUDIT_ZIP_ROOT" \
             --output "$RUNNER_TEMP/p7-audit-preflight"
-      - name: Preserve preflight observations without granting acceptance
+      - name: Reconstruct original auditors from the explicit allowlists
+        id: integrity
+        run: |
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/verify_review_adaptations.py
+          mkdir -p "$P7_AUDIT_RESULTS_ROOT/engineering"
+          P7_AUDIT_OUTPUT="$P7_AUDIT_RESULTS_ROOT/engineering" \
+            python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/verify_portable_adapters.py
+      - name: Independently replay engineering and four-arm mechanism evidence
+        if: always() && steps.inputs.outcome == 'success' && steps.integrity.outcome == 'success'
+        env:
+          P7_AUDIT_OUTPUT: ${{ runner.temp }}/p7-audit-results/engineering
+        run: |
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/review_ci_ffdc_engineering.py
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/review_ci_ffdc_mechanism.py
+      - name: Independently replay complete offline traces and the exact candidate
+        if: always() && steps.inputs.outcome == 'success' && steps.integrity.outcome == 'success'
+        env:
+          P7_AUDIT_OUTPUT: ${{ runner.temp }}/p7-audit-results/offline
+        run: |
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/audit_ciffdc_offline_zip.py
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/audit_ciffdc_p8_zip.py
+      - name: Replay all original lifecycle and real-crash assertions
+        if: always() && steps.inputs.outcome == 'success' && steps.integrity.outcome == 'success'
+        env:
+          SOURCE_ROOT: ${{ github.workspace }}/candidate
+          CLOSEOUT_ZIP: ${{ runner.temp }}/p7-audit-downloads/github-actions-artifact-11529028468.zip
+        run: |
+          mkdir -p "$P7_AUDIT_RESULTS_ROOT/closeout"
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/review_closeout_ffdc.py \
+            --expected-members 89 --expected-events 672 --expected-mcp-pairs 288 \
+            --expected-original-rpcs 107 --output "$P7_AUDIT_RESULTS_ROOT/closeout/review.json"
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/review_closeout_ffdc.py \
+            --expected-members 89 --expected-events 672 --expected-mcp-pairs 288 \
+            --expected-original-rpcs 107 --output "$P7_AUDIT_RESULTS_ROOT/closeout/root-replay.json"
+          cmp "$P7_AUDIT_RESULTS_ROOT/closeout/review.json" "$P7_AUDIT_RESULTS_ROOT/closeout/root-replay.json"
+      - name: Verify the candidate remains byte-identical
+        if: always() && steps.integrity.outcome == 'success'
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, sys
+          source = pathlib.Path(os.environ['P7_AUDIT_SOURCE_ROOT'])
+          out = pathlib.Path(os.environ['P7_AUDIT_RESULTS_ROOT'])
+          sys.path.insert(0, str(source / 'scripts'))
+          from p7_build_identity import json_bytes, source_snapshot
+          before = json.loads((out / 'candidate-source-before.json').read_bytes())
+          after = source_snapshot(source)
+          assert before == after, 'auditing changed candidate source'
+          assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=source)
+          (out / 'candidate-source-after.json').write_bytes(json_bytes(after))
+          PY
+      - name: Export exact review bytes for independent connector readback
+        if: always() && steps.integrity.outcome == 'success'
+        run: |
+          python3 audit/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_audit_outputs.py \
+            --root "$P7_AUDIT_RESULTS_ROOT" \
+            --prefix artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f
+      - name: Archive successful and failed review evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p7-ffdc-audit-preflight-${{ github.sha }}
-          path: ${{ runner.temp }}/p7-audit-preflight
+          name: p7-ffdc-independent-audit-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/p7-audit-results
+            ${{ runner.temp }}/p7-audit-preflight
           if-no-files-found: error

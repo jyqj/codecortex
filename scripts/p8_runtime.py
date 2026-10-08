@@ -285,12 +285,18 @@ def run(args):
     mutation_sequence = [0]
     stop = threading.Event()
     cancel_work = threading.Event()
-    product, sampler, work_cleanup = None, None, None
+    product, comparison_product, sampler, work_cleanup = None, None, None, None
+    product_closed = False
+    product_construction_pending = comparison_product_construction_pending = False
     futures = {}
     rejected_submissions = set()
     begun = time.monotonic_ns()
     report = dict(schema_version=1, status="running", exit_code=2, task_complete=False)
     def elapsed(): return time.monotonic_ns() - begun
+    def product_writers_stopped(owned):
+        return owned is None or (owned.process.poll() is not None
+                                 and not owned.transport.reader.is_alive()
+                                 and not owned.transport.exit_watcher.is_alive())
     def record_operation(row):
         with row_lock: rows.append(row)
         try:
@@ -305,7 +311,12 @@ def run(args):
             raise
     try:
         make_fixture(project, args.files)
+        # A constructor may fail after starting its process or stdio threads,
+        # before the assignment gives this driver a handle for cleanup. Keep
+        # that unknown ownership state explicitly unsealed.
+        product_construction_pending = True
         product = Product(identity, project, out / "product", out / "semantic-cache")
+        product_construction_pending = False
         product.initialize()
         initial = product.tool("index", {"path": str(project), "full": True}, timeout=180)
         raw.emit("initial_build", report=initial)
@@ -481,7 +492,9 @@ def run(args):
         # This copy happens only after the last incremental write. There is no
         # catch-up build/repair on that side before the independent comparison.
         shutil.copytree(project, full, ignore=shutil.ignore_patterns(".codecortex"))
+        comparison_product_construction_pending = True
         comparison_product = Product(identity, full, out / "full-product", out / "full-cache")
+        comparison_product_construction_pending = False
         try:
             comparison_product.initialize()
             full_report = comparison_product.tool("index", {"path": str(full), "full": True}, timeout=180)
@@ -508,7 +521,9 @@ def run(args):
         finally:
             comparison_product.close()
         product.close()
-        product = None
+        product_closed = True
+        require(product_writers_stopped(product) and product_writers_stopped(comparison_product),
+                "owned product writers did not stop before raw replay")
         raw.close()
         statistics_result = replay_statistics(statistics, out)
         statuses = {name: sum(r["status"] == name for r in rows) for name in sorted({r["status"] for r in rows})}
@@ -554,12 +569,26 @@ def run(args):
         if sampler is not None:
             sampler.join(timeout=35)
             if sampler.is_alive(): report.update(status="failed", exit_code=2, sampler_cleanup="timed_out")
-        if product is not None:
+        if product is not None and not product_closed:
             try: product.close()
             except Exception as error:
                 report.update(status="failed", exit_code=2, cleanup_error=str(error))
-        raw.close()
         unfinished = sum(not future.done() for future in futures)
+        owned_cleanup = dict(unfinished_work=unfinished,
+                             sampler_stopped=sampler is None or not sampler.is_alive(),
+                             product_stopped=product_writers_stopped(product),
+                             comparison_product_stopped=product_writers_stopped(comparison_product),
+                             product_construction_pending=product_construction_pending,
+                             comparison_product_construction_pending=comparison_product_construction_pending)
+        writers_stopped = (not unfinished and owned_cleanup["sampler_stopped"]
+                           and owned_cleanup["product_stopped"] and owned_cleanup["comparison_product_stopped"]
+                           and not product_construction_pending and not comparison_product_construction_pending)
+        report["owned_cleanup"] = owned_cleanup
+        if writers_stopped:
+            raw.close()
+        else:
+            report.update(status="failed", exit_code=2,
+                          artifact_seal_error="owned writer termination not established; no completed archive seal")
         if work_cleanup is not None:
             report["work_cleanup"] = work_cleanup
         if terminal_retention_failures:
@@ -578,12 +607,13 @@ def run(args):
         except Exception as error:
             report.update(status="failed", exit_code=2,
                           final_build_verification_error=f"{type(error).__name__}: {error}")
-        report["raw_sha256"] = digest(out / "raw.jsonl")
+        report["raw_sha256"] = digest(out / "raw.jsonl") if writers_stopped else None
         report["plan_sha256"] = digest(out / "plan.json")
-        report["artifact_seal"] = None if unfinished else "seal.json"
+        report["artifact_seal"] = "seal.json" if writers_stopped else None
+        report["artifact_seal_status"] = "sealed" if writers_stopped else "unsealed_owned_writers"
         report["elapsed_ns"] = elapsed()
         write_json(out / "report.json", report)
-        if not unfinished:
+        if writers_stopped:
             seal_output(out)
             verify_output(out)
     return report

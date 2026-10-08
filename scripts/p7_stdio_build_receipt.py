@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 
-from p7_build_identity import file_sha256, json_bytes, source_snapshot, verify_cargo_artifact
+from p7_build_identity import file_sha256, json_bytes, source_snapshot, verify_cargo_artifact, verify_release_profile
 
 
 def compiler_environment(root):
@@ -114,6 +114,8 @@ def build(root, output, package_kind, offline, release=False):
         if len(artifacts) != 1:
             raise ValueError("expected exactly one Cargo codecortex binary artifact")
         artifact = artifacts[0]
+        if release:
+            verify_release_profile(artifact["profile"])
         executable = verify_cargo_artifact(root, artifact, package_kind)
         if not executable.is_relative_to(target_dir):
             raise ValueError("Cargo product is outside this receipt's private target")

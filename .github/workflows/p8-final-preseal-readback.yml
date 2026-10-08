@@ -6,36 +6,35 @@ permissions:
   contents: read
   actions: read
 jobs:
-  inventory:
+  readback:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - key: synthetic
-            artifact: '11540145699'
-          - key: prepare
-            artifact: '11539832276'
-          - key: rust-prepare
-            artifact: '11539228641'
-          - key: rust-synthetic
-            artifact: '11539044028'
+        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Retrieve fixed completed original evidence
+      - name: Retrieve four fixed original archives and service records
         env:
           GH_TOKEN: ${{ github.token }}
-          ARTIFACT_ID: ${{ matrix.artifact }}
         run: |
-          mkdir "$RUNNER_TEMP/ptv2-readback"
-          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID" > "$RUNNER_TEMP/ptv2-readback/artifact.json"
-          gh api repos/jyqj/codecortex/actions/runs/37754844471 > "$RUNNER_TEMP/ptv2-readback/run.json"
-          gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/ptv2-readback/original.zip"
-      - name: Inventory all original bytes without executing product or scorer
+          python3 -I -S - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          root=Path(os.environ["RUNNER_TEMP"])/"ptv2-readback"
+          pins=json.loads(Path("artifacts/checkpoints/p8-final-preseal-readback-20261008/inventory-pins.json").read_bytes())
+          for key,pin in pins.items():
+              out=root/key
+              out.mkdir(parents=True)
+              for name,endpoint in (("artifact.json","actions/artifacts/"+str(pin["artifact_id"])),("run.json","actions/runs/"+str(pin["run_id"])),("original.zip","actions/artifacts/"+str(pin["artifact_id"])+"/zip")):
+                  with (out/name).open("xb") as stream:
+                      subprocess.run(["gh","api","repos/jyqj/codecortex/"+endpoint],stdout=stream,check=True)
+          PY
+      - name: Export only the complete fixed original bytes
         env:
           READBACK_ROOT: ${{ runner.temp }}/ptv2-readback
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -I -S artifacts/checkpoints/p8-final-preseal-readback-20261008/inventory.py --key ${{ matrix.key }}
+        run: python3 -I -S artifacts/checkpoints/p8-final-preseal-readback-20261008/export.py --part ${{ matrix.part }}

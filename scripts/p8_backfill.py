@@ -38,7 +38,7 @@ def execute(root, output):
     before = source_snapshot(root)
     write_json(out / "source-before.json", before)
     command = ["cargo", "test", "--release", "--locked", "--offline", "-p", "cc-eval",
-               "--features", "semantic", "--test", "p7_worker_contention", "--no-run",
+               "--no-default-features", "--features", "semantic", "--test", "p7_worker_contention", "--no-run",
                "--message-format=json-render-diagnostics"]
     record = dict(schema_version=1, status="running", source_before=before, build_command=command,
                   scope="original CodeIndex worker; fake provider in same process; no external provider",

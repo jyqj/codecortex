@@ -193,9 +193,67 @@ print(json.dumps(dict(reason='build-finished',success=True)))
                     destination = self.bundle(parent, dict(platform=os_name, toolchain=tc, package=package))
         result = cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
         self.assertEqual(result["counts"], dict(passed=8, failed=0, not_run=0))
+        output = self.base / "collected-complete"
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                              "--expected-commit", self.git("rev-parse", "HEAD"),
+                              "--output-dir", str(output)])
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads((output / "matrix.json").read_text()), result)
         shutil.copytree(destination, parent / "duplicate")
         with self.assertRaisesRegex(ValueError, "duplicate"):
             cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_empty_collector_preserves_invalid_matrix_without_passing_cells(self):
+        parent = cold.new_directory(self.base / "empty-bundles")
+        output = self.base / "empty-collection"
+        commit = self.git("rev-parse", "HEAD")
+        with contextlib.redirect_stderr(io.StringIO()):
+            code = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                              "--expected-commit", commit, "--output-dir", str(output)])
+        self.assertEqual(code, 2)
+        record = json.loads((output / "matrix.json").read_text())
+        self.assertEqual(record["status"], "invalid")
+        self.assertEqual(record["requested_commit"], commit)
+        self.assertIsNone(record["counts"])
+        self.assertEqual(record["expected_cell_count"], 8)
+        self.assertNotIn("cells", record)
+        self.assertIn("eight-cell platform matrix required; received 0", record["error"])
+        self.assertEqual(list(parent.iterdir()), [])
+
+    def test_bad_bundle_collector_preserves_refusal_and_input_bytes(self):
+        parent = cold.new_directory(self.base / "bad-bundles")
+        bundle = parent / "bundle.json"
+        bundle.write_bytes(b"not valid JSON; explicit protocol negative control\n")
+        original = bundle.read_bytes()
+        output = self.base / "bad-collection"
+        with contextlib.redirect_stderr(io.StringIO()):
+            code = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                              "--expected-commit", self.git("rev-parse", "HEAD"),
+                              "--output-dir", str(output)])
+        self.assertEqual(code, 2)
+        record = json.loads((output / "matrix.json").read_text())
+        self.assertEqual(record["status"], "invalid")
+        self.assertIsNone(record["counts"])
+        self.assertEqual(record["expected_cell_count"], 8)
+        self.assertIn("JSONDecodeError", record["error"])
+        self.assertEqual(bundle.read_bytes(), original)
+
+    def test_collector_existing_directory_and_symlink_are_never_written(self):
+        parent = cold.new_directory(self.base / "refused-bundles")
+        occupied = cold.new_directory(self.base / "occupied-collection")
+        (occupied / "prior.json").write_bytes(b"prior evidence must stay unchanged\n")
+        alias = self.base / "collection-alias"
+        alias.symlink_to(occupied, target_is_directory=True)
+        for output in (occupied, alias):
+            with self.subTest(output=output.name), contextlib.redirect_stderr(io.StringIO()):
+                code = cold.main(["--source-root", str(self.root), "--collect-cells", str(parent),
+                                  "--expected-commit", self.git("rev-parse", "HEAD"),
+                                  "--output-dir", str(output)])
+            self.assertEqual(code, 2)
+            self.assertEqual(sorted(p.name for p in occupied.iterdir()), ["prior.json"])
+            self.assertEqual((occupied / "prior.json").read_bytes(), b"prior evidence must stay unchanged\n")
+        self.assertTrue(alias.is_symlink())
 
     def test_bundle_binary_mutation_and_unrequested_source_fail(self):
         parent = cold.new_directory(self.base / "mutated-bundle")

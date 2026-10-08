@@ -1,0 +1,580 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/statsutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 2,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 9,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 13,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 11750
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 27,
+        "hydrate_requested": 27,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 115,
+            "sorts": 0,
+            "statements": 94,
+            "vm_steps": 4471
+          },
+          "text": {
+            "cache_hits": 27,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 27780,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 3,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 18861
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 13846,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1556,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 8231,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 11349,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 3,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 3
+          },
+          "elapsed_us": 1952,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "trace",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 1,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 27,
+      "intent": "trace",
+      "intent_facet_anchors": {
+        "implementation": "chunk:boltons/statsutils.py:45"
+      },
+      "limit_omitted": 17,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 27780,
+        "redundant_bytes": 0,
+        "unique_bytes": 27780
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 16121,
+        "redundant_bytes": 0,
+        "unique_bytes": 16121
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 14,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 400983,
+      "scope": "disk_generation:v1",
+      "verified_hits": 27
+    }
+  },
+  "intent": "trace",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "Stats > get_quantile",
+        "chunk_id": "chunk:boltons/statsutils.py:45",
+        "end_line": 508,
+        "file_path": "boltons/statsutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.36390573296152584,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "e7bb18683eb83b4e6cc4771f9c80620e316a95d3295b4add96748db6608581d2",
+            "doc_version": "15d7523d7be4589c24658e0762435488cd74e24424c3f64cbd4664eeab31f8e1",
+            "encoding_key": "fe50bfcc06bc9610cedf48b0984cb54aca09754982d2b61b9756ec1010fb782a",
+            "entity_key": "86c00aeba9e2570630481128d8f07f9155aca1160f19d758666ebc8036ad06d3"
+          },
+          "evidence_priority": "intent_facet",
+          "qname": "Stats.get_quantile",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 18291,
+              "start": 17680
+            },
+            "signature": {
+              "end": 17715,
+              "start": 17680
+            },
+            "slice_digest": "4a6b71f43fe669de42120757145469c954d5d3d2fe17b52cc76237f90abc10db",
+            "source": {
+              "byte_len": 31109,
+              "content_digest": "569d2b7d1030d9aeac9dc6d2aa0034879a40a653f589e83c2e89b0e8df671889",
+              "encoding": "utf8",
+              "snapshot_id": "05198d4d3862fb1b281d3c21140bf6b4099911ef420000d20d640f8185885615"
+            },
+            "span": {
+              "end": 18291,
+              "start": 17674
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "preselect:fts-summary:+2.29"
+        ],
+        "rerank_score": 0.35296113372160137,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.08076923076923077
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.09145155561293244
+          ],
+          [
+            "boost:graph-rerank",
+            0.10917171988845775
+          ]
+        ],
+        "source": "index",
+        "start_line": 492,
+        "symbol_kind": "method",
+        "symbol_name": "get_quantile",
+        "text": "\n\n    def get_quantile(self, q):\n        \"\"\"Get a quantile from the dataset. Quantiles are floating point\n        values between ``0.0`` and ``1.0``, with ``0.0`` representing\n        the minimum value in the dataset and ``1.0`` representing the\n        maximum. ``0.5`` represents the median:\n\n        >>> Stats(range(100)).get_quantile(0.5)\n        49.5\n        \"\"\"\n        q = float(q)\n        if not 0.0 <= q <= 1.0:\n            raise ValueError('expected q between 0.0 and 1.0, not %r' % q)\n        elif not self.data:\n            return self.default\n        return self._get_quantile(self._get_sorted_data(), q)"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Where is the dataset trimmed symmetrically according to a requested proportion, with no change when rounding removes zero observations and cache invalidation after a real trim?",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/statsutils.py:1",
+        "document": {
+          "doc_key": "76385761c3db67116179ea3e50d2dfeb5246775a694afe8cdb850771a8779856",
+          "doc_version": "666c1002f89c26527e7af2c075ba4e2934d43c45e45cb000aecb9b523e71a412",
+          "encoding_key": "1c70ac720858010a4f1fdf2441c9418ca08e31d1700134b80e53d5516697ccee",
+          "entity_key": null
+        },
+        "file_path": "boltons/statsutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "569d2b7d1030d9aeac9dc6d2aa0034879a40a653f589e83c2e89b0e8df671889",
+        "source_span": {
+          "end": 5030,
+          "start": 1511
+        },
+        "symbol_kind": null,
+        "symbol_name": null
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/statsutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:10e1259d460a428be381b82b",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 778,
+      "text": "caller: describe → Stats (boltons/statsutils.py:778)",
+      "title": "Caller: describe",
+      "token_estimate": 13
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/statsutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:8601c3f252e2e737352a48ed",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 783,
+      "text": "caller: stats_helper → Stats (boltons/statsutils.py:783)",
+      "title": "Caller: stats_helper",
+      "token_estimate": 14
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/namedutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:e494962287fc497f9715ef8f",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 308,
+      "text": "callee: namedlist → field_names.replace(',', ' ').split (boltons/namedutils.py:308)",
+      "title": "Callee: field_names.replace(',', ' ').split",
+      "token_estimate": 21
+    }
+  ],
+  "query": "Where is the dataset trimmed symmetrically according to a requested proportion, with no change when rounding removes zero observations and cache invalidation after a real trim?",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Where is the dataset trimmed symmetrically according to a requested proportion, with no change when rounding removes zero observations and cache invalidation after a real trim?",
+  "token_budget": 4000,
+  "token_estimate": 2938
+}

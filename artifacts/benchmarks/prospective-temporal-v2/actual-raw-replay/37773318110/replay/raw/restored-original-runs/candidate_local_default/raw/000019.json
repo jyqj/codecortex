@@ -1,0 +1,662 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/pathutils.py",
+      "boltons/tbutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 2,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 13,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15679
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 33,
+        "hydrate_requested": 33,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 149,
+            "sorts": 0,
+            "statements": 121,
+            "vm_steps": 5711
+          },
+          "text": {
+            "cache_hits": 11,
+            "legacy_auto_reads": 0,
+            "storage_reads": 22,
+            "utf8_bytes": 29534,
+            "zstd_decodes": 19
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 12,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 14463
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 14914,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1736,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 7720,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 11721,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 12,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 27
+          },
+          "elapsed_us": 6863,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 33,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 23,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 29534,
+        "redundant_bytes": 0,
+        "unique_bytes": 29534
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 13614,
+        "redundant_bytes": 0,
+        "unique_bytes": 13614
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 15,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 438720,
+      "scope": "disk_generation:v1",
+      "verified_hits": 33
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "augpath",
+        "chunk_id": "chunk:boltons/pathutils.py:2",
+        "end_line": 110,
+        "file_path": "boltons/pathutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.38332133440562166,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "89e1f75a75bc2ae3221fe6a68ac7658f63262afd0fc19e0d872a0d1c10a6e7ad",
+            "doc_version": "03a70b49a82d892802a1b19fbc071c4d001545e0fc9a06a3b8c0665bce9fe335",
+            "encoding_key": "4b225d3ca2a3dd176080ac959c07e853eb5bde40867aad05eaec34ff7f540ecf",
+            "entity_key": "3248012738602f3c337d8f9e02d6416e5868accb887e3736393efad27af4f006"
+          },
+          "qname": "augpath",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 4979,
+              "start": 2057
+            },
+            "signature": {
+              "end": 2163,
+              "start": 2057
+            },
+            "slice_digest": "25fe6a51ad42ee10183b40320194571cc6dd5e5e049011b3eeeec8ae79b31366",
+            "source": {
+              "byte_len": 6497,
+              "content_digest": "f0d05ce591c71e2e3b1c6a457d9720877688ceede74a47a2ed0329245f3d4b95",
+              "encoding": "utf8",
+              "snapshot_id": "35a8b5ff61eeab4ea7d7ed6d1657a8c72e3fefe5beeb52824c1e3f2adc6f3993"
+            },
+            "span": {
+              "end": 4308,
+              "start": 2054
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:expandpath",
+          "preselect:fts-summary:+2.34",
+          "preselect:token-search:+1.20"
+        ],
+        "rerank_score": 0.5348362475507297,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.20681818181818182
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.14145303795988096
+          ],
+          [
+            "boost:graph-rerank",
+            0.1149964003216865
+          ]
+        ],
+        "source": "index",
+        "start_line": 50,
+        "symbol_kind": "function",
+        "symbol_name": "augpath",
+        "text": "\n\n\ndef augpath(path, suffix='', prefix='', ext=None, base=None, dpath=None,\n            multidot=False):\n    \"\"\"\n    Augment a path by modifying its components.\n\n    Creates a new path with a different extension, basename, directory, prefix,\n    and/or suffix.\n\n    A prefix is inserted before the basename. A suffix is inserted\n    between the basename and the extension. The basename and extension can be\n    replaced with a new one. Essentially a path is broken down into components\n    (dpath, base, ext), and then recombined as (dpath, prefix, base, suffix,\n    ext) after replacing any specified component.\n\n    Args:\n        path (str | PathLike): a path to augment\n        suffix (str, default=''): placed between the basename and extension\n        prefix (str, default=''): placed in front of the basename\n        ext (str, default=None): if specified, replaces the extension\n        base (str, default=None): if specified, replaces the basename without\n            extension\n        dpath (str | PathLike, default=None): if specified, replaces the\n            directory\n        multidot (bool, default=False): Allows extensions to contain multiple\n            dots. Specifically, if False, everything after the last dot in the\n            basename is the extension. If True, everything after the first dot\n            in the basename is the extension.\n\n    Returns:\n        str: augmented path\n\n    Example:\n        >>> path = 'foo.bar'\n        >>> suffix = '_suff'\n        >>> prefix = 'pref_'\n        >>> ext = '.baz'\n        >>> newpath = augpath(path, suffix, prefix, ext=ext, base='bar')\n        >>> print('newpath = %s' % (newpath,))\n        newpath = pref_bar_suff.baz\n\n    Example:\n        >>> augpath('foo.bar')\n        'foo.bar'\n        >>> augpath('foo.bar', ext='.BAZ')\n        'foo.BAZ'\n        >>> augpath('foo.bar', suffix='_')\n        'foo_.bar'\n        >>> augpath('foo.bar', prefix='_')\n        '_foo.bar'\n        >>> augpath('foo.bar', base='baz')\n        'baz.bar'\n        >>> augpath('foo.tar.gz', ext='.zip', multidot=True)\n        'foo.zip'\n        >>> augpath('foo.tar.gz', ext='.zip', multidot=False)\n        'foo.tar.zip'\n        >>> augpath('foo.tar.gz', suffix='_new', multidot=True)\n        'foo_new.tar.gz'\n    \"\"\""
+      },
+      {
+        "breadcrumb": "ParsedException > from_string",
+        "chunk_id": "chunk:boltons/tbutils.py:66",
+        "end_line": 756,
+        "file_path": "boltons/tbutils.py",
+        "fused_score": 0.018032786885245903,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.09090909090909091,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "1527e807571e062979af29215be89e7209195ea7410e7cf4b1a14259356af054",
+            "doc_version": "a737fd62250f16eb2854e43707ff222274627c4ca898d4c115ab4689db79be14",
+            "encoding_key": "695c6e3ae45bad6657f60ea0ccd9560e4b52fe27370613b38b99d72efc0a3ea1",
+            "entity_key": "edae03a5be135fabdac5e2b605e55d2e8a6e209f64e17ecbf015e69f9d62c4c8"
+          },
+          "qname": "ParsedException.from_string",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 31127,
+              "start": 27405
+            },
+            "signature": {
+              "end": 27460,
+              "start": 27405
+            },
+            "slice_digest": "608435f3fce00fda5cb7fee0671acff5e5fbd2ea30d7a0a200ae978212d84e9d",
+            "source": {
+              "byte_len": 31173,
+              "content_digest": "da63e93923757148be4ddc47ec8c042937b43493bf1a15858c3509ef47f6b238",
+              "encoding": "utf8",
+              "snapshot_id": "233e58eec3d55ddb99ef4385f0e59aed2e21fbe031581426b97189b6c92b5081"
+            },
+            "span": {
+              "end": 28025,
+              "start": 27399
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@11",
+          "fts-summary",
+          "symbol:ContextualCallpoint",
+          "symbol:_populate_context_lines",
+          "preselect:fts-summary:+2.11",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.4612146050670641,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.018032786885245903
+          ],
+          [
+            "overlap",
+            0.1431818181818182
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 740,
+        "symbol_kind": "method",
+        "symbol_name": "from_string",
+        "text": "\n\n    @classmethod\n    def from_string(cls, tb_str):\n        \"\"\"Parse a traceback and exception from the text *tb_str*. This text\n        is expected to have been decoded, otherwise it will be\n        interpreted as UTF-8.\n\n        This method does not search a larger body of text for\n        tracebacks. If the first line of the text passed does not\n        match one of the known patterns, a :exc:`ValueError` will be\n        raised. This method will ignore trailing text after the end of\n        the first traceback.\n\n        Args:\n            tb_str (str): The traceback text (:class:`unicode` or UTF-8 bytes)\n        \"\"\""
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Which pathname helper inserts text before and after the basename and can use the first dot to separate a multi-part extension?",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/strutils.py:5",
+        "document": {
+          "doc_key": "0722a3e8336af3f0b9ff37bd1d943e26a85361fd0dc291f89456ca410f2fa525",
+          "doc_version": "45f5ebdd69cdf987127ef082460d250742e179c8604580c9f164c8a367e7ae67",
+          "encoding_key": "5f136ac021777409a0323c94d5fdd281f511e970df99cefa997be93826656c1f",
+          "entity_key": "bb05ae62e57ceace660ff6fa66f489f4bfc403064013d03c10ba2abf8dd142ea"
+        },
+        "file_path": "boltons/strutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:HTMLTextExtractor",
+          "symbol:get_text",
+          "symbol:html2text"
+        ],
+        "source_digest": "647790413693dfa35ed926d84e3ce2ae2473fca51d93d426efede4e4e4ebeadb",
+        "source_span": {
+          "end": 4166,
+          "start": 3420
+        },
+        "symbol_kind": "function",
+        "symbol_name": "slugify"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/pathutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:e494962287fc497f9715ef8f",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 115,
+      "text": "callee: augpath → fname.split (boltons/pathutils.py:115)",
+      "title": "Callee: fname.split",
+      "token_estimate": 14
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/setutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:ff76adf04ae0517c8b251306",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 578,
+      "text": "caller: complement → _ComplementSet (boltons/setutils.py:578)",
+      "title": "Caller: complement",
+      "token_estimate": 15
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/setutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:87318df56fb00e860b640f48",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 627,
+      "text": "caller: complemented → _ComplementSet (boltons/setutils.py:627)",
+      "title": "Caller: complemented",
+      "token_estimate": 16
+    }
+  ],
+  "query": "Which pathname helper inserts text before and after the basename and can use the first dot to separate a multi-part extension?",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Which pathname helper inserts text before and after the basename and can use the first dot to separate a multi-part extension?",
+  "token_budget": 4000,
+  "token_estimate": 3920
+}

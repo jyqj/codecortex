@@ -1,0 +1,622 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/funcutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 2,
+      "callers_added": 0,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 9,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 12,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15671
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 32,
+        "hydrate_requested": 32,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 156,
+            "sorts": 0,
+            "statements": 126,
+            "vm_steps": 5878
+          },
+          "text": {
+            "cache_hits": 32,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 37050,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 12,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 16411
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 13675,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1554,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 6701,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 10618,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 12,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 17
+          },
+          "elapsed_us": 4379,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "trace",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 1,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 32,
+      "intent": "trace",
+      "intent_facet_anchors": {
+        "implementation": "chunk:boltons/funcutils.py:26"
+      },
+      "limit_omitted": 22,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 37050,
+        "redundant_bytes": 0,
+        "unique_bytes": 37050
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 17573,
+        "redundant_bytes": 0,
+        "unique_bytes": 17573
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 12,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 339925,
+      "scope": "disk_generation:v1",
+      "verified_hits": 32
+    }
+  },
+  "intent": "trace",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "update_wrapper",
+        "chunk_id": "chunk:boltons/funcutils.py:26",
+        "end_line": 566,
+        "file_path": "boltons/funcutils.py",
+        "fused_score": 0.03288938216796153,
+        "graph_score": 0.3391042453358316,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "cebdb27a397d4aada0294aaf906fb9bbac5bc9fde49a1affe77654ae5a0cd7e5",
+            "doc_version": "4ce8f9433b7e9610bcd95b43bc99a78fb1d19da5c1cbdf9fdcaa728145f4477e",
+            "encoding_key": "4ba95811d33cfa2b8b916e242dbc79ca643751bda87aec116e456cfbf37f8bfd",
+            "entity_key": "fdf050918277ab632303cd4e310c1ac76364d993b62af3763a98f3a1996881c5"
+          },
+          "evidence_priority": "intent_facet",
+          "qname": "update_wrapper",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 22516,
+              "start": 17492
+            },
+            "signature": {
+              "end": 17584,
+              "start": 17492
+            },
+            "slice_digest": "cfad4dae12ee71fbae7298bcf8c2dac0f7a351d2a7ebc8fb496a5e3240a59472",
+            "source": {
+              "byte_len": 39650,
+              "content_digest": "6006741786df7db96335a565ec7f6e78b97388f343baf01447ab5a817502a84d",
+              "encoding": "utf8",
+              "snapshot_id": "c7d045788c2696bb57d33ac25025825b4cc9f8b9cc1960cfccd41066349752ba"
+            },
+            "span": {
+              "end": 20672,
+              "start": 17489
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:wrapper",
+          "symbol:update_wrapper",
+          "preselect:fts-summary:+2.03",
+          "preselect:token-search:+5.60"
+        ],
+        "rerank_score": 0.6365437326917879,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "rrf:graph",
+            0.011320754716981131
+          ],
+          [
+            "overlap",
+            0.2019230769230769
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ],
+          [
+            "boost:graph-rerank",
+            0.10173127360074948
+          ]
+        ],
+        "source": "index",
+        "start_line": 493,
+        "symbol_kind": "function",
+        "symbol_name": "update_wrapper",
+        "text": "\n\n\ndef update_wrapper(wrapper, func, injected=None, expected=None, build_from=None, **kw):\n    \"\"\"Modeled after the built-in :func:`functools.update_wrapper`,\n    this function is used to make your wrapper function reflect the\n    wrapped function's:\n\n      * Name\n      * Documentation\n      * Module\n      * Signature\n\n    The built-in :func:`functools.update_wrapper` copies the first three, but\n    does not copy the signature. This version of ``update_wrapper`` can copy\n    the inner function's signature exactly, allowing seamless usage\n    and :mod:`introspection <inspect>`. Usage is identical to the\n    built-in version::\n\n        >>> from boltons.funcutils import update_wrapper\n        >>>\n        >>> def print_return(func):\n        ...     def wrapper(*args, **kwargs):\n        ...         ret = func(*args, **kwargs)\n        ...         print(ret)\n        ...         return ret\n        ...     return update_wrapper(wrapper, func)\n        ...\n        >>> @print_return\n        ... def example():\n        ...     '''docstring'''\n        ...     return 'example return value'\n        >>>\n        >>> val = example()\n        example return value\n        >>> example.__name__\n        'example'\n        >>> example.__doc__\n        'docstring'\n\n    In addition, the boltons version of update_wrapper supports\n    modifying the outer signature. By passing a list of\n    *injected* argument names, those arguments will be removed from\n    the outer wrapper's signature, allowing your decorator to provide\n    arguments that aren't passed in.\n\n    Args:\n\n        wrapper (function) : The callable to which the attributes of\n            *func* are to be copied.\n        func (function): The callable whose attributes are to be copied.\n        injected (list): An optional list of argument names which\n            should not appear in the new wrapper's signature.\n        expected (list): An optional list of argument names (or (name,\n            default) pairs) representing new arguments introduced by\n            the wrapper (the opposite of *injected*). See\n            :meth:`FunctionBuilder.add_arg()` for more details.\n        build_from (function): The callable from which the new wrapper\n            is built. Defaults to *func*, unless *wrapper* is partial object\n            built from *func*, in which case it defaults to *wrapper*.\n            Useful in some specific cases where *wrapper* and *func* have the\n            same arguments but differ on which are keyword-only and positional-only.\n        update_dict (bool): Whether to copy other, non-standard\n            attributes of *func* over to the wrapper. Defaults to True.\n        inject_to_varkw (bool): Ignore missing arguments when a\n            ``**kwargs``-type catch-all is present. Defaults to True.\n        hide_wrapped (bool): Remove reference to the wrapped function(s)\n            in the updated function.\n\n    In opposition to the built-in :func:`functools.update_wrapper` bolton's\n    version returns a copy of the function and does not modify anything in place.\n    For more in-depth wrapping of functions, see the\n    :class:`FunctionBuilder` type, on which update_wrapper was built.\n    \"\"\""
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Locate the wrapper class that accepts a zero-argument callable, waits until string conversion or formatting to compute its value, and caches that value by default.",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/cacheutils.py:32",
+        "document": {
+          "doc_key": "654ab0a6c5784621015ee1497720da3f81eb2f850013ebee804ef27c1fdfef9e",
+          "doc_version": "1851d9135d2e109a264ad68c3b380f2dcd0277ee2940c2dc7e8a9b6c1a085943",
+          "encoding_key": "8852e47b2e4a0924396ae7d01c09a55241d842174357ada7a536f8487d6d4cc5",
+          "entity_key": "61bda36c2b1b3bb3ac87b2ad36e5c5c5e33d8035c733831041da6b394482fe01"
+        },
+        "file_path": "boltons/cacheutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "da940cc875b6f75a4e3f9cf404495d3b24a24c517aa8722690c8be4ffc27fcf4",
+        "source_span": {
+          "end": 12691,
+          "start": 11345
+        },
+        "symbol_kind": "class",
+        "symbol_name": "LRU"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/iterutils.py:29",
+        "document": {
+          "doc_key": "4b7c1e2ba77862715051b15656300bf0fa6cdf683f7ccab3a2174389943f5440",
+          "doc_version": "57548377dcf7e650b716f0c610da88a101df1a272219c2642d48d97b7f2d56c2",
+          "encoding_key": "4e38bce9ba8431972ed469b01eebf23cc16a8a297c9575e81da20b5e80088c9e",
+          "entity_key": "9edb04c6dc0d107f0e9a541d3bfbd53ea85aa0107110f860e577b5fd490f7e5c"
+        },
+        "file_path": "boltons/iterutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:_Wrapper"
+        ],
+        "source_digest": "2b420ab8f684c91cdc317370dd12d9755034bb7ff4ec765cbdd95651299d2681",
+        "source_span": {
+          "end": 27987,
+          "start": 25982
+        },
+        "symbol_kind": "function",
+        "symbol_name": "partition"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/iterutils.py:63",
+        "document": {
+          "doc_key": "cc6c0033f4c1863a275c2b2e474d6234c741b81da1107b1ae1290bb6a83cda73",
+          "doc_version": "fe1b4d2af6f1aa851cf0a3ae8e550f7c549dddc753d468a69342a7520ada4a7a",
+          "encoding_key": "d4c40a0d8e994be49581cb7efd605763cac0dd74790333321ca4d54df875bc1a",
+          "entity_key": "2984f4d9b325904578825eba515de8f446a740550419dbb00c40b31ae8532178"
+        },
+        "file_path": "boltons/iterutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:_Wrapper"
+        ],
+        "source_digest": "2b420ab8f684c91cdc317370dd12d9755034bb7ff4ec765cbdd95651299d2681",
+        "source_span": {
+          "end": 51540,
+          "start": 49119
+        },
+        "symbol_kind": "function",
+        "symbol_name": "research"
+      },
+      {
+        "file_path": "boltons/typeutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:issubclass",
+          "symbol:get_all_subclasses",
+          "symbol:classproperty"
+        ],
+        "source_digest": "c6a2462fe1d398614d74ce8e3116d7d47cb9e0be3a445ad9f59ca85a28e55b32"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/funcutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:44568f11ebe088de92ed0fb0",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 574,
+      "text": "callee: update_wrapper → _parse_wraps_expected (boltons/funcutils.py:574)",
+      "title": "Callee: _parse_wraps_expected",
+      "token_estimate": 18
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.95,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/funcutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:f1857eb7b9790102aa8206b9",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 591,
+      "text": "callee: update_wrapper → FunctionBuilder.from_func (boltons/funcutils.py:591)",
+      "title": "Callee: FunctionBuilder.from_func",
+      "token_estimate": 19
+    }
+  ],
+  "query": "Locate the wrapper class that accepts a zero-argument callable, waits until string conversion or formatting to compute its value, and caches that value by default.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Locate the wrapper class that accepts a zero-argument callable, waits until string conversion or formatting to compute its value, and caches that value by default.",
+  "token_budget": 4000,
+  "token_estimate": 3918
+}

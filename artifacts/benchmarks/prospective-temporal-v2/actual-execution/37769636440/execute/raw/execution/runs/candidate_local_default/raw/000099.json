@@ -1,0 +1,727 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/jsonutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 1,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 7,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 11,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15654
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 22,
+        "hydrate_requested": 22,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 86,
+            "sorts": 0,
+            "statements": 71,
+            "vm_steps": 3418
+          },
+          "text": {
+            "cache_hits": 15,
+            "legacy_auto_reads": 0,
+            "storage_reads": 7,
+            "utf8_bytes": 15853,
+            "zstd_decodes": 6
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 6,
+          "grep": 0,
+          "lexical": 21,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 21,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 885
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1170,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 163,
+        "soft_scanned": 163,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 163,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 2655
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 163,
+                "utf8_bytes": 95955,
+                "zstd_decodes": 111
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1170,
+                "utf8_bytes": 520758,
+                "zstd_decodes": 755
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 12085,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 1739,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 21,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 21
+          },
+          "elapsed_us": 1522,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 8546,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 6,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 6
+          },
+          "elapsed_us": 2270,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 4,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 22,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 12,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 15853,
+        "redundant_bytes": 0,
+        "unique_bytes": 15853
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 5164,
+        "redundant_bytes": 0,
+        "unique_bytes": 5164
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:boltons/jsonutils.py:10"
+      ],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 5,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 115916,
+      "scope": "disk_generation:v1",
+      "verified_hits": 22
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "JSONLIterator [members: __init__, cur_byte_pos, _align_to_newline, _init_rel_seek, __iter__, next]",
+        "chunk_id": "chunk:boltons/jsonutils.py:4",
+        "end_line": 141,
+        "file_path": "boltons/jsonutils.py",
+        "fused_score": 0.032918552036199096,
+        "graph_score": 0.3397895272798371,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "d45e66e9de45f8562af35a68dc3516bead52998610a4a6796bcc75300cf6d739",
+            "doc_version": "d9466a79a54b08648139edd5712084f1f8d60444e142175bdf56d24a97a166cb",
+            "encoding_key": "911e0a7e435c7e71a008a367e700954cc1a8f92427fafb08ba258ab245dc6e39",
+            "entity_key": "1e4d4a8bb6333cc0b40017249584306143586fd1e8b33d9007d36c9293418488"
+          },
+          "qname": "JSONLIterator",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 8646,
+              "start": 4553
+            },
+            "signature": {
+              "end": 4578,
+              "start": 4553
+            },
+            "slice_digest": "a15f5a974cd6ff97944e0021134e82232ffdbe132466e9eb9e0a41e2891fbd4b",
+            "source": {
+              "byte_len": 10175,
+              "content_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd",
+              "encoding": "utf8",
+              "snapshot_id": "8d3e13df274c05fb1cb8e831d585b516bf604ac3ba984c9396449b58e8a9f457"
+            },
+            "span": {
+              "end": 5613,
+              "start": 4550
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "symbol-exact",
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator",
+          "preselect:fts-summary:+2.24",
+          "preselect:token-search:+4.20"
+        ],
+        "rerank_score": 0.6416647589059524,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.07777777777777777
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ],
+          [
+            "boost:graph-rerank",
+            0.05096842909197556
+          ]
+        ],
+        "source": "index",
+        "start_line": 116,
+        "symbol_kind": "class",
+        "symbol_name": "JSONLIterator",
+        "text": "\n\n\nclass JSONLIterator:\n    \"\"\"The ``JSONLIterator`` is used to iterate over JSON-encoded objects\n    stored in the `JSON Lines format`_ (one object per line).\n\n    Most notably it has the ability to efficiently read from the\n    bottom of files, making it very effective for reading in simple\n    append-only JSONL use cases. It also has the ability to start from\n    anywhere in the file and ignore corrupted lines.\n\n    Args:\n        file_obj (file): An open file object.\n        ignore_errors (bool): Whether to skip over lines that raise an error on\n            deserialization (:func:`json.loads`).\n        reverse (bool): Controls the direction of the iteration.\n            Defaults to ``False``. If set to ``True`` and *rel_seek*\n            is unset, seeks to the end of the file before iteration\n            begins.\n        rel_seek (float): Used to preseek the start position of\n            iteration. Set to 0.0 for the start of the file, 1.0 for the\n            end, and anything in between.\n\n    .. _JSON Lines format: http://jsonlines.org/\n    \"\"\""
+      },
+      {
+        "breadcrumb": "JSONLIterator [members: __init__, cur_byte_pos, _align_to_newline, _init_rel_seek, __iter__, next]",
+        "chunk_id": "chunk:boltons/jsonutils.py:11",
+        "end_line": 225,
+        "file_path": "boltons/jsonutils.py",
+        "fused_score": 0.020370370370370372,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.25,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "35a506b3d18078b1cac4143ebbded3eb916ca762b864f4c9abf147861b4a22ed",
+            "doc_version": "6d6697d8ed6a512f88e09b9a39a6d91b53ccdea4a62301b819dfe6ba63a501b6",
+            "encoding_key": "d8cdbfba93506a377a1b510aa05f79509f5dac2768d2d08d5e4af0f6b9fc3468",
+            "entity_key": "1e4d4a8bb6333cc0b40017249584306143586fd1e8b33d9007d36c9293418488"
+          },
+          "qname": "JSONLIterator",
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": {
+              "end": 8646,
+              "start": 4553
+            },
+            "signature": {
+              "end": 4578,
+              "start": 4553
+            },
+            "slice_digest": "9dde6aded654a1f5544bee65830c939c4a0ad4dfececc756c2f6e1b00257939e",
+            "source": {
+              "byte_len": 10175,
+              "content_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd",
+              "encoding": "utf8",
+              "snapshot_id": "8d3e13df274c05fb1cb8e831d585b516bf604ac3ba984c9396449b58e8a9f457"
+            },
+            "span": {
+              "end": 8646,
+              "start": 8625
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@4",
+          "symbol-exact",
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator",
+          "preselect:fts-summary:+2.24",
+          "preselect:token-search:+4.20"
+        ],
+        "rerank_score": 0.5392592592592593,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.020370370370370372
+          ],
+          [
+            "overlap",
+            0.03888888888888888
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 223,
+        "symbol_kind": "class",
+        "symbol_name": "JSONLIterator",
+        "text": "\n\n    __next__ = next"
+      },
+      {
+        "breadcrumb": "JSONLIterator > next",
+        "chunk_id": "chunk:boltons/jsonutils.py:10",
+        "end_line": 223,
+        "file_path": "boltons/jsonutils.py",
+        "fused_score": 0.020754716981132078,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.3333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "f41eda1391c2d773fb9e3f00eaf06bbfc6d698dd7eab02a746d0a939feeddbec",
+            "doc_version": "9b92c2d3ff9dcba97009085049268b24318b2f59387daedcf7ef7a07c542fe2d",
+            "encoding_key": "167c83181dc1e2ea3ee60ed009125f8f33da22d653810268b327a90bf3686651",
+            "entity_key": "5405e8cb724eeb22683d4ad23f99188b3bf2a0c46376656570d098d726c2dc02"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "JSONLIterator.next",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 8625,
+              "start": 8042
+            },
+            "signature": {
+              "end": 8066,
+              "start": 8042
+            },
+            "slice_digest": "e949e44a029c44e012c65efb82da04488b80229c145892e0503bf3dc1d733313",
+            "source": {
+              "byte_len": 10175,
+              "content_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd",
+              "encoding": "utf8",
+              "snapshot_id": "8d3e13df274c05fb1cb8e831d585b516bf604ac3ba984c9396449b58e8a9f457"
+            },
+            "span": {
+              "end": 8625,
+              "start": 8036
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@3",
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator",
+          "preselect:fts-summary:+2.24",
+          "preselect:token-search:+4.20"
+        ],
+        "rerank_score": 0.39853249475890984,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.020754716981132078
+          ],
+          [
+            "overlap",
+            0.07777777777777777
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 206,
+        "symbol_kind": "method",
+        "symbol_name": "next",
+        "text": "\n\n    def next(self):\n        \"\"\"Yields one :class:`dict` loaded with :func:`json.loads`, advancing\n        the file object by one line. Raises :exc:`StopIteration` upon reaching\n        the end of the file (or beginning, if ``reverse`` was set to ``True``.\n        \"\"\"\n        while 1:\n            line = next(self._line_iter).lstrip()\n            if not line:\n                continue\n            try:\n                obj = json.loads(line)\n            except Exception:\n                if not self.ignore_errors:\n                    raise\n                continue\n            return obj"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "JSONLIterator 的哪个选项允许迭代跳过格式错误的 JSON 行？保持该选项默认值时，迭代器在哪里重新抛出反序列化错误？",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/jsonutils.py:9",
+        "document": {
+          "doc_key": "ac1342e4b375207c6a2b12003d78ba2b63b8ac2eaae1ff3f5132071a1531fee0",
+          "doc_version": "1c546d24b70504b34bc9d7d99a70cfe7b78bd198bef3f0c2e510d53f0bafe797",
+          "encoding_key": "dea4b2dbd3b6296d5de0a77d54877fbee7924e163d76f2fc8b2702dfa5a73c21",
+          "entity_key": "a0fc18aa7bce825a233bbb38986a202430502ba492fc316ceee5e2d7751986a2"
+        },
+        "file_path": "boltons/jsonutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator"
+        ],
+        "source_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd",
+        "source_span": {
+          "end": 8036,
+          "start": 7991
+        },
+        "symbol_kind": "method",
+        "symbol_name": "__iter__"
+      },
+      {
+        "file_path": "boltons/jsonutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator"
+        ],
+        "source_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd"
+      },
+      {
+        "file_path": "boltons/jsonutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "path-token:json",
+          "symbol:JSONLIterator"
+        ],
+        "source_digest": "d466afe3448f49379c61003cb228d774f8f376440b0c0dd6b433ffba0bcff6bd"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/jsonutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:0573498079a7bb4585004d0f",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 244,
+      "text": "caller: _main → JSONLIterator (boltons/jsonutils.py:244)",
+      "title": "Caller: _main",
+      "token_estimate": 14
+    }
+  ],
+  "query": "JSONLIterator 的哪个选项允许迭代跳过格式错误的 JSON 行？保持该选项默认值时，迭代器在哪里重新抛出反序列化错误？",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "JSONLIterator 的哪个选项允许迭代跳过格式错误的 JSON 行？保持该选项默认值时，迭代器在哪里重新抛出反序列化错误？",
+  "token_budget": 4000,
+  "token_estimate": 3914
+}

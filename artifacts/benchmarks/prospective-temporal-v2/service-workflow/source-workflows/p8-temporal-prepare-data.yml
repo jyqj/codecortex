@@ -1,0 +1,106 @@
+name: Prepare native data locks without product queries
+on:
+  push:
+    branches: [work/p8-temporal-prepare-data-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  prepare_data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+      RUSTUP_HOME: /home/runner/.rustup
+      CARGO_HOME: /home/runner/.cargo
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 2cd04485b0e0b23483f64671d56538bbaa47f442
+          path: candidate
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mahmoud/boltons
+          ref: 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+          path: upstream
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-fresh-release-external-revision2
+          path: package-input
+          repository: jyqj/codecortex
+          run-id: '37749276827'
+          github-token: ${{ github.token }}
+      - name: Restore fixed Rust and prepare observable rg runtime
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal
+          if ! command -v rg >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes ripgrep
+          fi
+          test -x /usr/bin/rg
+          /usr/bin/rg --version
+          python3 -I -S --version
+      - name: Verify same actual parent and isolated child Rust binaries
+        run: python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py"
+      - name: Parse frozen entrypoints without writing bytecode
+        run: |
+          python3 -I -S - <<'PY'
+          import ast, os
+          from pathlib import Path
+          root = Path(os.environ["GITHUB_WORKSPACE"]) / "utility"
+          for rel in ("artifacts/benchmarks/prospective-temporal-v2/implementation/temporal.py",
+                      "artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py"):
+              p = root / rel
+              ast.parse(p.read_bytes(), filename=str(p))
+          print("actual Python syntax parsed; not execution or acceptance")
+          PY
+      - name: Prepare native data locks without product queries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py" prepare-data \
+            --workspace "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/ptv2-data-preparation"
+      - name: Record bounded actual status without publishing question text
+        if: always()
+        run: |
+          python3 -I -S - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "ptv2-data-preparation"
+          for rel in ("workflow-failure.json", "result.json", "execution/failure.json", "execution/result.json"):
+              path = root / rel
+              if path.is_file():
+                  value = json.loads(path.read_bytes())
+                  keys = ("status", "error_type", "actual_helper_process_exit_code", "actual_scheduled_results",
+                          "scheduled_product_queries", "new_product_queries", "data_sealed", "task_acceptance")
+                  print(rel + " " + json.dumps({key: value[key] for key in keys if key in value}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-prospective-temporal-prepared-data
+          path: ${{ runner.temp }}/ptv2-data-preparation
+          include-hidden-files: true
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-prospective-temporal-prepared-data-shared-rust
+          path: ${{ runner.temp }}/ptv2-shared-rust-environment.json
+          if-no-files-found: error

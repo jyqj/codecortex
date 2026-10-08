@@ -1,0 +1,628 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/gcutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 6,
+      "omitted_hits": 3,
+      "omitted_nodes": 0,
+      "original_hits": 6,
+      "original_nodes": 6,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15679
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 6,
+        "hydrate_requested": 6,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 14,
+            "sorts": 0,
+            "statements": 13,
+            "vm_steps": 662
+          },
+          "text": {
+            "cache_hits": 5,
+            "legacy_auto_reads": 0,
+            "storage_reads": 1,
+            "utf8_bytes": 5787,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 6,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 6,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 11790
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 0,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 12,
+        "skipped_duplicates": 12,
+        "soft_scanned": 12,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 12,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 136
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 12,
+                "utf8_bytes": 6229,
+                "zstd_decodes": 5
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 12,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 14153
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1803,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 755,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 6,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 6
+          },
+          "elapsed_us": 4821,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "query_expansion_atom_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 12,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 3032,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1538,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons/gcutils.py",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 1,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 6
+      },
+      "input_candidates": 6,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 0,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 5787,
+        "redundant_bytes": 0,
+        "unique_bytes": 5787
+      },
+      "requested_limit": 10,
+      "selected": 6,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 5787,
+        "redundant_bytes": 0,
+        "unique_bytes": 5787
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:boltons/gcutils.py:4"
+      ],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 1,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 6229,
+      "scope": "disk_generation:v1",
+      "verified_hits": 6
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "GCToggler [members: __init__, __enter__, __exit__]",
+        "chunk_id": "chunk:boltons/gcutils.py:7",
+        "end_line": 144,
+        "file_path": "boltons/gcutils.py",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.12986122886681098,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "f867897b37bfaaedaf1d30e9fa4f187253c8f007f9771b758f4ed51422d06198",
+            "doc_version": "2b35a3da53efd6f805f642f6b3cbbe9ed2cc0dfc23e4a34a768e709a22e50b2a",
+            "encoding_key": "06830a7cf2f871b0652b14253f7bbd31af5a933054f8c2604c71037df8e595ed",
+            "entity_key": "fca0420da8cf0f293e59bc4676be436087794aa5fd63910f585559057a6ed0e4"
+          },
+          "qname": "GCToggler",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 5913,
+              "start": 4801
+            },
+            "signature": {
+              "end": 4822,
+              "start": 4801
+            },
+            "slice_digest": "0b9462962f58c2cd428b6bb1c6fad671002f801a7acd4a32e7f367a8ea27a877",
+            "source": {
+              "byte_len": 6229,
+              "content_digest": "736e5a28234732f167f4b9f00a42e87b10141cfe0e167ad28de61e335ce24dbc",
+              "encoding": "utf8",
+              "snapshot_id": "b58c1d7fdc111a6a205436fead79f4878547591a480b8b06fc634149a8e4311a"
+            },
+            "span": {
+              "end": 5658,
+              "start": 4798
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "preselect:fts-summary:+2.29"
+        ],
+        "rerank_score": 0.4023025050456901,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.19999999999999998
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.09177550893466638
+          ],
+          [
+            "boost:graph-rerank",
+            0.03895836866004329
+          ]
+        ],
+        "source": "index",
+        "start_line": 122,
+        "symbol_kind": "class",
+        "symbol_name": "GCToggler",
+        "text": "\n\n\nclass GCToggler:\n    \"\"\"The ``GCToggler`` is a context-manager that allows one to safely\n    take more control of your garbage collection schedule. Anecdotal\n    experience says certain object-creation-heavy tasks see speedups\n    of around 10% by simply doing one explicit collection at the very\n    end, especially if most of the objects will stay resident.\n\n    Two GCTogglers are already present in the ``gcutils`` module:\n\n    - :data:`toggle_gc` simply turns off GC at context entrance, and\n      re-enables at exit\n    - :data:`toggle_gc_postcollect` does the same, but triggers an\n      explicit collection after re-enabling.\n\n    >>> with toggle_gc:\n    ...     x = [object() for i in range(1000)]\n\n    Between those two instances, the ``GCToggler`` type probably won't\n    be used much directly, but is documented for inheritance purposes.\n    \"\"\""
+      },
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:boltons/gcutils.py:1",
+        "end_line": 58,
+        "file_path": "boltons/gcutils.py",
+        "fused_score": 0.020754716981132078,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.3333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "5e0b741addda7ec99e70d99f48e76b0c0084ff4370d0ebb52b01902e06007135",
+            "doc_version": "a559ce9bdbcab486bdbf9aa2d5c9a9066f7ea0a045902ce33582f03b72e3fd97",
+            "encoding_key": "de1fdd5cfb222967fd3c7b3fbccdb9e5f1f2e8fe5168dd82f2041e17789b8d00",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "083e039e128eb1f4a50ec6b0d4c0d5ed332a6e4cce84b84b99bc4a3b2ce8cebe",
+            "source": {
+              "byte_len": 6229,
+              "content_digest": "736e5a28234732f167f4b9f00a42e87b10141cfe0e167ad28de61e335ce24dbc",
+              "encoding": "utf8",
+              "snapshot_id": "b58c1d7fdc111a6a205436fead79f4878547591a480b8b06fc634149a8e4311a"
+            },
+            "span": {
+              "end": 2732,
+              "start": 1511
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@3",
+          "fts-summary",
+          "preselect:fts-summary:+2.29"
+        ],
+        "rerank_score": 0.3291968925824651,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.020754716981132078
+          ],
+          [
+            "overlap",
+            0.16666666666666666
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.09177550893466638
+          ]
+        ],
+        "source": "index",
+        "start_line": 29,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "\n\n\"\"\"The Python Garbage Collector (`GC`_) doesn't usually get too much\nattention, probably because:\n\n  - Python's `reference counting`_ effectively handles the vast majority of\n    unused objects\n  - People are slowly learning to avoid implementing `object.__del__()`_\n  - The collection itself strikes a good balance between simplicity and\n    power (`tunable generation sizes`_)\n  - The collector itself is fast and rarely the cause of long pauses\n    associated with GC in other runtimes\n\nEven so, for many applications, the time will come when the developer\nwill need to track down:\n\n  - Circular references\n  - Misbehaving objects (locks, ``__del__()``)\n  - Memory leaks\n  - Or just ways to shave off a couple percent of execution time\n\nThanks to the :mod:`gc` module, the GC is a well-instrumented entry\npoint for exactly these tasks, and ``gcutils`` aims to facilitate it\nfurther.\n\n.. _GC: https://docs.python.org/2/glossary.html#term-garbage-collection\n.. _reference counting: https://docs.python.org/2/glossary.html#term-reference-count\n.. _object.__del__(): https://docs.python.org/2/glossary.html#term-reference-count\n.. _tunable generation sizes: https://docs.python.org/2/library/gc.html#gc.set_threshold\n\"\"\""
+      },
+      {
+        "breadcrumb": "get_all",
+        "chunk_id": "chunk:boltons/gcutils.py:4",
+        "end_line": 116,
+        "file_path": "boltons/gcutils.py",
+        "fused_score": 0.02,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.2,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "e1dd069ca1856145de00d2a115d3055c77f4aac40ef59b80903e2f692aa9ad94",
+            "doc_version": "b0f3808f6dcad30207101f2ca585dc2cdc088b02618382164bad68cd97b87c23",
+            "encoding_key": "13aa89ed9e229ecd0a3813f45840f268a02b14691298c95ab2b54c248493c5e5",
+            "entity_key": "c1fad29971bbe162fcc01b5aa2405ca8badc9977d724c298d71ff90dc9716213"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "get_all",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 4676,
+              "start": 2852
+            },
+            "signature": {
+              "end": 2902,
+              "start": 2852
+            },
+            "slice_digest": "92d5b713fcd3081f3efcc596bf2946c6295e82613b060ddf0558f4a6741989b8",
+            "source": {
+              "byte_len": 6229,
+              "content_digest": "736e5a28234732f167f4b9f00a42e87b10141cfe0e167ad28de61e335ce24dbc",
+              "encoding": "utf8",
+              "snapshot_id": "b58c1d7fdc111a6a205436fead79f4878547591a480b8b06fc634149a8e4311a"
+            },
+            "span": {
+              "end": 4676,
+              "start": 2849
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@5",
+          "fts-summary",
+          "preselect:fts-summary:+2.29"
+        ],
+        "rerank_score": 0.2951088422679997,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.02
+          ],
+          [
+            "overlap",
+            0.1333333333333333
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.09177550893466638
+          ]
+        ],
+        "source": "index",
+        "start_line": 65,
+        "symbol_kind": "function",
+        "symbol_name": "get_all",
+        "text": "\n\n\ndef get_all(type_obj, include_subtypes=True):\n    \"\"\"Get a list containing all instances of a given type.  This will\n    work for the vast majority of types out there.\n\n    >>> class Ratking(object): pass\n    >>> wiki, hak, sport = Ratking(), Ratking(), Ratking()\n    >>> len(get_all(Ratking))\n    3\n\n    However, there are some exceptions. For example, ``get_all(bool)``\n    returns an empty list because ``True`` and ``False`` are\n    themselves built-in and not tracked.\n\n    >>> get_all(bool)\n    []\n\n    Still, it's not hard to see how this functionality can be used to\n    find all instances of a leaking type and track them down further\n    using :func:`gc.get_referrers` and :func:`gc.get_referents`.\n\n    ``get_all()`` is optimized such that getting instances of\n    user-created types is quite fast. Setting *include_subtypes* to\n    ``False`` will further increase performance in cases where\n    instances of subtypes aren't required.\n\n    .. note::\n\n      There are no guarantees about the state of objects returned by\n      ``get_all()``, especially in concurrent environments. For\n      instance, it is possible for an object to be in the middle of\n      executing its ``__init__()`` and be only partially constructed.\n    \"\"\"\n    # TODO: old-style classes\n    if not isinstance(type_obj, type):\n        raise TypeError('expected a type, not %r' % type_obj)\n    try:\n        type_is_tracked = gc.is_tracked(type_obj)\n    except AttributeError:\n        type_is_tracked = False  # Python 2.6 and below don't get the speedup\n    if type_is_tracked:\n        to_check = gc.get_referrers(type_obj)\n    else:\n        to_check = gc.get_objects()\n\n    if include_subtypes:\n        ret = [x for x in to_check if isinstance(x, type_obj)]\n    else:\n        ret = [x for x in to_check if type(x) is type_obj]\n    return ret"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Find the async-with garbage-collection suspension context manager defined in boltons/gcutils.py, including its asynchronous entry and exit methods.",
+    "references": [
+      {
+        "file_path": "boltons/gcutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "736e5a28234732f167f4b9f00a42e87b10141cfe0e167ad28de61e335ce24dbc"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "Find the async-with garbage-collection suspension context manager defined in boltons/gcutils.py, including its asynchronous entry and exit methods.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Find the async-with garbage-collection suspension context manager defined in boltons/gcutils.py, including its asynchronous entry and exit methods.",
+  "token_budget": 4000,
+  "token_estimate": 3920
+}

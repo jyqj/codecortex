@@ -1,0 +1,731 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/socketutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 7,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 16000
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 12,
+        "hydrate_requested": 12,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 56,
+            "sorts": 0,
+            "statements": 46,
+            "vm_steps": 2138
+          },
+          "text": {
+            "cache_hits": 12,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 4653,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 5,
+          "grep": 0,
+          "lexical": 10,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 10,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 504
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1157,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 176,
+        "soft_scanned": 176,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 176,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 2871
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 176,
+                "utf8_bytes": 76404,
+                "zstd_decodes": 104
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1157,
+                "utf8_bytes": 540309,
+                "zstd_decodes": 762
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 11784,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1798,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 10,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 10
+          },
+          "elapsed_us": 1475,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "query_expansion_atom_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 8237,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 5,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 5
+          },
+          "elapsed_us": 2441,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 5,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 12,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 2,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 4653,
+        "redundant_bytes": 0,
+        "unique_bytes": 4653
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 4134,
+        "redundant_bytes": 0,
+        "unique_bytes": 4134
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:boltons/socketutils.py:53"
+      ],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 1,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 29900,
+      "scope": "disk_generation:v1",
+      "validation_work": {
+        "candidate_projection_sql": {
+          "fullscan_steps": 0,
+          "rows": 12,
+          "sorts": 0,
+          "statements": 1,
+          "vm_steps": 376
+        },
+        "coverage": "current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost",
+        "schema_version": 1,
+        "source_records_sql": {
+          "fullscan_steps": 0,
+          "rows": 56,
+          "sorts": 0,
+          "statements": 46,
+          "vm_steps": 1574
+        }
+      },
+      "verified_hits": 12
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "NetstringSocket [members: __init__, fileno, settimeout, setmaxsize, _calc_msgsize_maxsize, read_ns, write_ns]",
+        "chunk_id": "chunk:boltons/socketutils.py:47",
+        "end_line": 652,
+        "file_path": "boltons/socketutils.py",
+        "fused_score": 0.03333333333333334,
+        "graph_score": 0.20094379124341002,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "80801217fe8585c66ed17df6210c70242c66a4830116198d89896099a95d0866",
+            "doc_version": "9c7f398829dda6f4a014c11120506b7341f66bb071a22e8f09cc9abfe9ab3a0a",
+            "encoding_key": "ebae81434f2d933089766911287b6389cdfde7f05617817baa389835ed38336c",
+            "entity_key": "6c0962b8728f10c5bb18d1747717eb765359162ddd3cc0c55584ab0b3c02cd01"
+          },
+          "qname": "NetstringSocket",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 28227,
+              "start": 26146
+            },
+            "signature": {
+              "end": 26173,
+              "start": 26146
+            },
+            "slice_digest": "90791ec12ca62537ea86452a86a263172be5d1f9c28b42d6b81d479eae8882c1",
+            "source": {
+              "byte_len": 29900,
+              "content_digest": "04e531a035cca9e134f2a97f02aff9ad3374603953230a33f2fbfb57fe8a7dde",
+              "encoding": "utf8",
+              "snapshot_id": "dfa6d606ee0636612ab91ffbd2def54e695dce670e376774b204221dee4b5e76"
+            },
+            "span": {
+              "end": 26348,
+              "start": 26143
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "symbol-exact",
+          "fts-summary",
+          "symbol:NetstringSocket",
+          "symbol:read_ns",
+          "preselect:fts-summary:+2.09",
+          "preselect:token-search:+4.00"
+        ],
+        "rerank_score": 0.6451785502710241,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.07777777777777777
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.24378430178689
+          ],
+          [
+            "boost:graph-rerank",
+            0.060283137373023
+          ]
+        ],
+        "source": "index",
+        "start_line": 643,
+        "symbol_kind": "class",
+        "symbol_name": "NetstringSocket",
+        "text": "\n\n\nclass NetstringSocket:\n    \"\"\"\n    Reads and writes using the netstring protocol.\n\n    More info: https://en.wikipedia.org/wiki/Netstring\n    Even more info: http://cr.yp.to/proto/netstrings.txt\n    \"\"\""
+      },
+      {
+        "breadcrumb": "NetstringSocket > read_ns",
+        "chunk_id": "chunk:boltons/socketutils.py:53",
+        "end_line": 697,
+        "file_path": "boltons/socketutils.py",
+        "fused_score": 0.032692307692307694,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "09d5aa6e408fc296ef3788416018c092e93927571b092541bfdc45a7345f8685",
+            "doc_version": "826b932c931f8f6c36afda91d8f951506fc8f3b95f4d7ac614320344e249d44d",
+            "encoding_key": "44db75eae13bbb4badf3513948196e8c79296207a52ce3b934e0140eff7536db",
+            "entity_key": "5ee4d49d06b21f07bd03475bac317d45931e3b863225490158cdf0e6dab7708d"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "NetstringSocket.read_ns",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 27976,
+              "start": 26982
+            },
+            "signature": {
+              "end": 27041,
+              "start": 26982
+            },
+            "slice_digest": "f2e94afce0fa56435344dbe3b052ef1193c54cf4441bd85f47dfc8784a73b23c",
+            "source": {
+              "byte_len": 29900,
+              "content_digest": "04e531a035cca9e134f2a97f02aff9ad3374603953230a33f2fbfb57fe8a7dde",
+              "encoding": "utf8",
+              "snapshot_id": "dfa6d606ee0636612ab91ffbd2def54e695dce670e376774b204221dee4b5e76"
+            },
+            "span": {
+              "end": 27976,
+              "start": 26976
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "symbol-exact",
+          "fts-summary",
+          "symbol:NetstringSocket",
+          "symbol:read_ns",
+          "preselect:fts-summary:+2.09",
+          "preselect:token-search:+4.00"
+        ],
+        "rerank_score": 0.5842543872569754,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "overlap",
+            0.07777777777777777
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.24378430178689
+          ]
+        ],
+        "source": "index",
+        "start_line": 670,
+        "symbol_kind": "method",
+        "symbol_name": "read_ns",
+        "text": "\n\n    def read_ns(self, timeout=_UNSET, maxsize=_UNSET):\n        if timeout is _UNSET:\n            timeout = self.timeout\n\n        if maxsize is _UNSET:\n            maxsize = self.maxsize\n            msgsize_maxsize = self._msgsize_maxsize\n        else:\n            msgsize_maxsize = self._calc_msgsize_maxsize(maxsize)\n\n        size_prefix = self.bsock.recv_until(b':',\n                                            timeout=timeout,\n                                            maxsize=msgsize_maxsize)\n        try:\n            size = int(size_prefix)\n        except ValueError:\n            raise NetstringInvalidSize('netstring message size must be valid'\n                                       ' integer, not %r' % size_prefix)\n\n        if size > maxsize:\n            raise NetstringMessageTooLong(size, maxsize)\n        payload = self.bsock.recv_size(size)\n        if self.bsock.recv(1) != b',':\n            raise NetstringProtocolError(\"expected trailing ',' after message\")\n\n        return payload"
+      },
+      {
+        "breadcrumb": "NetstringMessageTooLong [members: __init__]",
+        "chunk_id": "chunk:boltons/socketutils.py:58",
+        "end_line": 735,
+        "file_path": "boltons/socketutils.py",
+        "fused_score": 0.029242424242424243,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.1,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "79698603e311b081fd17765972d9cbf50d3f7e67f037cd00f0f7bc331d98b5ca",
+            "doc_version": "9ccaa7e79d824c78f4e30cbb03e852f8a1dd05604ef141a0fc47b125c0b37935",
+            "encoding_key": "8e59dc9a1c937fef7a09f2606662d1fd6b690c495b96261d6a8fded0d938909b",
+            "entity_key": "b4d2ab62d2420edd5827c7409418a81927bb5ac26b265ac8d47c4403868ed4de"
+          },
+          "qname": "NetstringMessageTooLong",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 29350,
+              "start": 28808
+            },
+            "signature": {
+              "end": 28867,
+              "start": 28808
+            },
+            "slice_digest": "4ee3ca698bfd62cf63bf031bc7c0a6bc045a2e402c10a59f8095b042d967417f",
+            "source": {
+              "byte_len": 29900,
+              "content_digest": "04e531a035cca9e134f2a97f02aff9ad3374603953230a33f2fbfb57fe8a7dde",
+              "encoding": "utf8",
+              "snapshot_id": "dfa6d606ee0636612ab91ffbd2def54e695dce670e376774b204221dee4b5e76"
+            },
+            "span": {
+              "end": 29169,
+              "start": 28805
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@10",
+          "fts-summary",
+          "symbol:NetstringSocket",
+          "symbol:read_ns",
+          "preselect:fts-summary:+2.09",
+          "preselect:token-search:+4.00"
+        ],
+        "rerank_score": 0.3619156149182031,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.018333333333333333
+          ],
+          [
+            "rrf:graph",
+            0.010909090909090908
+          ],
+          [
+            "overlap",
+            0.03888888888888888
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.24378430178689
+          ]
+        ],
+        "source": "index",
+        "start_line": 725,
+        "symbol_kind": "class",
+        "symbol_name": "NetstringMessageTooLong",
+        "text": "\n\n\nclass NetstringMessageTooLong(NetstringProtocolError):\n    \"\"\"NetstringMessageTooLong is raised when the size prefix contains a\n    valid integer, but that integer is larger than the\n    :class:`NetstringSocket`'s configured *maxsize*.\n\n    When this exception is raised, it's recommended to simply close\n    the connection instead of trying to recover.\n    \"\"\""
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "NetstringSocket.read_ns 在哪里应用单次调用的负载长度限制？在拒绝声明长度过大的负载前，哪个辅助方法负责计算长度前缀的读取上限？",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/socketutils.py:49",
+        "document": {
+          "doc_key": "89925b17965c4e4ecfaf477500b24e5c89318ec82804cd628c0e22a8daffaa76",
+          "doc_version": "1eb19656b4da04fa46a1e082fcc7a3b7b81601843e6a723d7393a5fab0fcdbde",
+          "encoding_key": "8de1b997cc6787db2d3a019b4a29f70fc2897bece8439701f5af329c4819406d",
+          "entity_key": "a63e25b55feea6c75ee804ca36859a86e24c52703f936ce5efdc98faab9ab289"
+        },
+        "file_path": "boltons/socketutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:NetstringSocket",
+          "symbol:read_ns"
+        ],
+        "source_digest": "04e531a035cca9e134f2a97f02aff9ad3374603953230a33f2fbfb57fe8a7dde",
+        "source_span": {
+          "end": 26667,
+          "start": 26609
+        },
+        "symbol_kind": "method",
+        "symbol_name": "fileno"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/socketutils.py:50",
+        "document": {
+          "doc_key": "d40bc43e8c22acfb425ed2d79a4590688221a0bb28adcb399381627147c6759a",
+          "doc_version": "36757a9a8bb26e7caa4b366d794444218e24b3cc81483d04ceab9dd9bff63ed0",
+          "encoding_key": "10c64675f57b0cb8285e58a8d912f503d179a0bec9a60dedd65397c2f92bf951",
+          "entity_key": "4e49d1a1369117ae8a9a3c720877fbeee80cd83c8b7ee796187d6285c6c0c526"
+        },
+        "file_path": "boltons/socketutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:NetstringSocket",
+          "symbol:read_ns"
+        ],
+        "source_digest": "04e531a035cca9e134f2a97f02aff9ad3374603953230a33f2fbfb57fe8a7dde",
+        "source_span": {
+          "end": 26734,
+          "start": 26667
+        },
+        "symbol_kind": "method",
+        "symbol_name": "settimeout"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "NetstringSocket.read_ns 在哪里应用单次调用的负载长度限制？在拒绝声明长度过大的负载前，哪个辅助方法负责计算长度前缀的读取上限？",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "NetstringSocket.read_ns 在哪里应用单次调用的负载长度限制？在拒绝声明长度过大的负载前，哪个辅助方法负责计算长度前缀的读取上限？",
+  "token_budget": 4000,
+  "token_estimate": 4000
+}

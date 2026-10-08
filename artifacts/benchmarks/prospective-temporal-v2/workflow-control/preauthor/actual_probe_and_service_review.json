@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "record_type": "independent_actual_preseal_rust_and_service_controls_review",
+  "reviewer": {
+    "agent": "/root/pr_audit",
+    "workspace": "9967275fe9a7",
+    "role": "Non-author of the final Rust probe and service implementation/controls; independent API, exact-source and original-log review. Prior source-review authorship is disclosed separately."
+  },
+  "decision": "accepted_scoped",
+  "scope": "Actual zero-query Rust runtime routing and six actual service unit controls, with a bounded production-source anti-overfitting review supplement. No first seal, fresh-authoring authorization, formal execution, PR merge or TODO disposition.",
+  "candidate": {
+    "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "tree": "4db46c8403c0a8687dc01f95ded006e31f842076",
+    "product": "3e3e7119ade9c16ccdabf8526ee73bd1077c645d",
+    "review_commit": "438b80cc90ff3b4842a0efbe4057253e73c95c72"
+  },
+  "methods": [
+    "Independently fetched both actual Actions run/job APIs and required success/attempt1/exact-head/all-step conclusions.",
+    "Parsed exact original timestamped logs; preserved BOM in SHA256/UTF8-byte accounting. No new product query or formal workflow was executed.",
+    "Read back the actual probe at its run commit and all six actual service files plus control source/workflow at their run commit. Recomputed SHA256 and byte lengths against the independently reviewed identities.",
+    "Compared prior complete production-signature inventories with the accepted 1038-input current source map, inspected the two historical test-only hits and independently reread the four post-9f production changes."
+  ],
+  "rust_probe": {
+    "run_id": 37757323019,
+    "job_id": 113244977716,
+    "utility_commit": "8806369943936d4f4e3885196cce7a32070d8be1",
+    "run_attempt": 1,
+    "api_status": "completed",
+    "api_conclusion": "success",
+    "all_job_steps_success": true,
+    "original_job_log": {
+      "sha256": "ce99b39c49416f8fbe097dd31fd39ba7a599469558b663126939853a9f68c8e4",
+      "bytes": 28580
+    },
+    "source": {
+      "git_blob": "ae61da6ba3ef8c6ef6c6a81857b0e58d97e815c6",
+      "sha256": "14987971375822cd5cf7a81c405bd284f37706f421a12ba239cd074c4571a721",
+      "bytes": 4869
+    },
+    "original_operator": {
+      "git_blob": "41ce2df9fd364de00bf2265aac6f4f791235e6a8",
+      "sha256": "ff63fc8da0d3de6ce5233549dcbebbb54d64422eb09b4f9c7eb7680a6734e148",
+      "execution_env": {
+        "sha256": "c3a53760f03ae6294b440cdbc73db37942e0c72f8c53b8d8b2730b39e94bc722",
+        "bytes": 900
+      }
+    },
+    "actual_entrypoints": {
+      "cargo": {
+        "child": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "child_lookup": "/home/runner/.cargo/bin/cargo",
+        "parent": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "parent_lookup": "/home/runner/.cargo/bin/cargo"
+      },
+      "rustc": {
+        "child": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "child_lookup": "/home/runner/.cargo/bin/rustc",
+        "parent": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "parent_lookup": "/home/runner/.cargo/bin/rustc"
+      },
+      "rustup": {
+        "child": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "child_lookup": "/home/runner/.cargo/bin/rustup",
+        "parent": {
+          "bytes": 21113232,
+          "mode": 493,
+          "path": "/home/runner/.cargo/bin/rustup",
+          "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+        },
+        "parent_lookup": "/home/runner/.cargo/bin/rustup"
+      }
+    },
+    "actual_toolchain_binaries": {
+      "cargo": {
+        "bytes": 42185192,
+        "mode": 493,
+        "path": "/home/runner/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66"
+      },
+      "rustc": {
+        "bytes": 644784,
+        "mode": 493,
+        "path": "/home/runner/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6"
+      }
+    },
+    "verified": [
+      "Parent and original isolated-HOME child PATH resolve rustup, rustc and cargo to exactly equal canonical path/SHA256/length/mode records; all three command shims resolve to the observed rustup binary.",
+      "Actual rustup which paths are identical in parent and child and lie under /home/runner/.rustup; rustc and cargo parent, child and direct-binary -Vv bytes agree at 1.95.0.",
+      "The actual probe embeds the exact 900-byte unchanged temporal3.1 execution_env function; its hash equals the bound original. The child retains the resolved /usr/bin rg prefix and the actual explicit allowlist.",
+      "Successful execution reaches the no-new-install assertion before emitting the unique P8_SHARED_RUST_RUNTIME record: the isolated child HOME contains neither .rustup nor .cargo."
+    ],
+    "actual_environment": {
+      "rustup_home": "/home/runner/.rustup",
+      "cargo_home": "/home/runner/.cargo",
+      "rustup_toolchain": "1.95.0",
+      "child_path_prefix": "/usr/bin",
+      "ld_library_path_forwarded": false,
+      "keys": [
+        "CARGO_HOME",
+        "GIT_CONFIG_NOSYSTEM",
+        "GIT_NO_LAZY_FETCH",
+        "GIT_TERMINAL_PROMPT",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "RUSTUP_HOME",
+        "RUSTUP_TOOLCHAIN",
+        "TZ",
+        "XDG_CACHE_HOME",
+        "XDG_CONFIG_HOME"
+      ]
+    },
+    "new_product_queries": 0,
+    "limitations": [
+      "This zero-query observation does not rerun or relabel the earlier 288 synthetic requests.",
+      "No assertion of complete OS/shared-library isolation or absence of every possible cache. The exact filesystem assertion concerns the new child HOME/.rustup and HOME/.cargo.",
+      "No independent ZIP reconstruction by this reviewer; the original API job log and fixed source are the reviewed execution evidence."
+    ]
+  },
+  "service_controls": {
+    "run_id": 37758006242,
+    "job_id": 113247247125,
+    "utility_commit": "6c18dab47eacc777392e54ee1684f7e8745ecb68",
+    "run_attempt": 1,
+    "api_status": "completed",
+    "api_conclusion": "success",
+    "all_job_steps_success": true,
+    "original_job_log": {
+      "git_blob": "ac9f3d6955974b4bdf533a4f32fe7b342e5ebcc1",
+      "sha256": "a8a8000f625d52e745921e2e607aae6d411e06b90bbfc0a980d14f9b985f1f52",
+      "bytes": 18772
+    },
+    "author_execution_receipt": {
+      "commit": "ddbd7fe2dc5556356ff28fad0198c811ad01acee",
+      "git_blob": "7a1f5901fba120cab0fb9f3ee30e228aeedd42ea",
+      "sha256": "88f308fdf2a2da94593371abb3525e54bfb2add346c2aa3e8737d7fdc5332680",
+      "bytes": 6956
+    },
+    "control_source": {
+      "git_blob": "2ff226bf65876f5f70f3a22f044f3e91f75af9b5",
+      "sha256": "e35a2283638f07e02d97024d0e99f2f735f5a9190943f3e368019488c626de45",
+      "bytes": 7745
+    },
+    "control_workflow": {
+      "git_blob": "7d3aa5ed864a4f8c0c6655c4a499335e2ff8e42f",
+      "sha256": "81fb8929b2842567a09db3c491eb6fe56868bd9944bdd617bc569a5208bcdd82",
+      "bytes": 1350
+    },
+    "actual_command": [
+      "python3",
+      "-I",
+      "-S",
+      "artifacts/benchmarks/prospective-temporal-v2/service-workflow-controls/controls.py"
+    ],
+    "tests_run": 6,
+    "failures": 0,
+    "errors": 0,
+    "unittest_seconds": 0.457,
+    "individual_passes": [
+      "test_code_change_then_revert_is_rejected",
+      "test_data_only_descendant_is_accepted",
+      "test_executable_data_file_is_rejected",
+      "test_extra_helper_file_is_rejected",
+      "test_wrong_contract_file_digest_is_rejected",
+      "test_wrong_data_seal_contract_digest_is_rejected"
+    ],
+    "exact_actual_result": {
+      "actual_prepare_data_freeze": "not_run",
+      "actual_python_ast": "actual-ast.json",
+      "driver_record": {
+        "bytes": 22112,
+        "mode": 420,
+        "sha256": "255aab123adab8f9b655d750d418e6ab322fc87784d958110fbb4ea4374ca8a9"
+      },
+      "errors": 0,
+      "failures": 0,
+      "first_seal_or_task_acceptance": "not_decided",
+      "formal_execute_or_replay": "not_run",
+      "fresh_question_or_gold_authored": false,
+      "new_product_queries": 0,
+      "real_boltons_source_read": false,
+      "status": "unit_controls_passed",
+      "tests_run": 6
+    },
+    "actual_source_readback": [
+      {
+        "path": ".github/workflows/p8-temporal-execute.yml",
+        "git_blob": "4e2c86d6b8158d49c766f1190965d7cdc8d31873",
+        "sha256": "3ef121a4ad49a8ce562ae5f208a5bf364023c3c8309f6db1fb5611b72250b6e8",
+        "bytes": 4276
+      },
+      {
+        "path": ".github/workflows/p8-temporal-prepare-data.yml",
+        "git_blob": "062c98bec041d185fffe1866ca6f2cf1eb92c940",
+        "sha256": "456c844ce39e7aa7417c9a1d3b5beba2958c84fdf26ee412b654a7d9f0e30aff",
+        "bytes": 4259
+      },
+      {
+        "path": ".github/workflows/p8-temporal-replay.yml",
+        "git_blob": "aad8b2458d57dd538cdefa58373e546092bac2e1",
+        "sha256": "e184c8b27a1dd9969d486a84be88273757b41a38a894c91f954d6ac8fdfc7c5f",
+        "bytes": 6086
+      },
+      {
+        "path": "artifacts/benchmarks/prospective-temporal-v2/service-workflow/OPERATIONS.md",
+        "git_blob": "76f7acc92ba43b21bc22b91e3bc9683a12b572cc",
+        "sha256": "8db16e466fc99cdff618b22dd816ab426c1c1172bdfc012dcef89b75ae6e07d4",
+        "bytes": 19884
+      },
+      {
+        "path": "artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py",
+        "git_blob": "b5da580a70c3e8630e0869187541b1065e4b265e",
+        "sha256": "255aab123adab8f9b655d750d418e6ab322fc87784d958110fbb4ea4374ca8a9",
+        "bytes": 22112
+      },
+      {
+        "path": "artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py",
+        "git_blob": "ae61da6ba3ef8c6ef6c6a81857b0e58d97e815c6",
+        "sha256": "14987971375822cd5cf7a81c405bd284f37706f421a12ba239cd074c4571a721",
+        "bytes": 4869
+      }
+    ],
+    "service_map_sha256": "299e5027bdf627eea271481c275f6c07fbb7eb0d00a6fdc3993fee04bf610b31",
+    "operator_map_sha256": "c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4",
+    "prior_non_author_static_review": {
+      "git_blob": "1a21bdb1edad497db216739aedac9048897fe736",
+      "sha256": "5ce10c17e2b46c38ec08be3f31344c44384bb877c3cf7a732ad73755516a2b51"
+    },
+    "execution_reasoning": "The actual fixed script parses the real driver, final probe, temporal operator and inline Python in all three service workflows before the six tests. It then imports the real driver and exercises check_logic/check_helpers against real temporary Git histories. Workflow exit propagation preserves the actual Python result. The unique result JSON matches the separately archived author receipt exactly.",
+    "limitations": [
+      "actual-ast.json itself was not downloaded from the artifact; successful AST execution is established from exact executed source, original zero-exit job log and ensuing six test results.",
+      "These are unit/AST controls, not real prepare-data freeze, formal execute/replay, real service chronology, anti-parallel-attempt enforcement or manual authorization.",
+      "No product, Rust scorer, rg arm, real Boltons source or new question/gold was executed or read by these controls.",
+      "Artifact API/upload identity is not a separate archive byte-verification claim. No ZIP downloaded by this reviewer."
+    ]
+  },
+  "production_source_supplement": {
+    "decision": "accepted_scoped_source_review_no_identified_gold_dependent_production_change",
+    "legacy_final_audit": {
+      "path": "artifacts/checkpoints/p8-next-ten-20261008/corpus/final/leakage-audit.json",
+      "git_blob": "5b3d25e0901c96c4a29527bca6cb5d7f8227f107",
+      "sha256": "b4cbe19f5ab9c35bc86fa423224a5e771d8d4f5ebb3c2b3365f5baf0d537c403",
+      "reported_worktree_head": "ae906513886bef4501d0a1d2ecffd68ef76c3f5d",
+      "files_scanned": 355,
+      "bytes_scanned": 6575117,
+      "source_manifest_sha256": "21eb4b5902a19b8444f47d90ba43f48100c77da36b0afb45bce1327babdf3154",
+      "status_retained": "boundary_review_required"
+    },
+    "legacy_triage": {
+      "git_blob": "0333db8375fb41b185f29fa27132545f956db180",
+      "sha256": "f36c8ba3ea8ae746339bd7ffac8b86ce3697159c953d32ee1752345878d05456",
+      "source": "crates/cc-db/src/index_db_arch.rs",
+      "source_sha256": "ce359cf824af4813eb80477fbfa58750f79f5275c3e485acdd5adbcf1d44fa65",
+      "finding_lines": [
+        727,
+        728
+      ],
+      "finding": "lib/utils.js in cfg(test) module beginning at610/611; one comment and a generic path extraction assertion. Current lines608-731 independently read; neither is production ranking."
+    },
+    "transfer": {
+      "legacy_inputs_unchanged_by_sha256": 333,
+      "legacy_inputs_changed": 22,
+      "changed_P7_inputs_at_exact_accepted_current_hash": 17,
+      "vector_exact": "The remaining pre-P7 vector/exact.rs is byte-identical between fixed47d baseline and current2cd; its corpus/gold literals observed here are within cfg(test). This does not relabel the old audit as a current rerun.",
+      "post_9f_production_paths": 4,
+      "new_src_test_modules": 4,
+      "current_crates_tree": "afaa5ed25021b919094591a3d7c7021b589d065f",
+      "current_tree_matches_reviewed_product": true
+    },
+    "post_9f_exact_source": {
+      "crates/cc-index/src/scanner.rs": {
+        "git_blob": "6b17dded43f5b6695e20312def6f7e8ec5bc6202",
+        "sha256": "46f143b7ff09c22bf4ba3ebae20b920f5ca58bcfdd79aeacaded7b22ef0ff3db"
+      },
+      "crates/cc-model/src/config.rs": {
+        "git_blob": "93c6c68cadcf8a4b8dcd34951b048c213dc02d72",
+        "sha256": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c"
+      },
+      "crates/cc-server/src/watcher.rs": {
+        "git_blob": "3f45d0eca3044f910454226016aeec13a89c5e9b",
+        "sha256": "d37240b3e0a1becd114c7a386d371509091222e5a216abf3e22cd89b8037a7dd"
+      },
+      "crates/cc-index/src/indexer_phases/resolve.rs": {
+        "git_blob": "37eaa21c86d5d6098d7c343f37b7aeac87e26f98",
+        "sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7"
+      }
+    },
+    "post_9f_manual_findings": [
+      "scanner/config/watcher only add explicit default-false generic UTF8/text and hidden-source admission, shared path filtering and watcher handling. Protected system/cache/secret path rules are generic and query-independent; no corpus import or benchmark-repository selector is added.",
+      "config's existing caller working-set/recent/pinned-context boost fields are unchanged by the complete line diff. The new config delta contains only two default-false booleans and comments; it does not add gold-derived path boosts.",
+      "resolve only omits currently parsed known no-forwarding leaf surfaces from forwarding discovery budgets; no repository, question, gold or corpus condition appears. Added forwarding module is cfg(test)."
+    ],
+    "review_chain": [
+      {
+        "git_blob": "fd4d60edd6bec4655958a848fcdbcbe9dd604340",
+        "scope": "17 inherited changed files retain exact accepted P7 hashes."
+      },
+      {
+        "git_blob": "394e04479673c81fa2f5de15bd96fb2ac083131c",
+        "scope": "Opt-in scanner/config/watcher and actual public projection/source boundary."
+      },
+      {
+        "git_blob": "aad8e1517e709a3f2e74eb88f2466a5b7df7de2c",
+        "scope": "Incoming forwarding and evaluator-only oracle/identity changes."
+      },
+      {
+        "git_blob": "d121e42bfa1ceff5f01963e26ac8ffc8ecc060ff",
+        "sha256": "7ad03e10449f72111601179b317a8257c284851cef2b348d78a7a17dd4133977",
+        "scope": "Complete current1038 source inputs/252 deltas and joint integration."
+      }
+    ],
+    "limitations": [
+      "This review inherits and checks fixed evidence; it is not a new execution of the historical355-file audit.",
+      "Original not_run items remain, including macro-generated literal expansion, ignored/generated sources and static binary-package content scanning. Absence of all overfitting is not proved.",
+      "The production inventory covers the seven original production crates plus root Cargo.toml; evaluation corpus/gold/scorer files are deliberately not treated as production search input.",
+      "No protected old heldout or fresh query/gold body was read. Old117 custody/unknown/exposed classifications are unchanged.",
+      "Runtime source admission, data outside indexed project and final concrete first-seal/permit checks remain separate required evidence."
+    ]
+  },
+  "pending_gate_boundary": {
+    "protocol_blob": "d52587834539c4f44f4e8b488d280e4c1c8d5a78",
+    "clause": "CANDIDATE_AND_SOURCE_SEALED requires P8-002/003 dependency receipts accepted and final actual candidate build and regressions accepted.",
+    "latest_parent_report": "a8ea docs/evidence-only head CI37756585680 encountered original benchmark_fixture index warm p95 1.56s against500ms; source2cd had passed its original jobs and current a8ea default leg passed. Parent retained the failed original log and started one unchanged failed-job retry. This reviewer has not separately retrieved that new large log.",
+    "recommendation": "Keep both source2cd successful evidence and the new failure. Resolve the pending regression disposition/actual retry before asserting the final regressions accepted first-seal entry condition. This is not a new requirement that every docs-only head be merged or every CI ever run be green.",
+    "first_seal_approved": false,
+    "fresh_roles_authorized": false,
+    "formal_queries_authorized": false,
+    "task_status_modified": false,
+    "new_original_todos_closed": 0,
+    "remaining_original_todos": 30
+  },
+  "unresolved_blockers_in_reviewed_probe_and_unit_scope": [],
+  "not_claimed": [
+    "Full prospective first-seal readiness",
+    "Future formal experiment success",
+    "Full G8 or release quality",
+    "PR153 final CI success or merge",
+    "P8-004 completion"
+  ]
+}

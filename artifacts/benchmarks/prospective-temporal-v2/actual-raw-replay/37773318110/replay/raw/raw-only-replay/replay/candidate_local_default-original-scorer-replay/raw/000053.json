@@ -1,0 +1,641 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/fileutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 1,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 12,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15996
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 28,
+        "hydrate_requested": 28,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 124,
+            "sorts": 0,
+            "statements": 101,
+            "vm_steps": 4776
+          },
+          "text": {
+            "cache_hits": 28,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 27809,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 5,
+          "grep": 0,
+          "lexical": 24,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 16009
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 14504,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 1840,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 7231,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 10598,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 5,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 5
+          },
+          "elapsed_us": 3004,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 28,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 18,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 27809,
+        "redundant_bytes": 0,
+        "unique_bytes": 27809
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 12005,
+        "redundant_bytes": 0,
+        "unique_bytes": 12005
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:boltons/fileutils.py:35",
+        "chunk:boltons/fileutils.py:37"
+      ],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 8,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 237411,
+      "scope": "disk_generation:v1",
+      "validation_work": {
+        "candidate_projection_sql": {
+          "fullscan_steps": 0,
+          "rows": 28,
+          "sorts": 0,
+          "statements": 1,
+          "vm_steps": 856
+        },
+        "coverage": "current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost",
+        "schema_version": 1,
+        "source_records_sql": {
+          "fullscan_steps": 0,
+          "rows": 124,
+          "sorts": 0,
+          "statements": 101,
+          "vm_steps": 3460
+        }
+      },
+      "verified_hits": 28
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "AtomicSaver [members: __init__, _open_part_file, setup, __enter__, __exit__]",
+        "chunk_id": "chunk:boltons/fileutils.py:31",
+        "end_line": 384,
+        "file_path": "boltons/fileutils.py",
+        "fused_score": 0.03132075471698113,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.2,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "f4f1da0450895eb820271157d8d5959d8294c67a63bba145d5731a18963d0435",
+            "doc_version": "52129f2213ef46f3987769f51c1f652c6dddcfd00737512476b545d883bdde8a",
+            "encoding_key": "585552c1e2bef5ee00c0f67a5f1177b57a1b872631d45bf7bd68b2a91b51b16b",
+            "entity_key": "31b5902955ca7d8ce6f760ce5953505f4f18aa4a14151233a1650cf41e4283dc"
+          },
+          "qname": "AtomicSaver",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 17797,
+              "start": 11014
+            },
+            "signature": {
+              "end": 11037,
+              "start": 11014
+            },
+            "slice_digest": "14815af75a3cf90ae20eeb377c3eee6b58f05dbd33615e53491065e8f030b4e3",
+            "source": {
+              "byte_len": 25539,
+              "content_digest": "ded4b2ad41bc1a9e4bd3d2daf924a05b571904c88d77195314180f5da0c4a18f",
+              "encoding": "utf8",
+              "snapshot_id": "8875f6c986f9c67528e9ba378ebd9cfc04bcf6c398750bea67ea479ef6565ee3"
+            },
+            "span": {
+              "end": 13643,
+              "start": 11011
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@5",
+          "fts-summary",
+          "symbol:atomic_save",
+          "symbol:AtomicSaver",
+          "preselect:fts-summary:+2.26",
+          "preselect:token-search:+7.20"
+        ],
+        "rerank_score": 0.5257651991614256,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.02
+          ],
+          [
+            "rrf:graph",
+            0.011320754716981131
+          ],
+          [
+            "overlap",
+            0.19444444444444445
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 332,
+        "symbol_kind": "class",
+        "symbol_name": "AtomicSaver",
+        "text": "\n\n\nclass AtomicSaver:\n    \"\"\"``AtomicSaver`` is a configurable `context manager`_ that provides\n    a writable :class:`file` which will be moved into place as long as\n    no exceptions are raised within the context manager's block. These\n    \"part files\" are created in the same directory as the destination\n    path to ensure atomic move operations (i.e., no cross-filesystem\n    moves occur).\n\n    Args:\n        dest_path (str): The path where the completed file will be\n            written.\n        overwrite (bool): Whether to overwrite the destination file if\n            it exists at completion time. Defaults to ``True``.\n        file_perms (int): Integer representation of file permissions\n            for the newly-created file. Defaults are, when the\n            destination path already exists, to copy the permissions\n            from the previous file, or if the file did not exist, to\n            respect the user's configured `umask`_, usually resulting\n            in octal 0644 or 0664.\n        text_mode (bool): Whether to open the destination file in text\n            mode (i.e., ``'w'`` not ``'wb'``). Defaults to ``False`` (``wb``).\n        part_file (str): Name of the temporary *part_file*. Defaults\n            to *dest_path* + ``.part``. Note that this argument is\n            just the filename, and not the full path of the part\n            file. To guarantee atomic saves, part files are always\n            created in the same directory as the destination path.\n        overwrite_part (bool): Whether to overwrite the *part_file*,\n            should it exist at setup time. Defaults to ``False``,\n            which results in an :exc:`OSError` being raised on\n            pre-existing part files. Be careful of setting this to\n            ``True`` in situations when multiple threads or processes\n            could be writing to the same part file.\n        rm_part_on_exc (bool): Remove *part_file* on exception cases.\n            Defaults to ``True``, but ``False`` can be useful for\n            recovery in some cases. Note that resumption is not\n            automatic and by default an :exc:`OSError` is raised if\n            the *part_file* exists.\n\n    Practically, the AtomicSaver serves a few purposes:\n\n      * Avoiding overwriting an existing, valid file with a partially\n        written one.\n      * Providing a reasonable guarantee that a part file only has one\n        writer at a time.\n      * Optional recovery of partial data in failure cases.\n\n    .. _context manager: https://docs.python.org/2/reference/compound_stmts.html#with\n    .. _umask: https://en.wikipedia.org/wiki/Umask\n\n    \"\"\""
+      },
+      {
+        "breadcrumb": "AtomicSaver > setup",
+        "chunk_id": "chunk:boltons/fileutils.py:35",
+        "end_line": 460,
+        "file_path": "boltons/fileutils.py",
+        "fused_score": 0.016666666666666666,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.0625,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "ea0e5cb18c406eac59b9f7268d4b2bc1118c545e60412cc97a42e7adcd3c2382",
+            "doc_version": "085daf550956bde4f79246b2e23a527e867cf6a324d56c86c481594794bc5db7",
+            "encoding_key": "41a7ee49458206c31e87c336f56aa0fd1451d032834fdcfa0bb8bcd62675d26d",
+            "entity_key": "05c861f603fa186375bd20ce37209173ffcc038a809ef1ed63b06724e7f0c96a"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "AtomicSaver.setup",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 16811,
+              "start": 15788
+            },
+            "signature": {
+              "end": 15813,
+              "start": 15788
+            },
+            "slice_digest": "7bee4d9423e5a7f84cde5dd10d37f8e8cf07bfac96d63b768a12363b05c60d69",
+            "source": {
+              "byte_len": 25539,
+              "content_digest": "ded4b2ad41bc1a9e4bd3d2daf924a05b571904c88d77195314180f5da0c4a18f",
+              "encoding": "utf8",
+              "snapshot_id": "8875f6c986f9c67528e9ba378ebd9cfc04bcf6c398750bea67ea479ef6565ee3"
+            },
+            "span": {
+              "end": 16811,
+              "start": 15782
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@16",
+          "fts-summary",
+          "symbol:atomic_save",
+          "symbol:AtomicSaver",
+          "preselect:fts-summary:+2.26",
+          "preselect:token-search:+7.20"
+        ],
+        "rerank_score": 0.45925925925925926,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.016666666666666666
+          ],
+          [
+            "overlap",
+            0.14259259259259258
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 436,
+        "symbol_kind": "method",
+        "symbol_name": "setup",
+        "text": "\n\n    def setup(self):\n        \"\"\"Called on context manager entry (the :keyword:`with` statement),\n        the ``setup()`` method creates the temporary file in the same\n        directory as the destination file.\n\n        ``setup()`` tests for a writable directory with rename permissions\n        early, as the part file may not be written to immediately (not\n        using :func:`os.access` because of the potential issues of\n        effective vs. real privileges).\n\n        If the caller is not using the :class:`AtomicSaver` as a\n        context manager, this method should be called explicitly\n        before writing.\n        \"\"\"\n        if os.path.lexists(self.dest_path):\n            if not self.overwrite:\n                raise OSError(errno.EEXIST,\n                              'Overwrite disabled and file already exists',\n                              self.dest_path)\n        if self.overwrite_part and os.path.lexists(self.part_path):\n            os.unlink(self.part_path)\n        self._open_part_file()\n        return"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Follow the Unix save-completion path from flushing, fsyncing and closing the part file to the non-overwriting hard-link publication and removal of its temporary name.",
+    "references": [
+      {
+        "file_path": "boltons/urlutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:path",
+          "symbol:quote_path_part",
+          "symbol:resolve_path_parts"
+        ],
+        "source_digest": "b1f182e4a494a56fe42809a4514e84ab7a131a5638d2306598cb582d4e1b37ce"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/fileutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:1acea87dc9d00f44aacb9ae9",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 261,
+      "text": "caller: atomic_save → AtomicSaver (boltons/fileutils.py:261)",
+      "title": "Caller: atomic_save",
+      "token_estimate": 15
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/fileutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:d9a8f9b2e0ed44fbbfc6e065",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 261,
+      "text": "callee: atomic_save → AtomicSaver (boltons/fileutils.py:261)",
+      "title": "Callee: AtomicSaver",
+      "token_estimate": 15
+    }
+  ],
+  "query": "Follow the Unix save-completion path from flushing, fsyncing and closing the part file to the non-overwriting hard-link publication and removal of its temporary name.",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Follow the Unix save-completion path from flushing, fsyncing and closing the part file to the non-overwriting hard-link publication and removal of its temporary name.",
+  "token_budget": 4000,
+  "token_estimate": 3999
+}

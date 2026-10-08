@@ -1101,45 +1101,46 @@
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
   "followup_validation": {
-    "elapsed_seconds": 71.85840035000001,
+    "elapsed_seconds": 107.47850998399372,
     "exit_code": 0,
     "input_sha256_after": {
-      "scripts/p8_runtime.py": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
       "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
-      "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
-      "scripts/tests/test_p8_runtime_finalization.py": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6"
+      "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2"
     },
     "input_sha256_before": {
-      "scripts/p8_runtime.py": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
       "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
-      "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
-      "scripts/tests/test_p8_runtime_finalization.py": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6"
+      "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2"
     },
-    "log": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round9-seal-finalization/all-p8.log",
-    "log_sha256": "68afeba7cdef17d6a471a19a0434039dea358dd69faef28b535d093f26e89285",
-    "receipt": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round9-seal-finalization/all-p8-receipt.json",
-    "source_head_at_execution": "c2ad27b2b189cbc98775f20a550d718dd4913038",
-    "staged_tree_after": "eeaa99dbc87810f6c04bbe9fa4a0de414698f0f7",
-    "staged_tree_before": "eeaa99dbc87810f6c04bbe9fa4a0de414698f0f7",
+    "log": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round8-cache-observer/all-p8.log",
+    "log_sha256": "b778034135f696899fe704253c00b19fd0af7ca796f89a0472d275f57e08f771",
+    "receipt": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round8-cache-observer/all-p8-receipt.json",
+    "source_head_at_execution": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
+    "staged_tree_after": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
+    "staged_tree_before": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
     "task_status_changes": [],
-    "tests": 409
+    "tests": 402
   },
   "incremental_review": {
+    "cache_origin_product": "f5518ca6d21f54cfd324e33edc3b739608ae28b8",
+    "cache_origin_review": "5463095d9650402161a23a332c2505b15c4d88b6",
+    "cache_origin_source": "24b0cba53178d14ef6c02355ee271fa0067be3e0",
     "exact_followup_source_changes": [],
     "exact_followup_validation_changes": [
       "scripts/p8_runtime.py",
-      "scripts/tests/test_p8_runtime_finalization.py"
+      "scripts/tests/test_p8_runtime_cache.py"
     ],
-    "execution_claims": "Scoped source/control acceptance only. Original M5 C4/C8/C16 sealing failures and interrupted/incomplete long runs remain as observed. This fix neither identifies the filesystem writer nor grants six-grid engineering, runtime,full scale,quality,release or original TODO acceptance.",
-    "followup_product_source": "b6513a991630c1d1a4e6b51e262c8c5556631987",
-    "original_execution_identity": "The409 integrated Python controls ran with HEAD at F5 c2ad27b2b189cbc98775f20a550d718dd4913038 and the exact two approved inputs staged. Original before/after tree and four input hashes match M6; the later commit is not substituted for the actual execution HEAD.",
-    "parent_source": "c2ad27b2b189cbc98775f20a550d718dd4913038",
-    "preserved_prior_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-7915f56-independent-source-review.json",
-    "preserved_prior_review_sha256": "322ca00da68b27e245b9fb5b46935969ae29a3649ef5d362d7b65fdcc3d84229",
-    "prior_product_source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
-    "prior_review_source": "7915f5663866539d6094e3e5ccf8a40e81cf6537",
-    "product_tree": "eeaa99dbc87810f6c04bbe9fa4a0de414698f0f7",
-    "scope": "Only final seal/verify failure metadata changes: preserve original pre-seal report/failed seal, persist failed/unsealed/exit2; unavailable failure metadata has explicit stderr and no retries. All1087 native inputs,30 source paths,136 other validation files and every prior acceptance boundary remain. One new control file makes138 validation inputs."
+    "execution_claims": "Scoped controller source and regression acceptance only. The original native 14-read probe used the older bb9 product and v3 observer; no new native one-hour soak, runtime performance or original TODO acceptance is granted.",
+    "followup_product_source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+    "original_execution_identity": "The 402-control run executed the two-file staged integration while HEAD was R4 d225df3528ab551d42c12d60e9a27dc6ed2fed09. Its before/after three input hashes and staged tree exactly match the subsequent product. No execution is relabeled as having run at the later commit. Independent shortened controls retain their own source identities and scope.",
+    "parent_source": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
+    "preserved_prior_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-d225df3-independent-source-review.json",
+    "preserved_prior_review_sha256": "e66cbe7b4b9164d3aefe131826c55a59c392ae754e72a4a0a819d2db5c72a3aa",
+    "prior_product_source": "d381f413bee3606bdc7410a73be855a0aab4aabb",
+    "prior_review_source": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
+    "product_tree": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
+    "scope": "Integrate only the independently reviewed compound cache observer and its controls into M4, retaining every M4 ownership, admission, interrupt and terminal-retention repair. Add metadata-only failure-sidecar projection after independently reproduced nested response retention. All 1087 Rust/Cargo inputs, all 30 previously reviewed source paths, and the other 135 existing validation inputs are unchanged; one validation file is added for an inventory of 137."
   },
   "incremental_review_records": {
     "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/acceptance-review/runtime-independent-review.json": {
@@ -1224,14 +1225,6 @@
       "reviewer": "/root/runtime_review",
       "scope": "Non-author scoped source/AST review, original native probe audit, synthetic actual-controller boundary and raw-budget negative controls, and 61 Python controls on the fixed candidate. No native full-soak acceptance.",
       "sha256": "0a8b754710822f18cba944643a3743d7508633de399752447e00c3f3d398e70b",
-      "workspace": "28fef0db5e01"
-    },
-    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round9-seal-finalization/independent-finalization-review.json": {
-      "author": "/root/acceptance_review",
-      "bytes": 6053,
-      "reviewer": "/root/pr_audit",
-      "scope": "Non-author fixed two-input source/AST review,68 scoped runtime controls, independent same-script M5/candidate finalization counterexamples; no native workload or six-grid/task approval.",
-      "sha256": "fc718793e21a675701db9cf6440726878a06d6ad8140769c7e322c948248b3e1",
       "workspace": "28fef0db5e01"
     }
   },
@@ -1406,32 +1399,6 @@
         "task_status_changes": [],
         "tests": 387
       }
-    },
-    {
-      "original_core_path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-7915f56-independent-source-review.json",
-      "original_core_sha256": "322ca00da68b27e245b9fb5b46935969ae29a3649ef5d362d7b65fdcc3d84229",
-      "record": {
-        "elapsed_seconds": 107.47850998399372,
-        "exit_code": 0,
-        "input_sha256_after": {
-          "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
-          "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
-          "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2"
-        },
-        "input_sha256_before": {
-          "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
-          "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
-          "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2"
-        },
-        "log": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round8-cache-observer/all-p8.log",
-        "log_sha256": "b778034135f696899fe704253c00b19fd0af7ca796f89a0472d275f57e08f771",
-        "receipt": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round8-cache-observer/all-p8-receipt.json",
-        "source_head_at_execution": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
-        "staged_tree_after": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
-        "staged_tree_before": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
-        "task_status_changes": [],
-        "tests": 402
-      }
     }
   ],
   "prior_incremental_reviews": [
@@ -1575,30 +1542,6 @@
         "product_tree": "854202cf6b0eaf5506d2fdc9394e3cc5b7d0bbf2",
         "scope": "Merge the current owner evidence and cleanup controls while preserving every prior supplement repair. The original owner parity exit-code field and defensive process-exit handling are retained; all six original owner lifecycle controls are added unchanged. All 1087 Rust/Cargo and 134 other validation inputs remain unchanged."
       }
-    },
-    {
-      "original_core_path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-7915f56-independent-source-review.json",
-      "original_core_sha256": "322ca00da68b27e245b9fb5b46935969ae29a3649ef5d362d7b65fdcc3d84229",
-      "record": {
-        "cache_origin_product": "f5518ca6d21f54cfd324e33edc3b739608ae28b8",
-        "cache_origin_review": "5463095d9650402161a23a332c2505b15c4d88b6",
-        "cache_origin_source": "24b0cba53178d14ef6c02355ee271fa0067be3e0",
-        "exact_followup_source_changes": [],
-        "exact_followup_validation_changes": [
-          "scripts/p8_runtime.py",
-          "scripts/tests/test_p8_runtime_cache.py"
-        ],
-        "execution_claims": "Scoped controller source and regression acceptance only. The original native 14-read probe used the older bb9 product and v3 observer; no new native one-hour soak, runtime performance or original TODO acceptance is granted.",
-        "followup_product_source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
-        "original_execution_identity": "The 402-control run executed the two-file staged integration while HEAD was R4 d225df3528ab551d42c12d60e9a27dc6ed2fed09. Its before/after three input hashes and staged tree exactly match the subsequent product. No execution is relabeled as having run at the later commit. Independent shortened controls retain their own source identities and scope.",
-        "parent_source": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
-        "preserved_prior_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-d225df3-independent-source-review.json",
-        "preserved_prior_review_sha256": "e66cbe7b4b9164d3aefe131826c55a59c392ae754e72a4a0a819d2db5c72a3aa",
-        "prior_product_source": "d381f413bee3606bdc7410a73be855a0aab4aabb",
-        "prior_review_source": "d225df3528ab551d42c12d60e9a27dc6ed2fed09",
-        "product_tree": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
-        "scope": "Integrate only the independently reviewed compound cache observer and its controls into M4, retaining every M4 ownership, admission, interrupt and terminal-retention repair. Add metadata-only failure-sidecar projection after independently reproduced nested response retention. All 1087 Rust/Cargo inputs, all 30 previously reviewed source paths, and the other 135 existing validation inputs are unchanged; one validation file is added for an inventory of 137."
-      }
     }
   ],
   "review_records": {
@@ -1663,10 +1606,10 @@
       "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
     }
   },
-  "reviewed_at_utc": "2026-10-08T23:23:07.708285+00:00",
+  "reviewed_at_utc": "2026-10-08T22:09:16.559211+00:00",
   "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source": "b6513a991630c1d1a4e6b51e262c8c5556631987",
+  "source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
   "source_path_reviewers": {
     "crates/cc-db/src/index_migrate.rs": [
       "/root",
@@ -1763,7 +1706,7 @@
       "/root/pr_audit"
     ]
   },
-  "tree": "eeaa99dbc87810f6c04bbe9fa4a0de414698f0f7",
+  "tree": "0e51197c98062ae68d4e8ad43be52f92b80dc45c",
   "unresolved_blockers": [],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
@@ -1812,7 +1755,7 @@
     "scripts/p8_resources.py": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1",
     "scripts/p8_rollback.py": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
     "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
-    "scripts/p8_runtime.py": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+    "scripts/p8_runtime.py": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
     "scripts/p8_runtime_build.py": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
     "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
     "scripts/p8_semantic_certification.py": "42dd72cbb08dd398239cd41b927f2a94bedbc8b813583b175191c87f291a72c4",
@@ -1867,7 +1810,6 @@
     "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
     "scripts/tests/test_p8_runtime_cache.py": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
     "scripts/tests/test_p8_runtime_evidence.py": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
-    "scripts/tests/test_p8_runtime_finalization.py": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6",
     "scripts/tests/test_p8_scale_matrix.py": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
     "scripts/tests/test_p8_semantic_certification.py": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8",
     "scripts/update-doc-baselines.sh": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",

@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "author": "acceptance_review",
+  "frozen_at_utc": "2026-10-08T23:18:06.812734+00:00",
+  "status": "candidate_implemented_scoped_controls_passed_pending_independent_review",
+  "base_source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+  "base_runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+  "original_M5_PINS5_runtime_unchanged": true,
+  "candidate_files": [
+    {
+      "path": "candidate/scripts/p8_runtime.py",
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+    },
+    {
+      "path": "candidate/scripts/tests/test_p8_runtime_finalization.py",
+      "bytes": 9355,
+      "sha256": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6"
+    }
+  ],
+  "patch": {
+    "path": "seal-finalization.patch",
+    "bytes": 13723,
+    "sha256": "b7d5b13d7a854602134cfe7daa5b8d53d6d2fd2dd5bd83a788ff3b16d1d672d1"
+  },
+  "source_scope": {
+    "original_python_support_files_exported": 95,
+    "changed_existing_paths": [
+      "scripts/p8_runtime.py"
+    ],
+    "new_path": "scripts/tests/test_p8_runtime_finalization.py",
+    "native_crate_Cargo_workflow_guard_tasks_changes": false
+  },
+  "behavior": [
+    "A seal_output or post-seal verify_output exception makes final report status failed, exit_code2, artifact_seal null, artifact_seal_status unsealed_finalization_error; original phase/type/message retained.",
+    "Exact serialized pre-seal report preserved once using exclusive report-before-seal-failure.json before final report replacement. No overwriting a backup, no retry chain.",
+    "A written or partially written seal.json is left byte-for-byte untouched. The final report describes it only as a failed attempt; never re-seals, deletes it, ignores paths or treats raw/statistics/parity success as seal success.",
+    "If failed seal fingerprinting itself errors, metadata_status unavailable and original error are recorded, while still writing a writable failed report. Missing fingerprints are not zeros.",
+    "If output/backup or final failure metadata cannot be written, CLI returns2 and stderr explicitly says final status failed/unsealed and metadata retention failed. No claim a stale pre-seal report has become final.",
+    "Normal success retains valid sealed/0; a stopped ordinary parity failure retains valid failure seal/1; owned writer stopping, terminal retention, cache and all existing gates remain unchanged."
+  ],
+  "controls": [
+    {
+      "receipt": {
+        "path": "controls/baseline-new.receipt.json",
+        "bytes": 605,
+        "sha256": "c7f8fc39bb7623c740f08a455ea898487c00de607b37f64286ed90ce90cca95e"
+      },
+      "execution": {
+        "source": "baseline",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime_finalization.py",
+          "-v"
+        ],
+        "exit_code": 1,
+        "elapsed_seconds": 5.318962689998443,
+        "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+        "test_sha256": "50e82563080268a7ec19179241d464d4101f8bf890e6abc671c3174e6ca38979",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "101594d91c4bb12ee34d420dc1018563b8d152438e0660d146e077a3d22776fa"
+      }
+    },
+    {
+      "receipt": {
+        "path": "controls/baseline-six.receipt.json",
+        "bytes": 605,
+        "sha256": "32dc6bf3ee93bb2057b8def470a0c4f49d28a20a959fb15d92fd57dcaab53c87"
+      },
+      "execution": {
+        "source": "baseline",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime_finalization.py",
+          "-v"
+        ],
+        "exit_code": 1,
+        "elapsed_seconds": 18.99871765798889,
+        "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+        "test_sha256": "cad380bfb78cd265dcda0b1ce6b2f79d9bf33cb41a5e0ea587a845686b8363ae",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d3b6f527a1913697572b060cad07b24f1059afe3dbc4f02aa5ae16863dabc486"
+      }
+    },
+    {
+      "receipt": {
+        "path": "controls/candidate-all-runtime.receipt.json",
+        "bytes": 595,
+        "sha256": "dd0841b325d805505c0ad6c11afa0fa1dee6ecb44625c3ec7175cdb34148f549"
+      },
+      "execution": {
+        "source": "candidate",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime*.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 19.619424925011117,
+        "runtime_sha256": "354069d9dc6d5df4c66d9cf2dc25993910fbfe2d95e0ba1f2727e6e71667dd9a",
+        "test_sha256": "cad380bfb78cd265dcda0b1ce6b2f79d9bf33cb41a5e0ea587a845686b8363ae",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "fbee28c3f476e2d86aba8ebe6fe442b3e7f6a97d6bf7a37af2639f088a53feef"
+      }
+    },
+    {
+      "receipt": {
+        "path": "controls/candidate-new.receipt.json",
+        "bytes": 605,
+        "sha256": "6984abf549cb804bafd183a8d10b08a0226ed30c1d4a3b14bcd1f36900b52cff"
+      },
+      "execution": {
+        "source": "candidate",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime_finalization.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.34911317199294,
+        "runtime_sha256": "354069d9dc6d5df4c66d9cf2dc25993910fbfe2d95e0ba1f2727e6e71667dd9a",
+        "test_sha256": "50e82563080268a7ec19179241d464d4101f8bf890e6abc671c3174e6ca38979",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "643e3a4192ff5b68be1fb5cc01e4896e7829f1f4639d1ce8fa48c8100d03a00e"
+      }
+    },
+    {
+      "receipt": {
+        "path": "controls/v2-baseline-seven.receipt.json",
+        "bytes": 606,
+        "sha256": "41c6ec1f978325713aca609e9d0199529de6f019e7576a2a04fd7809714e2a87"
+      },
+      "execution": {
+        "source": "baseline",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime_finalization.py",
+          "-v"
+        ],
+        "exit_code": 1,
+        "elapsed_seconds": 2.9779164619976655,
+        "runtime_sha256": "bc33ed073a2e035912a4d6f1794ceec8b836243c2bbb46c8a4dddfcdda791559",
+        "test_sha256": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "df5384d8903de8ce46d41d6b04d754ef38a241b962d49f473ceb85e3ecd08cfa"
+      }
+    },
+    {
+      "receipt": {
+        "path": "controls/v2-candidate-all-runtime.receipt.json",
+        "bytes": 595,
+        "sha256": "7c1aa6dc6e28457434937639f2b69dad0a688a61e3a63635e582127979ee2fd9"
+      },
+      "execution": {
+        "source": "candidate",
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/tests",
+          "-p",
+          "test_p8_runtime*.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 22.270856542992988,
+        "runtime_sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+        "test_sha256": "7a2d9ae4eb66de15e95780c44f6047ff424f69dfc01a3f921ee33405a6377cf6",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "ca712dde30e1570790ae76e8da93bd369a66a2b901580f64db5e0c7ee926f427"
+      }
+    }
+  ],
+  "final_control_result": {
+    "original_M5_same_seven_new_controls": {
+      "passed": 2,
+      "failed": 5,
+      "exit_code": 1
+    },
+    "candidate_original_plus_new_runtime_controls": {
+      "original_controls": 61,
+      "new_controls": 7,
+      "total": 68,
+      "passed": 68,
+      "exit_code": 0,
+      "duration_seconds": 22.270856542992988
+    },
+    "new_cases": [
+      "actual lstat ENOENT after real artifact walk enumerated file",
+      "real seal followed by actual extra file causing verify inventory mismatch",
+      "failed seal fingerprint PermissionError must not block writable failed report",
+      "normal stopped success preserves valid seal/0",
+      "stopped completed unequal oracle retains failure seal/1 and every original statistic",
+      "actual output directory moved/unavailable leaves explicit CLI2 stderr and original bytes intact",
+      "existing exclusive-backup path remains untouched, single attempt, explicit CLI2 stderr"
+    ]
+  },
+  "earlier_iterations_preserved": [
+    "Initial test module also exposed7 imported original tests to discovery: baseline13 ran with4 failures, candidate13 passed. Original initial test and logs retained; no inflated unique control claim.",
+    "The first corrected-discovery candidate354069 passed61 original+6 new=67; its source/test bytes are retained iterations/v1.",
+    "Independent pr_audit flagged failed-seal fingerprint diagnostic failure blocking final report. v2 adds only nested diagnostic error handling plus1 control; all old logs remain."
+  ],
+  "limits": [
+    "These are small synthetic executable/stdio controls with build admission explicitly mocked; no Cargo compilation or native product measurement.",
+    "This patch has not been applied to shared repo, committed, published, or used to rerun original M5 profiles.",
+    "No diagnosis of who created .index.sqlite3-wal.<suffix>; no external-writer fix or artifact-ignore/retry policy.",
+    "Original M5 three mixed failures remain failures. Interrupted/running original jobs are not upgraded.",
+    "No original TODO completed;29 remain; no six-grid engineering or full release acceptance."
+  ],
+  "evidence_inventory": [
+    {
+      "path": "controls/baseline-new.receipt.json",
+      "bytes": 605,
+      "sha256": "c7f8fc39bb7623c740f08a455ea898487c00de607b37f64286ed90ce90cca95e"
+    },
+    {
+      "path": "controls/baseline-new.stderr",
+      "bytes": 6298,
+      "sha256": "101594d91c4bb12ee34d420dc1018563b8d152438e0660d146e077a3d22776fa"
+    },
+    {
+      "path": "controls/baseline-new.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "controls/baseline-six.receipt.json",
+      "bytes": 605,
+      "sha256": "32dc6bf3ee93bb2057b8def470a0c4f49d28a20a959fb15d92fd57dcaab53c87"
+    },
+    {
+      "path": "controls/baseline-six.stderr",
+      "bytes": 5125,
+      "sha256": "d3b6f527a1913697572b060cad07b24f1059afe3dbc4f02aa5ae16863dabc486"
+    },
+    {
+      "path": "controls/baseline-six.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "controls/candidate-all-runtime.receipt.json",
+      "bytes": 595,
+      "sha256": "dd0841b325d805505c0ad6c11afa0fa1dee6ecb44625c3ec7175cdb34148f549"
+    },
+    {
+      "path": "controls/candidate-all-runtime.stderr",
+      "bytes": 11546,
+      "sha256": "fbee28c3f476e2d86aba8ebe6fe442b3e7f6a97d6bf7a37af2639f088a53feef"
+    },
+    {
+      "path": "controls/candidate-all-runtime.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "controls/candidate-new.receipt.json",
+      "bytes": 605,
+      "sha256": "6984abf549cb804bafd183a8d10b08a0226ed30c1d4a3b14bcd1f36900b52cff"
+    },
+    {
+      "path": "controls/candidate-new.stderr",
+      "bytes": 2464,
+      "sha256": "643e3a4192ff5b68be1fb5cc01e4896e7829f1f4639d1ce8fa48c8100d03a00e"
+    },
+    {
+      "path": "controls/candidate-new.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "controls/test_p8_runtime_finalization.initial-with-imported-tests.py",
+      "bytes": 8418,
+      "sha256": "50e82563080268a7ec19179241d464d4101f8bf890e6abc671c3174e6ca38979"
+    },
+    {
+      "path": "controls/v2-baseline-seven.receipt.json",
+      "bytes": 606,
+      "sha256": "41c6ec1f978325713aca609e9d0199529de6f019e7576a2a04fd7809714e2a87"
+    },
+    {
+      "path": "controls/v2-baseline-seven.stderr",
+      "bytes": 6456,
+      "sha256": "df5384d8903de8ce46d41d6b04d754ef38a241b962d49f473ceb85e3ecd08cfa"
+    },
+    {
+      "path": "controls/v2-baseline-seven.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "controls/v2-candidate-all-runtime.receipt.json",
+      "bytes": 595,
+      "sha256": "7c1aa6dc6e28457434937639f2b69dad0a688a61e3a63635e582127979ee2fd9"
+    },
+    {
+      "path": "controls/v2-candidate-all-runtime.stderr",
+      "bytes": 11754,
+      "sha256": "ca712dde30e1570790ae76e8da93bd369a66a2b901580f64db5e0c7ee926f427"
+    },
+    {
+      "path": "controls/v2-candidate-all-runtime.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "iterations/v1/p8_runtime.py",
+      "bytes": 58218,
+      "sha256": "354069d9dc6d5df4c66d9cf2dc25993910fbfe2d95e0ba1f2727e6e71667dd9a"
+    },
+    {
+      "path": "iterations/v1/test_p8_runtime_finalization.py",
+      "bytes": 8430,
+      "sha256": "cad380bfb78cd265dcda0b1ce6b2f79d9bf33cb41a5e0ea587a845686b8363ae"
+    },
+    {
+      "path": "baseline-source-manifest.json",
+      "bytes": 16295,
+      "sha256": "70f549e2b73cf4724337a4ef438cd482cae5384b1249c8f74b8ef5599ed5033d"
+    },
+    {
+      "path": "prepare_candidate.py",
+      "bytes": 3988,
+      "sha256": "68858e642fa6873fdc025ca412b7d5a3a5dcbd933f249211d6b6b7a2169ec6eb"
+    }
+  ]
+}

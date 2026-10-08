@@ -1,0 +1,38 @@
+name: P8 exact original child environment Rust probe
+on:
+  push:
+    branches: [work/p8-rust-probe-996727-20261008]
+permissions:
+  contents: read
+jobs:
+  rust-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+      RUSTUP_HOME: /home/runner/.rustup
+      CARGO_HOME: /home/runner/.cargo
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+          persist-credentials: false
+      - name: Restore same fixed Rust and rg
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal
+          if ! command -v rg >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes ripgrep
+          fi
+          test -x /usr/bin/rg
+          /usr/bin/rg --version
+          python3 -I -S --version
+      - name: Observe actual original child PATH and Rust binary routing
+        run: python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-exact-child-rust-probe
+          path: ${{ runner.temp }}/ptv2-shared-rust-environment.json
+          if-no-files-found: error

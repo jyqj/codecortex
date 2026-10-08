@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "kind": "pre_author_probe_coverage_delta",
+  "previous_probe_blob": "2ab6c28142e69b3db5d6a50cc2de7778059db240",
+  "finding": "Previous zero-query Rust probe did not reproduce original temporal.execution_env PATH prefix or optional LD_LIBRARY_PATH. Its evidence covered only its explicitly constructed environment.",
+  "fix": "Probe now uses a verbatim execution_env function copied from immutable3.1 and calls it with /usr/bin/rg and its isolated probe HOME. The original two measurement arms already used that exact function; candidate/scorer/helper/actual measurement environment are unchanged.",
+  "original_function_sha256": "c3a53760f03ae6294b440cdbc73db37942e0c72f8c53b8d8b2730b39e94bc722",
+  "actual_original_preseal_run_reused": 37754844471,
+  "new_probe_product_queries": 0,
+  "new_actual_heldout_bodies": 0,
+  "full_measurement_rerun_required": false,
+  "remaining_original_todos": 30
+}

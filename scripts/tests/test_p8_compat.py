@@ -218,6 +218,120 @@ class CompatLockTests(unittest.TestCase):
         self.assertIn("exit-code mismatch", result["reason"])
 
 
+    def set_engine_config(self, value):
+        self.suite["engine_config"] = copy.deepcopy(value)
+        self.write(self.input / "suite.compat.json", self.suite)
+        self.lock["suites"][0]["sha256"] = self.sha(self.input / "suite.compat.json")
+        self.save_lock()
+
+    @staticmethod
+    def text_hidden_config():
+        return {"auto_index": {"enabled": False},
+                "indexing": {"include_text_files": True, "include_hidden_files": True}}
+
+    def test_text_hidden_is_explicit_and_does_not_widen_default_inspection(self):
+        self.set_engine_config(self.text_hidden_config())
+        with self.assertRaisesRegex(compat.Invalid, "only the explicit local default"):
+            compat.inspect_lock(self.lockfile)
+        checked = compat.inspect_lock(self.lockfile, configuration_profile="local-text-hidden")
+        self.assertEqual(checked["identity"]["configuration_profile"], "local-text-hidden")
+        self.assertEqual(checked["identity"]["suites"]["compat"]["configuration"], self.text_hidden_config())
+
+    def test_original_default_profile_keeps_original_identity_and_predicate(self):
+        checked = compat.inspect_lock(self.lockfile)
+        self.assertNotIn("configuration_profile", checked["identity"])
+        with self.assertRaisesRegex(compat.Invalid, "must match exactly"):
+            compat.inspect_lock(self.lockfile, configuration_profile="local-text-hidden")
+        for config in [
+            {"auto_index": {"enabled": True}},
+            {"auto_index": {"enabled": False}, "query": {"strategy": "semantic"}},
+            self.text_hidden_config(),
+        ]:
+            self.set_engine_config(config)
+            with self.assertRaisesRegex(compat.Invalid, "only the explicit local default"):
+                compat.inspect_lock(self.lockfile)
+
+    def test_text_hidden_profile_rejects_missing_extra_or_network_configuration(self):
+        valid = self.text_hidden_config()
+        candidates = []
+        for flag in ("include_text_files", "include_hidden_files"):
+            missing = copy.deepcopy(valid)
+            del missing["indexing"][flag]
+            candidates.append(missing)
+            disabled = copy.deepcopy(valid)
+            disabled["indexing"][flag] = False
+            candidates.append(disabled)
+        for section, key, value in (("auto_index", "enabled", 0),
+                                    ("indexing", "include_text_files", 1),
+                                    ("indexing", "include_hidden_files", 1)):
+            altered = copy.deepcopy(valid)
+            altered[section][key] = value
+            candidates.append(altered)
+        for key, value in (("semantic", {"enabled": True}), ("query", {"strategy": "semantic"}),
+                           ("provider", "remote"), ("extra", True)):
+            extra = copy.deepcopy(valid)
+            extra[key] = value
+            candidates.append(extra)
+        altered = copy.deepcopy(valid)
+        altered["auto_index"]["enabled"] = True
+        candidates.append(altered)
+        altered = copy.deepcopy(valid)
+        altered["indexing"]["max_file_bytes"] = 1000000
+        candidates.append(altered)
+        for config in candidates:
+            with self.subTest(config=config):
+                self.set_engine_config(config)
+                with self.assertRaisesRegex(compat.Invalid, "must match exactly"):
+                    compat.inspect_lock(self.lockfile, configuration_profile="local-text-hidden")
+
+    def test_compat_native_require_the_same_explicit_configuration(self):
+        self.set_engine_config(self.text_hidden_config())
+        native = copy.deepcopy(self.suite)
+        native["scoring"] = "codecortex-native-v1"
+        native["engine_config"] = {"auto_index": {"enabled": False}}
+        native_path = self.input / "suite.native.json"
+        self.write(native_path, native)
+        self.lock["suites"].append({**copy.deepcopy(self.lock["suites"][0]),
+            "profile": "native", "path": "suite.native.json", "sha256": self.sha(native_path)})
+        self.save_lock()
+        with self.assertRaisesRegex(compat.Invalid, "must match exactly"):
+            compat.inspect_lock(self.lockfile, configuration_profile="local-text-hidden")
+        native["engine_config"] = self.text_hidden_config()
+        self.write(native_path, native)
+        self.lock["suites"][1]["sha256"] = self.sha(native_path)
+        self.save_lock()
+        checked = compat.inspect_lock(self.lockfile, configuration_profile="local-text-hidden")
+        self.assertEqual(checked["identity"]["suites"]["native"]["configuration"],
+                         checked["identity"]["suites"]["compat"]["configuration"])
+
+    def test_unknown_configuration_mode_is_rejected_before_process_creation(self):
+        with mock.patch.object(compat, "command") as execute, self.assertRaisesRegex(compat.Invalid, "unknown explicit"):
+            compat.run_locked(self.lockfile, self.root / "never", configuration_profile="anything")
+        execute.assert_not_called()
+        self.assertFalse((self.root / "never").exists())
+
+    def test_explicit_mode_still_rejects_zero_exit_without_real_artifacts(self):
+        self.set_engine_config(self.text_hidden_config())
+        result, code = compat.run_locked(self.lockfile, self.root / "explicit-fake",
+                                         configuration_profile="local-text-hidden")
+        self.assertEqual(code, 2)
+        self.assertEqual(result["status"], "invalid_measurement")
+        self.assertFalse(result["release_certified"])
+        self.assertEqual([c["process_exit_code"] for c in result["commands"]], [0, 0])
+
+    def test_cli_requires_the_named_opt_in(self):
+        self.set_engine_config(self.text_hidden_config())
+        self.assertEqual(compat.main(["run", "--lock", str(self.lockfile),
+                                      "--output", str(self.root / "default-refused"), "--validate-only"]), 2)
+        self.assertFalse((self.root / "default-refused").exists())
+        self.assertEqual(compat.main(["run", "--lock", str(self.lockfile),
+                                      "--output", str(self.root / "named-mode"), "--validate-only",
+                                      "--configuration-profile", "local-text-hidden"]), 0)
+        receipt = json.loads((self.root / "named-mode" / "receipt.json").read_bytes())
+        self.assertEqual(receipt["status"], "validated_inputs_only")
+        self.assertEqual(receipt["profiles"]["compat"]["ranking"], "not_run")
+
+
 class CompatRunIdentityTests(unittest.TestCase):
     """Synthetic retained runs exercise identity checks, never quality claims."""
 

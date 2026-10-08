@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "review_kind": "non-author static delta and fixed identity review",
+  "verdict": "accepted_scoped",
+  "reviewed_commit": "5e2e3f691338663784143f0cd9f4558a4f4f68a4",
+  "original_commit": "6343fe25302c957690d8cd9514f2d163c35f7f40",
+  "files": {
+    "artifacts/checkpoints/p8-joint-release-readback-20261008/export.py": {
+      "blob": "89bc32f162e5452c8bafe1f7f11e6dec8ea79bc3",
+      "sha256": "6504a41cd1c00f6a0b03afb066a51663ac9b1f011a6c3205e34760474d4b656e",
+      "bytes": 5107
+    },
+    "artifacts/checkpoints/p8-joint-release-readback-20261008/reports.py": {
+      "blob": "d346b7905527219ae40649cc70bd0289196fa22a",
+      "sha256": "84d9ca2b964a64657ec02ff72ee6d263a135a9a7f7eba2e40acb3040ab560aba",
+      "bytes": 4813
+    },
+    "artifacts/checkpoints/p8-joint-release-readback-20261008/original-inventory.json": {
+      "blob": "a734b290ab6e2c193e1dd4cf63f4bf5a5d0c3297",
+      "sha256": "9b96cb98a46fce65ce933715a473ac9a2ccfbc14e255353a2bb7bfebf57671c6",
+      "bytes": 549393
+    },
+    ".github/workflows/p8-joint-release-readback.yml": {
+      "blob": "847e9a0ee69eb7308410330bab42c49422efe0de",
+      "sha256": "0046648aab681c8f7bf0fe26c26f528ae5db4bdb55b31d955d8fa713c139fca2",
+      "bytes": 2367
+    }
+  },
+  "actual_identity": {
+    "artifact_id": 11537848186,
+    "artifact_name": "p8-fresh-release-external-revision2",
+    "zip_bytes": 29745796,
+    "zip_sha256": "7c0f7bf7e20d071b49fbd2e5aa1ae2d114bd9b3dc301469ac3160574a855c7a7",
+    "run_id": 37749276827,
+    "workflow_head": "978698f3d31ed040c9f835a720f0b2421cd26001",
+    "candidate_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "conclusion": "failure"
+  },
+  "checks": {
+    "export_full_bytes_equal_original": true,
+    "reports_exact_two_line_delta": [
+      {
+        "line": 21,
+        "old": "    need(sha(raw_index)==\"09d56a71921b8debd2c1740a941310f1c5d1e8709111676d7543bf550899e0d0\",\"fixed original restoration index\")",
+        "new": "    need(sha(raw_index)==\"bd8c836716aaf6e3fdf0df8945467d59480b1bbc5e33b6bf1f1ce4396f8851b8\",\"fixed original restoration index\")"
+      },
+      {
+        "line": 47,
+        "old": "    add(prefix+\"derived-original/selection.json\",(json.dumps({\"scope\":\"All86 existing nonraw nonquery reports plus original body-free fragments of first2 raw responses/profile. No corpus insertion, new scoring or new query.\",\"original_zip\":pin,\"index_sha256\":sha(raw_index),\"original_records\":subset},indent=2,sort_keys=True)+\"\\n\").encode(),{\"kind\":\"selection_and_original_identity_map\"})",
+        "new": "    add(prefix+\"derived-original/selection.json\",(json.dumps({\"scope\":\"All existing nonraw nonquery reports plus original body-free fragments of first2 raw responses/profile. No corpus insertion, new scoring or new query.\",\"original_zip\":pin,\"index_sha256\":sha(raw_index),\"original_records\":subset},indent=2,sort_keys=True)+\"\\n\").encode(),{\"kind\":\"selection_and_original_identity_map\"})"
+      }
+    ],
+    "original_index_sha256": "bd8c836716aaf6e3fdf0df8945467d59480b1bbc5e33b6bf1f1ce4396f8851b8",
+    "permissions": [
+      "contents:read",
+      "actions:read"
+    ],
+    "archive_export": {
+      "all_members_crc_hash_oid_mode_checked": true,
+      "full_zip_chunked_losslessly": true,
+      "parts": 12
+    },
+    "report_export": {
+      "parts": 6,
+      "query_jsonl_excluded": true,
+      "nonraw_reports_require_only_original_payload_segments": true,
+      "raw_fragments_explicitly_incomplete": true
+    },
+    "execution_scope": "Downloads and hashes the already completed artifact; no product invocation, scorer, replay, new query or source mutation.",
+    "original_release_conclusion_preserved": "failure"
+  },
+  "limitations": [
+    "This receipt audits the readback code and identity pins, not successful execution of its jobs or restoration of their outputs.",
+    "Package source and actual release measurements have separate evidence and are not approved solely by this utility review."
+  ]
+}

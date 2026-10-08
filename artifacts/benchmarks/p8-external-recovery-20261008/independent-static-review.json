@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p7_wiring",
+  "role": "Non-author of the new P8-003 external recovery script and its original p8_compat driver; reviewed source via GitHub API.",
+  "decision": "accepted_scoped_static_prepared_entrypoint",
+  "source": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "reviewed_inputs": [
+    {
+      "path": "recover_external.py",
+      "git_blob": "cfabe2bd7fba378f25ec5d19762d2758580a6baf",
+      "sha256": "331c5e534c0964a6700cc82b6420dd28eeceed74a94982570df193aa20f7073d",
+      "utf8_bytes": 30155
+    },
+    {
+      "path": "manifest.json",
+      "git_blob": "e7231b539bb9e6f7ac7c1aa2d39cf1aad7ef778e",
+      "sha256": "f8e69dcc9e12e9c22bc63658d7c533dc6c6028e6831c8e79f7857f24feab71dd",
+      "utf8_bytes": 8400
+    },
+    {
+      "path": ".github/workflows/p8-external-recovery.yml",
+      "git_blob": "85cbe73bcd23c9fa09e6af44947879ca6a56cf34",
+      "sha256": "c8d8ddec827143ea11b076d9fbd2bb096b321381992cc3043a64cd7004fdc260",
+      "utf8_bytes": 1705
+    }
+  ],
+  "independently_read_fixed_source": [
+    {
+      "path": "crates/cc-eval/src/bin/cc-eval.rs",
+      "git_blob": "a969818d0e69f24a57db8cc6cae415e871922614",
+      "sha256": "959d69d9798ed553144cf611407a79d7c286f94bef99896874837b897c8f35b6",
+      "utf8_bytes": 15218
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/importer_oce.rs",
+      "git_blob": "1838f00a9d5cf2700a3de12172987754421e3a8d",
+      "sha256": "c434e12d575537b7162342dc6d82f5e8ccfda7eaaac6b524f480e9d29354d383",
+      "utf8_bytes": 2991
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/manifest.rs",
+      "git_blob": "54986d2482ae25eae70953077453fd295267d667",
+      "sha256": "8a67fab83b00a05727a00db97527de72b596aed497c32aa53c5e9ebaa8742001",
+      "utf8_bytes": 9691
+    },
+    {
+      "path": "scripts/p8_compat.py",
+      "git_blob": "3a0eb0c47c3d18a456b4ab355ea8ca928dd29d8e",
+      "sha256": "5de5031592061a2f01aa69b19873be62da35f3352607eb2d89c8a3c5f9d9b4a5",
+      "utf8_bytes": 23608
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/schema.rs",
+      "git_blob": "95c77b433956a75c6bb3255c95f6017e987b9a06",
+      "sha256": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765",
+      "utf8_bytes": 4328
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/report.rs",
+      "git_blob": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "sha256": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d",
+      "utf8_bytes": 14477
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/validation.rs",
+      "git_blob": "4792463da5de8aeaf06baf16c726278ad2a6b3df",
+      "sha256": "ed3eda61174c98a56c314fcf9e9b6b8f7f2776f1703eea75dc122d68ed6658af",
+      "utf8_bytes": 3860
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/metrics.rs",
+      "git_blob": "fa0104a8ed385b7db87b3237ea27231c5745f32e",
+      "sha256": "b44093ea835e42643ce141e7a3c8c5d7a64c39f11bb299fb4b952259ffbc8516",
+      "utf8_bytes": 5469
+    }
+  ],
+  "checks": [
+    {
+      "check": "actual CLI and receipt",
+      "result": "import-oce --queries/--metadata/--output, freeze --suite and validate --suite match the fixed Rust CLI. imported.with_suffix('.receipt.json') matches Rust with_extension('receipt.json'). Actual import checks reference commit and 100-question count."
+    },
+    {
+      "check": "root-relative suites",
+      "result": "Suite directories and drift-copy directories are siblings of pinned source roots under inputs. '../<repository>' continues to point at the same verified clean Git checkout. Questions stay outside indexed source."
+    },
+    {
+      "check": "source and tool identity",
+      "result": "Whole original artifact archive and every extracted tool/helper are pinned by byte count and SHA256. Clones verify exact commit, full tree, clean status, no submodules and tracked regular Git blob bytes/modes. Additional current cc-eval exclusions fail closed instead of silently changing the input set. These checks are source-inspected, not executed in this review."
+    },
+    {
+      "check": "original scoring/lock interface",
+      "result": "Lock keys match original inspect_lock, including ten scorer inputs, platform, suite/source/query hashes, exact auto_index false, original evaluator and backend receipts. top_k=10, repetitions=3, warmup=0, timeout_ms=30000, seed=20261003 and 600s commands remain fixed. Original per-profile raw limits and run/replay gate conditions remain in the extracted unmodified wrapper."
+    },
+    {
+      "check": "query serialization",
+      "result": "Query field order, AnswerGroup and Alternative insertion order and sorted BTreeMap annotations match the fixed Rust serde structs and to_writer newline framing. Exact actual runner queries.jsonl equality is a mandatory runtime check; no static assumption can bypass a serialization mismatch."
+    },
+    {
+      "check": "native scope",
+      "result": "Generic native validation permits primary grade2/secondary grade1 and explicit path alternatives. This is a declared mechanical projection of original expected-file ordering. Native top1 requires a primary hit, while compatibility top1 accepts any matched expected file; the script separately reports profiles and does not claim metric equivalence or independently reviewed semantic gold."
+    },
+    {
+      "check": "four copied-query drift controls",
+      "result": "Both repositories and both profiles execute the original Rust validator against isolated modified query copies, require exit 2 and original content-lock error text, and verify original query bytes unchanged. Fixed load checks content digests before query scoring. Controls remain required even in prepare-only mode."
+    },
+    {
+      "check": "lossless external-reference package",
+      "result": "Actual query snapshots are external recipes, other exact full question representations are factored into external references, payload digests and original per-file bytes/hashes are retained, immediate restoration is private, and all restored files must equal same-run original bytes. Package is explicitly not an original raw ZIP. No third-party question bodies were fetched or read by this review."
+    },
+    {
+      "check": "workflow and failure visibility",
+      "result": "Ordinary ubuntu-24.04 Actions uses read-only permissions, no persisted checkout credential, syntax parse before execution, the fixed original artifact download, separate private/public directories, actual original runner, and always uploads only public results/references. Nonzero command/gate failures remain nonzero; no continue-on-error or task-state promotion."
+    }
+  ],
+  "execution": {
+    "python": "not_run_by_this_reviewer",
+    "cargo": "not_run",
+    "benchmark": "not_run",
+    "artifact_extraction": "not_run_by_this_reviewer",
+    "current_status": "prepared; actual Actions results required",
+    "holdout": "not_read",
+    "task_done": false
+  },
+  "limitations": [
+    "Review is static source/interface inspection, not a replacement for actual artifact verification, cloned inventories, four negative controls, run/replay outputs or restoration equality.",
+    "Native gold remains mechanical and unreviewed; no independent semantic quality or file/facet/span/graph acceptance is granted.",
+    "P8-002 hard dependency and P8-003 original acceptance remain unchanged. Historical inaccessible local outputs are not relabeled as new runs.",
+    "The private/public path separation is reviewed for the provided fresh GitHub Actions directories; no arbitrary hostile filesystem deployment is claimed."
+  ]
+}

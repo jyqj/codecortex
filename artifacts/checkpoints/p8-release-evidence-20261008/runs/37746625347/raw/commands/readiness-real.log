@@ -1,0 +1,42 @@
+   Compiling cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/candidate/crates/cc-eval)
+    Finished `release` profile [optimized] target(s) in 4m 34s
+     Running tests/p8_mcp_readiness.rs (/home/runner/work/_temp/p8-release-external/builds/product/cargo-target/release/deps/p8_mcp_readiness-b8df9820fec2d14b)
+
+running 2 tests
+test real_mcp_inventory_crosses_pages_and_preserves_exact_paths ... [2m2026-10-08T08:16:11.985620Z[0m [32m INFO[0m [2mcc_db::index_migrate[0m[2m:[0m initializing index schema [3mversion[0m[2m=[0m25
+[2m2026-10-08T08:16:11.998327Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-08T08:16:11.998365Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-08T08:16:11.998440Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-08T08:16:11.998511Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-08T08:16:11.998756Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.012905Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: creating temp database [3mtmp[0m[2m=[0m/tmp/.tmpuWrr32/.codecortex/index.sqlite3.tmp
+[2m2026-10-08T08:16:12.061859Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: writing data to temp database
+[2m2026-10-08T08:16:12.090474Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: recreating indexes
+[2m2026-10-08T08:16:12.101571Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: temp database ready for swap
+[2m2026-10-08T08:16:12.101980Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.119346Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.122863Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.127544Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-08T08:16:12.127562Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-08T08:16:12.127630Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+ok
+test real_mcp_wrong_input_with_same_count_is_rejected ... [2m2026-10-08T08:16:12.137362Z[0m [32m INFO[0m [2mcc_db::index_migrate[0m[2m:[0m initializing index schema [3mversion[0m[2m=[0m25
+[2m2026-10-08T08:16:12.150163Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-08T08:16:12.150206Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-08T08:16:12.150287Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-08T08:16:12.150336Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-08T08:16:12.150496Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.157017Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: creating temp database [3mtmp[0m[2m=[0m/tmp/.tmpPWEO4i/.codecortex/index.sqlite3.tmp
+[2m2026-10-08T08:16:12.207256Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: writing data to temp database
+[2m2026-10-08T08:16:12.208275Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: recreating indexes
+[2m2026-10-08T08:16:12.217027Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: temp database ready for swap
+[2m2026-10-08T08:16:12.217107Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.229679Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.233468Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m15989 [3mbudget_mb[0m[2m=[0m7994 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-08T08:16:12.236126Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-08T08:16:12.236141Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-08T08:16:12.236201Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+

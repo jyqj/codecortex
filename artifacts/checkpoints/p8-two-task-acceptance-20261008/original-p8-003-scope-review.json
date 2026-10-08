@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "kind": "P8-003_original_contract_scope_interpretation_not_runtime_acceptance",
+  "reviewer": "/root/pr_audit workspace9967275fe9a7",
+  "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+  "original_contract": {
+    "base": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+    "blob": "85c73442a7d2c01610ccf311b06f6c997d6f7748",
+    "fields": {
+      "title": "运行外部兼容套件",
+      "scope": [
+        "crates/cc-eval/src/benchmark/adapters/",
+        "artifacts/benchmarks/"
+      ],
+      "depends_on": [
+        "P8-002"
+      ],
+      "steps": [
+        "同输入锁跑cc-switch/Flask",
+        "compat与native独立分报"
+      ],
+      "deliverables": [
+        "运行外部兼容套件的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V19 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "无锁/输入不同/平台glob差异不能直接对比排行榜",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V19"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "conditional": null
+    },
+    "checked_fields": [
+      "title",
+      "scope",
+      "depends_on",
+      "steps",
+      "deliverables",
+      "acceptance",
+      "validations",
+      "rollback",
+      "conditional"
+    ],
+    "changed_fields": []
+  },
+  "actual_current_sources": {
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "1e17c57401a630ab0c8abd292e7469222fb7b21b"
+    },
+    "benchmark": {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "relevant_lines": [
+        52,
+        62,
+        130,
+        134,
+        136
+      ]
+    },
+    "validation": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "relevant_lines": [
+        25,
+        26,
+        27,
+        42,
+        58,
+        65,
+        67
+      ]
+    },
+    "gate": {
+      "path": "crates/cc-eval/src/benchmark/gate.rs",
+      "git_blob": "ecd0c8e5e229221b63ae719e244feb5eaa6b64ce",
+      "sha256": "d4ae114e21e6b54798716bc941dd59bc6c579672dc1b8191d596406acff9ac4d"
+    }
+  },
+  "interpretation": {
+    "task": "Run the two exact external locked targets and report compat/native independently, with scorer/transport/report regressions and truthful comparison eligibility. This task is not a separate invented absolute retrieval-quality threshold.",
+    "exit1": "Original09 explicitly calls exit1 a valid measurement whose gate failed. gate.rs assigns Partial exit1 unless a stronger invalidity/cancellation exists. It must remain gate_failed, never quality pass, and is not automatically invalid_measurement.",
+    "exit2": "Input/config/protocol/infrastructure or missing measurement invalidates execution; preserve its distinct failed evidence.",
+    "hard_correctness": "Even exit1 can contain invalid source evidence/no-answer failure. Independently inspect every raw/gate reason. Source/version/scope leaks, input/scorer locks or golden regressions remain blocking under06:65; the measurement-vs-quality distinction cannot excuse them.",
+    "conditional_disposition": "After actualP8-002 acceptance, exact-current product locked complete real target executions, allprofile original raw/normalized/metrics/gate/replay and realV03/V04/old regressions can complete the execution/report task while preserving quality gate_failed and unapproved release. This is conditional on actual evidence review, not an acceptance of pending/current artifacts.",
+    "prohibited_claims": [
+      "No leaderboard comparison across unequal input/platform glob/config/scorer semantics",
+      "No changed budgets/gold/labels/status to produce gate0",
+      "No oldcc514 or PR152 execution relabelled as combined2cd execution",
+      "No G8/complete retrieval/release claim from completedP8-003 task"
+    ],
+    "current_runtime_review": "Pending actual readback and independent current-source review. Parent reported cc514 run37746625347 four profiles1200 measurements withgate1, but this record has not inspected those raw bytes and makes no acceptance claim.",
+    "task_status_mutations": 0,
+    "remaining_tasks": 32
+  }
+}

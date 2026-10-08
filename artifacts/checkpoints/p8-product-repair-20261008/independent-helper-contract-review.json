@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p7_wiring",
+  "role": "non_author_of_this_helper_config_increment",
+  "reviewed_commit": "101fd1ab5caee7874ea21bfc162e45b416155021",
+  "parent_scope": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "verdict": "accepted_scoped_static_interface_review_no_identified_blocker",
+  "files": [
+    {
+      "path": "scripts/p8_compat.py",
+      "before": {
+        "sha256": "5de5031592061a2f01aa69b19873be62da35f3352607eb2d89c8a3c5f9d9b4a5",
+        "utf8_bytes": 23608
+      },
+      "after": {
+        "sha256": "182d150e903a907d3ad8ebacbad37a9de926eab817dabb859f0eaafbb771553d",
+        "utf8_bytes": 24945
+      }
+    },
+    {
+      "path": "scripts/p7_stdio_build_receipt.py",
+      "before": {
+        "sha256": "6b80499bccea5f5646650da127ef7c27e38d5cb36fdd8191738a2ff706d88cb9",
+        "utf8_bytes": 8794
+      },
+      "after": {
+        "sha256": "f3babd2f496896d1765620dcc92ae025c1df96d23938e15c91305d8271c490de",
+        "utf8_bytes": 9047
+      }
+    },
+    {
+      "path": "scripts/tests/test_p8_compat.py",
+      "before": {
+        "sha256": "ff2c1c50ca468bdaae8bbbbb65421d38cc29fb8ddb92577ea6576a769beb0193",
+        "utf8_bytes": 11398
+      },
+      "after": {
+        "sha256": "9e87c1efb4771af0046656586823765f93b2ce7b63441ec1b804344283d7d5a4",
+        "utf8_bytes": 17870
+      }
+    }
+  ],
+  "new_test_file": {
+    "path": "scripts/tests/test_p7_stdio_build_profile.py",
+    "sha256": "2a99d3098e94e680b32d52d79ed1ca414e8b008e81f7869dea5aab503da1232a",
+    "utf8_bytes": 2474
+  },
+  "checks": [
+    {
+      "topic": "Explicit mode and default predicate",
+      "finding": "local-default is the unchanged default; its old exact engine_config equality predicate is preserved verbatim. local-text-hidden is a named opt-in and admits exactly auto_index.enabled=false and indexing.include_text_files=true/include_hidden_files=true, with identity checks that reject numeric 0/1 for this new branch and reject extra keys."
+    },
+    {
+      "topic": "Identity",
+      "finding": "The new mode is added to comparison identity only when selected. Default identity gains no field. Locked suite configuration and source/budget/scorer/policy identities remain bound; post-run inspect receives the same selected mode. Mixed native/compat mode is rejected because every suite must match the exact selected configuration."
+    },
+    {
+      "topic": "Original contracts",
+      "finding": "The same external repository/commit, clean Git source, source inventory, full scorer lock, DEV boundary, timeout bounds, raw artifacts, query denominator, replay, and comparison identity checks remain. No gate or numeric budget changes in the reviewed diff."
+    },
+    {
+      "topic": "Real Cargo release invocation",
+      "finding": "release=False is the function/CLI default. True appends actual --release to the existing cargo build argv. --locked, no-default-features, package/binary selection, optional semantic feature, offline flag, private target/build-dir, disabled wrappers, pre/post source/compiler identity, exact single Cargo artifact, production artifact verifier and copied-binary hash remain. build_profile records the selected invocation while actual_cargo_profile records Cargo's emitted profile; it does not assert a particular optimization setting."
+    },
+    {
+      "topic": "Tests",
+      "finding": "I compared the complete original test_p8_compat.py prefix before __main__: all original 16 test methods and bytes are preserved. Seven new compatibility tests bring it to 23. Two new builder tests mock a nonzero Cargo result only to verify actual argv selection and that no success receipt exists; they are not represented as a real successful Cargo build."
+    },
+    {
+      "topic": "Documentation",
+      "finding": "Commit diff retains historical failure outcomes and states that compilation is not compatibility acceptance. Text/hidden inclusion remains subject to product filters; default and explicit configurations have different comparison identities."
+    }
+  ],
+  "tests_run": [],
+  "actual_cargo_build_run_by_reviewer": false,
+  "python_executed_by_reviewer": false,
+  "limits": [
+    "Static source/interface review only. CI must execute preserved/new Python controls and a real fixed-source Cargo build before claiming an actual release artifact.",
+    "No external corpus import, measurement, ranking acceptance, source admission bypass, or original TODO completion is certified here."
+  ],
+  "pending_actual_validation": [
+    "23 compatibility tests",
+    "2 builder profile controls",
+    "fixed-source real Cargo product/evaluator build receipts",
+    "full external run/replay with unchanged denominator and budget"
+  ]
+}

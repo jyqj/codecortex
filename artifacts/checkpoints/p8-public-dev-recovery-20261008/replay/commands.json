@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "prepared_not_executed",
+  "scope": "Original public DEV integrity/V02 replay followed by a new six-repository reviewed projection; no provider or retrieval run.",
+  "root": ".",
+  "history_objects_required": [
+    "0c0ec9e8906493373faf800ca37b78c589f38324",
+    "3aae8bf2a690213426af91427dc837fedbe50c83",
+    "465e9e0bd435e2e30c08de8702f78a0d10c49c8e",
+    "4c01f627bd6df73e70bfe1dbdc42b2a9234e797a",
+    "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+    "5aafcda4a5098c8407d9373eafc3185e59932550",
+    "704c0fd0901c85c51eaaa265bfc1aab49ccb3341",
+    "949a9471f552d496e85b27c460c7b76536f13803",
+    "ba79bcfc3f2bcc622297ef53b5de37ce205a5c89",
+    "c2026ebad0b6037f1c30b7d2b34055e211849b70",
+    "d6a41bbcf76b5dc15e4924e54c7375f673d714f7",
+    "e49f9ada5826b4206d2128f3bfb8d31603ff42fa"
+  ],
+  "dependency": {
+    "python": "Python 3 with jsonschema 4.23.0 installed explicitly by caller; scripts never install dependencies",
+    "evaluator": "An actual fixed-source cc-eval build, with Cargo source/binary receipt retained. Both stages receive the same binary and its independently recorded SHA256.",
+    "git": "The original auditor reads exact historical Git objects with lazy fetch disabled. Caller must fetch the explicit history_objects_required before running, and retain errors if unavailable."
+  },
+  "commands": [
+    {
+      "stage": "original",
+      "argv": [
+        "python3",
+        "artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/replay_original_public_dev.py",
+        "--repo-root",
+        "<candidate-checkout>",
+        "--evaluator",
+        "<fixed-cc-eval>",
+        "--evaluator-sha256",
+        "<actual-build-sha256>",
+        "--output",
+        "<fresh-original-replay-output>"
+      ],
+      "expected": "0 with original public audit, 16 actual V02 validates and unchanged original bytes; no freeze of old locks"
+    },
+    {
+      "stage": "reviewed-projection",
+      "argv": [
+        "python3",
+        "artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/project_reviewed_public_dev.py",
+        "--repo-root",
+        "<same-candidate-checkout>",
+        "--evaluator",
+        "<same-fixed-cc-eval>",
+        "--evaluator-sha256",
+        "<same-actual-build-sha256>",
+        "--original-replay-receipt",
+        "<fresh-original-replay-output>/receipt.json",
+        "--output",
+        "<fresh-reviewed-projection-output>"
+      ],
+      "expected": "0 with 20 exact canonical-only copies, 12 separate reviewed shards, 12 actual freeze calls and original schema+12 actual V02 validations"
+    }
+  ],
+  "rules": [
+    "Both output roots must be fresh and outside all immutable input paths. Never reuse a successful or failed output directory.",
+    "Keep complete original stdout/stderr/command receipts and upload failure outputs even on a nonzero command.",
+    "Do not treat prepared files or Python syntax compilation as actual benchmark validation.",
+    "If both actual stages pass, proposed canonical product inputs are in <fresh-reviewed-projection-output>/crates/cc-eval/benchmarks/public-v19/, not just in an artifact-only documentation namespace.",
+    "Review/admit the actual output inventory before the separate P8 pull request; these scripts do not change refs or the task ledger.",
+    "Original and canonical-only author review_status stays pending. Only separate reviewed projection annotations cite source/gold reviews; no question, gold, source or scorer selection is made from ranking."
+  ],
+  "budget": {
+    "top_k": 10,
+    "repetitions": 3,
+    "warmup": 0,
+    "timeout_ms": 30000,
+    "seed": 20261003
+  },
+  "limits": [
+    "6 repository source subsets; no full-checkout claim.",
+    "327 DEV native rows and 282 compat views, 305 known correlation components; these are not 305 proven independent statistical units.",
+    "14 reserved Serde/Vite slots remain undrafted/unread; no protected holdout custody/evaluation claim."
+  ]
+}

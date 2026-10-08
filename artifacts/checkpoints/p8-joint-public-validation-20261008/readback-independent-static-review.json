@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p7_wiring",
+  "role": "non-author of reviewed V02 readback helper and workflow",
+  "scope": "static source/readback-protocol review only, not actual exporter execution nor repeated product validation",
+  "decision": "accepted_scoped",
+  "candidate": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+  "files": [
+    {
+      "blob": "635b409fc03d37ba6ab1018125ec39c53a05d614",
+      "sha256": "94ed717b20a4d97dd81d8dcbc462f042b36ace84cc27d7519df25ebf7fb304bd",
+      "utf8_bytes": 5350
+    },
+    {
+      "blob": "cb670657e8b928e16dc87380d94c6bf38a7b85b9",
+      "sha256": "312c56dac77099a43c687a008c61f92e769960f0fe9778103cf28800443e7dbf",
+      "utf8_bytes": 1228
+    }
+  ],
+  "checked": [
+    "Completed run/artifact exact IDs, workflow head, conclusion, original service digest, ZIP byte count and SHA256 are all required.",
+    "All ZIP members are uniquely named safe relative regular files, read through ZipFile with CRC checks, complete byte lengths and SHA256/Git OID inventories; 4096/64MiB are resource ceilings only.",
+    "Original entire ZIP is preserved in ordered 786432-byte chunks, each hash recorded, plus all original members unchanged.",
+    "Original result.json source and status are required; does not rewrite a result or run product/runner/scorer/replay.",
+    "Six deterministic parts and 6MiB per-job encoded ceiling, no missing member selection. Base64 chunk indices explicit.",
+    "Workflow only read contents/actions, checkout credentials disabled; downloads exact original service evidence using scoped token, runner.temp only within step env, actual python3 -I -S script path consistent."
+  ],
+  "limitations": [
+    "No Python execution performed by reviewer; actual Actions result and all emitted chunks still require real verification.",
+    "No separate claim here of corpus gold certification or TODO completion."
+  ]
+}

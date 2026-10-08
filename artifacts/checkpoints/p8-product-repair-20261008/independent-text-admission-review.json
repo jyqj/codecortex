@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "review_kind": "non_author_static_product_delta_review",
+  "verdict": "accepted_scoped_static_no_identified_blocker",
+  "repository": "jyqj/codecortex",
+  "baseline": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "tests_only_commit": "b608d2639aff026a993d59f1a4ab59e8f7c270f5",
+  "reviewed_fix_commit": "d4a8c8653a049e45a1c71656fc53324b0cdb6849",
+  "pr148_scope": "Separate P8 product work; this review does not change the accepted PR148 head.",
+  "files": [
+    {
+      "path": "crates/cc-index/src/scanner.rs",
+      "git_blob": "e7436ad5d173447eb9e18e14c794a74850db1f46",
+      "additions": 126,
+      "deletions": 52
+    },
+    {
+      "path": "crates/cc-index/tests/explicit_text_admission.rs",
+      "git_blob": "9074890daf4825395475f35d560a9655f41f3016",
+      "additions": 194,
+      "deletions": 0
+    },
+    {
+      "path": "crates/cc-model/src/config.rs",
+      "git_blob": "93c6c68cadcf8a4b8dcd34951b048c213dc02d72",
+      "additions": 10,
+      "deletions": 0
+    },
+    {
+      "path": "crates/cc-server/src/watcher.rs",
+      "git_blob": "55f7410e36f74c071f02f678539e3822142eb7a2",
+      "additions": 55,
+      "deletions": 1
+    },
+    {
+      "path": "docs/CONFIGURATION.md",
+      "git_blob": "64a156436a90d8ff4551e01632a8d19e381b769f",
+      "additions": 6,
+      "deletions": 0
+    }
+  ],
+  "checks": [
+    "Both config keys use serde default false and IndexingConfig::default false. Existing explicit include-pattern behavior remains before the new generic-text fallback; new UTF-8/NUL guarantees apply to that fallback, not a claim to newly validate every recognized language.",
+    "Full and scoped walks converge on admitted_language, with the existing maximum file bytes and a bounded fallback read of at most cap+1 bytes. UTF-8, NUL and growth checks reject invalid fallback input.",
+    "scan_paths remains a project-root ignore walker; requests do not directly open nested paths. File admission retains canonical project containment and broad mode rejects symlink files. No directory-alias traversal was introduced by the diff.",
+    "Path-based broad-mode exclusions include state/control, environment and dependency/build paths even when configurable ignore patterns are empty. Final source admission rechecks the policy; it is independent of benchmark questions.",
+    "Native notification classification retains the existing structural gate before should_track_input. Its potential_config_path(rel + '/go.mod') permits normal deeply hidden source paths and excludes prior cache paths; adding hidden-source admission does not skip that gate.",
+    "Create, change and removed hidden source events are permitted without reading nonexistent removed bytes, then scanner membership determines source eligibility. Existing configuration invalidation path remains separate.",
+    "Deep hidden source traversal does not enlarge the config manifest's prior hidden-depth bound. Broad opted mode does prune protected paths; default false behavior preserves prior traversal/admission.",
+    "New real-files integration asserts full/scoped/single-request parity, independent opt-ins, UTF-8/NUL/size bounds, symlink rejection, generic chunks and SQLite FTS results, updates/deletion/rename, and loss of text eligibility. New watcher tests exercise production classify_notification, not a stand-in predicate."
+  ],
+  "supporting_source": {
+    "path": "crates/cc-index/src/project_model/mod.rs",
+    "git_blob": "dfb98b5feaa0808fddd2dcad62bde27d076b7123",
+    "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923"
+  },
+  "limits": [
+    "Static source and test-design review only. The disconnected local executor was not used and no Cargo/test result is claimed.",
+    "Actual compilation, formatting, existing regression execution and new-test counterexample/fix results remain mandatory root CI work.",
+    "No OCE/holdout question body, engine ranking, scorer or gold was used in this source review.",
+    "No claim of AST support for generic text, complete symlink race hardening, or all filesystem event-delivery guarantees."
+  ]
+}

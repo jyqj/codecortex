@@ -2,6 +2,7 @@
 pub mod ablation;
 pub mod adapters;
 pub mod comparison;
+pub mod coverage_diagnostics;
 pub mod fnmatch;
 pub mod gate;
 pub mod importer_oce;

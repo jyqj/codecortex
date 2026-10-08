@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "assessment": "accepted_scoped_completed_MSRV_security_jobs_only",
+  "run_id": 37835809287,
+  "head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "actual_checkout": "ac2417225b8cbbd9c48216e8440df103b6ebf9b5",
+  "actual_checkout_tree": "ace0d27684155176b28192fb222f9d0ae2c43aa9",
+  "parents": [
+    "7354db236c9d9850a75f31672697ae9eab44565e",
+    "599a7050e7d52b5b7b93975c419138e175b3f754"
+  ],
+  "jobs": [
+    {
+      "job_id": 113512403276,
+      "name": "msrv",
+      "conclusion": "success",
+      "original_log": "/dev/shm/a217aaae3bde/platform-review/ci-599-review/job-113512403276-original.log",
+      "log_sha256": "b42e8381aedc8e2f8cefbe9baeece9bcda6ad6274254ba6060eecb766ce3c77e",
+      "log_bytes": 38242,
+      "actual_checkout_commit": "ac2417225b8cbbd9c48216e8440df103b6ebf9b5",
+      "actual_checkout_tree": "ace0d27684155176b28192fb222f9d0ae2c43aa9",
+      "pull_request_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "same_full_tree": true,
+      "actual_commands": [
+        "cargo check --workspace --all-targets --locked",
+        "cargo check -p cc-eval --all-targets --features eval-http --locked"
+      ]
+    },
+    {
+      "job_id": 113512403769,
+      "name": "security",
+      "conclusion": "success",
+      "original_log": "/dev/shm/a217aaae3bde/platform-review/ci-599-review/job-113512403769-original.log",
+      "log_sha256": "44d12899ff194568b9c5c67b7b0183ab9ed66e354b3e01581015df356835fc4f",
+      "log_bytes": 62704,
+      "actual_checkout_commit": "ac2417225b8cbbd9c48216e8440df103b6ebf9b5",
+      "actual_checkout_tree": "ace0d27684155176b28192fb222f9d0ae2c43aa9",
+      "pull_request_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "same_full_tree": true,
+      "cargo_audit_original_result": {
+        "database": {
+          "advisory-count": 1295,
+          "last-commit": "550efd3d587a29b2e2c2b21b17a440da4fede999",
+          "last-updated": "2026-10-08T16:47:14+02:00"
+        },
+        "lockfile": {
+          "dependency-count": 338
+        },
+        "settings": {
+          "target_arch": [],
+          "target_os": [],
+          "severity": null,
+          "ignore": [],
+          "informational_warnings": [
+            "unmaintained",
+            "unsound",
+            "notice"
+          ]
+        },
+        "vulnerabilities": {
+          "found": false,
+          "count": 0,
+          "list": []
+        },
+        "warnings": {}
+      }
+    }
+  ],
+  "pending_job": 113512403659,
+  "full_CI_accepted": false,
+  "task_completion_certified": false
+}

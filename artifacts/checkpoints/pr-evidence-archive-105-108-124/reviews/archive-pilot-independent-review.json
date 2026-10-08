@@ -1,0 +1,96 @@
+{
+  "archive_requirements": [
+    "Create a separate add-only archive PR. Copy each of the190 complete original PR-delta paths with exactly its original Git blob and100644 mode; no reserialization, recompression, rename, trimming or threshold changes.",
+    "Preserve each old head commit/branch and original PR/CI history; do not delete branches or rewrite commits as part of cleanup.",
+    "Add an archive mapping record outside the three original checkpoint directories linking PR numbers, full original heads, complete original path/blob/mode/SHA256 inventories, archive commit/PR, and this scoped review.",
+    "Before publishing or merging the archive, recheck all190 destination paths against its actual fixed base. Present collisions or mismatched existing files as an error, not an overwrite.",
+    "After archive merge, read back the actual main merge commit/tree and verify190/190 paths against the original blob IDs/modes; keep this readback receipt.",
+    "Before closing an old PR, refresh its head and complete delta. If it changed from this fixed review, do not close on this report. Close only the reviewed evidence-only proposal using an explicit archive link and unchanged failure/not_run explanation."
+  ],
+  "candidates": [
+    {
+      "all_original_git_blobs_and_modes_verified": true,
+      "base": "6db4d396e5d994388ada1e97c3d28947ffdb9c81",
+      "bytes": 46978,
+      "checkpoint_root": "v24-failure-triage-20261003",
+      "files": 4,
+      "head": "7210cee93243621693418e6f26374557d9f30832",
+      "pr": 105,
+      "production_workflow_or_central_task_delta": false,
+      "url": "https://github.com/jyqj/codecortex/pull/105"
+    },
+    {
+      "all_original_git_blobs_and_modes_verified": true,
+      "base": "29b03a0fec6bfde92aac9c41dce996ebb2d08cc7",
+      "bytes": 9383961,
+      "checkpoint_root": "independent-v2-100k-release-20261003",
+      "files": 58,
+      "head": "99973e7d6faf3809add4a12cd444f8e69f04d93c",
+      "pr": 108,
+      "production_workflow_or_central_task_delta": false,
+      "url": "https://github.com/jyqj/codecortex/pull/108"
+    },
+    {
+      "all_original_git_blobs_and_modes_verified": true,
+      "base": "ff458bc591b4e7e444af4464d6eef2513cdb335c",
+      "bytes": 21610054,
+      "checkpoint_root": "parallel-startup-100k-paired-20261003",
+      "files": 128,
+      "head": "c32a08a591e4fb1e9d457eee91b2703727b3d619",
+      "pr": 124,
+      "production_workflow_or_central_task_delta": false,
+      "url": "https://github.com/jyqj/codecortex/pull/124"
+    }
+  ],
+  "checks": {
+    "all_added_only": true,
+    "all_modes_100644": true,
+    "all_under_three_artifact_checkpoint_roots": true,
+    "current_collisions_main_M_44f": 0,
+    "exact_git_three_dot_delta_matches_all_paginated_api_files": true,
+    "no_symlinks_or_submodules": true,
+    "original_sha256_manifest_mismatches": 0
+  },
+  "decision": "accepted_for_add_only_exact_blob_archive_pr; close old PRs only after exact archive delta is merged",
+  "fixed_source_report": {
+    "path": "complete-fixed-delta-audit.json",
+    "sha256": "e3ea7e9069d462724eabe73758d689438e0abcaba2dcbc787e584f83987ccbae"
+  },
+  "fresh_api_info_and_comments": {
+    "path": "fresh-pr-info-comments.json",
+    "result": "all 3 remain open Draft at fixed expected heads; no fetched PR comments",
+    "sha256": "c061975272c5bf0146d865f09611be6973898164d483cbf85e637aa0b02b2b69"
+  },
+  "newly_completed_original_todos": 0,
+  "original_intent_and_unresolved_semantics": {
+    "105": {
+      "action_items": "README recommends additional evidence for four failure diagnoses. These are historical follow-up proposals, not uncommitted production changes in this PR. Archival must not label them resolved.",
+      "intent": "Retain four static reports about the original v24 all-features failures.",
+      "must_preserve": "2474 passed / 4 failed / 68 ignored; fixture load sensitivity remains a candidate explanation, lifecycle exact blocker unknown, semantic-runtime EROFS directly observed, independent-review cache Hit timeout not a proven close-fence failure."
+    },
+    "108": {
+      "action_items": "PR body requests evidence retention only. No production or CI delta exists. Archived Python drivers remain historical original bytes and are not executed or installed by this archival review.",
+      "intent": "Retain one independent fixed 100k real MCP observation that failed the unchanged 300-second readiness gate.",
+      "must_preserve": "29,082 deadline manifests versus29,696 cleanup-tail manifests; cleanup is outside gate. Post-ready manifest/query/concurrency/normal-exit/reopen remain not_run, and complete process-tree RSS remains unknown."
+    },
+    "124": {
+      "action_items": "Original TODO.md has six completed documentation/measurement/delivery checkboxes. This local checkpoint checklist is separate from central project TODOs and does not make the product gate pass.",
+      "intent": "Retain a single baseline/candidate 100k paired measurement; both fail the original300-second readiness gate, including follow-up derived-evidence corrections.",
+      "must_preserve": "Deadline27,656/66,867 and cleanup-tail28,672/67,584 remain distinct. No significance or acceptance claim. Gate caps unknown; execution counters are not semantic provider caps; timestamp-sort explanation retains original append-order diagnosis."
+    }
+  },
+  "original_todo_certification": false,
+  "recommended_close_text": "证据已按原路径、原Git blob归档到 <archive PR / merged commit>；完整原差异与原head <SHA> 已逐文件核对。原测试失败、未运行阶段、限制和CI历史保持不变；此次关闭仅整理已归档的证据PR，不表示性能/正确性验收通过，也不增加原TODO完成数。原分支和commit保留。",
+  "remaining_original_todos_last_parent_count": 29,
+  "risks_and_limits": [
+    "Historical branches #105 and#108 target older integration branches. Merging those branches wholesale would import ancestry and is outside this archive recommendation; select only their verified artifact delta.",
+    "31,040,993 bytes are already-public compressed/log/document Git blobs. This review verifies exact archival identity, not the scientific validity or every expanded-log claim.",
+    "Original hash manifests verified56/56 for#108 and127/127 for#124. All190 files are independently bound to original Git blobs and SHA256; no claim that each original curated manifest covers all190 files.",
+    "References inside the archived reports to other fixed commits, prior failures and local-only excluded databases/binaries stay unchanged. Archival does not manufacture missing local material or make those archives self-contained product evidence.",
+    "No production executable, archived replay program, build, matrix, provider call or remote write was run for this review."
+  ],
+  "schema_version": 1,
+  "scope": "three original evidence-only PRs, not all 43 older drafts",
+  "total_original_bytes": 31040993,
+  "total_original_files": 190
+}

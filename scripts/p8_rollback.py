@@ -19,7 +19,7 @@ import subprocess
 import sys
 import time
 
-from p8_cold_build import digest, new_directory, write_json
+from p8_cold_build import digest, new_directory, observed_operation, write_json
 from resource_harness.runtime import Journal, StdioRPC
 
 
@@ -367,6 +367,7 @@ def run_version_pair(current, previous, output):
     """
     output = Path(output)
     record = dict(schema_version=1, task="P8-016", status="failed", cases=[],
+                  observer_binding="legacy_direct_engineering_scope",
                   products=dict(current=current, previous=previous), runner_sha256=digest(__file__),
                   scope="actual public source revision rollback; no released-package certification",
                   schema_fault_injection=False, released_version_pair=False, release_certified=False)
@@ -466,6 +467,7 @@ def run_version_pair(current, previous, output):
 
 def run_drill(default, semantic, output, network_wrapper=None):
     record = dict(schema_version=1, task="P8-016", status="failed", runner_sha256=digest(__file__),
+                  observer_binding="legacy_direct_engineering_scope",
                   runner_dependencies_sha256={name: digest(Path(__file__).parent / name) for name in
                                               ("p8_cold_build.py", "resource_harness/runtime.py")},
                   products=dict(default=default, semantic=semantic), cases=[],
@@ -610,7 +612,8 @@ def main(argv=None):
                 parser.error("version-pair mode uses disabled default products; syscall denial is not asserted")
             previous = binary_identity(args.previous_binary, args.previous_receipt, "default")
             output = new_directory(args.output_dir)
-            record = run_version_pair(default, previous, output)
+            record = observed_operation(Path(__file__).resolve().parents[1], output, "rollback", "version-pair.json",
+                                        lambda: run_version_pair(default, previous, output), file_manifest)
             print(json.dumps(dict(status=record["status"], error=record.get("error"),
                                   receipt=str(output / "version-pair.json"))))
             return 0 if record["status"] == "passed_actual_source_version_pair" else 1
@@ -618,9 +621,10 @@ def main(argv=None):
             parser.error("injected-schema drill requires --semantic-binary and --semantic-receipt")
         semantic = binary_identity(args.semantic_binary, args.semantic_receipt, "semantic")
         output = new_directory(args.output_dir)
-        record = run_drill(default, semantic, output, args.deny_network_wrapper)
+        record = observed_operation(Path(__file__).resolve().parents[1], output, "rollback", "rollback.json",
+                                    lambda: run_drill(default, semantic, output, args.deny_network_wrapper), file_manifest)
         print(json.dumps(dict(status=record["status"], receipt=str(output / "rollback.json"),
-                              cases={case["id"]: case["status"] for case in record["cases"]})))
+                              cases={case["id"]: case["status"] for case in record.get("cases", [])})))
         return 0 if record["status"] == "passed_limited_local_drill" else 1
     except (OSError, ValueError, KeyError) as error:
         print(f"P8 rollback refused: {error}", file=sys.stderr)

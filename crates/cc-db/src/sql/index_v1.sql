@@ -115,6 +115,9 @@ CREATE TABLE IF NOT EXISTS chunk_symbol_identity (
     record_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS chunk_symbol_identity_path ON chunk_symbol_identity(file_path);
+-- Child-key lookup for document deletion; a missing index scans all identities
+-- for every chunk replaced by an incremental batch.
+CREATE INDEX IF NOT EXISTS chunk_symbol_identity_doc_key ON chunk_symbol_identity(doc_key);
 CREATE TRIGGER IF NOT EXISTS chunk_symbol_identity_delete AFTER DELETE ON chunks BEGIN
     DELETE FROM chunk_symbol_identity WHERE chunk_id=OLD.chunk_id;
 END;

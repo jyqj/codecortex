@@ -5,7 +5,7 @@
       "remaining": 29,
       "total": 192
     },
-    "guard_finalization": "Only the three immutable v15 pins and corresponding registry remain to be installed and verified; the existing CI selector stays byte-identical.",
+    "guard_finalization": "Only the three immutable v15 pins and matching registry remain to be advanced and verified. Guard predicates, exclusions, historical proof and CI remain unchanged.",
     "runtime_quality_and_task_acceptance": "Not granted by this record. Full scale, runtime, one-hour soak, lifecycle, resources, recovery, eight platform cells, negative gates and original-task dependency checks require separate real execution evidence.",
     "source_admission": "The exact product source and complete validation inputs have scoped independent review. Authored changes are reviewed by a different agent as recorded in the original reviews.",
     "task_status_changes": []
@@ -38,7 +38,7 @@
     "crates/cc-db/src/index_db_tests.rs": "b20e04ef98ab3a778e4ef909045a8934aa185a894a606ca0cbd5a1819c6684f3",
     "crates/cc-db/src/index_db_types.rs": "f1b1b499879d721e6024b40e28050f705b74b2d13afdda98f55b8bc2c6591d67",
     "crates/cc-db/src/index_db_write_batch.rs": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
-    "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+    "crates/cc-db/src/index_migrate.rs": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
     "crates/cc-db/src/lib.rs": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
     "crates/cc-db/src/public_surface_store.rs": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
     "crates/cc-db/src/read_generation.rs": "54d9b0834214f6e58fbe2fa7a5ec00df77e7aaba1a11eb533498e7a9798f563f",
@@ -56,12 +56,12 @@
     "crates/cc-db/src/semantic_space_switch.rs": "d0e18001df11af72e59eb3ca2d4501f458a1f45040b76fbea9756df2676d64d4",
     "crates/cc-db/src/signature_agg.rs": "a931651405dace905001548167c05336e798fbcdcd6009a3db51d6a60ab275c0",
     "crates/cc-db/src/snapshot_write_txn.rs": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
-    "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+    "crates/cc-db/src/sql/index_v1.sql": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
     "crates/cc-db/src/sql_util.rs": "762158a26d237b986b2b76a9bfd8edd895c5919e7e5c9ce491c003a9d62616c9",
     "crates/cc-db/src/statement_work.rs": "e32e6ce3e78cb78088b7aa126420d450db6cbbf37f624872c2663fa2ef2dbdfe",
     "crates/cc-db/src/symbol_identity_store.rs": "16274aaae066b6a5e87bcd6d24657a27de60c45c3ea50bd24cc6fceda9cc7d2b",
     "crates/cc-db/src/unit_of_work.rs": "265a0c4cbddfd237e1cde1e199599389b10b87aa140ea72ecb7a85439aa39142",
-    "crates/cc-db/tests/ci_schema_guard_contract.rs": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql": "00a7d1fc249c562160fc0cdc7978ba2198b4ee063f8c6cf77cc564dd3f27407f",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v24.sql": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2",
     "crates/cc-db/tests/fts_identifier_expansion.rs": "e6d96c9b95aad8edeff1e9596b6db71759a2c4e3667163ba008071a43c2cca36",
@@ -1101,51 +1101,103 @@
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
   "incremental_review": {
-    "exact_followup_source_changes": [
-      "crates/cc-db/src/index_migrate.rs",
-      "crates/cc-db/src/sql/index_v1.sql",
-      "crates/cc-db/tests/ci_schema_guard_contract.rs"
-    ],
+    "accepted_file_sha256": {
+      "scripts/p8_cold_build.py": "867c024d6b1bd85750d054c8802a687d5cac38c7d6752b2f11e19be19ff7435b",
+      "scripts/p8_rollback.py": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
+      "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+      "scripts/tests/test_p8_platform.py": "9ecf71482d1c7f0ff3c2957047ea9e1fb1a82edc941864d6ecfdcdfda1819ee6",
+      "scripts/tests/test_p8_recovery.py": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11",
+      "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc"
+    },
     "exact_followup_validation_changes": [
-      ".github/workflows/p8-platform.yml",
-      ".github/workflows/p8-scale.yml",
-      "scripts/p7_fault_lifecycle_stdio.py",
       "scripts/p8_cold_build.py",
-      "scripts/p8_recovery.py",
       "scripts/p8_rollback.py",
-      "scripts/p8_scale_matrix.py",
+      "scripts/p8_runtime.py",
       "scripts/tests/test_p8_platform.py",
-      "scripts/tests/test_p8_platform_independent_review.py",
-      "scripts/tests/test_p8_scale_matrix.py"
+      "scripts/tests/test_p8_recovery.py",
+      "scripts/tests/test_p8_runtime.py"
     ],
-    "execution_claims": "Prior observations keep exact original source and outcomes. This review admits source only; it neither upgrades historical raw records nor grants original-task acceptance.",
-    "followup_product_source": "b5700f9a1a3dfb91a3448ebdb311ffd438297442",
+    "execution_claims": "Earlier CI and raw observations keep their original execution heads and statuses. This admission does not recertify them, complete roadmap tasks, or grant runtime, quality or release approval.",
+    "followup_product_source": "b592d57756adf20361e18a2b54045aedfb056cd8",
+    "integration_controls": {
+      "earlier_fixture_failures": "Both original attempts are retained; exact tracked sparse-checkout fixture inputs were restored without changing tests or thresholds.",
+      "exit_code": 0,
+      "log_sha256": "9bc8857b42ca5f6cfe2e319c64d2977c8b1c361bd4c2af6fa5b4e3768c5fcfde",
+      "receipt": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/integration-validation/p8-controls-restored-receipt.json",
+      "tests": 350
+    },
+    "preserved_prior_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr159-3b0db8f-independent-source-review.json",
     "prior_execution_head": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "prior_product_source": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3",
     "prior_review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
     "prior_review_sha256": "0a3982e86a55340de581e681792bca0b8b4a2a52d1faf0452020ae73216afdb0",
     "prior_review_source": "3b0db8fa2ee778c98196bba74a35ef4b36df610b",
-    "retained_prior_review_path": "artifacts/checkpoints/p8-completion-20261009/round4-independent-source-review.json",
-    "scope": "Three independently reviewed product source paths and ten validation inputs, including one new independent regression file. Other 1084 product inputs and 126 previous validation inputs are unchanged."
+    "scope": "Six independently reviewed Python controller and regression inputs; all 1087 Rust/Cargo product inputs and the other 129 validation inputs are byte-identical to the prior accepted product.",
+    "workspace": "28fef0db5e01"
+  },
+  "incremental_review_history": [
+    {
+      "exact_followup_validation_changes": [
+        "scripts/p8_backfill.py",
+        "scripts/tests/test_p8_backfill.py"
+      ],
+      "execution_claims": "Prior observations retain their original head and status. The corrected semantic-only build requires a real new execution.",
+      "followup_product_source": "94364da0cf771ff8f9b4dc81779cfc35e58f11a3",
+      "prior_execution_head": "5610335b31f0f866cfa17712c8a55b9b22dac4cf",
+      "prior_review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+      "prior_review_sha256": "1346bb1d8f3f8e6c6af9924b01e2d257a51d05305fed7c3641eb995ab0548b56",
+      "prior_review_source": "355851968e92f540b95b607cf5454c631fe53f55",
+      "scope": "Two independently reviewed backfill driver/control inputs; all 1087 product inputs and the other 133 validation inputs are byte-identical."
+    }
+  ],
+  "incremental_review_records": {
+    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/acceptance-review/runtime-independent-review.json": {
+      "author": "/root/runtime_review",
+      "bytes": 5865,
+      "reviewer": "/root/acceptance_review",
+      "sha256": "4b92f306aef7f8574b861574666577a211721084c31bfeceb73653300e891612",
+      "workspace": "28fef0db5e01"
+    },
+    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/pr-audit/product-f2366d9-independent-binding-review.json": {
+      "author": "/root (integration recorder; component authors remain separately identified)",
+      "bytes": 8575,
+      "reviewer": "/root/pr_audit",
+      "scope": "Immutable product manifests and actual independent-review/evidence binding",
+      "sha256": "7a2d98476723cc472418d350fd8ac0b30ee47c11dcc6d71280a862d46f82f8e0",
+      "workspace": "28fef0db5e01"
+    },
+    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/pr-audit/rollback-manifest-independent-review.json": {
+      "author": "/root",
+      "bytes": 2569,
+      "reviewer": "/root/pr_audit",
+      "sha256": "bf5735760d41b384212e2e97397346ef0a581f8e8a6ca590d17eeb3bef186a55",
+      "workspace": "28fef0db5e01"
+    },
+    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/publication/publication-equivalence-independent-review.json": {
+      "bytes": 9190,
+      "reviewer": "/root/pr_audit",
+      "scope": "Published product whole-tree and exact review-content equivalence; original local evidence identities unchanged",
+      "sha256": "8fca05b6f3cfccc457113758690d5abcf7fa166915d187aaa31f0aaab67e1e81",
+      "workspace": "28fef0db5e01"
+    },
+    "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/root-review/platform-root-independent-review.json": {
+      "author": "/root/acceptance_review",
+      "bytes": 2015,
+      "reviewer": "/root",
+      "sha256": "1d05987db596477ed646364ed1e49b37bf5da71cdabbd0b9d8cf21a66da0caf8",
+      "workspace": "28fef0db5e01"
+    }
   },
   "independent_reviewers": [
     "/root",
     "/root/scale_closeout",
     "/root/runtime_closeout",
-    "/root/pr_audit"
+    "/root/pr_audit",
+    "/root [workspace 28fef0db5e01]",
+    "/root/pr_audit [workspace 28fef0db5e01]",
+    "/root/acceptance_review [workspace 28fef0db5e01]"
   ],
   "paths": {
-    "crates/cc-db/src/index_migrate.rs": {
-      "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
-      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
-    },
-    "crates/cc-db/src/sql/index_v1.sql": {
-      "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
-      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
-    },
-    "crates/cc-db/tests/ci_schema_guard_contract.rs": {
-      "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
-      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
-    },
     "crates/cc-eval/src/bench.rs": {
       "before_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
       "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
@@ -1255,22 +1307,27 @@
       "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
     }
   },
+  "publication": {
+    "execution_identity": "All prior tests, reviews and CI observations retain their original local or remote commit identity. Tree equivalence admits unchanged content at the published product; it does not relabel old execution. The final published review/pins require their own complete source-proof execution.",
+    "identical_product_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+    "local_admission_source": "d5ec0c4fae7f6c3bbbe9008d8adac290405f4ffa",
+    "local_product_source": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+    "local_progress_source": "ffa886313d9fafac96fdeeeeff5ca28ea71ccc6a",
+    "local_review_sha256": "da93f6fc11d0fdd26beda2fc1ba898586a08a1ca5ef92be7455be6972cc17330",
+    "local_review_source": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+    "method": "Authenticated GitHub connector created the identical product tree and a new commit identity; direct git push had no write credential. No credential was extracted or access control changed.",
+    "original_commit_bundle": {
+      "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/local-reviewed-commits.bundle",
+      "prerequisite": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+      "sha256": "255843c0258d14a717cb963581d02a932e82ce040472c9d79fabeb1a61768df0"
+    },
+    "preserved_local_review": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/local-8aebe297-independent-source-review.json",
+    "published_product_source": "b592d57756adf20361e18a2b54045aedfb056cd8"
+  },
   "review_records": {
     "backfill-feature-independent-review.json": {
       "bytes": 3316,
       "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
-    },
-    "doc-key-index-independent-review.json": {
-      "bytes": 9275,
-      "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
-    },
-    "doc-key-index-root-review.json": {
-      "bytes": 3288,
-      "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
-    },
-    "doc-key-index-rust-validation.json": {
-      "bytes": 3728,
-      "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
     },
     "lint-independent-review.json": {
       "bytes": 3718,
@@ -1280,10 +1337,6 @@
       "bytes": 8524,
       "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
     },
-    "platform-port-independent-review.json": {
-      "bytes": 8379,
-      "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
-    },
     "pr-audit-scoped-review.json": {
       "bytes": 4770,
       "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
@@ -1291,10 +1344,6 @@
     "root-independent-review.json": {
       "bytes": 5342,
       "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
-    },
-    "round5-integration-root-review.json": {
-      "bytes": 4789,
-      "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
     },
     "scale-independent-review-supplement.json": {
       "bytes": 2062,
@@ -1304,36 +1353,16 @@
       "bytes": 8967,
       "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
     },
-    "scale-origin-independent-review.json": {
-      "bytes": 3886,
-      "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
-    },
-    "scale-sparse-independent-review.json": {
-      "bytes": 5674,
-      "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
-    },
     "source-guard-independent-review.json": {
       "bytes": 6505,
       "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
     }
   },
-  "reviewed_at_utc": "2026-10-08T19:44:16.860640+00:00",
+  "reviewed_at_utc": "2026-10-08T19:49:47.430684+00:00",
   "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source": "b5700f9a1a3dfb91a3448ebdb311ffd438297442",
+  "source": "b592d57756adf20361e18a2b54045aedfb056cd8",
   "source_path_reviewers": {
-    "crates/cc-db/src/index_migrate.rs": [
-      "/root",
-      "/root/pr_audit"
-    ],
-    "crates/cc-db/src/sql/index_v1.sql": [
-      "/root",
-      "/root/pr_audit"
-    ],
-    "crates/cc-db/tests/ci_schema_guard_contract.rs": [
-      "/root",
-      "/root/pr_audit"
-    ],
     "crates/cc-eval/src/bench.rs": [
       "/root"
     ],
@@ -1417,16 +1446,16 @@
       "/root/pr_audit"
     ]
   },
-  "tree": "080660f726da8abb857dfced95f834d0b72cf4f3",
+  "tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
   "unresolved_blockers": [],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
     ".github/workflows/p8-gates.yml": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
     ".github/workflows/p8-lifecycle.yml": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
-    ".github/workflows/p8-platform.yml": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+    ".github/workflows/p8-platform.yml": "c5a41d9f15e02361c2ff4e7f7bfed86fc57842f96178cfd4004333fea04bb8b7",
     ".github/workflows/p8-runtime.yml": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
-    ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+    ".github/workflows/p8-scale.yml": "e10f9a5ce85666344ed62367a429116d3bffffa3a902e78ea7f22704323422ee",
     "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
     "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
     "scripts/code_index_plan.py": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c",
@@ -1439,7 +1468,7 @@
     "scripts/p0-validation.py": "2f4013d6da41782ccadb15a23213f55a5117ec376747398919e7dcaa27a20145",
     "scripts/p0_historical_corpus.py": "67be5bc25b0116f666a36af83e88d19acc79515868a3199c01e816d268afee21",
     "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
-    "scripts/p7_fault_lifecycle_stdio.py": "0e1a0b6054ff5cb3708a7acfdc210af909849e62d8ff0616160e02e3988a2fdd",
+    "scripts/p7_fault_lifecycle_stdio.py": "ff2c39c2c265db6c2b93e738777260961469211933c11757d8e93ac544a1e9a5",
     "scripts/p7_gate_report.py": "772060b45bd26e787e4d4a7d011df1f24e554506cc97bbbcad0bb642acdd8afb",
     "scripts/p7_mechanism_build.py": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76",
     "scripts/p7_offline_network.py": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
@@ -1450,7 +1479,7 @@
     "scripts/p7_stdio_build_receipt.py": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2",
     "scripts/p8_backfill.py": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
     "scripts/p8_candidate_execution.py": "e5b36f6bb7bb13292734932f442a6b29d5d04e13d47c34b75d1f00bad3164d9b",
-    "scripts/p8_cold_build.py": "1da7189714959645f83762749d6bb6741e494e7a1ca4b9a2416d9d5366f315a3",
+    "scripts/p8_cold_build.py": "867c024d6b1bd85750d054c8802a687d5cac38c7d6752b2f11e19be19ff7435b",
     "scripts/p8_compat.py": "79765d4a8ff3cdb9e5e01625d4a13318a7122b1cda60fed552d16243663c4da2",
     "scripts/p8_corpus_audit.py": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
     "scripts/p8_external_candidate.py": "3bf04a43b33dd3e71b437162800a9a19e425b01a2c4a93e4eeb71d97e06fa189",
@@ -1460,15 +1489,15 @@
     "scripts/p8_leakage_audit.py": "bb909556f80bb47c76957b117a9187e6cbc934f8ce0df82d169a3aa58bcfb77e",
     "scripts/p8_lifecycle.py": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d",
     "scripts/p8_native_registry.py": "488b446221ade5598c058a56019f7e57ffb04cd8c311d52e3c69c7cc538fe6a9",
-    "scripts/p8_recovery.py": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42",
+    "scripts/p8_recovery.py": "b949d9621b62be8f636d8dbddc990d4d26e33a09ef0f77798bbd19e8e6fba287",
     "scripts/p8_release_evidence.py": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
     "scripts/p8_release_review.py": "dd421c1a2ca753c9a4777e6db1a7cc7d2c5ca7e98b87e61a9aff5ea59048c26f",
     "scripts/p8_resources.py": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1",
-    "scripts/p8_rollback.py": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
+    "scripts/p8_rollback.py": "48fb8c7f8ca37586ca19512590fb6fe8762df8ef296d340c1c321913bce123bc",
     "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
-    "scripts/p8_runtime.py": "ef4ab630a362c3402ecbb268281e89f19355123daac0f2d2354c74473d752764",
+    "scripts/p8_runtime.py": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
     "scripts/p8_runtime_build.py": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
-    "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+    "scripts/p8_scale_matrix.py": "c97dfcba5db12669c6d87650360caea61dfeea6ba046a7bd882516666949092f",
     "scripts/p8_semantic_certification.py": "42dd72cbb08dd398239cd41b927f2a94bedbc8b813583b175191c87f291a72c4",
     "scripts/resource_harness/__init__.py": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36",
     "scripts/resource_harness/analyze_existing.py": "13f61dd7b3612a47179aa5626e474bca98d6a78d23fddad5ce594b9050749ef0",
@@ -1511,16 +1540,15 @@
     "scripts/tests/test_p8_leakage_audit.py": "0dcd2d94f3d4208fef08f4da640598267f0500cac90df732946d6060dcafafa7",
     "scripts/tests/test_p8_lifecycle.py": "dfd9358f076673858048c5ca0bfb940e95b861a676b7daa498f51d8036ae0ebe",
     "scripts/tests/test_p8_native_registry.py": "e395b68915cf0382f13b9bb1157eea9052c034f377ccb6b4a2ef37cad3569125",
-    "scripts/tests/test_p8_platform.py": "5224a63b68accdcc6de858f3110316cc0739dfedac99c47b09c2472aedf0c8d7",
-    "scripts/tests/test_p8_platform_independent_review.py": "86ad7fbe3dcea399537e776833bb3f3d4c058bd9ccc4e3cdea09a1aa724ee5be",
-    "scripts/tests/test_p8_recovery.py": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
+    "scripts/tests/test_p8_platform.py": "9ecf71482d1c7f0ff3c2957047ea9e1fb1a82edc941864d6ecfdcdfda1819ee6",
+    "scripts/tests/test_p8_recovery.py": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11",
     "scripts/tests/test_p8_release_evidence.py": "62e8fdd449e4fb0fb4878185ebf06e9f9c790906a4f95415bf4138862977d380",
     "scripts/tests/test_p8_release_review.py": "c4e01032ea7f85d7cf0bdf0430b6c159112f25425d433eff8deb3bca7bd3544e",
     "scripts/tests/test_p8_resources.py": "992b6feecb4a40d6da15bddd2b89c7d4367bbb867108102182315362c16b7952",
     "scripts/tests/test_p8_runner_capacity.py": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
-    "scripts/tests/test_p8_runtime.py": "55e2ea9e9ba296fb38f6aee80928f9b5fec7a68cee3eddb542bd815911c7d588",
+    "scripts/tests/test_p8_runtime.py": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
     "scripts/tests/test_p8_runtime_evidence.py": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
-    "scripts/tests/test_p8_scale_matrix.py": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
+    "scripts/tests/test_p8_scale_matrix.py": "5bf621dfe3133c453d759b3f8d0932d19e67115f67982a8db5c837ad4a3fc755",
     "scripts/tests/test_p8_semantic_certification.py": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8",
     "scripts/update-doc-baselines.sh": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
     "scripts/v14_historical_context.py": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6",
@@ -1556,6 +1584,14 @@
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
     "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
+  },
+  "validation_path_reviewers": {
+    "scripts/p8_cold_build.py": "/root [workspace 28fef0db5e01]",
+    "scripts/p8_rollback.py": "/root/pr_audit [workspace 28fef0db5e01]",
+    "scripts/p8_runtime.py": "/root/acceptance_review [workspace 28fef0db5e01]",
+    "scripts/tests/test_p8_platform.py": "/root [workspace 28fef0db5e01]",
+    "scripts/tests/test_p8_recovery.py": "/root/pr_audit [workspace 28fef0db5e01]",
+    "scripts/tests/test_p8_runtime.py": "/root/acceptance_review [workspace 28fef0db5e01]"
   },
   "verdict": "accepted_scoped"
 }

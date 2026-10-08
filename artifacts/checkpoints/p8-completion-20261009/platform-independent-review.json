@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "review_kind": "independent_source_review",
+  "assessment": "accepted_scoped",
+  "fixed_source_commit": "1a18ba44411ee2d2c98e3556cf9a992a5850fd9f",
+  "fixed_source_tree": "d2733d89d618017d42c6c5fc905812775bb766d2",
+  "created_at_utc": "2026-10-08T18:21:51.195501+00:00",
+  "reviewed_paths": [
+    ".github/workflows/p8-platform.yml",
+    ".github/workflows/p8-gates.yml",
+    "scripts/p8_cold_build.py",
+    "scripts/p8_recovery.py",
+    "scripts/p8_rollback.py",
+    "scripts/p8_gate_controls.py",
+    "scripts/tests/test_p8_platform.py",
+    "scripts/tests/test_p8_recovery.py",
+    "docs/P8_PLATFORM_RECOVERY.md",
+    "crates/cc-server/src/project_session.rs"
+  ],
+  "source_binding": {
+    "method": "Compared each reviewed path from git show FIXED_COMMIT:path against the SHA256 recorded when independently reviewing that path; every reviewed byte matched.",
+    "reviewed_path_count": 10,
+    "matched": true,
+    "full_source_inventory": "To be generated and retained by root for the fixed product source."
+  },
+  "excluded_authored_paths": [
+    "crates/cc-eval/src/bench.rs",
+    "crates/cc-eval/src/report.rs",
+    "crates/cc-eval/src/benchmark/statistics.rs",
+    "crates/cc-eval/tests/p8_measurements.rs",
+    "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md"
+  ],
+  "authorship_boundary": {
+    "hygiene_reviewer": "root",
+    "hygiene_independent_approval_in_this_report": false,
+    "reason": "pr_audit authored the percentile consolidation, associated Rust tests, and historical platform-document navigation; those changes are explicitly excluded from this independent approval."
+  },
+  "methods": [
+    "Read the two platform/gate workflows, cold-build/recovery/rollback/gate drivers, contract controls, and current platform documentation; traced failure paths and evidence ownership through the actual called helpers.",
+    "Reviewed supporting build identity, runtime subprocess handling, fault lifecycle driver, and the existence/selection of each named original Rust fault test without claiming whole-file approval for these contextual dependencies.",
+    "Executed the platform and recovery Python contract suites and the declared-facts check, parsed the execution scripts, and checked the project_session patch whitespace.",
+    "Independently reviewed project_session cancellation ordering: worker-owned mutex handoff signalled inside spawn_blocking, plus a separately controlled cancellation-before-handoff test.",
+    "Recomputed every retained originals manifest payload hash, byte length and regular-file inventory; separately checked archive hashes and preservation of partial/failed result identity.",
+    "Rebound the independently reviewed file bytes to the fixed source commit above; did not rerun large Rust builds or represent synthetic contract fixtures as product execution."
+  ],
+  "findings": [
+    {
+      "id": "platform_cells_and_ci",
+      "assessment": "accepted_scoped",
+      "detail": "The workflow requires Linux/macOS x Rust 1.95/stable x default/semantic: eight actual cells at one source. A selected-cell driver exit 2 is insufficient by itself: strict export requires the selected cell to pass with its real receipt and smoke evidence, and aggregation requires eight distinct consistent cells. Missing/failed/incomplete cells cannot certify a green complete matrix."
+    },
+    {
+      "id": "timeouts_and_failed_commands",
+      "assessment": "accepted_scoped",
+      "detail": "Owned process groups are stopped on timeout, command failures retain raw logs and failed receipts, test selection must demonstrate an actual nonignored execution, and changed/missing source or executable evidence fails the driver. Workflows upload retained evidence even on failure; artifact upload is not task acceptance."
+    },
+    {
+      "id": "recovery_source_compile_binding",
+      "assessment": "accepted_scoped",
+      "detail": "Current-product and original-test builds snapshot committed Cargo/crate source before/after actual locked offline Cargo commands, validate the unique compiler artifact, package, manifest, target ownership and feature selection, and copy/hash the exact returned executable outside its target directory. Fault seeds and original tests execute those fixed copied binaries with hashes and raw process receipts. Version-pair validation additionally requires the declared historical source identity. This establishes the stated source/build/execution chain; it does not claim a fully hermetic compiler/dependency environment."
+    },
+    {
+      "id": "rollback_and_originals",
+      "assessment": "accepted_scoped",
+      "detail": "Actual schema versions are derived from the hash-bound source manifests and must be distinct in the expected direction. Backup and rollback retain original database/config/source state, verify post-run identities, and exercise actual older/current products rather than relabelling source builds as releases. Historical failed and partial engineering evidence remains separately identified and is not upgraded into fixed-candidate acceptance."
+    },
+    {
+      "id": "original_gate_negative_controls",
+      "assessment": "accepted_scoped",
+      "detail": "Gate controls require actual original Rust tests and the compiled cc-eval executable, retain fixture/raw evidence, and explicitly check expected failing decisions for invalid quality/performance/lock/policy/inconclusive/zero-sample cases. A passing control test certifies the failure contract only, not quality or performance acceptance."
+    },
+    {
+      "id": "project_session_cancellation_test",
+      "assessment": "accepted_scoped",
+      "detail": "The cfg(test) oneshot observes ownership from inside the blocking initializer before the caller is aborted. The separately polled pre-handoff cancellation control establishes the opposite ordering. The production/release path is unchanged; the timeout is a liveness bound rather than the synchronization assertion."
+    }
+  ],
+  "controls": {
+    "platform_python": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_platform.py -v",
+      "passed": 38,
+      "failed": 0,
+      "scope": "Contract fixtures, including intentionally synthetic compiler evidence; not real platform product builds."
+    },
+    "recovery_python": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_recovery.py -v",
+      "passed": 24,
+      "failed": 0,
+      "scope": "Recovery/rollback command, binding and failure contracts; not the full product recovery matrix."
+    },
+    "declared_facts": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/p8_facts.py --check",
+      "status": "passed",
+      "errors": [],
+      "runtime_certified": false
+    },
+    "python_syntax": "Four scoped execution drivers parsed successfully.",
+    "project_session_whitespace": "git diff bdcadfb^ bdcadfb --check passed.",
+    "engineering_originals": {
+      "archive_sha256": "b2e77d94d5a43ef3fee09f9462f8024fd3b518cec5849727e6135123f356ab61",
+      "manifest_payload_members_rehashed": 677,
+      "total_regular_members": 679,
+      "exact_manifest_and_inventory_verified": true
+    },
+    "scale_preflight_originals": {
+      "archive_sha256": "abfea29121b896965a71ee3208f749593c95f9af3d9460192fc10ceaae70f9a1",
+      "manifest_payload_members_rehashed": 29,
+      "total_regular_members": 30,
+      "exact_manifest_and_inventory_verified": true
+    }
+  },
+  "unresolved_blockers": [],
+  "unresolved_blocker_scope": "No unresolved source-review blocker in reviewed_paths. This does not mean runtime/task acceptance has completed.",
+  "execution_acceptance_pending": [
+    "Successful exact-fixed-source execution and retained raw evidence for all eight platform/compiler/feature cells.",
+    "Successful exact-fixed-source full recovery matrix, historical/current schema rollback pair and original Rust gate/control executions.",
+    "Merged-source Rust compilation and tests, including the hygiene tests reviewed independently by root; this reviewer did not compile them locally because of the shared-workspace resource constraint.",
+    "Root final inventory, independently owned hygiene review metadata, artifact consolidation and applicable offline replay/acceptance checks."
+  ],
+  "acceptance_boundary": {
+    "source_approval_only": true,
+    "todo_completion_certified": false,
+    "quality_or_performance_approval": false,
+    "release_approval": false
+  }
+}

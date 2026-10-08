@@ -127,7 +127,9 @@ fn inventory_query(after: Option<&str>) -> Result<String> {
     // The public graph_query handler has this existing query-size ceiling.
     // Never allow its input sanitization to silently change the cursor.
     if query.len() > 4096 {
-        return Err(BenchError::Protocol("inventory cursor exceeds MCP query budget".into()));
+        return Err(BenchError::Protocol(
+            "inventory cursor exceeds MCP query budget".into(),
+        ));
     }
     Ok(query)
 }
@@ -142,7 +144,9 @@ fn inventory_page(value: &Value, after: Option<&str>) -> Result<Vec<(String, u64
         || value.get("limit_applied").and_then(Value::as_u64) != Some(INVENTORY_PAGE_SIZE as u64)
         || rows.len() > INVENTORY_PAGE_SIZE
     {
-        return Err(BenchError::Protocol("inventory page is truncated or inconsistent".into()));
+        return Err(BenchError::Protocol(
+            "inventory page is truncated or inconsistent".into(),
+        ));
     }
     let mut result = Vec::with_capacity(rows.len());
     let mut previous = after;
@@ -157,7 +161,9 @@ fn inventory_page(value: &Value, after: Option<&str>) -> Result<Vec<(String, u64
             .and_then(Value::as_u64)
             .ok_or_else(|| BenchError::Protocol("inventory row has no byte size".into()))?;
         if previous.is_some_and(|old| path <= old) {
-            return Err(BenchError::Protocol("inventory cursor did not advance".into()));
+            return Err(BenchError::Protocol(
+                "inventory cursor did not advance".into(),
+            ));
         }
         previous = Some(path);
         result.push((path.to_owned(), bytes));
@@ -175,12 +181,16 @@ fn inventory_readiness(
         || indexed_count(after)? != observed.len()
         || index_epoch(before)? != index_epoch(after)?
     {
-        return Err(BenchError::Protocol("indexed inventory changed during readiness".into()));
+        return Err(BenchError::Protocol(
+            "indexed inventory changed during readiness".into(),
+        ));
     }
     let expected: std::collections::BTreeMap<_, _> =
         files.iter().map(|f| (f.path.as_str(), f.bytes)).collect();
     if expected.len() != files.len() || expected.contains_key(GENERATED_CONFIG) {
-        return Err(BenchError::Protocol("invalid source inventory for readiness".into()));
+        return Err(BenchError::Protocol(
+            "invalid source inventory for readiness".into(),
+        ));
     }
     let mut ready = 0;
     for (path, size) in observed {
@@ -193,7 +203,9 @@ fn inventory_readiness(
             BenchError::Protocol("indexed path is outside the source manifest".into())
         })?;
         if size != expected_size {
-            return Err(BenchError::Protocol("indexed file byte size differs from manifest".into()));
+            return Err(BenchError::Protocol(
+                "indexed file byte size differs from manifest".into(),
+            ));
         }
         ready += 1;
     }
@@ -228,7 +240,9 @@ impl Backend for McpStdio {
             .checked_add(1)
             .ok_or_else(|| BenchError::Protocol("source inventory too large".into()))?;
         if expected_count > bound {
-            return Err(BenchError::Protocol("indexed inputs exceed source manifest".into()));
+            return Err(BenchError::Protocol(
+                "indexed inputs exceed source manifest".into(),
+            ));
         }
         index_epoch(&before)?;
         let mut observed = std::collections::BTreeMap::new();
@@ -247,7 +261,9 @@ impl Backend for McpStdio {
             for (path, bytes) in entries {
                 cursor = Some(path.clone());
                 if observed.insert(path, bytes).is_some() || observed.len() > expected_count {
-                    return Err(BenchError::Protocol("indexed inventory count or identity changed".into()));
+                    return Err(BenchError::Protocol(
+                        "indexed inventory count or identity changed".into(),
+                    ));
                 }
             }
             if count < INVENTORY_PAGE_SIZE {
@@ -294,7 +310,11 @@ mod inventory_tests {
         json!({"indexed_files":n,"resolution_freshness":{"index_epoch":epoch}})
     }
     fn file(path: &str, bytes: u64) -> FileRecord {
-        FileRecord { path:path.into(), bytes, digest:"locked elsewhere".into() }
+        FileRecord {
+            path: path.into(),
+            bytes,
+            digest: "locked elsewhere".into(),
+        }
     }
     fn page(rows: Value) -> Value {
         json!({"row_count":rows.as_array().unwrap().len(),"results":rows,
@@ -304,56 +324,72 @@ mod inventory_tests {
     #[test]
     fn same_count_with_wrong_path_is_not_ready() {
         let actual = BTreeMap::from([("wrong.py".to_owned(), 10)]);
-        assert!(inventory_readiness(&[file("wanted.py",10)], &actual,
-            &status(1,4), &status(1,4)).is_err());
+        assert!(inventory_readiness(
+            &[file("wanted.py", 10)],
+            &actual,
+            &status(1, 4),
+            &status(1, 4)
+        )
+        .is_err());
     }
 
     #[test]
     fn missing_inputs_remain_unknown_and_generated_config_is_explicit() {
-        let actual = BTreeMap::from([("a.py".to_owned(),10),
-            (GENERATED_CONFIG.to_owned(),42)]);
-        let state = inventory_readiness(&[file("a.py",10),file("b.py",20)], &actual,
-            &status(2,4), &status(2,4)).unwrap();
-        assert_eq!(state.ready,1);
-        assert_eq!(state.unknown,1);
-        assert_eq!(state.state,State::Unknown);
-        let state = inventory_readiness(&[file("a.py",10)], &actual,
-            &status(2,4), &status(2,4)).unwrap();
-        assert_eq!(state.state,State::Ready);
+        let actual = BTreeMap::from([("a.py".to_owned(), 10), (GENERATED_CONFIG.to_owned(), 42)]);
+        let state = inventory_readiness(
+            &[file("a.py", 10), file("b.py", 20)],
+            &actual,
+            &status(2, 4),
+            &status(2, 4),
+        )
+        .unwrap();
+        assert_eq!(state.ready, 1);
+        assert_eq!(state.unknown, 1);
+        assert_eq!(state.state, State::Unknown);
+        let state = inventory_readiness(&[file("a.py", 10)], &actual, &status(2, 4), &status(2, 4))
+            .unwrap();
+        assert_eq!(state.state, State::Ready);
     }
 
     #[test]
     fn size_count_and_epoch_drift_are_rejected() {
-        let actual = BTreeMap::from([("a.py".to_owned(),10)]);
-        for (files,before,after) in [
-            (vec![file("a.py",11)],status(1,4),status(1,4)),
-            (vec![file("a.py",10)],status(2,4),status(1,4)),
-            (vec![file("a.py",10)],status(1,4),status(2,4)),
-            (vec![file("a.py",10)],status(1,4),status(1,5)),
+        let actual = BTreeMap::from([("a.py".to_owned(), 10)]);
+        for (files, before, after) in [
+            (vec![file("a.py", 11)], status(1, 4), status(1, 4)),
+            (vec![file("a.py", 10)], status(2, 4), status(1, 4)),
+            (vec![file("a.py", 10)], status(1, 4), status(2, 4)),
+            (vec![file("a.py", 10)], status(1, 4), status(1, 5)),
         ] {
-            assert!(inventory_readiness(&files,&actual,&before,&after).is_err());
+            assert!(inventory_readiness(&files, &actual, &before, &after).is_err());
         }
     }
 
     #[test]
     fn truncated_duplicate_or_inconsistent_pages_are_rejected() {
         let good = page(json!([{"path":"a.py","bytes":10}]));
-        assert_eq!(inventory_page(&good,None).unwrap(),vec![("a.py".to_owned(),10)]);
+        assert_eq!(
+            inventory_page(&good, None).unwrap(),
+            vec![("a.py".to_owned(), 10)]
+        );
         let mut truncated = good.clone();
         truncated["truncated"] = json!(true);
-        assert!(inventory_page(&truncated,None).is_err());
+        assert!(inventory_page(&truncated, None).is_err());
         let mut wrong_count = good.clone();
         wrong_count["row_count"] = json!(2);
-        assert!(inventory_page(&wrong_count,None).is_err());
-        assert!(inventory_page(&good,Some("a.py")).is_err());
-        assert!(inventory_page(&page(json!([
-            {"path":"a.py","bytes":10},{"path":"a.py","bytes":10}])),None).is_err());
-        assert!(inventory_page(&page(json!([{"path":"../escape","bytes":10}])),None).is_err());
+        assert!(inventory_page(&wrong_count, None).is_err());
+        assert!(inventory_page(&good, Some("a.py")).is_err());
+        assert!(inventory_page(
+            &page(json!([
+            {"path":"a.py","bytes":10},{"path":"a.py","bytes":10}])),
+            None
+        )
+        .is_err());
+        assert!(inventory_page(&page(json!([{"path":"../escape","bytes":10}])), None).is_err());
     }
 
     #[test]
     fn keyset_query_quotes_cursor_and_has_a_fixed_limit() {
-        let query=inventory_query(Some("q'quoted.py")).unwrap();
+        let query = inventory_query(Some("q'quoted.py")).unwrap();
         assert!(query.contains("f.file_path > 'q\\'quoted.py'"));
         assert!(query.ends_with("ORDER BY f.file_path LIMIT 64"));
         assert!(inventory_query(Some("bad\\path")).is_err());

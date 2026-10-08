@@ -73,34 +73,73 @@ fn opt_in_full_directory_and_single_event_scans_share_admission() {
     let scanner = Scanner::new(root.path(), &config);
     let expected = strings(&admitted);
     assert_eq!(paths(&scanner, None), expected);
-    let requests: Vec<String> = admitted.iter().chain(excluded.iter()).map(|v| (*v).into()).collect();
+    let requests: Vec<String> = admitted
+        .iter()
+        .chain(excluded.iter())
+        .map(|v| (*v).into())
+        .collect();
     assert_eq!(paths(&scanner, Some(&requests)), expected);
     let mut individual = BTreeSet::new();
     for requested in &requests {
         individual.extend(paths(&scanner, Some(std::slice::from_ref(requested))));
     }
     assert_eq!(individual, expected);
-    let subtrees = vec!["src".into(), "templates".into(), ".github".into(), ".hidden".into()];
+    let subtrees = vec![
+        "src".into(),
+        "templates".into(),
+        ".github".into(),
+        ".hidden".into(),
+    ];
     assert_eq!(
         paths(&scanner, Some(&subtrees)),
-        strings(&["src/lib.rs", "templates/page.html", ".github/workflows/ci.yml", ".hidden/a/b/c/d/e/notes.txt"])
+        strings(&[
+            "src/lib.rs",
+            "templates/page.html",
+            ".github/workflows/ci.yml",
+            ".hidden/a/b/c/d/e/notes.txt"
+        ])
     );
     // Expanded source traversal must not silently expand the config walk's
     // original hidden-depth consumer contract.
     let (_, manifest) = scanner.scan_with_manifest();
-    assert!(!manifest.files.iter().any(|f| f.rel_path == ".hidden/a/b/c/d/e/notes.txt"));
+    assert!(!manifest
+        .files
+        .iter()
+        .any(|f| f.rel_path == ".hidden/a/b/c/d/e/notes.txt"));
 }
 
 #[test]
 fn defaults_and_the_two_opt_ins_remain_independent() {
     let root = tempfile::tempdir().unwrap();
-    for p in ["src/lib.rs", "notes.rst", ".hidden/secret.rs", ".hidden/notes.rst"] {
+    for p in [
+        "src/lib.rs",
+        "notes.rst",
+        ".hidden/secret.rs",
+        ".hidden/notes.rst",
+    ] {
         write(root.path(), p, b"marker\n");
     }
-    assert_eq!(paths(&Scanner::new(root.path(), &IndexingConfig::default()), None), strings(&["src/lib.rs"]));
-    assert_eq!(paths(&Scanner::new(root.path(), &opted(true, false)), None), strings(&["src/lib.rs", "notes.rst"]));
-    assert_eq!(paths(&Scanner::new(root.path(), &opted(false, true)), None), strings(&["src/lib.rs", ".hidden/secret.rs"]));
-    assert_eq!(paths(&Scanner::new(root.path(), &opted(true, true)), None), strings(&["src/lib.rs", "notes.rst", ".hidden/secret.rs", ".hidden/notes.rst"]));
+    assert_eq!(
+        paths(&Scanner::new(root.path(), &IndexingConfig::default()), None),
+        strings(&["src/lib.rs"])
+    );
+    assert_eq!(
+        paths(&Scanner::new(root.path(), &opted(true, false)), None),
+        strings(&["src/lib.rs", "notes.rst"])
+    );
+    assert_eq!(
+        paths(&Scanner::new(root.path(), &opted(false, true)), None),
+        strings(&["src/lib.rs", ".hidden/secret.rs"])
+    );
+    assert_eq!(
+        paths(&Scanner::new(root.path(), &opted(true, true)), None),
+        strings(&[
+            "src/lib.rs",
+            "notes.rst",
+            ".hidden/secret.rs",
+            ".hidden/notes.rst"
+        ])
+    );
 }
 
 #[test]
@@ -114,7 +153,16 @@ fn explicit_text_rejects_binary_invalid_utf8_and_over_limit_on_every_entrypoint(
     let mut config = opted(true, true);
     config.max_file_bytes = 8;
     let scanner = Scanner::new(root.path(), &config);
-    let requested: Vec<String> = ["exact.rst", "large.rst", "nul.rst", "nonutf.rst", "empty.unknown"].iter().map(|s| (*s).into()).collect();
+    let requested: Vec<String> = [
+        "exact.rst",
+        "large.rst",
+        "nul.rst",
+        "nonutf.rst",
+        "empty.unknown",
+    ]
+    .iter()
+    .map(|s| (*s).into())
+    .collect();
     let expected = strings(&["exact.rst", "empty.unknown"]);
     assert_eq!(paths(&scanner, None), expected);
     assert_eq!(paths(&scanner, Some(&requested)), expected);
@@ -145,7 +193,9 @@ fn scoped(index: &Indexer, root: &Path, changed: &[&str], removed: &[&str]) {
         changed: changed.iter().map(|p| (*p).into()).collect(),
         removed: removed.iter().map(|p| (*p).into()).collect(),
     };
-    let prepared = index.prepare_build_scoped(root, false, None, Some(&scope)).unwrap();
+    let prepared = index
+        .prepare_build_scoped(root, false, None, Some(&scope))
+        .unwrap();
     let report = index.commit_build(root, false, None, prepared).unwrap();
     assert!(report.parse_errors.is_empty(), "{:?}", report.parse_errors);
 }
@@ -155,15 +205,26 @@ fn real_generic_chunks_fts_updates_hidden_moves_and_deletes_stay_coherent() {
     let root = tempfile::tempdir().unwrap();
     let storage = tempfile::tempdir().unwrap();
     write(root.path(), "guide.rst", b"fallbackalpha\n");
-    write(root.path(), "templates/page.html", b"<p>templategamma</p>\n");
+    write(
+        root.path(),
+        "templates/page.html",
+        b"<p>templategamma</p>\n",
+    );
     write(root.path(), ".hidden/notes.txt", b"hiddenbeta\n");
     let db = Arc::new(IndexDb::open(&storage.path().join("index.db")).unwrap().0);
     let index = Indexer::new(db.clone(), root.path(), &opted(true, true));
     let report = index.build_index(root.path(), true).unwrap();
     assert!(report.parse_errors.is_empty());
-    for (token, path) in [("fallbackalpha", "guide.rst"), ("templategamma", "templates/page.html"), ("hiddenbeta", ".hidden/notes.txt")] {
+    for (token, path) in [
+        ("fallbackalpha", "guide.rst"),
+        ("templategamma", "templates/page.html"),
+        ("hiddenbeta", ".hidden/notes.txt"),
+    ] {
         assert_eq!(hits(&db, token), strings(&[path]));
-        assert_eq!(db.reads().file_summary(path).unwrap()["parser_tier"], "generic");
+        assert_eq!(
+            db.reads().file_summary(path).unwrap()["parser_tier"],
+            "generic"
+        );
     }
 
     write(root.path(), "guide.rst", b"fallbackdelta\n");
@@ -174,10 +235,17 @@ fn real_generic_chunks_fts_updates_hidden_moves_and_deletes_stay_coherent() {
     scoped(&index, root.path(), &[], &[".hidden/notes.txt"]);
     assert!(hits(&db, "hiddenbeta").is_empty());
     assert_eq!(hits(&db, "fallbackdelta"), strings(&["guide.rst"]));
-    assert_eq!(hits(&db, "templategamma"), strings(&["templates/page.html"]));
+    assert_eq!(
+        hits(&db, "templategamma"),
+        strings(&["templates/page.html"])
+    );
     assert!(!db.reads().file_is_indexed(".hidden/notes.txt").unwrap());
 
-    std::fs::rename(root.path().join("guide.rst"), root.path().join(".hidden/moved.rst")).unwrap();
+    std::fs::rename(
+        root.path().join("guide.rst"),
+        root.path().join(".hidden/moved.rst"),
+    )
+    .unwrap();
     scoped(&index, root.path(), &[".hidden/moved.rst"], &["guide.rst"]);
     assert_eq!(hits(&db, "fallbackdelta"), strings(&[".hidden/moved.rst"]));
     assert!(!db.reads().file_is_indexed("guide.rst").unwrap());
@@ -190,5 +258,8 @@ fn real_generic_chunks_fts_updates_hidden_moves_and_deletes_stay_coherent() {
     let before = db.reads().list_file_paths().unwrap();
     index.build_index(root.path(), true).unwrap();
     assert_eq!(db.reads().list_file_paths().unwrap(), before);
-    assert_eq!(hits(&db, "templategamma"), strings(&["templates/page.html"]));
+    assert_eq!(
+        hits(&db, "templategamma"),
+        strings(&["templates/page.html"])
+    );
 }

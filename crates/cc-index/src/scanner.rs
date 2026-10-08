@@ -171,13 +171,34 @@ impl Scanner {
                 || part.starts_with(".codecortex")
                 || matches!(
                     part,
-                    ".git" | ".hg" | ".svn" | ".codecortex" | ".codecortex.json"
-                        | ".DS_Store" | "Thumbs.db"
-                        | ".config" | ".cache" | ".local" | ".ssh" | ".gnupg"
-                        | ".venv" | "venv" | "__pycache__" | "node_modules"
-                        | "vendor" | ".mypy_cache" | ".pytest_cache" | ".tox" | ".eggs"
-                        | "target" | "dist" | "build" | "coverage" | ".next"
-                        | ".idea" | ".vscode"
+                    ".git"
+                        | ".hg"
+                        | ".svn"
+                        | ".codecortex"
+                        | ".codecortex.json"
+                        | ".DS_Store"
+                        | "Thumbs.db"
+                        | ".config"
+                        | ".cache"
+                        | ".local"
+                        | ".ssh"
+                        | ".gnupg"
+                        | ".venv"
+                        | "venv"
+                        | "__pycache__"
+                        | "node_modules"
+                        | "vendor"
+                        | ".mypy_cache"
+                        | ".pytest_cache"
+                        | ".tox"
+                        | ".eggs"
+                        | "target"
+                        | "dist"
+                        | "build"
+                        | "coverage"
+                        | ".next"
+                        | ".idea"
+                        | ".vscode"
                 )
         })
     }
@@ -197,7 +218,10 @@ impl Scanner {
             return None;
         }
         if (self.config.include_text_files || self.config.include_hidden_files)
-            && std::fs::symlink_metadata(path).ok()?.file_type().is_symlink()
+            && std::fs::symlink_metadata(path)
+                .ok()?
+                .file_type()
+                .is_symlink()
         {
             return None;
         }
@@ -459,8 +483,7 @@ impl Scanner {
                     continue;
                 }
             }
-            let Some(language) =
-                self.admitted_language(&entry.abs_path, &rel_path, entry.size)
+            let Some(language) = self.admitted_language(&entry.abs_path, &rel_path, entry.size)
             else {
                 continue;
             };

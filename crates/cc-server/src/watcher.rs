@@ -936,14 +936,18 @@ mod explicit_text_admission_tests {
         let hidden = ".docs/guide.rst";
         std::fs::create_dir(root.path().join(".docs")).unwrap();
         std::fs::write(root.path().join(hidden), "text source").unwrap();
-        for kind in [EventKind::Create(CreateKind::File), EventKind::Modify(ModifyKind::Data(notify::event::DataChange::Content))] {
+        for kind in [
+            EventKind::Create(CreateKind::File),
+            EventKind::Modify(ModifyKind::Data(notify::event::DataChange::Content)),
+        ] {
             let event = Event::new(kind).add_path(root.path().join(hidden));
             let classified = classify_notification(root.path(), &Ok(event), &rules);
             assert_eq!(classified.changed, vec![hidden]);
             assert!(classified.removed.is_empty());
         }
         std::fs::remove_file(root.path().join(hidden)).unwrap();
-        let event = Event::new(EventKind::Remove(RemoveKind::File)).add_path(root.path().join(hidden));
+        let event =
+            Event::new(EventKind::Remove(RemoveKind::File)).add_path(root.path().join(hidden));
         let classified = classify_notification(root.path(), &Ok(event), &rules);
         assert_eq!(classified.removed, vec![hidden]);
         assert!(classified.changed.is_empty());
@@ -962,8 +966,14 @@ mod explicit_text_admission_tests {
         .unwrap();
         let rules = cc_index::IgnoreRules::load(root.path(), &config);
         for path in [
-            ".env", "nested/.env.local", ".codecortex/index.db", ".git/objects/a",
-            ".cache/a.txt", ".ssh/id_rsa", "target/a.txt", ".docs/.DS_Store",
+            ".env",
+            "nested/.env.local",
+            ".codecortex/index.db",
+            ".git/objects/a",
+            ".cache/a.txt",
+            ".ssh/id_rsa",
+            "target/a.txt",
+            ".docs/.DS_Store",
             ".docs/ignored/a.rst",
         ] {
             assert!(!should_track_input(path, &rules), "{path}");

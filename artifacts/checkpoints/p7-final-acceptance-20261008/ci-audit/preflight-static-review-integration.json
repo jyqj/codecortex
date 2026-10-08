@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "recorded_by": "/root",
+  "reviewer": "/root/pr_audit",
+  "reviewed_commit": "97ef2cd9443c3f8cfb54292db184c0560ea2b6bf",
+  "scope": "Static independent review of preflight utility and exact five-artifact bindings; no task or runtime acceptance.",
+  "finding": "The metadata API read used a default redirect-following opener; reviewer requested applying the existing NoRedirect opener to this authenticated read as well.",
+  "resolution": "Authenticated metadata now refuses redirects and requires HTTP 200; signed archive download follows a separate request without Authorization. Added observed engineering owner PIDs and original lifecycle RPC counts for explicit subsequent audit parameters.",
+  "independent_observations": [
+    "Reviewer independently fetched current Actions artifact metadata and matched all five id/name/run/head/size/digest bindings.",
+    "ZIP download checks fixed length and SHA-256, then streams all members through EOF and records CRC/hash inventory; no extraction or product invocation.",
+    "Workflow is confined to the audit utility branch and uses contents/read and actions/read permissions."
+  ],
+  "remaining": "Actual preflight execution and all original semantic audit checks remain pending.",
+  "task_ledger_changed": false
+}

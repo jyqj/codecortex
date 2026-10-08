@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "status": "prepared_portable_replay_not_executed",
+  "fixed_candidate": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "actual_engineering_checkout": "683d8882c108e4e9be68ebac127f3c709e329711",
+  "expected_complete_tree": "9e59b41540eb3769e9ca0a787c9ed60441259d20",
+  "scope": "Exact original 9ebe auditors with explicit filesystem and observed-run identity substitutions. Original query, timeout, queue, CPU pool, lane, metric, bootstrap and negative-control assertions are preserved. Actual artifact verification remains pending execution.",
+  "required_environment": [
+    "P7_AUDIT_SOURCE_ROOT",
+    "P7_AUDIT_ZIP_ROOT",
+    "P7_AUDIT_OUTPUT",
+    "P7_AUDIT_EXPECTED_WORKER_PID",
+    "P7_AUDIT_EXPECTED_MECHANISM_MEMBERS",
+    "P7_AUDIT_EXPECTED_MECHANISM_EXPANDED_BYTES"
+  ],
+  "scripts": [
+    {
+      "kind": "engineering",
+      "old_path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/review_ci9ebe_engineering.py",
+      "old_blob": "f218c51778bfbd7a0ed657f05be7d794f0b92499",
+      "old_sha256": "8945b7324a1ce20f9e662934454dbc173bd8560602492af5e3e0e15103e2de45",
+      "new_file": "review_ci_ffdc_engineering.py",
+      "new_sha256": "6bbcb1a27be8ba192e554bc1cd774f9ee6506c83d63fc95fb1d2f68e9d838b25",
+      "old_assert_statements": 54,
+      "new_assert_statements": 57,
+      "replacements": [
+        {
+          "from": "import json\n",
+          "to": "import json\nimport os\n",
+          "category": "filesystem",
+          "occurrences": 1
+        },
+        {
+          "from": "ROOT = Path('/dev/shm/codecortex-closeout-996727/codecortex-root')\nOUTPUT = Path('/dev/shm/codecortex-closeout-996727/validation')\nZIP = Path('/workspace/scratch/9967275fe9a7/ci-import/ci9ebe-engineering-artifact.zip')",
+          "to": "ROOT = Path(os.environ['P7_AUDIT_SOURCE_ROOT']).resolve()\nOUTPUT = Path(os.environ['P7_AUDIT_OUTPUT']).resolve()\nZIP = Path(os.environ['P7_AUDIT_ZIP_ROOT']).resolve() / 'ci_ffdc_engineering_artifact.zip'\nRAW_LOG = Path(__file__).resolve().parent / 'ci_ffdc_engineering_job.log'\nEXPECTED_WORKER_PID = int(os.environ['P7_AUDIT_EXPECTED_WORKER_PID'])\nassert EXPECTED_WORKER_PID == 12783\nOUTPUT.mkdir(parents=True, exist_ok=True)",
+          "category": "filesystem_and_observed_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "9ebe1f619a298b9955d576d9d8250368259924d2",
+          "to": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+          "category": "source_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "c41bf2717aa745863520daedb89d8c4b3353d8c4",
+          "to": "683d8882c108e4e9be68ebac127f3c709e329711",
+          "category": "actual_execution_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "assert ZIP.stat().st_size == 221887",
+          "to": "assert ZIP.stat().st_size == 220992",
+          "category": "official_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "7066eda6e181f47b12d980e9989ce00a2d3566fc6e293e1bdee0abac832d01dd",
+          "to": "8ac8223cc3278e4316fa83050ad40850985303f7041aa53919fb94650bdcb6d0",
+          "category": "official_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "assert source['source_tree'] == git('rev-parse', PR + '^{tree}').decode().strip()",
+          "to": "assert source['source_tree'] == git('rev-parse', PR + '^{tree}').decode().strip()\n    assert source['source_tree'] == git('rev-parse', EXECUTED + '^{tree}').decode().strip() == '9e59b41540eb3769e9ca0a787c9ed60441259d20'",
+          "category": "additional_complete_tree_identity_check",
+          "occurrences": 1
+        },
+        {
+          "from": "== 794",
+          "to": "== 795",
+          "category": "source_inventory_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "full_794_crate_cargo_inputs",
+          "to": "full_795_crate_cargo_inputs",
+          "category": "receipt_identity_label",
+          "occurrences": 1
+        },
+        {
+          "from": "log = (OUTPUT / 'ci9ebe-engineering-job.log').read_bytes()",
+          "to": "log = RAW_LOG.read_bytes()\n    assert len(log) == 1531741 and digest(log) == '6b4b52cd3b3cd96a4e6d7d374d5e9644abfa7c619df2944568443f2a78be8a78'",
+          "category": "raw_log_location_and_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "== 13025",
+          "to": "== EXPECTED_WORKER_PID",
+          "category": "observed_process_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "'ownership': 'one PID 13025; runner + CodeIndex + fake provider counted once'",
+          "to": "'ownership': f'one PID {EXPECTED_WORKER_PID}; runner + CodeIndex + fake provider counted once'",
+          "category": "receipt_identity_label",
+          "occurrences": 1
+        },
+        {
+          "from": "'workflow_run_id': 37724421463, 'job_id': 113139222544, 'artifact_id': 11527696269",
+          "to": "'workflow_run_id': 37729686671, 'job_id': 113155754732, 'artifact_id': 11529288057",
+          "category": "workflow_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "ci9ebe-engineering-independent-receipt.json",
+          "to": "ci_ffdc_engineering_independent_receipt.json",
+          "category": "output_name",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "kind": "mechanism",
+      "old_path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/review_ci9ebe_mechanism.py",
+      "old_blob": "004a8997bbfda6a839e375b7e33637fa38a8e1f9",
+      "old_sha256": "7e94a4d647ebad9439945734e3e340b9910081f9902525a41cb299015c4bacb8",
+      "new_file": "review_ci_ffdc_mechanism.py",
+      "new_sha256": "3f01068ee433864a06a04c0c088ac5b780654dfb12828a1c4d0d40978ad2e370",
+      "old_assert_statements": 128,
+      "new_assert_statements": 130,
+      "replacements": [
+        {
+          "from": "import json\n",
+          "to": "import json\nimport os\n",
+          "category": "filesystem",
+          "occurrences": 1
+        },
+        {
+          "from": "ROOT = Path('/dev/shm/codecortex-closeout-996727/codecortex-root')\nOUT = Path('/dev/shm/codecortex-closeout-996727/validation')\nZIP = Path('/workspace/scratch/9967275fe9a7/ci-import/ci9ebe-mechanism-artifact.zip')",
+          "to": "ROOT = Path(os.environ['P7_AUDIT_SOURCE_ROOT']).resolve()\nOUT = Path(os.environ['P7_AUDIT_OUTPUT']).resolve()\nZIP_ROOT = Path(os.environ['P7_AUDIT_ZIP_ROOT']).resolve()\nZIP = ZIP_ROOT / 'ci_ffdc_mechanism_artifact.zip'\nRAW_LOG = Path(__file__).resolve().parent / 'ci_ffdc_mechanism_job.log'\nEXPECTED_ARCHIVE_MEMBERS = int(os.environ['P7_AUDIT_EXPECTED_MECHANISM_MEMBERS'])\nEXPECTED_EXPANDED_BYTES = int(os.environ['P7_AUDIT_EXPECTED_MECHANISM_EXPANDED_BYTES'])\nassert EXPECTED_ARCHIVE_MEMBERS == 4163 and EXPECTED_EXPANDED_BYTES == 368834949\nOUT.mkdir(parents=True, exist_ok=True)",
+          "category": "filesystem_and_observed_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "9ebe1f619a298b9955d576d9d8250368259924d2",
+          "to": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+          "category": "source_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "assert ZIP.stat().st_size == 91097221",
+          "to": "assert ZIP.stat().st_size == 91141978",
+          "category": "official_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "245959ade64c43884d50a5b90a40c2f6e4a37f1d6da83cb78f1ee7cc3d169d60",
+          "to": "c31b0656a8e7e4e091710d2c43b1d399c5b36820bd1ffeb97a373005ff052233",
+          "category": "official_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "with zipfile.ZipFile('/workspace/scratch/9967275fe9a7/ci-import/ci9ebe-engineering-artifact.zip') as eng:",
+          "to": "with zipfile.ZipFile(ZIP_ROOT / 'ci_ffdc_engineering_artifact.zip') as eng:",
+          "category": "filesystem",
+          "occurrences": 1
+        },
+        {
+          "from": "ci9ebe-engineering-independent-receipt.json",
+          "to": "ci_ffdc_engineering_independent_receipt.json",
+          "category": "input_receipt_name",
+          "occurrences": 1
+        },
+        {
+          "from": "full_794_crate_cargo_inputs",
+          "to": "full_795_crate_cargo_inputs",
+          "category": "receipt_identity_label",
+          "occurrences": 1
+        },
+        {
+          "from": "== 4158",
+          "to": "== EXPECTED_ARCHIVE_MEMBERS",
+          "category": "observed_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "== 368711988",
+          "to": "== EXPECTED_EXPANDED_BYTES",
+          "category": "observed_archive_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "== 794",
+          "to": "== 795",
+          "category": "source_inventory_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "(OUT / 'ci9ebe-mechanism-job.log')",
+          "to": "RAW_LOG",
+          "category": "raw_log_location",
+          "occurrences": 2
+        },
+        {
+          "from": "    acceptance_lines = [line.split",
+          "to": "    assert RAW_LOG.stat().st_size == 71365 and sha(RAW_LOG.read_bytes()) == 'ced82c7d9cd4cbb8571f5752dde3919495ce7182f7f2a605078162971285a529'\n    acceptance_lines = [line.split",
+          "category": "additional_raw_log_identity_check",
+          "occurrences": 1
+        },
+        {
+          "from": "ci9ebe-mechanism-archive-inventory.json",
+          "to": "ci_ffdc_mechanism_archive_inventory.json",
+          "category": "output_name",
+          "occurrences": 1
+        },
+        {
+          "from": "'workflow_run_id': 37724421493, 'job_id': 113139223006, 'artifact_id': 11527337724",
+          "to": "'workflow_run_id': 37729686665, 'job_id': 113155755150, 'artifact_id': 11529353250",
+          "category": "workflow_identity",
+          "occurrences": 1
+        },
+        {
+          "from": "reference_full_794_inputs",
+          "to": "reference_full_795_inputs",
+          "category": "receipt_identity_label",
+          "occurrences": 1
+        },
+        {
+          "from": "ci9ebe-mechanism-independent-receipt.json",
+          "to": "ci_ffdc_mechanism_independent_receipt.json",
+          "category": "output_name",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "raw_logs": [
+    {
+      "file": "ci_ffdc_engineering_job.log",
+      "sha256": "6b4b52cd3b3cd96a4e6d7d374d5e9644abfa7c619df2944568443f2a78be8a78",
+      "utf8_bytes": 1531741,
+      "workflow_run_id": 37729686671,
+      "job_id": 113155754732,
+      "source": "Official GitHub job-log tool, retrieved once; original UTF-8 BOM retained."
+    },
+    {
+      "file": "ci_ffdc_mechanism_job.log",
+      "sha256": "ced82c7d9cd4cbb8571f5752dde3919495ce7182f7f2a605078162971285a529",
+      "utf8_bytes": 71365,
+      "workflow_run_id": 37729686665,
+      "job_id": 113155755150,
+      "source": "Official GitHub job-log tool, retrieved once; original UTF-8 BOM retained."
+    }
+  ],
+  "observed_identity_preflight": {
+    "workflow_run_id": 37731271464,
+    "job_id": 113160685102,
+    "raw_job_log": {
+      "sha256": "d9ba3eac16974808d58e3a83f38297c944cf03e01f725ce4234748074e57d828",
+      "utf8_bytes": 140320
+    },
+    "independent_read": "The non-author reviewer fetched the official preflight job raw log and parsed these two actual P7_AUDIT_PREFLIGHT_JSON records; this establishes identity constants only, not semantic artifact acceptance.",
+    "records": [
+      {
+        "kind": "engineering",
+        "artifact_id": 11529288057,
+        "archive_sha256": "8ac8223cc3278e4316fa83050ad40850985303f7041aa53919fb94650bdcb6d0",
+        "archive_bytes": 220992,
+        "member_count": 26,
+        "expanded_bytes": 3120623,
+        "semantic_acceptance": "not_granted; inventory only",
+        "source-before.json": {
+          "input_count": 795,
+          "manifest_sha256": "5b0f2f129500327a23a44a10b8f4530db6260273481698c9bb5c7cbe65fbc114",
+          "source_commit": "683d8882c108e4e9be68ebac127f3c709e329711",
+          "source_tree": "9e59b41540eb3769e9ca0a787c9ed60441259d20"
+        },
+        "source-after.json": {
+          "input_count": 795,
+          "manifest_sha256": "5b0f2f129500327a23a44a10b8f4530db6260273481698c9bb5c7cbe65fbc114",
+          "source_commit": "683d8882c108e4e9be68ebac127f3c709e329711",
+          "source_tree": "9e59b41540eb3769e9ca0a787c9ed60441259d20"
+        },
+        "resource_owner_observations": [
+          {
+            "member": "worker-contention/seed-19/held-before.json",
+            "stage": "held-before",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-19/summary.json",
+            "stage": "after-model-drain",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-19/summary.json",
+            "stage": "held-after",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-19/summary.json",
+            "stage": "quiet-before",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-43/held-before.json",
+            "stage": "held-before",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-43/summary.json",
+            "stage": "after-model-drain",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-43/summary.json",
+            "stage": "held-after",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-43/summary.json",
+            "stage": "quiet-before",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-7/held-before.json",
+            "stage": "held-before",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-7/summary.json",
+            "stage": "after-model-drain",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-7/summary.json",
+            "stage": "held-after",
+            "pid": 12783
+          },
+          {
+            "member": "worker-contention/seed-7/summary.json",
+            "stage": "quiet-before",
+            "pid": 12783
+          }
+        ],
+        "resource_owner_pids": [
+          12783
+        ]
+      },
+      {
+        "kind": "mechanism",
+        "artifact_id": 11529353250,
+        "archive_sha256": "c31b0656a8e7e4e091710d2c43b1d399c5b36820bd1ffeb97a373005ff052233",
+        "archive_bytes": 91141978,
+        "member_count": 4163,
+        "expanded_bytes": 368834949,
+        "semantic_acceptance": "not_granted; inventory only"
+      }
+    ]
+  },
+  "expected_environment_identity": {
+    "P7_AUDIT_EXPECTED_WORKER_PID": "12783",
+    "P7_AUDIT_EXPECTED_MECHANISM_MEMBERS": "4163",
+    "P7_AUDIT_EXPECTED_MECHANISM_EXPANDED_BYTES": "368834949"
+  }
+}

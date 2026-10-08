@@ -1,0 +1,142 @@
+{
+  "controls": [
+    {
+      "attack": false,
+      "parent_returncode": 0,
+      "tree": {
+        "attempts": [],
+        "exec_command": [
+          "/usr/bin/python3",
+          "-I",
+          "-S",
+          "-c",
+          "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n libc=ctypes.CDLL(None,use_errno=True); fds=(ctypes.c_int*2)()\n libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]\n assert libc.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET,0,fds)==0\n os.write(fds[0],b'ipc'); assert os.read(fds[1],3)==b'ipc'\n libc.recvfrom.argtypes=[ctypes.c_int,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_int,ctypes.c_void_p,ctypes.c_void_p]\n os.write(fds[0],b'12345678'); buf=ctypes.create_string_buffer(8)\n assert libc.recvfrom(fds[1],buf,8,0,None,None)==8 and buf.raw==b'12345678'\n os.close(fds[0]); os.close(fds[1])\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.waitstatus_to_exitcode(status)==0\nprint('owned child waited; parent exits zero',flush=True)\n"
+        ],
+        "local_anonymous_ipc": [
+          {
+            "created_at_us": 1791435282912532,
+            "endpoints": [
+              {
+                "fd": 3,
+                "inode": 20306,
+                "peer": 20307,
+                "protocol": "UNIX"
+              },
+              {
+                "fd": 4,
+                "inode": 20307,
+                "peer": 20306,
+                "protocol": "UNIX"
+              }
+            ],
+            "kind": "SOCK_SEQPACKET",
+            "line": 1,
+            "pid": 3423,
+            "raw": "socketpair(AF_UNIX, SOCK_SEQPACKET, 0, [3<UNIX:[20306->20307]>, 4<UNIX:[20307->20306]>]) = 0",
+            "scope": "anonymous AF_UNIX pair with reciprocal kernel peer inodes",
+            "syscall": "socketpair"
+          },
+          {
+            "created_at_us": 1791435282912532,
+            "endpoint_inode": 20307,
+            "fd_at_receive": 4,
+            "kind": "SOCK_SEQPACKET",
+            "line": 2,
+            "pair_creation_line": 1,
+            "pair_creator_pid": 3423,
+            "peer_inode": 20306,
+            "pid": 3423,
+            "raw": "recvfrom(4<UNIX:[20307->20306]>, \"12345678\", 8, 0, NULL, NULL) = 8",
+            "scope": "eight-byte no-address receive on this product tree's new anonymous pair",
+            "syscall": "recvfrom"
+          }
+        ],
+        "processes_and_threads": {
+          "3384": {
+            "from_line": 5,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "96a739dd85114aa0fca79094699cbca3aa92e44c0b4a66b19024f2b080fac9aa"
+          },
+          "3422": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "acd0e01196abc07c15839e5dccdfa199140789e7917112964f3b2bf4655b47ac"
+          },
+          "3423": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "f6ef9b38365214772a8c933754b7fe31281a844b579def5aa68d21ea9faa732a"
+          }
+        },
+        "root_pid": 3384,
+        "root_terminal": {
+          "exit_code": 0
+        }
+      }
+    },
+    {
+      "attack": true,
+      "parent_returncode": 0,
+      "tree": {
+        "attempts": [
+          {
+            "pid": 3537,
+            "reason": "SIGSYS in guarded product tree"
+          },
+          {
+            "known_network_syscall": true,
+            "line": 1,
+            "pid": 3537,
+            "raw": "socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 41",
+            "syscall": "socket"
+          }
+        ],
+        "exec_command": [
+          "/usr/bin/python3",
+          "-I",
+          "-S",
+          "-c",
+          "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\nprint('owned child waited; parent exits zero',flush=True)\n"
+        ],
+        "local_anonymous_ipc": [],
+        "processes_and_threads": {
+          "3469": {
+            "from_line": 5,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "da7f9e098af290f4c88ce2b0940adef07bc46484701fad06287b43287583ead7"
+          },
+          "3518": {
+            "from_line": 1,
+            "terminal": {
+              "exit_code": 0
+            },
+            "trace_sha256": "4f27570da3e2e6837eabf68fcb93b2aff9f11ad67a461ed72ae9128a55de6d66"
+          },
+          "3537": {
+            "from_line": 1,
+            "terminal": {
+              "signal": "SIGSYS"
+            },
+            "trace_sha256": "8b494dc27f4cab5a74c9ee41c0c9e910099fb4767d99f14f82a1d9fa74604ab6"
+          }
+        },
+        "root_pid": 3469,
+        "root_terminal": {
+          "exit_code": 0
+        }
+      }
+    }
+  ],
+  "guard_sha256": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
+  "schema_version": 1,
+  "status": "passed",
+  "verifier_sha256": "66f17363721e1186d3087ef3259919e2c9c7782cfba18cda9662fd0706ca17d1"
+}

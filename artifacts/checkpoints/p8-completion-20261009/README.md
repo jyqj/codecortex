@@ -72,3 +72,25 @@ The original task baseline remains 192 total, 163 complete, 29 outstanding
 until the requested full acceptance evidence is available.
 `pr-triage-applied.json` records the subsequent exact-head recheck and additive
 labels: 43 `needs-review`, 11 `needs-ci-fix`, and one `needs-rebase`.
+
+## Final implementation review and engineering originals
+
+`independent-source-review.json` accepts the source and validation inputs at
+`7e4e4fefb8a5302b90579a41f4d334fe176aeb3f`: 1,087 complete source inputs,
+22 changed source inputs, and 135 validation inputs. It records the independent
+reviewers and their authorship boundaries. Its scope does not certify runtime,
+quality, release, or TODO completion.
+
+`final-engineering/` preserves 1,518 original files, including actual failures,
+cancelled builds, capacity refusals, passing controls, complete short runtime
+build/observation pairs, and the exact local source history. Both runtime pairs
+were extracted from the archives and passed their original offline verifier.
+The 350 final Python controls and the 79 independent platform controls passed.
+The complete original build logs and binaries remain available for inspection.
+See that directory's README, manifest, and verification receipt for exact scope,
+source identities, hashes, and reproduction commands.
+
+The original task baseline remains 163 of 192 complete, with 29 outstanding.
+Five-scale N=30 execution, lifecycle distributions, full recovery and version
+rollback, eight fresh platform builds, and the one-hour soak still require
+separate formal execution evidence before any original task can be closed.

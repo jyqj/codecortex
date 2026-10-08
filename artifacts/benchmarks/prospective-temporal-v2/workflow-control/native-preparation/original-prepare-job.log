@@ -1,0 +1,922 @@
+﻿2026-10-08T10:53:23.7617288Z Current runner version: '2.337.0'
+2026-10-08T10:53:23.7638278Z ##[group]Runner Image Provisioner
+2026-10-08T10:53:23.7639072Z Hosted Compute Agent
+2026-10-08T10:53:23.7639952Z Version: 20260901.588
+2026-10-08T10:53:23.7640506Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-08T10:53:23.7641139Z Build Date: 2026-09-01T19:56:44Z
+2026-10-08T10:53:23.7641736Z Worker ID: {41c9588a-9943-4cb4-a811-f20b27ee5efd}
+2026-10-08T10:53:23.7642337Z Azure Region: centralus
+2026-10-08T10:53:23.7642840Z ##[endgroup]
+2026-10-08T10:53:23.7645093Z ##[group]Operating System
+2026-10-08T10:53:23.7645686Z Ubuntu
+2026-10-08T10:53:23.7646186Z 24.04.5
+2026-10-08T10:53:23.7646625Z LTS
+2026-10-08T10:53:23.7647075Z ##[endgroup]
+2026-10-08T10:53:23.7647554Z ##[group]Runner Image
+2026-10-08T10:53:23.7648090Z Image: ubuntu-24.04
+2026-10-08T10:53:23.7648585Z Version: 20260927.320.1
+2026-10-08T10:53:23.7649656Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T10:53:23.7650945Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-08T10:53:23.7651766Z ##[endgroup]
+2026-10-08T10:53:23.7652782Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T10:53:23.7655341Z Actions: read
+2026-10-08T10:53:23.7655887Z Contents: read
+2026-10-08T10:53:23.7656387Z Metadata: read
+2026-10-08T10:53:23.7656849Z ##[endgroup]
+2026-10-08T10:53:23.7658716Z Secret source: Actions
+2026-10-08T10:53:23.7659543Z Cache mode: write
+2026-10-08T10:53:23.7660186Z Prepare workflow directory
+2026-10-08T10:53:23.7999470Z Prepare all required actions
+2026-10-08T10:53:23.8060589Z Getting action download info
+2026-10-08T10:53:24.0622638Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-08T10:53:24.1452619Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-10-08T10:53:24.5720683Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-08T10:53:24.8172833Z Complete job name: prepare_data
+2026-10-08T10:53:24.8834651Z ##[group]Run actions/checkout@v4
+2026-10-08T10:53:24.8835562Z with:
+2026-10-08T10:53:24.8836077Z   path: utility
+2026-10-08T10:53:24.8836597Z   fetch-depth: 0
+2026-10-08T10:53:24.8837112Z   persist-credentials: false
+2026-10-08T10:53:24.8837736Z   repository: jyqj/codecortex
+2026-10-08T10:53:24.8841500Z   token: ***
+2026-10-08T10:53:24.8842002Z   ssh-strict: true
+2026-10-08T10:53:24.8842510Z   ssh-user: git
+2026-10-08T10:53:24.8842987Z   clean: true
+2026-10-08T10:53:24.8843530Z   sparse-checkout-cone-mode: true
+2026-10-08T10:53:24.8844790Z   fetch-tags: false
+2026-10-08T10:53:24.8845366Z   show-progress: true
+2026-10-08T10:53:24.8845919Z   lfs: false
+2026-10-08T10:53:24.8846398Z   submodules: false
+2026-10-08T10:53:24.8846888Z   set-safe-directory: true
+2026-10-08T10:53:24.8847477Z   allow-unsafe-pr-checkout: false
+2026-10-08T10:53:24.8848296Z env:
+2026-10-08T10:53:24.8848781Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:53:24.8849394Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:53:24.8850071Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:53:24.8850690Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:53:24.8851253Z ##[endgroup]
+2026-10-08T10:53:24.9721871Z Syncing repository: jyqj/codecortex
+2026-10-08T10:53:24.9723708Z ##[group]Getting Git version info
+2026-10-08T10:53:24.9724957Z Working directory is '/home/runner/work/codecortex/codecortex/utility'
+2026-10-08T10:53:24.9726268Z [command]/usr/bin/git version
+2026-10-08T10:53:24.9773793Z git version 2.55.0
+2026-10-08T10:53:24.9788707Z ##[endgroup]
+2026-10-08T10:53:24.9799666Z Temporarily overriding HOME='/home/runner/work/_temp/51bdf5a7-a11d-4acc-8076-f6bd87725656' before making global git config changes
+2026-10-08T10:53:24.9801132Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:53:24.9805624Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/utility
+2026-10-08T10:53:24.9842671Z ##[group]Initializing the repository
+2026-10-08T10:53:24.9847026Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex/utility
+2026-10-08T10:53:24.9934815Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T10:53:24.9936290Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T10:53:24.9937306Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T10:53:24.9938126Z hint: call:
+2026-10-08T10:53:24.9938605Z hint:
+2026-10-08T10:53:24.9939203Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T10:53:24.9940282Z hint:
+2026-10-08T10:53:24.9940936Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T10:53:24.9941907Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T10:53:24.9942750Z hint:
+2026-10-08T10:53:24.9943255Z hint: 	git branch -m <name>
+2026-10-08T10:53:24.9943938Z hint:
+2026-10-08T10:53:24.9944742Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T10:53:24.9948968Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/utility/.git/
+2026-10-08T10:53:24.9956105Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-08T10:53:24.9994162Z ##[endgroup]
+2026-10-08T10:53:24.9995169Z ##[group]Disabling automatic garbage collection
+2026-10-08T10:53:24.9996477Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T10:53:25.0020361Z ##[endgroup]
+2026-10-08T10:53:25.0021618Z ##[group]Setting up auth
+2026-10-08T10:53:25.0026608Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:53:25.0050541Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:53:25.0313475Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:53:25.0338533Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:53:25.0496297Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:53:25.0519766Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:53:25.0675713Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T10:53:25.0704501Z ##[endgroup]
+2026-10-08T10:53:25.0705659Z ##[group]Fetching the repository
+2026-10-08T10:53:25.0712038Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-08T10:53:41.1242825Z From https://github.com/jyqj/codecortex
+2026-10-08T10:53:41.1245338Z  * [new branch]        audit/public-dev-kind-review-20261003 -> origin/audit/public-dev-kind-review-20261003
+2026-10-08T10:53:41.1246627Z  * [new branch]        audit/public-dev-pygo-v2-independent-20261003 -> origin/audit/public-dev-pygo-v2-independent-20261003
+2026-10-08T10:53:41.1247735Z  * [new branch]        audit/v19-development-baseline -> origin/audit/v19-development-baseline
+2026-10-08T10:53:41.1248797Z  * [new branch]        audit/v19-four-repo-dev-admission -> origin/audit/v19-four-repo-dev-admission
+2026-10-08T10:53:41.1249745Z  * [new branch]        audit/v19-gin-dev-admission -> origin/audit/v19-gin-dev-admission
+2026-10-08T10:53:41.1250488Z  * [new branch]        audit/v19-global-protocol -> origin/audit/v19-global-protocol
+2026-10-08T10:53:41.1251246Z  * [new branch]        audit/v19-public-corpus-readiness -> origin/audit/v19-public-corpus-readiness
+2026-10-08T10:53:41.1252197Z  * [new branch]        audit/v19-public-index-failure-diagnosis -> origin/audit/v19-public-index-failure-diagnosis
+2026-10-08T10:53:41.1253576Z  * [new branch]        audit/v19-two-repo-admission -> origin/audit/v19-two-repo-admission
+2026-10-08T10:53:41.1254742Z  * [new branch]        audit/v24-failure-triage-20261003 -> origin/audit/v24-failure-triage-20261003
+2026-10-08T10:53:41.1255746Z  * [new branch]        backfill-phase-costs-v2-20261003 -> origin/backfill-phase-costs-v2-20261003
+2026-10-08T10:53:41.1256802Z  * [new branch]        candidate/integrate-gate-parallel-retry-20261003 -> origin/candidate/integrate-gate-parallel-retry-20261003
+2026-10-08T10:53:41.1258006Z  * [new branch]        candidate/integrate-startup-gate-parallel-retry-20261003 -> origin/candidate/integrate-startup-gate-parallel-retry-20261003
+2026-10-08T10:53:41.1259181Z  * [new branch]        candidate/pr123-attempt-pipeline -> origin/candidate/pr123-attempt-pipeline
+2026-10-08T10:53:41.1260293Z  * [new branch]        capability-snapshot-optimization-20261003 -> origin/capability-snapshot-optimization-20261003
+2026-10-08T10:53:41.1261440Z  * [new branch]        cloud/cc-search-budget-diagnostic -> origin/cloud/cc-search-budget-diagnostic
+2026-10-08T10:53:41.1262520Z  * [new branch]        codecortex-source-registry-v6-20261006-r1 -> origin/codecortex-source-registry-v6-20261006-r1
+2026-10-08T10:53:41.1263671Z  * [new branch]        codex/bounded-db-publication -> origin/codex/bounded-db-publication
+2026-10-08T10:53:41.1264700Z  * [new branch]        codex/cloud-cache-key-review -> origin/codex/cloud-cache-key-review
+2026-10-08T10:53:41.1265579Z  * [new branch]        codex/cloud-cross-build-validation -> origin/codex/cloud-cross-build-validation
+2026-10-08T10:53:41.1266565Z  * [new branch]        codex/cloud-dependency-security -> origin/codex/cloud-dependency-security
+2026-10-08T10:53:41.1267243Z  * [new branch]        codex/cloud-express-dev-review -> origin/codex/cloud-express-dev-review
+2026-10-08T10:53:41.1268181Z  * [new branch]        codex/cloud-express-repair-review -> origin/codex/cloud-express-repair-review
+2026-10-08T10:53:41.1269054Z  * [new branch]        codex/cloud-gin-dev-review -> origin/codex/cloud-gin-dev-review
+2026-10-08T10:53:41.1269722Z  * [new branch]        codex/cloud-gin-repair-review -> origin/codex/cloud-gin-repair-review
+2026-10-08T10:53:41.1270371Z  * [new branch]        codex/cloud-index-fix-integration -> origin/codex/cloud-index-fix-integration
+2026-10-08T10:53:41.1271044Z  * [new branch]        codex/cloud-p0-corpus-lock-repair -> origin/codex/cloud-p0-corpus-lock-repair
+2026-10-08T10:53:41.1271747Z  * [new branch]        codex/cloud-p0-gold-bounded-audit -> origin/codex/cloud-p0-gold-bounded-audit
+2026-10-08T10:53:41.1272490Z  * [new branch]        codex/cloud-p7-014-integration -> origin/codex/cloud-p7-014-integration
+2026-10-08T10:53:41.1273130Z  * [new branch]        codex/cloud-p7-014-lifecycle -> origin/codex/cloud-p7-014-lifecycle
+2026-10-08T10:53:41.1273791Z  * [new branch]        codex/cloud-p7-baseline-diagnosis -> origin/codex/cloud-p7-baseline-diagnosis
+2026-10-08T10:53:41.1275063Z  * [new branch]        codex/cloud-p7-cache-identity-review -> origin/codex/cloud-p7-cache-identity-review
+2026-10-08T10:53:41.1275839Z  * [new branch]        codex/cloud-p7-contention-validation -> origin/codex/cloud-p7-contention-validation
+2026-10-08T10:53:41.1276512Z  * [new branch]        codex/cloud-p7-crash-preparation -> origin/codex/cloud-p7-crash-preparation
+2026-10-08T10:53:41.1277241Z  * [new branch]        codex/cloud-p7-empty-test-independent-review -> origin/codex/cloud-p7-empty-test-independent-review
+2026-10-08T10:53:41.1278015Z  * [new branch]        codex/cloud-p7-empty-test-population -> origin/codex/cloud-p7-empty-test-population
+2026-10-08T10:53:41.1278744Z  * [new branch]        codex/cloud-p7-fixture-marker-publication -> origin/codex/cloud-p7-fixture-marker-publication
+2026-10-08T10:53:41.1279476Z  * [new branch]        codex/cloud-p7-formal-gate-scope -> origin/codex/cloud-p7-formal-gate-scope
+2026-10-08T10:53:41.1280328Z  * [new branch]        codex/cloud-p7-integration -> origin/codex/cloud-p7-integration
+2026-10-08T10:53:41.1281189Z  * [new branch]        codex/cloud-p7-integration-format -> origin/codex/cloud-p7-integration-format
+2026-10-08T10:53:41.1281884Z  * [new branch]        codex/cloud-p7-integration-review-base -> origin/codex/cloud-p7-integration-review-base
+2026-10-08T10:53:41.1282563Z  * [new branch]        codex/cloud-p7-lifecycle-fences -> origin/codex/cloud-p7-lifecycle-fences
+2026-10-08T10:53:41.1283207Z  * [new branch]        codex/cloud-p7-model-transition -> origin/codex/cloud-p7-model-transition
+2026-10-08T10:53:41.1284101Z  * [new branch]        codex/cloud-p7-query-encoding-service -> origin/codex/cloud-p7-query-encoding-service
+2026-10-08T10:53:41.1284899Z  * [new branch]        codex/cloud-p7-query-optin-integration -> origin/codex/cloud-p7-query-optin-integration
+2026-10-08T10:53:41.1285590Z  * [new branch]        codex/cloud-p7-query-production -> origin/codex/cloud-p7-query-production
+2026-10-08T10:53:41.1286265Z  * [new branch]        codex/cloud-p7-recovery-integration -> origin/codex/cloud-p7-recovery-integration
+2026-10-08T10:53:41.1287044Z  * [new branch]        codex/cloud-p7-recovery-lifecycle-review-base -> origin/codex/cloud-p7-recovery-lifecycle-review-base
+2026-10-08T10:53:41.1287878Z  * [new branch]        codex/cloud-p7-recovery-query-cache-review-base -> origin/codex/cloud-p7-recovery-query-cache-review-base
+2026-10-08T10:53:41.1288741Z  * [new branch]        codex/cloud-p7-recovery-retry-review-base -> origin/codex/cloud-p7-recovery-retry-review-base
+2026-10-08T10:53:41.1289529Z  * [new branch]        codex/cloud-p7-recovery-worker-review-base -> origin/codex/cloud-p7-recovery-worker-review-base
+2026-10-08T10:53:41.1290284Z  * [new branch]        codex/cloud-p7-release-resource-large -> origin/codex/cloud-p7-release-resource-large
+2026-10-08T10:53:41.1291025Z  * [new branch]        codex/cloud-p7-release-resource-small -> origin/codex/cloud-p7-release-resource-small
+2026-10-08T10:53:41.1291855Z  * [new branch]        codex/cloud-p7-resource-hotspot-diagnostic -> origin/codex/cloud-p7-resource-hotspot-diagnostic
+2026-10-08T10:53:41.1292596Z  * [new branch]        codex/cloud-p7-resource-prepared -> origin/codex/cloud-p7-resource-prepared
+2026-10-08T10:53:41.1293346Z  * [new branch]        codex/cloud-p7-resource-review-intake -> origin/codex/cloud-p7-resource-review-intake
+2026-10-08T10:53:41.1294143Z  * [new branch]        codex/cloud-p7-seed-bind-limit -> origin/codex/cloud-p7-seed-bind-limit
+2026-10-08T10:53:41.1294837Z  * [new branch]        codex/cloud-p7-staging-gc-prepared -> origin/codex/cloud-p7-staging-gc-prepared
+2026-10-08T10:53:41.1295503Z  * [new branch]        codex/cloud-p7-test-isolation -> origin/codex/cloud-p7-test-isolation
+2026-10-08T10:53:41.1296117Z  * [new branch]        codex/cloud-p7-v05-public-scope -> origin/codex/cloud-p7-v05-public-scope
+2026-10-08T10:53:41.1296807Z  * [new branch]        codex/cloud-p7-v11-cache-consumption -> origin/codex/cloud-p7-v11-cache-consumption
+2026-10-08T10:53:41.1297507Z  * [new branch]        codex/cloud-p7-v11-cache-key-matrix -> origin/codex/cloud-p7-v11-cache-key-matrix
+2026-10-08T10:53:41.1298265Z  * [new branch]        codex/cloud-p7-v11-generation-contract -> origin/codex/cloud-p7-v11-generation-contract
+2026-10-08T10:53:41.1299037Z  * [new branch]        codex/cloud-p7-v11-generation-snapshot-fix -> origin/codex/cloud-p7-v11-generation-snapshot-fix
+2026-10-08T10:53:41.1299821Z  * [new branch]        codex/cloud-p7-v16-offline-oracle -> origin/codex/cloud-p7-v16-offline-oracle
+2026-10-08T10:53:41.1300571Z  * [new branch]        codex/cloud-p7-v18-fault-contract -> origin/codex/cloud-p7-v18-fault-contract
+2026-10-08T10:53:41.1301246Z  * [new branch]        codex/cloud-p7-v18-integration -> origin/codex/cloud-p7-v18-integration
+2026-10-08T10:53:41.1301902Z  * [new branch]        codex/cloud-p7-v19-current-local -> origin/codex/cloud-p7-v19-current-local
+2026-10-08T10:53:41.1302578Z  * [new branch]        codex/cloud-semantic-chunk-lints -> origin/codex/cloud-semantic-chunk-lints
+2026-10-08T10:53:41.1303338Z  * [new branch]        codex/cloud-semantic-http-transport -> origin/codex/cloud-semantic-http-transport
+2026-10-08T10:53:41.1304189Z  * [new branch]        codex/cloud-semantic-provider-factory -> origin/codex/cloud-semantic-provider-factory
+2026-10-08T10:53:41.1304894Z  * [new branch]        codex/cloud-semantic-test-lints -> origin/codex/cloud-semantic-test-lints
+2026-10-08T10:53:41.1305600Z  * [new branch]        codex/cloud-typescript-dev-review -> origin/codex/cloud-typescript-dev-review
+2026-10-08T10:53:41.1306341Z  * [new branch]        codex/cloud-typescript-remaining-review -> origin/codex/cloud-typescript-remaining-review
+2026-10-08T10:53:41.1307045Z  * [new branch]        codex/cloud-v11-consumption-review -> origin/codex/cloud-v11-consumption-review
+2026-10-08T10:53:41.1307971Z  * [new branch]        codex/cloud-v16-cache-read-bounds -> origin/codex/cloud-v16-cache-read-bounds
+2026-10-08T10:53:41.1308849Z  * [new branch]        codex/cloud-v16-resource-validation -> origin/codex/cloud-v16-resource-validation
+2026-10-08T10:53:41.1309540Z  * [new branch]        codex/cloud-verified-chunk-qname -> origin/codex/cloud-verified-chunk-qname
+2026-10-08T10:53:41.1310499Z  * [new branch]        codex/native-adapter-diagnostic-20261003 -> origin/codex/native-adapter-diagnostic-20261003
+2026-10-08T10:53:41.1311443Z  * [new branch]        codex/packing-scope-v1-20261003 -> origin/codex/packing-scope-v1-20261003
+2026-10-08T10:53:41.1312126Z  * [new branch]        codex/python-root-provenance -> origin/codex/python-root-provenance
+2026-10-08T10:53:41.1312759Z  * [new branch]        codex/qname-packing-100k-20261004 -> origin/codex/qname-packing-100k-20261004
+2026-10-08T10:53:41.1313355Z  * [new branch]        corpus/v19-express-100  -> origin/corpus/v19-express-100
+2026-10-08T10:53:41.1314055Z  * [new branch]        corpus/v19-express-author -> origin/corpus/v19-express-author
+2026-10-08T10:53:41.1314802Z  * [new branch]        corpus/v19-express-dev-review-fixes -> origin/corpus/v19-express-dev-review-fixes
+2026-10-08T10:53:41.1315841Z  * [new branch]        corpus/v19-express-dev-supplement -> origin/corpus/v19-express-dev-supplement
+2026-10-08T10:53:41.1316441Z  * [new branch]        corpus/v19-gin-author   -> origin/corpus/v19-gin-author
+2026-10-08T10:53:41.1317021Z  * [new branch]        corpus/v19-requests-author -> origin/corpus/v19-requests-author
+2026-10-08T10:53:41.1317640Z  * [new branch]        corpus/v19-requests-dev-extension -> origin/corpus/v19-requests-dev-extension
+2026-10-08T10:53:41.1318277Z  * [new branch]        corpus/v19-requests-f0022-scope -> origin/corpus/v19-requests-f0022-scope
+2026-10-08T10:53:41.1319406Z  * [new branch]        corpus/v19-requests-license -> origin/corpus/v19-requests-license
+2026-10-08T10:53:41.1320204Z  * [new branch]        corpus/v19-typescript-author -> origin/corpus/v19-typescript-author
+2026-10-08T10:53:41.1321030Z  * [new branch]        cursor/deep-index-optimization-1dab -> origin/cursor/deep-index-optimization-1dab
+2026-10-08T10:53:41.1321788Z  * [new branch]        design/batched-cache-durability-20261003 -> origin/design/batched-cache-durability-20261003
+2026-10-08T10:53:41.1322508Z  * [new branch]        dev-corpus-lock-reconcile-20261003 -> origin/dev-corpus-lock-reconcile-20261003
+2026-10-08T10:53:41.1323171Z  * [new branch]        dev-paired-requests-20261004 -> origin/dev-paired-requests-20261004
+2026-10-08T10:53:41.1323772Z  * [new branch]        diag/cache-put-costs-20261003 -> origin/diag/cache-put-costs-20261003
+2026-10-08T10:53:41.1324836Z  * [new branch]        diag/p5e-fixed-boundary-review-20261003 -> origin/diag/p5e-fixed-boundary-review-20261003
+2026-10-08T10:53:41.1325589Z  * [new branch]        diag/p5e-stage-receipts-20261003 -> origin/diag/p5e-stage-receipts-20261003
+2026-10-08T10:53:41.1326300Z  * [new branch]        diagnostics/gin-native-regression-20261004 -> origin/diagnostics/gin-native-regression-20261004
+2026-10-08T10:53:41.1327081Z  * [new branch]        diagnostics/requests-native-zero-20261004 -> origin/diagnostics/requests-native-zero-20261004
+2026-10-08T10:53:41.1327900Z  * [new branch]        dot/cpp-cvref-fts-v28-20261006-e7745566 -> origin/dot/cpp-cvref-fts-v28-20261006-e7745566
+2026-10-08T10:53:41.1328685Z  * [new branch]        dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55 -> origin/dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55
+2026-10-08T10:53:41.1329623Z  * [new branch]        eval/public-dev-declaration-kind-v2-admission -> origin/eval/public-dev-declaration-kind-v2-admission
+2026-10-08T10:53:41.1330465Z  * [new branch]        evidence/baseline-cloud-20261003-build-blocked -> origin/evidence/baseline-cloud-20261003-build-blocked
+2026-10-08T10:53:41.1331229Z  * [new branch]        evidence/candidate-100k-gate-20261003 -> origin/evidence/candidate-100k-gate-20261003
+2026-10-08T10:53:41.1331973Z  * [new branch]        evidence/independent-100k-release-20261003 -> origin/evidence/independent-100k-release-20261003
+2026-10-08T10:53:41.1332702Z  * [new branch]        evidence/localwidth4-100k-paired-20261003 -> origin/evidence/localwidth4-100k-paired-20261003
+2026-10-08T10:53:41.1333689Z  * [new branch]        evidence/parallel-startup-100k-paired-20261003 -> origin/evidence/parallel-startup-100k-paired-20261003
+2026-10-08T10:53:41.1335036Z  * [new branch]        evidence/public-dev-current-group-js-20261003 -> origin/evidence/public-dev-current-group-js-20261003
+2026-10-08T10:53:41.1336403Z  * [new branch]        evidence/public-dev-paired-express-20261004 -> origin/evidence/public-dev-paired-express-20261004
+2026-10-08T10:53:41.1337563Z  * [new branch]        evidence/public-dev-paired-gin-20261004 -> origin/evidence/public-dev-paired-gin-20261004
+2026-10-08T10:53:41.1338876Z  * [new branch]        evidence/public-dev-paired-typescript-20261004 -> origin/evidence/public-dev-paired-typescript-20261004
+2026-10-08T10:53:41.1340314Z  * [new branch]        feat/declaration-identity-resource-contract-20261004 -> origin/feat/declaration-identity-resource-contract-20261004
+2026-10-08T10:53:41.1341834Z  * [new branch]        feat/final-validation-work-20261007 -> origin/feat/final-validation-work-20261007
+2026-10-08T10:53:41.1343465Z  * [new branch]        feat/p7-engineering-reviewed-union-20261007 -> origin/feat/p7-engineering-reviewed-union-20261007
+2026-10-08T10:53:41.1344885Z  * [new branch]        feat/p7-gc-unlink-reviewed-20261007 -> origin/feat/p7-gc-unlink-reviewed-20261007
+2026-10-08T10:53:41.1346101Z  * [new branch]        feat/p7-semantic-coverage-retention-reviewed-20261007 -> origin/feat/p7-semantic-coverage-retention-reviewed-20261007
+2026-10-08T10:53:41.1347469Z  * [new branch]        feat/p7-strategy-ablation-reviewed-20261007 -> origin/feat/p7-strategy-ablation-reviewed-20261007
+2026-10-08T10:53:41.1348617Z  * [new branch]        feat/python-capture-revalidation-20261007 -> origin/feat/python-capture-revalidation-20261007
+2026-10-08T10:53:41.1349682Z  * [new branch]        feat/python-declaration-adapter -> origin/feat/python-declaration-adapter
+2026-10-08T10:53:41.1350796Z  * [new branch]        fifo-100k-paired-decision-20261003 -> origin/fifo-100k-paired-decision-20261003
+2026-10-08T10:53:41.1351722Z  * [new branch]        fix/ci-schema-v25-contract -> origin/fix/ci-schema-v25-contract
+2026-10-08T10:53:41.1352649Z  * [new branch]        fix/contextual-member-ranking-20261004 -> origin/fix/contextual-member-ranking-20261004
+2026-10-08T10:53:41.1353630Z  * [new branch]        fix/cpp-boundary-declarator -> origin/fix/cpp-boundary-declarator
+2026-10-08T10:53:41.1354869Z  * [new branch]        fix/cpp-namespace-function-identity-20261005 -> origin/fix/cpp-namespace-function-identity-20261005
+2026-10-08T10:53:41.1356100Z  * [new branch]        fix/cpp-namespace-source-registry-v5-20261005 -> origin/fix/cpp-namespace-source-registry-v5-20261005
+2026-10-08T10:53:41.1357233Z  * [new branch]        fix/direct-writer-schema-20261003 -> origin/fix/direct-writer-schema-20261003
+2026-10-08T10:53:41.1358485Z  * [new branch]        fix/go-nested-call-identity -> origin/fix/go-nested-call-identity
+2026-10-08T10:53:41.1359421Z  * [new branch]        fix/hydration-fence-completeness -> origin/fix/hydration-fence-completeness
+2026-10-08T10:53:41.1360106Z  * [new branch]        fix/mcp-startup-project-errors -> origin/fix/mcp-startup-project-errors
+2026-10-08T10:53:41.1360807Z  * [new branch]        fix/member-source-registry-v4-20261005 -> origin/fix/member-source-registry-v4-20261005
+2026-10-08T10:53:41.1361719Z  * [new branch]        fix/nonembedding-facts-and-benchmark-v3 -> origin/fix/nonembedding-facts-and-benchmark-v3
+2026-10-08T10:53:41.1362616Z  * [new branch]        fix/nonembedding-facts-quality-20260906 -> origin/fix/nonembedding-facts-quality-20260906
+2026-10-08T10:53:41.1363927Z  * [new branch]        fix/nonembedding-facts-verified-20260906 -> origin/fix/nonembedding-facts-verified-20260906
+2026-10-08T10:53:41.1364888Z  * [new branch]        fix/p7-011-language-coverage -> origin/fix/p7-011-language-coverage
+2026-10-08T10:53:41.1365516Z  * [new branch]        fix/p7-013-cancellable-exact -> origin/fix/p7-013-cancellable-exact
+2026-10-08T10:53:41.1366120Z  * [new branch]        fix/p7-017-ci-build-receipt -> origin/fix/p7-017-ci-build-receipt
+2026-10-08T10:53:41.1366735Z  * [new branch]        fix/p7-ci-architecture-guards -> origin/fix/p7-ci-architecture-guards
+2026-10-08T10:53:41.1367342Z  * [new branch]        fix/p7-linux-process-sampler -> origin/fix/p7-linux-process-sampler
+2026-10-08T10:53:41.1368056Z  * [new branch]        fix/parallel-retry-progress-20261003 -> origin/fix/parallel-retry-progress-20261003
+2026-10-08T10:53:41.1368712Z  * [new branch]        fix/pr126-harness-observation -> origin/fix/pr126-harness-observation
+2026-10-08T10:53:41.1369307Z  * [new branch]        fix/python-declaration-kind -> origin/fix/python-declaration-kind
+2026-10-08T10:53:41.1369896Z  * [new branch]        fix/query-target-controls -> origin/fix/query-target-controls
+2026-10-08T10:53:41.1370530Z  * [new branch]        fix/schema-contract-cleanup-20261003 -> origin/fix/schema-contract-cleanup-20261003
+2026-10-08T10:53:41.1371375Z  * [new branch]        fix/semantic-http-ci-regression-20261003 -> origin/fix/semantic-http-ci-regression-20261003
+2026-10-08T10:53:41.1372146Z  * [new branch]        fix/shared-provider-gate-20261003 -> origin/fix/shared-provider-gate-20261003
+2026-10-08T10:53:41.1372842Z  * [new branch]        fix/type-atom-identifier-regression -> origin/fix/type-atom-identifier-regression
+2026-10-08T10:53:41.1373516Z  * [new branch]        fix/v19-requests-type-dependency -> origin/fix/v19-requests-type-dependency
+2026-10-08T10:53:41.1374439Z  * [new branch]        harness/reusable-100k-driver -> origin/harness/reusable-100k-driver
+2026-10-08T10:53:41.1375151Z  * [new branch]        independent-capability-v2-review-20261003 -> origin/independent-capability-v2-review-20261003
+2026-10-08T10:53:41.1375944Z  * [new branch]        independent-go-call-fix-review-20261003 -> origin/independent-go-call-fix-review-20261003
+2026-10-08T10:53:41.1376661Z  * [new branch]        independent-v2-100k-release-20261003 -> origin/independent-v2-100k-release-20261003
+2026-10-08T10:53:41.1377423Z  * [new branch]        integration/bounded-groundwork-20261004 -> origin/integration/bounded-groundwork-20261004
+2026-10-08T10:53:41.1378124Z  * [new branch]        integration/ci-contract-20261003 -> origin/integration/ci-contract-20261003
+2026-10-08T10:53:41.1378796Z  * [new branch]        integration/localwidth4-fixed-e3-20261003 -> origin/integration/localwidth4-fixed-e3-20261003
+2026-10-08T10:53:41.1379540Z  * [new branch]        integration/packing-evidence-20261003 -> origin/integration/packing-evidence-20261003
+2026-10-08T10:53:41.1380294Z  * [new branch]        integration/python-inventory-capture-v2 -> origin/integration/python-inventory-capture-v2
+2026-10-08T10:53:41.1381162Z  * [new branch]        integration/python-resource-contract-20261004 -> origin/integration/python-resource-contract-20261004
+2026-10-08T10:53:41.1381996Z  * [new branch]        integration/query-owner-context-v3-20261004 -> origin/integration/query-owner-context-v3-20261004
+2026-10-08T10:53:41.1382682Z  * [new branch]        main                    -> origin/main
+2026-10-08T10:53:41.1383412Z  * [new branch]        opt/code-index-benchmark-v2-20260906 -> origin/opt/code-index-benchmark-v2-20260906
+2026-10-08T10:53:41.1384221Z  * [new branch]        opt/python-inventory-capture -> origin/opt/python-inventory-capture
+2026-10-08T10:53:41.1384895Z  * [new branch]        perf/backfill-cost-breakdown-20261003 -> origin/perf/backfill-cost-breakdown-20261003
+2026-10-08T10:53:41.1385737Z  * [new branch]        perf/bounded-parallel-backfill-20261003 -> origin/perf/bounded-parallel-backfill-20261003
+2026-10-08T10:53:41.1386781Z  * [new branch]        perf/fifo-claim-index-20261003 -> origin/perf/fifo-claim-index-20261003
+2026-10-08T10:53:41.1387872Z  * [new branch]        prototype/source-declaration-identity-v1 -> origin/prototype/source-declaration-identity-v1
+2026-10-08T10:53:41.1388926Z  * [new branch]        public-dev-current-group-pygo-20261003 -> origin/public-dev-current-group-pygo-20261003
+2026-10-08T10:53:41.1390212Z  * [new branch]        public-dev-declaration-kind-v2-candidate-20261003 -> origin/public-dev-declaration-kind-v2-candidate-20261003
+2026-10-08T10:53:41.1391655Z  * [new branch]        review/context-owner-closing-qualifiers-20261004 -> origin/review/context-owner-closing-qualifiers-20261004
+2026-10-08T10:53:41.1392897Z  * [new branch]        review/context-owner-comparison-guard-20261004 -> origin/review/context-owner-comparison-guard-20261004
+2026-10-08T10:53:41.1394458Z  * [new branch]        review/context-owner-lexical-spans-20261004 -> origin/review/context-owner-lexical-spans-20261004
+2026-10-08T10:53:41.1395685Z  * [new branch]        review/context-owner-source-boundaries-20261004 -> origin/review/context-owner-source-boundaries-20261004
+2026-10-08T10:53:41.1396982Z  * [new branch]        review/declaration-identity-independent-20261004 -> origin/review/declaration-identity-independent-20261004
+2026-10-08T10:53:41.1398677Z  * [new branch]        review/declaration-resource-independent -> origin/review/declaration-resource-independent
+2026-10-08T10:53:41.1399743Z  * [new branch]        review/independent-closing-qualifiers-20261004 -> origin/review/independent-closing-qualifiers-20261004
+2026-10-08T10:53:41.1400617Z  * [new branch]        review/independent-comparison-guard-20261004 -> origin/review/independent-comparison-guard-20261004
+2026-10-08T10:53:41.1401383Z  * [new branch]        review/independent-direct-writer-20261003 -> origin/review/independent-direct-writer-20261003
+2026-10-08T10:53:41.1402185Z  * [new branch]        review/independent-e3-runtime-cache-20261003 -> origin/review/independent-e3-runtime-cache-20261003
+2026-10-08T10:53:41.1403151Z  * [new branch]        review/independent-fifo-claim-20261003 -> origin/review/independent-fifo-claim-20261003
+2026-10-08T10:53:41.1404406Z  * [new branch]        review/independent-lexical-spans-20261004 -> origin/review/independent-lexical-spans-20261004
+2026-10-08T10:53:41.1405483Z  * [new branch]        review/independent-parallel-drain-20261003 -> origin/review/independent-parallel-drain-20261003
+2026-10-08T10:53:41.1406276Z  * [new branch]        review/independent-requests-fix-20261003 -> origin/review/independent-requests-fix-20261003
+2026-10-08T10:53:41.1407053Z  * [new branch]        review/independent-retry-liveness-20261003 -> origin/review/independent-retry-liveness-20261003
+2026-10-08T10:53:41.1407841Z  * [new branch]        review/independent-source-boundaries-20261004 -> origin/review/independent-source-boundaries-20261004
+2026-10-08T10:53:41.1408602Z  * [new branch]        review/independent-v24-migration-20261003 -> origin/review/independent-v24-migration-20261003
+2026-10-08T10:53:41.1409314Z  * [new branch]        review/manual-v24-evidence-20261003 -> origin/review/manual-v24-evidence-20261003
+2026-10-08T10:53:41.1409933Z  * [new branch]        review/p7-crash-independent -> origin/review/p7-crash-independent
+2026-10-08T10:53:41.1410579Z  * [new branch]        review/p7-gc-unlink-20261007 -> origin/review/p7-gc-unlink-20261007
+2026-10-08T10:53:41.1411401Z  * [new branch]        review/p7-semantic-coverage-retention-20261007 -> origin/review/p7-semantic-coverage-retention-20261007
+2026-10-08T10:53:41.1412378Z  * [new branch]        review/p7-staging-gc-independent -> origin/review/p7-staging-gc-independent
+2026-10-08T10:53:41.1413201Z  * [new branch]        review/p7-strategy-ablation-20261007 -> origin/review/p7-strategy-ablation-20261007
+2026-10-08T10:53:41.1414518Z  * [new branch]        review/p7-worker-contention-20261007 -> origin/review/p7-worker-contention-20261007
+2026-10-08T10:53:41.1415562Z  * [new branch]        review/pr127-independent-20261003 -> origin/review/pr127-independent-20261003
+2026-10-08T10:53:41.1416500Z  * [new branch]        review/public-v19-requests-delta -> origin/review/public-v19-requests-delta
+2026-10-08T10:53:41.1417446Z  * [new branch]        review/public-v19-requests-dev -> origin/review/public-v19-requests-dev
+2026-10-08T10:53:41.1418554Z  * [new branch]        review/public-v19-requests-remaining -> origin/review/public-v19-requests-remaining
+2026-10-08T10:53:41.1419609Z  * [new branch]        review/python-identity-independent -> origin/review/python-identity-independent
+2026-10-08T10:53:41.1420754Z  * [new branch]        review/python-identity-r1-independent -> origin/review/python-identity-r1-independent
+2026-10-08T10:53:41.1421945Z  * [new branch]        review/python-inventory-independent-20261004 -> origin/review/python-inventory-independent-20261004
+2026-10-08T10:53:41.1423123Z  * [new branch]        review/python-inventory-p2-delta-20261004 -> origin/review/python-inventory-p2-delta-20261004
+2026-10-08T10:53:41.1424609Z  * [new branch]        review/python-provenance-independent-20261004 -> origin/review/python-provenance-independent-20261004
+2026-10-08T10:53:41.1425739Z  * [new branch]        review/qname-db-20261003 -> origin/review/qname-db-20261003
+2026-10-08T10:53:41.1426701Z  * [new branch]        review/qname-parser-public-20261003 -> origin/review/qname-parser-public-20261003
+2026-10-08T10:53:41.1427573Z  * [new branch]        review/query-owner-hint-20261004-0741 -> origin/review/query-owner-hint-20261004-0741
+2026-10-08T10:53:41.1428398Z  * [new branch]        review/query-owner-hint-independent-evidence-20261004 -> origin/review/query-owner-hint-independent-evidence-20261004
+2026-10-08T10:53:41.1429245Z  * [new branch]        review/query-target-independent-20261004 -> origin/review/query-target-independent-20261004
+2026-10-08T10:53:41.1430196Z  * [new branch]        review/resolver-bind-independent -> origin/review/resolver-bind-independent
+2026-10-08T10:53:41.1431294Z  * [new branch]        review/validation-work-metadata-fix-20261007 -> origin/review/validation-work-metadata-fix-20261007
+2026-10-08T10:53:41.1432217Z  * [new branch]        review/validation-work-packing-fix-20261007 -> origin/review/validation-work-packing-fix-20261007
+2026-10-08T10:53:41.1432956Z  * [new branch]        test/p7-014-fence-independent-recheck -> origin/test/p7-014-fence-independent-recheck
+2026-10-08T10:53:41.1433681Z  * [new branch]        test/p7-014-final-independent-review -> origin/test/p7-014-final-independent-review
+2026-10-08T10:53:41.1434525Z  * [new branch]        test/p7-017-offline-default -> origin/test/p7-017-offline-default
+2026-10-08T10:53:41.1435086Z  * [new branch]        test/p7-acceptance-matrix -> origin/test/p7-acceptance-matrix
+2026-10-08T10:53:41.1435784Z  * [new branch]        test/p7-cache-allocation-independent-review -> origin/test/p7-cache-allocation-independent-review
+2026-10-08T10:53:41.1436476Z  * [new branch]        test/p7-gate-lifecycle-review -> origin/test/p7-gate-lifecycle-review
+2026-10-08T10:53:41.1437092Z  * [new branch]        test/p7-partial-budget  -> origin/test/p7-partial-budget
+2026-10-08T10:53:41.1437755Z  * [new branch]        test/p7-production-fairness-model-review -> origin/test/p7-production-fairness-model-review
+2026-10-08T10:53:41.1438486Z  * [new branch]        test/p7-query-encoding-independent-review -> origin/test/p7-query-encoding-independent-review
+2026-10-08T10:53:41.1439296Z  * [new branch]        test/p7-query-network-contract -> origin/test/p7-query-network-contract
+2026-10-08T10:53:41.1439931Z  * [new branch]        test/p7-query-public-independent -> origin/test/p7-query-public-independent
+2026-10-08T10:53:41.1440619Z  * [new branch]        test/p7-query-public-independent-final -> origin/test/p7-query-public-independent-final
+2026-10-08T10:53:41.1441364Z  * [new branch]        test/p7-status-fence-independent -> origin/test/p7-status-fence-independent
+2026-10-08T10:53:41.1442001Z  * [new branch]        test/p7-v05-v11-independent-review -> origin/test/p7-v05-v11-independent-review
+2026-10-08T10:53:41.1442697Z  * [new branch]        test/p7-v16-oracle-independent-review -> origin/test/p7-v16-oracle-independent-review
+2026-10-08T10:53:41.1443994Z  * [new branch]        test/p7-v18-parameter-contract -> origin/test/p7-v18-parameter-contract
+2026-10-08T10:53:41.1444613Z  * [new branch]        test/p7-v19-offline     -> origin/test/p7-v19-offline
+2026-10-08T10:53:41.1445281Z  * [new branch]        test/p7-worker-contention-reviewed-20261007 -> origin/test/p7-worker-contention-reviewed-20261007
+2026-10-08T10:53:41.1445982Z  * [new branch]        work/p7-audit-996727-20261008 -> origin/work/p7-audit-996727-20261008
+2026-10-08T10:53:41.1446763Z  * [new branch]        work/p7-round2-20261007 -> origin/work/p7-round2-20261007
+2026-10-08T10:53:41.1447311Z  * [new branch]        work/p7-round2-final-20261007 -> origin/work/p7-round2-final-20261007
+2026-10-08T10:53:41.1447990Z  * [new branch]        work/p8-corpus-holdout-031390-20261008 -> origin/work/p8-corpus-holdout-031390-20261008
+2026-10-08T10:53:41.1448705Z  * [new branch]        work/p8-corpus-register-996727-20261008 -> origin/work/p8-corpus-register-996727-20261008
+2026-10-08T10:53:41.1449385Z  * [new branch]        work/p8-corpus-replay-996727-20261008 -> origin/work/p8-corpus-replay-996727-20261008
+2026-10-08T10:53:41.1450164Z  * [new branch]        work/p8-current-readback-996727-20261008 -> origin/work/p8-current-readback-996727-20261008
+2026-10-08T10:53:41.1450946Z  * [new branch]        work/p8-final-preseal-readback-996727-20261008 -> origin/work/p8-final-preseal-readback-996727-20261008
+2026-10-08T10:53:41.1451694Z  * [new branch]        work/p8-joint-corpus-996727-20261008 -> origin/work/p8-joint-corpus-996727-20261008
+2026-10-08T10:53:41.1452436Z  * [new branch]        work/p8-joint-release-readback-996727-20261008 -> origin/work/p8-joint-release-readback-996727-20261008
+2026-10-08T10:53:41.1453138Z  * [new branch]        work/p8-local-ten-todos-20261007 -> origin/work/p8-local-ten-todos-20261007
+2026-10-08T10:53:41.1453961Z  * [new branch]        work/p8-native-external-996727-20261008 -> origin/work/p8-native-external-996727-20261008
+2026-10-08T10:53:41.1454626Z  * [new branch]        work/p8-next-source-ebacee -> origin/work/p8-next-source-ebacee
+2026-10-08T10:53:41.1455237Z  * [new branch]        work/p8-next-ten-ebacee -> origin/work/p8-next-ten-ebacee
+2026-10-08T10:53:41.1455870Z  * [new branch]        work/p8-output-readback-996727-20261008 -> origin/work/p8-output-readback-996727-20261008
+2026-10-08T10:53:41.1456564Z  * [new branch]        work/p8-product-build-996727-20261008 -> origin/work/p8-product-build-996727-20261008
+2026-10-08T10:53:41.1457267Z  * [new branch]        work/p8-product-format-996727-20261008 -> origin/work/p8-product-format-996727-20261008
+2026-10-08T10:53:41.1457972Z  * [new branch]        work/p8-profile-contract-996727-20261008 -> origin/work/p8-profile-contract-996727-20261008
+2026-10-08T10:53:41.1458688Z  * [new branch]        work/p8-public-readback-996727-20261008 -> origin/work/p8-public-readback-996727-20261008
+2026-10-08T10:53:41.1459431Z  * [new branch]        work/p8-public-recovery-996727-20261008 -> origin/work/p8-public-recovery-996727-20261008
+2026-10-08T10:53:41.1460147Z  * [new branch]        work/p8-recovery-evidence-996727-20261008 -> origin/work/p8-recovery-evidence-996727-20261008
+2026-10-08T10:53:41.1460961Z  * [new branch]        work/p8-release-external-996727-20261008 -> origin/work/p8-release-external-996727-20261008
+2026-10-08T10:53:41.1461691Z  * [new branch]        work/p8-release-readback-996727-20261008 -> origin/work/p8-release-readback-996727-20261008
+2026-10-08T10:53:41.1462453Z  * [new branch]        work/p8-rust-probe-996727-20261008 -> origin/work/p8-rust-probe-996727-20261008
+2026-10-08T10:53:41.1463054Z  * [new branch]        work/p8-scale-031390    -> origin/work/p8-scale-031390
+2026-10-08T10:53:41.1463739Z  * [new branch]        work/p8-temporal-frozen-logic-996727-20261008 -> origin/work/p8-temporal-frozen-logic-996727-20261008
+2026-10-08T10:53:41.1464701Z  * [new branch]        work/p8-temporal-holdout-996727-20261008 -> origin/work/p8-temporal-holdout-996727-20261008
+2026-10-08T10:53:41.1465489Z  * [new branch]        work/p8-temporal-prepare-data-996727-20261008 -> origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-08T10:53:41.1466233Z  * [new branch]        work/p8-temporal-preseal-996727-20261008 -> origin/work/p8-temporal-preseal-996727-20261008
+2026-10-08T10:53:41.1466983Z  * [new branch]        work/p8-temporal-readback-996727-20261008 -> origin/work/p8-temporal-readback-996727-20261008
+2026-10-08T10:53:41.1467756Z  * [new branch]        work/p8-temporal-readback-tools-996727-20261008 -> origin/work/p8-temporal-readback-tools-996727-20261008
+2026-10-08T10:53:41.1468613Z  * [new branch]        work/p8-temporal-service-controls-996727-20261008 -> origin/work/p8-temporal-service-controls-996727-20261008
+2026-10-08T10:53:41.1469500Z  * [new branch]        work/p8-text-admission-counterexample-996727-20261008 -> origin/work/p8-text-admission-counterexample-996727-20261008
+2026-10-08T10:53:41.1470245Z  * [new branch]        work/todo-close-996727-20261008 -> origin/work/todo-close-996727-20261008
+2026-10-08T10:53:41.1471833Z [command]/usr/bin/git branch --list --remote origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-08T10:53:41.1472709Z   origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-08T10:53:41.1474008Z [command]/usr/bin/git rev-parse refs/remotes/origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-08T10:53:41.1474618Z 4ed046554522c61bfc02e297fe01b8e0b22f0c27
+2026-10-08T10:53:41.1475660Z ##[endgroup]
+2026-10-08T10:53:41.1476166Z ##[group]Determining the checkout info
+2026-10-08T10:53:41.1476725Z ##[endgroup]
+2026-10-08T10:53:41.1477075Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T10:53:41.1477999Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T10:53:41.1479031Z ##[group]Checking out the ref
+2026-10-08T10:53:41.1479760Z [command]/usr/bin/git checkout --progress --force -B work/p8-temporal-prepare-data-996727-20261008 refs/remotes/origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-08T10:53:42.5304918Z Updating files:  89% (14373/16042)
+2026-10-08T10:53:42.8821352Z Updating files:  90% (14438/16042)
+2026-10-08T10:53:42.8909990Z Updating files:  91% (14599/16042)
+2026-10-08T10:53:42.8973991Z Updating files:  92% (14759/16042)
+2026-10-08T10:53:42.9045085Z Updating files:  93% (14920/16042)
+2026-10-08T10:53:42.9165595Z Updating files:  94% (15080/16042)
+2026-10-08T10:53:42.9286953Z Updating files:  95% (15240/16042)
+2026-10-08T10:53:42.9419635Z Updating files:  96% (15401/16042)
+2026-10-08T10:53:42.9509192Z Updating files:  97% (15561/16042)
+2026-10-08T10:53:42.9600321Z Updating files:  98% (15722/16042)
+2026-10-08T10:53:42.9745278Z Updating files:  99% (15882/16042)
+2026-10-08T10:53:42.9745625Z Updating files: 100% (16042/16042)
+2026-10-08T10:53:42.9745973Z Updating files: 100% (16042/16042), done.
+2026-10-08T10:53:42.9920715Z Switched to a new branch 'work/p8-temporal-prepare-data-996727-20261008'
+2026-10-08T10:53:42.9924156Z branch 'work/p8-temporal-prepare-data-996727-20261008' set up to track 'origin/work/p8-temporal-prepare-data-996727-20261008'.
+2026-10-08T10:53:42.9971962Z ##[endgroup]
+2026-10-08T10:53:43.0017532Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T10:53:43.0036691Z 4ed046554522c61bfc02e297fe01b8e0b22f0c27
+2026-10-08T10:53:43.0074404Z ##[group]Removing auth
+2026-10-08T10:53:43.0079366Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:53:43.0081171Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:53:43.0254552Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:53:43.0275203Z http.https://github.com/.extraheader
+2026-10-08T10:53:43.0285315Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-08T10:53:43.0315159Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:53:43.0503017Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:53:43.0527868Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:53:43.0697056Z ##[endgroup]
+2026-10-08T10:53:43.0906242Z ##[group]Run actions/checkout@v4
+2026-10-08T10:53:43.0906552Z with:
+2026-10-08T10:53:43.0906837Z   ref: 2cd04485b0e0b23483f64671d56538bbaa47f442
+2026-10-08T10:53:43.0907190Z   path: candidate
+2026-10-08T10:53:43.0907453Z   fetch-depth: 1
+2026-10-08T10:53:43.0907706Z   persist-credentials: false
+2026-10-08T10:53:43.0908025Z   repository: jyqj/codecortex
+2026-10-08T10:53:43.0910045Z   token: ***
+2026-10-08T10:53:43.0910308Z   ssh-strict: true
+2026-10-08T10:53:43.0910562Z   ssh-user: git
+2026-10-08T10:53:43.0910798Z   clean: true
+2026-10-08T10:53:43.0911103Z   sparse-checkout-cone-mode: true
+2026-10-08T10:53:43.0911406Z   fetch-tags: false
+2026-10-08T10:53:43.0911687Z   show-progress: true
+2026-10-08T10:53:43.0911969Z   lfs: false
+2026-10-08T10:53:43.0912233Z   submodules: false
+2026-10-08T10:53:43.0912518Z   set-safe-directory: true
+2026-10-08T10:53:43.0912833Z   allow-unsafe-pr-checkout: false
+2026-10-08T10:53:43.0913119Z env:
+2026-10-08T10:53:43.0913468Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:53:43.0913757Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:53:43.0914169Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:53:43.0914494Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:53:43.0914794Z ##[endgroup]
+2026-10-08T10:53:43.1650504Z Syncing repository: jyqj/codecortex
+2026-10-08T10:53:43.1651382Z ##[group]Getting Git version info
+2026-10-08T10:53:43.1651965Z Working directory is '/home/runner/work/codecortex/codecortex/candidate'
+2026-10-08T10:53:43.1678482Z [command]/usr/bin/git version
+2026-10-08T10:53:43.1707347Z git version 2.55.0
+2026-10-08T10:53:43.1722200Z ##[endgroup]
+2026-10-08T10:53:43.1732516Z Temporarily overriding HOME='/home/runner/work/_temp/eaefdcf8-478e-4eff-acc9-358bd60b753d' before making global git config changes
+2026-10-08T10:53:43.1733216Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:53:43.1737676Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/candidate
+2026-10-08T10:53:43.1762210Z ##[group]Initializing the repository
+2026-10-08T10:53:43.1765858Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex/candidate
+2026-10-08T10:53:43.1795731Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T10:53:43.1796569Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T10:53:43.1797578Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T10:53:43.1798281Z hint: call:
+2026-10-08T10:53:43.1798784Z hint:
+2026-10-08T10:53:43.1799342Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T10:53:43.1799893Z hint:
+2026-10-08T10:53:43.1800514Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T10:53:43.1801546Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T10:53:43.1802318Z hint:
+2026-10-08T10:53:43.1802818Z hint: 	git branch -m <name>
+2026-10-08T10:53:43.1803268Z hint:
+2026-10-08T10:53:43.1804071Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T10:53:43.1804993Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/candidate/.git/
+2026-10-08T10:53:43.1806721Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-08T10:53:43.1835645Z ##[endgroup]
+2026-10-08T10:53:43.1836123Z ##[group]Disabling automatic garbage collection
+2026-10-08T10:53:43.1836591Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T10:53:43.1857750Z ##[endgroup]
+2026-10-08T10:53:43.1858343Z ##[group]Setting up auth
+2026-10-08T10:53:43.1862881Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:53:43.1886965Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:53:43.2047509Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:53:43.2069057Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:53:43.2227207Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:53:43.2249653Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:53:43.2407718Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T10:53:43.2435363Z ##[endgroup]
+2026-10-08T10:53:43.2436071Z ##[group]Fetching the repository
+2026-10-08T10:53:43.2442092Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 2cd04485b0e0b23483f64671d56538bbaa47f442
+2026-10-08T10:53:58.2344485Z From https://github.com/jyqj/codecortex
+2026-10-08T10:53:58.2345112Z  * branch            2cd04485b0e0b23483f64671d56538bbaa47f442 -> FETCH_HEAD
+2026-10-08T10:53:58.2350793Z ##[endgroup]
+2026-10-08T10:53:58.2351283Z ##[group]Determining the checkout info
+2026-10-08T10:53:58.2351806Z ##[endgroup]
+2026-10-08T10:53:58.2355750Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T10:53:58.2391341Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T10:53:58.2412583Z ##[group]Checking out the ref
+2026-10-08T10:53:58.2416213Z [command]/usr/bin/git checkout --progress --force 2cd04485b0e0b23483f64671d56538bbaa47f442
+2026-10-08T10:53:59.5965508Z Updating files:  89% (14257/15926)
+2026-10-08T10:53:59.9438201Z Updating files:  90% (14334/15926)
+2026-10-08T10:53:59.9527900Z Updating files:  91% (14493/15926)
+2026-10-08T10:53:59.9585803Z Updating files:  92% (14652/15926)
+2026-10-08T10:53:59.9659368Z Updating files:  93% (14812/15926)
+2026-10-08T10:53:59.9760156Z Updating files:  94% (14971/15926)
+2026-10-08T10:53:59.9868134Z Updating files:  95% (15130/15926)
+2026-10-08T10:53:59.9985357Z Updating files:  96% (15289/15926)
+2026-10-08T10:54:00.0066258Z Updating files:  97% (15449/15926)
+2026-10-08T10:54:00.0159849Z Updating files:  98% (15608/15926)
+2026-10-08T10:54:00.0293359Z Updating files:  99% (15767/15926)
+2026-10-08T10:54:00.0294320Z Updating files: 100% (15926/15926)
+2026-10-08T10:54:00.0294680Z Updating files: 100% (15926/15926), done.
+2026-10-08T10:54:00.0449033Z Note: switching to '2cd04485b0e0b23483f64671d56538bbaa47f442'.
+2026-10-08T10:54:00.0449439Z 
+2026-10-08T10:54:00.0449705Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T10:54:00.0450191Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T10:54:00.0451008Z state without impacting any branches by switching back to a branch.
+2026-10-08T10:54:00.0451330Z 
+2026-10-08T10:54:00.0451553Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T10:54:00.0452028Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T10:54:00.0452266Z 
+2026-10-08T10:54:00.0452422Z   git switch -c <new-branch-name>
+2026-10-08T10:54:00.0452627Z 
+2026-10-08T10:54:00.0452732Z Or undo this operation with:
+2026-10-08T10:54:00.0452984Z 
+2026-10-08T10:54:00.0453085Z   git switch -
+2026-10-08T10:54:00.0453273Z 
+2026-10-08T10:54:00.0453520Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T10:54:00.0453997Z 
+2026-10-08T10:54:00.0454321Z HEAD is now at 2cd0448 ci(p8): install reviewed joint v14 source and join merged PR152
+2026-10-08T10:54:00.0497489Z ##[endgroup]
+2026-10-08T10:54:00.0530050Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T10:54:00.0550127Z 2cd04485b0e0b23483f64671d56538bbaa47f442
+2026-10-08T10:54:00.0558575Z ##[group]Removing auth
+2026-10-08T10:54:00.0562053Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:00.0587230Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:00.0767466Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:00.0785320Z http.https://github.com/.extraheader
+2026-10-08T10:54:00.0791133Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-08T10:54:00.0817692Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:00.0989347Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:00.1012244Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:00.1178387Z ##[endgroup]
+2026-10-08T10:54:00.1328125Z ##[group]Run actions/checkout@v4
+2026-10-08T10:54:00.1328419Z with:
+2026-10-08T10:54:00.1328741Z   repository: mahmoud/boltons
+2026-10-08T10:54:00.1329068Z   ref: 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+2026-10-08T10:54:00.1329405Z   path: upstream
+2026-10-08T10:54:00.1329683Z   fetch-depth: 1
+2026-10-08T10:54:00.1329958Z   persist-credentials: false
+2026-10-08T10:54:00.1330317Z   submodules: false
+2026-10-08T10:54:00.1330574Z   lfs: false
+2026-10-08T10:54:00.1332537Z   token: ***
+2026-10-08T10:54:00.1332804Z   ssh-strict: true
+2026-10-08T10:54:00.1333089Z   ssh-user: git
+2026-10-08T10:54:00.1333355Z   clean: true
+2026-10-08T10:54:00.1333622Z   sparse-checkout-cone-mode: true
+2026-10-08T10:54:00.1334080Z   fetch-tags: false
+2026-10-08T10:54:00.1334358Z   show-progress: true
+2026-10-08T10:54:00.1334660Z   set-safe-directory: true
+2026-10-08T10:54:00.1334976Z   allow-unsafe-pr-checkout: false
+2026-10-08T10:54:00.1335273Z env:
+2026-10-08T10:54:00.1335654Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:00.1335950Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:00.1336255Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:00.1336586Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:00.1336873Z ##[endgroup]
+2026-10-08T10:54:00.2031231Z Syncing repository: mahmoud/boltons
+2026-10-08T10:54:00.2035617Z ##[group]Getting Git version info
+2026-10-08T10:54:00.2036199Z Working directory is '/home/runner/work/codecortex/codecortex/upstream'
+2026-10-08T10:54:00.2061426Z [command]/usr/bin/git version
+2026-10-08T10:54:00.2091035Z git version 2.55.0
+2026-10-08T10:54:00.2105597Z ##[endgroup]
+2026-10-08T10:54:00.2115684Z Temporarily overriding HOME='/home/runner/work/_temp/d1eba52a-fd56-4755-b341-9d0083a80934' before making global git config changes
+2026-10-08T10:54:00.2116647Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:54:00.2120411Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/upstream
+2026-10-08T10:54:00.2147090Z ##[group]Initializing the repository
+2026-10-08T10:54:00.2151001Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex/upstream
+2026-10-08T10:54:00.2180899Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T10:54:00.2181575Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T10:54:00.2182190Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T10:54:00.2182693Z hint: call:
+2026-10-08T10:54:00.2183024Z hint:
+2026-10-08T10:54:00.2183467Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T10:54:00.2184000Z hint:
+2026-10-08T10:54:00.2184538Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T10:54:00.2185109Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T10:54:00.2185558Z hint:
+2026-10-08T10:54:00.2185897Z hint: 	git branch -m <name>
+2026-10-08T10:54:00.2186300Z hint:
+2026-10-08T10:54:00.2186719Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T10:54:00.2187325Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/upstream/.git/
+2026-10-08T10:54:00.2190687Z [command]/usr/bin/git remote add origin https://github.com/mahmoud/boltons
+2026-10-08T10:54:00.2215442Z ##[endgroup]
+2026-10-08T10:54:00.2215909Z ##[group]Disabling automatic garbage collection
+2026-10-08T10:54:00.2219257Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T10:54:00.2242862Z ##[endgroup]
+2026-10-08T10:54:00.2243497Z ##[group]Setting up auth
+2026-10-08T10:54:00.2249191Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:00.2272885Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:00.2433107Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:00.2455534Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:00.2610766Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:00.2633690Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:00.2790687Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T10:54:00.2823106Z ##[endgroup]
+2026-10-08T10:54:00.2823575Z ##[group]Fetching the repository
+2026-10-08T10:54:00.2830395Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+2026-10-08T10:54:00.8359768Z From https://github.com/mahmoud/boltons
+2026-10-08T10:54:00.8360458Z  * branch            4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d -> FETCH_HEAD
+2026-10-08T10:54:00.8364543Z ##[endgroup]
+2026-10-08T10:54:00.8365125Z ##[group]Determining the checkout info
+2026-10-08T10:54:00.8367309Z ##[endgroup]
+2026-10-08T10:54:00.8373053Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T10:54:00.8412365Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T10:54:00.8434875Z ##[group]Checking out the ref
+2026-10-08T10:54:00.8439104Z [command]/usr/bin/git checkout --progress --force 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+2026-10-08T10:54:00.8526102Z Note: switching to '4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d'.
+2026-10-08T10:54:00.8526756Z 
+2026-10-08T10:54:00.8527061Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T10:54:00.8527697Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T10:54:00.8528423Z state without impacting any branches by switching back to a branch.
+2026-10-08T10:54:00.8529269Z 
+2026-10-08T10:54:00.8529637Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T10:54:00.8530267Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T10:54:00.8530617Z 
+2026-10-08T10:54:00.8530765Z   git switch -c <new-branch-name>
+2026-10-08T10:54:00.8531099Z 
+2026-10-08T10:54:00.8531246Z Or undo this operation with:
+2026-10-08T10:54:00.8531547Z 
+2026-10-08T10:54:00.8531720Z   git switch -
+2026-10-08T10:54:00.8531887Z 
+2026-10-08T10:54:00.8532274Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T10:54:00.8532704Z 
+2026-10-08T10:54:00.8533112Z HEAD is now at 4e5faa3 Fix spooled stream write compatibility and backwards text seeks (#513)
+2026-10-08T10:54:00.8535145Z ##[endgroup]
+2026-10-08T10:54:00.8559886Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T10:54:00.8577315Z 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d
+2026-10-08T10:54:00.8585365Z ##[group]Removing auth
+2026-10-08T10:54:00.8587513Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:00.8610946Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:00.8770103Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:00.8787040Z http.https://github.com/.extraheader
+2026-10-08T10:54:00.8792361Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-08T10:54:00.8816122Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:00.8969547Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:00.8990903Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:00.9141680Z ##[endgroup]
+2026-10-08T10:54:00.9249928Z ##[group]Run actions/download-artifact@v4
+2026-10-08T10:54:00.9250264Z with:
+2026-10-08T10:54:00.9250548Z   name: p8-fresh-release-external-revision2
+2026-10-08T10:54:00.9250867Z   path: package-input
+2026-10-08T10:54:00.9251174Z   repository: jyqj/codecortex
+2026-10-08T10:54:00.9251513Z   run-id: 37749276827
+2026-10-08T10:54:00.9253508Z   github-token: ***
+2026-10-08T10:54:00.9253775Z   merge-multiple: false
+2026-10-08T10:54:00.9254249Z env:
+2026-10-08T10:54:00.9254577Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:00.9254939Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:00.9255248Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:00.9255553Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:00.9255828Z ##[endgroup]
+2026-10-08T10:54:01.0565778Z Downloading single artifact
+2026-10-08T10:54:01.0632882Z (node:2597) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T10:54:01.0634632Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T10:54:01.0803493Z (node:2597) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-08T10:54:01.2961671Z Preparing to download the following artifacts:
+2026-10-08T10:54:01.2963271Z - p8-fresh-release-external-revision2 (ID: 11537848186, Size: 29745796, Expected Digest: sha256:7c0f7bf7e20d071b49fbd2e5aa1ae2d114bd9b3dc301469ac3160574a855c7a7)
+2026-10-08T10:54:01.2991396Z Downloading artifact '11537848186' from 'jyqj/codecortex'
+2026-10-08T10:54:01.5983173Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/7ef19cd4-b211-8f8d-b02b-f9d8958ffd89/workflow-job-run-0b591cfe-2a67-5ba8-a23d-62e5386d82d0/artifacts/4276b649b31bdd48e61ff3d47e14211978d807994ce985d13f5f8123c23e817e.zip
+2026-10-08T10:54:01.5984744Z Starting download of artifact to: /home/runner/work/codecortex/codecortex/package-input
+2026-10-08T10:54:01.7780132Z (node:2597) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T10:54:02.7960215Z SHA256 digest of downloaded artifact is 7c0f7bf7e20d071b49fbd2e5aa1ae2d114bd9b3dc301469ac3160574a855c7a7
+2026-10-08T10:54:02.7961065Z Artifact download completed successfully.
+2026-10-08T10:54:02.7961542Z Total of 1 artifact(s) downloaded
+2026-10-08T10:54:02.7965753Z Download artifact has finished successfully
+2026-10-08T10:54:02.8120491Z ##[group]Run rustup toolchain install 1.95.0 --profile minimal
+2026-10-08T10:54:02.8121093Z [36;1mrustup toolchain install 1.95.0 --profile minimal[0m
+2026-10-08T10:54:02.8121478Z [36;1mif ! command -v rg >/dev/null; then[0m
+2026-10-08T10:54:02.8121810Z [36;1m  sudo apt-get update[0m
+2026-10-08T10:54:02.8122150Z [36;1m  sudo apt-get install --yes ripgrep[0m
+2026-10-08T10:54:02.8122499Z [36;1mfi[0m
+2026-10-08T10:54:02.8122779Z [36;1mtest -x /usr/bin/rg[0m
+2026-10-08T10:54:02.8123080Z [36;1m/usr/bin/rg --version[0m
+2026-10-08T10:54:02.8123378Z [36;1mpython3 -I -S --version[0m
+2026-10-08T10:54:02.8300022Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T10:54:02.8300411Z env:
+2026-10-08T10:54:02.8300755Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:02.8301078Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:02.8301375Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:02.8301717Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:02.8302137Z ##[endgroup]
+2026-10-08T10:54:02.8750349Z info: syncing channel updates for 1.95.0-x86_64-unknown-linux-gnu
+2026-10-08T10:54:03.0560619Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+2026-10-08T10:54:03.0561244Z info: downloading 3 components
+2026-10-08T10:54:11.2694710Z 
+2026-10-08T10:54:11.2765415Z   1.95.0-x86_64-unknown-linux-gnu installed - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-08T10:54:11.2765950Z 
+2026-10-08T10:54:11.4346260Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-08T10:54:11.4684795Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-08T10:54:11.5172961Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-08T10:54:11.5213643Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-08T10:54:11.5327013Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-08T10:54:11.5697883Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [530 kB]
+2026-10-08T10:54:11.5731713Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-08T10:54:11.6094946Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main all Packages [640 B]
+2026-10-08T10:54:11.6285478Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.3 kB]
+2026-10-08T10:54:11.6369090Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1375 kB]
+2026-10-08T10:54:11.6424434Z Get:21 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [475 kB]
+2026-10-08T10:54:11.6517204Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [306 kB]
+2026-10-08T10:54:11.6822840Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
+2026-10-08T10:54:11.6824829Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1702 kB]
+2026-10-08T10:54:11.6915774Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [341 kB]
+2026-10-08T10:54:11.7202004Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+2026-10-08T10:54:11.7256398Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1761 kB]
+2026-10-08T10:54:11.7409291Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [401 kB]
+2026-10-08T10:54:11.7611843Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [55.0 kB]
+2026-10-08T10:54:11.7612611Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [14.3 kB]
+2026-10-08T10:54:11.8091916Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2026-10-08T10:54:11.8533077Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5764 B]
+2026-10-08T10:54:11.9128689Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [12.6 kB]
+2026-10-08T10:54:11.9317775Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1074 kB]
+2026-10-08T10:54:11.9825522Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [223 kB]
+2026-10-08T10:54:12.0326878Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [46.3 kB]
+2026-10-08T10:54:12.0735036Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1218 kB]
+2026-10-08T10:54:12.0800965Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [245 kB]
+2026-10-08T10:54:12.0907123Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+2026-10-08T10:54:12.1012876Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1566 kB]
+2026-10-08T10:54:12.1224017Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [361 kB]
+2026-10-08T10:54:12.1308184Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [11.6 kB]
+2026-10-08T10:54:19.7930756Z Fetched 12.8 MB in 1s (9616 kB/s)
+2026-10-08T10:54:20.5836770Z Reading package lists...
+2026-10-08T10:54:20.6143035Z Reading package lists...
+2026-10-08T10:54:20.7800752Z Building dependency tree...
+2026-10-08T10:54:20.7805698Z Reading state information...
+2026-10-08T10:54:20.9429509Z The following NEW packages will be installed:
+2026-10-08T10:54:20.9430401Z   ripgrep
+2026-10-08T10:54:20.9576441Z 0 upgraded, 1 newly installed, 0 to remove and 36 not upgraded.
+2026-10-08T10:54:20.9577127Z Need to get 1551 kB of archives.
+2026-10-08T10:54:20.9577685Z After this operation, 5335 kB of additional disk space will be used.
+2026-10-08T10:54:20.9578348Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-08T10:54:21.0487375Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ripgrep amd64 14.1.0-1 [1551 kB]
+2026-10-08T10:54:21.2831584Z Fetched 1551 kB in 0s (14.4 MB/s)
+2026-10-08T10:54:21.3003982Z Selecting previously unselected package ripgrep.
+2026-10-08T10:54:21.3189781Z (Reading database ... 
+2026-10-08T10:54:21.3190243Z (Reading database ... 5%
+2026-10-08T10:54:21.3191500Z (Reading database ... 10%
+2026-10-08T10:54:21.3191813Z (Reading database ... 15%
+2026-10-08T10:54:21.3192135Z (Reading database ... 20%
+2026-10-08T10:54:21.3192660Z (Reading database ... 25%
+2026-10-08T10:54:21.3193026Z (Reading database ... 30%
+2026-10-08T10:54:21.3193394Z (Reading database ... 35%
+2026-10-08T10:54:21.3193771Z (Reading database ... 40%
+2026-10-08T10:54:21.3194163Z (Reading database ... 45%
+2026-10-08T10:54:21.3194453Z (Reading database ... 50%
+2026-10-08T10:54:21.3234530Z (Reading database ... 55%
+2026-10-08T10:54:21.4286003Z (Reading database ... 60%
+2026-10-08T10:54:21.6347038Z (Reading database ... 65%
+2026-10-08T10:54:21.8255558Z (Reading database ... 70%
+2026-10-08T10:54:22.0279511Z (Reading database ... 75%
+2026-10-08T10:54:22.1722085Z (Reading database ... 80%
+2026-10-08T10:54:22.3754986Z (Reading database ... 85%
+2026-10-08T10:54:22.5447159Z (Reading database ... 90%
+2026-10-08T10:54:22.7323298Z (Reading database ... 95%
+2026-10-08T10:54:22.7324061Z (Reading database ... 100%
+2026-10-08T10:54:22.7324701Z (Reading database ... 202296 files and directories currently installed.)
+2026-10-08T10:54:22.7363389Z Preparing to unpack .../ripgrep_14.1.0-1_amd64.deb ...
+2026-10-08T10:54:22.7382489Z Unpacking ripgrep (14.1.0-1) ...
+2026-10-08T10:54:22.8004186Z Setting up ripgrep (14.1.0-1) ...
+2026-10-08T10:54:22.8027611Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-08T10:54:22.8045427Z Not building database; man-db/auto-update is not 'true'.
+2026-10-08T10:54:23.2830470Z 
+2026-10-08T10:54:23.2831823Z Running kernel seems to be up-to-date.
+2026-10-08T10:54:23.2832291Z 
+2026-10-08T10:54:23.2832414Z No services need to be restarted.
+2026-10-08T10:54:23.2832652Z 
+2026-10-08T10:54:23.2832775Z No containers need to be restarted.
+2026-10-08T10:54:23.2833219Z 
+2026-10-08T10:54:23.2833376Z No user sessions are running outdated binaries.
+2026-10-08T10:54:23.2833630Z 
+2026-10-08T10:54:23.2834018Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-08T10:54:24.0773290Z ripgrep 14.1.0
+2026-10-08T10:54:24.0773573Z 
+2026-10-08T10:54:24.0773783Z features:-simd-accel,+pcre2
+2026-10-08T10:54:24.0774505Z simd(compile):+SSE2,-SSSE3,-AVX2
+2026-10-08T10:54:24.0774926Z simd(runtime):+SSE2,+SSSE3,+AVX2
+2026-10-08T10:54:24.0775170Z 
+2026-10-08T10:54:24.0775365Z PCRE2 10.42 is available (JIT is available)
+2026-10-08T10:54:24.0781988Z Python 3.12.3
+2026-10-08T10:54:24.0820226Z ##[group]Run python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py"
+2026-10-08T10:54:24.0821078Z [36;1mpython3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py"[0m
+2026-10-08T10:54:24.0857009Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T10:54:24.0857425Z env:
+2026-10-08T10:54:24.0857714Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:24.0858049Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:24.0858396Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:24.0858705Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:24.0858995Z ##[endgroup]
+2026-10-08T10:54:24.3465799Z P8_SHARED_RUST_RUNTIME {"actual_command_entrypoints": {"cargo": {"child": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "child_lookup": "/home/runner/.cargo/bin/cargo", "parent": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "parent_lookup": "/home/runner/.cargo/bin/cargo"}, "rustc": {"child": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "child_lookup": "/home/runner/.cargo/bin/rustc", "parent": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "parent_lookup": "/home/runner/.cargo/bin/rustc"}, "rustup": {"child": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "child_lookup": "/home/runner/.cargo/bin/rustup", "parent": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "parent_lookup": "/home/runner/.cargo/bin/rustup"}}, "cargo_home": "/home/runner/.cargo", "child_environment_keys": ["CARGO_HOME", "GIT_CONFIG_NOSYSTEM", "GIT_NO_LAZY_FETCH", "GIT_TERMINAL_PROMPT", "HOME", "LANG", "LC_ALL", "PATH", "PYTHONDONTWRITEBYTECODE", "PYTHONNOUSERSITE", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN", "TZ", "XDG_CACHE_HOME", "XDG_CONFIG_HOME"], "child_path_prefix": "/usr/bin", "execution_env_origin": {"exact_function_text_sha256": "c3a53760f03ae6294b440cdbc73db37942e0c72f8c53b8d8b2730b39e94bc722", "operator_git_blob": "41ce2df9fd364de00bf2265aac6f4f791235e6a8"}, "ld_library_path_forwarded": false, "new_product_queries": 0, "rustup_home": "/home/runner/.rustup", "schema_version": 1, "scope": "Actual parent and isolated-HOME probes use an exact text copy of unchanged temporal3.1 execution_env, including resolved /usr/bin rg PATH prefix and optional LD_LIBRARY_PATH. No claim of complete OS shared-library isolation.", "status": "same_fixed_parent_and_child_rust_paths_verified", "toolchain": "1.95.0", "tools": {"cargo": {"actual_binary": {"bytes": 42185192, "mode": 493, "path": "/home/runner/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo", "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66"}, "child_entrypoint": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "direct_binary_version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n", "isolated_child_version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n", "parent_entrypoint": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "parent_version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n"}, "rustc": {"actual_binary": {"bytes": 644784, "mode": 493, "path": "/home/runner/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc", "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6"}, "child_entrypoint": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "direct_binary_version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n", "isolated_child_version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n", "parent_entrypoint": {"bytes": 21113232, "mode": 493, "path": "/home/runner/.cargo/bin/rustup", "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"}, "parent_version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n"}}}
+2026-10-08T10:54:24.3528262Z ##[group]Run python3 -I -S - <<'PY'
+2026-10-08T10:54:24.3528666Z [36;1mpython3 -I -S - <<'PY'[0m
+2026-10-08T10:54:24.3528946Z [36;1mimport ast, os[0m
+2026-10-08T10:54:24.3529244Z [36;1mfrom pathlib import Path[0m
+2026-10-08T10:54:24.3529626Z [36;1mroot = Path(os.environ["GITHUB_WORKSPACE"]) / "utility"[0m
+2026-10-08T10:54:24.3530111Z [36;1mfor rel in ("artifacts/benchmarks/prospective-temporal-v2/implementation/temporal.py",[0m
+2026-10-08T10:54:24.3530830Z [36;1m            "artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py"):[0m
+2026-10-08T10:54:24.3531300Z [36;1m    p = root / rel[0m
+2026-10-08T10:54:24.3531616Z [36;1m    ast.parse(p.read_bytes(), filename=str(p))[0m
+2026-10-08T10:54:24.3532028Z [36;1mprint("actual Python syntax parsed; not execution or acceptance")[0m
+2026-10-08T10:54:24.3532399Z [36;1mPY[0m
+2026-10-08T10:54:24.3567884Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T10:54:24.3568410Z env:
+2026-10-08T10:54:24.3568673Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:24.3568964Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:24.3569314Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:24.3569598Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:24.3569898Z ##[endgroup]
+2026-10-08T10:54:24.4026767Z actual Python syntax parsed; not execution or acceptance
+2026-10-08T10:54:24.4096967Z ##[group]Run python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py" prepare-data \
+2026-10-08T10:54:24.4097890Z [36;1mpython3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/benchmarks/prospective-temporal-v2/service-workflow/service_workflow.py" prepare-data \[0m
+2026-10-08T10:54:24.4098494Z [36;1m  --workspace "$GITHUB_WORKSPACE" \[0m
+2026-10-08T10:54:24.4098891Z [36;1m  --output "$RUNNER_TEMP/ptv2-data-preparation"[0m
+2026-10-08T10:54:24.4131863Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T10:54:24.4132228Z env:
+2026-10-08T10:54:24.4132514Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:24.4132898Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:24.4133191Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:24.4133527Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:24.4135903Z   GH_TOKEN: ***
+2026-10-08T10:54:24.4136188Z ##[endgroup]
+2026-10-08T10:54:27.1008735Z ##[group]Run python3 -I -S - <<'PY'
+2026-10-08T10:54:27.1009144Z [36;1mpython3 -I -S - <<'PY'[0m
+2026-10-08T10:54:27.1009444Z [36;1mimport json, os[0m
+2026-10-08T10:54:27.1009737Z [36;1mfrom pathlib import Path[0m
+2026-10-08T10:54:27.1010089Z [36;1mroot = Path(os.environ["RUNNER_TEMP"]) / "ptv2-data-preparation"[0m
+2026-10-08T10:54:27.1010637Z [36;1mfor rel in ("workflow-failure.json", "result.json", "execution/failure.json", "execution/result.json"):[0m
+2026-10-08T10:54:27.1011101Z [36;1m    path = root / rel[0m
+2026-10-08T10:54:27.1011435Z [36;1m    if path.is_file():[0m
+2026-10-08T10:54:27.1011743Z [36;1m        value = json.loads(path.read_bytes())[0m
+2026-10-08T10:54:27.1012186Z [36;1m        keys = ("status", "error_type", "actual_helper_process_exit_code", "actual_scheduled_results",[0m
+2026-10-08T10:54:27.1012758Z [36;1m                "scheduled_product_queries", "new_product_queries", "data_sealed", "task_acceptance")[0m
+2026-10-08T10:54:27.1013364Z [36;1m        print(rel + " " + json.dumps({key: value[key] for key in keys if key in value}))[0m
+2026-10-08T10:54:27.1013961Z [36;1mPY[0m
+2026-10-08T10:54:27.1048707Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T10:54:27.1049087Z env:
+2026-10-08T10:54:27.1049327Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:27.1049688Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:27.1049975Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:27.1050301Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:27.1050587Z ##[endgroup]
+2026-10-08T10:54:27.1281456Z result.json {"status": "original_native_freeze_validate_recorded_before_data_seal", "scheduled_product_queries": 0, "data_sealed": false}
+2026-10-08T10:54:27.1372082Z ##[group]Run actions/upload-artifact@v4
+2026-10-08T10:54:27.1372443Z with:
+2026-10-08T10:54:27.1372744Z   name: p8-prospective-temporal-prepared-data
+2026-10-08T10:54:27.1373124Z   path: /home/runner/work/_temp/ptv2-data-preparation
+2026-10-08T10:54:27.1373475Z   include-hidden-files: true
+2026-10-08T10:54:27.1373793Z   if-no-files-found: error
+2026-10-08T10:54:27.1374400Z   compression-level: 6
+2026-10-08T10:54:27.1374667Z   overwrite: false
+2026-10-08T10:54:27.1374906Z env:
+2026-10-08T10:54:27.1375243Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:27.1375535Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:27.1375834Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:27.1376139Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:27.1376410Z ##[endgroup]
+2026-10-08T10:54:27.2804962Z (node:3681) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T10:54:27.2805778Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T10:54:27.2945088Z With the provided path, there will be 51 files uploaded
+2026-10-08T10:54:27.2946588Z Artifact name is valid!
+2026-10-08T10:54:27.2947082Z Root directory input is valid!
+2026-10-08T10:54:27.6163976Z Beginning upload of artifact content to blob storage
+2026-10-08T10:54:28.3206624Z (node:3681) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-08T10:54:28.7773547Z Uploaded bytes 8388608
+2026-10-08T10:54:29.1936157Z Uploaded bytes 16777216
+2026-10-08T10:54:29.2808670Z Uploaded bytes 19401855
+2026-10-08T10:54:29.3200972Z Finished uploading artifact content to blob storage!
+2026-10-08T10:54:29.3201896Z SHA256 digest of uploaded artifact zip is 13d59836387c02a3c81b36f0c409c400bbc87238db58dad5b6825974fd6f39c0
+2026-10-08T10:54:29.3203554Z Finalizing artifact upload
+2026-10-08T10:54:29.5845516Z Artifact p8-prospective-temporal-prepared-data.zip successfully finalized. Artifact ID 11544885640
+2026-10-08T10:54:29.5846446Z Artifact p8-prospective-temporal-prepared-data has been successfully uploaded! Final size is 19401855 bytes. Artifact ID is 11544885640
+2026-10-08T10:54:29.5850805Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37766434808/artifacts/11544885640
+2026-10-08T10:54:29.5985585Z ##[group]Run actions/upload-artifact@v4
+2026-10-08T10:54:29.5985921Z with:
+2026-10-08T10:54:29.6110258Z   name: p8-prospective-temporal-prepared-data-shared-rust
+2026-10-08T10:54:29.6110769Z   path: /home/runner/work/_temp/ptv2-shared-rust-environment.json
+2026-10-08T10:54:29.6111082Z   if-no-files-found: error
+2026-10-08T10:54:29.6111300Z   compression-level: 6
+2026-10-08T10:54:29.6111500Z   overwrite: false
+2026-10-08T10:54:29.6111754Z   include-hidden-files: false
+2026-10-08T10:54:29.6111971Z env:
+2026-10-08T10:54:29.6112152Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T10:54:29.6112374Z   RUSTUP_TOOLCHAIN: 1.95.0
+2026-10-08T10:54:29.6112592Z   RUSTUP_HOME: /home/runner/.rustup
+2026-10-08T10:54:29.6112833Z   CARGO_HOME: /home/runner/.cargo
+2026-10-08T10:54:29.6113040Z ##[endgroup]
+2026-10-08T10:54:29.7514946Z (node:3694) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T10:54:29.7515897Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T10:54:29.7552916Z With the provided path, there will be 1 file uploaded
+2026-10-08T10:54:29.7557133Z Artifact name is valid!
+2026-10-08T10:54:29.7557633Z Root directory input is valid!
+2026-10-08T10:54:30.0254022Z Beginning upload of artifact content to blob storage
+2026-10-08T10:54:30.0395039Z (node:3694) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-08T10:54:30.1909843Z Uploaded bytes 1501
+2026-10-08T10:54:30.2339153Z Finished uploading artifact content to blob storage!
+2026-10-08T10:54:30.2340022Z SHA256 digest of uploaded artifact zip is c3b1b65c818b539e32a54a56af4cbdc524007b1b1b09b9ec85c9f727bfacd89d
+2026-10-08T10:54:30.2341032Z Finalizing artifact upload
+2026-10-08T10:54:30.4629337Z Artifact p8-prospective-temporal-prepared-data-shared-rust.zip successfully finalized. Artifact ID 11543799879
+2026-10-08T10:54:30.4631234Z Artifact p8-prospective-temporal-prepared-data-shared-rust has been successfully uploaded! Final size is 1501 bytes. Artifact ID is 11543799879
+2026-10-08T10:54:30.4636595Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37766434808/artifacts/11543799879
+2026-10-08T10:54:30.4771345Z Post job cleanup.
+2026-10-08T10:54:30.5480885Z [command]/usr/bin/git version
+2026-10-08T10:54:30.5511729Z git version 2.55.0
+2026-10-08T10:54:30.5540199Z Temporarily overriding HOME='/home/runner/work/_temp/41c57f8d-3c11-4250-ab73-7843bb4ddfef' before making global git config changes
+2026-10-08T10:54:30.5541525Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:54:30.5545500Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/upstream
+2026-10-08T10:54:30.5574730Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:30.5602810Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:30.5766100Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:30.5789895Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:30.5947327Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:30.5969853Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:30.6255389Z Post job cleanup.
+2026-10-08T10:54:30.7017963Z [command]/usr/bin/git version
+2026-10-08T10:54:30.7050214Z git version 2.55.0
+2026-10-08T10:54:30.7079079Z Temporarily overriding HOME='/home/runner/work/_temp/5fb3cb8d-bd43-44f0-8723-f55a0554812c' before making global git config changes
+2026-10-08T10:54:30.7080244Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:54:30.7084085Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/candidate
+2026-10-08T10:54:30.7115570Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:30.7141619Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:30.7322413Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:30.7346417Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:30.7521396Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:30.7545252Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:30.7824968Z Post job cleanup.
+2026-10-08T10:54:30.8538442Z [command]/usr/bin/git version
+2026-10-08T10:54:30.8569120Z git version 2.55.0
+2026-10-08T10:54:30.8595737Z Temporarily overriding HOME='/home/runner/work/_temp/29791649-fe83-4caf-bf63-99d51b6c7d6b' before making global git config changes
+2026-10-08T10:54:30.8596583Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T10:54:30.8600554Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex/utility
+2026-10-08T10:54:30.8629223Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T10:54:30.8654865Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T10:54:30.8835705Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T10:54:30.8860650Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T10:54:30.9039266Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T10:54:30.9062153Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T10:54:30.9342245Z Cleaning up orphan processes
+2026-10-08T10:54:30.9541595Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

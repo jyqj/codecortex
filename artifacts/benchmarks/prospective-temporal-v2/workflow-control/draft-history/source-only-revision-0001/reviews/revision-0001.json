@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "protocol_id": "p8-004-prospective-temporal-v2",
+  "version": "source-only-revision-0001",
+  "author_id": "/root/temporal_author",
+  "requesting_reviewer_id": "/root/temporal_gold_review",
+  "status": "implemented_pending_independent_recheck",
+  "reviewer_request": {
+    "channel": "collaboration message",
+    "sender": "/root/temporal_gold_review",
+    "payload": "Independent source finding for f0008: initial en_original 'which helper bounds the length prefix' and zh_translation '哪个辅助方法负责限制长度前缀' can denote BufferedSocket.recv_until enforcement, while the intended/current complete gold denotes read_ns plus _calc_msgsize_maxsize calculation. Please preserve the initial query/gold and create a versioned source-only query correction to make both originals explicitly ask calculation: English 'which helper calculates the length-prefix read bound'; Chinese '哪个辅助方法负责计算长度前缀的读取上限'. Existing two paraphrases already ask calculation; gold and all task/source/quotas stay unchanged. Record original/revised text, rationale, disagreement/request event and actual creation/readback clocks. I will independently compare and review the new immutable blob before any acceptance. Remaining negatives/evidence checks underway; no product/scorer/runtime execution.",
+    "author_actual_clock_after_receiving_request": {
+      "current_time": "2026-10-08 10:38:52 UTC"
+    }
+  },
+  "reason": "Clarify that the requested helper calculates the prefix-read limit rather than itself enforcing it. This preserves the initial intended task and evidence while removing a source-level wording ambiguity.",
+  "changes": [
+    {
+      "row_id": "ptv2.boltons.f0008.en_original",
+      "original_text": "Where is NetstringSocket.read_ns's per-call payload limit applied, and which helper bounds the length prefix before an oversized announced payload is rejected?",
+      "revised_text": "Where is NetstringSocket.read_ns's per-call payload limit applied, and which helper calculates the length-prefix read bound before an oversized announced payload is rejected?"
+    },
+    {
+      "row_id": "ptv2.boltons.f0008.zh_translation",
+      "original_text": "NetstringSocket.read_ns 在哪里应用单次调用的负载长度限制？在拒绝声明长度过大的负载前，哪个辅助方法负责限制长度前缀？",
+      "revised_text": "NetstringSocket.read_ns 在哪里应用单次调用的负载长度限制？在拒绝声明长度过大的负载前，哪个辅助方法负责计算长度前缀的读取上限？"
+    }
+  ],
+  "original_queries": {
+    "blob": "4026bef92552177cfc84a5d3bb9b36f14567b6f5",
+    "bytes": 48406,
+    "sha256": "a889fe8e0ca042ccb25951e169d0bd280afdb6c44461c6742d6ead9d6ee53531",
+    "preserved": true
+  },
+  "revised_queries": {
+    "blob": "a9ab505a98af892834f83d98cd5a9548ad9abd63",
+    "bytes": 48436,
+    "sha256": "aa58ad4c66d68a812f13fc827c4bfdbbafc7f5c186dbfd66ec5f8f2c81d525b5"
+  },
+  "unchanged_gold_review_blob": "d71ae27f786710bc468336d5e5af9584f5e8439d",
+  "create_blob_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "sha": "a9ab505a98af892834f83d98cd5a9548ad9abd63"
+    },
+    "isError": false
+  },
+  "post_write_clock_response": {
+    "current_time": "2026-10-08 10:39:44 UTC"
+  },
+  "readback": {
+    "exact_bytes_equal": true,
+    "computed_metadata": {
+      "bytes": 48436,
+      "sha256": "aa58ad4c66d68a812f13fc827c4bfdbbafc7f5c186dbfd66ec5f8f2c81d525b5",
+      "git_blob_oid": "a9ab505a98af892834f83d98cd5a9548ad9abd63"
+    },
+    "service_returned_oid": null,
+    "post_read_clock_response": {
+      "current_time": "2026-10-08 10:39:44 UTC"
+    }
+  },
+  "checks": {
+    "changed_query_rows": 2,
+    "other_query_rows_unchanged": 46,
+    "all_non_query_row_fields_unchanged": true,
+    "gold_unchanged": true,
+    "source_unchanged": true,
+    "quotas_unchanged": true,
+    "candidate_measurement_unchanged": true
+  },
+  "product_queries": 0,
+  "scorer_queries": 0,
+  "source_only": true,
+  "independent_acceptance": null
+}

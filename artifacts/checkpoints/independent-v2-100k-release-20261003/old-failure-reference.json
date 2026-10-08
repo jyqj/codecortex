@@ -1,0 +1,22 @@
+{
+  "evidence_sha": "a8452be903e1a88c935e267f5d76879ce7ee2716",
+  "summary_blob_sha256": "a4fe4c35cb418c9aa8327334baadafe8168c438a7e693b5a64ee26cd8012313e",
+  "source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+  "status": "failed",
+  "cold_seconds": 21.638296750000052,
+  "failures": [
+    {
+      "phase": "backfill-drain",
+      "type": "TimeoutError",
+      "error": "backfill did not become ready in 300s",
+      "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/run.py\", line 106, in <module>\n    if time.monotonic()>=deadline:raise TimeoutError(\"backfill did not become ready in 300s\")\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: backfill did not become ready in 300s\n"
+    }
+  ],
+  "not_run": [
+    "ready_manifest_integrity_fk",
+    "bounded_concurrency",
+    "normal_exit",
+    "reopen_stability"
+  ],
+  "note": "Original failure remains at immutable evidence SHA. Cleanup semantic_manifest 29696 is not a deadline success. No old failure is rewritten."
+}

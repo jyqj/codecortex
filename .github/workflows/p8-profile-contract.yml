@@ -1,0 +1,25 @@
+name: P8 explicit profile contract
+on:
+  push:
+    branches: [work/p8-profile-contract-996727-20261008]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  helper-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve old and new wrapper and build-profile controls
+        run: |
+          mkdir -p artifacts/checkpoints/p8-product-repair-20261008/profile-contract
+          set -o pipefail
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_compat.py -v 2>&1 | tee artifacts/checkpoints/p8-product-repair-20261008/profile-contract/p8-compat.log
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p7_stdio_build_profile.py -v 2>&1 | tee artifacts/checkpoints/p8-product-repair-20261008/profile-contract/build-profile.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-explicit-profile-contract
+          path: artifacts/checkpoints/p8-product-repair-20261008/profile-contract
+          if-no-files-found: error

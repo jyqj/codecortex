@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a fixed dev-profile stdio product with source/toolchain/feature identity."""
+"""Build a fixed stdio product with its actual dev/release and source/toolchain identity."""
 import argparse
 import json
 import os
@@ -56,7 +56,7 @@ def toolchain_identity(root, environment):
     return result
 
 
-def build(root, output, package_kind, offline):
+def build(root, output, package_kind, offline, release=False):
     # Every invocation owns a new evidence directory. Failed/repeated builds
     # cannot overwrite an older valid receipt or its raw build log.
     output.mkdir(parents=True, exist_ok=False)
@@ -67,6 +67,8 @@ def build(root, output, package_kind, offline):
         command.extend(["--features", "semantic"])
     if offline:
         command.append("--offline")
+    if release:
+        command.append("--release")
     result = None
     try:
         before = source_snapshot(root)
@@ -134,7 +136,7 @@ def build(root, output, package_kind, offline):
             "compiler_environment": compiler_overrides,
             "cargo_target_dir": str(target_dir), "cargo_target_initially_absent": True,
             "cargo_build_dir": str(target_dir),
-            "build_profile": "dev", "actual_cargo_profile": artifact["profile"],
+            "build_profile": "release" if release else "dev", "actual_cargo_profile": artifact["profile"],
             "builder_sha256": runner_inputs[str(Path(__file__).resolve())],
             "identity_helper_sha256": runner_inputs[str(Path(__file__).with_name("p7_build_identity.py").resolve())],
             "scope": "Committed crate/Cargo content, compiler invocation explicitly selected for Cargo with wrappers disabled, feature artifact and copied binary. Compiler proxies are identified by their invocation, resolved bytes and reported version; no behavior or hermetic-build certification.",
@@ -144,7 +146,7 @@ def build(root, output, package_kind, offline):
         print(json.dumps({"binary": str(snapshot), "receipt": str(receipt_path),
                           "package_kind": package_kind, "features": artifact["features"],
                           "sha256": digest, "source_commit": before["source_commit"],
-                          "source_inputs": before["input_count"], "profile": "dev"}))
+                          "source_inputs": before["input_count"], "profile": "release" if release else "dev"}))
         return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         (output / "build-failure.json").write_bytes(json_bytes({
@@ -160,10 +162,11 @@ def main():
     parser.add_argument("--package-kind", choices=("default", "semantic"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--release", action="store_true", help="record an actual Cargo --release build")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = args.output_dir.resolve()
-    return build(root, output, args.package_kind, args.offline)
+    return build(root, output, args.package_kind, args.offline, release=args.release)
 
 
 if __name__ == "__main__":

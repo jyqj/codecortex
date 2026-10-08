@@ -82,7 +82,9 @@ def git_checkout_lock(root, expected):
     require(not git(root, "submodule", "status", "--recursive").strip(), "expanded submodule source lock required")
 
 
-def inspect_lock(lock_file):
+def inspect_lock(lock_file, *, configuration_profile="local-default"):
+    require(configuration_profile in ("local-default", "local-text-hidden"),
+            "unknown explicit configuration profile")
     lock_file = path(lock_file)
     lock = read_json(lock_file)
     require(set(lock) == {"schema_version", "dataset", "repository", "commit", "source_mode", "input_root",
@@ -129,7 +131,17 @@ def inspect_lock(lock_file):
         suite_path, _ = pin_file(root / name(entry["path"]), entry["sha256"])
         suite = read_json(suite_path)
         require(suite["scoring"] == PROFILES[profile], "mixed scoring profile")
-        require(suite["engine_config"] == {"auto_index": {"enabled": False}}, "only the explicit local default config is admitted")
+        if configuration_profile == "local-text-hidden":
+            require(suite["engine_config"] == {
+                "auto_index": {"enabled": False},
+                "indexing": {"include_text_files": True, "include_hidden_files": True}}
+                and suite["engine_config"]["auto_index"]["enabled"] is False
+                and suite["engine_config"]["indexing"]["include_text_files"] is True
+                and suite["engine_config"]["indexing"]["include_hidden_files"] is True,
+                "explicit local-text-hidden configuration must match exactly")
+        else:
+            require(suite["engine_config"] == {"auto_index": {"enabled": False}}, "only the explicit local default config is admitted")
+
         base = str(suite_path.parent.relative_to(root))
         query_path = joined_input(root, base, suite["queries"])
         pin_file(query_path, entry["query_sha256"])
@@ -167,6 +179,8 @@ def inspect_lock(lock_file):
                 "evaluator_build_receipt_sha256": evaluator["build_receipt_sha256"],
                 "backend": {"kind": backend["kind"], "sha256": backend["sha256"]},
                 "scorer_sha256": digest(scorer["files"]), "comparison_policy_sha256": lock["comparison_policy"]["sha256"]}
+    if configuration_profile != "local-default":
+        identity["configuration_profile"] = configuration_profile
     return {"lock": lock, "lock_path": lock_file, "root": root, "binary": binary,
             "backend_binary": backend_binary, "policy": policy, "suites": suites,
             "identity": identity, "input_paths": input_paths}
@@ -247,8 +261,8 @@ def check_run(run, suite, process_exit):
             "adapter": manifest["adapter"], "adapter_version": manifest["adapter_version"]}
 
 
-def run_locked(lock_file, output, *, validate_only=False):
-    checked = inspect_lock(lock_file)
+def run_locked(lock_file, output, *, validate_only=False, configuration_profile="local-default"):
+    checked = inspect_lock(lock_file, configuration_profile=configuration_profile)
     output = path(output, exists=False)
     disjoint(output, checked["input_paths"])
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -294,7 +308,7 @@ def run_locked(lock_file, output, *, validate_only=False):
             require(raw_inventory(run) == before, "original raw run changed during replay")
             result["profiles"][profile] = {**measured, "raw_files": before, "replay_exit_code": replayed["exit_code"]}
             code = max(code, executed["exit_code"])
-        require(inspect_lock(lock_file)["identity"] == checked["identity"], "input identity drift during run")
+        require(inspect_lock(lock_file, configuration_profile=configuration_profile)["identity"] == checked["identity"], "input identity drift during run")
         result["status"] = "validated_inputs_only" if validate_only else ("baseline_recorded_not_quality_certified" if code == 0 else "gate_not_passed")
     except (Invalid, OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as exc:
         code = 2
@@ -376,6 +390,9 @@ def main(argv=None):
     run.add_argument("--lock", required=True, type=Path)
     run.add_argument("--output", required=True, type=Path)
     run.add_argument("--validate-only", action="store_true")
+    run.add_argument("--configuration-profile", choices=("local-default", "local-text-hidden"),
+                     default="local-default",
+                     help="explicit source admission configuration; original default remains strict")
     compare = commands.add_parser("compare")
     compare.add_argument("--left", required=True, type=Path)
     compare.add_argument("--right", required=True, type=Path)
@@ -383,7 +400,8 @@ def main(argv=None):
     compare.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     try:
-        result, code = (run_locked(args.lock, args.output, validate_only=args.validate_only) if args.command == "run"
+        result, code = (run_locked(args.lock, args.output, validate_only=args.validate_only,
+                                   configuration_profile=args.configuration_profile) if args.command == "run"
                         else compare_runs(args.left, args.right, args.evaluator, args.output))
         print(json.dumps({"status": result["status"], "exit_code": code, "release_certified": False}))
         return code

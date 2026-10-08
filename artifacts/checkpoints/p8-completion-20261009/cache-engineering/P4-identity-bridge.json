@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "conclusion": "accepted_scoped_P4_exact_publication_and_validation_delta",
+  "reviewer": "/root/pr_audit",
+  "source": "f5518ca6d21f54cfd324e33edc3b739608ae28b8",
+  "tree": "3237c7fedfe9b3f3966cf675e1e1bde232405f72",
+  "parent": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "public_api_and_imported_git_object_identity_match": true,
+  "whole_tree_diff_only": [
+    "M\tscripts/p8_runtime.py",
+    "A\tscripts/tests/test_p8_runtime_cache.py"
+  ],
+  "complete_production_inputs_unchanged": 1087,
+  "production_source_modes_unchanged": true,
+  "production_delta_from7354_unchanged_count": 22,
+  "prior_validation_inputs": 135,
+  "current_validation_inputs": 136,
+  "validation_added": [
+    "scripts/tests/test_p8_runtime_cache.py"
+  ],
+  "validation_modified": [
+    "scripts/p8_runtime.py"
+  ],
+  "all_other134_validation_hashes_inherited_exactly": true,
+  "fixed_new_bytes": {
+    "scripts/p8_runtime.py": {
+      "sha256": "63ad7e850d5cfeca9830db747fe8137c9200bc0f5d4d446ab678ec96f040617e",
+      "bytes": 51214,
+      "blob": "146f2a91799d3e50d069a5f00a694592ea343138"
+    },
+    "scripts/tests/test_p8_runtime_cache.py": {
+      "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
+      "bytes": 20087,
+      "blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf"
+    }
+  },
+  "prior_review_sha256": "9e19bdf897af21fef00a78e3291921aa445d68f77b7115a44ff0f719580785e9",
+  "intake_sha256": "55715686e42b64af0b122e0f5366de9ad3afbbe6f6ceee8d748e3de9a3660455",
+  "cache_independent_review_sha256": "0614a66b096b4726a544a3fd3093cc196a8d5a799f13e5166f58bd0a3594b6f9",
+  "small_actual_probe_independent_review_sha256": "d7e0308e7104e04f30f3fca46f80da162768b09268b1ebf7c02ead4e5032e899",
+  "limitations": [
+    "P4 cache-only observer change; no DDL/prefix/oracle candidate incorporated.",
+    "Existing source review covers unchanged Rust inputs; new validation paths/bytes require actual R3/registry/pins binding and execution of original guards.",
+    "Actual small probe is originalG product plusP4-equivalent observer, not a newly builtP4 product or formal one-hour run.",
+    "No heldout corpus body read; full-tree Git difference plus prior accepted input maps establishes unchanged source.",
+    "TODO remains29, no closure."
+  ]
+}

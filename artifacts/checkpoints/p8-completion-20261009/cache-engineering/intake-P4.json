@@ -1,11 +1,7 @@
 {
-  "author_independence": {
-    "/root": "Non-author of this cache delta; inspected the changes and retained controls, executed the real G-binary/v3-observer probe, mechanically checked the complete P4 Git inventory, and coordinated source approval. Probe authorship is distinguished from observer authorship.",
-    "/root/acceptance_audit": "Author of the new cache observer and its tests; author controls are recorded without self-approval.",
-    "/root/pr_audit": "Non-author of this cache delta; independently inspected code and original product protocol, executed 39 v2 controls, verified v3 is only three additive timeout metadata lines, and independently replayed the real small-probe wire records."
-  },
   "base": "7354db236c9d9850a75f31672697ae9eab44565e",
   "changed_source_input_count": 22,
+  "classification": "mechanically verified immutable input inventory; not a source approval or execution attestation",
   "complete_input_count": 1087,
   "complete_inputs": {
     "Cargo.lock": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
@@ -1096,38 +1092,9 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "engineering_archive": {
-    "bytes": 916043,
-    "manifest_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-manifest.json",
-    "manifest_sha256": "a6351cbec2b9225d2a805ab550d7b230affaf9016f19572bf3afff1b2b4bbd91",
-    "original_bytes": 5533275,
-    "original_files": 167,
-    "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz",
-    "sha256": "0a5363280bd60773f57ed75431d76be568ff19f842998f61803d373165026830"
-  },
-  "findings": [
-    "All 1087 crate/Cargo inputs, their modes, and the 22 BASE-to-product source deltas equal the prior independently accepted P3/R2. Exactly one validation input changes and one is added; 134 prior validation inputs remain byte-identical. Original CI, all six frozen v14 paths, and every Rust source file are unchanged.",
-    "Soak compound reads retain before-status, original symbol query, local hybrid query, and after-status RPCs. The original 3601-operation/2400-read denominator is unchanged; 9600 workload RPCs are declared. All RPCs, validation, and shared admission-lock wait remain in the original read timing. Mixed workload behavior is unchanged.",
-    "Actual native PID, complete generation, exact cache counter deltas, current stable.py source bytes/spans/entity and pool completion are checked. A changed generation requires a cache miss; a repeated generation requires a hit, including an epoch-preserving restore. All-zero cache counters cannot pass.",
-    "Quarter coverage uses actual hybrid and successful mutation completion times. Independent counterexamples exposed an incorrect status structure and offered-time coverage; both were fixed and all failed attempts are retained. Four execution quarters each require observed hits, misses and invalidations.",
-    "Original one-hour duration, operation/sample counts, 1Hz resource sampling, RSS gate, compaction and branch cycle, 512MiB raw budget, worker cleanup bounds, terminal outcome rules, and endpoint full-build 15-table oracle remain unchanged. The original Rust replayer validates original outcomes and symbol responses; the additive cache evidence is validated by Python.",
-    "Author v3 protocol controls actually passed 39 tests, with unchanged before/after source. The non-author independently executed 39 v2 controls and verified v3 changes only three timeout metadata lines. These are not described as one combined actual full P4 CI execution.",
-    "The separately identified real engineering probe used original G artifact 11573313154 product bytes with SHA256 9ebbd85103ae3d4e88fc13d2fcf6144438a0dfbcfba44cbe6a4e0232bf8a8f7e and exact v3 observer bytes: one full build, six real mutations/incremental builds, 14 compound reads and 56 read RPCs, five generation invalidations, same native PID, and clean EOF/exit0. The non-author independently matched all request/response/wire rows and all 58 sealed file hashes. It is a 0.648-second sequential engineering probe, not a shortened formal soak.",
-    "The engineering archive preserves 167 files and 5533275 original bytes, including prior failed and superseded attempts, before/after source records, raw small-probe requests/responses and process records. Every archived member was actually roundtrip-verified. The original 27MB product binary remains referenced by its immutable Actions artifact and member/hash rather than duplicated here."
-  ],
   "heldout_corpus_bodies_read": false,
-  "independent_reviewers": [
-    "/root",
-    "/root/pr_audit"
-  ],
-  "limitations": [
-    "This source approval closes no TODO and supplies no full P4 CI, one-hour cache, scale, quality or release certification.",
-    "The real small probe retains distinct G product and v3 observer identities. No G or G2 execution is relabeled as a P4/G3 execution. Original G symbol-only soak cache counters were zero; final cache acceptance requires a new original-duration successful run.",
-    "The status/symbol/hybrid/status per-RPC timeouts are 30/60/60/30 seconds. Their sequential sum is 180 seconds excluding admission wait; this is not a whole-operation 60-second guarantee or a new SLA.",
-    "Shared query pool counters and the same native process do not prove individual OS-thread or semantic-worker identity. Semantic providers remain disabled for this workload; no paid or heldout data is used.",
-    "Existing original G scale observations may remain under their true G identity only after separately checking all executed input invariance and every original shard. New runtime observer timings are not directly comparable with symbol-only soak timings.",
-    "Product/review/registry pins must be installed in a subsequent exact-diff-reviewed commit. Original source proof behavior, frozen historical gates, CI and acceptance thresholds remain unchanged."
-  ],
+  "inherited_input_count": 1082,
+  "method": "independent ls-tree mode/path inventory; fixed Git blob bytes hashed with SHA-256; source delta BASE..source; no worktree mutation or contents copied",
   "paths": {
     "crates/cc-eval/src/benchmark/oracle.rs": {
       "before_sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
@@ -1218,39 +1185,9 @@
       "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
     }
   },
-  "prior_accepted_review": {
-    "complete_source_inputs_unchanged": true,
-    "path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
-    "review_commit": "64ea77a36b6fbb9b755a2e24e5ff9e7cd678b1de",
-    "scope": "Prior independent acceptance is inherited for exact byte-identical inputs only",
-    "sha256": "9e19bdf897af21fef00a78e3291921aa445d68f77b7115a44ff0f719580785e9",
-    "source": "b11addeed93b02c7b840bd3b61a452ce0e671287",
-    "validation_inputs_unchanged": 134
-  },
-  "review_evidence": {
-    "actual_small_probe": {
-      "archive": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz",
-      "member": "actual-small-probe/run-01/receipt.json",
-      "sha256": "334cb82e9e498ccb518eef3519dbba502269c91619bfcc5dee03902203fe720a"
-    },
-    "author_v3_controls": {
-      "archive": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz",
-      "member": "candidate/validation-v3-receipt.json",
-      "sha256": "2110a73e5f584dec4d16bb6425567d7170c7292de97c640eddb68e92e84f67cd"
-    },
-    "non_author_cache_review": {
-      "archive": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz",
-      "member": "independent-review/final-review.json",
-      "sha256": "0614a66b096b4726a544a3fd3093cc196a8d5a799f13e5166f58bd0a3594b6f9"
-    },
-    "non_author_small_probe_review": {
-      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/actual-small-probe-independent-audit.json",
-      "sha256": "d7e0308e7104e04f30f3fca46f80da162768b09268b1ebf7c02ead4e5032e899"
-    }
-  },
   "schema_version": 1,
-  "scope": "independently_reviewed_source_and_validation_inputs",
   "source": "f5518ca6d21f54cfd324e33edc3b739608ae28b8",
+  "source_bytes": 18685648,
   "source_modes": {
     "Cargo.lock": "100644",
     "Cargo.toml": "100644",
@@ -2341,17 +2278,12 @@
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "100644"
   },
   "source_tree": "3237c7fedfe9b3f3966cf675e1e1bde232405f72",
-  "unresolved_blockers": [],
-  "validation_delta_from_prior": {
-    "scripts/p8_runtime.py": {
-      "before_sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
-      "sha256": "63ad7e850d5cfeca9830db747fe8137c9200bc0f5d4d446ab678ec96f040617e"
-    },
-    "scripts/tests/test_p8_runtime_cache.py": {
-      "before_sha256": null,
-      "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
-    }
-  },
+  "validation_bytes": 2848420,
+  "validation_exclusions": [
+    ".github/workflows/ci.yml",
+    "scripts/reviewed-source-registry-v15.json",
+    "scripts/verify_reviewed_source_v15.py"
+  ],
   "validation_input_count": 136,
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
@@ -2629,5 +2561,5 @@
     "tests/source_integrity/v14_historical_test_adapter.py": "100644",
     "tests/source_integrity/v15_historical_test_adapter.py": "100644"
   },
-  "verdict": "accepted_scoped"
+  "verdict": "pending_review_and_actual_validation"
 }

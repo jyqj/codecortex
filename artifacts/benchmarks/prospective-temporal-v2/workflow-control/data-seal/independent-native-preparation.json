@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "protocol_id": "p8-004-prospective-temporal-v2",
+  "reviewer": "/root/p7_wiring",
+  "review_kind": "independent_actual_native_preparation_archive_and_input_integrity_review",
+  "decision": "accepted_native_preparation_only",
+  "actual_review_completion_clock": {
+    "current_time": "2026-10-08 11:11:32 UTC"
+  },
+  "metadata_only": true,
+  "contains_question_text": false,
+  "contains_gold_spans_symbols_or_source_bodies": false,
+  "original_service": {
+    "run_id": 37766434808,
+    "run_attempt": 1,
+    "job_id": 113275128365,
+    "utility_commit": "4ed046554522c61bfc02e297fe01b8e0b22f0c27",
+    "status": "completed",
+    "conclusion": "success",
+    "original_run_blob": "fa2cc6ed85d3ca0ead2d6c76b9a6b9ad597eb64a",
+    "original_job_blob": "9f6f3942656685babd6b563279743cc4d7e3e42b"
+  },
+  "readback": {
+    "run_id": 37766641135,
+    "utility_commit": "399fdc0ed265b3021c0b32de4fcf61462f4258fe",
+    "archive_commit": "f206c4c6973db2882673a375463e3891893b7743",
+    "archive_tree": "1a117d437922ddbf888d68670acf2930d7a0aaed",
+    "export_manifest": {
+      "blob": "c0dc44329e4e9db09fbe1fee8750ffec0f597048",
+      "sha256": "934f26e80037d13860363a7f763caf7ea383ccdba8f846a2b5133161e9812463",
+      "bytes": 72891
+    },
+    "all88_exported_paths_accounted_for": true,
+    "unique_binary_chunks_fetched_and_hashed": 26,
+    "unique_UTF8_blobs_fetched_and_hashed": 57,
+    "all83_unique_export_blobs_actually_verified": true,
+    "existing_original_metadata_preserved": true
+  },
+  "archives": [
+    {
+      "kind": "prepare",
+      "artifact_id": 11544885640,
+      "artifact_name": "p8-prospective-temporal-prepared-data",
+      "conclusion": "success",
+      "export_prefix": "artifacts/benchmarks/prospective-temporal-v2/actual-native-preparation/37766434808/prepare",
+      "run_attempt": 1,
+      "run_id": 37766434808,
+      "workflow_head": "4ed046554522c61bfc02e297fe01b8e0b22f0c27",
+      "zip_bytes": 19401855,
+      "zip_sha256": "13d59836387c02a3c81b36f0c409c400bbc87238db58dad5b6825974fd6f39c0",
+      "original_artifact_metadata_blob": "a3e2efa725cb98db789fdffd7068cd8902653908",
+      "original_complete_member_inventory_blob": "e7561cc78a4bc90ffc7876650a425033d2ef5e0e",
+      "original_zip_restoration_manifest_blob": "d3c40c5389437fbb0d3694511660b018a2414153",
+      "whole_zip_independently_reassembled": true,
+      "whole_zip_sha256_matches_original_service_digest": true,
+      "independently_inflated_members": 51,
+      "expanded_bytes": 60221394,
+      "every_member_bytes_mode_CRC32_SHA256_matches_original_inventory": true,
+      "includes_actual_product_and_evaluator_binary_payloads": true
+    },
+    {
+      "kind": "prepare-rust",
+      "artifact_id": 11543799879,
+      "artifact_name": "p8-prospective-temporal-prepared-data-shared-rust",
+      "conclusion": "success",
+      "export_prefix": "artifacts/benchmarks/prospective-temporal-v2/actual-native-preparation/37766434808/prepare-rust",
+      "run_attempt": 1,
+      "run_id": 37766434808,
+      "workflow_head": "4ed046554522c61bfc02e297fe01b8e0b22f0c27",
+      "zip_bytes": 1501,
+      "zip_sha256": "c3b1b65c818b539e32a54a56af4cbdc524007b1b1b09b9ec85c9f727bfacd89d",
+      "original_artifact_metadata_blob": "fc9b73fb29d7ec2494a08e25d4265e63aa47cb6b",
+      "original_complete_member_inventory_blob": "35e049452874394febec93002b51e6a6a86db5f0",
+      "original_zip_restoration_manifest_blob": "1a55ad92df65d5ecb973399e6e5fe4b1b856bfc1",
+      "whole_zip_independently_reassembled": true,
+      "whole_zip_sha256_matches_original_service_digest": true,
+      "independently_inflated_members": 1,
+      "expanded_bytes": 6066,
+      "every_member_bytes_mode_CRC32_SHA256_matches_original_inventory": true
+    }
+  ],
+  "verification_method": {
+    "code_functions_used_in_metadata_review": {
+      "blob": "0793dd56ba29d142254ddb35689605dcab62e4f2",
+      "sha256": "f08e0b0193dc7e00878e437ddd03ec758a8baffd90b523c0e65f7f8b0dd5e9db",
+      "utf8_bytes": 7433,
+      "exact_readback": true
+    },
+    "execution_environment": "functions JS isolate; not candidate product or scorer",
+    "mechanics": "Exact base64 fetch_file decoding; contiguous offset/length-checked ZIP reassembly; whole SHA256; independent central/local ZIP metadata comparison, raw DEFLATE decoding, CRC32 and SHA256 for all52 members; separately hash57 original UTF8 Git blobs. Original files were never rewritten.",
+    "controls": "Known empty/abc SHA256, UTF8 equivalence vectors, base64 bytes, stored-deflate abc and known CRC32. Actual tiny ZIP independently matched its original6066-byte exported member before the full archive check.",
+    "binary_API_failure_preserved": "Direct UTF8 blob routes rejected the tiny binary. Reading exact archive-commit paths with explicit base64 succeeded; no lossy decoding or ZIP redownload used."
+  },
+  "original_native_commands": {
+    "freeze": {
+      "receipt_blob": "c105f59547d2ce0b02b9cc727bbbf86f7d948333",
+      "stdout_blob": "97babcd37bc1279a3e369b17de7b52c37b6b8871",
+      "exit": 0,
+      "timeout": 600,
+      "timed_out": false,
+      "seconds": 0.055927276611328125
+    },
+    "validate": {
+      "receipt_blob": "52bb3dddf4eb123abc1bacf4d68724b02479b077",
+      "stdout_blob": "ee2eee628984fc16967907b0b3d959414b29d183",
+      "exit": 0,
+      "timeout": 600,
+      "timed_out": false,
+      "seconds": 0.05590367317199707
+    },
+    "actual_validation_observation": {
+      "queries": 48,
+      "admitted_files": 113,
+      "locks_valid": true
+    },
+    "runner_binary": {
+      "sha256": "afdaf1ddbd28340f4ffbfbbef935194d563f3242d31ffb022b9bbd208e31537f",
+      "bytes": 31287288,
+      "mode": 493,
+      "independently_decompressed_from_actual_zip": true,
+      "same_as_both_actual_command_executable_records": true
+    },
+    "product_binary": {
+      "sha256": "f9337b0347727a31a7b147497763b9c0765a725f207c6245b3715cd4749f79f0",
+      "bytes": 27045272,
+      "mode": 493,
+      "independently_decompressed_from_actual_zip": true,
+      "not_executed_by_reviewer": true
+    }
+  },
+  "data_changes": {
+    "accepted9file_core_manifest_blob": "0a3f6d2eecbed0005022148ff4a027322e3a6b2b",
+    "original9file_inventory_matches_accepted_core": true,
+    "prepared9file_set_unchanged": true,
+    "eight_non_suite_files_original_bytes_modes_unchanged": true,
+    "suite_only_modified_file": true,
+    "original_suite_blob": "ebc04915ff70e5d0c145e0521372ebead231e73a",
+    "actual_prepared_suite": {
+      "blob": "73c5ce0a4874160d7be051600bfaac2739dd3939",
+      "sha256": "63a27f8567a10347d9e5b0792a138805d51347a803b33e86d5aeb3f714119535",
+      "bytes": 4139
+    },
+    "semantic_delta": "Only queries_digest changes from empty to the actual native content digest; JSON field order/format changes are original Rust serialization.",
+    "source_digest_unchanged": "98a6ffa33befc33c843b8b3143c6795056a5e7617d60be64ec47643ab2fa0214",
+    "queries_digest": "e2ad9aeb50b8c1f33102a01217cce4dd5cbe886bf2f49a8e92ed633bf8f9bbfd",
+    "native_digest_scope": "Observed actual original Rust freeze/validate, executed by byte-verified fixed runner. This JS review did not recompute BLAKE3 across the113 upstream source bytes.",
+    "all_other_suite_fields_deep_equal": true,
+    "actual_query": {
+      "blob": "a9ab505a98af892834f83d98cd5a9548ad9abd63",
+      "sha256": "aa58ad4c66d68a812f13fc827c4bfdbbafc7f5c186dbfd66ec5f8f2c81d525b5",
+      "bytes": 48436
+    },
+    "actual_gold_blob": "a8b4c459a75c032d1ecd4f3dc0ed4228aa1c9cd3",
+    "source_admission_blob": "2714bbc8f3cf7e4b0c00bed211428f9403a95837",
+    "source_path_set_113_excluded0_matches_actual_suite": true,
+    "budget": {
+      "top_k": 10,
+      "timeout_ms": 30000,
+      "repetitions": 3,
+      "warmup": 0,
+      "seed": 20261003
+    }
+  },
+  "source_helper_and_runtime": {
+    "actual_result": {
+      "blob": "010ce83337c72985cd16f46bb48a456f1f1bd55c",
+      "sha256": "d9d10ee0b05131daa3c78755387cdae5d7ff8150a8fbe487c184146159b7afea",
+      "bytes": 371115
+    },
+    "before_blob": "528000f52ed2aef9fdbafbc399106d2b11c98bb0",
+    "candidate_commit": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "candidate_tree": "4db46c8403c0a8687dc01f95ded006e31f842076",
+    "candidate_dirty": false,
+    "complete_before_result_candidate_equal": true,
+    "complete_before_result_helper_equal": true,
+    "complete_before_result_preparation_python_equal": true,
+    "preparation_python_modules": 148,
+    "maps_independently_rehashed": {
+      "source": {
+        "count": 1038,
+        "expected_count": 1038,
+        "sha256": "4a99362ed8249510d6794d23e8ea2d8c5f06238de9b7355e533ff762d56308d2",
+        "expected_sha256": "4a99362ed8249510d6794d23e8ea2d8c5f06238de9b7355e533ff762d56308d2"
+      },
+      "validation": {
+        "count": 110,
+        "expected_count": 110,
+        "sha256": "dd407762f6e7f6c156a2f6ea6c8f61ee9d6e824adffbb69ca2b4b6253d8bf49e",
+        "expected_sha256": "dd407762f6e7f6c156a2f6ea6c8f61ee9d6e824adffbb69ca2b4b6253d8bf49e"
+      },
+      "helpers": {
+        "count": 6,
+        "expected_count": 6,
+        "sha256": "c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4",
+        "expected_sha256": "c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4"
+      }
+    },
+    "build_source_input_map_all1038_equal_actual_candidate_SHA_projection": true,
+    "actual_immutable_package_manifest_sha256": "1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b",
+    "actual_package_archive_sha256": "acb16c6c8b34dc513569d4667b0dff721713f791eb7c7752791ad2430ed438f3",
+    "driver_sha256": "255aab123adab8f9b655d750d418e6ab322fc87784d958110fbb4ea4374ca8a9",
+    "contract_sha256": "8f804328b238dd446f67a98fa31f726838f76cfdbe141e6de6aa9b25de009fa5",
+    "shared_rust_original_blob": "a284a0a5f61fd0710506bc050ca3214b2d70b42c",
+    "same_parent_child_rust_entrypoints_paths_SHA_bytes_modes_and_versions": true,
+    "actual_cargo_binary_sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+    "actual_rustc_binary_sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+    "preparation_ImageVersion": "20260927.320.1",
+    "preparation_CPU": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "measurement_dependency_fingerprint": "Not claimed. Preparation imports service orchestration; its148-module closure and Intel8573C runner are distinct from the earlier synthetic measurement environment."
+  },
+  "limits": {
+    "source_gold_semantics_owned_by_fresh_independent_reviewer": true,
+    "finite_public_relation_review_blob": "858b88e86f1507f2fab2e3f68c1fb7b13c04072b",
+    "product_queries_in_preparation": 0,
+    "product_or_scorer_executions_by_this_review": 0,
+    "candidate_or_helper_or_question_or_gold_changes": 0,
+    "shared_ref_updates_by_reviewer": 0,
+    "data_sealed_in_original_result": false,
+    "formal_execution_authorized_in_original_result": false,
+    "this_receipt_authorizes_formal_execution": false,
+    "task_closed_by_this_receipt": false,
+    "old_external_unknown_body_relationships": "unknown"
+  },
+  "conclusion": "The exact successful native preparation and all archived originals pass this finite independent byte/metadata review. Data sealing and any actual formal attempt require their separate existing authorization steps."
+}

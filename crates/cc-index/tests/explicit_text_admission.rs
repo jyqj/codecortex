@@ -1,6 +1,6 @@
 //! Real files, the production scanner/parser/SQLite writer, and actual FTS.
 //! This contains no benchmark question, repository-specific allowlist, or gold.
-use cc_db::{index_db::IndexDb, index_db_retrieval::ChunkScope};
+use cc_db::{index_db::IndexDb, ChunkScope};
 use cc_index::{BuildScope, Indexer, Scanner};
 use cc_model::config::IndexingConfig;
 use std::{collections::BTreeSet, path::Path, sync::Arc};

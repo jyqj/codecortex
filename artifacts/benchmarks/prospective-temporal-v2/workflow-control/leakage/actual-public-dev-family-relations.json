@@ -1,0 +1,1258 @@
+{
+  "schema_version": 1,
+  "protocol_id": "p8-004-prospective-temporal-v2",
+  "reviewer": "/root/p7_wiring",
+  "scope": "Finite semantic source-task comparison against the exact327 publicly admitted DEV rows; no scoring and no question/gold edits.",
+  "query_blob": "a9ab505a98af892834f83d98cd5a9548ad9abd63",
+  "families": [
+    {
+      "family": "ptv2.boltons.f0001",
+      "behavior": "Recompose path directory, prefix, basename, suffix and extension; choose first versus last dot for compound-extension boundaries.",
+      "basis": "Verified augpath source span; four variants preserve the compound-extension augmentation requirement.",
+      "comparison": "Requests filename inference returns a basename from a file object's name; Vite scaffold renames a small fixed template-name map and writes package metadata; TypeScript roots/normalizes paths. None implements prefix/suffix insertion around a selected compound-extension boundary.",
+      "relationship": "Related filename/path vocabulary only. os.path split/splitext/join are ordinary dependencies, not evidence that another admitted source task implements augpath.",
+      "policy": "The adopted copied/adapted-helper exclusions do not identify this primary region.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0022.en01",
+          "global_family": "v19.requests.f0022",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/utils.py",
+              "symbol": {
+                "name": "guess_filename",
+                "qname": "requests.utils.guess_filename",
+                "kind": "function"
+              },
+              "span": {
+                "start": 8603,
+                "end": 8868
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.requests.f0074.en01",
+          "global_family": "v19.requests.f0022",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/models.py",
+              "symbol": {
+                "name": "_encode_files",
+                "qname": "requests.models.RequestEncodingMixin._encode_files",
+                "kind": "function"
+              },
+              "span": {
+                "start": 4684,
+                "end": 7247
+              }
+            },
+            {
+              "path": "src/requests/utils.py",
+              "symbol": {
+                "name": "guess_filename",
+                "qname": "requests.utils.guess_filename",
+                "kind": "function"
+              },
+              "span": {
+                "start": 8603,
+                "end": 8868
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.vite.f0017.en02",
+          "global_family": "v19.vite.f0017",
+          "source_commit": "10033218d239c927cdc375970b5741cce408e81b",
+          "gold_targets": [
+            {
+              "path": "packages/create-vite/src/index.ts",
+              "symbol": null,
+              "span": {
+                "start": 9886,
+                "end": 10013
+              }
+            },
+            {
+              "path": "packages/create-vite/src/index.ts",
+              "symbol": null,
+              "span": {
+                "start": 18070,
+                "end": 19000
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0068.en01",
+          "global_family": "v19.typescript.f0068",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/path.ts",
+              "symbol": {
+                "name": "toRootedPath",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 17143,
+                "end": 18211
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/pathutils.py",
+          "span": {
+            "end": 4980,
+            "start": 2057
+          },
+          "span_sha256": "6628315f79e8ede70da28907261b37610b8a82ec6aeac5274691a669924c7fdc",
+          "symbol": {
+            "kind": null,
+            "name": "augpath",
+            "qname": "augpath"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0002",
+      "behavior": "Parse signed/fractional textual week/day/hour/minute/second quantities into timedelta; identify the parse_td alias and unit grammar/map.",
+      "basis": "Verified parse_timedelta, alias and grammar/map spans.",
+      "comparison": "Gin parses a point-in-time according to format/timezone; Requests converts cookie max-age or expires to an expiry timestamp. Neither is a mixed-unit signed/fractional duration parser with this alias/table.",
+      "relationship": "Shared time conversion domain, not identical input grammar, result type or required source chain. The excluded USTimeZone implementation is in the same module but outside this primary task.",
+      "policy": "timeutils.USTimeZone exclusion respected; no whole-module novelty inference.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.gin.f0056.en01",
+          "global_family": "v19.gin.f0056",
+          "source_commit": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+          "gold_targets": [
+            {
+              "path": "binding/form_mapping.go",
+              "symbol": {
+                "name": "setTimeField",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 11231,
+                "end": 12334
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.requests.f0105.en01",
+          "global_family": "v19.requests.f0105",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/cookies.py",
+              "symbol": {
+                "name": "morsel_to_cookie",
+                "qname": "requests.cookies.morsel_to_cookie",
+                "kind": "function"
+              },
+              "span": {
+                "start": 18457,
+                "end": 19431
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/timeutils.py",
+          "span": {
+            "end": 7232,
+            "start": 5948
+          },
+          "span_sha256": "f39f7142f5387e1d204d07868263a64977a837d62f43c06efa23586ab107187e",
+          "symbol": {
+            "kind": null,
+            "name": "parse_timedelta",
+            "qname": "parse_timedelta"
+          }
+        },
+        {
+          "path": "boltons/timeutils.py",
+          "span": {
+            "end": 7277,
+            "start": 7234
+          },
+          "span_sha256": "91d4c6f610ce7c0a42b54d8ffae1f6c78a699942e69c10da7f12d62e2eb0bfef",
+          "symbol": null
+        },
+        {
+          "path": "boltons/timeutils.py",
+          "span": {
+            "end": 5946,
+            "start": 5278
+          },
+          "span_sha256": "aa333f8bbeb92ce381a245483e572a7b361f40ee42e2d38e53da96b077844e47",
+          "symbol": null
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0003",
+      "behavior": "A zero-argument callable-backed value wrapper defers computation until conversion/rendering and normally reuses its cached value.",
+      "basis": "Verified complete DeferredValue class, including get_value, conversion hooks and __format__.",
+      "comparison": "Gin's OnceValue creates one Engine reused by package-level route/server wrappers. Gin debug/production rendering controls template reload, not arbitrary callable-backed value conversion. TypeScript coalesces in-flight connect promises and clears the promise on settlement. Those answers do not supply the required value-wrapper rendering hooks.",
+      "relationship": "Concrete related lazy-computation/cache motif retained. No direct call/import/implementation-copy relationship found in the fixed DeferredValue and ginS sources. This does not prove zero transfer/correlation.",
+      "policy": "No use of copied cacheutils key helpers as the primary task.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.gin.f0090.en01",
+          "global_family": "v19.gin.f0090",
+          "source_commit": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+          "gold_targets": [
+            {
+              "path": "ginS/gins.go",
+              "symbol": {
+                "name": "engine",
+                "qname": null,
+                "kind": "variable"
+              },
+              "span": {
+                "start": 259,
+                "end": 332
+              }
+            },
+            {
+              "path": "ginS/gins.go",
+              "symbol": {
+                "name": "Use",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 4384,
+                "end": 4477
+              }
+            },
+            {
+              "path": "ginS/gins.go",
+              "symbol": {
+                "name": "Run",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 4818,
+                "end": 4888
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.gin.f0069.en01",
+          "global_family": "v19.gin.f0069",
+          "source_commit": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+          "gold_targets": [
+            {
+              "path": "render/html.go",
+              "symbol": {
+                "name": "Instance",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 1437,
+                "end": 1580
+              }
+            },
+            {
+              "path": "render/html.go",
+              "symbol": {
+                "name": "Instance",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 1667,
+                "end": 1811
+              }
+            },
+            {
+              "path": "render/html.go",
+              "symbol": {
+                "name": "loadTemplate",
+                "qname": null,
+                "kind": "function"
+              },
+              "span": {
+                "start": 1813,
+                "end": 2528
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0025.en01",
+          "global_family": "v19.typescript.f0025",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/async/client.ts",
+              "symbol": {
+                "name": "connect",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 2301,
+                "end": 2603
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/formatutils.py",
+          "span": {
+            "end": 12706,
+            "start": 10156
+          },
+          "span_sha256": "ae2ee80bab726ce234c2c4d51cdb0c1e772884d1b72015b3672ebe014df4271b",
+          "symbol": {
+            "kind": null,
+            "name": "DeferredValue",
+            "qname": "DeferredValue"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0004",
+      "behavior": "Reverse a segmented BarrelList in place by reversing each segment and then reversing segment order without flattening.",
+      "basis": "Verified BarrelList.reverse four-line implementation plus surrounding segmented-list class context.",
+      "comparison": "Express req.ips reverses proxy addresses and removes the socket address; TypeScript timing samples use a bounded ring and iterate oldest-first. Neither preserves the segmented-list representation by the two-level reversal.",
+      "relationship": "Array order/reversal is a shared algorithmic idea. Different state representation and observable mutation contract; no claim that the four-line algorithm is uniquely invented.",
+      "policy": "No separate count for segments, source files or related generic list recipes.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.express.f0045.en01",
+          "global_family": "v19.express.f0045",
+          "source_commit": "7ef98448f8b38099ab1ded55e458538ad47a51e7",
+          "gold_targets": [
+            {
+              "path": "lib/request.js",
+              "symbol": {
+                "name": "ips",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 8470,
+                "end": 8725
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0045.en01",
+          "global_family": "v19.typescript.f0045",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/timing.ts",
+              "symbol": {
+                "name": "record",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 8458,
+                "end": 9222
+              }
+            },
+            {
+              "path": "packages/typescript/src/api/timing.ts",
+              "symbol": {
+                "name": "getInfo",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 10035,
+                "end": 10398
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/listutils.py",
+          "span": {
+            "end": 11366,
+            "start": 11257
+          },
+          "span_sha256": "e6cd00b1dfa66f67f415065638ee8e689da52ad1731c136b43bc1ab7056e82f6",
+          "symbol": {
+            "kind": null,
+            "name": "reverse",
+            "qname": "BarrelList.reverse"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0005",
+      "behavior": "Maintain a live bijection when assigning OneToOne: remove the old reverse entry, evict another owner of the new value, and update both maps.",
+      "basis": "Verified OneToOne.__init__, __setitem__ and paired __delitem__ spans.",
+      "comparison": "Requests CaseInsensitiveDict keeps original header spelling under normalized-key lookup; Serde MapDeserializer saves one pending value until it is taken. These are not paired inverse maps and do not implement value-owner eviction.",
+      "relationship": "Mapping bookkeeping is a shared concept. OneToOne is not the duplicated OrderedMultiDict class, and the selected methods do not call that implementation.",
+      "policy": "The embedded/imported OrderedMultiDict pair is retained as one source component; it is not used as a primary family here, even where an OMD region appears as a hard negative.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0040.en01",
+          "global_family": "v19.express.f0002",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/structures.py",
+              "symbol": {
+                "name": "__setitem__",
+                "qname": "requests.structures.CaseInsensitiveDict.__setitem__",
+                "kind": "function"
+              },
+              "span": {
+                "start": 1722,
+                "end": 1924
+              }
+            },
+            {
+              "path": "src/requests/structures.py",
+              "symbol": {
+                "name": "__getitem__",
+                "qname": "requests.structures.CaseInsensitiveDict.__getitem__",
+                "kind": "function"
+              },
+              "span": {
+                "start": 1930,
+                "end": 2012
+              }
+            },
+            {
+              "path": "src/requests/structures.py",
+              "symbol": {
+                "name": "__iter__",
+                "qname": "requests.structures.CaseInsensitiveDict.__iter__",
+                "kind": "function"
+              },
+              "span": {
+                "start": 2101,
+                "end": 2203
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.serde.f0004.en02",
+          "global_family": "v19.serde.f0004",
+          "source_commit": "6693a89cca77e0151437da1c7f890090b9ebf04c",
+          "gold_targets": [
+            {
+              "path": "serde_core/src/de/value.rs",
+              "symbol": null,
+              "span": {
+                "start": 34337,
+                "end": 35383
+              }
+            },
+            {
+              "path": "serde/src/private/de.rs",
+              "symbol": null,
+              "span": {
+                "start": 53129,
+                "end": 54215
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/dictutils.py",
+          "span": {
+            "end": 30031,
+            "start": 29729
+          },
+          "span_sha256": "c680047be1e401582ccdaf45aabeefe1b814a5426fc5054529627a2c1b10bf16",
+          "symbol": {
+            "kind": null,
+            "name": "__setitem__",
+            "qname": "OneToOne.__setitem__"
+          }
+        },
+        {
+          "path": "boltons/dictutils.py",
+          "span": {
+            "end": 30146,
+            "start": 30032
+          },
+          "span_sha256": "1b28940cab2f0025cc7e8768fa63cdc60dfec3430345a100d482747888176d50",
+          "symbol": {
+            "kind": null,
+            "name": "__delitem__",
+            "qname": "OneToOne.__delitem__"
+          }
+        },
+        {
+          "path": "boltons/dictutils.py",
+          "span": {
+            "end": 29041,
+            "start": 27912
+          },
+          "span_sha256": "1295baf7cb42030e5bc9cd1b6aa7326e32697bc975f4e4b3a762d19bdbaceac7",
+          "symbol": {
+            "kind": null,
+            "name": "__init__",
+            "qname": "OneToOne.__init__"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0006",
+      "behavior": "Trim equal proportions from both ends of sorted observations, do nothing when rounding removes zero entries, and invalidate cached statistics after actual data replacement.",
+      "basis": "Verified trim_relative, _get_sorted_data and clear_cache spans.",
+      "comparison": "TypeScript timing retains a fixed-capacity ring by age/order, source-file caches evict by ownership, and the scoped percentile query is absent. None removes symmetric sorted tails by proportion with dependent-statistic invalidation.",
+      "relationship": "Related sample retention and cache invalidation motifs, different selection rule and data invariant. New f0003 caches a computed rendering value; f0006 mutates a dataset and invalidates derived statistics.",
+      "policy": "No copied cache-key primitive is counted as primary; shared mention of caches does not establish equivalent source task.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.typescript.f0045.en01",
+          "global_family": "v19.typescript.f0045",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/timing.ts",
+              "symbol": {
+                "name": "record",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 8458,
+                "end": 9222
+              }
+            },
+            {
+              "path": "packages/typescript/src/api/timing.ts",
+              "symbol": {
+                "name": "getInfo",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 10035,
+                "end": 10398
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0046.en01",
+          "global_family": "v19.typescript.f0046",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/sourceFileCache.ts",
+              "symbol": {
+                "name": "releaseRef",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 12399,
+                "end": 13043
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0038.en01",
+          "global_family": "v19.typescript.f0038",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/statsutils.py",
+          "span": {
+            "end": 19702,
+            "start": 18847
+          },
+          "span_sha256": "9adb36b685f6cadd33da379b16d3e6697c674cde99edc5dbcccf4688f173b6b0",
+          "symbol": {
+            "kind": null,
+            "name": "trim_relative",
+            "qname": "Stats.trim_relative"
+          }
+        },
+        {
+          "path": "boltons/statsutils.py",
+          "span": {
+            "end": 8361,
+            "start": 7825
+          },
+          "span_sha256": "c015f8e94a66fdaeb670e5b7e6023bfbf53ad71f2366fe555909d5263d53088d",
+          "symbol": {
+            "kind": null,
+            "name": "_get_sorted_data",
+            "qname": "Stats._get_sorted_data"
+          }
+        },
+        {
+          "path": "boltons/statsutils.py",
+          "span": {
+            "end": 9043,
+            "start": 8362
+          },
+          "span_sha256": "73ec4bda0646fd82ccc4d995763dd179a323a26516af9664c3da972ab062cd10",
+          "symbol": {
+            "kind": null,
+            "name": "clear_cache",
+            "qname": "Stats.clear_cache"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0007",
+      "behavior": "Configure whether malformed JSON lines are skipped or propagated during iteration, with default propagation.",
+      "basis": "Verified JSONLIterator constructor/default, next error branch and __next__ alias.",
+      "comparison": "Requests iter_lines reconstructs physical lines across chunks, Response.json selects byte encoding, and JSONDecodeError preserves exception semantics/pickling. Serde untagged-enum retries variant decoders for one buffered input. None is the per-line malformed-JSON skip option/default.",
+      "relationship": "JSON parsing/errors and iterator control are related domains. json.loads is an ordinary standard-library dependency, not a copied Boltons control loop in the identified public tasks.",
+      "policy": "No excluded copied URL decoding or iterator recipe alone is used as this primary error-policy task.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0049.en01",
+          "global_family": "v19.requests.f0049",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/models.py",
+              "symbol": {
+                "name": "iter_lines",
+                "qname": "requests.models.Response.iter_lines",
+                "kind": "function"
+              },
+              "span": {
+                "start": 34387,
+                "end": 35671
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.requests.f0014.en01",
+          "global_family": "v19.requests.f0014",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/models.py",
+              "symbol": {
+                "name": "json",
+                "qname": "requests.models.Response.json",
+                "kind": "function"
+              },
+              "span": {
+                "start": 37723,
+                "end": 39442
+              }
+            },
+            {
+              "path": "src/requests/utils.py",
+              "symbol": {
+                "name": "guess_json_utf",
+                "qname": "requests.utils.guess_json_utf",
+                "kind": "function"
+              },
+              "span": {
+                "start": 30993,
+                "end": 32179
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.requests.f0063.en01",
+          "global_family": "v19.requests.f0063",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/exceptions.py",
+              "symbol": {
+                "name": "__init__",
+                "qname": "requests.exceptions.JSONDecodeError.__init__",
+                "kind": "function"
+              },
+              "span": {
+                "start": 1240,
+                "end": 1693
+              }
+            },
+            {
+              "path": "src/requests/exceptions.py",
+              "symbol": {
+                "name": "__reduce__",
+                "qname": "requests.exceptions.JSONDecodeError.__reduce__",
+                "kind": "function"
+              },
+              "span": {
+                "start": 1699,
+                "end": 2167
+              }
+            },
+            {
+              "path": "src/requests/exceptions.py",
+              "symbol": {
+                "name": "InvalidJSONError",
+                "qname": "requests.exceptions.InvalidJSONError",
+                "kind": "class"
+              },
+              "span": {
+                "start": 1049,
+                "end": 1123
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.serde.f0011.en02",
+          "global_family": "v19.serde.f0011",
+          "source_commit": "6693a89cca77e0151437da1c7f890090b9ebf04c",
+          "gold_targets": [
+            {
+              "path": "serde_derive/src/de/enum_untagged.rs",
+              "symbol": null,
+              "span": {
+                "start": 612,
+                "end": 2140
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/jsonutils.py",
+          "span": {
+            "end": 8626,
+            "start": 8038
+          },
+          "span_sha256": "c3abbbf3e61ecd27b560a09c43788d02c75ae8a3a34e163d02aeed67654bb1bf",
+          "symbol": {
+            "kind": null,
+            "name": "next",
+            "qname": "JSONLIterator.next"
+          }
+        },
+        {
+          "path": "boltons/jsonutils.py",
+          "span": {
+            "end": 6582,
+            "start": 5614
+          },
+          "span_sha256": "64efda4b722e4254a678c139787ad74b352ef0befdca390cea835a772401e535",
+          "symbol": {
+            "kind": null,
+            "name": "__init__",
+            "qname": "JSONLIterator.__init__"
+          }
+        },
+        {
+          "path": "boltons/jsonutils.py",
+          "span": {
+            "end": 8647,
+            "start": 8627
+          },
+          "span_sha256": "e7c04175cc4229f5278c9fab49f23089bc98ecd6e1511109086d59821ff897bb",
+          "symbol": null
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0008",
+      "behavior": "Apply a per-call incoming netstring payload-size limit, calculate a decimal length-prefix read bound, and reject oversized announced payloads before reading the body.",
+      "basis": "Verified read_ns and _calc_msgsize_maxsize; latest revision0001 explicitly asks for calculation, not the separate recv_until enforcement helper.",
+      "comparison": "TypeScript binHeaderSize returns binary MessagePack header-size bands for outgoing fields; writeTuple assembles/writes a fixed tuple; readTuple checks marker/type validity. These do not compute a decimal netstring prefix read cap from a caller's payload budget or enforce announced size before payload read.",
+      "relationship": "Related framed-I/O/header-length concepts. Direct fixed-source comparison shows different encoding, direction, inputs and admission invariant; no shared implementation/call edge.",
+      "policy": "No adopted copied/attributed primitive is the primary.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.typescript.f0021.en01",
+          "global_family": "v19.typescript.f0021",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/node/msgpack.ts",
+              "symbol": {
+                "name": "binHeaderSize",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 780,
+                "end": 1010
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0075.en01",
+          "global_family": "v19.typescript.f0021",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/syncChannel.ts",
+              "symbol": {
+                "name": "writeTuple",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 14519,
+                "end": 17093
+              }
+            },
+            {
+              "path": "packages/typescript/src/api/node/msgpack.ts",
+              "symbol": {
+                "name": "binHeaderSize",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 780,
+                "end": 1010
+              }
+            },
+            {
+              "path": "packages/typescript/src/api/node/msgpack.ts",
+              "symbol": {
+                "name": "writeBinHeader",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 1091,
+                "end": 1659
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0096.en01",
+          "global_family": "v19.typescript.f0096",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/syncChannel.ts",
+              "symbol": {
+                "name": "readTuple",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 17447,
+                "end": 18281
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/socketutils.py",
+          "span": {
+            "end": 27977,
+            "start": 26978
+          },
+          "span_sha256": "5d9399c13d931222e932dd7f02d8358b8200dd544a952dbd761c251202248639",
+          "symbol": {
+            "kind": null,
+            "name": "read_ns",
+            "qname": "NetstringSocket.read_ns"
+          }
+        },
+        {
+          "path": "boltons/socketutils.py",
+          "span": {
+            "end": 26977,
+            "start": 26871
+          },
+          "span_sha256": "0abd8a9c819af69153411f3d82af639a7e12c7b33a639e5572ce30c0e0267985",
+          "symbol": {
+            "kind": null,
+            "name": "_calc_msgsize_maxsize",
+            "qname": "NetstringSocket._calc_msgsize_maxsize"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0009",
+      "behavior": "Trace successful Unix AtomicSaver completion with overwrite=False through flush, fsync, close and non-overwriting hard-link publication followed by unlinking the temporary name.",
+      "basis": "Verified AtomicSaver.__exit__ plus non-Windows atomic_rename and direct comparison with Requests atomic_open.",
+      "comparison": "Requests atomic_open yields a temporary binary file, then os.replace overwrites the destination, with cleanup on exceptions. The old task's overwrite result and exception-cleanup focus do not answer the new non-overwrite success chain; Requests lacks the explicit fsync and link/unlink publication required by this question.",
+      "relationship": "Strongest related public motif: context-managed temporary-file atomic publication. Retain this edge as plausible conceptual transfer/correlation, not proven same-task equivalence or copying. New and old code have different explicit overwrite contracts; answering one verbatim would violate the other's requirement.",
+      "policy": "fileutils.copy_tree recipe caveat is not this AtomicSaver branch. No blanket fresh-file/module argument and no silent exclusion of the old near-neighbor.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0023.en01",
+          "global_family": "v19.requests.f0023",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/utils.py",
+              "symbol": {
+                "name": "atomic_open",
+                "qname": "requests.utils.atomic_open",
+                "kind": "function"
+              },
+              "span": {
+                "start": 10428,
+                "end": 10842
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/fileutils.py",
+          "span": {
+            "end": 17798,
+            "start": 16890
+          },
+          "span_sha256": "e6bddc8c4a81bcb4cb88e0734c4f62eefba2e0a0ddcd0146aae41f183aab22fe",
+          "symbol": {
+            "kind": null,
+            "name": "__exit__",
+            "qname": "AtomicSaver.__exit__"
+          }
+        },
+        {
+          "path": "boltons/fileutils.py",
+          "span": {
+            "end": 10677,
+            "start": 10416
+          },
+          "span_sha256": "b624f0f3602d4a380d90fceda3584d6bc0c16a69fe41c23b10b34e6521686458",
+          "symbol": null
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0010",
+      "behavior": "Register module-member deprecation, wrap/copy the module namespace, warn on member access and return the original value.",
+      "basis": "Verified registration, DeprecatableModule namespace initialization and __getattribute__ spans.",
+      "comparison": "Requests deprecates a legacy adapter connection method while send uses a replacement path; TypeScript folds a deprecated input field into the new wire field. Neither installs module attribute interception with warning-and-return semantics.",
+      "relationship": "Shared deprecation/migration theme, different trigger and state transformation. No demonstrated shared copied implementation or call chain.",
+      "policy": "No adopted excluded primitive is primary.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0091.en01",
+          "global_family": "v19.requests.f0091",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [
+            {
+              "path": "src/requests/adapters.py",
+              "symbol": {
+                "name": "send",
+                "qname": "requests.adapters.HTTPAdapter.send",
+                "kind": "function"
+              },
+              "span": {
+                "start": 23494,
+                "end": 27991
+              }
+            },
+            {
+              "path": "src/requests/adapters.py",
+              "symbol": {
+                "name": "get_connection",
+                "qname": "requests.adapters.HTTPAdapter.get_connection",
+                "kind": "function"
+              },
+              "span": {
+                "start": 18715,
+                "end": 20478
+              }
+            },
+            {
+              "path": "src/requests/adapters.py",
+              "symbol": {
+                "name": "get_connection_with_tls_context",
+                "qname": "requests.adapters.HTTPAdapter.get_connection_with_tls_context",
+                "kind": "function"
+              },
+              "span": {
+                "start": 16516,
+                "end": 18709
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0008.en01",
+          "global_family": "v19.typescript.f0008",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [
+            {
+              "path": "packages/typescript/src/api/proto.ts",
+              "symbol": {
+                "name": "toCreateSnapshotRequest",
+                "qname": null,
+                "kind": null
+              },
+              "span": {
+                "start": 6011,
+                "end": 6409
+              }
+            }
+          ],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [
+        {
+          "path": "boltons/deprutils.py",
+          "span": {
+            "end": 2478,
+            "start": 2212
+          },
+          "span_sha256": "a1a135fc584a8de3d6923a816ac614361fd2ae04ac1e190b4e5813771a32212b",
+          "symbol": {
+            "kind": null,
+            "name": "deprecate_module_member",
+            "qname": "deprecate_module_member"
+          }
+        },
+        {
+          "path": "boltons/deprutils.py",
+          "span": {
+            "end": 1789,
+            "start": 1644
+          },
+          "span_sha256": "c7929bbd41210743600b5764f64949cd1ee93aa40cf93d216be6cdf230301837",
+          "symbol": {
+            "kind": null,
+            "name": "__init__",
+            "qname": "DeprecatableModule.__init__"
+          }
+        },
+        {
+          "path": "boltons/deprutils.py",
+          "span": {
+            "end": 2210,
+            "start": 1790
+          },
+          "span_sha256": "cc86dcf29050b744987f1e373cc92bf920638b9f4f4da96202d9edad559bbab6",
+          "symbol": {
+            "kind": null,
+            "name": "__getattribute__",
+            "qname": "DeprecatableModule.__getattribute__"
+          }
+        }
+      ],
+      "no_answer_scope": "boltons/",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0011",
+      "behavior": "Under the exact gcutils.py scope, request absent asynchronous GC suspension context methods (__aenter__/__aexit__).",
+      "basis": "Read the whole pinned gcutils.py. It defines synchronous GCToggler.__enter__/__exit__, not asynchronous context methods.",
+      "comparison": "Requests' scoped AsyncSession absence concerns HTTP sessions; TypeScript's scoped AbortSignal absence concerns synchronous request cancellation. Sharing the no-answer/async form does not make the requested GC lifecycle behavior equivalent.",
+      "relationship": "Only generic absence-check and asynchronous-interface motifs. Not a negative variant of new f0009's implemented file-publication task. Relationship to unopened old no-answer bodies remains unknown.",
+      "policy": "No invented implementation or source-family top-up; absence conclusion is limited to the named file.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.requests.f0020.en01",
+          "global_family": "v19.requests.f0020",
+          "source_commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+          "gold_targets": [],
+          "body_read": true,
+          "question_source_description_read": true
+        },
+        {
+          "id": "v19.typescript.f0059.en01",
+          "global_family": "v19.typescript.f0059",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [],
+      "no_answer_scope": "boltons/gcutils.py",
+      "old_external_or_unknown_body_relation": "unknown"
+    },
+    {
+      "family": "ptv2.boltons.f0012",
+      "behavior": "Under the exact mathutils.py scope, request an absent Euclidean greatest-common-divisor remainder-loop implementation.",
+      "basis": "Read the whole pinned mathutils.py: clamp, ceil/floor choices and Bits are present; the requested GCD implementation is absent.",
+      "comparison": "The closest weak public numerical absence task asks for a percentile latency estimator in TypeScript timing.ts. Its statistic, input, algorithm and source scope differ; no concrete public GCD task was found in the 327 read rows.",
+      "relationship": "No concrete same-task candidate after full finite DEV review; generic mathematical/no-answer category is not equivalence. Standard Euclidean-algorithm familiarity is not claimed absent from prior knowledge or training.",
+      "policy": "No primary copied region is selected; no-answer is confined to the exact scope and not a universal repository/library absence claim.",
+      "decision": "no_required_same_task_merge_identified_within_exact_read_scope",
+      "public_candidates": [
+        {
+          "id": "v19.typescript.f0038.en01",
+          "global_family": "v19.typescript.f0038",
+          "source_commit": "ed4807212c28c90777c1d7ef2bf8e47af5d08519",
+          "gold_targets": [],
+          "body_read": true,
+          "question_source_description_read": true
+        }
+      ],
+      "new_source_evidence": [],
+      "no_answer_scope": "boltons/mathutils.py",
+      "old_external_or_unknown_body_relation": "unknown"
+    }
+  ],
+  "intra_draft_related_groups": [
+    {
+      "families": [
+        "f0003",
+        "f0006"
+      ],
+      "relation": "related_cache_concept_distinct_source_tasks",
+      "basis": "Callable conversion caches a rendered value; dataset trimming invalidates dependent statistical values after mutation."
+    },
+    {
+      "families": [
+        "f0004",
+        "f0005"
+      ],
+      "relation": "shared_reverse_word_distinct_invariant",
+      "basis": "Segmented sequence ordering versus maintaining a key/value bijection."
+    },
+    {
+      "families": [
+        "f0002",
+        "f0007",
+        "f0008"
+      ],
+      "relation": "shared_parsing_domain_distinct_grammar_and_state",
+      "basis": "Text durations, malformed-record skipping, and framed-message size admission use separate input grammars and observable decisions."
+    },
+    {
+      "families": [
+        "f0009",
+        "f0011"
+      ],
+      "relation": "context_manager_form_distinct_source_task",
+      "basis": "Implemented synchronous file publication versus absent asynchronous GC lifecycle support in a strict scope."
+    }
+  ],
+  "interpretation": "No demonstrated primary-copy or equivalent required task requiring a cross-DEV or intra-draft merge was identified. Related motifs remain disclosed; this is not statistical independence or universal novelty certification.",
+  "access_note": "Contains summaries of previously read public task semantics. Root owns distribution. Do not pass the full comparison packet to fresh roles whose public-question-body allowlist is empty; use the minimal result metadata instead.",
+  "accepted_gold_blob": "a8b4c459a75c032d1ecd4f3dc0ed4228aa1c9cd3",
+  "accepted_gold_spans_and_scopes_exactly_equal_initial_proposal": true,
+  "independent_gold_acceptance_metadata_blob": "3b511816878d55b6583b19e3c63051f69a6da351",
+  "prior_pre_acceptance_comparison": {
+    "path": "family-comparisons.json",
+    "blob": "b069fa1c8f478d505f7b77b0ac46e3dae05bee06",
+    "sha256": "1abeecf6dee15728682ab8ea64469e4a8636aeea524a7a73cde0061be4c9cd6d",
+    "utf8_bytes": 47190,
+    "exact_readback": true,
+    "git_refs_updated": 0
+  }
+}

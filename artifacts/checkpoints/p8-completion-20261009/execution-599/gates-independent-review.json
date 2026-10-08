@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "reviewed_at_utc": "2026-10-08T20:03:02.911871+00:00",
+  "assessment": "accepted_scoped_original_failure_gate_execution",
+  "task": "P8-013",
+  "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "pr": 159,
+  "workflow_run_id": 37835809216,
+  "workflow_job_id": 113512402558,
+  "artifact_id": 11574928381,
+  "artifact_zip_sha256": "720aeed5b1a6193c0ea34d04ef32b5ca1a21140ac20f0e6f884676e2e70451e3",
+  "artifact_zip_bytes": 32993589,
+  "artifact_directory": "/dev/shm/a217aaae3bde/ci-artifacts/11574928381/extracted",
+  "report_sha256": "e9aebab9e7b795343015a9e3a9ca807901f15e2209fdcf05278261c33ef81fa3",
+  "checked_original_payload_files": 336,
+  "checked_fixed_source_files": 1087,
+  "source_manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+  "reviewed_driver_source_sha256": {
+    "scripts/p8_gate_controls.py": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7",
+    "scripts/p8_recovery.py": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42",
+    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+    "crates/cc-eval/tests/benchmark_cli.rs": "ac7dcd8e7024735414779e76b2b15613ff885e4c99ddabb2e3846f7065e2f9be",
+    "crates/cc-eval/src/benchmark/comparison.rs": "40aa2be7ec22aea1092d5cc9a8d18e2fd819cfe47fe97c8172fdeeb26bc0df8c",
+    "crates/cc-eval/src/benchmark/gate.rs": "d4ae114e21e6b54798716bc941dd59bc6c579672dc1b8191d596406acff9ac4d",
+    "crates/cc-eval/src/benchmark/report.rs": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d"
+  },
+  "cli_sha256": "ddde84d2aa51f7395a6c4393ba51bd471cdec69e59d3ab5e9f4ba4f5c217073c",
+  "cases": [
+    {
+      "case": 0,
+      "test": "unmeasurable_latency_cannot_pass_comparison",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    },
+    {
+      "case": 1,
+      "test": "zero_measurement_gate_is_invalid",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    },
+    {
+      "case": 2,
+      "test": "cli_quality_and_latency_failures_are_nonzero_and_keep_raw",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    },
+    {
+      "case": 3,
+      "test": "cli_inconclusive_is_nonzero",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    },
+    {
+      "case": 4,
+      "test": "cli_lock_failure_preserves_machine_readable_failure_and_raw",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    },
+    {
+      "case": 5,
+      "test": "cli_bad_policy_is_recorded_without_overwriting_existing_report",
+      "original_execution": "passed_nonignored_exact_test",
+      "test_binary_sha256": "3c65fb806c5da133050f492b4f3adcc39249c4da331fef91ae9820c49ffa8f5f",
+      "source_commit": "599a7050e7d52b5b7b93975c419138e175b3f754"
+    }
+  ],
+  "independent_cli_replays": [
+    {
+      "control": "zero-denominator",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-00/base",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-00/candidate",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/zero-denominator-policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/zero-denominator-replayed.json"
+      ],
+      "exit_code": 1,
+      "status": "inconclusive",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/zero-denominator-replayed.json",
+      "report_sha256": "e4b10415f9b0b53ba465fb6da6f6a3aa7319dbaf5ebb109fc13b42ce65115f1a",
+      "original_report_equivalent": null,
+      "ignored_comparison_fields": [],
+      "raw_unchanged": true
+    },
+    {
+      "control": "quality",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/base",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/quality",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/quality-replayed.json"
+      ],
+      "exit_code": 1,
+      "status": "failed",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/quality-replayed.json",
+      "report_sha256": "3eb616998568a4b54efe4d6d6cbf401c60b4ed02d19780a1bd0d1f99e586d6a2",
+      "original_report_equivalent": true,
+      "ignored_comparison_fields": [],
+      "raw_unchanged": true
+    },
+    {
+      "control": "latency",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/base",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/latency",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-02/policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/latency-replayed.json"
+      ],
+      "exit_code": 1,
+      "status": "failed",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/latency-replayed.json",
+      "report_sha256": "e4e06446ee049ad6f32da94ef4cec7a9caa20389a6e33c51acd3ee88f6e8b1ec",
+      "original_report_equivalent": true,
+      "ignored_comparison_fields": [],
+      "raw_unchanged": true
+    },
+    {
+      "control": "insufficient-samples",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-03/base",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-03/candidate",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-03/policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/insufficient-samples-replayed.json"
+      ],
+      "exit_code": 1,
+      "status": "inconclusive",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/insufficient-samples-replayed.json",
+      "report_sha256": "a0bba99b39f560b5f12385f8a6566cbadf0d88ade2e717c0cf0e160781eba549",
+      "original_report_equivalent": true,
+      "ignored_comparison_fields": [],
+      "raw_unchanged": true
+    },
+    {
+      "control": "raw-lock-drift",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-04/base",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-04/candidate",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-04/policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/raw-lock-drift-replayed.json"
+      ],
+      "exit_code": 2,
+      "status": "invalid_measurement",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/raw-lock-drift-replayed.json",
+      "report_sha256": "da922a6d86c70794382cdd54b19b916cbd0be7dbf22c7326c94475b58d68a818",
+      "original_report_equivalent": true,
+      "ignored_comparison_fields": [
+        "baseline",
+        "candidate",
+        "policy_path"
+      ],
+      "raw_unchanged": true
+    },
+    {
+      "control": "bad-policy",
+      "command": [
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/cc-eval",
+        "compare",
+        "--baseline",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-05/missing-run",
+        "--candidate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-05/missing-run",
+        "--gate",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/fixtures-05/policy.json",
+        "--output",
+        "/dev/shm/a217aaae3bde/platform-review/gates-599-review/bad-policy-replayed.json"
+      ],
+      "exit_code": 2,
+      "status": "invalid_measurement",
+      "report": "/dev/shm/a217aaae3bde/platform-review/gates-599-review/bad-policy-replayed.json",
+      "report_sha256": "0f23264fc46cd154d169f6b0b74e135cfaebab9c3ed5ee61193a8473b0f30c05",
+      "original_report_equivalent": true,
+      "ignored_comparison_fields": [
+        "baseline",
+        "candidate",
+        "policy_path"
+      ],
+      "raw_unchanged": true,
+      "overwrite_control": {
+        "exit_code": 2,
+        "report_unchanged": true
+      }
+    }
+  ],
+  "original_artifacts_unchanged": true,
+  "unresolved_subgate_blockers": [],
+  "hard_dependencies": [
+    {
+      "task": "P8-012",
+      "status": "pending_complete_platform_and_dependency_acceptance"
+    }
+  ],
+  "task_done": false,
+  "measured_product_performance": false,
+  "release_approval": false,
+  "limitations": [
+    "Scope is the original six failure-control tests and retained evidence; applicable wider V03/V04 regressions remain with original CI acceptance.",
+    "The fixture data is explicitly synthetic. Passing controls proves failure exits/receipts/raw retention, not product quality or speed.",
+    "All original and supplementary replays use the retained 599a705 CLI. These results belong only to the fixed round5 execution source.",
+    "Supplementary invalid-input report comparison ignores only relocated baseline/candidate/policy filesystem paths; outcomes, reasons and raw are unchanged.",
+    "The pure zero-plan library case is verified through its exact original nonignored test binary/source/log; no extra local Cargo compilation or hosted rerun was performed."
+  ]
+}

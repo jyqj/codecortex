@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_acceptance",
+  "author": "/root/p7_wiring",
+  "decision": "accepted_scoped_static_entrypoint",
+  "subject": {
+    "git_blob": "d063cff82c5d2c09739b47e5cb8c6ca13f431490",
+    "sha256": "b81aeef61130ac1344c5f011fea64c246868662457d5b7d64932037631e385e2",
+    "bytes": 9101
+  },
+  "source_comparison": {
+    "commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+    "files": {
+      "scripts/p8_corpus_audit.py": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+      "scripts/p8_release_evidence.py": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
+      "crates/cc-eval/src/bin/cc-eval.rs": "959d69d9798ed553144cf611407a79d7c286f94bef99896874837b897c8f35b6"
+    }
+  },
+  "checks": [
+    {
+      "name": "original_validator_interface",
+      "finding": "Original auditor accepts --repo-root/--output and returns errors-based exit0 only; status/totals/repositories checked exactly. Original Rust CLI accepts validate --suite, manifest::load failure exit2, no freeze/ranking/provider call."
+    },
+    {
+      "name": "two_distinct_fixed_input_paths",
+      "finding": "Original Python auditor reads its own fixed historical Git object allowlist, so all referenced historical commit objects must actually be present. Separately, the helper validates restored 183 fixed archived files by size/SHA256/Git blob, keeps the original commit/path layout, and passes the 16 restored suite paths to original Rust validate. Neither fallback nor rewritten digest bypass exists."
+    },
+    {
+      "name": "failure_preservation",
+      "finding": "Each command stores stdout/stderr/argv/exit/timing before requiring zero; timeout or exception writes failure.json and raises. Existing output is refused. Archive bytes and executable hash rechecked after all validations."
+    },
+    {
+      "name": "scope",
+      "finding": "Snapshot source subsets and historical public DEV verification only. No new semantic gold review, upstream clean checkout, ranking, family independence, or heldout certification. Fixed 10/3/0/30000/20261003 budgets unchanged."
+    }
+  ],
+  "not_executed": [
+    "Python syntax/runtime",
+    "all183 archived file bytes",
+    "16 actual Rust validations",
+    "historical Git object availability"
+  ],
+  "runtime_dependencies": [
+    "Python3 stdlib",
+    "git executable with all fixed historical objects locally available; no lazy fetch",
+    "real executable cc-eval whose expected SHA256 is separately fixed by workflow/build receipts"
+  ],
+  "limitations": [
+    "The supplied evaluator digest by itself is an input pin, not a compiler/source attestation; root must bind it to its actual candidate build evidence.",
+    "This review does not advance any task status or turn historical pending author annotations into current acceptance."
+  ],
+  "material_blockers_identified": []
+}

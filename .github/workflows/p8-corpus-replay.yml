@@ -1,0 +1,63 @@
+name: P8 original corpus replay and reviewed projection
+on:
+  push:
+    branches: [work/p8-corpus-replay-996727-20261008]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      P8_REPLAY_OUT: ${{ runner.temp }}/p8-public-replay
+      P8_REPLAY_DOWNLOADS: ${{ runner.temp }}/p8-public-downloads
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install exact original schema dependency
+        run: python3 -m pip install --disable-pip-version-check --quiet jsonschema==4.23.0
+      - name: Fetch fixed previously reviewed evaluator archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$P8_REPLAY_DOWNLOADS"
+          gh api repos/jyqj/codecortex/actions/artifacts/11529447454 > "$P8_REPLAY_DOWNLOADS/artifact.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11529447454/zip > "$P8_REPLAY_DOWNLOADS/artifact.zip"
+      - name: Verify exact binary provenance and historical Git inputs
+        run: python3 artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/bootstrap.py
+      - name: Execute unchanged original auditor and sixteen original locks
+        run: |
+          set -o pipefail
+          python3 artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/replay_original_public_dev.py --repo-root "$PWD" --evaluator "$P8_REPLAY_OUT/validator/cc-eval" --evaluator-sha256 b0726d6a5a8cb2950521dba0ff63e4e8f4d22aa00647e9752d803b3c2d82c1c4 --output "$P8_REPLAY_OUT/original" 2>&1 | tee "$P8_REPLAY_OUT/original-run.log"
+      - name: Project independent source and family reviews then run original schema and twelve V02 locks
+        run: |
+          set -o pipefail
+          python3 artifacts/checkpoints/p8-public-dev-recovery-20261008/replay/project_reviewed_public_dev.py --repo-root "$PWD" --evaluator "$P8_REPLAY_OUT/validator/cc-eval" --evaluator-sha256 b0726d6a5a8cb2950521dba0ff63e4e8f4d22aa00647e9752d803b3c2d82c1c4 --original-replay-receipt "$P8_REPLAY_OUT/original/receipt.json" --output "$P8_REPLAY_OUT/reviewed" 2>&1 | tee "$P8_REPLAY_OUT/projection-run.log"
+      - name: Print bounded actual failure diagnostics
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import os,pathlib
+          root=pathlib.Path(os.environ['P8_REPLAY_OUT'])
+          budget=50000
+          for p in sorted(root.rglob('*')):
+              if p.is_file() and (p.name=='failure.json' or p.suffix in ('.stderr','.stdout')):
+                  b=p.read_bytes()
+                  if b and budget>0:
+                      s=b[-min(8000,budget):].decode('utf-8','replace')
+                      print(str(p.relative_to(root))+': '+s)
+                      budget-=len(s.encode())
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-original-corpus-replay-and-projection
+          path: |
+            ${{ runner.temp }}/p8-public-replay
+            !${{ runner.temp }}/p8-public-replay/validator/cc-eval
+          include-hidden-files: true
+          if-no-files-found: error

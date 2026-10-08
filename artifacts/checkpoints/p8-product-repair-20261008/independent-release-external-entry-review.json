@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p7_wiring",
+  "role": "non_author_static_reviewer",
+  "verdict": "accepted_scoped_prepared_release_and_fresh_candidate_entry",
+  "commits": [
+    "2995a50e6865ee6eac0e9b8917f792d9225d18c4",
+    "b09990af18f68bf56e68cae524c6dcabf4a1a909",
+    "c1ec9669b1f9b8cddb965a9cdcd5aa1f0918cb14"
+  ],
+  "prior_review": {
+    "git_blob": "061d27853877d13da6bbb4420cd8cd7a4ebc3563",
+    "sha256": "618f14b7eac58aa29437e96cb9ee2a7db21d2b06142f908c33ea10dda25608f3"
+  },
+  "final_recovery": {
+    "sha256": "266446ebdcf304cd2fc02718c958b697d3f71cce54e17abc92dca6c42fdca9ff",
+    "utf8_bytes": 34881
+  },
+  "b099_files": [
+    {
+      "path": "artifacts/benchmarks/p8-external-recovery-20261008/revision-2/recover_external.py",
+      "sha256": "640d9f21f8dfcbfeff2d4b4f44d0bfa1232653ee506a3a24122e6e88faac5cfc",
+      "utf8_bytes": 34781
+    },
+    {
+      "path": "scripts/p8_external_candidate.py",
+      "sha256": "8acd1e456b77d986829531bcad9e4221dd43ec0b7f91272d7f900b5c284feece",
+      "utf8_bytes": 11305
+    },
+    {
+      "path": "scripts/p8_candidate_execution.py",
+      "sha256": "e5b36f6bb7bb13292734932f442a6b29d5d04e13d47c34b75d1f00bad3164d9b",
+      "utf8_bytes": 23811
+    },
+    {
+      "path": "artifacts/benchmarks/p8-external-recovery-20261008/manifest.json",
+      "sha256": "f8e69dcc9e12e9c22bc63658d7c533dc6c6028e6831c8e79f7857f24feab71dd",
+      "utf8_bytes": 8400
+    }
+  ],
+  "checks": [
+    {
+      "topic": "Actual release fields",
+      "result": "2995 checks actual Cargo profile opt_level in 1/2/3/s/z, literal false debug_assertions/test, and receipt profile equality to actual artifact for release invocations. Product build, evaluator build and candidate validation all call the release verifier only for release. Dev behavior is retained."
+    },
+    {
+      "topic": "Retained raw Cargo identity",
+      "result": "Existing candidate validation verifies the artifact parsed from retained Cargo JSONL, source_before/after/current source inventory, feature/package/main.rs or cc-eval.rs identity and binary hash. New packager invokes it for both actual same-source release builds, checks builder/helper hashes against committed bytes, requires identical toolchain records and repeats byte/source checks after packaging."
+    },
+    {
+      "topic": "Fresh bundle identity",
+      "result": "New archive carries actual binaries, receipts, full Cargo logs/stderr/source inventories and validation record. Every archive member has size/SHA pins and regular mode; ZIP is immediately byte-roundtripped. Manifest uses the exact current source and archive digest; old ffdc tool SHA values are not relabeled as new binaries."
+    },
+    {
+      "topic": "Input and gate continuity",
+      "result": "Original upstream/query/source-inventory/budget template is fixed by f8e69dcc... hash. Original scorer/parser/audit/comparison policy helper bytes must match; only p8_compat is an explicitly revised old helper. New mode is precisely local-text-hidden; clone/import/freeze/validate, full common source, original expected patterns, all 100+100 questions, original command budget and actual run/replay/gate flows remain. Native gold remains a mechanical projection and is not claimed an independent semantic review."
+    },
+    {
+      "topic": "Observed measurements",
+      "result": "Revision reports attempted profiles from actual commands, complete profiles only from original wrapper results, row counts only from actual normalized files and raw gate values. It does not replace failed readiness with planned 1200 query count. c1ec changes exactly two reporting lines: true process_exit_codes now reads process_exit_code; effective_exit_codes retains timeout/log-budget normalized exit_code. I independently read original compat.command, which emits both fields, and reconstructed the exact c1ec delta from b099 bytes."
+    },
+    {
+      "topic": "Failure retention",
+      "result": "First external invalid-measurement attempt remains distinct. Fresh failures preserve raw/partial observations and available reference-package restoration; code uses actual max exit status or failure2, never marks P8_003_done. Query bodies remain temporary input and public package uses externally restorable references; no protected heldout access is introduced."
+    }
+  ],
+  "python_executed_by_reviewer": false,
+  "cargo_executed_by_reviewer": false,
+  "external_input_bodies_read_by_reviewer": false,
+  "ranking_run_by_reviewer": false,
+  "limitations": [
+    "Static source/interface assessment only; not actual release build, benchmark run or original TODO acceptance.",
+    "Release flags alone are insufficient: actual CI build receipts/raw and subsequent full measured results still require verification.",
+    "Existing native mechanical primary/supporting interpretation differs from compat-any-expected and is not a new P8-002 gold review."
+  ]
+}

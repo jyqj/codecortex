@@ -1,0 +1,524 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "review_kind": "original_contract_preflight_with_open_blocker",
+  "created_at_utc": "2026-10-08T04:18:30.689824+00:00",
+  "source_commit": "9ebe1f619a298b9955d576d9d8250368259924d2",
+  "source_tree": "bd14c262bc8d029a64f28e05c29e611ec645f929",
+  "baseline": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+  "method": "Read original task contracts, briefs, authoritative round12 wiring, historical minimum acceptance, fixed production call sites and independently attributed actual CI artifact reviews. No Cargo, product execution, task mutation or holdout-body access in this preflight.",
+  "role_disclosure": {
+    "non_author_of_closure_ledger": true,
+    "non_author_of_GC_WAL_L3_and_P8_driver": true,
+    "author_of_P7_017_guard_and_trace_verifier": true,
+    "P7_017_source_approval": "Use fixed non-author reviews by todo_acceptance and p7_wiring, plus root integration review; this document does not substitute a self-review for those."
+  },
+  "original_authorities": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "a7ebacf3903f3f405e3c5ba4d19f5590107467b55ede35c4d675516c07cf4e68",
+      "bytes": 759314
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+      "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613",
+      "bytes": 38897
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md",
+      "sha256": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9",
+      "bytes": 18237
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/OPEN-QUESTIONS.md",
+      "sha256": "c17891c5f8adf69062d4aa1bc9dcb7eb3ad2cc77f86e5b2832ac49dca18bfb0b",
+      "bytes": 5160
+    },
+    {
+      "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+      "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559",
+      "bytes": 12461
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "bytes": 10172
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P7-REMAINING-GATES.json",
+      "sha256": "ab90471315a8d18e90235bf875dea091828d9930f859a55345357f578eab704b",
+      "bytes": 69037
+    },
+    {
+      "path": "artifacts/checkpoints/p7-round2-final-20261007/evidence-index-v3.json",
+      "sha256": "db645c196a481768792b5ec42ae4306dc9af16572fc384a273b36811ae8bd5c8",
+      "bytes": 27020
+    }
+  ],
+  "production_files_inspected": [
+    {
+      "path": "crates/cc-semantic/src/queue.rs",
+      "sha256": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d",
+      "bytes": 30249
+    },
+    {
+      "path": "crates/cc-semantic/src/space_switch.rs",
+      "sha256": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b",
+      "bytes": 9896
+    },
+    {
+      "path": "crates/cc-db/src/semantic_queue.rs",
+      "sha256": "78452087441c24209358c7da0bd825e13344735425b151ee72035e9db20023ae",
+      "bytes": 6987
+    },
+    {
+      "path": "crates/cc-db/src/semantic_outbox.rs",
+      "sha256": "67745644d49f9e5d281bf2b1abffb6075c8f2025a652d6bb979f02b109a08e97",
+      "bytes": 29604
+    },
+    {
+      "path": "crates/cc-db/src/semantic_recovery.rs",
+      "sha256": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9",
+      "bytes": 13093
+    },
+    {
+      "path": "crates/cc-db/src/semantic_coverage.rs",
+      "sha256": "ae4d09198d6ed7b605e43d55d2b80af05ba5a1d708963ac3a8bac56aef64947c",
+      "bytes": 25912
+    },
+    {
+      "path": "crates/cc-db/src/document_store.rs",
+      "sha256": "affe3cfa66341a0f739d49b054c98492554c0dfdaca4703fd5c62ca16b6f3c77",
+      "bytes": 15876
+    },
+    {
+      "path": "crates/cc-server/src/semantic_runtime.rs",
+      "sha256": "44d1671247408d7b4b99c55cca8d07d4073cb2ce38d16728bdafe828ae77d6e2",
+      "bytes": 72426
+    },
+    {
+      "path": "crates/cc-server/src/semantic_wiring.rs",
+      "sha256": "b63b23981c35a9f53664aaa0b29552642fcdcb206353dcd5a7093f92c665b8ee",
+      "bytes": 91007
+    },
+    {
+      "path": "crates/cc-server/src/engine.rs",
+      "sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
+      "bytes": 82944
+    }
+  ],
+  "task_contracts_unchanged_against_original_baseline": true,
+  "compared_fields": [
+    "steps",
+    "acceptance",
+    "validations",
+    "depends_on",
+    "conditional_dependencies",
+    "conditional",
+    "required_for"
+  ],
+  "counts_at_review": {
+    "task_count": 192,
+    "states": {
+      "done": 153,
+      "in_progress": 21,
+      "todo": 17,
+      "blocked": 1
+    },
+    "unfinished": 39
+  },
+  "candidate_closures": [
+    "P7-014",
+    "P7-015",
+    "P7-016",
+    "P7-017",
+    "P7-019",
+    "P7-020",
+    "P8-001"
+  ],
+  "prospective_count_only_if_all_seven_are_accepted": {
+    "done": 160,
+    "unfinished": 32,
+    "newly_completed_original_tasks": 7,
+    "user_at_least_ten_goal_met": false
+  },
+  "task_contracts": [
+    {
+      "id": "P7-014",
+      "title": "配置/status/MCP全链贯通",
+      "status_at_review": "in_progress",
+      "steps": [
+        "新字段schema/sanitize/handler/doc/E2E一体",
+        "原mode语义不变"
+      ],
+      "acceptance": [
+        "未配置、关闭、回填、失败、就绪状态真实一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18"
+      ],
+      "depends_on": [
+        "P7-013"
+      ],
+      "conditional_dependencies": [],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-015",
+      "title": "后台回填与前台查询竞争测试",
+      "status_at_review": "todo",
+      "steps": [
+        "partial backfill时查询/写入/删除/切模型",
+        "测queue和CPU/DB占用"
+      ],
+      "acceptance": [
+        "慢模型不会饿死local索引/查询，过期发布0",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V20"
+      ],
+      "depends_on": [
+        "P7-014"
+      ],
+      "conditional_dependencies": [],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-016",
+      "title": "fake全故障矩阵回归",
+      "status_at_review": "todo",
+      "steps": [
+        "组合重试/close/rebuild/delete/lease/GC",
+        "每条保留可重放seed"
+      ],
+      "acceptance": [
+        "依赖独立实验证明恢复，不把fake分数解释成语义效果",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V15",
+        "V17",
+        "V18"
+      ],
+      "depends_on": [
+        "P6-020",
+        "P7-015"
+      ],
+      "conditional_dependencies": [],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-017",
+      "title": "离线默认包和未启用测试",
+      "status_at_review": "todo",
+      "steps": [
+        "禁网络环境启动所有旧工具",
+        "检查不创建语义cache文件"
+      ],
+      "acceptance": [
+        "零key、feature关、semantic.enabled=false都保持本地功能",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "depends_on": [
+        "P7-016"
+      ],
+      "conditional_dependencies": [],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-019",
+      "title": "本地加dense的质量/成本消融",
+      "status_at_review": "todo",
+      "steps": [
+        "同输入同budget比较local/dense/hybrid",
+        "报告heldout、exact退化和费用"
+      ],
+      "acceptance": [
+        "收益CI与能力差异可解释，不为单题写特殊权重",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V19",
+        "V20"
+      ],
+      "depends_on": [
+        "P7-017"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P7-018",
+          "when": "live semantic-effect certification; not required for engineering/fake profile"
+        }
+      ],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-020",
+      "title": "P7语义闭环与发布范围验收",
+      "status_at_review": "todo",
+      "steps": [
+        "G7分别出工程/fake与live效果结论",
+        "列出认证不足"
+      ],
+      "acceptance": [
+        "无live证据不声称已证明真实语义收益，本地发布不被模型密钥强绑",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V15",
+        "V16",
+        "V17",
+        "V18",
+        "V19",
+        "V20"
+      ],
+      "depends_on": [
+        "P7-001",
+        "P7-002",
+        "P7-003",
+        "P7-004",
+        "P7-005",
+        "P7-006",
+        "P7-007",
+        "P7-008",
+        "P7-009",
+        "P7-010",
+        "P7-011",
+        "P7-012",
+        "P7-013",
+        "P7-014",
+        "P7-015",
+        "P7-016",
+        "P7-017",
+        "P7-019"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P7-018",
+          "when": "live semantic-effect certification; not required for engineering/fake profile"
+        }
+      ],
+      "conditional": null,
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-001",
+      "title": "锁定release候选与证据输入",
+      "status_at_review": "in_progress",
+      "steps": [
+        "冻结binary/config/corpus/scoring/model/环境",
+        "停止覆盖被测源码"
+      ],
+      "acceptance": [
+        "每份报告精确回到同一候选，后续改动使对应证据失效",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V02"
+      ],
+      "depends_on": [
+        "P7-020"
+      ],
+      "conditional_dependencies": [],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P7-018",
+      "title": "受授权的真实provider小集认证",
+      "status_at_review": "blocked",
+      "steps": [
+        "选公开固定输入显式批准费用",
+        "验证真实返回、用量和partial behavior"
+      ],
+      "acceptance": [
+        "live与fake分栏；无授权则blocked/deferred而不假称通过",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V15",
+        "V19",
+        "V20"
+      ],
+      "depends_on": [
+        "P7-017"
+      ],
+      "conditional_dependencies": [],
+      "conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+      "required_for": [
+        "M4-semantic"
+      ]
+    }
+  ],
+  "contract_interpretation": [
+    {
+      "subject": "P7-019 and P7-020 engineering versus live",
+      "basis": "TASK-BRIEFS lines653-657 and665-687; original conditional_dependencies",
+      "decision": "Engineering/fake mechanism may be accepted independently. Real corpus/provider V19 effect, heldout quality and paid costs remain blocked/not_evaluated. No statistical semantic-benefit conclusion from fake vectors."
+    },
+    {
+      "subject": "P7-016 representative matrix",
+      "basis": "TASK-BRIEFS lines583-593",
+      "decision": "Original scope permits explicitly enumerated representative combinations; no new full-factorial requirement. Current L3 GC follows rebuild/delete+500 and precedes held retry SIGKILL; recovery follows natural lease expiry. Do not describe GC as first occurring after crash."
+    },
+    {
+      "subject": "Wiring7",
+      "basis": "round12 item7 and IMPLEMENTATION-ORDER line91",
+      "decision": "Persistent auxiliary GC counters are conditional. Owner may accept actual returned counters/log receipts for P7-016 with explicit no persistent status-table claim."
+    },
+    {
+      "subject": "Wiring13",
+      "basis": "round12 item13 and IMPLEMENTATION-ORDER line97",
+      "decision": "Only audit-log capacity is conditional. Configuration/model-switch production trigger is required and present; append-only human-driven log retention must be honestly left as original conditional follow-up."
+    },
+    {
+      "subject": "Runtime disabled state",
+      "basis": "IMPLEMENTATION-ORDER lines212-219; engine set_project/close/reopen; original actual13 state record",
+      "decision": "Constructed runtime is closed and query services torn down; reopening reads enabled=false. Keep untested file-watcher hot reload not_run without replacing the real lifecycle shutdown requirement."
+    },
+    {
+      "subject": "Wiring10 and11",
+      "basis": "old evidence-index-v3 rows10/11; current semantic_coverage/document_store/semantic_runtime",
+      "decision": "Failed counts are bounded scalar responses, not bounded SQL scan work. Server production desired projection uses a validated SQL page at limit64; unused legacy all-row reconcile API has not been certified as bounded."
+    },
+    {
+      "subject": "Historical minimum gates",
+      "basis": "P7-REMAINING-GATES minimum_gate_decisions V05/V16/V18/V11",
+      "decision": "Preserve accepted declared minima and their original limitations. Current source changes require reviewed deltas/current regression proof, not invented 100k/C8/16/all-language/live thresholds."
+    },
+    {
+      "subject": "P8-001 frozen candidate",
+      "basis": "original P8-001 steps/acceptance and actual immutable candidate execution/replay/drift receipt",
+      "decision": "Actual development profile is explicitly recorded. Candidate9ebe remains immutable; later evidence/ledger commits are not relabeled as its tested HEAD. Freezing does not grant G8 or publication certification."
+    }
+  ],
+  "blocking_findings": [
+    {
+      "id": "G7-WIRING9-UNBOUNDED-OPPORTUNISTIC-RECLAIM",
+      "severity": "closure_blocker",
+      "original_requirement": "TASK-BRIEFS line581 explicitly assigns opportunistic reclaim narrowing to P7-016. OPEN-QUESTIONS Q3 permits owner reassignment but no exemption. Prior index-v3 row9 remains partial.",
+      "observed_call_chain": [
+        "queue.rs drain_pending_with_lifecycle line289 -> IndexDb::reclaim_expired_semantic -> semantic_outbox::reclaim_expired_on",
+        "queue.rs drain_pending_parallel_with_lifecycle line418 -> same unbounded UPDATE",
+        "space_switch.rs drain_space_revocations line134 -> same unbounded UPDATE"
+      ],
+      "actual_implementation": "UPDATE all expired claimed rows; no LIMIT in semantic_outbox.rs line734 function. Existing bounded API in semantic_recovery.rs line81 is not called by these three opportunistic drain paths.",
+      "implication": "Successful SIGKILL/WAL/GC recovery observations do not satisfy this separate original implementation obligation. P7-016 cannot be closed solely from the currently reviewed proof; P7-017/019/020/P8-001 retain their hard dependency block.",
+      "suggested_fix": "Use bounded recovery API with a clear per-drain budget on every opportunistic path; preserve legacy explicitly unbounded public API semantics. Test stranded backlog beyond cap, real affected-row count, later-call convergence including foreign/current spaces, unchanged attempt accounting/epoch and preservation of unexpired leases. Retain actual old-fail/new-pass and new source/CI identities.",
+      "verification_performed": "Static exact-source call chain and SQL inspection only; no fabricated timing or runtime counterexample."
+    }
+  ],
+  "already_validated_evidence_limits": [
+    "P7-017: two actual packages x two configuration cases x14 original tools, plus separate reopen per case; eight complete product trees, zero external/unknown network attempts, eight anonymous AF_UNIX IPC pairs separately counted. Not eight complete14-tool runs.",
+    "P8-001: exact candidate/source/binaries, one original P0 DEV measurement row, byte-identical native replay, seven copied drift controls; no heldout or release-quality certification.",
+    "P7-015:384 requests in quiet/held C1/C4 and three seeds, max16353us/admission500us, truthful one-PID CPU/RSS and database probes. No formal stable P99/SLA or C8/C16/100k claim.",
+    "P7-019: four distinct independently built arms, four actual identity negative controls,36 total requests/24 measured; fake pairedCI recomputed, heldout not_evaluated and unknown costs remain null.",
+    "P7-016: root separately re-executed the original89-member artifact checker exit0, exact author receipt comparison, raw actual post-wait SIGKILL precedes lease by about1.975 seconds; GC chronology as above. Static/source review and execution evidence remain separately attributed."
+  ],
+  "remaining_final_gates": [
+    "Resolve original wiring9 implementation obligation on a fixed new source, or keep its dependent tasks open.",
+    "A repaired source needs its own actual full CI; old9ebe three-workflow success cannot certify changed product inputs.",
+    "Read and bind final seven-task acceptance, bidirectional13-row index, current source review and unchanged original dependency/authorization records."
+  ],
+  "explicit_non_approvals": [
+    "P7-018 remains blocked under prior D1+D2.",
+    "No live provider/paid cost/heldout quality/G8/release publish approval.",
+    "No task ledger writes and no count advance performed by this review."
+  ],
+  "verdict": "blocked_by_original_wiring9_despite_old_source_ci_green",
+  "external_review_receipts_inspected": [
+    {
+      "file": "ci9ebe-p7-016-final-review.json",
+      "sha256": "04c319ab3aeb149ad69ac3eb1a1c9437b9a1139e05a27540f90c42fe8081ad46",
+      "bytes": 34978
+    },
+    {
+      "file": "ci9ebe-p7-016-root-independent-review.json",
+      "sha256": "7f609a2ef25dcf083a4b976c4b1ba9506b31541f43ea46ee067716c4a9451b24",
+      "bytes": 980
+    },
+    {
+      "file": "ci9ebe-engineering-independent-receipt.json",
+      "sha256": "785bef9d9340ea26d848734bef089a5043102ef2dde724dc7f7510da0ce4a1b0",
+      "bytes": 28204
+    },
+    {
+      "file": "ci9ebe-mechanism-independent-receipt.json",
+      "sha256": "8a848611326e6287dba767ff873f857a4bbb3c5c47befb53f703ca75c4977940",
+      "bytes": 12116
+    }
+  ],
+  "old_source_ci_terminal_addendum": {
+    "reviewed_after_initial_preflight": true,
+    "source": "9ebe1f619a298b9955d576d9d8250368259924d2",
+    "all_three_workflows_completed_success": true,
+    "main_run": 37724421453,
+    "main_job": 113139222686,
+    "execution_commit": "c41bf2717aa745863520daedb89d8c4b3353d8c4",
+    "default_regression": {
+      "passed": 2635,
+      "failed": 0,
+      "ignored": 67
+    },
+    "script_suites": [
+      46,
+      205
+    ],
+    "source_integrity_tests": 139,
+    "source_cli_complete_inputs": 794,
+    "evidence": [
+      {
+        "path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/ci9ebe-main-job.log",
+        "sha256": "20165ef3358ea53ab0e439918aa828a1996fd7bba089b97e15179e02cf5e09b4",
+        "bytes": 986353
+      },
+      {
+        "path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/ci9ebe-main-summary.json",
+        "sha256": "24014e32e83dc2edbd8b4c1a105a90a0ca7fdb1eccde84a5438d806c49953959",
+        "bytes": 647
+      },
+      {
+        "path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/ci9ebe-workflows-terminal.json",
+        "sha256": "8c2c9c211e7320e839395851ad0aa3b74c29cac8ef03c2641122b85b75594895",
+        "bytes": 1165
+      }
+    ],
+    "interpretation": "CI success does not satisfy the still-missing original wiring9 implementation. This success belongs to9ebe and is not new fixed-source regression proof."
+  }
+}

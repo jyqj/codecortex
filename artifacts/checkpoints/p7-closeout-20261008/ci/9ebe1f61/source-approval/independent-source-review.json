@@ -1,25 +1,34 @@
 {
   "base": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
-  "complete_source_input_count": 795,
+  "complete_source_input_count": 794,
   "execution_evidence_boundary": {
-    "current_local_execution": "root executed9 new SQLite controls and29 unchanged old contract tests;0failed/1pre-existing ignore. pr_audit reviewed exact source and complete raw logs; no independent product rerun by reviewer.",
-    "current_scoped_strict_clippy": "cargo clippy -p cc-semantic --locked --offline --test opportunistic_reclaim -- -D warnings passed; full current CI still pending",
-    "first_compile_failure_preserved": true,
+    "latest_independent_local_execution": "32 revised offline parser/seccomp controls passed; hashes before and after identical",
     "new_tasks_closed": 0,
-    "old_failed_ci_and_all_older_approval_chains_preserved": true,
+    "old_approval_execution": "Historical 2313 main CI ran all 139 source-integrity tests and the v13 CLI, executing both complete inherited approval chains.",
     "pending": [
-      "current full CI/source-integrity795",
-      "current original13-checkpoint HTTP driver",
-      "current three-seed real L3 lifecycle",
-      "current384-request engineering resource execution",
-      "current four-source mechanism execution",
-      "current both default/semantic offline matrices with complete trace closure",
-      "current P8 candidate execution/replay/archive and drift controls"
+      "all full final-source CI jobs",
+      "original 13-checkpoint MCP execution",
+      "three-seed real L3 lifecycle",
+      "both complete offline product matrices and full trace closure",
+      "actual P8 default MCP execution, replay and archive"
     ],
-    "prior_acceptance_gap": "original wiring9 still called unbounded reclaim in all three drain paths despite green CI; independent finding retained",
-    "prior_actual_ci": "all three workflows successful; main2635 passed/67 ignored,139 source-integrity plus full v13 CLI794; engineering384 requests; all four closeout jobs successful",
-    "prior_actual_ci_source": "9ebe1f619a298b9955d576d9d8250368259924d2",
-    "prior_main_and_engineering_execution_source": "c41bf2717aa745863520daedb89d8c4b3353d8c4",
+    "prior_actual_ci_source": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+    "prior_ci_failed": [
+      "HTTP shared-provider fixture: two earlier queued workers exhausted their original timeout while the separate overflow call waited",
+      "both offline matrices: actual Rust spawn recvfrom denied before the product gate"
+    ],
+    "prior_ci_passed": [
+      "main CI (check/MSRV/security)",
+      "P7 engineering original suite and all 384 measured query requests",
+      "four-source/binary mechanism build and actual 36-query/negative-control execution"
+    ],
+    "prior_ci_skipped": [
+      "original 13-checkpoint HTTP driver",
+      "three-seed L3 lifecycle",
+      "P8 candidate execution under fatal network denial"
+    ],
+    "prior_failures_preserved": true,
+    "prior_main_and_engineering_execution_source": "1cfa17a2548c2ebcf1b207c99dd4734d9be612cb",
     "prior_main_and_engineering_tree_equal_to_pr_head": true,
     "remaining_original_tasks": 39,
     "task_ledger_modified": false
@@ -37,7 +46,7 @@
   "independent_reviewers": [
     {
       "id": "root",
-      "role": "Integration reviewer; independently reviewed p7_wiring runtime/mechanism, pr_audit offline runner, and todo_acceptance fault/P8 execution changes; own sampler/guard/workflow changes cross-reviewed by non-authors. Root authored the four-path opportunistic reclaim correction; pr_audit independently reviewed its fixed bytes and all raw local results."
+      "role": "Integration reviewer; independently reviewed p7_wiring runtime/mechanism, pr_audit offline runner, and todo_acceptance fault/P8 execution changes; own sampler/guard/workflow changes cross-reviewed by non-authors."
     },
     {
       "id": "p7_wiring",
@@ -45,22 +54,14 @@
     },
     {
       "id": "pr_audit",
-      "role": "Independent reviewer of todo_acceptance GC/WAL/P8 changes; author of fatal offline changes, independently reviewed by root and todo_acceptance. Non-author reviewer of root opportunistic reclaim (fixed local28a/remote0929); accepted source scope only."
+      "role": "Independent reviewer of todo_acceptance GC/WAL/P8 changes; author of fatal offline changes, independently reviewed by root and todo_acceptance."
     },
     {
       "id": "todo_acceptance",
       "role": "Independent reviewer of offline seccomp baseline and parser controls; author of GC/WAL/L3/P8 execution, independently reviewed by pr_audit and root."
     }
   ],
-  "local_same_tree_review_source": "28a32154dde199127c5efcbf740cc522682b46a7",
-  "new_opportunistic_reclaim_independent_review": {
-    "author": "root",
-    "fixed_local_tree": "8f47f647d327221adcdec103bb1ee756d029fda5",
-    "path": "artifacts/checkpoints/p7-g7-preflight-20261008/reclaim-28a32154-independent-review.json",
-    "remote_product_tree_independently_matched_by_integration_owner": "8f47f647d327221adcdec103bb1ee756d029fda5",
-    "reviewer": "pr_audit",
-    "sha256": "1b36a470c699f3550076bed70b688e4b11e4f7774fc0cb954dea0927e665a535"
-  },
+  "local_same_tree_review_source": "2d7a7f61f7e959632a0637f14b7ea21c821ef15d",
   "offline_evidence_records": [
     {
       "path": "artifacts/checkpoints/p7-offline-runner-20261008/validation-summary.json",
@@ -115,10 +116,6 @@
     "crates/cc-db/src/semantic_gc_reads.rs": {
       "before_sha256": "5d51eea6a372a3ffec951032651dec37b503e758bc94951f92cc237e999714a3",
       "sha256": "0e3a01631be1670ed2bd2168b968f943f3cae6b0d8159877ad1e2731b0634f49"
-    },
-    "crates/cc-db/src/semantic_recovery.rs": {
-      "before_sha256": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9",
-      "sha256": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e"
     },
     "crates/cc-eval/src/benchmark/ablation.rs": {
       "before_sha256": "2f7e62ae883c4087d99b3c160f8012fbfce37d52fb3299c877531588ebff6aa2",
@@ -188,10 +185,6 @@
       "before_sha256": "266f01841afc452512e70fb273a36cd11e800a1a0be807423872e03c7f2631b2",
       "sha256": "a9b71bf109a09c3bd509d453676400ce45d3ea8d3051feff76d3283904061629"
     },
-    "crates/cc-semantic/src/queue.rs": {
-      "before_sha256": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d",
-      "sha256": "3ef3d0b90260bfb4f3fed94703ed37e6e02324299996a60a64eb560fc9e9a349"
-    },
     "crates/cc-semantic/src/reconcile.rs": {
       "before_sha256": "021cbdeb6fde4a0636498dc20b58d19ee7cb289d114ccee4b3172573dff58c35",
       "sha256": "16d66527f6e96d95fcd0f64219ab75e06fd5be5e26e4c777dc09b8fbe54d049c"
@@ -200,17 +193,9 @@
       "before_sha256": "490b833d9f5b4326c12eab64de71fa2356b093516946f91c6fd7284bb6d53bd0",
       "sha256": "21ea2a9f10ab76111439d60fa450f2a90e3eb9e365c78418cb089bb44fbc4708"
     },
-    "crates/cc-semantic/src/space_switch.rs": {
-      "before_sha256": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b",
-      "sha256": "f09dde979b3aa1c6aefded96e0cfe5629c9835b88ea344979c69015375d5fb9b"
-    },
     "crates/cc-semantic/tests/gc_concurrent_replacement.rs": {
       "before_sha256": null,
       "sha256": "89419449ee27dd0373a8b14403dace732aeb2246a36dafba1c96793a03e6fc93"
-    },
-    "crates/cc-semantic/tests/opportunistic_reclaim.rs": {
-      "before_sha256": null,
-      "sha256": "0718d3a869c0ad17ff486e5f363cc0f2fb980752161934337b7459548d9d5999"
     },
     "crates/cc-semantic/tests/semantic_degrade.rs": {
       "before_sha256": "2ceb2b84c7e334c11ecc33813dc06e1a959b24c2ba5ac390f5df42ab0bb0fd3f",
@@ -236,13 +221,6 @@
       "before_sha256": "cc6d0518028d6c5395d00b760eae134abc68bb2cd919f47e756ab8526e41b03b",
       "sha256": "eb29f040b5e91bc52eae9e07993814f7440fbf6eeb5680254a89deee36eb0dfc"
     }
-  },
-  "prior_accepted_source_review": {
-    "path": "artifacts/checkpoints/p7-closeout-20261008/ci/9ebe1f61/source-approval/independent-source-review.json",
-    "previous_31_source_deltas_byte_identical": true,
-    "review_commit": "89b9607977b1b7822543852cd267ddffc5d91c9c",
-    "sha256": "7481551bd2eb200467d5e75b31c1f03168fae81253e628ad3fc4bb6ee96d1c1d",
-    "source": "832dc4cbf0469ee4964bb3e4d2a1d085a9d749b1"
   },
   "review_records": [
     {
@@ -338,7 +316,7 @@
   ],
   "schema_version": 1,
   "scope": "Exact source and validation inputs for P7 engineering closeout and P8-001 execution mechanism. This review permits fixed source verification only; it does not approve tasks, real semantic quality, release platforms, custody or final runtime evidence.",
-  "source": "09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc",
+  "source": "832dc4cbf0469ee4964bb3e4d2a1d085a9d749b1",
   "source_tree": "8f326276af01c836f7550fb4140a12dc69d3f892",
   "unresolved_blockers": [],
   "validation_inputs": {

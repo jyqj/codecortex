@@ -1,0 +1,11 @@
+# G7 original-contract preflight and wiring9 repair review
+
+The review found one original implementation obligation still missing at `9ebe1f619a298b9955d576d9d8250368259924d2`: all three opportunistic drain paths still invoked the full-table lease reclaim API. All three CI workflows on that source succeeded; this did not close the missing TODO. `review-9ebe.json` preserves that finding, the unchanged original contracts, precise Git paths and source hashes.
+
+`reclaim-28a32154-independent-review.json` accepts the four-file repair at local `28a32154dde199127c5efcbf740cc522682b46a7` within its stated source-review scope. The local tree is `8f47f647d327221adcdec103bb1ee756d029fda5`; the integration owner binds remote PRODUCT `09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc` to this tree. The reviewer independently confirmed the remote commit exists; normalized GitHub commit metadata did not expose the tree, so remote tree equality is attributed to the integration owner and remains covered by the full source guard.
+
+The repair uses one target-space page per serial, parallel or revocation drain. Review verified the target predicate inside LIMIT, unchanged legacy APIs, SQL mutation/rollback/attempt/epoch semantics, preclosed and no-active behavior, and actual local logs for 9 new SQLite checks plus29 unchanged checks, with1 unchanged prior ignore. This reviewer did not run Cargo; source review and author-run evidence are separately attributed. The original compile failure is retained unchanged.
+
+The original contract files may be absent from a sparse checkout. Read them with `git show 9ebe1f619a298b9955d576d9d8250368259924d2:artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md` (line581) and the same prefix plus `OPEN-QUESTIONS.md` (lines25–30). Their exact hashes are in both JSON records.
+
+New-source full CI and integrated task/G7 acceptance are still required. No task or dependency is changed here: 192 original tasks,153 done,39 unfinished. Seven prospective closures would leave32 unfinished and would not yet satisfy the user's request for at least10 fully completed original TODOs. P7-018, live benefit, protected holdout and G8 remain outside this approval.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the existing approval chains and an independently reviewed P7 delta.
+"""Verify the existing approval chains and an independently reviewed P8 engineering delta.
 
 The new record admits fixed implementation and validation inputs. It neither
 relabels historical executions nor grants task, quality or release approval.
@@ -11,29 +11,29 @@ from pathlib import Path
 import re
 import sys
 
-import verify_reviewed_source_v12 as previous
+import verify_reviewed_source_v13 as previous
+import v14_historical_context as history
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "p7-closeout-source-20261008-v13"
-BASE = "47d1939e43455ecd72ccc73e80825d971e3f33e7"
-PRODUCT = "09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc"
-REVIEW = "7b5d6f1fa436f4c655b0c0fafc66b521faeb480e"
-REVIEW_PATH = "artifacts/checkpoints/p7-closeout-20261008/independent-source-review.json"
-REGISTRY = ROOT / "scripts/reviewed-source-registry-v13.json"
-REGISTRY_SHA256 = "b9e520984d04241104ead7cd26635967d9ce4d5f8f8700ce57b9b1d24c03e31a"
-CI_SNAPSHOT = "scripts/source_snapshots/v12_ci"
+VERSION = "p8-oracle-compat-source-20261008-v14"
+BASE = "9f6684ac81fa82f2bc99903ff42fb532478c2aaf"
+PRODUCT = "df140ad1dc97f080afd748e9571b360e0cade5fe"
+REVIEW = "b2a6c135444ef61d629cac1d739b120c8a3158d2"
+REVIEW_PATH = "artifacts/checkpoints/p8-oracle-compat-20261008/independent-source-review.json"
+REGISTRY = ROOT / "scripts/reviewed-source-registry-v14.json"
+REGISTRY_SHA256 = "289b6925b4f28644209c5d63a8284e201e296bde9fa111fd42d18b41f5d44ec2"
 FROZEN = (
-    "scripts/verify_reviewed_source_v12.py",
-    "scripts/reviewed-source-registry-v12.json",
-    "tests/source_integrity/test_reviewed_source_v12.py",
+    "scripts/verify_reviewed_source_v13.py",
+    "scripts/reviewed-source-registry-v13.json",
+    "tests/source_integrity/test_reviewed_source_v13.py",
 )
 VALIDATION_ROOTS = ("scripts", ".github/workflows", "tests/source_integrity")
 # The selected guard and its registry are the new trust root. Their fixed
 # references are installed after the reviewed product commit. The current CI
 # selector is separately constrained by expected_ci(), which runs the old proof.
 VALIDATION_EXCLUSIONS = frozenset({
-    "scripts/verify_reviewed_source_v13.py",
-    "scripts/reviewed-source-registry-v13.json",
+    "scripts/verify_reviewed_source_v14.py",
+    "scripts/reviewed-source-registry-v14.json",
     ".github/workflows/ci.yml",
 })
 git = previous.git
@@ -41,7 +41,7 @@ require = previous.require
 
 
 def identities():
-    return dict(schema_version=8, source_version=VERSION,
+    return dict(schema_version=9, source_version=VERSION,
                 previous_source_version=previous.VERSION, base_source=BASE,
                 product_source=PRODUCT, review_source=REVIEW,
                 scope="independently_reviewed_source_and_validation_inputs",
@@ -51,28 +51,39 @@ def identities():
 def verify_pins():
     require(all(isinstance(pin, str) and re.fullmatch(r"[0-9a-f]{40}", pin)
                 for pin in (BASE, PRODUCT, REVIEW)),
-            "v13 pins must be immutable full commit SHAs")
+            "v14 pins must be immutable full commit SHAs")
+    require(isinstance(REGISTRY_SHA256, str)
+            and re.fullmatch(r"[0-9a-f]{64}", REGISTRY_SHA256),
+            "v14 registry digest must be a fixed SHA-256")
 
 
 def check_identity(registry):
     verify_pins()
     for key, value in identities().items():
-        require(registry.get(key) == value, "wrong v13 identity: " + key)
+        require(registry.get(key) == value, "wrong v14 identity: " + key)
 
 
 def load_registry(path=REGISTRY):
+    verify_pins()
     raw = path.read_bytes()
     require(hashlib.sha256(raw).hexdigest() == REGISTRY_SHA256,
-            "stale or altered v13 registry")
+            "stale or altered v14 registry")
     registry = json.loads(raw)
     check_identity(registry)
     return registry
 
 
 def unchanged_file(root, path, raw, label):
-    target = root / path
-    require(not target.is_symlink() and target.is_file() and target.read_bytes() == raw,
-            label + ": " + path)
+    root = Path(root)
+    require(root.is_dir() and not root.is_symlink(), label + ": invalid root")
+    relative = Path(path)
+    require(not relative.is_absolute() and ".." not in relative.parts,
+            label + ": invalid path")
+    target = root
+    for part in relative.parts:
+        target /= part
+        require(not target.is_symlink(), label + ": symlink input: " + path)
+    require(target.is_file() and target.read_bytes() == raw, label + ": " + path)
 
 
 def validation_path(path):
@@ -102,85 +113,98 @@ def verify_validation_inventory(root, expected):
             for directory in VALIDATION_ROOTS for path in (root / directory).rglob("*")
             if (path.is_file() or path.is_symlink())
             and validation_path(path.relative_to(root).as_posix())}
-    require(disk == set(expected), "v13 validation disk inventory differs")
+    require(disk == set(expected), "v14 validation disk inventory differs")
     # The byte and symlink check runs separately for every reviewed input below.
+
+
+def verify_validation_inputs(root, expected):
+    """Check the complete current validation domain before the old proof runs."""
+    verify_validation_inventory(root, expected)
+    for path, digest in expected.items():
+        require(isinstance(path, str) and path.startswith(tuple(x + "/" for x in VALIDATION_ROOTS))
+                and ".." not in Path(path).parts, "invalid v14 validation input")
+        raw = git.blob(PRODUCT, path)
+        require(git.sha(raw) == digest, "v14 validation source digest differs: " + path)
+        unchanged_file(root, path, raw, "v14 reviewed validation input changed")
 
 
 def verify_snapshots(root=ROOT):
     verify_pins()
+    require(BASE == history.HISTORICAL_HEAD, "v14 historical base differs")
     git.ensure_refs([BASE, PRODUCT, REVIEW])
+    history.verify_current_history(root)
     for path in FROZEN:
-        unchanged_file(root, path, git.blob(BASE, path), "v12 approval snapshot changed")
-    for path in (".github/workflows/ci.yml", ".github/workflows/p7-engineering.yml"):
-        unchanged_file(root, CI_SNAPSHOT + "/" + path, git.blob(BASE, path),
-                       "v12 CI snapshot changed")
-    # Execute the old CI proof in its exact historical workflow snapshot.
-    previous.verify_ci(root / CI_SNAPSHOT)
+        unchanged_file(root, path, git.blob(BASE, path), "v13 approval snapshot changed")
 
 
 def reconstruct(registry, inherited, root=ROOT):
     check_identity(registry)
     require(set(inherited) == git.inputs(BASE)
             and all(raw == git.blob(BASE, path) for path, raw in inherited.items()),
-            "v13 base is not the proven inherited source")
+            "v14 base is not the proven inherited source")
     source_inputs = git.inputs(PRODUCT)
-    changes = previous.changed_paths(BASE, PRODUCT)
+    changes = previous.previous.changed_paths(BASE, PRODUCT)
     delta = registry.get("delta", {})
     require(isinstance(delta, dict) and changes == set(delta) and bool(changes),
-            "v13 reviewed source delta inventory differs")
+            "v14 reviewed source delta inventory differs")
     # Deletions are deliberately not part of this fixed implementation review.
-    require(set(inherited) <= source_inputs, "v13 source unexpectedly removes an inherited input")
+    require(set(inherited) <= source_inputs, "v14 source unexpectedly removes an inherited input")
     raw_review = git.blob(REVIEW, REVIEW_PATH)
-    require(git.sha(raw_review) == registry.get("review_sha256"), "v13 review digest differs")
-    unchanged_file(root, REVIEW_PATH, raw_review, "v13 fixed independent review changed")
+    require(git.sha(raw_review) == registry.get("review_sha256"), "v14 review digest differs")
+    unchanged_file(root, REVIEW_PATH, raw_review, "v14 fixed independent review changed")
     review = json.loads(raw_review)
     require(review.get("source") == PRODUCT and review.get("base") == BASE
             and review.get("verdict") == "accepted_scoped"
-            and review.get("independent_reviewers")
+            and review.get("scope") == identities()["scope"]
+            and isinstance(review.get("independent_reviewers"), list)
+            and bool(review["independent_reviewers"])
+            and all(isinstance(name, str) and name.strip()
+                    for name in review["independent_reviewers"])
             and review.get("unresolved_blockers") == []
             and set(review.get("paths", {})) == changes,
-            "v13 review does not accept the exact source delta")
+            "v14 review does not accept the exact source delta")
     result = dict(inherited)
     for path in sorted(changes):
         before = inherited.get(path)
         after = git.blob(PRODUCT, path)
         expected = {"before_sha256": None if before is None else git.sha(before),
                     "sha256": git.sha(after)}
-        require(delta[path] == expected, "v13 before/after digest differs: " + path)
+        require(delta[path] == expected, "v14 before/after digest differs: " + path)
         require(review["paths"][path] == expected,
-                "v13 independent source review differs: " + path)
+                "v14 independent source review differs: " + path)
         result[path] = after
     require(set(result) == source_inputs
             and all(raw == git.blob(PRODUCT, path) for path, raw in result.items()),
-            "v13 complete source inventory or bytes differ")
-    require({path: git.sha(raw) for path, raw in result.items()}
-            == registry.get("complete_inputs"), "v13 complete manifest differs")
+            "v14 complete source inventory or bytes differ")
+    complete = {path: git.sha(raw) for path, raw in result.items()}
+    require(complete == registry.get("complete_inputs"), "v14 complete manifest differs")
+    require(review.get("complete_inputs") == complete,
+            "v14 independent review complete manifest differs")
     extra = registry.get("validation_inputs")
     require(isinstance(extra, dict) and extra
             and review.get("validation_inputs") == extra,
-            "v13 validation review inventory differs")
-    require(extra == validation_inventory(PRODUCT), "v13 complete validation manifest differs")
-    verify_validation_inventory(root, extra)
-    for path, digest in extra.items():
-        require(isinstance(path, str) and path.startswith(tuple(x + "/" for x in VALIDATION_ROOTS))
-                and ".." not in Path(path).parts, "invalid v13 validation input")
-        raw = git.blob(PRODUCT, path)
-        require(git.sha(raw) == digest, "v13 validation source digest differs: " + path)
-        unchanged_file(root, path, raw, "v13 reviewed validation input changed")
+            "v14 validation review inventory differs")
+    require(extra == validation_inventory(PRODUCT), "v14 complete validation manifest differs")
+    verify_validation_inputs(root, extra)
     return result
 
 
 def approved_union(registry, root=ROOT):
+    check_identity(registry)
+    git.ensure_refs([BASE, PRODUCT, REVIEW])
+    # The new helper, tests and adapter are reviewed inputs, not exclusions.
+    # Reject their current bytes before any historical-context proof uses them.
+    verify_validation_inputs(root, validation_inventory(PRODUCT))
     verify_snapshots(root)
-    inherited = previous.approved_union(previous.load_registry(), root=root)
+    inherited = history.approved_union(previous, root=root)
     return reconstruct(registry, inherited, root=root)
 
 
 def expected_ci():
     original = previous.expected_ci()
-    old = "verify_reviewed_source_v12.py --source-version " + previous.VERSION
-    new = "verify_reviewed_source_v13.py --source-version " + VERSION
-    require(original.count(old) == 1, "v12 CI selector differs")
+    old = "verify_reviewed_source_v13.py --source-version " + previous.VERSION
+    new = "verify_reviewed_source_v14.py --source-version " + VERSION
+    require(original.count(old) == 1, "v13 CI selector differs")
     return original.replace(old, new)
 
 
@@ -188,7 +212,7 @@ def verify_ci(root=ROOT):
     target = root / ".github/workflows/ci.yml"
     require(not target.is_symlink() and target.is_file()
             and target.read_text() == expected_ci(),
-            "CI differs beyond the explicit v13 selector")
+            "CI differs beyond the explicit v14 selector")
     unchanged_file(root, ".github/workflows/p7-engineering.yml",
                    git.blob(BASE, ".github/workflows/p7-engineering.yml"),
                    "P7 engineering workflow changed")
@@ -202,10 +226,12 @@ def main():
     parser.parse_args()
     expected = approved_union(load_registry())
     tracked = git.git("ls-files", "--", "crates", "Cargo.toml", "Cargo.lock")
+    for path, raw in expected.items():
+        unchanged_file(ROOT, path, raw, "v14 complete source input changed")
     git.verify_tree(ROOT, expected, tracked.decode().splitlines())
     validation_tracked = git.git("ls-files", "--", *VALIDATION_ROOTS).decode().splitlines()
     require({path for path in validation_tracked if validation_path(path)}
-            == set(validation_inventory(PRODUCT)), "v13 tracked validation inventory differs")
+            == set(validation_inventory(PRODUCT)), "v14 tracked validation inventory differs")
     verify_ci()
     print(json.dumps(dict(identities(), status="passed", complete_inputs=len(expected),
                           executed_previous_proof=previous.VERSION)))

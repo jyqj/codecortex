@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "record_type": "additive_acceptance_interpretation_correction",
+  "reviewed_source_commit": "fb190e9f281ae1629e877c51f0e87cb7b2a23aba",
+  "authoritative_requirement": {
+    "source": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+    "section": "7 / D2",
+    "verbatim": "6 个以上真实仓库，覆盖 Rust/JS/TS/Python/Go 与至少一个 mixed monorepo；初始约 600 个审阅问题",
+    "unit": "reviewed_questions",
+    "quantity": {
+      "initial_approximate_target": 600,
+      "hard_independent_family_threshold": null
+    }
+  },
+  "original_task_steps": [
+    "扩至规划语言/仓库覆盖并复核gold",
+    "公开/私有数据分离"
+  ],
+  "original_task_acceptance": [
+    "题数、类别、语言、能力缺口和实际审阅范围透明",
+    "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+  ],
+  "additional_independent_family_threshold_found": false,
+  "separate_requirements": [
+    {
+      "source": "09-BENCHMARK.md section 5",
+      "requirement": "Keep paraphrases and Chinese/English pairs in the same query_family split to prevent leakage."
+    },
+    {
+      "source": "09-BENCHMARK.md section 7",
+      "requirement": "Read fixed source, label primary/supporting gold, then independently review each question; preserve hard negatives and quarantine disputed gold."
+    },
+    {
+      "source": "09-BENCHMARK.md section 10",
+      "requirement": "Stratify bootstrap by repository/query-family and never count repeated executions of one question as independent retrieval questions."
+    },
+    {
+      "source": "06-VALIDATION.md V19 and section 4",
+      "requirement": "Disclose corpus, hard negatives, holdout, facet/span, macro/micro/CI and sample applicability; do not invent absolute thresholds."
+    }
+  ],
+  "withdrawn_interpretation": "formal 600-family acceptance target",
+  "affected_derived_fields": [
+    "coverage_gaps.formal_family_target=600",
+    "coverage_gaps.formal_family_shortfall=600",
+    "totals.formal_accepted_families=0 as an alleged count against that nonexistent threshold"
+  ],
+  "affected_derived_records": [
+    "artifacts/checkpoints/p8-corpus-lock-review-20261008/README.md",
+    "artifacts/checkpoints/p8-corpus-lock-review-20261008/corpus-audit.json",
+    "docs/roadmap/code-index-v2/P8-CORPUS-AUDIT.md",
+    "scripts/p8_corpus_audit.py"
+  ],
+  "interpretation": {
+    "old_measurements_unchanged": true,
+    "old_artifacts_unchanged": true,
+    "hardcoded_family_target_is_acceptance_authority": false,
+    "new_independent_gold_reviews_zero_revokes_prior_dev_review": false,
+    "question_rows_are_not_certified_independent_sample_counts": true,
+    "reported_current_gaps": [
+      "Rust coverage / serde source admission and actual gold review",
+      "Mixed monorepo coverage / Vite source admission and actual gold review",
+      "Declared category and full source/corpus validation gaps under original V02/V19 scope"
+    ],
+    "quantity_reporting": "Keep 301 retained native DEV questions, 301 family labels, 287 local components, 280 conservative global correlation components and zero new reviews as separate scoped facts. Do not infer a formal independent-family shortfall of 600; any numerical comparison to about 600 reviewed questions must disclose its planning and review scope."
+  },
+  "checked_files_sha256": {
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+    "docs/roadmap/code-index-v2/04-PHASES.md": "7c799531fa9bad32b274db107f4808e0e641fe1585e9d5fbbe5fe32ddcb52fd3",
+    "docs/roadmap/code-index-v2/06-VALIDATION.md": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+    "docs/roadmap/code-index-v2/02-CONTRACTS.md": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+    "docs/roadmap/code-index-v2/tasks.json": "b5a33e7827a6a1b60b71194348d61eb629385c48c1b970f434f330b2244a0812",
+    "docs/roadmap/code-index-v2/P8-CORPUS-AUDIT.md": "e5e02b1ae97c68104f0075b25f2642a9aade5cabf9dadd8d7df86928027fff6f",
+    "scripts/p8_corpus_audit.py": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+    "artifacts/checkpoints/p8-corpus-lock-review-20261008/README.md": "81dbc67eac4e59e34a7510745084994ef384aa6b0797135e19d263adc588257f",
+    "artifacts/checkpoints/p8-corpus-lock-review-20261008/corpus-audit.json": "ff8c6cca1723e644ce1e2d95a868c25a37dbb5954d7965354c732d8805090bc5"
+  },
+  "mutations": {
+    "repository_source": [],
+    "historical_records": [],
+    "tasks_json": [],
+    "integration_or_scale_workspace": []
+  }
+}

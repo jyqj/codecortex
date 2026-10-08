@@ -21,7 +21,7 @@ RECOVERY = "artifacts/benchmarks/p8-external-recovery-20261008/revision-2/recove
 BUILD_FILES = ("build-receipt.json", "build-failure.json", "source-inputs.json",
                "cargo-build.jsonl", "cargo-build.stderr.log")
 SCOPED_EXTRA = (RECOVERY, "artifacts/benchmarks/p8-external-recovery-20261008/manifest.json")
-EXPECTED_TESTS = {"wrapper": 23, "profile": 4, "scanner": 5, "watcher": 2, "readiness-unit": 5, "readiness-real": 2}
+EXPECTED_TESTS = {"wrapper": 39, "profile": 4, "scanner": 5, "watcher": 2, "readiness-unit": 5, "readiness-real": 2}
 
 def need(value, label):
     if not value:

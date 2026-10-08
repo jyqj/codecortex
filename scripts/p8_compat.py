@@ -36,6 +36,9 @@ SCORER_FILES = {"crates/cc-eval/src/benchmark/" + n for n in
                 ("schema.rs", "metrics.rs", "manifest.rs", "normalizer.rs", "validation.rs", "comparison.rs",
                  "statistics.rs", "report.rs", "gate.rs", "importer_oce.rs")}
 PROFILES = {"compat": "oce-compat-v1", "native": "codecortex-native-v1"}
+ADAPTERS = {"rg": "rg-literal", "mcp-stdio": "mcp-stdio"}
+RUN_GATE_STATUS = {0: "baseline_recorded_not_quality_certified", 1: "gate_failed",
+                   2: "invalid_measurement", 3: "cancelled"}
 GLOB_POLICY = "case-sensitive-slash-normalized-no-overlap-v1"
 MAX_FILE = 16 * 1024 * 1024
 MAX_RAW = 128 * 1024 * 1024
@@ -59,6 +62,31 @@ def jsonl(filename):
     rows = [parse_json(line) for line in read_bytes(filename, limit=MAX_FILE).splitlines() if line.strip()]
     require(rows and all(isinstance(row, dict) for row in rows), "empty or invalid JSONL")
     return rows
+
+
+def query_snapshot(rows):
+    """Preserve every locked value, filling only cc-eval's serde defaults.
+
+    The runner serializes parsed Query values, so omitted optional fields become
+    null and annotations default to an empty map. Source bytes and scorer locks
+    are still checked by cc-eval; this is not another validator or scorer.
+    """
+    result = []
+    for row in rows:
+        value = {"path_prefix": None, "annotations": {}, **row}
+        if "answers" in value:
+            groups = []
+            for group in value["answers"]:
+                alternatives = []
+                for alternative in group["alternatives"]:
+                    alt = {"span": None, "symbol": None, **alternative}
+                    if alt["symbol"] is not None:
+                        alt["symbol"] = {"qname": None, "kind": None, **alt["symbol"]}
+                    alternatives.append(alt)
+                groups.append({**group, "alternatives": alternatives})
+            value["answers"] = groups
+        result.append(value)
+    return result
 
 
 def joined_input(root, base, relative):
@@ -148,7 +176,8 @@ def inspect_lock(lock_file, *, configuration_profile="local-default"):
         rows = jsonl(query_path)
         require(all(row.get("split") == "dev" for row in rows), "only public DEV input accepted; no body echoed")
         ids = [row["id"] for row in rows]
-        require(len(ids) == len(set(ids)), "duplicate query ID")
+        require(all(isinstance(ident, str) and ident for ident in ids)
+                and len(ids) == len(set(ids)), "invalid or duplicate query ID")
         source_root = joined_input(root, base, suite["source"]["root"])
         if dataset in TARGETS:
             require(suite["source"]["commit"] == lock["commit"], "missing external Git commit lock")
@@ -167,7 +196,8 @@ def inspect_lock(lock_file, *, configuration_profile="local-default"):
                                "source": source_signature, "scoring": PROFILES[profile],
                                "configuration": suite["engine_config"],
                                "budget": {k: suite[k] for k in ("top_k", "timeout_ms", "warmup", "repetitions", "seed")}}
-        suites.append({"profile": profile, "path": suite_path, "suite": suite, "query_rows": len(rows)})
+        suites.append({"profile": profile, "path": suite_path, "suite": suite, "query_rows": len(rows),
+                       "query_snapshot": query_snapshot(rows), "backend_kind": backend["kind"]})
     require("compat" in seen, "compat suite is required")
     if "native" in seen:
         require(signatures["native"]["source"] == signatures["compat"]["source"], "native/compat source input mismatch")
@@ -245,16 +275,36 @@ def check_run(run, suite, process_exit):
     manifest = read_json(run / "manifest.json")
     gate = read_json(run / "gate.json")
     metrics = read_json(run / "metrics.json")
-    require(manifest["suite"] == suite["suite"], "run manifest changed locked suite")
-    require(gate["exit_code"] == process_exit and type(process_exit) is int and process_exit in (0, 1, 2, 3),
+    require(canonical(manifest["suite"]) == canonical(suite["suite"]), "run manifest changed locked suite")
+    require(manifest["adapter"] == ADAPTERS[suite["backend_kind"]]
+            and manifest["measurement_profile"] == "smoke", "run adapter or measurement profile drift")
+    require(type(process_exit) is int and process_exit in RUN_GATE_STATUS
+            and type(gate["exit_code"]) is int and gate["exit_code"] == process_exit
+            and gate["status"] == RUN_GATE_STATUS[process_exit],
             "process/gate exit mismatch")
     rows = jsonl(run / "normalized.jsonl")
     queries = jsonl(run / "queries.jsonl")
     require(len(queries) == suite["query_rows"] and all(q["split"] == "dev" for q in queries), "query denominator drift")
-    require(len(rows) == len(queries) * suite["suite"]["repetitions"], "missing measured rows")
-    require(metrics["queries"] == len(queries) and metrics["measured_rows"] == len(rows), "metrics denominator drift")
-    require(len({(r["case_id"], r["repetition"]) for r in rows}) == len(rows), "duplicate measured rows")
-    require(all(r["raw_path"] in names for r in rows), "missing raw response")
+    require(canonical(query_snapshot(queries)) == canonical(query_snapshot(suite["query_snapshot"])),
+            "run query snapshot differs from locked input")
+    repetitions = suite["suite"]["repetitions"]
+    require(type(repetitions) is int and repetitions > 0, "invalid repetition budget")
+    require(len(rows) == len(queries) * repetitions, "missing measured rows")
+    require(type(metrics["queries"]) is int and type(metrics["measured_rows"]) is int
+            and metrics["queries"] == len(queries) and metrics["measured_rows"] == len(rows), "metrics denominator drift")
+    query_ids = [q["id"] for q in queries]
+    require(all(isinstance(ident, str) and ident for ident in query_ids)
+            and len(set(query_ids)) == len(query_ids), "invalid locked query identity")
+    query_ids = set(query_ids)
+    require(all(isinstance(r.get("case_id"), str) and r["case_id"] in query_ids
+                and type(r.get("repetition")) is int and 0 <= r["repetition"] < repetitions for r in rows)
+            and len({(r["case_id"], r["repetition"]) for r in rows}) == len(rows),
+            "measured request matrix differs from locked query IDs and repetitions")
+    # Cardinality, membership, bounds and uniqueness together require every
+    # locked query x repetition exactly once, irrespective of execution order.
+    raw_paths = [r.get("raw_path") for r in rows]
+    require(all(isinstance(p, str) and p.startswith("raw/") and p in names for p in raw_paths)
+            and len(set(raw_paths)) == len(raw_paths), "missing or reused raw response")
     require(manifest["input"]["query_digest"] == suite["suite"]["queries_digest"]
             and manifest["input"]["source_digest"] == suite["suite"]["source"]["digest"], "run source/query lock mismatch")
     return {"gate": gate, "metrics": {k: metrics[k] for k in ("queries", "measured_rows", "mean_top1", "mean_ndcg10")},

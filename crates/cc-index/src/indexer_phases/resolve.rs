@@ -12,6 +12,10 @@ use crate::indexer::{Indexer, ResolveResult, MIN_FILES_FOR_PARALLEL};
 use crate::resolver::catalog_cache::{self, CatalogCarry};
 use crate::resolver::{ResolutionContext, SymbolCatalog};
 
+#[cfg(test)]
+#[path = "forwarding_budget_tests.rs"]
+mod forwarding_budget_tests;
+
 /// Phase 4a output: the [`SymbolCatalog`] seeded with persisted + freshly
 /// parsed symbols, the persisted symbols themselves (consumed again by the
 /// hierarchy sub-phase; empty when the catalog was reused from the
@@ -153,6 +157,16 @@ impl Indexer {
             .iter()
             .map(|u| (u.rel_path.as_str(), &u.outcome.public_surface))
             .collect();
+        // A parsed, known surface with no forwards needs no forwarding lookup.
+        // Its direct declarations remain in the catalog's by_export index.
+        // Unknown or persisted-only surfaces still consume the original load
+        // budget: discovering that they are leaves requires an actual read.
+        let needs_forwarding = |path: &str| {
+            !current.get(path).is_some_and(|surface| {
+                surface.knowledge != cc_model::public_surface::SurfaceKnowledge::Unknown
+                    && surface.forwards.is_empty()
+            })
+        };
         let mut pending = units
             .iter()
             .flat_map(|u| {
@@ -161,12 +175,15 @@ impl Indexer {
                     .iter()
                     .filter_map(|i| i.resolved_path.clone())
             })
+            .filter(|path| needs_forwarding(path))
             .collect::<BTreeSet<_>>();
         let mut seen = BTreeSet::new();
         let mut routes = HashMap::new();
         let mut edges = 0usize;
         for _ in 0..32 {
-            pending.retain(|p| !seen.contains(p) && project.model().files().contains(p));
+            pending.retain(|p| {
+                !seen.contains(p) && project.model().files().contains(p) && needs_forwarding(p)
+            });
             if pending.is_empty() {
                 break;
             }
@@ -223,7 +240,7 @@ impl Indexer {
                 routes.insert(file, links);
             }
         }
-        pending.retain(|p| !seen.contains(p));
+        pending.retain(|p| !seen.contains(p) && needs_forwarding(p));
         if !pending.is_empty() {
             return Err(cc_model::CcError::Config(
                 "reexport_depth_budget_exceeded".into(),

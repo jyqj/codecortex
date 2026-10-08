@@ -1,5 +1,5 @@
 //! Bounded local P8 scale preparation, using the existing generator, actual MCP
-//! index dispatch, and unchanged full-table diagnostic oracle. No release claim.
+//! index dispatch, and the shared full-table diagnostic oracle. No release claim.
 use super::{
     invalid, manifest, mutation_case, mutations::Mutation, oracle, runner, sampler, BenchError,
     Result,
@@ -527,10 +527,14 @@ fn parity(a: &Path, b: &Path, complete: bool) -> Result<Value> {
         })
     });
     if over {
-        return Ok(
-            json!({"status":"not_run_oracle_row_budget","equal":Value::Null,"oracle_rows_per_table":ORACLE_ROWS,
-            "incremental_counts":ac,"full_counts":bc}),
-        );
+        let mut comparison = oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?;
+        if !complete {
+            comparison["status"] = json!("incomplete_not_certified");
+            comparison["equal"] = json!(false);
+        }
+        comparison["incremental_counts"] = ac;
+        comparison["full_counts"] = bc;
+        return Ok(comparison);
     }
     let ca = oracle::canonical(a)?;
     let cb = oracle::canonical(b)?;

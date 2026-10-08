@@ -26,6 +26,9 @@ const TABLES: &[&str] = &[
     "test_edges",
     "routes",
 ];
+mod streaming;
+pub use streaming::{compare_streaming, StreamingLimits};
+
 fn db_error(e: rusqlite::Error) -> super::BenchError {
     super::BenchError::Protocol(format!("oracle DB: {e}"))
 }
@@ -53,12 +56,15 @@ pub fn table_columns(root: &Path, table: &str) -> Result<std::collections::BTree
         .map_err(db_error)?;
     Ok(columns)
 }
-pub fn canonical(root: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
+fn snapshot(root: &Path) -> Result<Connection> {
     let c = Connection::open_with_flags(
         root.join(".codecortex/index.sqlite3"),
         OpenFlags::SQLITE_OPEN_READ_ONLY,
     )
     .map_err(db_error)?;
+    // Keep schema, integrity checks and every table in the same read snapshot.
+    c.execute_batch("BEGIN DEFERRED TRANSACTION")
+        .map_err(db_error)?;
     let integrity: String = c
         .query_row("PRAGMA integrity_check", [], |r| r.get(0))
         .map_err(db_error)?;
@@ -73,32 +79,63 @@ pub fn canonical(root: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
     if fk != 0 {
         return Err(invalid("oracle foreign_key_check failed"));
     }
+    Ok(c)
+}
+
+fn columns(c: &Connection, table: &str) -> Result<Vec<String>> {
+    let mut stmt = c
+        .prepare(&format!("PRAGMA table_info(\"{table}\")"))
+        .map_err(db_error)?;
+    let cols = stmt
+        .query_map([], |r| r.get::<_, String>(1))
+        .map_err(db_error)?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(db_error)?;
+    // One projection for both diagnostic implementations. No target identity,
+    // strategy, semantic payload, multiplicity or table is discarded.
+    let cols: Vec<String> = cols
+        .into_iter()
+        .filter(|col| {
+            !(table == "files" && matches!(col.as_str(), "mtime" | "indexed_at")
+                || table == "imports" && col == "id")
+        })
+        .collect();
+    if cols.is_empty() {
+        return Err(invalid(format!("oracle table missing: {table}")));
+    }
+    Ok(cols)
+}
+
+fn select_columns(cols: &[String]) -> String {
+    cols.iter()
+        .map(|n| format!("\"{}\"", n.replace('"', "\"\"")))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+fn project_row(row: &rusqlite::Row<'_>, cols: &[String]) -> Result<Value> {
+    let mut values = serde_json::Map::new();
+    for (i, col) in cols.iter().enumerate() {
+        let v = match row.get_ref(i).map_err(db_error)? {
+            ValueRef::Null => Value::Null,
+            ValueRef::Integer(v) => json!(v),
+            ValueRef::Real(v) => json!(v),
+            ValueRef::Text(v) => {
+                json!(std::str::from_utf8(v).map_err(|_| invalid("oracle UTF8"))?)
+            }
+            ValueRef::Blob(v) => json!({"blob_digest":manifest::digest(v)}),
+        };
+        values.insert(col.clone(), v);
+    }
+    Ok(Value::Object(values))
+}
+
+pub fn canonical(root: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
+    let c = snapshot(root)?;
     let mut result = BTreeMap::new();
     for table in TABLES {
-        let mut stmt = c
-            .prepare(&format!("PRAGMA table_info(\"{table}\")"))
-            .map_err(db_error)?;
-        let cols = stmt
-            .query_map([], |r| r.get::<_, String>(1))
-            .map_err(db_error)?
-            .collect::<std::result::Result<Vec<_>, _>>()
-            .map_err(db_error)?;
-        // Only these documented physical columns are excluded. Target IDs/strategy remain.
-        let cols: Vec<String> = cols
-            .into_iter()
-            .filter(|col| {
-                !(*table == "files" && matches!(col.as_str(), "mtime" | "indexed_at")
-                    || *table == "imports" && col == "id")
-            })
-            .collect();
-        if cols.is_empty() {
-            return Err(invalid(format!("oracle table missing: {table}")));
-        }
-        let select = cols
-            .iter()
-            .map(|n| format!("\"{n}\""))
-            .collect::<Vec<_>>()
-            .join(",");
+        let cols = columns(&c, table)?;
+        let select = select_columns(&cols);
         let mut stmt = c
             .prepare(&format!("SELECT {select} FROM \"{table}\""))
             .map_err(db_error)?;
@@ -108,20 +145,7 @@ pub fn canonical(root: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
             if rows.len() > 100000 {
                 return Err(invalid("P0 diagnostic oracle row budget exceeded"));
             }
-            let mut values = serde_json::Map::new();
-            for (i, col) in cols.iter().enumerate() {
-                let v = match row.get_ref(i).map_err(db_error)? {
-                    ValueRef::Null => Value::Null,
-                    ValueRef::Integer(v) => json!(v),
-                    ValueRef::Real(v) => json!(v),
-                    ValueRef::Text(v) => {
-                        json!(std::str::from_utf8(v).map_err(|_| invalid("oracle UTF8"))?)
-                    }
-                    ValueRef::Blob(v) => json!({"blob_digest":manifest::digest(v)}),
-                };
-                values.insert(col.clone(), v);
-            }
-            rows.push(Value::Object(values));
+            rows.push(project_row(row, &cols)?);
         }
         rows.sort_by_key(|v| serde_json::to_string(v).unwrap_or_default());
         result.insert((*table).to_string(), rows);

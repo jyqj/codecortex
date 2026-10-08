@@ -21,7 +21,7 @@ import sys
 import threading
 import time
 
-from p8_cold_build import digest, new_directory, write_json
+from p8_cold_build import digest, new_directory, observed_operation, write_json
 from p8_rollback import (FIXTURE_FILES, MARKER, Product, binary_identity, db_snapshot,
                          file_manifest, require, source_manifest)
 from resource_harness.runtime import Journal
@@ -426,6 +426,7 @@ def deleted_source(identity, case_dir, journal, wrapper):
 
 def run(identity, output, network_wrapper=None):
     report = dict(schema_version=1, task="P8-011", status="failed", product=identity,
+                  observer_binding="legacy_direct_engineering_scope",
                   source_scope="exact supplied product receipt, not inferred from this runner checkout",
                   runner_files_sha256={name: digest(Path(__file__).parent / name) for name in
                                        ("p8_recovery.py", "p8_rollback.py", "p8_cold_build.py", "resource_harness/runtime.py")},
@@ -741,19 +742,31 @@ def current_product(root, output, env, package):
     expected = {"default": [], "semantic": ["semantic"], "semantic-http": ["semantic", "semantic-http"]}[package]
     require(sorted(artifact.get("features", [])) == expected and artifact.get("target", {}).get("kind") == ["bin"],
             "compiled product feature identity differs")
-    require(Path(artifact["manifest_path"]).resolve() == root / "crates/cc-server/Cargo.toml"
-            and Path(artifact["executable"]).resolve().is_relative_to(Path(env["CARGO_TARGET_DIR"]).resolve()),
+    target_directory = Path(env["CARGO_TARGET_DIR"]).resolve(strict=True)
+    produced = Path(artifact["executable"])
+    require(artifact["manifest_path"] == str(root / "crates/cc-server/Cargo.toml")
+            and artifact.get("target", {}).get("src_path") == str(root / "crates/cc-server/src/main.rs")
+            and produced.resolve(strict=True) == produced
+            and produced == target_directory / "debug/codecortex",
             "compiled product belongs to a different source or target")
+    profile = artifact.get("profile", {})
+    require(profile.get("test") is False and profile.get("opt_level") == "0"
+            and profile.get("debug_assertions") is True, "compiled product dev profile differs")
+    original = dict(path=str(produced), bytes=produced.stat().st_size, sha256=digest(produced))
     binary = output / "codecortex"
     shutil.copy2(artifact["executable"], binary)
     binary.chmod(0o555)
-    require(digest(binary) == digest(artifact["executable"]), "copied product differs from Cargo artifact")
+    require(digest(binary) == original["sha256"] and digest(produced) == original["sha256"]
+            and binary.stat().st_size == original["bytes"] and produced.stat().st_size == original["bytes"],
+            "copied product differs from Cargo artifact or original changed during copy")
     source = {key: value for key, value in before.items() if key != "inputs"}
     source["source_root"] = str(root)
     record = dict(schema_version=1, status="passed", package_kind=package, build_exit_code=0,
                   stop_reason=None, build_command=command, cargo_artifact=artifact,
                   binary_path=str(binary), binary_sha256=digest(binary), source_before=source,
                   source_after=source, source_manifest="source-inputs.json", build_profile="dev",
+                  copy_source=original, binary_bytes=binary.stat().st_size,
+                  target_directory=str(target_directory),
                   cold_build_claim=False, release_certified=False, build_observation=observed)
     write_json(output / "build-receipt.json", record)
     return record
@@ -809,6 +822,7 @@ def run_full_matrix(root, output, expected_commit, jobs=2, previous_root=None, p
     source = source_snapshot(root)
     require(source["source_commit"] == expected_commit, "full recovery source differs from requested commit")
     report = dict(schema_version=1, tasks=["P8-011", "P8-016"], status="failed", source=source,
+                  observer_binding="legacy_direct_engineering_scope",
                   executions=[], dependency_acceptance="separate original task gates",
                   release_certified=False, actual_paid_cost=None,
                   scope="owned stdio/HTTP fixtures, original production fault suites, and bounded rollback")
@@ -924,8 +938,9 @@ def main(argv=None):
             if bool(args.previous_source_root) != bool(args.previous_commit):
                 parser.error("previous source checkout and exact commit must be supplied together")
             output = new_directory(args.output_dir)
-            report = run_full_matrix(args.source_root, output, args.expected_commit, args.jobs,
-                                     args.previous_source_root, args.previous_commit)
+            report = observed_operation(args.source_root, output, "full", "full-recovery.json",
+                lambda: run_full_matrix(args.source_root, output, args.expected_commit, args.jobs,
+                                        args.previous_source_root, args.previous_commit), full_evidence_manifest)
             print(json.dumps(dict(status=report["status"], error=report.get("error"), receipt=str(output / "full-recovery.json"))))
             return 0 if report["status"] == "passed_declared_fault_matrix" else 1
         if not args.binary or not args.package_kind or not (args.build_receipt or args.engineering_witness):
@@ -933,8 +948,10 @@ def main(argv=None):
         identity = (engineering_identity(args.binary, args.engineering_witness, args.package_kind)
                     if args.engineering_witness else binary_identity(args.binary, args.build_receipt, args.package_kind))
         output = new_directory(args.output_dir)
-        report = run(identity, output, args.deny_network_wrapper)
-        print(json.dumps(dict(status=report["status"], counts=report["counts"], receipt=str(output / "recovery.json"))))
+        report = (run(identity, output, args.deny_network_wrapper) if args.engineering_witness else
+                  observed_operation(Path(__file__).resolve().parents[1], output, "full", "recovery.json",
+                      lambda: run(identity, output, args.deny_network_wrapper), file_manifest))
+        print(json.dumps(dict(status=report["status"], counts=report.get("counts"), receipt=str(output / "recovery.json"))))
         return 0 if report["status"] == "passed_limited_local_recovery" else 3 if report["status"] == "cancelled" else 1
     except (OSError, ValueError, KeyError) as error:
         print(f"P8 recovery refused: {error}", file=sys.stderr)

@@ -1,0 +1,96 @@
+name: P8 public fixed-input recovery
+on:
+  push:
+    branches: ["work/p8-public-recovery-996727-20261008"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  external-public:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONOPTIMIZE: "0"
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check new entry syntax
+        run: |
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+          p = Path("artifacts/benchmarks/p8-external-recovery-20261008/recover_external.py")
+          ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+          PY
+      - name: Download the original accepted default artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/jyqj/codecortex/actions/artifacts/11529447454/zip > "$RUNNER_TEMP/p8-default-ffdc.zip"
+      - name: Recover inputs and execute original compat and native runner
+        run: |
+          python3 artifacts/benchmarks/p8-external-recovery-20261008/recover_external.py \
+            --manifest artifacts/benchmarks/p8-external-recovery-20261008/manifest.json \
+            --archive "$RUNNER_TEMP/p8-default-ffdc.zip" \
+            --work "$RUNNER_TEMP/p8-external-private" \
+            --public-output "$RUNNER_TEMP/p8-external-public"
+      - name: Show bounded actual execution summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'p8-external-public'
+          for name in ('result.json', 'external-reference-package/roundtrip.json'):
+              p = root / name
+              if p.is_file():
+                  raw = p.read_bytes()
+                  if len(raw) > 131072:
+                      raise SystemExit('summary exceeds bound')
+                  print('P8_RECOVERY_SUMMARY ' + name)
+                  print(raw.decode('utf-8'))
+          PY
+      - name: Preserve actual public evidence and external-body references
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-external-recovery-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-external-public
+          if-no-files-found: warn
+          retention-days: 30
+          include-hidden-files: true
+  public-metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONOPTIMIZE: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify actual fixed public metadata
+        shell: bash
+        run: |
+          set +e
+          python3 artifacts/checkpoints/p8-public-dev-recovery-20261008/recover_public_dev.py --output "$RUNNER_TEMP/p8-public-metadata-recovery" > "$RUNNER_TEMP/p8-public-metadata.stdout.log" 2> "$RUNNER_TEMP/p8-public-metadata.stderr.log"
+          recovery_exit=$?
+          cat "$RUNNER_TEMP/p8-public-metadata.stdout.log"
+          cat "$RUNNER_TEMP/p8-public-metadata.stderr.log" >&2
+          exit "$recovery_exit"
+      - name: Preserve actual metadata recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-public-metadata-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p8-public-metadata-recovery
+            ${{ runner.temp }}/p8-public-metadata.stdout.log
+            ${{ runner.temp }}/p8-public-metadata.stderr.log
+          if-no-files-found: error
+          retention-days: 30
+          include-hidden-files: true

@@ -1,0 +1,142 @@
+﻿2026-10-08T05:50:22.1249755Z Current runner version: '2.337.0'
+2026-10-08T05:50:22.1284337Z ##[group]Runner Image Provisioner
+2026-10-08T05:50:22.1286032Z Hosted Compute Agent
+2026-10-08T05:50:22.1287093Z Version: 20261002.596
+2026-10-08T05:50:22.1288104Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T05:50:22.1289326Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T05:50:22.1290609Z Worker ID: {53f5b838-d225-4c49-ade9-34647ec3baf9}
+2026-10-08T05:50:22.1291824Z Region: eastus
+2026-10-08T05:50:22.1292793Z Cloud: Azure
+2026-10-08T05:50:22.1293657Z ##[endgroup]
+2026-10-08T05:50:22.1296396Z ##[group]Operating System
+2026-10-08T05:50:22.1297651Z Ubuntu
+2026-10-08T05:50:22.1298516Z 24.04.5
+2026-10-08T05:50:22.1299448Z LTS
+2026-10-08T05:50:22.1300280Z ##[endgroup]
+2026-10-08T05:50:22.1301129Z ##[group]Runner Image
+2026-10-08T05:50:22.1302296Z Image: ubuntu-24.04
+2026-10-08T05:50:22.1303207Z Version: 20261004.327.1
+2026-10-08T05:50:22.1305978Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T05:50:22.1308820Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T05:50:22.1310562Z ##[endgroup]
+2026-10-08T05:50:22.1312594Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T05:50:22.1315734Z Actions: read
+2026-10-08T05:50:22.1316720Z Contents: read
+2026-10-08T05:50:22.1317785Z Metadata: read
+2026-10-08T05:50:22.1318692Z ##[endgroup]
+2026-10-08T05:50:22.1321896Z Secret source: Actions
+2026-10-08T05:50:22.1323465Z Cache mode: write
+2026-10-08T05:50:22.1325019Z Prepare workflow directory
+2026-10-08T05:50:22.1910118Z Prepare all required actions
+2026-10-08T05:50:22.1982983Z Getting action download info
+2026-10-08T05:50:22.3789841Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-08T05:50:22.5500403Z Complete job name: export-completed-output (1)
+2026-10-08T05:50:22.6416306Z ##[group]Run actions/checkout@v4
+2026-10-08T05:50:22.6417311Z with:
+2026-10-08T05:50:22.6418021Z   sparse-checkout: artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit
+2026-10-08T05:50:22.6418831Z   repository: jyqj/codecortex
+2026-10-08T05:50:22.6423136Z   token: ***
+2026-10-08T05:50:22.6423608Z   ssh-strict: true
+2026-10-08T05:50:22.6424057Z   ssh-user: git
+2026-10-08T05:50:22.6424511Z   persist-credentials: true
+2026-10-08T05:50:22.6425004Z   clean: true
+2026-10-08T05:50:22.6425621Z   sparse-checkout-cone-mode: true
+2026-10-08T05:50:22.6426152Z   fetch-depth: 1
+2026-10-08T05:50:22.6426582Z   fetch-tags: false
+2026-10-08T05:50:22.6427034Z   show-progress: true
+2026-10-08T05:50:22.6427510Z   lfs: false
+2026-10-08T05:50:22.6427938Z   submodules: false
+2026-10-08T05:50:22.6428400Z   set-safe-directory: true
+2026-10-08T05:50:22.6428918Z   allow-unsafe-pr-checkout: false
+2026-10-08T05:50:22.6429813Z env:
+2026-10-08T05:50:22.6430250Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T05:50:22.6430975Z   PYTHONOPTIMIZE: 0
+2026-10-08T05:50:22.6431429Z ##[endgroup]
+2026-10-08T05:50:22.7494964Z Syncing repository: jyqj/codecortex
+2026-10-08T05:50:22.7497286Z ##[group]Getting Git version info
+2026-10-08T05:50:22.7498231Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-08T05:50:22.7499342Z [command]/usr/bin/git version
+2026-10-08T05:50:22.7572091Z git version 2.55.0
+2026-10-08T05:50:22.7594026Z ##[endgroup]
+2026-10-08T05:50:22.7611067Z Temporarily overriding HOME='/home/runner/work/_temp/09e646f6-fdf1-42a7-b88b-ea7124e77131' before making global git config changes
+2026-10-08T05:50:22.7613519Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T05:50:22.7618272Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-08T05:50:22.7672107Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-08T05:50:22.7676962Z ##[group]Initializing the repository
+2026-10-08T05:50:22.7682065Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-08T05:50:22.7801084Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T05:50:22.7803181Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T05:50:22.7804847Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T05:50:22.7806420Z hint: call:
+2026-10-08T05:50:22.7807106Z hint:
+2026-10-08T05:50:22.7807679Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T05:50:22.7808309Z hint:
+2026-10-08T05:50:22.7808902Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T05:50:22.7809923Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T05:50:22.7810692Z hint:
+2026-10-08T05:50:22.7811119Z hint: 	git branch -m <name>
+2026-10-08T05:50:22.7811616Z hint:
+2026-10-08T05:50:22.7812409Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T05:50:22.7814071Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-08T05:50:22.7819343Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-08T05:50:22.7871756Z ##[endgroup]
+2026-10-08T05:50:22.7872570Z ##[group]Disabling automatic garbage collection
+2026-10-08T05:50:22.7876021Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T05:50:22.7907896Z ##[endgroup]
+2026-10-08T05:50:22.7908635Z ##[group]Setting up auth
+2026-10-08T05:50:22.7914490Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T05:50:22.7946201Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T05:50:22.8326981Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T05:50:22.8359242Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T05:50:22.8586744Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T05:50:22.8618639Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T05:50:22.8842472Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T05:50:22.8880495Z ##[endgroup]
+2026-10-08T05:50:22.8881323Z ##[group]Fetching the repository
+2026-10-08T05:50:22.8890195Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin +ff3f7e5aa517530fc5580b44872b788008590932:refs/remotes/origin/work/p7-audit-996727-20261008
+2026-10-08T05:50:23.1761781Z From https://github.com/jyqj/codecortex
+2026-10-08T05:50:23.1766111Z  * [new ref]         ff3f7e5aa517530fc5580b44872b788008590932 -> origin/work/p7-audit-996727-20261008
+2026-10-08T05:50:23.1779857Z ##[endgroup]
+2026-10-08T05:50:23.1781502Z ##[group]Determining the checkout info
+2026-10-08T05:50:23.1782893Z ##[endgroup]
+2026-10-08T05:50:23.1784642Z ##[group]Setting up sparse checkout
+2026-10-08T05:50:23.1787915Z [command]/usr/bin/git sparse-checkout set artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit
+2026-10-08T05:50:23.1837313Z ##[endgroup]
+2026-10-08T05:50:23.1838177Z ##[group]Checking out the ref
+2026-10-08T05:50:23.1842480Z [command]/usr/bin/git checkout --progress --force -B work/p7-audit-996727-20261008 refs/remotes/origin/work/p7-audit-996727-20261008
+2026-10-08T05:50:24.0689794Z Switched to a new branch 'work/p7-audit-996727-20261008'
+2026-10-08T05:50:24.0695390Z branch 'work/p7-audit-996727-20261008' set up to track 'origin/work/p7-audit-996727-20261008'.
+2026-10-08T05:50:24.0707547Z ##[endgroup]
+2026-10-08T05:50:24.0800472Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T05:50:24.0826617Z ff3f7e5aa517530fc5580b44872b788008590932
+2026-10-08T05:50:24.1119908Z ##[group]Run python3 artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_completed_finalization.py \
+2026-10-08T05:50:24.1123959Z [36;1mpython3 artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_completed_finalization.py \[0m
+2026-10-08T05:50:24.1127158Z [36;1m  --part 1 --output "$RUNNER_TEMP/finalization-part-1"[0m
+2026-10-08T05:50:24.1387623Z shell: /usr/bin/bash -e {0}
+2026-10-08T05:50:24.1389120Z env:
+2026-10-08T05:50:24.1390332Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-08T05:50:24.1391797Z   PYTHONOPTIMIZE: 0
+2026-10-08T05:50:24.1403397Z   GH_TOKEN: ***
+2026-10-08T05:50:24.1404433Z ##[endgroup]
+2026-10-08T05:50:24.9383984Z Traceback (most recent call last):
+2026-10-08T05:50:24.9386305Z   File "/home/runner/work/codecortex/codecortex/artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/export_completed_finalization.py", line 62, in <module>
+2026-10-08T05:50:24.9388204Z     assert len(rows) == 288, "unexpected completed finalization file inventory"
+2026-10-08T05:50:24.9388741Z            ^^^^^^^^^^^^^^^^
+2026-10-08T05:50:24.9389171Z AssertionError: unexpected completed finalization file inventory
+2026-10-08T05:50:24.9598609Z ##[error]Process completed with exit code 1.
+2026-10-08T05:50:24.9742805Z Post job cleanup.
+2026-10-08T05:50:25.0605902Z [command]/usr/bin/git version
+2026-10-08T05:50:25.0642938Z git version 2.55.0
+2026-10-08T05:50:25.0681383Z Temporarily overriding HOME='/home/runner/work/_temp/e38eab27-3d9e-4adf-8fc2-5383c71571d5' before making global git config changes
+2026-10-08T05:50:25.0682816Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T05:50:25.0688635Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-08T05:50:25.0727094Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T05:50:25.0762218Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T05:50:25.1017714Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T05:50:25.1044984Z http.https://github.com/.extraheader
+2026-10-08T05:50:25.1056313Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-08T05:50:25.1089959Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T05:50:25.1330206Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T05:50:25.1363792Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T05:50:25.1759736Z Cleaning up orphan processes
+2026-10-08T05:50:25.2114506Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

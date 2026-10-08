@@ -141,7 +141,10 @@ pub use crate::index_db_types::*;
 /// The index database handle.
 pub struct IndexDb {
     pub(crate) db_path: PathBuf,
-    pub(crate) pool: RwLock<Pool<SqliteConnectionManager>>,
+    /// A failed rebuild reopen leaves the handle unavailable. Existing
+    /// borrowed connections retain their previous snapshot; new borrowers
+    /// must explicitly reopen the database instead of reading a stale pool.
+    pub(crate) pool: RwLock<Option<Pool<SqliteConnectionManager>>>,
     pub(crate) write_conn: Mutex<Connection>,
     pub(crate) read_pool_size: u32,
     /// Process-unique handle identity assigned at open from a monotonic
@@ -236,7 +239,7 @@ impl IndexDb {
         Ok((
             Self {
                 db_path: path.to_path_buf(),
-                pool: RwLock::new(pool),
+                pool: RwLock::new(Some(pool)),
                 write_conn: Mutex::new(write_conn),
                 read_pool_size,
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
@@ -651,7 +654,7 @@ impl IndexDb {
         tmp_path: &Path,
         floor: IndexGeneration,
     ) -> CcResult<()> {
-        let live = self.generation().unwrap_or_default();
+        let live = self.generation()?;
         let next = IndexGeneration {
             index_epoch: floor.index_epoch.max(live.index_epoch).saturating_add(1),
             evidence_epoch: floor
@@ -665,14 +668,15 @@ impl IndexDb {
         crate::read_generation::renew(&tmp_conn)?;
         // Fold the write back into the main file before the rename; the temp
         // db may be in WAL mode and only the main file is swapped in.
-        let _ = tmp_conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);");
+        Self::checkpoint_before_rebuild_swap(&tmp_conn, "staging database")?;
         drop(tmp_conn);
         let mut tmp_wal = tmp_path.as_os_str().to_owned();
         tmp_wal.push("-wal");
         let mut tmp_shm = tmp_path.as_os_str().to_owned();
         tmp_shm.push("-shm");
-        let _ = std::fs::remove_file(&tmp_wal);
-        let _ = std::fs::remove_file(&tmp_shm);
+        Self::remove_rebuild_sidecar(Path::new(&tmp_wal))?;
+        Self::remove_rebuild_sidecar(Path::new(&tmp_shm))?;
+        std::fs::File::open(tmp_path)?.sync_all()?;
         Ok(())
     }
 
@@ -711,7 +715,13 @@ impl IndexDb {
             .pool
             .read()
             .map_err(|e| CcError::Database(format!("read pool lock: {}", e)))?;
-        pool.get()
+        pool.as_ref()
+            .ok_or_else(|| {
+                CcError::Database(
+                    "database rebuild reopen failed; reopen the database handle".into(),
+                )
+            })?
+            .get()
             .map_err(|e| CcError::Database(format!("pool get: {}", e)))
     }
 

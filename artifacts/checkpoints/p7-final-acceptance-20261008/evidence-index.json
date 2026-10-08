@@ -1,0 +1,569 @@
+{
+  "schema_version": 1,
+  "baseline_sha": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+  "tasks_sha256": "b5a33e7827a6a1b60b71194348d61eb629385c48c1b970f434f330b2244a0812",
+  "decision": {
+    "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+    "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+  },
+  "entries": [
+    {
+      "task_id": "P7-014",
+      "kind": "implementation",
+      "scope": "原配置/schema/sanitize/handler/doc/MCP链和原mode兼容完成；实际13状态、107 RPC及配置关闭/重开/撤销/失败投影通过；显式/索引后有限后台任务串起分页对账、恢复与单页GC。原接线7/13按需条件已明确处置，未实现的历史持久计数和日志截断不宣称实现。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        }
+      ],
+      "limitations": [
+        "hot reload not_run; live provider quality/currency not_run",
+        "历史GC累计表与space-switch日志长度上限未实现；按原按需/如需条件处置，不作为完成的实现计数"
+      ]
+    },
+    {
+      "task_id": "P7-015",
+      "kind": "current_validation",
+      "scope": "原慢模型竞争工程要求完成：真实held后台工作下384请求、3seed×2phase×2concurrency×32，原2s查询/5s切换界限通过，过期发布0；CPU/RSS/DB/queue归属与12格原统计重算。1100真实manifest跨64文档分页及1024项有限job边界，重开不增加provider调用。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/engineering/ci_ffdc_engineering_independent_receipt.json",
+          "sha256": "1c9baeeeb888cfc62b109291045f68e29b7f94f956575eb99cf0582183f609c8"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/engineering-mechanism-human-review.json",
+          "sha256": "886b3c9a99253028ba2c541adc4a187a76339ab00b36fa99beb7a7c55079ad2b"
+        }
+      ],
+      "limitations": [
+        "功能工程竞争证据，不宣称p99改善、统计显著或完整100k/并发矩阵认证",
+        "单PID测试器+服务+fake provider只计一次；瞬时子进程资源unknown，RSS为进程生命周期high-water"
+      ]
+    },
+    {
+      "task_id": "P7-016",
+      "kind": "implementation",
+      "scope": "原fake故障矩阵及13状态工程链完成：3seed真实stdio组合重试/close/rebuild/delete/lease/GC与SIGKILL，原内部GC/WAL/发布/恢复回归通过；新增3个机会回收入口均为目标space内有界page，9新与29旧合同测试证据完整，失败历史保留。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance/p7-016-manual-review.json",
+          "sha256": "6a9e90100afe259475b3c263a5e149ae29a9e200e7d4382b7ee39725006b0977"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-g7-preflight-20261008/reclaim-28a32154-independent-review.json",
+          "sha256": "1b36a470c699f3550076bed70b688e4b11e4f7774fc0cb954dea0927e665a535"
+        }
+      ],
+      "limitations": [
+        "代表性固定seed组合及原内部回归，不声称穷尽所有并发interleaving",
+        "crash前远端消费及账单unknown，paid=null；旧内部/tmp每案raw未进入ZIP，未伪称完整子文件归档"
+      ]
+    },
+    {
+      "task_id": "P7-017",
+      "kind": "current_validation",
+      "scope": "原default与semantic未启用工程合同完成：两真实私有构建包合计4配置×14旧工具和4次独立reopen断言（每包2配置，合计8个产品根进程），完整strace子进程树复核外部网络尝试0、semantic cache创建0；8个合法匿名IPC，原IPv4/6 SIGSYS及swallowed-child负控成立。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/offline/offline-review.json",
+          "sha256": "b4e30f362c99865dc2cbeadfbd59431b7f7dd3a7024d908e62f223c587364160"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/offline-non-author-joint-review.json",
+          "sha256": "0a67b9bc2df67deb3a10668907f513e087c45e957531afe10e90acfb96b3c96d"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/pr-audit-p17-p8-current-acceptance.json",
+          "sha256": "6bd0b02b48f8c12446e4973a9435571cccc219ae2e8cdf8930a355104c9fa491"
+        }
+      ],
+      "limitations": [
+        "default/semantic.enabled=false与零key范围；不认证任意第三方插件或live provider",
+        "编译器/源码/二进制收据和实际CI执行证据，不构成远端硬件attestation"
+      ]
+    },
+    {
+      "task_id": "P7-018",
+      "kind": "blocked_disposition",
+      "scope": "Original D1+D2 live-provider authorization disposition remains blocked, with no provider calls, currency or live-quality claim.",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+          "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ],
+      "limitations": [
+        "No live authorization or actual live certification is introduced.",
+        "This blocked disposition is not counted as implementation or completion."
+      ]
+    },
+    {
+      "task_id": "P7-019",
+      "kind": "current_validation",
+      "scope": "原TASK-BRIEFS规定可先完成的fake机制工程腿完成：同输入同完整budget的none/local/dense-only/hybrid四真实构建及独立lane身份，36请求、24测量，原计分和2000次配对bootstrap重算一致，exact退化/heldout未评估/费用unknown分别报告；不将fake差异称为真实语义收益。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/engineering/ci_ffdc_mechanism_independent_receipt.json",
+          "sha256": "8d0c6fbf54c21517f5057a0e85741348382ef023c464e5d9f288be617545c8fb"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/engineering-mechanism-human-review.json",
+          "sha256": "886b3c9a99253028ba2c541adc4a187a76339ab00b36fa99beb7a7c55079ad2b"
+        }
+      ],
+      "limitations": [
+        "fake authored机制输入不是clean heldout，收益置信区间不作语义效果解释",
+        "provider账单和query-cache复用unknown；P7-018及完整V19仍blocked/open"
+      ]
+    },
+    {
+      "task_id": "P7-020",
+      "kind": "scope_audit",
+      "scope": "依赖014→015→016→017→019及先前001–013完成后，按原G7分别验收当前工程/fake并记录live blocked；13条原接线逐条对账，7/13显式条件处置。原dossier工具保持not_accepted，由单独非作者人工复核承载G7结论。完整V19/G8和live效果不认证。",
+      "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json",
+          "sha256": "f2ed910ab8ce05bf972824a30ae5cdfd80fc776bd98e0b5faf16ef11fd5f353a"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/main-ci-summary.json",
+          "sha256": "e61025aa3780a368b719e299a438253bb6fed6deb0478f5b37ff1e479ff2a3a6"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/engineering/ci_ffdc_engineering_independent_receipt.json",
+          "sha256": "1c9baeeeb888cfc62b109291045f68e29b7f94f956575eb99cf0582183f609c8"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/engineering/ci_ffdc_mechanism_independent_receipt.json",
+          "sha256": "8d0c6fbf54c21517f5057a0e85741348382ef023c464e5d9f288be617545c8fb"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/offline/offline-review.json",
+          "sha256": "b4e30f362c99865dc2cbeadfbd59431b7f7dd3a7024d908e62f223c587364160"
+        }
+      ],
+      "limitations": [
+        "P7-018遵循原D1+D2 blocked；没有授权/真实provider/付费/源码外发",
+        "完整V19语料/独立custody/质量统计及G8/G9未认证；历史已接受最小门保持原范围"
+      ]
+    }
+  ],
+  "wiring": [
+    {
+      "id": 1,
+      "task_id": "P7-014",
+      "status": "implemented",
+      "note": "完整配置校验装配后替换旧实例；close/reopen对称关闭runtime/端口/状态槽；原13状态与旧mode通过。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "task_id": "P7-014",
+      "status": "implemented",
+      "note": "索引事务后或显式有限调度串起64文档分页desired对账、fenced drain/cache reuse、目标space有界lease回收及成功job后一页GC。status/query/idle非调度触发。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "task_id": "P7-014",
+      "status": "implemented",
+      "note": "Corrupt经quarantine_detected/requeue_after_degrade处理并投影当前ledger；不把缓存损坏冒充本次付费失败。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "task_id": "P7-010",
+      "status": "implemented",
+      "note": "保留P7-010已接受ownership；DegradationLedger投影绑定当前端口，retired worker不能覆写新投影，当前旧回归通过。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "task_id": "P7-010",
+      "status": "implemented",
+      "note": "保留P7-010 ownership；规范项目namespace，disabled先于cache root lookup返回，空/关闭job零cache创建。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "task_id": "P7-014",
+      "status": "implemented",
+      "note": "gc_min_retention_secs使用正数且≤i64::MAX检查；disabled整节惰性，配置合法性与完整原字段链已回归。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "task_id": "P7-014",
+      "status": "transferred",
+      "note": "按原“Auxiliary计数，按需”条件处置。当前GcCounters/分页结构化日志及真实GC删除计数已验证；历史持久累计表未实现且无当前产品消费者。root源码review及最终非作者人工接受此条件处置。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "task_id": "P7-005",
+      "status": "implemented",
+      "note": "保留P7-005 ownership；project-FIFO/doc-round-robin闭枚举经配置到worker限制并供两drain消费，原公平性合同未放宽。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "task_id": "P7-016",
+      "status": "implemented",
+      "note": "由P7-016关闭：串行drain、并行drain、显式revocation drain在目标space内每入口最多64且受max_batch裁剪，SQL space/state/expiry在LIMIT内；9新真实SQLite边界与29旧合同及本轮完整CI通过。旧全量显式facade不冒充生产有界路径。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-g7-preflight-20261008/reclaim-28a32154-independent-review.json",
+          "sha256": "1b36a470c699f3550076bed70b688e4b11e4f7774fc0cb954dea0927e665a535"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/acceptance/p7-016-manual-review.json",
+          "sha256": "6a9e90100afe259475b3c263a5e149ae29a9e200e7d4382b7ee39725006b0977"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "task_id": "P7-014",
+      "status": "implemented",
+      "note": "公共status在短只读事务仅返回pending/failed/eligible/published标量，响应有界。未声称SQL扫描常数时间或所有内部list API分页。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "task_id": "P7-015",
+      "status": "implemented",
+      "note": "由P7-015关闭：当前生产runtime使用keyset SQL LIMIT的64文档desired页；missing enqueue有限且检查当前版本。1100真实manifest旧测试本轮pass，跨64文档分页和1024项有限job边界，reopen provider调用不增。legacy全量facade无生产runtime调用。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/engineering/ci_ffdc_engineering_independent_receipt.json",
+          "sha256": "1c9baeeeb888cfc62b109291045f68e29b7f94f956575eb99cf0582183f609c8"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci-audit/engineering-mechanism-human-review.json",
+          "sha256": "886b3c9a99253028ba2c541adc4a187a76339ab00b36fa99beb7a7c55079ad2b"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "task_id": "P7-012",
+      "status": "implemented",
+      "note": "保留P7-011/P7-012已接受hard scope/final hydration/查询内coverage合同及失败历史；当前原回归通过，不重计这些任务。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "task_id": "P7-014",
+      "status": "transferred",
+      "note": "真实set_project/provider install触发configured-space事务切换，重复same-space不追加。原“日志上限（如需）”条件显式处置：当前没有高频自动切换/full-log状态消费者，历史log cap未实现，hot reload not_run。",
+      "artifacts": [
+        {
+          "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+          "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-closeout-20261008/p7-014-final-source-review.json",
+          "sha256": "06515f93f55f85b61a1703fe202bac4af5da7c2c2a3eb3342183fe5976da9f14"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/closeout/review.json",
+          "sha256": "761761bb3ca5e7f2d214f12e498c01e1e762a6444af68f9326be1fee0bcfff38"
+        },
+        {
+          "path": "artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json",
+          "sha256": "980deb68f8c0c6a5919ae530b3a849a4da497236f8f3257fe85d9ee5eec79732"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+   Compiling serde_core v1.0.228
+   Compiling smallvec v1.15.1
+   Compiling parking_lot_core v0.9.12
+   Compiling serde v1.0.228
+   Compiling hashbrown v0.17.1
+   Compiling parking_lot v0.12.5
+   Compiling getrandom v0.4.2
+   Compiling serde_json v1.0.149
+   Compiling tracing-core v0.1.36
+   Compiling rand v0.10.3
+   Compiling scheduled-thread-pool v0.2.7
+   Compiling hashlink v0.12.1
+   Compiling aho-corasick v1.1.4
+   Compiling log v0.4.29
+   Compiling bitflags v2.11.0
+   Compiling tracing v0.1.44
+   Compiling rusqlite v0.40.1
+   Compiling regex-automata v0.4.14
+   Compiling r2d2 v0.8.10
+   Compiling uuid v1.23.0
+   Compiling chrono v0.4.44
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-model v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-model)
+   Compiling regex v1.12.3
+   Compiling cc-db v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-semantic)
+    Finished `test` profile [unoptimized] target(s) in 39.56s
+     Running tests/gc_concurrent_replacement.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/gc_concurrent_replacement-8c65fdfb9b00c564)
+
+running 3 tests
+
+thread 'collected_old_timestamp_cannot_delete_a_fresh_reput' (426) panicked at crates/cc-semantic/tests/gc_concurrent_replacement.rs:125:9:
+assertion `left == right` failed: seed 101: GcCounters { kept_fresh: 0, kept_referenced: 0, kept_live_task: 0, deleted_objects: 1, deleted_halves: 0, deleted_temps: 0, pruned_dirs: 3 }
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test collected_old_timestamp_cannot_delete_a_fresh_reput ... FAILED
+
+thread 'collected_old_checksum_cannot_delete_current_manifest_reference' (425) panicked at crates/cc-semantic/tests/gc_concurrent_replacement.rs:147:9:
+assertion `left == right` failed: seed 109: GcCounters { kept_fresh: 0, kept_referenced: 0, kept_live_task: 0, deleted_objects: 1, deleted_halves: 0, deleted_temps: 0, pruned_dirs: 3 }
+  left: 0
+ right: 1
+test collected_old_checksum_cannot_delete_current_manifest_reference ... FAILED
+test nonexistent_namespace_gc_remains_side_effect_free ... ok
+
+failures:
+
+failures:
+    collected_old_checksum_cannot_delete_current_manifest_reference
+    collected_old_timestamp_cannot_delete_a_fresh_reput
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p cc-semantic --test gc_concurrent_replacement`

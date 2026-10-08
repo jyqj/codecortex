@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "task": "P7-014",
+  "source_commit": "e94eb1a6d4f40abf1541aaeb06c9e6a1d0c1156f",
+  "authority_sha256": {
+    "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/IMPLEMENTATION-ORDER.md": "8ed86886353876f9980d7b5ce7b6f30444d057f1141bdd1fdebaaa30f40131d9",
+    "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613",
+    "docs/roadmap/code-index-v2/tasks.json": "a7ebacf3903f3f405e3c5ba4d19f5590107467b55ede35c4d675516c07cf4e68"
+  },
+  "rows": [
+    {
+      "no": 1,
+      "original_owner": [
+        "P7-010",
+        "P7-014"
+      ],
+      "disposition": "implemented_pending_current_validation",
+      "implementation": "CodeIndex::set_project先完整校验/装配再替换旧实例；close/reopen对称关闭runtime、端口和状态槽。enabled=false保持not_configured/dense disabled。",
+      "source": [
+        "crates/cc-server/src/engine.rs::set_project",
+        "crates/cc-server/src/engine.rs::close",
+        "crates/cc-server/src/semantic_wiring.rs::assemble_with"
+      ],
+      "evidence_targets": [
+        "semantic_wiring::tests::switching_the_switch_off_detaches_again",
+        "p7_runtime_independent_review",
+        "lifecycle_stdio.py:disabled_after_ready"
+      ]
+    },
+    {
+      "no": 2,
+      "original_owner": [
+        "P7-014",
+        "P7-015"
+      ],
+      "disposition": "four_responsibilities_implemented_pending_safe_composite_validation",
+      "implementation": {
+        "drain": "handlers/core.rs::split_build_once在索引事务结束后调用SemanticRuntime::schedule，亦可宿主显式schedule；每job最多64轮/30s轮间预算。",
+        "reconcile": "run_round_with的64行desired分页、semantic_worker_publication_current及cache检查、enqueue_semantic_worker_missing与同fence drain实现重开/重建对账；没有调用无界全量reconcile_after_rebuild。",
+        "recovery": "drain_pending_with_lifecycle/drain_pending_parallel在claim前回收过期lease，FencedProvider优先复用已验证cache，Publisher做生命周期及五重CAS；既有恢复测试覆盖重开预算、取消和零重复provider。使用实际等价链路，不以必须调用旧recover_scan函数作为验收。",
+        "gc": "新增每成功有限job结束一页GC（256候选），同runtime游标留给后续显式/索引事件；GC剩余页不启动job。显式run_gc_until_exhausted/drain_revocations_with_reclaim保留。"
+      },
+      "required_safe_composition": "2574359bca6749f02c6cecc95b3e7dc1f6885273",
+      "non_triggers": [
+        "status",
+        "普通查询",
+        "idle timer"
+      ],
+      "evidence_targets": [
+        "semantic_runtime::maintenance_tests",
+        "semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts",
+        "semantic_runtime::tests::reopen_preserves_live_retry_budget_and_terminal_failure",
+        "lifecycle_stdio.py"
+      ]
+    },
+    {
+      "no": 3,
+      "original_owner": [
+        "P7-014"
+      ],
+      "disposition": "implemented_pending_current_validation",
+      "implementation": "生产drain外层检测Corrupt，经quarantine_detected/requeue_after_degrade处理，之后投影当前ledger；不把缓存损坏计作任务自身付费失败。",
+      "source": [
+        "crates/cc-server/src/semantic_wiring.rs::drain_worker_batch_parallel"
+      ],
+      "evidence_targets": [
+        "semantic_wiring wiring_tests",
+        "p7_runtime_independent_review"
+      ]
+    },
+    {
+      "no": 4,
+      "original_owner": [
+        "P7-010"
+      ],
+      "disposition": "prior_task_ownership_retained",
+      "implementation": "attach/drain将DegradationLedger快照转入当前端口拥有的QueryServices，旧runtime不能覆写新端口投影。",
+      "source": [
+        "crates/cc-server/src/service_factory.rs::set_semantic_degradation_for"
+      ],
+      "evidence_targets": [
+        "p7_runtime_independent_review::retired_worker_cannot_clear_reopened_degradation_projection"
+      ]
+    },
+    {
+      "no": 5,
+      "original_owner": [
+        "P7-010"
+      ],
+      "disposition": "prior_task_ownership_retained",
+      "implementation": "规范项目路径参与namespace；disabled在cache root lookup前返回，ArtifactCache::open零创建。",
+      "source": [
+        "crates/cc-server/src/semantic_wiring.rs::assemble_with"
+      ],
+      "evidence_targets": [
+        "semantic_wiring::tests::enabled_config_assembles_attaches_and_creates_no_cache_path",
+        "semantic_runtime::maintenance_tests::empty_and_closed_jobs_do_not_create_or_touch_cache_objects"
+      ]
+    },
+    {
+      "no": 6,
+      "original_owner": [
+        "P7-014"
+      ],
+      "disposition": "implemented_pending_current_validation",
+      "implementation": "gc_min_retention_secs须1..=i64::MAX，checked转换先于root lookup；reembed_budget_max/worker_lease_secs由相同配置节消费，disabled整节惰性。",
+      "source": [
+        "crates/cc-model/src/config.rs::SemanticProviderConfig",
+        "crates/cc-server/src/semantic_wiring.rs::assemble_with"
+      ],
+      "evidence_targets": [
+        "p7_gc_retention_config",
+        "cc_model::config::tests::semantic_section_keys_are_known_config_keys",
+        "semantic_wiring wiring_tests"
+      ]
+    },
+    {
+      "no": 7,
+      "original_owner": [
+        "P7-014"
+      ],
+      "disposition": "conditional_auxiliary_persistence_not_required_for_current_surface",
+      "original_condition": "原权威表明确“Auxiliary计数，按需”；IMPLEMENTATION-ORDER允许有依据地只在P7-016验收记录。",
+      "rationale": "现有status只承诺当前覆盖/失败数，不承诺历史GC累计；显式API返回GcCounters，新调度逐页结构化日志记录实际计数及exhausted。不存在消费历史计数的产品字段，新增DB累计会引入未请求的版本与恢复语义。",
+      "implemented": "实际删除计数/错误传播仍必须验收，不能把条件持久化不需要解释为未执行也算通过。P7-016继续保存故障/GC原始计数。",
+      "not_implemented": "无持久GC累计表；没有把此项写成已落库。"
+    },
+    {
+      "no": 8,
+      "original_owner": [
+        "P7-005"
+      ],
+      "disposition": "prior_task_ownership_retained",
+      "implementation": "共享provider gate与闭枚举claim fairness保持；本次不改ORDER BY或既有公平性阈值。",
+      "evidence_targets": [
+        "p7_production_fairness_model_review"
+      ]
+    },
+    {
+      "no": 9,
+      "original_owner": [
+        "P7-016"
+      ],
+      "disposition": "original_owner_retained",
+      "implementation": "原文机会性reclaim收窄仍属P7-016；本次不开放query/idle opportunistic调度，也不把此项计作P7-014新完成任务。",
+      "remaining": "现队列reclaim有界性的修改与故障回归需由P7-016独立核定。"
+    },
+    {
+      "no": 10,
+      "original_owner": [
+        "P7-014"
+      ],
+      "disposition": "implemented_for_public_status_scalar_surface",
+      "implementation": "capability_snapshot在同一短只读事务仅取得pending/failed/eligible/published的u64标量。public status不序列化dead_letter/failed行数组，字段数量和计数字宽有界。",
+      "source": [
+        "crates/cc-db/src/capability_read.rs::snapshot_on",
+        "crates/cc-server/src/capability_status.rs::apply_semantic_snapshot"
+      ],
+      "limitation": "不据此声称全部内部泛用list API已分页或SQL耗时恒定。",
+      "evidence_targets": [
+        "capability_status::tests",
+        "p7_status_snapshot_independent_review"
+      ]
+    },
+    {
+      "no": 11,
+      "original_owner": [
+        "P7-015"
+      ],
+      "disposition": "original_owner_retained",
+      "implementation": "实际runtime消费semantic_worker_desired_page(after,64)，没有生产全量desired列表；资源竞争与规模验收保持P7-015负责。",
+      "evidence_targets": [
+        "p7_worker_contention",
+        "semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts"
+      ]
+    },
+    {
+      "no": 12,
+      "original_owner": [
+        "P7-011",
+        "P7-012"
+      ],
+      "disposition": "prior_task_ownership_retained",
+      "implementation": "hard scope/active manifest守卫与每查询coverage按原端口消费，不改既有lane/packing语义。",
+      "evidence_targets": [
+        "p7_dense_artifact_coverage",
+        "p7_v18_parameter_contract"
+      ]
+    },
+    {
+      "no": 13,
+      "original_owner": [
+        "P7-014"
+      ],
+      "disposition": "trigger_implemented_optional_log_cap_not_required_for_current_surface",
+      "implementation": "显式set_project或provider install授予configured revision，runtime通过prepare_semantic_configured_space在同事务注册、切换、supersede旧任务并日志；同active space的重复选择不追加切换事件。",
+      "source": [
+        "crates/cc-server/src/engine.rs::install_semantic_provider",
+        "crates/cc-server/src/semantic_runtime.rs::authorize_configured_space_transition",
+        "crates/cc-db/src/semantic_space_switch.rs::prepare_semantic_configured_space",
+        "crates/cc-db/src/semantic_space_switch.rs::switch_active_space_on"
+      ],
+      "original_condition": "round12原表为“上限（如需）”；不把后续对账中的open文字升级为新增硬要求。",
+      "rationale": "仅真实模型/space切换产生审计事件；status没有返回整个日志。当前不需要新增截断配置与历史审计丢弃策略。若未来高频自动切模型成为产品路径，应独立规定保留/压缩预算。",
+      "not_implemented": "日志仍可能随长期显式切换增长，不声称有历史长度上限。",
+      "evidence_targets": [
+        "p7_configured_space_transition",
+        "p7_worker_contention:model retirement"
+      ]
+    }
+  ],
+  "minimal_schedule_authority": "TASK-BRIEFS P7-014: 显式 + 索引事务后一次性；机会性触发默认不开",
+  "requires_parent_acceptance_of_conditional_disposition": [
+    7,
+    13
+  ],
+  "task_ledger_modified": false,
+  "full_task_accepted": false,
+  "remaining": "本次源码与GC安全修复组合后的实际测试、真实stdio 13checkpoint及独立审查尚未完成；原P7-015/P7-016任务保留其自身验收。"
+}

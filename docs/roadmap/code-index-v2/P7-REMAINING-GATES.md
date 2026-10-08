@@ -1,3 +1,21 @@
+# P7 current engineering acceptance and remaining gates
+
+## 2026-10-08 current decision
+
+Original tasks P7-014, P7-015, P7-016, P7-017, P7-019, P7-020 and P8-001 are accepted in dependency order at fixed source ffdc6f0f97db78cc25a6c026904e7c2adde05d14: **160 done / 32 unfinished out of 192**.
+
+The current G7 decision accepts the original engineering/fake scope. P7-018 remains **blocked** under the unchanged D1+D2 decision. Full V19 corpus/custody/quality certification and G8 release acceptance remain open. P8-001 freezes and actually runs a default DEV candidate with the original scorer; its original gate remains baseline_recorded_not_quality_certified.
+
+Acceptance and exact current evidence: [manual acceptance](../../../artifacts/checkpoints/p7-final-acceptance-20261008/acceptance.json), [non-author G7 review](../../../artifacts/checkpoints/p7-final-acceptance-20261008/g7-non-author-review.json), [13-row reconciliation](../../../artifacts/checkpoints/p7-final-acceptance-20261008/wiring-reconciliation.json), and [integrity-only dossier](../../../artifacts/checkpoints/p7-final-acceptance-20261008/generated-final/report.json). The unchanged dossier generator deliberately reports not_accepted; the separate non-author reviewer record carries the scoped G7 decision.
+
+Offline evidence is **four full 14-tool matrices total plus four separate reopens**, across two packages and two configurations per package. There are eight product roots, zero external-network attempts and eight separately reported anonymous local IPC operations.
+
+Rows7 and13 retain their original conditional dispositions: persistent historical GC totals and switch-log truncation have not been implemented and are not claimed. Row9 is now resolved by actual target-space bounded reclaim in three production entry paths, with the original tests and independent source review retained.
+
+## Historical gate records and original limitations
+
+The following records describe their own frozen historical sources. Their earlier open/prepared statements are retained for audit; the current decision above supersedes only the seven listed task states and scoped G7 engineering decision. It does not close their separately identified full-quality, live or release limitations.
+
 # P7 precise remaining gate map
 
 Current executed integration source `78b0ce52cb2ff4c53c53893b9f7dd469269806b8`. tasks.json remains authoritative. V05/V16/V18 acceptedminimumdecisions retained. V11 **accepted_current_supported_minimum** with currentrun `p7-v11-current-78b0-20261003`44/0 andexactCI159success; futureactualsupported-version upgrade rows remainstrictnot_run_cross_build andconditional, notpermanentcurrentproductblockers. V19quality andP7overall remainopen.

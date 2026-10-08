@@ -1,0 +1,56 @@
+{
+  "controls": [
+    {
+      "id": "local_retrieval",
+      "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: retain type references under -D warnings,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ];\n    lanes.clear();\n    lanes\n}",
+      "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ]\n}",
+      "path": "crates/cc-search/src/lanes.rs"
+    },
+    {
+      "id": "semantic_dense",
+      "off_text": "        // Counterfactual experiment snapshot: suppress semantic dispatch,\n        // retain the actual caller's requested strategy and all budgets.\n        let _ = CcError::SemanticUnavailable;\n        let effective = RetrievalStrategy::Local;",
+      "on_text": "        if requested == RetrievalStrategy::Semantic && !semantic_configured {\n            return Err(CcError::SemanticUnavailable);\n        }\n        let effective = if requested == RetrievalStrategy::Local || !semantic_configured {\n            RetrievalStrategy::Local\n        } else {\n            requested\n        };",
+      "path": "crates/cc-search/src/query_policy.rs"
+    }
+  ],
+  "reference_source": "/home/runner/work/_temp/p7-019-build/reference",
+  "schema_version": 1,
+  "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "variants": [
+    {
+      "binary": "/home/runner/work/_temp/p7-019-build/products/none",
+      "build_receipt": "/home/runner/work/_temp/p7-019-build/builds/none/receipt.json",
+      "enabled": [],
+      "id": "none",
+      "source_root": "/home/runner/work/_temp/p7-019-build/sources/none"
+    },
+    {
+      "binary": "/home/runner/work/_temp/p7-019-build/products/local",
+      "build_receipt": "/home/runner/work/_temp/p7-019-build/builds/local/receipt.json",
+      "enabled": [
+        "local_retrieval"
+      ],
+      "id": "local",
+      "source_root": "/home/runner/work/_temp/p7-019-build/sources/local"
+    },
+    {
+      "binary": "/home/runner/work/_temp/p7-019-build/products/dense_only",
+      "build_receipt": "/home/runner/work/_temp/p7-019-build/builds/dense_only/receipt.json",
+      "enabled": [
+        "semantic_dense"
+      ],
+      "id": "dense_only",
+      "source_root": "/home/runner/work/_temp/p7-019-build/sources/dense_only"
+    },
+    {
+      "binary": "/home/runner/work/_temp/p7-019-build/products/hybrid",
+      "build_receipt": "/home/runner/work/_temp/p7-019-build/builds/hybrid/receipt.json",
+      "enabled": [
+        "local_retrieval",
+        "semantic_dense"
+      ],
+      "id": "hybrid",
+      "source_root": "/home/runner/work/_temp/p7-019-build/sources/hybrid"
+    }
+  ]
+}

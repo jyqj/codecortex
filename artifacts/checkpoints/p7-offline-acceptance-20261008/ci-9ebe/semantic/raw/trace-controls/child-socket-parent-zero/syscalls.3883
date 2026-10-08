@@ -1,0 +1,10 @@
+1791431319.693026 execve("/usr/bin/python3", ["/usr/bin/python3", "-I", "-S", "/home/runner/work/codecortex/codecortex/scripts/p7_offline_network.py", "--action", "kill", "--receipt", "/home/runner/work/_temp/p7-offline/trace-controls/child-socket-parent-zero.json", "--", "/usr/bin/python3", "-I", "-S", "-c", "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\nprint('owned child waited; parent exits zero',flush=True)\n"], 0x7ffeac136808 /* 122 vars */) = 0
+1791431319.796517 vfork()               = 3914
+1791431319.802623 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3914, si_uid=1001, si_status=0, si_utime=0, si_stime=0} ---
+1791431319.802932 wait4(3914, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 3914
+1791431319.805514 execve("/usr/bin/python3", ["/usr/bin/python3", "-I", "-S", "-c", "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\nprint('owned child waited; parent exits zero',flush=True)\n"], 0xd6ad990 /* 122 vars */) = 0
+1791431319.835819 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f27de8f0350) = 3915
+1791431319.836274 wait4(3915, [{WIFSIGNALED(s) && WTERMSIG(s) == SIGSYS && WCOREDUMP(s)}], 0, NULL) = 3915
+1791431319.949771 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_DUMPED, si_pid=3915, si_uid=1001, si_status=SIGSYS, si_utime=0, si_stime=0} ---
+1791431319.955400 exit_group(0)         = ?
+1791431319.956193 +++ exited with 0 +++

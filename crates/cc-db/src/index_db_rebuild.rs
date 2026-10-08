@@ -13,6 +13,17 @@ use crate::index_db::{IndexDb, IndexGeneration};
 use crate::index_migrate::{CURRENT_SCHEMA_VERSION, FULL_SCHEMA_SQL};
 use crate::sql_util::db_err;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum RebuildSwapPoint {
+    SidecarsRemoved,
+    Renamed,
+    WriterReopened,
+}
+
+#[cfg(test)]
+#[path = "index_db_rebuild_fault_tests.rs"]
+mod fault_tests;
+
 impl IndexDb {
     // ── Bulk rebuild pragmas ────────────────────────────────────
 
@@ -81,7 +92,7 @@ impl IndexDb {
         tmp_path: &Path,
         build_temp: impl FnOnce(&Path) -> CcResult<()>,
     ) -> CcResult<IndexGeneration> {
-        let generation_floor = self.generation().unwrap_or_default();
+        let generation_floor = self.generation()?;
         Self::cleanup_rebuild_staging_artifacts(tmp_path);
         build_temp(tmp_path)?;
         Ok(generation_floor)
@@ -94,6 +105,18 @@ impl IndexDb {
         generation_floor: IndexGeneration,
         label: &str,
     ) -> CcResult<()> {
+        self.swap_rebuild_staging_with_hook(tmp_path, generation_floor, label, |_| {})
+    }
+
+    /// The production caller supplies a no-op; tests can observe exact
+    /// durable boundaries without modifying clocks, SQL or filesystem work.
+    pub(crate) fn swap_rebuild_staging_with_hook(
+        &self,
+        tmp_path: &Path,
+        generation_floor: IndexGeneration,
+        label: &str,
+        mut observe: impl FnMut(RebuildSwapPoint),
+    ) -> CcResult<()> {
         if !tmp_path.exists() {
             return Err(CcError::Database(format!(
                 "rebuild staging file missing: {}",
@@ -101,25 +124,37 @@ impl IndexDb {
             )));
         }
 
-        // Acquire write lock, do atomic swap while lock is held
-        {
-            // Lock the write connection to prevent concurrent writes.
-            // The rename MUST happen inside this scope so no writer can
-            // slip in between lock-release and file replacement.
-            let _write_guard = self.write_conn.lock().map_err(db_err)?;
+        // A writer may enter only after the new connection is installed.
+        // Releasing this mutex just after rename would let a writer commit
+        // to the detached old inode while reporting success.
+        let mut write_guard = self.write_conn.lock().map_err(db_err)?;
+        self.finalize_rebuild_generation(tmp_path, generation_floor)?;
+        // A successful PRAGMA execution is not a completed checkpoint: BUSY
+        // is a row value. Never unlink committed pages still needed by a
+        // live snapshot, nor rely on close-time best-effort checkpointing.
+        Self::checkpoint_before_rebuild_swap(&write_guard, "live database")?;
 
-            // Write the final epoch vector now that no further writes can
-            // land: max(floor, live) + 1 covers writes committed while the
-            // rebuild ran (including from other processes).
-            self.finalize_rebuild_generation(tmp_path, generation_floor)?;
+        // Once sidecars or the main file are replaced, an error must not
+        // leave a usable connection to the old inode. Disable that writer
+        // before entering the destructive window, and withdraw the old pool
+        // while excluding new borrowers. Existing borrowed read snapshots
+        // keep their original isolation semantics; they cannot be revoked.
+        write_guard
+            .execute_batch("PRAGMA query_only=ON;")
+            .map_err(|e| CcError::Database(format!("quiesce writer before rebuild swap: {e}")))?;
+        let mut pool_guard = self
+            .pool
+            .write()
+            .map_err(|e| CcError::Database(format!("write pool lock: {}", e)))?;
+        drop(pool_guard.take());
 
-            // Remove the old WAL/SHM files — the new file will create its own
+        let publication_result = (|| -> CcResult<()> {
             let wal = Self::sidecar_path(&self.db_path, "-wal");
             let shm = Self::sidecar_path(&self.db_path, "-shm");
-            let _ = std::fs::remove_file(&wal);
-            let _ = std::fs::remove_file(&shm);
+            Self::remove_rebuild_sidecar(&wal)?;
+            Self::remove_rebuild_sidecar(&shm)?;
+            observe(RebuildSwapPoint::SidecarsRemoved);
 
-            // Atomic rename: temp → main (inside write lock)
             std::fs::rename(tmp_path, &self.db_path).map_err(|e| {
                 CcError::Database(format!(
                     "atomic rename {} → {}: {}",
@@ -128,28 +163,44 @@ impl IndexDb {
                     e
                 ))
             })?;
+            observe(RebuildSwapPoint::Renamed);
+            Self::remove_rebuild_sidecar(&Self::sidecar_path(tmp_path, "-wal"))?;
+            Self::remove_rebuild_sidecar(&Self::sidecar_path(tmp_path, "-shm"))?;
+            let parent = self
+                .db_path
+                .parent()
+                .filter(|p| !p.as_os_str().is_empty())
+                .unwrap_or_else(|| Path::new("."));
+            std::fs::File::open(parent)?.sync_all()?;
+            Ok(())
+        })();
 
-            // Clean up temp WAL/SHM if any
-            let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-wal"));
-            let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-shm"));
+        // Even a failed unlink/rename may have removed a sidecar. Reopen the
+        // still-authoritative path before returning that original failure.
+        // Install neither half until both are ready: if open or pool setup
+        // fails, the old writer stays query-only and the pool stays absent.
+        // A fresh IndexDb::open is then the explicit recovery boundary.
+        let rebind_result = (|| -> CcResult<()> {
+            let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
+            observe(RebuildSwapPoint::WriterReopened);
+            let new_pool = Self::build_read_pool(&self.db_path, self.read_pool_size)?;
+            *write_guard = new_write_conn;
+            *pool_guard = Some(new_pool);
+            Ok(())
+        })();
+        if let Err(reopen_error) = rebind_result {
+            return Err(CcError::Database(match publication_result {
+                Ok(()) => format!(
+                    "rebuild connection reopen failed; reopen the database handle: {reopen_error}"
+                ),
+                Err(publication_error) => format!(
+                    "{publication_error}; connection reopen also failed; reopen the database handle: {reopen_error}"
+                ),
+            }));
         }
-
-        // Reopen write connection
-        let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
-        {
-            let mut guard = self.write_conn.lock().map_err(db_err)?;
-            *guard = new_write_conn;
-        }
-
-        // Rebuild the read pool using the configured/adaptive pool size.
-        let new_pool = Self::build_read_pool(&self.db_path, self.read_pool_size)?;
-        {
-            let mut pool_guard = self
-                .pool
-                .write()
-                .map_err(|e| CcError::Database(format!("write pool lock: {}", e)))?;
-            *pool_guard = new_pool;
-        }
+        drop(pool_guard);
+        drop(write_guard);
+        publication_result?;
 
         // Checkpoint WAL to reclaim space after full rebuild
         if let Err(e) = self.checkpoint_wal() {
@@ -157,6 +208,28 @@ impl IndexDb {
         }
 
         Ok(())
+    }
+
+    pub(crate) fn checkpoint_before_rebuild_swap(conn: &Connection, label: &str) -> CcResult<()> {
+        let (busy, pages, checkpointed): (i64, i64, i64) = conn
+            .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |row| {
+                Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+            })
+            .map_err(|e| CcError::Database(format!("{label} checkpoint before swap: {e}")))?;
+        if busy != 0 || pages != checkpointed {
+            return Err(CcError::Database(format!(
+                "{label} checkpoint incomplete before swap: busy={busy}, pages={pages}, checkpointed={checkpointed}"
+            )));
+        }
+        Ok(())
+    }
+
+    pub(crate) fn remove_rebuild_sidecar(path: &Path) -> CcResult<()> {
+        match std::fs::remove_file(path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error.into()),
+        }
     }
 
     /// Shared temp-db build strategy: open a fresh schema, bulk-insert via

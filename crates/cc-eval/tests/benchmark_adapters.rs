@@ -6,6 +6,9 @@ use cc_eval::benchmark::{
 };
 use serde_json::json;
 use std::{path::PathBuf, time::Duration};
+#[cfg(target_os = "linux")]
+#[path = "support/p7_procfs.rs"]
+mod p7_procfs;
 fn project() -> tempfile::TempDir {
     let d = tempfile::tempdir().unwrap();
     std::fs::write(
@@ -82,7 +85,6 @@ mod p7_offline {
     use rmcp::{
         model::{CallToolRequestParams, ErrorCode},
         service::{RunningService, ServiceError},
-        transport::{ConfigureCommandExt, TokioChildProcess},
         RoleClient, ServiceExt,
     };
     use serde_json::Value;
@@ -211,32 +213,166 @@ mod p7_offline {
         "adr",
     ];
 
-    async fn spawn(binary: &Path, root: &Path) -> (Client, u32) {
-        let transport =
-            TokioChildProcess::new(tokio::process::Command::new(binary).configure(|cmd| {
-                // Exact child boundary: no credentials or developer CODECORTEX
-                // overrides survive. HOME/cache/config are local to the fixture.
-                cmd.env_clear()
-                    .env("PATH", std::env::var_os("PATH").unwrap())
-                    .env("HOME", root)
-                    .env("XDG_CONFIG_HOME", root.join(".config"))
-                    .env("XDG_CACHE_HOME", root.join(".cache"))
-                    .env("CODECORTEX_PPID_POLL_MS", "0")
-                    .arg("mcp")
-                    .arg("--project-path")
-                    .arg(root)
-                    .current_dir(root)
-                    .stdin(Stdio::piped())
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::null());
-            }))
+    fn file_digest(path: &Path) -> String {
+        use sha2::{Digest, Sha256};
+        format!("{:x}", Sha256::digest(std::fs::read(path).unwrap()))
+    }
+
+    enum SpawnPolicy {
+        Direct,
+        KillOnNetwork {
+            launcher: PathBuf,
+            digest: String,
+            probes: Value,
+        },
+    }
+
+    impl SpawnPolicy {
+        #[cfg(not(target_os = "linux"))]
+        fn verified_network_guard() -> Self {
+            panic!("isolated offline acceptance requires Linux seccomp");
+        }
+
+        #[cfg(target_os = "linux")]
+        fn verified_network_guard() -> Self {
+            let launcher = PathBuf::from(
+                std::env::var("P7_017_NETWORK_GUARD")
+                    .expect("explicit product network launcher required"),
+            )
+            .canonicalize()
             .unwrap();
-        let pid = transport.id().expect("actual product subprocess PID");
+            let digest = file_digest(&launcher);
+            let evidence = tempfile::tempdir().unwrap();
+            let output = std::process::Command::new("python3")
+                .args(["-I", "-S"])
+                .arg(&launcher)
+                .arg("--verify-kill-policy")
+                .arg(evidence.path().join("probes"))
+                .env_clear()
+                .env("PATH", std::env::var_os("PATH").unwrap())
+                .stdin(Stdio::null())
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "network kill probes failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let probes: Value = serde_json::from_slice(&output.stdout).unwrap();
+            assert_eq!(probes["status"], "passed");
+            assert_eq!(probes["wrapper_sha256"], digest);
+            for family in ["ipv4", "ipv6"] {
+                assert_eq!(probes["probes"][family]["reached_socket"], true);
+                assert_eq!(probes["probes"][family]["exit_code"], -libc::SIGSYS);
+            }
+            Self::KillOnNetwork {
+                launcher,
+                digest,
+                probes,
+            }
+        }
+
+        fn proof(&self) -> Value {
+            match self {
+                Self::Direct => Value::Null,
+                Self::KillOnNetwork { probes, .. } => probes.clone(),
+            }
+        }
+    }
+
+    struct ProductChild {
+        process: tokio::process::Child,
+        guard_receipt: Value,
+    }
+
+    async fn spawn(binary: &Path, root: &Path, policy: &SpawnPolicy) -> (Client, ProductChild) {
+        let evidence = tempfile::tempdir().unwrap();
+        let receipt_path = evidence.path().join("pre-exec.json");
+        let mut command = match policy {
+            SpawnPolicy::Direct => tokio::process::Command::new(binary),
+            SpawnPolicy::KillOnNetwork {
+                launcher, digest, ..
+            } => {
+                assert_eq!(&file_digest(launcher), digest, "network launcher changed");
+                let mut command = tokio::process::Command::new("python3");
+                command
+                    .args(["-I", "-S"])
+                    .arg(launcher)
+                    .args(["--action", "kill", "--receipt"])
+                    .arg(&receipt_path)
+                    .arg("--")
+                    .arg(binary);
+                command
+            }
+        };
+        // Exact original child boundary: no keys or developer overrides.
+        // The launcher execs the separately receipt-verified product; it is
+        // never substituted for that product in binary identity checks.
+        command
+            .env_clear()
+            .env("PATH", std::env::var_os("PATH").unwrap())
+            .env("HOME", root)
+            .env("XDG_CONFIG_HOME", root.join(".config"))
+            .env("XDG_CACHE_HOME", root.join(".cache"))
+            .env("CODECORTEX_PPID_POLL_MS", "0")
+            .arg("mcp")
+            .arg("--project-path")
+            .arg(root)
+            .current_dir(root)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true);
+        let mut process = command.spawn().unwrap();
+        let transport = (
+            process.stdout.take().unwrap(),
+            process.stdin.take().unwrap(),
+        );
         let client = tokio::time::timeout(Duration::from_secs(20), ().serve(transport))
             .await
             .unwrap()
             .unwrap();
-        (client, pid)
+        let guard_receipt = match policy {
+            SpawnPolicy::Direct => Value::Null,
+            SpawnPolicy::KillOnNetwork { digest, .. } => {
+                let receipt: Value =
+                    serde_json::from_slice(&std::fs::read(receipt_path).unwrap()).unwrap();
+                assert_eq!(receipt["action"], "kill");
+                assert_eq!(receipt["result"], "filter_loaded_before_exec");
+                assert_eq!(receipt["wrapper_sha256"], *digest);
+                assert_eq!(receipt["exec_sha256"], file_digest(binary));
+                assert_eq!(
+                    receipt["exec_command"],
+                    json!([binary, "mcp", "--project-path", root])
+                );
+                assert_eq!(receipt["socket_fds_before_exec"], json!([]));
+                receipt
+            }
+        };
+        (
+            client,
+            ProductChild {
+                process,
+                guard_receipt,
+            },
+        )
+    }
+
+    async fn close(client: Client, mut child: ProductChild) -> Value {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
+        tokio::time::timeout_at(deadline, client.cancel())
+            .await
+            .unwrap()
+            .unwrap();
+        let status = tokio::time::timeout_at(deadline, child.process.wait())
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(
+            status.success(),
+            "product must exit normally, including after the last response: {status}"
+        );
+        json!({"exit_code":status.code(), "success":true})
     }
 
     async fn raw(
@@ -299,22 +435,24 @@ mod p7_offline {
         out
     }
 
-    fn network_status(pid: u32) -> Value {
+    fn network_status(child: &ProductChild) -> Value {
+        let pid = child
+            .process
+            .id()
+            .expect("actual live product subprocess PID");
         #[cfg(target_os = "linux")]
         {
-            let text = std::fs::read_to_string(format!("/proc/{pid}/status")).unwrap();
-            let rows: serde_json::Map<String, Value> = text
-                .lines()
-                .filter(|line| {
-                    line.starts_with("NoNewPrivs:")
-                        || line.starts_with("Seccomp:")
-                        || line.starts_with("Seccomp_filters:")
-                })
-                .map(|line| {
-                    let (key, value) = line.split_once(':').unwrap();
-                    (key.into(), json!(value.trim()))
-                })
-                .collect();
+            let rows =
+                super::p7_procfs::child_security(Path::new("/proc"), std::process::id(), pid)
+                    .expect(
+                    "positive direct-child procfs identity required; unavailable is not isolated",
+                );
+            if !child.guard_receipt.is_null() {
+                for field in ["NoNewPrivs", "Seccomp", "Seccomp_filters", "NSpid"] {
+                    assert_eq!(json!(rows[field]), child.guard_receipt["after"][field]);
+                }
+                assert_eq!(json!(rows["ProcPid"]), child.guard_receipt["after"]["Pid"]);
+            }
             json!(rows)
         }
         #[cfg(not(target_os = "linux"))]
@@ -354,6 +492,11 @@ mod p7_offline {
                 );
             }
         }
+        let policy = if restricted {
+            SpawnPolicy::verified_network_guard()
+        } else {
+            SpawnPolicy::Direct
+        };
         let expected: BTreeSet<String> = TOOLS.iter().map(|name| (*name).into()).collect();
         let mut observations = Vec::new();
         for explicitly_disabled in [false, true] {
@@ -375,8 +518,9 @@ mod p7_offline {
                 serde_json::to_vec(&config).unwrap(),
             )
             .unwrap();
-            let (client, pid) = spawn(&binary, root).await;
-            let child_network = network_status(pid);
+            let (client, child) = spawn(&binary, root, &policy).await;
+            let child_network = network_status(&child);
+            let child_guard = child.guard_receipt.clone();
             if restricted {
                 assert_eq!(child_network["NoNewPrivs"], "1");
                 assert_eq!(child_network["Seccomp"], "2");
@@ -571,11 +715,8 @@ mod p7_offline {
             assert!(matches!(&missing, ServiceError::McpError(data)
                 if data.code == ErrorCode::INTERNAL_ERROR && data.message.contains("symbol not found")));
             let before_close = files(root);
-            tokio::time::timeout(Duration::from_secs(5), client.cancel())
-                .await
-                .unwrap()
-                .unwrap();
-            let (reopened, reopen_pid) = spawn(&binary, root).await;
+            let child_exit = close(client, child).await;
+            let (reopened, reopened_child) = spawn(&binary, root, &policy).await;
             let after = call(&reopened, "status", json!({"aspect":"index"}), &mut called).await;
             assert!(after["indexed_files"].as_u64().unwrap() >= 1);
             let reopened_search = call(
@@ -604,20 +745,23 @@ mod p7_offline {
             )
             .await;
             assert!(removed["deleted"].as_bool().unwrap());
-            let reopened_network = network_status(reopen_pid);
-            tokio::time::timeout(Duration::from_secs(5), reopened.cancel())
-                .await
-                .unwrap()
-                .unwrap();
+            let reopened_network = network_status(&reopened_child);
+            let reopened_guard = reopened_child.guard_receipt.clone();
+            let reopened_exit = close(reopened, reopened_child).await;
             let final_files = files(root);
-            observations.push(json!({"package":package,"explicitly_disabled":explicitly_disabled,"child_environment":"env_clear; fixture HOME/XDG paths; PATH only; no key","network_scope":if restricted {"verified_process_seccomp"} else {"not_isolated_not_claimed"},"child_security":child_network,"reopened_child_security":reopened_network,"tools_listed":names,"tools_executed":called,"local_source_verified":true,"error_contracts_verified":true,"reopen_and_persisted_adr_verified":true,"files_before_close":before_close,"files_after_reopen_close":final_files,"semantic_cache_absent":true}));
+            // A main-process exit cannot account for a child whose SIGSYS is
+            // swallowed. Only the separate full strace tree verifier may
+            // publish zero attempts after every descendant/thread has exited.
+            observations.push(json!({"package":package,"explicitly_disabled":explicitly_disabled,"child_environment":"env_clear; fixture HOME/XDG paths; PATH only; no key","network_scope":if restricted {"verified_process_seccomp_guard; full_descendant_trace_required"} else {"not_isolated_not_claimed"},"network_socket_attempts":Value::Null,"network_attempt_basis":Value::Null,"child_security":child_network,"reopened_child_security":reopened_network,"child_network_guard":child_guard,"reopened_network_guard":reopened_guard,"child_exit":child_exit,"reopened_exit":reopened_exit,"tools_listed":names,"tools_executed":called,"local_source_verified":true,"error_contracts_verified":true,"reopen_and_persisted_adr_verified":true,"files_before_close":before_close,"files_after_reopen_close":final_files,"semantic_cache_absent":true}));
         }
+        verify_build_receipt(&binary, &package, &receipt)
+            .expect("product identity unchanged after matrix");
         if let Ok(output) = std::env::var("CODECORTEX_BENCH_OBSERVATIONS") {
             std::fs::create_dir_all(&output).unwrap();
             std::fs::write(
                 Path::new(&output).join(format!("p7-017-{package}.json")),
                 serde_json::to_vec_pretty(
-                    &json!({"binary":binary,"build_receipt":receipt,"cases":observations}),
+                    &json!({"binary":binary,"build_receipt":receipt,"network_positive_controls":policy.proof(),"cases":observations}),
                 )
                 .unwrap(),
             )

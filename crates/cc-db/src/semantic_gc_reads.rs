@@ -155,6 +155,37 @@ pub fn mark_batch_on(conn: &Connection, probes: &[GcMarkProbe]) -> CcResult<Vec<
 }
 
 impl crate::index_db::IndexDb {
+    /// Execute a filesystem sweep while this handle's rebuild/write mutex
+    /// and a read-only SQLite snapshot remain held. The caller must acquire
+    /// the cache namespace mutation lease FIRST and keep it until return.
+    /// The callback performs bounded local file operations only: it must
+    /// not re-enter this database, wait for another writer or call a provider.
+    ///
+    /// No SQL writes or epoch effects occur. Unlike `semantic_gc_mark`, this
+    /// seam also excludes a same-handle rebuild between mark and unlink and
+    /// refuses an already-detached database handle. Cross-process rebuild
+    /// still follows the existing composition-root serialization contract.
+    pub fn with_semantic_gc_marks<T>(
+        &self,
+        probes: &[GcMarkProbe],
+        sweep: impl FnOnce(&[GcMark]) -> CcResult<T>,
+    ) -> CcResult<T> {
+        let conn = self.write_conn.lock().map_err(crate::sql_util::db_err)?;
+        let snapshot = conn
+            .unchecked_transaction()
+            .map_err(crate::sql_util::db_err)?;
+        let incarnation = crate::read_generation::read_on(&conn)?.incarnation;
+        if let crate::semantic_rebuild::IncarnationFreshness::Stale { .. } =
+            self.semantic_incarnation_freshness(incarnation)?
+        {
+            return Err(cc_model::CcError::RetrievalChanged { attempts: 1 });
+        }
+        let marks = mark_batch_on(&conn, probes)?;
+        let result = sweep(&marks);
+        drop(snapshot);
+        result
+    }
+
     /// Facade for the GC synchronization point: takes the read-pool
     /// connection, wraps [`mark_batch_on`] in one short deferred snapshot,
     /// and releases it. Same-order, same-length verdicts as the probes.

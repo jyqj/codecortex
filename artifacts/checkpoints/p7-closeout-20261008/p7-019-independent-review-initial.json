@@ -1,0 +1,45 @@
+{
+  "reviewer": "root (independent of mechanism implementation author p7_wiring)",
+  "scope": "P7-019 original fake engineering mechanism leg only",
+  "source": "6d48f2e723030188e273cc787154e6b53c111e9f",
+  "reviewed_inputs": {
+    "scripts/p7_mechanism_build.py": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76",
+    "crates/cc-eval/src/benchmark/ablation/mechanism.rs": "ffdd1538c29f59fd5b3a9ba56b3510e284657c805d062bc76f9c09b90b8ede74",
+    "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json": "f24ae9777ce7c4c042624bb7144eb5ed3d100ca5f342184095ba54f76228b94b",
+    "crates/cc-eval/tests/p7_mechanism_stdio.rs": "c41b9e36b499fbd6612eab9c523fde5429760b0c9743ef0d3992c34a80aa1399"
+  },
+  "actual_execution": {
+    "run_id": 37718752153,
+    "job_id": 113121265463,
+    "conclusion": "success",
+    "build_cells": [
+      "none",
+      "local",
+      "dense_only",
+      "hybrid"
+    ],
+    "queries_including_warmup": 36,
+    "paired_bootstrap_replayed": true,
+    "raw_job_log": "ci/6d48f2e7/job-113121265463.log",
+    "artifact_id": 11524923065,
+    "artifact_sha256": "fbfdfa04c724a06febda796db3a0caaa1a029ed78f88fdcbd4a6dc6b21529d41",
+    "artifact_downloaded_for_review": false
+  },
+  "findings": [
+    {
+      "severity": "medium",
+      "status": "fix_requested",
+      "path": "crates/cc-eval/src/benchmark/ablation/mechanism.rs",
+      "issue": "Top-level source_commit can differ from all four otherwise valid receipts; report may attribute execution to another commit. Bind every receipt build_options.binding.source_commit to build.source_commit and reject top-level-only tampering."
+    }
+  ],
+  "accepted_properties": [
+    "Full tracked Cargo/crates/config/toolchain snapshot before/after each private source build",
+    "Only two checked-in factor edits in isolated source snapshots; production retrieval weights and flags unchanged",
+    "Same requested Semantic input, budgets, readiness and document preparation across four arms",
+    "Zero-lane negative control, actual local positives, actual semantic candidate receipts, false dense-only and aliased binary/source rejections",
+    "Actual paired replay and cost unknown fields, with authored fake partition explicitly not independent public holdout"
+  ],
+  "decision": "request targeted source identity correction; runtime mechanism execution itself succeeded; final task acceptance awaits dependency and final fixed source CI",
+  "live_quality": "not evaluated; no semantic benefit or paid provider claims"
+}

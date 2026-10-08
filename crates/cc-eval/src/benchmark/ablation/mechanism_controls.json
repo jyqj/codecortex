@@ -1,0 +1,14 @@
+[
+  {
+    "id": "local_retrieval",
+    "path": "crates/cc-search/src/lanes.rs",
+    "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ]\n}",
+    "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: retain type references under -D warnings,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ];\n    lanes.clear();\n    lanes\n}"
+  },
+  {
+    "id": "semantic_dense",
+    "path": "crates/cc-search/src/query_policy.rs",
+    "on_text": "        if requested == RetrievalStrategy::Semantic && !semantic_configured {\n            return Err(CcError::SemanticUnavailable);\n        }\n        let effective = if requested == RetrievalStrategy::Local || !semantic_configured {\n            RetrievalStrategy::Local\n        } else {\n            requested\n        };",
+    "off_text": "        // Counterfactual experiment snapshot: suppress semantic dispatch,\n        // retain the actual caller's requested strategy and all budgets.\n        let _ = CcError::SemanticUnavailable;\n        let effective = RetrievalStrategy::Local;"
+  }
+]

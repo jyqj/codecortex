@@ -323,6 +323,107 @@ fn fresh_conn(path: &Path) -> rusqlite::Connection {
 
 const DOC_A: &[u8] = b"degrade-doc-a payload";
 
+#[test]
+fn delayed_corrupt_report_never_quarantines_a_republished_healthy_object() {
+    for seed in [223, 227, 229] {
+        let world = World::new(&format!("delayed-quarantine-{seed}"), Some(4));
+        world.activate_space();
+        let input = digest(DOC_A);
+        world.seed_doc("doc-a", "v1", &input);
+        world.drain(&[(input.as_str().to_string(), DOC_A)]);
+        assert_eq!(world.outbox_state("doc-a"), "done");
+
+        // A reader observes actual corrupt bytes, then pauses before cleanup.
+        // Its separate handle shares the production namespace mutation lock.
+        let delayed_reader = ArtifactCache::open(
+            world.cache.root().to_path_buf(),
+            world.cache.namespace().to_string(),
+        )
+        .unwrap();
+        world.corrupt_payload(&input);
+        let CacheRead::Corrupt(stale_report) = delayed_reader
+            .get(&world.space, &input, &world.spec)
+            .unwrap()
+        else {
+            panic!("seed {seed}: the original corruption must be real");
+        };
+
+        // A worker repairs the same address and completes the real fenced CAS
+        // before the delayed cleanup is allowed to acquire its mutation lease.
+        world.bump_version("doc-a", "v2", &input);
+        world.drain(&[(input.as_str().to_string(), DOC_A)]);
+        assert_eq!(world.outbox_state("doc-a"), "done");
+        assert_eq!(world.provider.call_count(), 2);
+        let CacheRead::Hit(repaired) = world.cache.get(&world.space, &input, &world.spec).unwrap()
+        else {
+            panic!("seed {seed}: worker publication must leave verified bytes");
+        };
+        let published_ref: String = world
+            .conn
+            .query_row(
+                "SELECT artifact_ref FROM semantic_manifest WHERE doc_key='doc-a' AND doc_version='v2'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(published_ref, repaired.artifact_ref.as_str());
+        let generation = world.db.reads().read_generation().unwrap();
+        let bin = world.bin_path(&input);
+        let meta = bin
+            .parent()
+            .unwrap()
+            .join(format!("{}.meta.json", world.spec.as_str()));
+        let repaired_bytes = [std::fs::read(&bin).unwrap(), std::fs::read(&meta).unwrap()];
+
+        let record = quarantine_detected(
+            &delayed_reader,
+            &world.ledger,
+            &world.space,
+            &input,
+            &world.spec,
+            &stale_report,
+            2_000,
+        )
+        .unwrap();
+        eprintln!(
+            "{}",
+            serde_json::json!({
+                "case": "delayed-corrupt-report-after-republish",
+                "seed": seed,
+                "original_corrupt_reason": stale_report.reason,
+                "republished_artifact_ref": published_ref,
+                "quarantined_current_object": record.is_some(),
+                "document_provider_calls": world.provider.call_count()
+            })
+        );
+        assert!(
+            record.is_none(),
+            "seed {seed}: a stale report moved a repaired object"
+        );
+        assert_eq!(
+            delayed_reader
+                .get(&world.space, &input, &world.spec)
+                .unwrap(),
+            CacheRead::Hit(repaired)
+        );
+        assert_eq!(std::fs::read(&bin).unwrap(), repaired_bytes[0]);
+        assert_eq!(std::fs::read(&meta).unwrap(), repaired_bytes[1]);
+        assert!(!world.cache.quarantine_dir().exists());
+        assert_eq!(world.db.reads().read_generation().unwrap(), generation);
+        assert_eq!(world.outbox_state("doc-a"), "done");
+        assert_eq!(world.manifest_count(), 1);
+        assert_eq!(world.search_doc_keys(10), vec!["doc-a".to_string()]);
+        let degradation = world.ledger.snapshot();
+        assert!(
+            degradation.degraded,
+            "the prior real corrupt event remains visible"
+        );
+        assert_eq!(degradation.corrupt_events, 1);
+        assert_eq!(degradation.quarantined_objects, 0);
+        assert_eq!(degradation.reembeds_used, 0);
+    }
+}
+
 // ── 1. 自愈回路：发布 → 损坏 → 隔离 → 预算内补嵌 → 重新发布 → 检索重见 ──
 
 #[test]

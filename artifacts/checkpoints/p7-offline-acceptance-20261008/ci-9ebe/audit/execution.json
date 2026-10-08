@@ -1,0 +1,64 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "python",
+        "-B",
+        "/dev/shm/codecortex-closeout-996727/validation/audit_ci9ebe_offline_zip.py"
+      ],
+      "exit_code": 0,
+      "observed_stdout": [
+        {
+          "complete_matrix_trace_pids": 130,
+          "config_cases": 2,
+          "external_network_attempts": 0,
+          "local_anonymous_ipc_count": 4,
+          "package": "default",
+          "status": "passed"
+        },
+        {
+          "complete_matrix_trace_pids": 128,
+          "config_cases": 2,
+          "external_network_attempts": 0,
+          "local_anonymous_ipc_count": 4,
+          "package": "semantic",
+          "status": "passed"
+        }
+      ],
+      "source_sha256": "413f964a875b5fab878db9f3cb47732cdb00d663914db92bcc1bb058e9325b8e"
+    },
+    {
+      "argv": [
+        "python",
+        "-B",
+        "/dev/shm/codecortex-closeout-996727/validation/audit_ci9ebe_p8_zip.py"
+      ],
+      "exit_code": 0,
+      "observed_stdout": {
+        "archive_payload_files": 953,
+        "archive_sha256": "a34d7b1d7f4546940b02e57a2c9f21fefdeebe2d4873e0289044f7c24f1aa37a",
+        "candidate_sha256": "0b2765bbf6994b708e729a0e48e02c03d5272c87271d5de3b49ad24c59a7076d",
+        "measured_queries": 1,
+        "measured_rows": 1,
+        "original_gate": {
+          "exit_code": 0,
+          "reasons": [],
+          "status": "baseline_recorded_not_quality_certified"
+        },
+        "release_certified": false,
+        "status": "passed"
+      },
+      "source_sha256": "7b48917b7a48fdda84056d91ec3b3c769a91ce4b560211b21b15c3540f74fc00"
+    }
+  ],
+  "retained_failed_evidence": "previous ci2313 and earlier failed artifacts remain unchanged; this is a separate new-source acceptance bundle",
+  "review_roles": {
+    "offline_artifact": "pr_audit independently downloaded and verified completed CI raw observations against fixed source and GitHub digests",
+    "offline_source": "pr_audit implemented the guard/verifier; fixed source was independently reviewed by todo_acceptance and p7_wiring before CI",
+    "p8_source_and_artifact": "pr_audit is independent of P8 implementation author todo_acceptance"
+  },
+  "schema_version": 1,
+  "scope": "read-only local artifact verification, not a repeated product execution",
+  "source_commit": "9ebe1f619a298b9955d576d9d8250368259924d2",
+  "task_ledger_mutated": false
+}

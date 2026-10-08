@@ -498,6 +498,91 @@ fn rebuild_generation_exceeds_writes_committed_during_rebuild() {
 }
 
 #[test]
+fn staging_checkpoint_busy_preserves_wal_and_refuses_replacement() {
+    let tmp = TempDir::new().unwrap();
+    let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+    db.set_metadata("live-sentinel", "preserve-before-swap")
+        .unwrap();
+    let before = db.reads().read_generation().unwrap();
+    let path = db.rebuild_staging_path();
+    let floor = db
+        .build_rebuild_staging(&path, |path| {
+            IndexDb::execute_temp_db_staging_build(path, |_| Ok(()))
+        })
+        .unwrap();
+
+    let reader = Connection::open(&path).unwrap();
+    reader.execute_batch("BEGIN;").unwrap();
+    let _: i64 = reader
+        .query_row("SELECT COUNT(*) FROM metadata", [], |r| r.get(0))
+        .unwrap();
+    let result = db.swap_rebuild_staging(&path, floor, "staging checkpoint regression");
+    assert!(
+        result.is_err(),
+        "uncheckpointed staging WAL must not be discarded: {result:?}"
+    );
+    assert!(path.exists(), "failed replacement retains staging evidence");
+    let wal = PathBuf::from(format!("{}-wal", path.display()));
+    assert!(wal.is_file(), "busy staging WAL was unlinked");
+    assert!(std::fs::metadata(&wal).unwrap().len() > 0);
+    assert_eq!(db.reads().read_generation().unwrap(), before);
+    assert_eq!(
+        db.get_metadata("live-sentinel").unwrap().as_deref(),
+        Some("preserve-before-swap")
+    );
+
+    reader.execute_batch("ROLLBACK;").unwrap();
+    drop(reader);
+    db.swap_rebuild_staging(&path, floor, "staging checkpoint retry")
+        .unwrap();
+    assert_ne!(
+        db.reads().read_generation().unwrap().incarnation,
+        before.incarnation
+    );
+}
+
+#[test]
+fn live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement() {
+    let tmp = TempDir::new().unwrap();
+    let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+    db.set_metadata("snapshot-sentinel", "before").unwrap();
+    let reader = Connection::open(db.admin().db_path()).unwrap();
+    reader.execute_batch("BEGIN;").unwrap();
+    let _: i64 = reader
+        .query_row("SELECT COUNT(*) FROM metadata", [], |r| r.get(0))
+        .unwrap();
+    db.set_metadata("committed-sentinel", "must-survive-refused-swap")
+        .unwrap();
+    let before = db.reads().read_generation().unwrap();
+    let result = db.rebuild_with_temp_db(|_| Ok(()));
+    assert!(
+        result.is_err(),
+        "a busy live WAL must not be deleted before rename: {result:?}"
+    );
+    let wal = PathBuf::from(format!("{}-wal", db.admin().db_path().display()));
+    assert!(wal.is_file());
+    assert!(std::fs::metadata(&wal).unwrap().len() > 0);
+    assert_eq!(db.reads().read_generation().unwrap(), before);
+    let fresh = Connection::open(db.admin().db_path()).unwrap();
+    let retained: String = fresh
+        .query_row(
+            "SELECT value FROM metadata WHERE key='committed-sentinel'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(retained, "must-survive-refused-swap");
+    drop(fresh);
+    reader.execute_batch("ROLLBACK;").unwrap();
+    drop(reader);
+    db.rebuild_with_temp_db(|_| Ok(())).unwrap();
+    assert_ne!(
+        db.reads().read_generation().unwrap().incarnation,
+        before.incarnation
+    );
+}
+
+#[test]
 fn schema_mismatch_rebuild_advances_generation_past_old_values() {
     let tmp = TempDir::new().unwrap();
     let path = tmp.path().join("index.sqlite3");

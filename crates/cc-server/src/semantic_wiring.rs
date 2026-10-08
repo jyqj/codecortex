@@ -701,16 +701,10 @@ pub fn run_gc_until_exhausted(
     subsystem: &SemanticSubsystem,
     now_unix: i64,
 ) -> CcResult<GcCounters> {
-    let cfg = GcConfig {
-        min_retention_secs: subsystem.gc_min_retention_secs,
-        batch_entries: GC_BATCH_ENTRIES,
-        now_unix,
-    };
     let mut total = GcCounters::default();
     let mut after: Option<GcPosition> = None;
     for _ in 0..GC_MAX_ROUNDS {
-        let (counters, resume, _exhausted) =
-            run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
+        let (counters, resume, _exhausted) = run_gc_page(db, subsystem, now_unix, after.as_ref())?;
         total.kept_fresh += counters.kept_fresh;
         total.kept_referenced += counters.kept_referenced;
         total.kept_live_task += counters.kept_live_task;
@@ -724,6 +718,23 @@ pub fn run_gc_until_exhausted(
         }
     }
     Ok(total)
+}
+
+/// Shared single-page policy for explicit GC and the end of a finite
+/// post-index job. Only a successful pass advances the caller's cursor;
+/// errors retain it so surviving paths receive a fresh collect/mark on retry.
+pub(crate) fn run_gc_page(
+    db: &IndexDb,
+    subsystem: &SemanticSubsystem,
+    now_unix: i64,
+    after: Option<&GcPosition>,
+) -> CcResult<(GcCounters, Option<GcPosition>, bool)> {
+    let config = GcConfig {
+        min_retention_secs: subsystem.gc_min_retention_secs,
+        batch_entries: GC_BATCH_ENTRIES,
+        now_unix,
+    };
+    run_gc_pass(db, &subsystem.cache, &config, after)
 }
 
 /// What one [`drain_revocations_with_reclaim`] round did: the space-switch

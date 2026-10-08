@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "source_parent": "ef102d2687e1c44a1f76a40ba6261ecfe2673a34",
+  "ci_source": "6d48f2e723030188e273cc787154e6b53c111e9f",
+  "observed_ci_failures": [
+    {
+      "job_id": 113121265633,
+      "package_kind": "default",
+      "path": "job-113121265633.log",
+      "sha256": "dcd681213ed0ab2273f17fe123e340200f31c74f88dd02bc9d57e30dd34afc79",
+      "failure": "missing enforced product network isolation",
+      "product_build_or_matrix_executed": false
+    },
+    {
+      "job_id": 113121265654,
+      "package_kind": "semantic",
+      "path": "job-113121265654.log",
+      "sha256": "dcf66411988957499931eb8880a37c75810097c28a248d6f76c7138e22395e9f",
+      "failure": "missing enforced product network isolation",
+      "product_build_or_matrix_executed": false
+    }
+  ],
+  "artifact_access": {
+    "artifacts": [
+      11525036858,
+      11524313551
+    ],
+    "connector_download_reference": "returned",
+    "local_download": "HTTP403; no raw trace or guard receipt read from ZIP",
+    "raw_seccomp_baseline": "not directly observed from artifact; standalone wrapper control path loads exactly one filter"
+  },
+  "finding": "Standalone trace controls run a single kill wrapper, but the verifier required at least two filters. A native zero-filter baseline needs 0 to 1. Actual product and positive probe executions have a separate inherited errno policy and must retain it.",
+  "fix": "Require stable before/after PID and NSpid, nonnegative previous filter count and exact +1, after Seccomp2 and NoNewPrivs1, no inherited socket descriptors. Default guard mode additionally requires before Seccomp2, NoNewPrivs1, and at least one inherited filter. Only standalone real_controls explicitly disables the parent-policy requirement.",
+  "network_policy_changed": false,
+  "clippy_fix": {
+    "observed_job_id": 113121265637,
+    "problem": "assertions_on_constants for assert!(cfg!(target_os=linux))",
+    "change": "Mutually exclusive cfg function definitions: only invoking the non-Linux offline gate panics at runtime. No lint suppression or compile_error.",
+    "local_validation": "rustfmt --check --edition 2021: exit0; actual Clippy rerun pending CI"
+  },
+  "parser_tests": {
+    "before": "parser-before-fix.log: old13 remain passing; new controls reveal baseline rejection and missing increment/PID validation; failures6/errors1 include subtests and specific-error-message checks",
+    "after": "parser-after-fix.log:16 passed0 failed",
+    "independent_review": "/root/todo_acceptance independently reran all16 and accepted source; real kernel/product still pending CI"
+  },
+  "source_sha256": {
+    "scripts/p7_offline_trace.py": "c3cdcc8d5a95b572514f25f3c46fbc02e7a618a379242bfe82b8c6427e0aba5a",
+    "scripts/tests/test_p7_offline_trace.py": "26dcdab785e690b383ee19e9c529a5c434a1f72e1235b7ca2dad573f8c47817e",
+    "scripts/p7_offline_network.py": "9ca7d37e3e827ad62ffe44d87ebff5cc35dac7ba26cf8c4b9c537888b7c69ac1",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "70e189b75cb4045bb8a77eaea3fb4e0d23a2820e7d5264b5bcb225ac625d76eb"
+  },
+  "local_logs": {
+    "parser-after-fix.log": "4a53ed68f3a365e4cea898163e61b9d1f0064dd8250d7c6a5e3b865ff5be00af",
+    "parser-before-fix.log": "659e296b49db11a653c962098363a42bd3be0d92ad1de4fd04fadf8a141a0455"
+  },
+  "certification": "not_complete; zero external product attempts is unclaimed until real complete tree matrix passes"
+}

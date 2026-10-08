@@ -251,13 +251,26 @@ pub fn response_budget(
     query: &QueryConfig,
     dense_configured: bool,
 ) -> Result<EffectiveBudget> {
+    let expected = if strategy == RetrievalStrategy::Auto && !dense_configured {
+        RetrievalStrategy::Local
+    } else {
+        strategy
+    };
+    response_budget_effective(raw, input, strategy, query, expected)
+}
+
+/// Only the source-isolated mechanism runner supplies a counterfactual
+/// effective policy. Public strategy comparisons retain the resolver above.
+pub(super) fn response_budget_effective(
+    raw: &Value,
+    input: &SearchInput,
+    strategy: RetrievalStrategy,
+    query: &QueryConfig,
+    expected: RetrievalStrategy,
+) -> Result<EffectiveBudget> {
     let retrieval = &raw["evidence_summary"]["retrieval"];
     let policy = &retrieval["policy"];
-    let effective = if strategy == RetrievalStrategy::Auto && !dense_configured {
-        "local"
-    } else {
-        strategy_name(strategy)
-    };
+    let effective = strategy_name(expected);
     if policy["requested"] != strategy_name(strategy) || policy["effective"] != effective {
         return Err(protocol(
             "requested/effective retrieval strategy was not preserved",
@@ -438,6 +451,7 @@ pub struct ProfileBackend<C> {
     readiness: ReadyPolicy,
     queries: usize,
     files: usize,
+    expected_effective: Option<RetrievalStrategy>,
 }
 impl<C: PublicRpc> ProfileBackend<C> {
     pub fn new(
@@ -462,7 +476,12 @@ impl<C: PublicRpc> ProfileBackend<C> {
             readiness,
             queries: 0,
             files: 0,
+            expected_effective: None,
         })
+    }
+    pub(super) fn expect_effective(mut self, expected: RetrievalStrategy) -> Self {
+        self.expected_effective = Some(expected);
+        self
     }
     async fn observe_status(&mut self, phase: &str) -> Result<bool> {
         let raw = self
@@ -480,7 +499,11 @@ impl<C: PublicRpc> ProfileBackend<C> {
 }
 impl<C: PublicRpc> Backend for ProfileBackend<C> {
     fn name(&self) -> &'static str {
-        SPEC
+        if self.expected_effective.is_some() {
+            super::mechanism::SPEC
+        } else {
+            SPEC
+        }
     }
     fn pid(&self) -> Option<u32> {
         self.client.pid()
@@ -528,13 +551,18 @@ impl<C: PublicRpc> Backend for ProfileBackend<C> {
         // Preserve the real response before rejecting a strategy or budget
         // mismatch. The generic runner otherwise retains only the error text.
         std::fs::write(self.out.join(&raw_path), &bytes)?;
-        let budget = response_budget(
-            &raw,
-            input,
-            self.strategy,
-            &self.query,
-            self.readiness.expected_space.is_some(),
-        );
+        let budget = match self.expected_effective {
+            Some(expected) => {
+                response_budget_effective(&raw, input, self.strategy, &self.query, expected)
+            }
+            None => response_budget(
+                &raw,
+                input,
+                self.strategy,
+                &self.query,
+                self.readiness.expected_space.is_some(),
+            ),
+        };
         let observation = QueryObservation {
             sequence: self.queries,
             input: input.clone(),
@@ -587,6 +615,20 @@ pub fn read_observations(
     query: &QueryConfig,
     dense_configured: bool,
 ) -> Result<Vec<QueryObservation>> {
+    let expected = if strategy == RetrievalStrategy::Auto && !dense_configured {
+        RetrievalStrategy::Local
+    } else {
+        strategy
+    };
+    read_observations_effective(cell, strategy, query, expected)
+}
+
+pub(super) fn read_observations_effective(
+    cell: &Path,
+    strategy: RetrievalStrategy,
+    query: &QueryConfig,
+    expected: RetrievalStrategy,
+) -> Result<Vec<QueryObservation>> {
     let path = cell.join("profile-queries.jsonl");
     if !path.exists() {
         return Ok(Vec::new());
@@ -605,7 +647,7 @@ pub fn read_observations(
             return Err(protocol("strategy raw response digest drift"));
         }
         let raw: Value = serde_json::from_slice(&bytes)?;
-        let budget = response_budget(&raw, &row.input, strategy, query, dense_configured);
+        let budget = response_budget_effective(&raw, &row.input, strategy, query, expected);
         let effective = raw
             .pointer("/evidence_summary/retrieval/policy/effective")
             .and_then(Value::as_str)

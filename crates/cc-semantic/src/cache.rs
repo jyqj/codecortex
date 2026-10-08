@@ -87,7 +87,7 @@ const MAX_NAMESPACE_BYTES: usize = 128;
 // model id of at most MAX_MODEL_ID_BYTES. JSON expands a model byte by at
 // most six (\u00XX); 1024 bytes covers every other field, including i64::MIN.
 // Do not derive this bound from untrusted metadata or file stat lengths.
-const MAX_ARTIFACT_METADATA_BYTES: usize = 1024 + 6 * crate::spec::MAX_MODEL_ID_BYTES;
+pub(crate) const MAX_ARTIFACT_METADATA_BYTES: usize = 1024 + 6 * crate::spec::MAX_MODEL_ID_BYTES;
 
 /// Consume at most the admitted length plus one sentinel byte. A fixed
 /// allocation and sliced reads keep growing/replaced files bounded without
@@ -256,11 +256,32 @@ pub struct CorruptReport {
 /// The artifact cache: `<root>/namespace-<ns>/<space_id>/<input>/<spec>.{bin,meta.json}`.
 ///
 /// Open is side-effect free; [`ArtifactCache::put`] creates the layout
-/// lazily. All methods are thread-safe (content-addressed ids make concurrent
-/// writes converge: unique temp names + atomic rename, identical payload).
+/// lazily. Mutations share an OS file lock across handles and processes;
+/// reads keep the existing bounded, verified, nonblocking file-handle path.
 pub struct ArtifactCache {
     root: PathBuf,
     namespace: String,
+}
+
+/// The persistent lock inode is never pruned or replaced. Acquire this
+/// before a DB transaction; process termination releases the OS lock. A
+/// publisher retains the lease through verification and manifest CAS.
+pub(crate) struct CacheMutation<'a> {
+    cache: &'a ArtifactCache,
+    _lock: std::fs::File,
+}
+
+impl CacheMutation<'_> {
+    pub(crate) fn put(
+        &self,
+        space: &VectorSpace,
+        input: &InputDigest,
+        spec: &DocSpecDigest,
+        vector: &[f32],
+        now_unix: i64,
+    ) -> CcResult<ArtifactRef> {
+        self.cache.put_locked(space, input, spec, vector, now_unix)
+    }
 }
 
 impl ArtifactCache {
@@ -281,6 +302,27 @@ impl ArtifactCache {
 
     pub fn namespace(&self) -> &str {
         &self.namespace
+    }
+
+    pub(crate) fn namespace_dir(&self) -> PathBuf {
+        self.root
+            .join(format!("{NAMESPACE_DIR_PREFIX}{}", self.namespace))
+    }
+
+    pub(crate) fn lock_mutation(&self) -> CcResult<CacheMutation<'_>> {
+        let namespace = self.namespace_dir();
+        std::fs::create_dir_all(&namespace)?;
+        let lock = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(namespace.join(".mutation.lock"))?;
+        lock.lock()?;
+        Ok(CacheMutation {
+            cache: self,
+            _lock: lock,
+        })
     }
 
     /// Quarantine directory convention (P6-018). Reported, never created by
@@ -319,7 +361,7 @@ impl ArtifactCache {
         ) {
             (Ok(p), Ok(m)) => (p, m),
             (Err(e), _) | (_, Err(e)) if e.kind() == std::io::ErrorKind::NotFound => {
-                return Ok(CacheRead::Miss)
+                return Ok(CacheRead::Miss);
             }
             (Err(e), _) | (_, Err(e)) => return Err(e.into()),
         };
@@ -367,7 +409,7 @@ impl ArtifactCache {
             None => {
                 return Ok(corrupt(
                     "payload byte length exceeds the requested dimension byte budget".into(),
-                ))
+                ));
             }
         };
         let checksum = bytes_hash(&payload);
@@ -415,18 +457,22 @@ impl ArtifactCache {
         vector: &[f32],
         now_unix: i64,
     ) -> CcResult<ArtifactRef> {
-        space.validate()?;
+        // Invalid vectors must not even create the mutation-lock directory.
+        validate_vector(space, vector)?;
+        self.lock_mutation()?
+            .put(space, input, spec, vector, now_unix)
+    }
+
+    fn put_locked(
+        &self,
+        space: &VectorSpace,
+        input: &InputDigest,
+        spec: &DocSpecDigest,
+        vector: &[f32],
+        now_unix: i64,
+    ) -> CcResult<ArtifactRef> {
+        validate_vector(space, vector)?;
         let space_digest = space.digest()?;
-        if vector.len() != space.dimension() as usize {
-            return Err(invalid(format!(
-                "vector length {} does not match space dimension {}",
-                vector.len(),
-                space.dimension()
-            )));
-        }
-        if vector.iter().any(|v| !v.is_finite()) {
-            return Err(invalid("vector contains NaN or infinite components"));
-        }
 
         let payload: Vec<u8> = vector.iter().flat_map(|v| v.to_le_bytes()).collect();
         let checksum = bytes_hash(&payload);
@@ -453,8 +499,10 @@ impl ArtifactCache {
 
     /// Discardable semantics: remove both halves of an object so subsequent
     /// reads are [`CacheRead::Miss`]. Returns whether anything was removed.
-    /// Used by callers degrading from [`CacheRead::Corrupt`]; the quarantine
-    /// *move* (preserve-for-diagnostics) is P6-018 and deliberately not here.
+    /// This is an explicit eviction of the current address, including a
+    /// healthy object. For cleanup triggered by an earlier corrupt read,
+    /// use [`crate::degrade::quarantine_object`], which revalidates under the
+    /// mutation lease before preserving the corrupt evidence.
     pub fn discard(
         &self,
         space: &VectorSpace,
@@ -463,6 +511,10 @@ impl ArtifactCache {
     ) -> CcResult<bool> {
         space.validate()?;
         let space_digest = space.digest()?;
+        if !self.namespace_dir().try_exists()? {
+            return Ok(false);
+        }
+        let _mutation = self.lock_mutation()?;
         let dir = self.object_dir(&space_digest, input, spec);
         let mut removed = false;
         for suffix in [".bin", ".meta.json"] {
@@ -503,6 +555,21 @@ impl ArtifactCache {
             spec.as_str()
         ))
     }
+}
+
+pub(crate) fn validate_vector(space: &VectorSpace, vector: &[f32]) -> CcResult<()> {
+    space.validate()?;
+    if vector.len() != space.dimension() as usize {
+        return Err(invalid(format!(
+            "vector length {} does not match space dimension {}",
+            vector.len(),
+            space.dimension()
+        )));
+    }
+    if vector.iter().any(|v| !v.is_finite()) {
+        return Err(invalid("vector contains NaN or infinite components"));
+    }
+    Ok(())
 }
 
 /// Atomic file write: unique temp name in the target directory, full write,

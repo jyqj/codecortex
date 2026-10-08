@@ -1,0 +1,27 @@
+   Compiling rusqlite v0.40.1
+   Compiling tempfile v3.27.0
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-db v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-db)
+    Finished `test` profile [unoptimized] target(s) in 12.85s
+     Running unittests src/lib.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/cc_db-fbc20d7562261222)
+
+running 2 tests
+
+thread 'index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement' (78) panicked at crates/cc-db/src/index_db_tests.rs:558:5:
+a busy live WAL must not be deleted before rename: Ok(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement ... FAILED
+
+thread 'index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement' (79) panicked at crates/cc-db/src/index_db_tests.rs:524:5:
+failed replacement retains staging evidence
+test index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement ... FAILED
+
+failures:
+
+failures:
+    index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement
+    index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 186 filtered out; finished in 5.35s
+
+error: test failed, to rerun pass `-p cc-db --lib`

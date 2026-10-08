@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "status": "prepared_narrow_anonymous_local_ipc",
+  "source_files": {
+    "scripts/p7_offline_network.py": "9ca7d37e3e827ad62ffe44d87ebff5cc35dac7ba26cf8c4b9c537888b7c69ac1",
+    "scripts/p7_offline_trace.py": "715edad7dbe045cc118f828bf26470968e800b2bba48ba3e359f4b21b58fc911",
+    "scripts/tests/test_p7_offline_network.py": "6c774b7f61b28839bc5e2ef8a5129a11d718421d44733d24afcc0246d1dae725",
+    "scripts/tests/test_p7_offline_trace.py": "543a2053bf2d96b077cfba81aad02a0545c9e1bf951dda9e6f569a5642663fee",
+    "docs/roadmap/code-index-v2/P7-OFFLINE-RUNNER.md": "de0c5440585abfc58e17355be87280eb5c2abd02db37ae58bd296429bfca75fc"
+  },
+  "kernel_controls": {
+    "passed": 8,
+    "failed": 0,
+    "raw_log": "kernel-controls-02.log",
+    "scope": "Actual seccomp controls, not product or ptrace evidence. Direct libc AF_UNIX socketpair plus read/write works under both errno and kill. IPv4/6 sockets, non-Unix socketpair, nonzero protocol, addressable Unix socket and connect remain denied."
+  },
+  "parser_controls": {
+    "passed": 12,
+    "failed": 0,
+    "raw_log": "parser-controls-02.log",
+    "scope": "Synthetic trace falsification only; no kernel trace claim"
+  },
+  "prior_failure": {
+    "raw_log": "kernel-controls-01.log",
+    "cause": "High-level Python socket wrapper performs extra socket metadata calls after the anonymous pair; its kill-policy control failed. The passing replacement tests mio's actual direct libc pair/read/write boundary without allowing extra metadata calls.",
+    "classification": "control_fixture_mismatch_not_product_regression"
+  },
+  "ci_trigger": "Parent reported Tokio signal UnixStream::pair EPERM at runner startup in run37717479390 jobs113117194249/113117194444. Local crate source mio1.2.0/src/sys/unix/uds/mod.rs uses libc socketpair AF_UNIX, SOCK_STREAM|SOCK_NONBLOCK|SOCK_CLOEXEC, protocol0. Actual CI syscall trace still required.",
+  "ptrace_controls": "not_run_local_platform_rejects_ptrace",
+  "default_product_matrix": "not_run",
+  "semantic_product_matrix": "not_run",
+  "full_P7_017": false,
+  "raw_logs": {
+    "kernel-controls-01.log": "3c51702fa8ebb87fc4a3c2ab4c40babc2bccc81e415c24739a96e34dc4e19172",
+    "kernel-controls-02.log": "af13f0fbe135f878c77791f05b0f2fc12c4a86975cf3c938a87779b122601d09",
+    "parser-controls-01.log": "b2d60d756c34f3288e389f634b84f0ffe680ca95e9a5bf0f29165dc2966659a7",
+    "parser-controls-02.log": "b2d60d756c34f3288e389f634b84f0ffe680ca95e9a5bf0f29165dc2966659a7"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "reviewed_head": "2313b808d3ca95ae9917f72f6898dfd81dbae2c8",
+  "next_source_change": {
+    "author_commit": "9e105604937873a0974f341d1d09da9b97356695",
+    "file": "crates/cc-server/src/shared_provider_gate_tests.rs",
+    "sha256": "eb29f040b5e91bc52eae9e07993814f7440fbf6eeb5680254a89deee36eb0dfc",
+    "author": "p7_wiring",
+    "independent_reviewers": [
+      "todo_acceptance",
+      "root"
+    ],
+    "verdict": "accepted_scoped",
+    "mechanism": "With width two, four local claims occupy two HTTP slots and two earlier gate waiters. The later overflow call used the same 1000 ms wait before releasing held HTTP, so the earlier worker waiters timed out first. Observed 13 done / 3 backoff is consistent with the original fixture ordering.",
+    "repair": "Only the real same-namespace overflow document factory uses a shorter 20 ms acquire deadline. Original worker/neighbor 1000 ms, HTTP global four/project two, sixteen first claims, 15 first done, final 19 done and one backoff remain unchanged. Two extra assertions require original waiters to remain queued.",
+    "original_assertion_macros_byte_preserved": 75,
+    "actual_after_fix_execution": "pending next fixed CI",
+    "unresolved_source_blockers": []
+  },
+  "independent_evidence_steps": {
+    "author": "root",
+    "reviewer": "todo_acceptance",
+    "workflow_sha256": "fd964d4416a15916846e0b733a6f30faf192f81104c0df4926228069f46a3d19",
+    "original_workflow_sha256": "7ea70f862bd30c264edaccb001aad30dab92f33a757058add87abd2b3b1f5f85",
+    "change": "Only four metadata lines: original HTTP lifecycle id and always; L3 always plus preceding original lifecycle raw outcome==success; independent resources always.",
+    "review": "Removing exactly four lines restores prior workflow bytes. Every command, pipefail, assertion and budget remains. An earlier failed step continues to fail the entire job. L3 cannot run without successful original HTTP build, source/binary/driver checks and original 13 checkpoints.",
+    "verdict": "accepted_scoped"
+  },
+  "task_ledger_modified": false,
+  "new_tasks_closed": 0,
+  "remaining_original_tasks": 39,
+  "timestamp_diagnostic_followup": {
+    "author": "pr_audit",
+    "reviewers": [
+      "root",
+      "todo_acceptance"
+    ],
+    "source_commit": "12092fee0e2ffdd0bdc62c791a9cd96e8657b9b4",
+    "final_workflow_sha256": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
+    "change": "Strip only the optional six-digit strace timestamp prefix into a classifier variable; print the original raw line unchanged. This read-only failure diagnostic cannot accept a product or alter actual trace bytes."
+  }
+}

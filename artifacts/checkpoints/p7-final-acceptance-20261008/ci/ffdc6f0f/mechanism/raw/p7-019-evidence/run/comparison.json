@@ -1,0 +1,425 @@
+{
+  "acceptance_note": "the fixed actual-product positive/negative fixture must pass separately",
+  "budgets_by_input": {
+    "04800692a4ebeaf561faaff6f9341883913c044ba404a8fc10d516384b65737f": {
+      "candidate_budget": {
+        "exact_symbol_candidates": 24,
+        "grep_candidates": 12,
+        "grep_enabled": true,
+        "grep_scan_cap": 20000,
+        "lexical_candidates": 24,
+        "path_candidates": 24,
+        "rerank_window": 40,
+        "top_k": 1
+      },
+      "configured_max_bytes": 18000,
+      "deadline_ms": 30000,
+      "hard_scope": {
+        "empty": false,
+        "explicit_file_count": null,
+        "languages": null,
+        "path_prefix": null,
+        "path_prefix_truncated": false
+      },
+      "lane_timeout_ms": 20000,
+      "limit_bytes": 16000,
+      "packing_spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "policy_version": "query-policy-local-semantic-canonical-path-domain-v4",
+      "scope_policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+      "semantic_timeout_ms": 5000,
+      "semantic_top_k": 24,
+      "token_budget": 4000
+    },
+    "5352ccd42faa651d721da5c0d568e1e744594b8cc516e82c9dfc7ef83df08c17": {
+      "candidate_budget": {
+        "exact_symbol_candidates": 24,
+        "grep_candidates": 12,
+        "grep_enabled": true,
+        "grep_scan_cap": 20000,
+        "lexical_candidates": 24,
+        "path_candidates": 24,
+        "rerank_window": 40,
+        "top_k": 1
+      },
+      "configured_max_bytes": 18000,
+      "deadline_ms": 30000,
+      "hard_scope": {
+        "empty": false,
+        "explicit_file_count": null,
+        "languages": null,
+        "path_prefix": null,
+        "path_prefix_truncated": false
+      },
+      "lane_timeout_ms": 20000,
+      "limit_bytes": 16000,
+      "packing_spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "policy_version": "query-policy-local-semantic-canonical-path-domain-v4",
+      "scope_policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+      "semantic_timeout_ms": 5000,
+      "semantic_top_k": 24,
+      "token_budget": 4000
+    },
+    "a42db9c3fb8de4902fab714e420060a0508deb3cee657e8aacb518f699a737ab": {
+      "candidate_budget": {
+        "exact_symbol_candidates": 24,
+        "grep_candidates": 12,
+        "grep_enabled": true,
+        "grep_scan_cap": 20000,
+        "lexical_candidates": 24,
+        "path_candidates": 24,
+        "rerank_window": 40,
+        "top_k": 1
+      },
+      "configured_max_bytes": 18000,
+      "deadline_ms": 30000,
+      "hard_scope": {
+        "empty": false,
+        "explicit_file_count": null,
+        "languages": null,
+        "path_prefix": null,
+        "path_prefix_truncated": false
+      },
+      "lane_timeout_ms": 20000,
+      "limit_bytes": 16000,
+      "packing_spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "policy_version": "query-policy-local-semantic-canonical-path-domain-v4",
+      "scope_policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+      "semantic_timeout_ms": 5000,
+      "semantic_top_k": 24,
+      "token_budget": 4000
+    }
+  },
+  "build_options_projection": {
+    "positional_metrics": {
+      "dense_only": "/home/runner/work/_temp/p7-019-build/targets/dense_only",
+      "hybrid": "/home/runner/work/_temp/p7-019-build/targets/hybrid",
+      "local": "/home/runner/work/_temp/p7-019-build/targets/local",
+      "none": "/home/runner/work/_temp/p7-019-build/targets/none"
+    },
+    "projection_kind": "ablation_build_options_without_target_dir",
+    "projection_version": 1
+  },
+  "capability_scope": {
+    "dense_only": "semantic candidate lane only; entire local registry removed",
+    "hybrid": "unmodified production local lanes plus semantic",
+    "local": "local registry only; semantic dispatch removed",
+    "none": "all candidate lanes removed; negative control"
+  },
+  "comparison_error": null,
+  "cost_columns": {
+    "dense_only": {
+      "cache_reuse": null,
+      "cache_reuse_unknown": 9,
+      "originating_work_observations": 9,
+      "originating_work_unknown": 0,
+      "profile": "fake",
+      "provider_cost_units": null,
+      "provider_cost_unknown": 9,
+      "requests_including_warmup": 9,
+      "scope": "observation counts only; no sum of originating-work receipts and no zero-filled monetary/cache estimate",
+      "validation_work_observations": 9,
+      "validation_work_unknown": 0
+    },
+    "hybrid": {
+      "cache_reuse": null,
+      "cache_reuse_unknown": 9,
+      "originating_work_observations": 9,
+      "originating_work_unknown": 0,
+      "profile": "fake",
+      "provider_cost_units": null,
+      "provider_cost_unknown": 9,
+      "requests_including_warmup": 9,
+      "scope": "observation counts only; no sum of originating-work receipts and no zero-filled monetary/cache estimate",
+      "validation_work_observations": 9,
+      "validation_work_unknown": 0
+    },
+    "local": {
+      "cache_reuse": null,
+      "cache_reuse_unknown": 9,
+      "originating_work_observations": 9,
+      "originating_work_unknown": 0,
+      "profile": "fake",
+      "provider_cost_units": null,
+      "provider_cost_unknown": 9,
+      "requests_including_warmup": 9,
+      "scope": "observation counts only; no sum of originating-work receipts and no zero-filled monetary/cache estimate",
+      "validation_work_observations": 9,
+      "validation_work_unknown": 0
+    },
+    "none": {
+      "cache_reuse": null,
+      "cache_reuse_unknown": 9,
+      "originating_work_observations": 9,
+      "originating_work_unknown": 0,
+      "profile": "fake",
+      "provider_cost_units": null,
+      "provider_cost_unknown": 9,
+      "requests_including_warmup": 9,
+      "scope": "observation counts only; no sum of originating-work receipts and no zero-filled monetary/cache estimate",
+      "validation_work_observations": 9,
+      "validation_work_unknown": 0
+    }
+  },
+  "equal_effective_budgets": true,
+  "execution_order": [
+    "none",
+    "dense_only",
+    "local",
+    "hybrid"
+  ],
+  "exit_code": 0,
+  "full_p7_019_fake_mechanism_acceptance": false,
+  "gates": {
+    "dense_only": {
+      "exit_code": 0,
+      "reasons": [],
+      "status": "baseline_recorded_not_quality_certified"
+    },
+    "hybrid": {
+      "exit_code": 0,
+      "reasons": [],
+      "status": "baseline_recorded_not_quality_certified"
+    },
+    "local": {
+      "exit_code": 0,
+      "reasons": [],
+      "status": "baseline_recorded_not_quality_certified"
+    },
+    "none": {
+      "exit_code": 0,
+      "reasons": [],
+      "status": "baseline_recorded_not_quality_certified"
+    }
+  },
+  "held_out_semantic_quality_gate": "not_evaluated",
+  "lane_witness_counts": {
+    "dense_only": 9,
+    "hybrid": 9,
+    "local": 9,
+    "none": 9
+  },
+  "limitations": [
+    "fake/authored inputs have no real semantic quality interpretation",
+    "full source/build receipts are local provenance, not remote attestation",
+    "dense-only describes candidate retrieval; shared planning, source validation and packing remain",
+    "budget equality includes hard scope, candidate caps and complete output bytes",
+    "provider billing and cache-reuse attribution remain unknown, never zero-filled",
+    "latency includes adapter validation and persistence; no product latency SLA"
+  ],
+  "paired_against_local": [
+    {
+      "baseline": "local",
+      "candidate": "dense_only",
+      "observations": {
+        "bootstrap_draws": 2000,
+        "cases": [
+          {
+            "category": "exact",
+            "delta_ndcg10": 0.0,
+            "delta_top1": 0.0,
+            "id": "exact-a",
+            "profile": "fake",
+            "query_family": "exact-a",
+            "repetitions_averaged": 2,
+            "split": "dev"
+          },
+          {
+            "category": "exact",
+            "delta_ndcg10": 0.0,
+            "delta_top1": 0.0,
+            "id": "exact-b",
+            "profile": "fake",
+            "query_family": "exact-b",
+            "repetitions_averaged": 2,
+            "split": "holdout"
+          },
+          {
+            "category": "synthetic_dense_control",
+            "delta_ndcg10": 1.0,
+            "delta_top1": 1.0,
+            "id": "dense-control",
+            "profile": "fake",
+            "query_family": "dense-control",
+            "repetitions_averaged": 2,
+            "split": "holdout"
+          }
+        ],
+        "direction": "candidate minus local",
+        "effect_interpretation": "none; authored/fake mechanism observations only",
+        "family_means": {
+          "dense-control": 1.0,
+          "exact-a": 0.0,
+          "exact-b": 0.0
+        },
+        "family_ndcg_delta_ci": {
+          "high": 1.0,
+          "independent_units": 3,
+          "low": 0.0,
+          "mean": 0.3333333333333333
+        },
+        "method": "paired query means; family bootstrap; category/split strata reported separately",
+        "no_answer_queries_excluded_from_effect_ci": 0,
+        "percentile_indices_zero_based": [
+          49,
+          1949
+        ],
+        "profile": "fake",
+        "quality_gate": "not_evaluated; fake/engineering effects have no semantic benefit interpretation",
+        "seed": 19,
+        "strata": [
+          {
+            "category": "exact",
+            "family_means": {
+              "exact-a": 0.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 0.0,
+              "independent_units": 1,
+              "low": 0.0,
+              "mean": 0.0
+            },
+            "profile": "fake",
+            "split": "dev"
+          },
+          {
+            "category": "exact",
+            "family_means": {
+              "exact-b": 0.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 0.0,
+              "independent_units": 1,
+              "low": 0.0,
+              "mean": 0.0
+            },
+            "profile": "fake",
+            "split": "holdout"
+          },
+          {
+            "category": "synthetic_dense_control",
+            "family_means": {
+              "dense-control": 1.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 1.0,
+              "independent_units": 1,
+              "low": 1.0,
+              "mean": 1.0
+            },
+            "profile": "fake",
+            "split": "holdout"
+          }
+        ]
+      }
+    },
+    {
+      "baseline": "local",
+      "candidate": "hybrid",
+      "observations": {
+        "bootstrap_draws": 2000,
+        "cases": [
+          {
+            "category": "exact",
+            "delta_ndcg10": 0.0,
+            "delta_top1": 0.0,
+            "id": "exact-a",
+            "profile": "fake",
+            "query_family": "exact-a",
+            "repetitions_averaged": 2,
+            "split": "dev"
+          },
+          {
+            "category": "exact",
+            "delta_ndcg10": 0.0,
+            "delta_top1": 0.0,
+            "id": "exact-b",
+            "profile": "fake",
+            "query_family": "exact-b",
+            "repetitions_averaged": 2,
+            "split": "holdout"
+          },
+          {
+            "category": "synthetic_dense_control",
+            "delta_ndcg10": 1.0,
+            "delta_top1": 1.0,
+            "id": "dense-control",
+            "profile": "fake",
+            "query_family": "dense-control",
+            "repetitions_averaged": 2,
+            "split": "holdout"
+          }
+        ],
+        "direction": "candidate minus local",
+        "effect_interpretation": "none; authored/fake mechanism observations only",
+        "family_means": {
+          "dense-control": 1.0,
+          "exact-a": 0.0,
+          "exact-b": 0.0
+        },
+        "family_ndcg_delta_ci": {
+          "high": 1.0,
+          "independent_units": 3,
+          "low": 0.0,
+          "mean": 0.3333333333333333
+        },
+        "method": "paired query means; family bootstrap; category/split strata reported separately",
+        "no_answer_queries_excluded_from_effect_ci": 0,
+        "percentile_indices_zero_based": [
+          49,
+          1949
+        ],
+        "profile": "fake",
+        "quality_gate": "not_evaluated; fake/engineering effects have no semantic benefit interpretation",
+        "seed": 19,
+        "strata": [
+          {
+            "category": "exact",
+            "family_means": {
+              "exact-a": 0.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 0.0,
+              "independent_units": 1,
+              "low": 0.0,
+              "mean": 0.0
+            },
+            "profile": "fake",
+            "split": "dev"
+          },
+          {
+            "category": "exact",
+            "family_means": {
+              "exact-b": 0.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 0.0,
+              "independent_units": 1,
+              "low": 0.0,
+              "mean": 0.0
+            },
+            "profile": "fake",
+            "split": "holdout"
+          },
+          {
+            "category": "synthetic_dense_control",
+            "family_means": {
+              "dense-control": 1.0
+            },
+            "family_ndcg_delta_ci": {
+              "high": 1.0,
+              "independent_units": 1,
+              "low": 1.0,
+              "mean": 1.0
+            },
+            "profile": "fake",
+            "split": "holdout"
+          }
+        ]
+      }
+    }
+  ],
+  "paired_status": "mechanism_only",
+  "profile": "fake",
+  "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "spec": "source-isolated-mechanism-ablation-v1"
+}

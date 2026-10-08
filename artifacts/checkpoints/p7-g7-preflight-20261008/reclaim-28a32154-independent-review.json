@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "author": "root",
+  "non_author_source_review": true,
+  "reviewed_at_utc": "2026-10-08T04:42:11.899586+00:00",
+  "verdict": "accepted_scoped",
+  "scope": "Original P7-016 wiring9 implementation delta only; source review and raw author-run evidence assessment. No task/G7/release approval from this record.",
+  "local_source_commit": "28a32154dde199127c5efcbf740cc522682b46a7",
+  "local_source_tree": "8f47f647d327221adcdec103bb1ee756d029fda5",
+  "base_source": "9ebe1f619a298b9955d576d9d8250368259924d2",
+  "remote_product_binding": {
+    "commit": "09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc",
+    "url": "https://github.com/jyqj/codecortex/commit/09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc",
+    "commit_exists_independently_read_via_GitHub": true,
+    "tree_reported_by_integration_owner": "8f47f647d327221adcdec103bb1ee756d029fda5",
+    "tree_binding_scope": "Local reviewed tree verified by git; integration owner supplied remote tree identity. The normalized GitHub fetch_commit response confirms commit/message but does not expose tree metadata. Full reviewed-source guard remains required."
+  },
+  "finding_closed_in_source": "G7-WIRING9-UNBOUNDED-OPPORTUNISTIC-RECLAIM",
+  "prior_finding_record": {
+    "path": "artifacts/checkpoints/p7-g7-preflight-20261008/review-9ebe.json",
+    "sha256": "1f5e0b15655aecb606edb141e307302f9567783adc27dfa079dd5b204da3b61d"
+  },
+  "original_requirement_references": [
+    {
+      "baseline_sha": "9ebe1f619a298b9955d576d9d8250368259924d2",
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+      "lines": [
+        571,
+        593
+      ],
+      "exact_obligation_line": 581,
+      "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613",
+      "meaning": "P7-016 explicitly consumes wiring9 opportunistic reclaim narrowing."
+    },
+    {
+      "baseline_sha": "9ebe1f619a298b9955d576d9d8250368259924d2",
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/OPEN-QUESTIONS.md",
+      "lines": [
+        25,
+        30
+      ],
+      "sha256": "c17891c5f8adf69062d4aa1bc9dcb7eb3ad2cc77f86e5b2832ac49dca18bfb0b",
+      "meaning": "Owner may reassign9/11; no exemption from13-row reconciliation or removal of implementation obligation."
+    },
+    {
+      "baseline_sha": "9ebe1f619a298b9955d576d9d8250368259924d2",
+      "path": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+      "json_pointer": "/wiring_round_pending_table/items/8",
+      "sha256": "99231db3f6cd0726e0fb62bfebfa8a7b053130a1e2b88b87d4ed16f939f94559"
+    },
+    {
+      "baseline_sha": "9ebe1f619a298b9955d576d9d8250368259924d2",
+      "path": "artifacts/checkpoints/p7-round2-final-20261007/evidence-index-v3.json",
+      "row_id": 9,
+      "prior_status": "partial"
+    }
+  ],
+  "exact_source_delta": [
+    {
+      "path": "crates/cc-db/src/semantic_recovery.rs",
+      "sha256": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e",
+      "bytes": 16209,
+      "before_sha256": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9"
+    },
+    {
+      "path": "crates/cc-semantic/src/queue.rs",
+      "sha256": "3ef3d0b90260bfb4f3fed94703ed37e6e02324299996a60a64eb560fc9e9a349",
+      "bytes": 31260,
+      "before_sha256": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d"
+    },
+    {
+      "path": "crates/cc-semantic/src/space_switch.rs",
+      "sha256": "f09dde979b3aa1c6aefded96e0cfe5629c9835b88ea344979c69015375d5fb9b",
+      "bytes": 10096,
+      "before_sha256": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b"
+    },
+    {
+      "path": "crates/cc-semantic/tests/opportunistic_reclaim.rs",
+      "sha256": "0718d3a869c0ad17ff486e5f363cc0f2fb980752161934337b7459548d9d5999",
+      "bytes": 14991,
+      "before_sha256": null
+    }
+  ],
+  "independent_byte_checks": {
+    "only_these_four_crate_Cargo_inputs_changed": true,
+    "new_recovery_method_is_only_insertion_in_old_recovery_file": true,
+    "old_global_bounded_method_byte_identical": true,
+    "unchanged_entire_files": [
+      {
+        "path": "crates/cc-db/src/semantic_queue.rs",
+        "sha256": "78452087441c24209358c7da0bd825e13344735425b151ee72035e9db20023ae",
+        "bytes": 6987
+      },
+      {
+        "path": "crates/cc-db/src/semantic_outbox.rs",
+        "sha256": "67745644d49f9e5d281bf2b1abffb6075c8f2025a652d6bb979f02b109a08e97",
+        "bytes": 29604
+      },
+      {
+        "path": "crates/cc-semantic/tests/queue_worker.rs",
+        "sha256": "04d3d073d1e35c389582e2823c17cd3112545ea4313258b921ed21d93c0e00b0",
+        "bytes": 26572
+      },
+      {
+        "path": "crates/cc-semantic/tests/bounded_parallel.rs",
+        "sha256": "a8a64072dd4328c0f061c2f2465c29465ca57a6bb6ebc1c831cd6939de928a7e",
+        "bytes": 21979
+      },
+      {
+        "path": "crates/cc-semantic/tests/semantic_recovery.rs",
+        "sha256": "f320536aeafacb327c3ab62191e5a183d2daa9048b7ae4e717d2d6a0c0e2d798",
+        "bytes": 27163
+      },
+      {
+        "path": "crates/cc-semantic/tests/space_switch.rs",
+        "sha256": "a01b746187a6055842e416679137799fd81450d2623ff212c52ec82223d70e67",
+        "bytes": 21137
+      }
+    ],
+    "all_seven_author_evidence_file_sizes_and_hashes_verified": true,
+    "four_final_source_files_match_live_reviewed_worktree": true
+  },
+  "review_findings": [
+    {
+      "topic": "One page per drain",
+      "assessment": "Serial and revocation call exactly once before their claim loops. Parallel calls exactly once before worker construction; no per-worker/per-claim multiplier. Budget is min(max_batch,64)."
+    },
+    {
+      "topic": "Target isolation and progress",
+      "assessment": "space_id, claimed state and expiry predicates occur inside the ORDER BY task_id LIMIT selection;193 earlier foreign tasks cannot absorb a target page. Repeated explicit drains progress137 target rows64/64/9/0; production runtime uses max_batch16 and its existing full-batch continuation remains aligned with the page bound."
+    },
+    {
+      "topic": "Transactions and row semantics",
+      "assessment": "One write mutex and BEGIN IMMEDIATE cover selection/update/exhaustion read/commit. Both statement/query error and commit failure issue rollback. Reclaim preserves attempt_count and last_error, clears lease token/deadline/owner, updates availability, and performs no epoch effect. Token fencing stays in unchanged claim/publish consumers."
+    },
+    {
+      "topic": "No early-expiry or terminal revival",
+      "assessment": "Strict lease_expires_at < now and state=claimed constrain mutation. Real-clock control observes0 before deadline and1 after real elapsed expiry; long lease, foreign rows, future pending rows, failed and superseded rows are byte-protected in fixtures."
+    },
+    {
+      "topic": "Cancellation and active-space boundary",
+      "assessment": "Already-closed lifecycle and missing active space return before reclaim; existing per-claim cancellation/lifecycle guards remain. Parallel retains active-space-change refusal. No new atomic cancellation guarantee between the early check and the auxiliary DB transaction is claimed."
+    },
+    {
+      "topic": "API compatibility",
+      "assessment": "Legacy global bounded and unbounded APIs retain exact old bytes. New DB API rejects0 and usize values outside positive i64 before SQLite LIMIT, preventing negative LIMIT overflow. Public existing claim/retry budgets and attempt rules are unchanged."
+    },
+    {
+      "topic": "Validation scope",
+      "assessment": "Real SQLite mutations observed through an independent audit trigger; rows deliberately aged are explicitly synthetic fixture data, not SIGKILL evidence. Existing L3 crash driver is separate. No claim of bounded SQL scan time, release SLA, full quality certification, or independent product execution by this reviewer."
+    }
+  ],
+  "local_validation": {
+    "executor": "root",
+    "reviewer_action": "Read entire final test source, actual raw logs and command receipts; independently recomputed result totals and verified evidence hashes. Did not run Cargo or execute product.",
+    "raw_results": {
+      "opportunistic-reclaim-run.log": {
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "completed_test_targets": 1
+      },
+      "opportunistic-reclaim-old-contracts.log": {
+        "passed": 29,
+        "failed": 0,
+        "ignored": 1,
+        "completed_test_targets": 4
+      }
+    },
+    "total_passed": 38,
+    "total_failed": 0,
+    "total_existing_ignored": 1,
+    "original_ignore_unchanged": true,
+    "new_tests": [
+      "serial_drain_one_target_page_converges_past_older_foreign_backlog",
+      "four_workers_share_one_target_page_and_converge_without_foreign_starvation",
+      "revocation_drain_one_target_page_converges_and_preserves_other_leases",
+      "small_claim_budget_caps_all_three_reclaim_paths",
+      "closed_lifecycle_or_missing_active_space_does_no_reclaim",
+      "scoped_db_page_preserves_attempts_and_reports_only_target_exhaustion",
+      "scoped_db_reclaim_error_rolls_back_whole_page_and_leaves_connection_usable",
+      "scoped_db_invalid_limits_cannot_become_an_unbounded_sqlite_limit",
+      "real_clock_expiry_preserves_fresh_lease_and_reclaims_only_after_deadline"
+    ],
+    "old_contract_target_counts": {
+      "bounded_parallel": {
+        "passed": 12,
+        "ignored": 1
+      },
+      "queue_worker": {
+        "passed": 9,
+        "ignored": 0
+      },
+      "semantic_recovery": {
+        "passed": 6,
+        "ignored": 0
+      },
+      "space_switch": {
+        "passed": 2,
+        "ignored": 0
+      }
+    },
+    "evidence": [
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/author-record.json",
+        "sha256": "e9fc7d545107e4c676629bf75f92dd7a57c36484898bd4d1ee9139f1cc0e5254",
+        "bytes": 4169
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-run.json",
+        "sha256": "6a04e419aad10aac72cb2c90b0f76733941325d51ce1392c37b432310ab527ca",
+        "bytes": 462
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-run.log",
+        "sha256": "359245d2b1ccb44e0933da794eec391ce4874ce0954794330fa7e5123d8fc339",
+        "bytes": 2419
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-old-contracts.json",
+        "sha256": "96d4248ad1e62acba65afed70fbd806d507549fced92b37ef35a366dd2754d87",
+        "bytes": 574
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-old-contracts.log",
+        "sha256": "92bfd69a3d96409a7bae1f36688815ae060a1faba908b7373b31e3e95c40a580",
+        "bytes": 4448
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-first-run.json",
+        "sha256": "e9b311c179ba4811f304af14c229ed175ecfdc30298470ba788f1f9eb7a4b4d2",
+        "bytes": 470
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-first-run.log",
+        "sha256": "ac76e38c7ea12deefed26fc60901e2f365e820d879f024a6c090d09f46a5e4e5",
+        "bytes": 6443
+      },
+      {
+        "path": "artifacts/checkpoints/p7-opportunistic-reclaim-20261008/opportunistic-reclaim-first-test-source.rs.txt",
+        "sha256": "b91d4ae89993a66e38c5f6d87ae37995ee7e75e63477611fc62ffa6152b484a5",
+        "bytes": 14515
+      }
+    ]
+  },
+  "limitations": [
+    "No old-production runtime failure is claimed; the original blocker was a fixed-source call-chain/SQL finding. Initial compiler errors are preserved as compiler failures, not behavioral negative-control passes.",
+    "Old9ebe full three-workflow success remains true but does not certify this changed product. New-source sourceguard/build/default regression/semantic closeout/offline/P8 evidence remains to run and review.",
+    "P7-016 and its hard dependents remain unclosed until their final current-source obligations pass. No acceptance, task dependency, live authorization or task count changed by this artifact."
+  ],
+  "remaining_original_tasks": 39,
+  "new_tasks_closed_by_this_review": 0
+}

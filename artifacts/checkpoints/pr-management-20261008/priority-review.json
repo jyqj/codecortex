@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "scope": "Selected priority PR read-only review at the audit.json frozen source; workflow results belong only to listed exact PR heads.",
+  "review_thread_reads": {
+    "prs": [
+      146,
+      127,
+      133,
+      137,
+      3,
+      4
+    ],
+    "submitted_and_inline_reviews": "empty in the observed readback; repository artifact reviews are a separate evidence channel"
+  },
+  "main_at_audit": {
+    "source_commit": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+    "push_ci": {
+      "run_id": 37677873765,
+      "conclusion": "success",
+      "attempt": 1
+    },
+    "p7_ci": {
+      "run_id": 37677873823,
+      "conclusion": "success",
+      "attempt": 1
+    },
+    "pr146_ci": [
+      {
+        "run_id": 37674979736,
+        "conclusion": "success"
+      },
+      {
+        "run_id": 37674979650,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "priorities": [
+    {
+      "number": 127,
+      "head_sha": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "base_sha": "513a98c9a94b15ec77153df41af26fa3c8c0b5e8",
+      "path_counts": {
+        "exact": 0,
+        "evolved": 1,
+        "missing": 7,
+        "deleted_still_absent": 0,
+        "deleted_reintroduced": 0
+      },
+      "exact_head_workflows": [
+        {
+          "run_id": 37148745699,
+          "conclusion": "success"
+        }
+      ],
+      "unintegrated_scope": "独立的 bounded publish group API；1 条演进路径、7 条新增路径未完整采用。尚未接入生产 queue，不能将旧 CI 解释为生产收益或当前性能证明。",
+      "next_action": "按当前单项 CAS/namespace 锁/fail-closed 约束单独迁移审查。"
+    },
+    {
+      "number": 133,
+      "head_sha": "6c1416109003bcff0c1911307a4af5bd48870517",
+      "base_sha": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+      "path_counts": {
+        "exact": 0,
+        "evolved": 0,
+        "missing": 24,
+        "deleted_still_absent": 0,
+        "deleted_reintroduced": 0
+      },
+      "exact_head_workflows": [
+        {
+          "run_id": 37156263311,
+          "conclusion": "success"
+        }
+      ],
+      "unintegrated_scope": "24 条 kind-taxonomy 诊断证据路径未采用；Requests broad-function convention 有来源，Gin convention 尚未裁定。",
+      "next_action": "保留诊断与 owner 裁定边界；不借此改写原 gold 或质量结论。"
+    },
+    {
+      "number": 137,
+      "head_sha": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "base_sha": "5f4e7d1643802078d3c1253eec7b5670bd487d6a",
+      "path_counts": {
+        "exact": 0,
+        "evolved": 0,
+        "missing": 18,
+        "deleted_still_absent": 0,
+        "deleted_reintroduced": 0
+      },
+      "exact_head_workflows": [
+        {
+          "run_id": 37165691923,
+          "conclusion": "failure",
+          "failure_scope": "default regression; later checks skipped"
+        }
+      ],
+      "unintegrated_scope": "18 条 native-zero/qname 诊断路径未采用；parser qname 与 gold namespace 的字段契约仍需独立裁定。",
+      "next_action": "保留原失败和字段诊断，重新绑定当前源码后再处理；不按诊断数字认证当前质量。"
+    },
+    {
+      "number": 3,
+      "head_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "base_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+      "path_counts": {
+        "exact": 3,
+        "evolved": 32,
+        "missing": 13,
+        "deleted_still_absent": 0,
+        "deleted_reintroduced": 0
+      },
+      "exact_head_workflows": [
+        {
+          "run_id": 33983158344,
+          "conclusion": "failure",
+          "failure_scope": "security audit; check/MSRV/quality successful"
+        }
+      ],
+      "unintegrated_scope": "旧非 embedding 索引与质量回放改动：3 同字节、32 演进、13 缺失；原 schema/benchmark 不宜直接反向合并。",
+      "next_action": "逐项移植尚未采用意图，再以当前依赖与固定源码验证；保留旧安全失败归属。"
+    },
+    {
+      "number": 4,
+      "head_sha": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "base_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "path_counts": {
+        "exact": 1,
+        "evolved": 48,
+        "missing": 21,
+        "deleted_still_absent": 0,
+        "deleted_reintroduced": 0
+      },
+      "exact_head_workflows": [
+        {
+          "run_id": 34039657167,
+          "conclusion": "success"
+        },
+        {
+          "run_id": 34039657162,
+          "conclusion": "success",
+          "scope": "quality"
+        }
+      ],
+      "unintegrated_scope": "旧扩展改动仍有1 同字节、48 演进、21 缺失；旧 head 成功不等于当前 main 全部已采用。",
+      "next_action": "先拆清独立差异与演进冲突，再决定迁移或人工有据关闭。"
+    }
+  ]
+}

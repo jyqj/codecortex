@@ -1,0 +1,70 @@
+FFFFFE
+======================================================================
+ERROR: test_seqpacket_receive_is_bound_to_the_actual_anonymous_pair_inode (scripts.tests.test_p7_offline_trace.TraceVerifierTests.test_seqpacket_receive_is_bound_to_the_actual_anonymous_pair_inode)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 132, in test_seqpacket_receive_is_bound_to_the_actual_anonymous_pair_inode
+    report = self.inspect()
+             ^^^^^^^^^^^^^^
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_trace.py", line 32, in inspect
+    return trace.inspect_tree(trace.read_traces(self.prefix), 10, self.command)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_trace.py", line 100, in read_traces
+    traces[pid] = parse_trace(path, pid)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_trace.py", line 81, in parse_trace
+    require(match is not None and pending is None, f"unparsed trace: {path}:{number}: {line}")
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_trace.py", line 50, in require
+    raise ValueError(message)
+ValueError: unparsed trace: /tmp/tmp4yxi07dv/syscalls.10:1: 100.000001 execve("/fixture/product", ["/fixture/product", "mcp", "--project-path", "/fixture/project"], 0x1 /* 4 vars */) = 0
+
+======================================================================
+FAIL: test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies (scripts.tests.test_p7_offline_network.NetworkGuardTests.test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies) (action='errno', eof=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_network.py", line 123, in test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+AssertionError: 1
+
+
+======================================================================
+FAIL: test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies (scripts.tests.test_p7_offline_network.NetworkGuardTests.test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies) (action='errno', eof=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_network.py", line 123, in test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+AssertionError: 1
+
+
+======================================================================
+FAIL: test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies (scripts.tests.test_p7_offline_network.NetworkGuardTests.test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies) (action='kill', eof=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_network.py", line 123, in test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: -31 != 0 : 
+
+======================================================================
+FAIL: test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies (scripts.tests.test_p7_offline_network.NetworkGuardTests.test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies) (action='kill', eof=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_network.py", line 123, in test_rust_spawn_anonymous_seqpacket_eof_and_eight_byte_error_under_both_policies
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: -31 != 0 : 
+
+======================================================================
+FAIL: test_addressed_receives_wrong_flags_and_descriptor_import_remain_fatal (scripts.tests.test_p7_offline_network.NetworkGuardTests.test_addressed_receives_wrong_flags_and_descriptor_import_remain_fatal) (attempt='libc.syscall(438,-1,0,0)')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/tests/test_p7_offline_network.py", line 145, in test_addressed_receives_wrong_flags_and_descriptor_import_remain_fatal
+    self.assertEqual(result.returncode, -signal.SIGSYS, result.stderr)
+AssertionError: 0 != -31 : 
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.469s
+
+FAILED (failures=5, errors=1)

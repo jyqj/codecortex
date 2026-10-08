@@ -1,0 +1,36 @@
+   Compiling cc-semantic v1.0.0 (/dev/shm/codecortex-closeout-996727/codecortex-root/crates/cc-semantic)
+    Finished `test` profile [unoptimized] target(s) in 4.05s
+     Running tests/gc_concurrent_replacement.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/gc_concurrent_replacement-8c65fdfb9b00c564)
+
+running 3 tests
+test nonexistent_namespace_gc_remains_side_effect_free ... ok
+test collected_old_timestamp_cannot_delete_a_fresh_reput ... ok
+test collected_old_checksum_cannot_delete_current_manifest_reference ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/gc_unlink_accounting.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/gc_unlink_accounting-7ec5b5c3add72fc1)
+
+running 5 tests
+test failed_half_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test failed_temp_unlink_is_an_error_and_fresh_collection_recovers ... ok
+test failed_first_object_unlink_preserves_counterpart_and_retries ... ok
+test failed_second_object_unlink_exposes_partial_deletion_and_retries_as_half ... ok
+test already_absent_halves_are_idempotent_and_never_count_as_unlinks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/semantic_gc.rs (/dev/shm/codecortex-closeout-996727/target/debug/deps/semantic_gc-e529953cffa8d96d)
+
+running 8 tests
+test manifest_referenced_object_is_never_swept ... ok
+test temps_and_halves_are_swept_and_emptied_dirs_pruned_without_touching_quarantine ... ok
+test publish_committing_between_collect_and_sweep_is_protected_by_the_snapshot ... ok
+test revoked_space_object_stays_protected_by_its_manifest_row ... ok
+test publish_committing_after_the_sweep_is_covered_by_the_grace ... ok
+test fresh_unpublished_object_is_graced_then_reclaimed ... ok
+test corrupt_object_is_swept_after_grace_and_reads_miss_like_discard ... ok
+test bounded_backlog_converges_over_rounds_and_reference_survives_every_round ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+

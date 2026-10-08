@@ -1,0 +1,38 @@
+{
+  "command": [
+    "/usr/bin/strace",
+    "-ff",
+    "-s",
+    "4096",
+    "-e",
+    "trace=%process,%network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns",
+    "-o",
+    "/home/runner/work/_temp/p7-offline/trace-controls/child-socket-parent-zero/syscalls",
+    "--",
+    "/usr/bin/python3",
+    "/home/runner/work/codecortex/codecortex/scripts/p7_offline_network.py",
+    "--action",
+    "kill",
+    "--receipt",
+    "/home/runner/work/_temp/p7-offline/trace-controls/child-socket-parent-zero.json",
+    "--",
+    "/usr/bin/python3",
+    "-c",
+    "import os,signal,socket,ctypes; child=os.fork()\nif child == 0:\n socket.socket(socket.AF_INET,socket.SOCK_STREAM)\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.WIFSIGNALED(status) and os.WTERMSIG(status)==signal.SIGSYS\nprint('owned child waited; parent exits zero',flush=True)\n"
+  ],
+  "pid_namespace": "pid:[4026531836]",
+  "raw_files": {
+    "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.log": "d2dca045ddcffdd9a414d02c6070d1be747503825182c109c51c2fd4ca74975f",
+    "syscalls.3009": "3c308cb426ca5da72cada6ae1e17e6fcfc71f02b5e29e55006bbe40864ee116b",
+    "syscalls.3020": "04a312769749ac98d976f1719f8672c9b2746b2659063a84be77a34b7f60bc9c",
+    "syscalls.3021": "929e21dbb0fe6966c1963b46de5868812c6bd053283d354bca502a98f8ad2492"
+  },
+  "returncode": 0,
+  "schema_version": 1,
+  "strace_sha256": "28f957c227012de0b18d1bd7fff2d396cb693ea60ed8013be68de071e84b5001",
+  "strace_version": "strace -- version 6.8",
+  "timeout_seconds": 30,
+  "trace_expression": "%process,%network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns",
+  "tracer_namespace_pid": 2987
+}

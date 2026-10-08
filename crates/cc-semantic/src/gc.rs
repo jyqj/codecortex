@@ -25,11 +25,12 @@
 //!
 //! Synchronization point (brief: "GC 候选收集与删除决定之间，取一次 DB 短事务
 //! 快照"): [`sweep_batch`] marks the whole batch inside ONE short read
-//! snapshot on the cc-db side (`IndexDb::semantic_gc_mark`). That snapshot
-//! checks the addresses captured by collection. No shared filesystem lock
-//! spans collection, mark, and unlink: replacement/re-put of those paths can
-//! race with the captured metadata or mark. The deletion-error accounting
-//! below does not establish atomicity with publication or close that race.
+//! snapshot on the cc-db side (`IndexDb::with_semantic_gc_marks`). A shared
+//! namespace mutation lease spans metadata revalidation, mark and unlink;
+//! put/publish/replay and other cache mutations hold the same OS file lock.
+//! Collection is only a hint: timestamps, checksums and completed halves
+//! are reread after acquiring the lease. The DB mutex also spans the sweep
+//! so this handle cannot replace its database between mark and unlink.
 //!
 //! Module placement deviation (documented per the batch red line): the brief
 //! assigns the sweep to `cache.rs` and the sync point to `publish.rs`, but
@@ -61,6 +62,7 @@
 //! publish from their address. The full pass is DB-read-only and moves no
 //! epoch (brief: "全程无 DB 写……不刷 epoch").
 
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
@@ -166,6 +168,8 @@ pub struct CollectedBatch {
 /// actually unlinked. Already absent paths do not count as deletions. An
 /// object counts once after both unlink attempts succeed (including an
 /// already absent half). `pruned_dirs` counts removed empty directories.
+/// A current manifest reference takes precedence over timestamp freshness;
+/// other fresh candidates count as `kept_fresh` before live-task protection.
 /// An error returns no counters and may follow earlier successful unlinks;
 /// it must not be interpreted as zero work or a rolled-back filesystem.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -340,12 +344,90 @@ fn classify(path: &Path, file_name: &str, input_dir: &Path) -> Option<GcEntryKin
 }
 
 fn peek_meta(meta_path: &Path) -> (Option<i64>, Option<String>) {
-    match std::fs::read(meta_path) {
+    let read = || -> std::io::Result<Vec<u8>> {
+        let mut raw = Vec::new();
+        std::fs::File::open(meta_path)?
+            .take((crate::cache::MAX_ARTIFACT_METADATA_BYTES + 1) as u64)
+            .read_to_end(&mut raw)?;
+        Ok(raw)
+    };
+    match read() {
+        Ok(raw) if raw.len() > crate::cache::MAX_ARTIFACT_METADATA_BYTES => (None, None),
         Ok(raw) => match serde_json::from_slice::<GcMetaPeek>(&raw) {
             Ok(peek) => (peek.created_at, peek.checksum),
             Err(_) => (None, None),
         },
         Err(_) => (None, None),
+    }
+}
+
+/// Reconstruct mutable filesystem evidence under the namespace lease. Keep
+/// the original object paths even when replaced by a directory: a real
+/// unlink error must still propagate rather than becoming a successful skip.
+/// A candidate whose paths are already absent has no protection or deletion
+/// outcome. Only an actual NotFound permits this idempotent skip.
+fn refresh_entry(entry: &GcEntry) -> CcResult<Option<GcEntry>> {
+    let mut current = entry.clone();
+    let paths = match &entry.kind {
+        GcEntryKind::Object {
+            bin, meta, spec, ..
+        } => {
+            let bin_present = path_present(bin)?;
+            let meta_present = path_present(meta)?;
+            if !bin_present && !meta_present {
+                return Ok(None);
+            }
+            Some((bin.clone(), meta.clone(), spec.clone()))
+        }
+        GcEntryKind::Half { path } => {
+            if !path_present(path)? {
+                return Ok(None);
+            }
+            let name = path.file_name().and_then(|name| name.to_str());
+            let parent = path.parent();
+            match (name, parent) {
+                (Some(name), Some(parent)) => {
+                    let spec = name
+                        .strip_suffix(BIN_SUFFIX)
+                        .or_else(|| name.strip_suffix(META_SUFFIX));
+                    if let Some(spec) = spec {
+                        let bin = parent.join(format!("{spec}{BIN_SUFFIX}"));
+                        let meta = parent.join(format!("{spec}{META_SUFFIX}"));
+                        let bin_present = path_present(&bin)?;
+                        let meta_present = path_present(&meta)?;
+                        (bin_present && meta_present).then(|| (bin, meta, spec.to_string()))
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            }
+        }
+        GcEntryKind::Temp { path } => {
+            if !path_present(path)? {
+                return Ok(None);
+            }
+            None
+        }
+    };
+    if let Some((bin, meta, spec)) = paths {
+        let (created_at, checksum) = peek_meta(&meta);
+        current.kind = GcEntryKind::Object {
+            bin,
+            meta,
+            spec,
+            created_at,
+            checksum,
+        };
+    }
+    Ok(Some(current))
+}
+
+fn path_present(path: &Path) -> CcResult<bool> {
+    match std::fs::symlink_metadata(path) {
+        Ok(_) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
     }
 }
 
@@ -366,7 +448,7 @@ fn fresh_timestamp(entry: &GcEntry, cfg: &GcConfig) -> bool {
     };
     match ts {
         None => true, // un-dateable: conservative — treat as fresh
-        Some(t) => cfg.now_unix - t < cfg.min_retention_secs,
+        Some(t) => cfg.now_unix.saturating_sub(t) < cfg.min_retention_secs,
     }
 }
 
@@ -390,104 +472,133 @@ pub fn sweep_batch(
     cfg: &GcConfig,
     batch: &CollectedBatch,
 ) -> CcResult<GcCounters> {
+    sweep_batch_with_mark_hook(db, cache, cfg, batch, || {})
+}
+
+// The hook is a per-invocation seam for deterministic unit interleavings;
+// the public production entry always supplies a no-op. It never changes a
+// clock, a DB verdict, a gate threshold or a filesystem operation.
+fn sweep_batch_with_mark_hook(
+    db: &IndexDb,
+    cache: &ArtifactCache,
+    cfg: &GcConfig,
+    batch: &CollectedBatch,
+    after_mark: impl FnOnce(),
+) -> CcResult<GcCounters> {
     let mut counters = GcCounters::default();
+    if batch.entries.is_empty() || !cache.namespace_dir().try_exists()? {
+        return Ok(counters);
+    }
+    let _mutation = cache.lock_mutation()?;
+    let mut entries = Vec::with_capacity(batch.entries.len());
+    for entry in &batch.entries {
+        if let Some(current) = refresh_entry(entry)? {
+            entries.push(current);
+        }
+    }
+    if entries.is_empty() {
+        return Ok(counters);
+    }
 
     // Pass 1: freshness (filesystem clock data only).
-    let marked: Vec<bool> = batch
-        .entries
+    let marked: Vec<bool> = entries
         .iter()
         .map(|entry| fresh_timestamp(entry, cfg))
         .collect();
 
-    // Pass 2: build probes for the non-fresh objects/halves and mark them
-    // under one short read snapshot (the synchronization point). Temps need
-    // no DB mark: a temp name is never a publishable address.
-    let probe_indices: Vec<usize> = batch
-        .entries
+    // Pass 2: mark every current object/half under one short read snapshot.
+    // A publish between collection and this lease may refresh the timestamp
+    // and commit a manifest reference; freshness must not hide that actual
+    // reference from the snapshot or its protection counter. The batch cap
+    // still bounds all probes. Temps have no publishable address or DB mark.
+    let probe_indices: Vec<usize> = entries
         .iter()
         .enumerate()
-        .filter(|(i, entry)| !marked[*i] && !matches!(entry.kind, GcEntryKind::Temp { .. }))
+        .filter(|(_, entry)| !matches!(entry.kind, GcEntryKind::Temp { .. }))
         .map(|(i, _)| i)
         .collect();
     let probes: Vec<GcMarkProbe> = probe_indices
         .iter()
-        .map(|&i| probe_of(cache, &batch.entries[i]).expect("non-temp entry has a probe"))
+        .map(|&i| probe_of(cache, &entries[i]).expect("non-temp entry has a probe"))
         .collect();
-    let marks = db.semantic_gc_mark(&probes)?;
-    if marks.len() != probes.len() {
-        return Err(invalid(
-            "gc mark snapshot returned a different number of verdicts than probes",
-        ));
-    }
-    let mut marks_aligned: Vec<Option<cc_db::semantic_gc_reads::GcMark>> =
-        vec![None; batch.entries.len()];
-    for (idx, mark) in probe_indices.into_iter().zip(marks) {
-        marks_aligned[idx] = Some(mark);
-    }
+    db.with_semantic_gc_marks(&probes, |marks| {
+        if marks.len() != probes.len() {
+            return Err(invalid(
+                "gc mark snapshot returned a different number of verdicts than probes",
+            ));
+        }
+        let mut marks_aligned: Vec<Option<cc_db::semantic_gc_reads::GcMark>> =
+            vec![None; entries.len()];
+        for (idx, mark) in probe_indices.into_iter().zip(marks.iter().copied()) {
+            marks_aligned[idx] = Some(mark);
+        }
+        after_mark();
 
-    // Pass 3: decide and unlink; collect leaf directories touched by
-    // deletions.
-    let mut prunable: Vec<PathBuf> = Vec::new(); // leaf (spec) dirs of deletions
-    use cc_db::semantic_gc_reads::GcMark;
-    for (index, (entry, fresh)) in batch.entries.iter().zip(&marked).enumerate() {
-        if let GcEntryKind::Temp { path } = &entry.kind {
-            if *fresh {
-                counters.kept_fresh += 1;
-            } else if unlink_if_present(path)? {
-                counters.deleted_temps += 1;
-            }
-            continue;
-        }
-        if *fresh {
-            counters.kept_fresh += 1;
-            continue;
-        }
-        match marks_aligned[index] {
-            Some(GcMark::ManifestRef) | Some(GcMark::ManifestPair) => {
-                counters.kept_referenced += 1;
-            }
-            Some(GcMark::LiveTask) => counters.kept_live_task += 1,
-            Some(GcMark::Unreferenced) | None => match &entry.kind {
-                GcEntryKind::Object { bin, meta, .. } => {
-                    let removed_bin = unlink_if_present(bin)?;
-                    let removed_meta = unlink_if_present(meta)?;
-                    if removed_bin || removed_meta {
-                        counters.deleted_objects += 1;
-                    }
-                    prunable.push(entry_dir(entry));
+        // Pass 3: decide and unlink; collect leaf directories touched by
+        // deletions.
+        let mut prunable: Vec<PathBuf> = Vec::new(); // leaf (spec) dirs of deletions
+        use cc_db::semantic_gc_reads::GcMark;
+        for (index, (entry, fresh)) in entries.iter().zip(&marked).enumerate() {
+            if let GcEntryKind::Temp { path } = &entry.kind {
+                if *fresh {
+                    counters.kept_fresh += 1;
+                } else if unlink_if_present(path)? {
+                    counters.deleted_temps += 1;
                 }
-                GcEntryKind::Half { path } => {
-                    if unlink_if_present(path)? {
-                        counters.deleted_halves += 1;
-                    }
-                    prunable.push(entry_dir(entry));
+                continue;
+            }
+            match marks_aligned[index] {
+                Some(GcMark::ManifestRef) | Some(GcMark::ManifestPair) => {
+                    counters.kept_referenced += 1;
                 }
-                GcEntryKind::Temp { .. } => unreachable!("temps handled above"),
-            },
+                _ if *fresh => counters.kept_fresh += 1,
+                Some(GcMark::LiveTask) => counters.kept_live_task += 1,
+                Some(GcMark::Unreferenced) | None => match &entry.kind {
+                    GcEntryKind::Object { bin, meta, .. } => {
+                        let removed_bin = unlink_if_present(bin)?;
+                        let removed_meta = unlink_if_present(meta)?;
+                        if removed_bin || removed_meta {
+                            counters.deleted_objects += 1;
+                        }
+                        prunable.push(entry_dir(entry));
+                    }
+                    GcEntryKind::Half { path } => {
+                        if unlink_if_present(path)? {
+                            counters.deleted_halves += 1;
+                        }
+                        prunable.push(entry_dir(entry));
+                    }
+                    GcEntryKind::Temp { .. } => unreachable!("temps handled above"),
+                },
+            }
         }
-    }
 
-    // Pass 4: prune emptied directories bottom-up (spec leaf dir → input dir
-    // → space dir). remove_dir only succeeds on empty dirs, so fresh halves,
-    // temps or surviving objects hold their parents — conservative by
-    // construction. The namespace dir itself is never removed.
-    for leaf in &prunable {
-        let mut depth = 0;
-        let mut dir = Some(leaf.as_path());
-        while let Some(current) = dir {
-            if depth >= 3 {
-                break; // leaf → input → space; never above the space dir
+        // Pass 4: prune emptied directories bottom-up (spec leaf dir → input dir
+        // → space dir). remove_dir only succeeds on empty dirs, so fresh halves,
+        // temps or surviving objects hold their parents — conservative by
+        // construction. The namespace dir itself is never removed.
+        for leaf in &prunable {
+            let mut depth = 0;
+            let mut dir = Some(leaf.as_path());
+            while let Some(current) = dir {
+                if depth >= 3 {
+                    break; // leaf → input → space; never above the space dir
+                }
+                match std::fs::remove_dir(current) {
+                    Ok(()) => counters.pruned_dirs += 1,
+                    Err(_) => break, // non-empty (or already gone): stop climbing
+                }
+                depth += 1;
+                dir = current.parent();
             }
-            match std::fs::remove_dir(current) {
-                Ok(()) => counters.pruned_dirs += 1,
-                Err(_) => break, // non-empty (or already gone): stop climbing
-            }
-            depth += 1;
-            dir = current.parent();
         }
-    }
-    Ok(counters)
+        Ok(counters)
+    })
 }
+
+#[cfg(test)]
+#[path = "gc_concurrency_tests.rs"]
+mod concurrency_tests;
 
 fn probe_of(cache: &ArtifactCache, entry: &GcEntry) -> Option<GcMarkProbe> {
     match &entry.kind {

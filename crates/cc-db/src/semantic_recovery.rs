@@ -132,6 +132,76 @@ impl IndexDb {
         }
     }
 
+    /// One target-space page for an opportunistic worker drain (P7-016).
+    /// Unlike the explicit global recovery pass, a worker must not spend its
+    /// finite page on older rows belonging to spaces it cannot consume.
+    /// The caller invokes this ONCE per drain with its fixed page budget;
+    /// repeated caller-driven drains converge without a per-claim full scan.
+    /// Row transformations and Auxiliary epoch discipline match the global
+    /// bounded primitive above. `exhausted` is scoped to this space only.
+    pub fn reclaim_expired_semantic_space_bounded(
+        &self,
+        space_id: &str,
+        limit: usize,
+    ) -> CcResult<BoundedReclaim> {
+        let limit = i64::try_from(limit)
+            .ok()
+            .filter(|limit| *limit > 0)
+            .ok_or_else(|| {
+                CcError::InvalidParams(
+                    "semantic space reclaim requires 1 <= limit <= i64::MAX".into(),
+                )
+            })?;
+        debug_assert!(OutboxState::Claimed.can_transition_to(OutboxState::Pending));
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        conn.execute_batch("BEGIN IMMEDIATE;")
+            .map_err(|e| CcError::Database(format!("begin bounded space reclaim: {e}")))?;
+        let outcome = (|| -> CcResult<BoundedReclaim> {
+            let now = semantic_outbox::now_unix();
+            let ts = timestamp_text(now)?;
+            let reclaimed = conn
+                .prepare_cached(
+                    "UPDATE semantic_outbox \
+                     SET state='pending', available_at=?1, lease_token=NULL, \
+                         lease_expires_at=NULL, claim_owner=NULL, updated_at=?2 \
+                     WHERE task_id IN (SELECT task_id FROM semantic_outbox \
+                                       WHERE space_id=?4 AND state='claimed' \
+                                         AND lease_expires_at<?1 \
+                                       ORDER BY task_id LIMIT ?3)",
+                )
+                .map_err(db_err)?
+                .execute(rusqlite::params![now, ts, limit, space_id])
+                .map_err(db_err)?;
+            let more: i64 = conn
+                .query_row(
+                    "SELECT EXISTS(SELECT 1 FROM semantic_outbox \
+                     WHERE space_id=?2 AND state='claimed' AND lease_expires_at<?1)",
+                    rusqlite::params![now, space_id],
+                    |r| r.get(0),
+                )
+                .map_err(db_err)?;
+            Ok(BoundedReclaim {
+                reclaimed,
+                exhausted: more == 0,
+            })
+        })();
+        match outcome {
+            Ok(value) => match conn.execute_batch("COMMIT;") {
+                Ok(()) => Ok(value),
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK;");
+                    Err(CcError::Database(format!(
+                        "commit bounded space reclaim: {e}"
+                    )))
+                }
+            },
+            Err(e) => {
+                let _ = conn.execute_batch("ROLLBACK;");
+                Err(e)
+            }
+        }
+    }
+
     /// Fenced hand-back WITHOUT consuming the attempt budget (P6 batch-3
     /// closure, review action ②): the claimed→pending direct write the
     /// recovery cache-miss path needs. One CAS statement —

@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "reviewer": "independent subagent /root/pr_audit",
+  "decision": "accept_scoped_candidate_execution_implementation",
+  "target_author_commit": "5ae41338c3093bac33214dbbfc4d981141a60715",
+  "patch_chain": [
+    "50c743d15cad3f98bd57c9bed91d9e8f13e1bca9",
+    "5ae41338c3093bac33214dbbfc4d981141a60715"
+  ],
+  "source_files": {
+    "scripts/p8_candidate_execution.py": {
+      "git_blob": "950718d19ce3531684455da2049ab18ee0203016",
+      "sha256": "72ea809e46c41f8b45bac67eb3bc7cd078c31dc67e4406895715bc1e6a6287d5",
+      "bytes": 23487,
+      "scope": "new implementation"
+    },
+    "scripts/tests/test_p8_candidate_execution.py": {
+      "git_blob": "7301ac76d29662366cc0c51c20b32767b254e255",
+      "sha256": "a057cca1304fa5980ffb786d890cd71067c6a2087bce77eb2d4c63eb4a18fa15",
+      "bytes": 7781,
+      "scope": "new implementation"
+    },
+    "docs/roadmap/code-index-v2/P8-CANDIDATE-EXECUTION.md": {
+      "git_blob": "781fef1c87eff4ce3a2d624320d04f427fce8680",
+      "sha256": "226af4535de57c784f957175c9aa2a59a52cf3df0bd3659eb3805856f5ff7e33",
+      "bytes": 5622,
+      "scope": "new implementation"
+    },
+    "scripts/p7_build_identity.py": {
+      "git_blob": "7b239de4f0e8aeb558a0890187989c5166784059",
+      "sha256": "b89f1825876a7d4e485be1bd116186b3f75b5b7d92641fc359dae9f83b8b8e23",
+      "bytes": 5523,
+      "scope": "unchanged interface inspected"
+    },
+    "scripts/p7_stdio_build_receipt.py": {
+      "git_blob": "70a3680e3f9836304de2ffcb6d8debb563fdb0c1",
+      "sha256": "6b80499bccea5f5646650da127ef7c27e38d5cb36fdd8191738a2ff706d88cb9",
+      "bytes": 8794,
+      "scope": "unchanged interface inspected"
+    },
+    "scripts/p8_release_evidence.py": {
+      "git_blob": "90ab28ac05bc177626f7dc652eb1dadda1a1b0c9",
+      "sha256": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
+      "bytes": 30556,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/bin/cc-eval.rs": {
+      "git_blob": "d711f7afc4c35d8951f9782a33fa121d07e1d0af",
+      "sha256": "2de5e8cfc3fa8e8fffd572c0a9df4449cea6c46f12fcfa542127dc4a9a0074cc",
+      "bytes": 14808,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/benchmark/runner.rs": {
+      "git_blob": "9cc6735bdb6ad49c4200cf32cc947473e0f90bbf",
+      "sha256": "5350bb18401a288498fa1e5529485926045350f94bb9c07d25f5818e5ff02ee5",
+      "bytes": 10229,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/benchmark/report.rs": {
+      "git_blob": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "sha256": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d",
+      "bytes": 14477,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/benchmark/schema.rs": {
+      "git_blob": "95c77b433956a75c6bb3255c95f6017e987b9a06",
+      "sha256": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765",
+      "bytes": 4328,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/benchmark/manifest.rs": {
+      "git_blob": "54986d2482ae25eae70953077453fd295267d667",
+      "sha256": "8a67fab83b00a05727a00db97527de72b596aed497c32aa53c5e9ebaa8742001",
+      "bytes": 9691,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs": {
+      "git_blob": "a0aba49b072bd63672e39d877091e9bd67c13df2",
+      "sha256": "7d66ee77dc64c001d8ec6ba8312c1b9cb7a60356c9a49530e837be388306eceb",
+      "bytes": 4907,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/benchmarks/manifests/p0-rust-api.json": {
+      "git_blob": "c3502b116ee3176dd643f8411a8263f34cb59963",
+      "sha256": "cf7fc8f8d246ea2316037d39c7bcb7eb7e81d2ce0ba4e08c7d671ac08e1e3d98",
+      "bytes": 616,
+      "scope": "unchanged interface inspected"
+    },
+    "crates/cc-eval/benchmarks/native/p0-rust-api.jsonl": {
+      "git_blob": "357e50f4e6c5e47dfb8f419663a063bef8521e07",
+      "sha256": "4e721f4224f9093c29b2a947abe8cbd1710b2556dff7b37cabd9212fa7674735",
+      "bytes": 442,
+      "scope": "unchanged interface inspected"
+    }
+  },
+  "open_blockers_in_reviewed_scope": [],
+  "checks": [
+    {
+      "topic": "Cargo product/runner bindings",
+      "result": "accept",
+      "evidence": "Both actual default bin targets and package/source paths are checked. Test artifacts and semantic features are rejected; exact source before/after, complete retained source manifest, binary SHA and selected raw Cargo artifact plus a single successful build-finished record are required. Both build receipts must match the currently selected Cargo/rustc toolchain identity."
+    },
+    {
+      "topic": "Profile provenance",
+      "result": "accept",
+      "evidence": "dev/release is taken from the build invocation and matched to --release, while custom --profile is refused. Raw Cargo profile is retained. Default product builder actually builds dev. Mapping dev to the original freeze tool debug name does not relabel it as release or claim optimized performance."
+    },
+    {
+      "topic": "Actual current CI build boundary",
+      "result": "scoped_accept",
+      "evidence": "Planned CI first creates a new private default product target through p7_stdio_build_receipt, then optionally reuses that same target for cc-eval at the same immutable checkout/toolchain. The helper records target reuse honestly. This review does not certify arbitrary prepopulated targets supplied outside that same-source CI sequence."
+    },
+    {
+      "topic": "Freeze and original fixture",
+      "result": "accept",
+      "evidence": "Original P0 rust API suite, source2 and query/gold1 are copied without edits. Existing Rust validator checks original BLAKE3 locks. SHA256 corpus/query/gold/scorer/build/environment identities are separately frozen. Full source scope includes crates/Cargo/scripts/workflows. Candidate pin is external and reverified against current inputs before/after actual execution and replay."
+    },
+    {
+      "topic": "Actual run output and source observation",
+      "result": "accept",
+      "evidence": "Single-suite cc-eval run writes manifest/normalized/gate directly at measurement, matching the new driver. Suite serde fields preserve the original JSON semantic value. mcp-stdio, expected complete row count, clean observed Git HEAD, no infrastructure failure, actual process exit and original gate exit0 are all required. Observed HEAD alone is not used as binary proof; retained build/source/hash bindings supply it."
+    },
+    {
+      "topic": "Configuration and disabled model",
+      "result": "accept",
+      "evidence": "Both product and runner are no-default-features binaries, model input is disabled, and original suite engine_config is retained. Original MCP adapter strips CODECORTEX_* variables and uses isolated project HOME/XDG paths. Explicit noncredential build/hardware environment and current toolchain are checked before/after; no live model/quality claim."
+    },
+    {
+      "topic": "Replay and archive gate interface",
+      "result": "accept",
+      "evidence": "Original report::replay verifies query/normalized/raw digests and recomputes into a new copy. metrics/gate/report bytes must match the original, and original measurement inventory must stay unchanged. Baseline gate status/exit already belongs to the original archive gate vocabulary. The separate outer gate only adds candidate/witness bindings; original measurement gate is never rewritten."
+    },
+    {
+      "topic": "Failure ownership and drift controls",
+      "result": "accept",
+      "evidence": "5ae41338 marks output_owned only after successful exclusive mkdir, so an existing run cannot gain a new failure.json. Actual CLI control proves it. Seven drift controls mutate only newly copied candidate trees, require old pin rejection, remove only owned copies, and reverify the original candidate."
+    }
+  ],
+  "independent_validation": {
+    "new_control_tests": {
+      "passed": 8,
+      "failed": 0,
+      "log": "test_p8_candidate_execution.log"
+    },
+    "original_release_evidence_tests": {
+      "passed": 39,
+      "failed": 0,
+      "log": "test_p8_release_evidence.log"
+    },
+    "log_files": {
+      "test_p8_release_evidence.log": {
+        "sha256": "3d21729f7cea8337510342b9bcb970a3496be8308d623dd2bff02a638a5e8c09",
+        "bytes": 6424
+      },
+      "test_p8_candidate_execution.log": {
+        "sha256": "25edbdf92a148aa16b1be61c4c97ede154b0fa0aa9bf975c1a352ebec25363ca",
+        "bytes": 1516
+      }
+    },
+    "actual_rust_product_build_and_run": "not_run_by_this_reviewer; requires final CI receipts"
+  },
+  "acceptance_boundary": "Implementation/control review only. P8-001 is not done until the exact candidate completes actual product measurement/replay/archive plus its original hard dependencies. Original P7-020, corpus certification, holdout,100k,soak,live providers,optimized release/platform and G8 gates are not changed or certified."
+}

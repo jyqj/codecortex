@@ -1,0 +1,444 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-08T20:14:41.378899+00:00",
+  "reviewer": "/root/pr_audit",
+  "author_of_reviewed_merge": false,
+  "verdict": "accepted_scoped_fixed_merge_product",
+  "repository": "https://github.com/jyqj/codecortex",
+  "scope": "Independent source/conflict-resolution review of the three Python merge files, exact preservation of both parent inputs and actual author-run Python controls. No original TODO or production matrix certification.",
+  "product": {
+    "commit": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+    "tree": "5173ebb5ffdb96ddc71bfcd9bac8099cd40efc05",
+    "parents": [
+      "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "599a7050e7d52b5b7b93975c419138e175b3f754"
+    ],
+    "merge_base": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "remote_api": {
+      "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-independent/remote-product-api.json",
+      "sha256": "ea7632d91955fbd0dfb6476c02ca9a9ae0eb33008270f5f64363829684629197",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/e52bf0b3c7abd9fca42e5384cdf88f4e33f96768"
+    },
+    "local_raw_commit_sha1_recomputed": true,
+    "local_raw_tree_sha1_recomputed": true,
+    "recursive_tree_entries": 21508
+  },
+  "source_files": [
+    {
+      "path": "scripts/p8_cold_build.py",
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+      "bytes": 52649,
+      "same_as_our_parent": false,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310"
+    },
+    {
+      "path": "scripts/p8_rollback.py",
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
+      "bytes": 38818,
+      "same_as_our_parent": false,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56"
+    },
+    {
+      "path": "scripts/tests/test_p8_platform.py",
+      "sha256": "16ecf02fd3cddb2449623ac11e599ed60f3664ce1cfcd30156b85c581769b2f3",
+      "bytes": 42727,
+      "same_as_our_parent": false,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "aa8066379b4acf2c2581c85199e4d29fc1d1cb53"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "sha256": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+      "bytes": 35428,
+      "same_as_our_parent": true,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "a8f8571f767b4139df85b86e56b8309612f32dc8"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime.py",
+      "sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+      "bytes": 21979,
+      "same_as_our_parent": true,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "fd49fa00d5a0fab7cd7f4b92240e5a42bc281443"
+    },
+    {
+      "path": "scripts/tests/test_p8_recovery.py",
+      "sha256": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11",
+      "bytes": 23133,
+      "same_as_our_parent": true,
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "2df6ce3f08fc65780c47ab23a58ad62c43821eb8"
+    }
+  ],
+  "both_parent_comparison": {
+    "owner_changed_paths_since_common_base": 38,
+    "owner_paths_identically_preserved": 35,
+    "owner_paths_integrated": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
+      "scripts/tests/test_p8_platform.py"
+    ],
+    "all_owner_modes_preserved": true,
+    "paths_different_from_owner_parent": 114,
+    "new_blob_contents_not_in_either_parent": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
+      "scripts/tests/test_p8_platform.py"
+    ],
+    "all_other_differing_paths_reuse_published_parent_blobs": true,
+    "inventory": {
+      "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-independent/owner-input-preservation.json",
+      "bytes": 14848,
+      "sha256": "83245fdbb32bb4ea3e2b9341d881636535db7390eeda9ba59f64f682e9ef80d5"
+    },
+    "diffs": [
+      {
+        "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-independent/merge-vs-our-parent.patch",
+        "bytes": 54776,
+        "sha256": "77cbc8613ac59c2ee02212c279a19ab7f58055a4591e7e2f48931a6da2528523"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-independent/merge-vs-owner-parent.patch",
+        "bytes": 21961,
+        "sha256": "586c61fe35a822dc7af858798a3c10a307e0a6022cb9af99d330d984896f8fec"
+      }
+    ]
+  },
+  "ast_comparison": [
+    {
+      "path": "scripts/p8_cold_build.py",
+      "reference": "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "added": [
+        "absolute_recorded_path",
+        "cold_command",
+        "finish_observers",
+        "loaded_observer_path",
+        "observed_operation",
+        "observer_snapshot",
+        "parse_rustc_verbose",
+        "start_observers",
+        "verify_observer_archive",
+        "verify_observers",
+        "verify_portable_cell"
+      ],
+      "removed": [
+        "validate_build_contract"
+      ],
+      "changed": [
+        "build_cell",
+        "cargo_artifact",
+        "collect_cells",
+        "discover_toolchain",
+        "export_cell",
+        "main",
+        "validate_cell"
+      ],
+      "identical": [
+        "cargo_config_identity",
+        "digest",
+        "git",
+        "host_platform",
+        "json_bytes",
+        "new_directory",
+        "probe",
+        "selected_cell",
+        "selected_inventory",
+        "smoke_product",
+        "source_identity",
+        "validate_smoke",
+        "write_json"
+      ]
+    },
+    {
+      "path": "scripts/p8_cold_build.py",
+      "reference": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "added": [
+        "selected_inventory"
+      ],
+      "removed": [],
+      "changed": [
+        "collect_cells",
+        "main",
+        "selected_cell"
+      ],
+      "identical": [
+        "absolute_recorded_path",
+        "build_cell",
+        "cargo_artifact",
+        "cargo_config_identity",
+        "cold_command",
+        "digest",
+        "discover_toolchain",
+        "export_cell",
+        "finish_observers",
+        "git",
+        "host_platform",
+        "json_bytes",
+        "loaded_observer_path",
+        "new_directory",
+        "observed_operation",
+        "observer_snapshot",
+        "parse_rustc_verbose",
+        "probe",
+        "smoke_product",
+        "source_identity",
+        "start_observers",
+        "validate_cell",
+        "validate_smoke",
+        "verify_observer_archive",
+        "verify_observers",
+        "verify_portable_cell",
+        "write_json"
+      ]
+    },
+    {
+      "path": "scripts/p8_rollback.py",
+      "reference": "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "added": [],
+      "removed": [],
+      "changed": [
+        "main",
+        "run_drill",
+        "run_version_pair"
+      ],
+      "identical": [
+        "Product",
+        "backup_database",
+        "binary_identity",
+        "db_snapshot",
+        "exercise",
+        "file_manifest",
+        "product_manifest_hashes",
+        "product_schema_version",
+        "require",
+        "source_manifest",
+        "validate_rebuild",
+        "verify_fixture_search",
+        "version_pair_contract"
+      ]
+    },
+    {
+      "path": "scripts/p8_rollback.py",
+      "reference": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "added": [
+        "product_manifest_hashes"
+      ],
+      "removed": [
+        "manifest_hashes"
+      ],
+      "changed": [
+        "binary_identity",
+        "product_schema_version"
+      ],
+      "identical": [
+        "Product",
+        "backup_database",
+        "db_snapshot",
+        "exercise",
+        "file_manifest",
+        "main",
+        "require",
+        "run_drill",
+        "run_version_pair",
+        "source_manifest",
+        "validate_rebuild",
+        "verify_fixture_search",
+        "version_pair_contract"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "cold-v2-contract-preserved",
+      "result": "pass",
+      "details": "All 27 unchanged owner cold-build functions remain AST-identical, including producer/local/portable verifier, exact Cargo command, compiler verbose identity, executable-copy origin, source observer Git/blob/mode/loaded-module binding, archive checks and final observer drift checks. The same selected_inventory and selected_cell functions as our parent are retained."
+    },
+    {
+      "id": "portable-selection-binding",
+      "result": "pass",
+      "details": "Collection rechecks all eight original selection rows, one selected passed row and seven explicit not_run rows; requires the exported live replay flag; binds the original absolute receipt filename and parent/target ownership, receipt digest and matrix source before the complete owner v2 portable verifier and RPC smoke replay. Original machine target/compiler paths are metadata, with dedicated successful portable-collection regression."
+    },
+    {
+      "id": "failed-collection-receipt",
+      "result": "pass",
+      "details": "Exclusive output allocation plus failed schema-2 record produces invalid exit 2 or cancelled exit 3 on failed collection, preserves inputs and does not add passed counts; success is added only after complete collection returns. Negative controls cover malformed/empty input and existing output preservation."
+    },
+    {
+      "id": "rollback-strict-snapshot-and-observer",
+      "result": "pass",
+      "details": "product_manifest_hashes, binary_identity and product_schema_version are AST-identical to our previously independently reviewed parent. Manifest JSON parses the same raw bytes checked by digest, rejects duplicate keys/paths, malformed paths/digests and nonexact counts; schema revalidates manifest and hashes/parses one schema byte snapshot. Owner run_version_pair/run_drill/main are AST-identical, preserving observed_operation formal wrappers, legacy direct engineering labels and historical product identity."
+    },
+    {
+      "id": "both-test-families-retained",
+      "result": "pass",
+      "details": "No platform test/helper method from either parent is removed. Both parents have 42 platform tests; merged source has 46. Eleven consistently resealed negative controls retain each mutation and validator-specific error assertion; fixture repair only avoids rewriting unchanged 0555 binary bytes and adapts precise v2 diagnostics. An additional independent matrix receipt-owner mutation tests the added target ownership check. Duplicate-key regression calls the strict bound helper with a freshly bound manifest digest and input_count."
+    },
+    {
+      "id": "unchanged-and-owner-inputs",
+      "result": "pass",
+      "details": "Runtime source/runtime tests and strict rollback manifest recovery tests exactly retain our accepted bytes. Every owner input outside the three merged files is byte-for-byte and mode-identical, including doc_key foreign-key child index source/schema guard tests, observer recovery wrappers, platform/scale workflows, scale origin/source validation and sparse checkout, and all owner audit artifacts. This is preservation verification, not a fresh Rust acceptance run."
+    },
+    {
+      "id": "historical-review-preservation",
+      "result": "pass",
+      "details": "Both parents main source-review JSON files are retained verbatim in distinct history paths. Product currently retains owner main review and owner guard/registry bytes as an intermediate product step; these are not accepted final pins for the new product."
+    }
+  ],
+  "test_inventory_comparison": [
+    {
+      "reference": "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "prior_test_count": 42,
+      "merged_test_count": 46,
+      "removed_methods": [],
+      "changed_methods": [
+        "PlatformControls.bundle",
+        "PlatformControls.setUp",
+        "PlatformControls.test_bundle_binary_mutation_and_unrequested_source_fail",
+        "PlatformControls.test_collector_replays_same_build_contract_after_consistent_resealing",
+        "PlatformControls.test_collector_requires_original_selected_cell_and_source",
+        "PlatformControls.test_newer_compiler_does_not_certify_msrv",
+        "PlatformControls.toolchain"
+      ],
+      "added_methods": [
+        "PlatformControls.test_formal_observer_end_drift_cannot_leave_a_passed_receipt",
+        "PlatformControls.test_formal_observer_keeps_historical_product_and_current_driver_separate",
+        "PlatformControls.test_observer_rejects_uncommitted_bytes_and_loaded_foreign_module",
+        "PlatformControls.test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths"
+      ]
+    },
+    {
+      "reference": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "prior_test_count": 42,
+      "merged_test_count": 46,
+      "removed_methods": [],
+      "changed_methods": [
+        "PlatformControls.schema_identity",
+        "PlatformControls.test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths"
+      ],
+      "added_methods": [
+        "PlatformControls.reseal_exported_receipt",
+        "PlatformControls.seal_bundle_inventory",
+        "PlatformControls.test_collector_does_not_require_original_target_or_compiler_paths",
+        "PlatformControls.test_collector_replays_same_build_contract_after_consistent_resealing",
+        "PlatformControls.test_collector_requires_original_selected_cell_and_source",
+        "PlatformControls.test_failed_collection_retains_machine_readable_failure_and_input_bytes"
+      ]
+    }
+  ],
+  "dynamic_evidence": {
+    "executed_by": "/root",
+    "independently_rerun_by_this_review": false,
+    "logs_read_and_digest_verified": [
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/initial-00.log",
+        "sha256": "761d46f0a7de12843f0ac8c41524f36a3321aec1a1e46590c4edbe78c596c32c",
+        "bytes": 25509,
+        "tests": 59,
+        "unittest_elapsed_seconds": 31.574,
+        "result": "FAILED (errors=11)"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/initial-01.log",
+        "sha256": "a81dddcbdd39f5088d006e34c60865222c271a01b682f02b75cfbd91d7f6d681",
+        "bytes": 4738,
+        "tests": 29,
+        "unittest_elapsed_seconds": 1.209,
+        "result": "OK"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/fixture-recheck.log",
+        "sha256": "62f300b7d3328e10a5ad37aaeec803fa508f2d4038a0b61ae9868ffc56920d08",
+        "bytes": 440,
+        "tests": 2,
+        "unittest_elapsed_seconds": 3.015,
+        "result": "OK"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/all-p8.log",
+        "sha256": "575a5227e70e06d2b1631b441fe81b2e2b9ce1f3ea93c205cfed549c1c4bae9c",
+        "bytes": 62028,
+        "tests": 371,
+        "unittest_elapsed_seconds": 49.749,
+        "result": "OK"
+      }
+    ],
+    "receipts_read_and_digest_verified": [
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/initial-receipt.json",
+        "sha256": "14efddb538edd3f010f2105b1e88f850da26ddaa9b32c815f6500a9ca427f769"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/fixture-recheck-receipt.json",
+        "sha256": "e8f4dd21a095bf74a0820393d79888a827023a0115f6822532acf10c05d1d12e"
+      },
+      {
+        "path": "/workspace/scratch/28fef0db5e01/integration-validation/merge599-p8-controls/all-p8-receipt.json",
+        "sha256": "9cc1f3f6a1fa7f906dfe71c240eeea25d4b29235970ebbfc7ade77e35682175e"
+      }
+    ],
+    "all_p8_command": [
+      "python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p8_*.py",
+      "-v"
+    ],
+    "all_p8_exit_code": 0,
+    "test_time_identity": {
+      "head_at_start": "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "merge_parent": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "product_commit_existed_at_test_time": false,
+      "binding": "All six recorded source hashes equal the immutable merge product blobs and the reviewer observed workspace bytes. The original receipt remains identified as a precommit candidate run; it is not relabelled as execution at the later merge commit."
+    },
+    "historical_failed_run_preserved": true,
+    "historical_failure_explanation": "First platform run reached 59 tests, with 11 fixture write PermissionErrors on the intentionally read-only retained binary. No control was deleted; fixed fixture skips unchanged bytes. Exact 2-method recheck and subsequent full 371-test run passed."
+  },
+  "historical_main_reviews": [
+    {
+      "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr161-33a36ae-independent-source-review.json",
+      "original_commit": "3f7da3bae78b5b5e1d804a722f215c56b24e2280",
+      "original_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+      "sha256": "2ae8113ebe20cebbeb6a8af7750f67641f0ad18fe3025c2563765617e995e3ab",
+      "verbatim_preserved": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/history/pr159-7867c3c-independent-source-review.json",
+      "original_commit": "599a7050e7d52b5b7b93975c419138e175b3f754",
+      "original_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+      "sha256": "d6294acc9ff75bc66dbcbc6714f5c2976d689498adaee2549f05c35c4597341e",
+      "verbatim_preserved": true
+    }
+  ],
+  "prior_independent_reviews": [
+    {
+      "path": "/workspace/scratch/28fef0db5e01/pr-audit/rollback-manifest-independent-review.json",
+      "sha256": "bf5735760d41b384212e2e97397346ef0a581f8e8a6ca590d17eeb3bef186a55"
+    },
+    {
+      "path": "/workspace/scratch/28fef0db5e01/pr-audit/publication-v15-final-independent-review.json",
+      "sha256": "bda0b22ca2a9b3e839a3da7aae3fd63a2c34b82e12ca40d527c22474852132b5"
+    }
+  ],
+  "limitations": [
+    "No final REVIEW/PINS identity acceptance in this record; a fresh source review and immutable pin update are pending.",
+    "No Rust compilation, platform cold-build matrix, soak, backfill, recovery drill or scale matrix was executed by this reviewer for this merge.",
+    "The 371 Python controls include synthetic compiler/contract fixtures and cannot certify production runs or close original TODOs.",
+    "The isolated scale-window candidate remains frozen with dynamic tests not_run and is absent from this product.",
+    "Original TODO ledger remains 192 total, 163 done, 29 remaining; this source integration completes zero original TODOs."
+  ],
+  "blocking_findings": []
+}

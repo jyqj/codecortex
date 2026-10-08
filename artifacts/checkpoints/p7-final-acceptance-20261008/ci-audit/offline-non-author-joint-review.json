@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p7_wiring",
+  "reviewer_role": "Non-author of P7-017 seccomp guard, descendant trace parser and offline archive auditor. Earlier source review is supplemented here by actual fixed-source execution receipts and raw original tool observations.",
+  "status": "accepted_P7_017_actual_offline_engineering_evidence_scope",
+  "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+  "receipt_archive_commit": "82a6d24eeb8fb3c4bd6c5166cd30ee44d671b72f",
+  "aggregate_receipt_path": "artifacts/checkpoints/p7-final-acceptance-20261008/ci/ffdc6f0f/offline/offline-review.json",
+  "aggregate_receipt_sha256": "b4e30f362c99865dc2cbeadfbd59431b7f7dd3a7024d908e62f223c587364160",
+  "actual_audit_run": 37731869613,
+  "actual_audit_job": 113162596476,
+  "method": "Read three exact archived receipts plus both original per-profile matrix observation JSON files through the official connector. Independently recomputed configuration/process/trace/IPC totals and checked feature, binary, source, tool, cache, exit and kernel-positive-control identities using JavaScript assertions. The full descendant parser and all ZIP streams were actually replayed by the separately reviewed CI auditor; this reviewer did not re-run a second complete syscall parser locally.",
+  "totals": {
+    "configurations": 4,
+    "original_tools_per_configuration": 14,
+    "initial_product_roots": 4,
+    "real_reopened_roots": 4,
+    "product_roots": 8,
+    "all_matrix_trace_pids": 257,
+    "product_process_and_thread_members": 241,
+    "external_network_attempts": 0,
+    "anonymous_local_ipc_pairs": 8
+  },
+  "packages": [
+    {
+      "package": "default",
+      "artifact_id": 11529447454,
+      "zip_sha256": "21e15185fc7e0fe917d1253a283026b20e69266fcd75768cff0f2012632aef68",
+      "source": {
+        "input_count": 795,
+        "manifest_sha256": "5b0f2f129500327a23a44a10b8f4530db6260273481698c9bb5c7cbe65fbc114",
+        "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+        "source_tree": "9e59b41540eb3769e9ca0a787c9ed60441259d20"
+      },
+      "binary_sha256": "81e966c6b00276ccf8841aef7d44f741b48586bd8d1b7205621d9c511ed7c706",
+      "config_cases": 2,
+      "real_initial_and_reopen_processes": 4,
+      "complete_matrix_trace_pids": 129,
+      "product_process_and_thread_members": 121,
+      "anonymous_local_ipc_pairs": 4,
+      "external_network_attempts": 0,
+      "review_sha256": "2f8aeb64e46901da8f58d40c066cfda4569b7ef209abe56cb165089922c9992a",
+      "observation_sha256": "adec0045da21f5a1068382acdd303b340a6d2d43c3e54958c965a0891d7b06d6"
+    },
+    {
+      "package": "semantic",
+      "artifact_id": 11528648875,
+      "zip_sha256": "59f151919b95508017da6aca062d7be46a5c40b65cd87fae26e070707b6389d5",
+      "source": {
+        "input_count": 795,
+        "manifest_sha256": "5b0f2f129500327a23a44a10b8f4530db6260273481698c9bb5c7cbe65fbc114",
+        "source_commit": "ffdc6f0f97db78cc25a6c026904e7c2adde05d14",
+        "source_tree": "9e59b41540eb3769e9ca0a787c9ed60441259d20"
+      },
+      "binary_sha256": "6848d8c4e78aec2e939b4208c7d11f830b67823c916fe9a17c45784e3b21133c",
+      "config_cases": 2,
+      "real_initial_and_reopen_processes": 4,
+      "complete_matrix_trace_pids": 128,
+      "product_process_and_thread_members": 120,
+      "anonymous_local_ipc_pairs": 4,
+      "external_network_attempts": 0,
+      "review_sha256": "0aeded612f59e2d599df5999cc5f5be95de54b12d849b305a54ff3c0767d0fd4",
+      "observation_sha256": "58712a8bbc8f2ed1f4e70120990ce5553b2c899b01a2ca0f741cbaa97aa603a7"
+    }
+  ],
+  "decisions": [
+    "Both actual Cargo feature profiles are exact: default features [], semantic features ['semantic']; neither enables semantic-http.",
+    "All four zero-key initial configurations execute the same full 14-tool list; all four perform real reopen/persistence checks, and semantic cache absence is retained.",
+    "Zero external attempts follows complete descendant trace replay, not exit code zero alone. Original observations deliberately retain network_socket_attempts=null until joined to the trace evidence.",
+    "Eight observed anonymous AF_UNIX STREAM pairs have reciprocal kernel inode/peer witnesses. They are disclosed local IPC, not falsely counted as zero socket activity.",
+    "IPv4 and IPv6 actual probes terminate SIGSYS; the retained swallowed-child counterexample is rejected from descendant evidence even when the parent exits normally.",
+    "Original source/validation bytes, launcher policy, per-process trace checks and tool assertions remain unchanged by the portable identity adaptation."
+  ],
+  "limitations": [
+    "This is the declared Linux process-local seccomp plus full strace engineering gate; it is not a proof for arbitrary unobserved future code paths or platforms.",
+    "No claim of remote compiler/source-to-binary attestation. The test runner executable is identified by retained Cargo/actual runtime hashes and is not archived as a binary in the original artifact.",
+    "No live-provider or held-out semantic benefit evidence is supplied.",
+    "Task dependencies and final integrated G7/ledger changes remain owned by root; no tasks or refs were modified by this review."
+  ]
+}

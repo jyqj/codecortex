@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import stat
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 import zipfile
 from inspect_fixed_artifacts import NoRedirect, authenticated, copy_archive
@@ -59,9 +60,106 @@ with zipfile.ZipFile(archive_path) as z:
         assert text.encode("utf-8") == raw
         rows.append({"path":relative, "bytes":len(raw), "sha256":sha(raw), "raw":raw,
                      "estimated_export_bytes":len(json.dumps(text, ensure_ascii=True)) + 500 + (len(text)//8000+1)*(len(relative)+180)})
-assert len(rows) == 288, "unexpected completed finalization file inventory"
+# The artifact uploader may omit hidden files. Recover only original successful
+# export bytes; never reduce the expected inventory or rerun the task operation.
+artifact_rows = rows
+artifact_by_path = {r["path"]:r for r in artifact_rows}
+assert len(artifact_by_path) == len(artifact_rows)
+job_api = "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113169576519"
+with urllib.request.build_opener(NoRedirect()).open(authenticated(job_api, token), timeout=60) as response:
+    assert response.status == 200
+    job = json.load(response)
+assert job["id"] == 113169576519 and job["run_id"] == EXPECTED["run_id"]
+assert job["status"] == "completed" and job["conclusion"] == "success"
+assert all(step["conclusion"] == "success" for step in job["steps"])
+try:
+    response = urllib.request.build_opener(NoRedirect()).open(authenticated(job_api + "/logs", token), timeout=60)
+except urllib.error.HTTPError as error:
+    assert error.code == 302
+    location = error.headers.get("Location")
+    error.close()
+    assert location and location.startswith("https://")
+    response = urllib.request.urlopen(location, timeout=60)
+with response:
+    assert response.status == 200
+    original_log = response.read(64 * 1024 * 1024 + 1)
+assert len(original_log) <= 64 * 1024 * 1024, "original log exceeds read bound"
+headers, chunks = {}, {}
+manifests = []
+closed = False
+for line in original_log.decode("utf-8").splitlines():
+    if "P7_AUDIT_EXPORT_FILE " in line:
+        assert not closed
+        meta = json.loads(line.split("P7_AUDIT_EXPORT_FILE ",1)[1])
+        path = meta["path"]
+        assert path not in headers
+        headers[path] = meta
+        chunks[path] = []
+    elif "P7_AUDIT_EXPORT_CHUNK " in line:
+        assert not closed
+        chunk = json.loads(line.split("P7_AUDIT_EXPORT_CHUNK ",1)[1])
+        path = chunk["path"]
+        assert path in headers and chunk["index"] == len(chunks[path])
+        assert isinstance(chunk["content"], str)
+        chunks[path].append(chunk["content"])
+    elif "P7_AUDIT_EXPORT_MANIFEST " in line:
+        assert not closed
+        manifests.append(json.loads(line.split("P7_AUDIT_EXPORT_MANIFEST ",1)[1]))
+        closed = True
+assert closed and len(manifests) == 1
+manifest = manifests[0]
+assert manifest["file_count"] == len(manifest["files"]) == len(headers) == 288
+assert len({r["path"] for r in manifest["files"]}) == 288
+assert all(headers[r["path"]] == r for r in manifest["files"])
+rows = []
+for meta in manifest["files"]:
+    path = meta["path"]
+    pure = PurePosixPath(path)
+    assert not pure.is_absolute() and ".." not in pure.parts and str(pure) == path
+    assert len(chunks[path]) == meta["chunks"]
+    text = "".join(chunks[path])
+    raw = text.encode("utf-8")
+    assert len(text) == meta["characters"]
+    assert len(raw) == meta["bytes"] and sha(raw) == meta["sha256"]
+    rows.append({"path":path, "bytes":len(raw), "sha256":sha(raw), "raw":raw,
+                 "estimated_export_bytes":len(json.dumps(text, ensure_ascii=True)) + 500 + (len(text)//8000+1)*(len(path)+180)})
+assert sum(r["bytes"] for r in rows) == manifest["total_bytes"]
 by_path = {r["path"]:r for r in rows}
-assert len(by_path) == len(rows)
+assert len(by_path) == len(rows) == 288
+spec_raw = Path(__file__).with_name("raw-preservation-spec.json").read_bytes()
+assert sha(spec_raw) == "5d064e780286f42361e7bca4ba5e508467f3c536e82262abcab42359ae6dcfe7"
+spec = json.loads(spec_raw)
+expected_paths = {r["path"] for r in spec["files"]}
+for label in ["plan-write","plan-check","p8-facts-check","g7-original-dossier"]:
+    for ending in [".stdout.log",".stderr.log",".json"]:
+        expected_paths.add(BASE + "/finalization/" + label + ending)
+expected_paths.update([
+    "docs/roadmap/code-index-v2/tasks.json", "README.md",
+    "docs/roadmap/code-index-v2/README.md","docs/roadmap/code-index-v2/05-TODO.md",
+    "docs/roadmap/code-index-v2/08-HANDOFF.md",
+    "docs/roadmap/code-index-v2/P7-REMAINING-GATES.json",
+    "docs/roadmap/code-index-v2/P7-REMAINING-GATES.md",
+    BASE + "/generated-final/report.json",BASE + "/generated-final/README.md",
+    BASE + "/raw-preservation-receipt.json",BASE + "/task-transition-receipt.json"])
+assert set(by_path) == expected_paths
+assert set(artifact_by_path) <= set(by_path), "artifact has unexpected extra output"
+for path,row in artifact_by_path.items():
+    assert row["raw"] == by_path[path]["raw"], "artifact and original successful export conflict"
+missing = sorted(set(by_path) - set(artifact_by_path))
+expected_hidden = sorted(r["path"] for r in spec["files"] if any(p.startswith(".") for p in PurePosixPath(r["path"]).parts))
+assert missing == expected_hidden, "missing set is not exactly original declared hidden raw"
+for item in spec["files"]:
+    row = by_path[item["path"]]
+    assert row["sha256"] == item["sha256"] and row["bytes"] == item["bytes"]
+print("P7_ORIGINAL_LOG_RECOVERY " + json.dumps({
+    "original_job_id":job["id"],"original_run_id":job["run_id"],"original_job_conclusion":job["conclusion"],
+    "original_log_sha256":sha(original_log),"original_log_bytes":len(original_log),
+    "original_manifest_file_count":manifest["file_count"],"original_manifest_total_bytes":manifest["total_bytes"],
+    "artifact_present_files":len(artifact_rows),"artifact_existing_bytes_match_original_log":True,
+    "missing_hidden_original_files_recovered":missing,
+    "all_declared_265_original_raw_hashes_verified":True,
+    "original_manifest_is_unique_complete_terminal_export_record":True
+},ensure_ascii=True),flush=True)
 task = by_path["docs/roadmap/code-index-v2/tasks.json"]
 assert task["sha256"] == "b5a33e7827a6a1b60b71194348d61eb629385c48c1b970f434f330b2244a0812"
 transition = json.loads(by_path[suffix]["raw"])

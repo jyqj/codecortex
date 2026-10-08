@@ -60,6 +60,7 @@ jobs:
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--lib', 'indexer_phases::reconcile::dependency_window_tests', '--', '--nocapture'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--lib', 'build_plan::tests::stale_prepared_build_is_rejected_at_commit', '--', '--exact'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'p2d_dependency_cost', 'p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes', '--', '--exact'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'ci_schema_guard_contract'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2c_reconcile'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2d_mutations', 'pending_changes_rebase_and_shrinker_cannot_certify_incomplete', '--', '--exact'],
               ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p8_scale', 'bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity', '--', '--exact'],

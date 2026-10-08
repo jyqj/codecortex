@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-08T20:53:20.281850+00:00",
+  "reviewer": "/root/pr_audit",
+  "author_of_changes": false,
+  "conclusion": "accepted_scoped_static_adoption_pending_execution",
+  "blockers": [],
+  "source": {
+    "peer_commit": "1b9e846db340cf9a5297ef44ab548a0816712029",
+    "peer_parent": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "adoption_base": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+    "all_three_parent_bytes_equal_adoption_base": true,
+    "files": [
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "base_blob": "ed800b86b2aad5a78edcd6b123de202529e2b83b",
+        "new_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+        "new_sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+        "new_bytes": 7941,
+        "peer_parent_equals_G2": true
+      },
+      {
+        "path": "crates/cc-db/src/sql/index_v1.sql",
+        "base_blob": "5164dc5420086390dbdd08cc961b86977dc5ef7e",
+        "new_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+        "new_sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+        "new_bytes": 25396,
+        "peer_parent_equals_G2": true
+      },
+      {
+        "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+        "base_blob": "b29fb6bffb64d15b64d869c019c388698d3c1c7b",
+        "new_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+        "new_sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
+        "new_bytes": 12152,
+        "peer_parent_equals_G2": true
+      }
+    ]
+  },
+  "findings": [
+    {
+      "topic": "exact_delta",
+      "result": "All three peer parent file bytes equal fixed G2 blobs; all three new files independently recompute the fixed peer Git blob IDs. Direct three-file adoption is valid; no other peer-branch changes are approved."
+    },
+    {
+      "topic": "fresh_and_existing_schema_25",
+      "result": "Fresh DDL and same-version writable-open maintenance both add the same nonunique doc_key index using IF NOT EXISTS. Schema remains 25; preexisting duplicate child keys retain their semantics. Existing read-generation ensure code is unchanged."
+    },
+    {
+      "topic": "mismatch_and_rollback",
+      "result": "Nonzero non-25 versions still return Mismatch before maintenance DDL. The existing committed v21/v24 and other-version guard assertions remain. Extra physical index is compatible with schema-25 readers; schema-24 readers still reject schema 25. This is static compatibility analysis, not a newly executed historical-binary test."
+    },
+    {
+      "topic": "readonly_and_failure",
+      "result": "CREATE INDEX errors still propagate through normal migration/open. New query_only regression asserts error and unchanged logical rows when the index is missing. No read-only bypass or failure-to-success fallback was added. Physical index/schema bytes necessarily change on successful installation; no whole-file hash preservation claim."
+    },
+    {
+      "topic": "logical_data_and_epoch",
+      "result": "DDL only adds a nonunique secondary index. No logical row rewrites, semantic version bump, epoch advancement or incarnation replacement are added. New regression compares all table values before/after two real open cycles including metadata epoch sentinels and existing incarnation."
+    },
+    {
+      "topic": "query_path",
+      "result": "Fixed G2 delete_files_data_chunk_keep_test_edges deletes chunks; schema triggers delete document_manifest, whose FK child lookup references chunk_symbol_identity(doc_key). The new index addresses that lookup. No claim that it removes all quadratic work or delivers any measured wall-clock speedup."
+    },
+    {
+      "topic": "tests_preserved",
+      "result": "All four original tests and assertions remain; semantic-object checks are strengthened. New fifth test covers missing-index same-version installation, readonly rejection, two opens/idempotence, full logical-row/epoch preservation, real indexed cascade EXPLAIN, child deletion and foreign_key_check. No static need for an additional mandatory test beyond executing this full target and existing engineering controls was found."
+    }
+  ],
+  "workflow": {
+    "path": "/dev/shm/p8-doc-key-index-root/p8-prefix-window-engineering.yml",
+    "bytes": 9446,
+    "sha256": "fdf3d3bffb674e0c9be5fb59b095a03e80d11425ff7048b23a8f54d0185cac22",
+    "git_blob": "85a6a3f06d064f7852fc9e6aee96096af2a5ca34",
+    "previous_sha256": "11bfc15d5836459afe2a9137351ea5b46c400b12227eb5adea02c9612fb90658",
+    "exact_delta": "Exactly one command line added; removing it reproduces the previously reviewed workflow byte-for-byte.",
+    "new_command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "ci_schema_guard_contract"
+    ],
+    "all_other_eight_commands_and_workflow_bytes_unchanged": true,
+    "scope": "Engineering nine-command controls/build and original 1k/10k rep0 diagnostics only; no full N30 approval, no changes to original CI or #160."
+  },
+  "original_tests": [
+    "fresh_index_really_initializes_current_schema",
+    "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+    "nonadjacent_versions_still_require_rebuild",
+    "committed_v24_requires_rebuild_and_invalidates_legacy_rows"
+  ],
+  "new_tests": [
+    "fresh_index_really_initializes_current_schema",
+    "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade",
+    "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+    "nonadjacent_versions_still_require_rebuild",
+    "committed_v24_requires_rebuild_and_invalidates_legacy_rows"
+  ],
+  "execution": {
+    "cargo_or_product_executed_by_reviewer": false,
+    "peer_test_claims_used_as_independent_execution_evidence": false,
+    "required_next": "Run the full five-test ci_schema_guard_contract target and all existing engineering controls at the adopted engineering head. Preserve original failures and source identities."
+  },
+  "limitations": [
+    "Review applies only to the fixed three product/test blobs and exact one-line engineering-workflow increment.",
+    "No production correctness or performance pass is inferred from this static acceptance.",
+    "Source-approval registry and final formal acceptance remain separate.",
+    "Original TODO count remains 29; no TODO closure is authorized by this review."
+  ],
+  "inputs": {
+    "0.diff": {
+      "bytes": 1295,
+      "sha256": "46982ae2ed1beba096583d53ffb8417afa8434e1cb02d0f0a66c75870aa73daa"
+    },
+    "1.diff": {
+      "bytes": 625,
+      "sha256": "d75295011ed9df31884e178ff410434246b91c8acbc2fff8b734597217b32bb2"
+    },
+    "2.diff": {
+      "bytes": 6540,
+      "sha256": "66b23b2e415620a072d111e34432dd874ad093e28b3c313e5261da4a2751e201"
+    },
+    "blob-verification.json": {
+      "bytes": 984,
+      "sha256": "e83cfa87d9b50e460bb6bb540add068dc8bf02f8850bebd8a00b35430911a3f4"
+    },
+    "fixed-source-inputs.json": {
+      "bytes": 87826,
+      "sha256": "0e92616644bf681cc2c29bc3e337010db9e3d50bd3672c75c9468cd1a49f09b7"
+    },
+    "workflow-new.yml": {
+      "bytes": 9446,
+      "sha256": "fdf3d3bffb674e0c9be5fb59b095a03e80d11425ff7048b23a8f54d0185cac22"
+    }
+  }
+}

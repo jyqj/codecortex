@@ -1,0 +1,127 @@
+{
+  "schema": "p8-doc-key-index-adoption-review-v1",
+  "reviewer": "/root/scale_engineering",
+  "reviewed_at_utc": "2026-10-08T20:48:48Z",
+  "assessment": "accepted_scoped_static_adoption_review",
+  "base_source": "bb9a96d71622458c39a143055360cc97f0d11d78",
+  "target_integration_base": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "peer_fixed_source": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "minimal_patch_commit": "1b9e846db340cf9a5297ef44ab548a0816712029",
+  "minimal_patch_parent": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+  "scope": "Read-only source review of three-path physical access-path fix. No product execution, new Cargo build, workflow mutation or task completion.",
+  "production_paths": [
+    "crates/cc-db/src/sql/index_v1.sql",
+    "crates/cc-db/src/index_migrate.rs"
+  ],
+  "test_path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+  "hot_path": [
+    "IndexDb::delete_files_data_chunk_keep_test_edges executes DELETE FROM chunks WHERE file_path IN (...) for every replace/remove batch.",
+    "chunk_document_delete trigger and the existing manifest FK cascade delete document_manifest rows for removed chunks.",
+    "Deleting each document_manifest parent probes child chunk_symbol_identity by doc_key; existing child primary key(chunk_id) and index(file_path) do not provide this equality access path.",
+    "A D-document deletion in I identity rows can execute Theta(D*I) child scanning without the new index; the non-unique B-tree doc_key index changes that child access to indexed lookup. Actual end-to-end speedup remains unmeasured here."
+  ],
+  "semantics": [
+    "Fresh FULL_SCHEMA_SQL installs the new non-unique index without altering tables, columns, constraints, triggers or stored representation.",
+    "Existing current schema 25 runs CREATE INDEX IF NOT EXISTS on ordinary writable open, after the existing semantic_outbox index maintenance; no row rewrite, schema-version bump or direct epoch/incarnation mutation.",
+    "Existing version!=0 and !=25 returns Mismatch before the index-creation branch; historical v21/v24 rebuild contracts remain unchanged.",
+    "DDL failures propagate through db_err and ?, not fallback reset; query_only remains enabled and rejects a missing-index installation.",
+    "Full staging and direct writer derive drop/recreate index lists from FULL_SCHEMA_SQL; the new access path is restored as part of the existing protocol.",
+    "No modification to resolution frontier, durable recovery, budgets, closure completion, 15-table oracle or raw sampling/host strata."
+  ],
+  "test_review": [
+    "Existing four schema-guard tests are retained; fresh-schema control now requires the index and parent-delete EXPLAIN SEARCH.",
+    "New test constructs current-schema rows, drops the index, requires original child SCAN, records every SQL table and metadata, requires query_only refusal, reopens twice and requires identical rows plus indexed SEARCH.",
+    "Actual parent deletion retains only the intended other child row and PRAGMA foreign_key_check is empty."
+  ],
+  "compatibility_with_prefix_window_833": "Disjoint 3 cc-db paths vs single cc-index reconcile.rs path; no changes to the witness theorem, same-prepare lifetime, epoch fence or actual SqlWork accounting.",
+  "limitations": [
+    "First writable open of a large existing DB pays real index-build time/space/lock cost; existing busy/disk errors must remain visible.",
+    "Index maintenance adds storage and insertion costs; end-to-end scale performance requires source-bound execution.",
+    "This index does not eliminate repeated dependency-prefix SQL or full scan per resume, and cannot alone justify attributing old fresh-staging or oracle time to child-key deletion.",
+    "Peer job status and elapsed seconds below are API observations, not independently replayed raw acceptance; different hosts/source binaries mean no causal speedup claim and no reuse as G samples."
+  ],
+  "peer_execution_receipt": {
+    "source": "1b9e846db340cf9a5297ef44ab548a0816712029",
+    "command": "cargo test --offline --locked -p cc-db --test ci_schema_guard_contract",
+    "reported_passed": 5,
+    "reported_failed": 0,
+    "reported_ignored": 0,
+    "embedded_original_stdout_stderr_sha256": "d554c05c521bd98bb750c376b5e641b7f9a51d859788e942c68bd1e5183cd40d",
+    "verified_embedded_log_matches_its_sha256": true,
+    "executed_by_this_reviewer": false
+  },
+  "api_observation": {
+    "observed_at_utc": "2026-10-08T20:46:13Z",
+    "original_run": 37824742267,
+    "original_source": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+    "indexed_run": 37835810882,
+    "indexed_source": "599a7050e7d52b5b7b93975c419138e175b3f754",
+    "execute_step_seconds": [
+      {
+        "scale": 1000,
+        "original": 44,
+        "indexed": 42
+      },
+      {
+        "scale": 5000,
+        "original": 232,
+        "indexed": 213
+      },
+      {
+        "scale": 10000,
+        "original": 535,
+        "indexed": null,
+        "indexed_status": "in_progress"
+      },
+      {
+        "scale": 50000,
+        "original": 5795,
+        "indexed": null,
+        "indexed_status": "in_progress"
+      },
+      {
+        "scale": 100000,
+        "original": null,
+        "original_status": "in_progress",
+        "indexed": null,
+        "indexed_status": "in_progress"
+      }
+    ]
+  },
+  "unresolved_static_blockers": [],
+  "suggested_integration_validation": [
+    "cargo test --locked -p cc-db --test ci_schema_guard_contract",
+    "retain original epoch/durable rebuild and 15-table scale controls on the resulting fixed source; do not recertify any prior raw under the new source"
+  ],
+  "remaining_original_todos": 29,
+  "new_original_todos_completed": 0,
+  "paths": [
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "base_bytes": 7831,
+      "base_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+      "target_base_matches_original_base": true,
+      "peer_bytes": 7941,
+      "peer_sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "peer_blob": "0de28f327cc989fafc112d6415491026de167bd1"
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "base_bytes": 25171,
+      "base_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+      "target_base_matches_original_base": true,
+      "peer_bytes": 25396,
+      "peer_sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "peer_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+    },
+    {
+      "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+      "base_bytes": 6487,
+      "base_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
+      "target_base_matches_original_base": true,
+      "peer_bytes": 12152,
+      "peer_sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
+      "peer_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627"
+    }
+  ]
+}

@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "kind": "readonly_runtime_two_parent_semantic_comparison",
+  "reviewer": "/root/pr_audit",
+  "ours": "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+  "owner": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "owner_api_object": {
+    "tree": "c75038d358e6c8b881a246bfd3c3111cda86dde0",
+    "parent": "f25d0b994edf9c08c5514864701e3b050b317c88",
+    "source": "GitHub GET git/commits/29682890 read during this review; matched local immutable commit"
+  },
+  "inputs_sha256": {
+    "8c1e943c84208bd3ddde4bb36e29448fcba14f6c": {
+      "scripts/p8_runtime.py": "a78880dfc50faf4ed86bda962cc6cbd7ac0252a493cfe69741c02ee49445847b",
+      "scripts/tests/test_p8_runtime.py": "e9eb3bd3a00c607ee89b99fa9719fbe70e1a99d0a55fe5e8d51000f0358e8c8c"
+    },
+    "29682890c89511dd6f477a6bf48bd969aa1537af": {
+      "scripts/p8_runtime.py": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+      "scripts/tests/test_p8_runtime.py": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0"
+    },
+    "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c": {
+      "scripts/p8_runtime.py": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+      "scripts/tests/test_p8_runtime.py": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0"
+    }
+  },
+  "owner_two_files_exact_equal_PR160_d2": true,
+  "shared_eight_evidence_controls_ast_sha256": "6c3663b092eabaa0f822c4985dd41b105e9e3cb95575e24360701fa594008365",
+  "owner_new_controls_class_ast_sha256": "3822955ab2c0ef9a4a6d24c91114f023d6a7dfcfa2f67cc3853f36f9da6cbda5",
+  "control_mapping": [
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_oracle_difference_keeps_statistics_and_failure_exit_one",
+      "ours": "RuntimeDriverControls.test_completed_unequal_oracle_preserves_gate_failure_and_all_statistics",
+      "scope": "Our actual synthetic stdio/oracle/replay control also checks all 60 latency denominators and unchanged archived statistics."
+    },
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_equal_oracle_still_keeps_passing_statistics",
+      "ours": "RuntimeDriverControls.test_equal_oracle_retains_successful_observation",
+      "scope": "Both check exit0 and60 successful outcomes."
+    },
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_oracle_infrastructure_failure_stays_exit_two",
+      "ours": "RuntimeDriverControls.test_oracle_execution_error_remains_driver_failure",
+      "scope": "Owner explicitly checks no statistics call; ours checks actual oracle exit2/failed report and source require skips statistics."
+    },
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_raw_budget_abort_drains_actual_worker_before_sealing",
+      "ours": "RuntimeDriverControls.test_raw_budget_failure_cancels_and_joins_before_sealing",
+      "scope": "Both exercise actual raw budget and real executor; ours additionally retains missing terminal metadata from exhausted sink."
+    },
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows",
+      "ours": "RuntimeDriverControls.test_existing_drain_deadline_preserves_canceled_outcomes_and_bounds",
+      "scope": "Owner deterministic one-active/59-canceled fixture; ours300attempts with [180,70], all terminal IDs and canceled>0."
+    },
+    {
+      "owner": "RuntimeFailureLifecycleTests.test_unconfirmed_worker_shutdown_cannot_create_a_seal",
+      "ours": "OwnedWriterSealControls.test_worker_unfinished_seal_contract",
+      "scope": "Owner combines raw-budget failure and refused70s drain; ours proves live real delayed Product handling blocks seal with59/60rawrows. Keep both distinct triggers."
+    }
+  ],
+  "containment_conclusion": "Ours covers the six repaired behavior categories but is not a bytewise or full metadata superset; preserve owner controls and small differences rather than replacing the whole runtime file. Static only; no claim owner controls were executed against ours.",
+  "small_owner_deltas_to_preserve": [
+    {
+      "path": "scripts/p8_runtime.py",
+      "owner_line": 518,
+      "change": "report.parity_exit_code=result.returncode",
+      "reason": "Additive explicitly recorded oracle outcome; ours preserves same value in original oracle_process raw/parity.json but lacks this report field. For completed oracle0/1 paths, preserve alongside existing parity hash/statistics."
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "owner_lines": [
+        398,
+        402
+      ],
+      "change": "Catch only ProcessLookupError around process.kill before continuing original70s bounded drain.",
+      "reason": "Defensive difference worth retaining. Current local CPython3.12 Popen.send_signal already suppresses os.kill ProcessLookupError, so this review does not claim a reproduced ordinary Linux bug. If kill itself propagates, ours currently skips that wait while final unfinished gate still prevents a false seal; no timeout increase needed."
+    }
+  ],
+  "do_not_replace_ours_with_owner": [
+    "Preserve admission-ready event around submit, including failure after enqueue; slot and terminal identity ownership.",
+    "Preserve KeyboardInterrupt failed receipt and terminal retention sidecar when raw sink is exhausted.",
+    "Preserve both construction_pending flags; None after failed constructor is not evidence of no launched writer.",
+    "Preserve actual retained main/comparison Product references and product_closed, including pre-replay all-product writer predicate.",
+    "Preserve outer final gate over real unfinished futures, sampler, both process/reader/exit_watcher states and pending construction. Owner worker_cleanup snapshot and product=None successful path are not replacements.",
+    "Preserve all25 ours tests plus6 owner RuntimeFailureLifecycleTests; retain common8 onlyonce."
+  ],
+  "test_import_notes": {
+    "preserve_owner_class_without_modifying_assertions": true,
+    "additional_imports": [
+      "os",
+      "types.SimpleNamespace",
+      "test_p8_runtime_evidence.ReceiptFixture"
+    ],
+    "next_validation_by_author": "Run original31 union controls plus explicit additive parity metadata assertions and a narrowly labeled injected ProcessLookupError cleanup control if that defensive delta is adopted; then appropriate full P8 regressions. No tests run by this reviewer."
+  },
+  "provenance_to_preserve": {
+    "owner_directory": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/",
+    "owner_directory_inventory": {
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/README.md": {
+        "bytes": 2338,
+        "sha256": "feccd8499327b96a8017ae54ed12301cfd38129a8e1eed5ee7b987cd78fb9d8e"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/archive-verification.json": {
+        "bytes": 1607,
+        "sha256": "02c4b6803d620eff52735bed1e6aa079f1a2dbf634c8cd0b6bdfafc94c7cc5f2"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/evidence-applicability-boundary.json": {
+        "bytes": 7439,
+        "sha256": "673b68e32dabda0902a3d304b891715814c83e8123d17844d01ece9a940406b0"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/final-pin-independent-review.json": {
+        "bytes": 2544,
+        "sha256": "c89cc399fa4bb8095452cf178c31ebbab2918d87f52487b37607d01552f9c4ec"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/import_exact_commit.py": {
+        "bytes": 2544,
+        "sha256": "e56bf95002dbb22c6694d04d165b34aca4c9bba2525d019ce75070046e47bfb9"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/independent-failure-path-review.json": {
+        "bytes": 17565,
+        "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-evidence-inventory.json": {
+        "bytes": 127254,
+        "sha256": "9a48d4ec71117b3edd060546f82c367bc8a5b39c995f055b31eed898bf27c6b8"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-evidence.tar.gz": {
+        "bytes": 173326,
+        "sha256": "2f79bac4019a0c2b21e35d746f1eca30c2990fec489b5707779b92a935ce1e03"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-tests.log": {
+        "bytes": 5386,
+        "sha256": "0a74715940b4a2eceed8acc14fb1c548c182535d13b4133eaed2add85c881083"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8-regressions-receipt.json": {
+        "bytes": 912,
+        "sha256": "d9d988b3b941bd67476da35fd12fe2a73205c360179e5a273f92b259d6fa44da"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8-regressions.log": {
+        "bytes": 60308,
+        "sha256": "f8353a36bf95ee7eeb880650b5f767f949b9af3072e8249f7ba1e837567fedbb"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8_runtime.py.pr160.patch": {
+        "bytes": 9915,
+        "sha256": "88a816b417b60386555ba6c0b7f3e9ffd5f17c4af11497825334cf2bbc2fd78d"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-evidence-inventory.json": {
+        "bytes": 126627,
+        "sha256": "2dc1ea5e0235526d01aa640cfd3a7f4ae7cf1c0f546e512eeceffa13c96c7e27"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-evidence.tar.gz": {
+        "bytes": 179137,
+        "sha256": "ec4b76a68dbded7a6cb604257ebcbb6bdbba3b30fdeb8b10d1119c2f3170f77f"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-tests.log": {
+        "bytes": 2211,
+        "sha256": "8e86c132b7918bdb712b369d3c36c6edf6793f0f049296f72ebbed98e7515334"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/regression-inputs-before.json": {
+        "bytes": 163821,
+        "sha256": "863ce7940a7bab1dbf271cd460011c87f1e93dfce18fad361d35e66bfc071fe6"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-evidence-inventory.json": {
+        "bytes": 132414,
+        "sha256": "bb34299c418d27cdbc90187322536c418eb5413ca0613887cdf5429fcc7fd4d1"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-evidence.tar.gz": {
+        "bytes": 179515,
+        "sha256": "4187265c02b2e158ba8c8d8c0e77162392c5931c0e3fb73f066439d903fcf610"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-review.json": {
+        "bytes": 5099,
+        "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-tests.log": {
+        "bytes": 2211,
+        "sha256": "dce0b99b833ba15a330e6c023b10987368a9994b8a649a687addd305b138378e"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/source-pin-binding.json": {
+        "bytes": 2001,
+        "sha256": "b1e991d12c631b3a6c290904bdf04a3a30cb4e64fb3b4e1938a36f2cfc77e91f"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/source-verification-original.log": {
+        "bytes": 572,
+        "sha256": "59ce5656adeeb832365cf72878f4ecb96131228e5851c5bb1a8a509f94a73f70"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/test_p8_runtime.py.pr160.patch": {
+        "bytes": 11251,
+        "sha256": "88921d35c6c72769a18e5c8168d6cc8f13723d03ada9b8d3507e2952b3326a31"
+      }
+    },
+    "records_are_from_other_session": "Reviewer labels such as pr_audit inside owner artifacts belong to their original session; do not relabel as this independent review.",
+    "owner_main_review_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
+    "rules": [
+      "Carry execution-599 original evidence and full round6-runtime-cleanup archives/logs/reviews without rewriting their original source/runner identities.",
+      "Retain both previous independent-source-review documents as historical immutable bytes before producing new integrated review; exact mapping of new two-file delta requires a new product/review/pins chain.",
+      "Owner runtime14-test and P8-regression records certify owner1e458/9bdf files. Our381 record certifies originalHEAD44f plus a788/e9eb candidate bytes. Neither becomes a test run of the future merged source.",
+      "Owner applicability boundary is a historical scoped plan assuming its selected delta; our combined cold/rollback/runtime differences need an explicit fresh applicability statement. No rewriting old599 execution as currenthead."
+    ]
+  },
+  "original_task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "closed_by_this_review": 0
+  },
+  "new_tests_builds_or_repo_mutations": 0
+}

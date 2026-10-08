@@ -1,0 +1,310 @@
+{
+  "ours": "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+  "owner": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "expected_parent_order": [
+    "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+    "29682890c89511dd6f477a6bf48bd969aa1537af"
+  ],
+  "resolution": "Preserve our corrected runtime/admission inputs; add original owner parity_exit_code and defensive ProcessLookupError handling plus all six original owner lifecycle controls. All new owner evidence bytes are preserved; admission will be rebound in a later independently reviewed commit.",
+  "retained_original_our_class_asts": [
+    "RuntimeDriverControls",
+    "RuntimeEvidenceTests",
+    "OwnedWriterSealControls"
+  ],
+  "owner_class_ast_identical": true,
+  "changed_inputs": {
+    "scripts/p8_runtime.py": "1bcb34e17c714a2838ea9ab1468095b17b7037d652bddc66654e784e22961e56",
+    "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+  },
+  "changed_paths": 58,
+  "tree": "854202cf6b0eaf5506d2fdc9394e3cc5b7d0bbf2",
+  "task_sha256": "a9b1e95e38ed207b6d1950d98ee68a8a51a706dd427559f2484290346e006bee",
+  "inherited_evidence_files": [
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/backfill-independent-review.json",
+      "bytes": 12316,
+      "sha256": "263283097d57d3ce3e5535d6db75c3126bca9e2a9b9b56c9029e4ba5fbb208ed"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/checkpoint.json",
+      "bytes": 3538,
+      "sha256": "202c5109e7780f1679e6c1efe543e4ad1d34ebec404f07bc049af0403eaf5ed6"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-all-jobs-independent-review.json",
+      "bytes": 150167,
+      "sha256": "fe562a5ed8ba9a7f040c3d7be95bf12545e35d4dd6d13b9d6a4559872277d555"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-final-jobs-metadata.json",
+      "bytes": 8771,
+      "sha256": "ca2c05bd069f2522550b2c21f5b73220884739f007e5769273d978b8cb21bae0"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-final-run-metadata.json",
+      "bytes": 13488,
+      "sha256": "3ffb03f525e433ef562bedc305e7e78df4bfa0a47f3cd9a10421cb6167b74eef"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-msrv-original.log",
+      "bytes": 38242,
+      "sha256": "b42e8381aedc8e2f8cefbe9baeece9bcda6ad6274254ba6060eecb766ce3c77e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-msrv-security-independent-review.json",
+      "bytes": 2547,
+      "sha256": "77ed8edb3b12f072777ae428b93a408eecc71194c101c8e323110df60032b3dd"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/ci-three-jobs-original-logs.tar.gz",
+      "bytes": 209235,
+      "sha256": "31bf4339db75d40e604919f81652298c1b461a6830ecf5ef72384044ed771deb"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/completed-subgates-2054-checkpoint.json",
+      "bytes": 3432,
+      "sha256": "8ba3a261a83aa7be53ad329bf9e7580a1fc8f4939f20608f9b34f06cd20a0c9a"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/fault-recovery-independent-review.json",
+      "bytes": 9041,
+      "sha256": "f83cdf8f60dcb7819b108adf378d01a4f3d48e0d700901f906d52a081b00466e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/frozen-execution-and-acceptance-plan.json",
+      "bytes": 163047,
+      "sha256": "71e06966841d5389749696cf17652cc6dfe95fa4b28267f13c2b66e6b2763ec3"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/gates-independent-review.json",
+      "bytes": 10782,
+      "sha256": "2ab07aea801e39589bd9a5a3329e321e0e6dab5c9ed64ea94507104ebcb4ea69"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/gates-root-admission.json",
+      "bytes": 866,
+      "sha256": "040a8878a08eeacc40d844bfe6d68da45e1aba73d6cb5998df89c324ad0c286d"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/lifecycle-cargo-selection-addendum.json",
+      "bytes": 1220,
+      "sha256": "834d6b908ccbeeb5409da0b6c15e463da74abcbeec10dcc869e0af671e5cc807"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/lifecycle-independent-review.json",
+      "bytes": 25009,
+      "sha256": "9d0bc52db01dd0e402fc68cb6c039fe767386d43b32892a912a6e956f176ce36"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/mixed-c4-independent-review.json",
+      "bytes": 4197,
+      "sha256": "c5ae5b77bd9893429a9f09b17d48ba01aa5a1a69e11e4e3bcde570c282dc170d"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/mixed-c8-independent-review.json",
+      "bytes": 4206,
+      "sha256": "5577ac9e9fb18c6984777ed898059903d6f8a85638fd0ae461a2402f662be09d"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/original-artifact-metadata-checkpoint.json",
+      "bytes": 33620,
+      "sha256": "5d835c647069a0b055a4f7dc6bbc4cc4d02c0dedf20cccacb901c2313c376de2"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/p7-closeout-originals-independent-review.json",
+      "bytes": 26912,
+      "sha256": "17af87c08bf3e1aef854d99726aeff6ccd9fa48e89c7530bf3db399050d8a362"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/p7-engineering-independent-review.json",
+      "bytes": 6170,
+      "sha256": "f45d4ae348434857c64acf0b84b54b381e8b8041fcc1ef679521a403bf776b6a"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/platform-collector-equivalence-review.json",
+      "bytes": 835,
+      "sha256": "e9784dbc05be9093ed884ff795ffce522903047c348543e1d33291fc8fb1c20f"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/platform-eight-cells-independent-review.json",
+      "bytes": 11420,
+      "sha256": "ffdaa1a7c35f43086a3dbf7f8b70800851b889653789c6e7426f93771db3cb85"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/platform-final-task-mapping.json",
+      "bytes": 28293,
+      "sha256": "df36b719ff0ebac833555154da4e9fd0728210100adfc78b3793544ef0df02f0"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/recovery-independent-review.json",
+      "bytes": 15398,
+      "sha256": "bc8c96ed282ed960b1891bcf52b95ef546f911d5599cca1bf7b14298326cc1e7"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-1k-independent-review.json",
+      "bytes": 13170,
+      "sha256": "4dd3112d2c9e595a163b03c73218667a49062a774527c85522ebd90fa93eaed9"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-1k-original-validator-return.json",
+      "bytes": 16095,
+      "sha256": "da419ec43b88830dc0aded00f5ce98d3ee7e8af0183bfdc9e608ce5efcf07d35"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-build-independent-review.json",
+      "bytes": 855,
+      "sha256": "a14ec6c63eb87b0949aae05b9fac859fbe91f257e1f7e1e1786534d73072d084"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-partial-matrix-rejection.json",
+      "bytes": 632,
+      "sha256": "20475cb320f1e5421a371ebf954d5bb2fc64975f442295bcc10fc830796fea70"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-streaming-helper-root-review.json",
+      "bytes": 1638,
+      "sha256": "e9442718fc5ef6ea02b799905a0490c8af7258fd3526445ad4093e7fe85d795c"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-streaming-helper.py",
+      "bytes": 19399,
+      "sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-streaming-review-controls.json",
+      "bytes": 4578,
+      "sha256": "75cb623b7f5568718b60c679b2bdd5659a9f3a17e8301e88984e21b50381630e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/execution-599/scale-streaming-review-procedure.md",
+      "bytes": 6712,
+      "sha256": "abfdaf5f4ef7bea82f923438f35062855710f6b9b2bbb6cfd393ee0546e4a3fc"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round5-independent-source-review.json",
+      "bytes": 175725,
+      "sha256": "d6294acc9ff75bc66dbcbc6714f5c2976d689498adaee2549f05c35c4597341e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/README.md",
+      "bytes": 2338,
+      "sha256": "feccd8499327b96a8017ae54ed12301cfd38129a8e1eed5ee7b987cd78fb9d8e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/archive-verification.json",
+      "bytes": 1607,
+      "sha256": "02c4b6803d620eff52735bed1e6aa079f1a2dbf634c8cd0b6bdfafc94c7cc5f2"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/evidence-applicability-boundary.json",
+      "bytes": 7439,
+      "sha256": "673b68e32dabda0902a3d304b891715814c83e8123d17844d01ece9a940406b0"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/final-pin-independent-review.json",
+      "bytes": 2544,
+      "sha256": "c89cc399fa4bb8095452cf178c31ebbab2918d87f52487b37607d01552f9c4ec"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/import_exact_commit.py",
+      "bytes": 2544,
+      "sha256": "e56bf95002dbb22c6694d04d165b34aca4c9bba2525d019ce75070046e47bfb9"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/independent-failure-path-review.json",
+      "bytes": 17565,
+      "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-evidence-inventory.json",
+      "bytes": 127254,
+      "sha256": "9a48d4ec71117b3edd060546f82c367bc8a5b39c995f055b31eed898bf27c6b8"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-evidence.tar.gz",
+      "bytes": 173326,
+      "sha256": "2f79bac4019a0c2b21e35d746f1eca30c2990fec489b5707779b92a935ce1e03"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/original-tests.log",
+      "bytes": 5386,
+      "sha256": "0a74715940b4a2eceed8acc14fb1c548c182535d13b4133eaed2add85c881083"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8-regressions-receipt.json",
+      "bytes": 912,
+      "sha256": "d9d988b3b941bd67476da35fd12fe2a73205c360179e5a273f92b259d6fa44da"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8-regressions.log",
+      "bytes": 60308,
+      "sha256": "f8353a36bf95ee7eeb880650b5f767f949b9af3072e8249f7ba1e837567fedbb"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/p8_runtime.py.pr160.patch",
+      "bytes": 9915,
+      "sha256": "88a816b417b60386555ba6c0b7f3e9ffd5f17c4af11497825334cf2bbc2fd78d"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-evidence-inventory.json",
+      "bytes": 126627,
+      "sha256": "2dc1ea5e0235526d01aa640cfd3a7f4ae7cf1c0f546e512eeceffa13c96c7e27"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-evidence.tar.gz",
+      "bytes": 179137,
+      "sha256": "ec4b76a68dbded7a6cb604257ebcbb6bdbba3b30fdeb8b10d1119c2f3170f77f"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/patched-tests.log",
+      "bytes": 2211,
+      "sha256": "8e86c132b7918bdb712b369d3c36c6edf6793f0f049296f72ebbed98e7515334"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/regression-inputs-before.json",
+      "bytes": 163821,
+      "sha256": "863ce7940a7bab1dbf271cd460011c87f1e93dfce18fad361d35e66bfc071fe6"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-evidence-inventory.json",
+      "bytes": 132414,
+      "sha256": "bb34299c418d27cdbc90187322536c418eb5413ca0613887cdf5429fcc7fd4d1"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-evidence.tar.gz",
+      "bytes": 179515,
+      "sha256": "4187265c02b2e158ba8c8d8c0e77162392c5931c0e3fb73f066439d903fcf610"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-review.json",
+      "bytes": 5099,
+      "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/root-independent-tests.log",
+      "bytes": 2211,
+      "sha256": "dce0b99b833ba15a330e6c023b10987368a9994b8a649a687addd305b138378e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/source-pin-binding.json",
+      "bytes": 2001,
+      "sha256": "b1e991d12c631b3a6c290904bdf04a3a30cb4e64fb3b4e1938a36f2cfc77e91f"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/source-verification-original.log",
+      "bytes": 572,
+      "sha256": "59ce5656adeeb832365cf72878f4ecb96131228e5851c5bb1a8a509f94a73f70"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/round6-runtime-cleanup/test_p8_runtime.py.pr160.patch",
+      "bytes": 11251,
+      "sha256": "88921d35c6c72769a18e5c8168d6cc8f13723d03ada9b8d3507e2952b3326a31"
+    }
+  ],
+  "whitespace_checks": {
+    "all_staged_exit": 2,
+    "all_staged_log_sha256": "1f472f3c5556eda58df718f7a108028c1c7f401a3c03012083238dcd3193e6c8",
+    "two_changed_inputs_exit": 0,
+    "note": "Original owner CI logs and original patch context contain whitespace; these unchanged evidence bytes are retained. The source/control input check passes."
+  }
+}

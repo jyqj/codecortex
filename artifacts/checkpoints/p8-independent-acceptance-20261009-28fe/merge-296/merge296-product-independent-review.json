@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "merge296_fixed_tree_non_author_review",
+  "reviewer": "/root/pr_audit",
+  "status": "accepted_scoped_actual_remote_product",
+  "candidate_tree": "854202cf6b0eaf5506d2fdc9394e3cc5b7d0bbf2",
+  "expected_parents": [
+    "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+    "29682890c89511dd6f477a6bf48bd969aa1537af"
+  ],
+  "source_sha256": {
+    "scripts/p8_runtime.py": "1bcb34e17c714a2838ea9ab1468095b17b7037d652bddc66654e784e22961e56",
+    "scripts/tests/test_p8_runtime.py": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7"
+  },
+  "only_runtime_changes": [
+    "Defensive ProcessLookupError catch around kill; original70s wait retained",
+    "Additive report.parity_exit_code"
+  ],
+  "checks": {
+    "normalized_runtime_bytes_equal_ours": true,
+    "all_ours_test_AST_nodes_retained": true,
+    "owner6_control_class_AST_exact": true,
+    "test_methods": 31,
+    "owner_evidence_original_files_exact": 56,
+    "complete_delta_paths": 58,
+    "tasks_guard_registry_ci_identical_to_ours": true
+  },
+  "original_test_execution": {
+    "receipt_path": "/workspace/scratch/28fef0db5e01/integration-validation/round8-merge296/all-p8-receipt.json",
+    "receipt_sha256": "e03ac75346b7bcdf65d829956f175652c7d785cc51e73b19ebc82b49f39c1254",
+    "head": "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+    "merge_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+    "before_after_inputs_equal": true,
+    "command": [
+      "python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p8*.py",
+      "-v"
+    ],
+    "passed_tests": 387,
+    "exit_code": 0,
+    "wrapper_elapsed_seconds": 86.62575663800817,
+    "log_sha256": "1e38609b91dfe68623d144e42121bbd0c6b985ff4615774daacc1a4350fb5b1b",
+    "log_bytes": 64326,
+    "started_at_utc": "2026-10-08T21:36:58.117432+00:00",
+    "finished_at_utc": "2026-10-08T21:38:24.762376+00:00",
+    "future_commit_relabelling": false
+  },
+  "limits": [
+    "This review reads original execution receipts/logs and immutable candidate tree; no test rerun.",
+    "Inherited original whitespace failures remain unchanged; source-only clean check does not mean full inherited patch check passed.",
+    "No actual new mixed/soak/backfill run or original task completion certified.",
+    "Current local CPython suppresses ordinary os.kill ProcessLookupError internally; additional catch is defensive, not claimed reproduced product race."
+  ],
+  "repo_mutations_by_reviewer": 0,
+  "todo_remaining": 29,
+  "product_commit": "d381f413bee3606bdc7410a73be855a0aab4aabb",
+  "actual_object_verification": {
+    "github_git_commit_api": true,
+    "local_commit_sha1_recomputed": true,
+    "tree": "854202cf6b0eaf5506d2fdc9394e3cc5b7d0bbf2",
+    "ordered_parents": [
+      "8c1e943c84208bd3ddde4bb36e29448fcba14f6c",
+      "29682890c89511dd6f477a6bf48bd969aa1537af"
+    ]
+  },
+  "prior_candidate_report": {
+    "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge296-candidate-independent-review.json",
+    "sha256": "e7cc419c98683c4e5e2e09a068e8a74499c99bf5482ba88261e615c5635d3a8b"
+  }
+}

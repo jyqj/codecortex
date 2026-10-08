@@ -1,0 +1,69 @@
+{
+  "started_at": "2026-10-08T20:34:27.237503+00:00",
+  "head": "ef6d772aff2756a94c129c2a69d982b4084cda49",
+  "tree": "e3b279def5ca0ea297a9870bb132cf554b06a289",
+  "product": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+  "review": "5b7fe1a980c130a73739a15105a0343392585cc8",
+  "inputs": {
+    "scripts/verify_reviewed_source_v15.py": "bd996fe8146d4bf860601bc5f6442052d6056ef48334553d617abcb7b01e61f3",
+    "scripts/reviewed-source-registry-v15.json": "41c55b45d90a6629154ca6636443d19288a2a0bc63a04e5678ee9907954b6061",
+    "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json": "f85564c69fc8c8adb9b4cd137c19035d57ec6f22384e6aaab6bf0931da59b7b0"
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 200.85562955500063,
+      "log": "00.log",
+      "log_sha256": "a05b7d6bb041347ef9992008ec2aaac09ccf8a8e6c16970ad7199991f7c27c09",
+      "bytes": 572
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06356989200139651,
+      "log": "01.log",
+      "log_sha256": "f89e30bd04896781879968f89b03a66f5f47271046cf377fe3c4e518e49ac159",
+      "bytes": 205
+    },
+    {
+      "argv": [
+        "python3",
+        "-B",
+        "scripts/p8_facts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06604801300272811,
+      "log": "02.log",
+      "log_sha256": "7fba000395cc0acb4b44665e974b86756e9dab603c18cbd46243699c5b64fbfc",
+      "bytes": 2632
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.015809356998943258,
+      "log": "03.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "finished_at": "2026-10-08T20:37:48.251606+00:00",
+  "head_after": "ef6d772aff2756a94c129c2a69d982b4084cda49",
+  "passed": true,
+  "inputs_unchanged": true
+}

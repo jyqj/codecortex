@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-08T20:34:57.828753+00:00",
+  "reviewer": "/root/pr_audit",
+  "verdict": "accepted_scoped_actual_published_product_review_pins_chain",
+  "chain": {
+    "product": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+    "review": "5b7fe1a980c130a73739a15105a0343392585cc8",
+    "review_tree": "20478d9e444df9ea018731bc102aa8c5bbd616b3",
+    "pins": "ef6d772aff2756a94c129c2a69d982b4084cda49",
+    "pins_tree": "e3b279def5ca0ea297a9870bb132cf554b06a289",
+    "pins_parent": "5b7fe1a980c130a73739a15105a0343392585cc8"
+  },
+  "remote_pins_api": {
+    "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-independent/remote-pins-api.json",
+    "sha256": "2369161d689a4465c52a57ecc2d7abcc2bc0609abe9c5feb9375f1195efa13ce",
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/ef6d772aff2756a94c129c2a69d982b4084cda49"
+  },
+  "object_verification": [
+    {
+      "sha1": "ef6d772aff2756a94c129c2a69d982b4084cda49",
+      "kind": "commit",
+      "raw_object_sha1_recomputed": true
+    },
+    {
+      "sha1": "e3b279def5ca0ea297a9870bb132cf554b06a289",
+      "kind": "tree",
+      "raw_object_sha1_recomputed": true
+    },
+    {
+      "sha1": "5b7fe1a980c130a73739a15105a0343392585cc8",
+      "kind": "commit",
+      "raw_object_sha1_recomputed": true
+    },
+    {
+      "sha1": "20478d9e444df9ea018731bc102aa8c5bbd616b3",
+      "kind": "tree",
+      "raw_object_sha1_recomputed": true
+    }
+  ],
+  "prior_static_review": {
+    "path": "/workspace/scratch/28fef0db5e01/pr-audit/merge599-published-review-staged-pins-independent-review.json",
+    "sha256": "bc85752bf75ca9b9a5562ac960c67a7eb1de1677e728b6dda45631172105abde",
+    "verdict": "accepted_scoped_published_review_and_staged_pins"
+  },
+  "published_pins_files": [
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "sha256": "bd996fe8146d4bf860601bc5f6442052d6056ef48334553d617abcb7b01e61f3",
+      "bytes": 11076,
+      "mode": "100644",
+      "matches_staged_and_worktree": true
+    },
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "sha256": "41c55b45d90a6629154ca6636443d19288a2a0bc63a04e5678ee9907954b6061",
+      "bytes": 168561,
+      "mode": "100644",
+      "matches_staged_and_worktree": true
+    }
+  ],
+  "actual_pins_delta_paths": [
+    "scripts/reviewed-source-registry-v15.json",
+    "scripts/verify_reviewed_source_v15.py"
+  ],
+  "guard_changes": {
+    "exact_changed_constants": [
+      "PRODUCT",
+      "REVIEW",
+      "REGISTRY_SHA256"
+    ],
+    "before": {
+      "PRODUCT": "b5700f9a1a3dfb91a3448ebdb311ffd438297442",
+      "REVIEW": "7867c3c1f94d90fea81b82952a011e21bcdd38ba",
+      "REGISTRY_SHA256": "e18d326e959bc036ea770f4bfcc648d41821af2e0445583d553d71e8bb77eac4"
+    },
+    "after": {
+      "PRODUCT": "e52bf0b3c7abd9fca42e5384cdf88f4e33f96768",
+      "REVIEW": "5b7fe1a980c130a73739a15105a0343392585cc8",
+      "REGISTRY_SHA256": "41c55b45d90a6629154ca6636443d19288a2a0bc63a04e5678ee9907954b6061"
+    },
+    "all_other_bytes_identical": true,
+    "normalized_ast_identical": true,
+    "VERSION_BASE_predicates_exclusions_and_CI_selector_unchanged": true
+  },
+  "registry_changes": {
+    "exact_changed_top_level_fields": [
+      "product_source",
+      "review_sha256",
+      "review_source",
+      "validation_inputs"
+    ],
+    "exact_changed_validation_paths": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
+      "scripts/p8_runtime.py",
+      "scripts/tests/test_p8_platform.py",
+      "scripts/tests/test_p8_recovery.py",
+      "scripts/tests/test_p8_runtime.py"
+    ],
+    "complete_inputs_unchanged": 1087,
+    "validation_inventory_count": 136,
+    "source_delta_unchanged": 30,
+    "all_validation_hashes_match_product_and_final_tree": true,
+    "all_other_fields_unchanged": true
+  },
+  "frozen_approval_inputs": [
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "sha256": "d37219bb0906f0f64d44fcf7ccf944865748e876f597ce83ffe79f5d35b3af70",
+      "same_as_BASE": true
+    },
+    {
+      "path": "scripts/reviewed-source-registry-v14.json",
+      "sha256": "610502b90e5ef402875dcf7d32d1128681b2eae3b23a9a4f726fc40a823ba03c",
+      "same_as_BASE": true
+    },
+    {
+      "path": "tests/source_integrity/test_reviewed_source_v14.py",
+      "sha256": "26be23a90a88814781c201e2ad60b0bd618334f82651e1ba55f91ca98d688a0e",
+      "same_as_BASE": true
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "sha256": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6",
+      "same_as_BASE": true
+    },
+    {
+      "path": "tests/source_integrity/v14_historical_test_adapter.py",
+      "sha256": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
+      "same_as_BASE": true
+    },
+    {
+      "path": "tests/source_integrity/test_v14_historical_context.py",
+      "sha256": "651632a8fc46bfe97b9cdb4eca1fb8b06d132033e9892402e667337b415c0386",
+      "same_as_BASE": true
+    }
+  ],
+  "ci": {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+    "same_as_owner_product_review": true
+  },
+  "review_main_sha256": "f85564c69fc8c8adb9b4cd137c19035d57ec6f22384e6aaab6bf0931da59b7b0",
+  "review_tree_and_all_prior_metadata_evidence_unchanged": true,
+  "execution_scope": {
+    "new_complete_v15_proof": "pending author execution and separate immutable log/receipt readback",
+    "dynamic_tests_rerun_by_this_reviewer": false,
+    "existing_371_run_identity": "precommit fixed candidate with original HEAD3f7/MERGE_HEAD599; original receipt unchanged",
+    "remote_branch_ref_update_claimed": false
+  },
+  "scope_limits": [
+    "This record verifies actual immutable remote Git objects and their exact previously reviewed trees/bytes; it does not claim a branch ref update.",
+    "The final full v15 proof result remains a separate execution observation and must retain its actual identity.",
+    "No original TODO or runtime/scale/platform/quality/release certification is granted. Original task counts remain192 total,163 done,29 remaining."
+  ],
+  "blocking_findings": []
+}

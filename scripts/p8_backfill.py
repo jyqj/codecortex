@@ -45,7 +45,7 @@ def execute(root, output):
     root, out = root.resolve(strict=True), new_directory(output)
     target = Path(os.environ.get("CARGO_TARGET_DIR", out.with_name(out.name + "-cargo-target"))).absolute().resolve()
     command = ["cargo", "test", "--release", "--locked", "--offline", "-p", "cc-eval",
-               "--features", "semantic", "--test", "p7_worker_contention", "--no-run",
+               "--no-default-features", "--features", "semantic", "--test", "p7_worker_contention", "--no-run",
                "--message-format=json-render-diagnostics", "--target-dir", str(target)]
     record = dict(schema_version=1, status="running", build_command=command, target_dir=str(target),
                   scope="original CodeIndex worker; fake provider in same process; no external provider",

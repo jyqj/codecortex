@@ -30,7 +30,8 @@ class BackfillBuildTests(unittest.TestCase):
                    "features": ["semantic"], "executable": str(executable), "fresh": False}
             finished = {"reason": "build-finished", "success": True}
             self.assertEqual(backfill.artifact([row, finished], fixture.root, fixture.target), row)
-            for change, error in (({"fresh": True}, "was reused"),
+            for change, error in (({"features": ["default", "semantic"]}, "actual release semantic test profile"),
+                                  ({"fresh": True}, "was reused"),
                                   ({"executable": str(fixture.out / "codecortex")}, "outside its private target")):
                 with self.subTest(change=change), self.assertRaisesRegex(ValueError, error):
                     backfill.artifact([{**row, **change}, finished], fixture.root, fixture.target)
@@ -62,6 +63,8 @@ class BackfillBuildTests(unittest.TestCase):
             self.assertNotEqual(receipt["exit_code"], 0)
             self.assertEqual(len(observed), 1)
             command, environment = observed[0]
+            self.assertIn("--no-default-features", command)
+            self.assertEqual(command[command.index("--features") + 1], "semantic")
             self.assertEqual(command[-2:], ["--target-dir", str(target)])
             self.assertEqual(environment["CARGO_TARGET_DIR"], str(target))
             self.assertEqual(environment["CARGO_BUILD_BUILD_DIR"], str(target))

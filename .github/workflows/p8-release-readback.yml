@@ -1,0 +1,28 @@
+name: P8 original release evidence inventory
+on:
+  push:
+    branches: [work/p8-release-readback-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Retrieve exact original archive and service evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$RUNNER_TEMP/p8-release-readback"
+          gh api repos/jyqj/codecortex/actions/artifacts/11536828205 > "$RUNNER_TEMP/p8-release-readback/artifact.json"
+          gh api repos/jyqj/codecortex/actions/runs/37746625347 > "$RUNNER_TEMP/p8-release-readback/run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11536828205/zip > "$RUNNER_TEMP/p8-release-readback/original.zip"
+      - name: Verify complete byte inventory without executing the candidate
+        env:
+          READBACK_ROOT: ${{ runner.temp }}/p8-release-readback
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -I -S artifacts/checkpoints/p8-release-readback-20261008/inventory.py

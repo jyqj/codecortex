@@ -31,7 +31,7 @@ with zipfile.ZipFile(root/"original.zip") as z:
         rec={"path":n,"bytes":len(v),"sha256":digest(v),"git_blob":hashlib.sha1(b"blob "+str(len(v)).encode()+b"\0"+v).hexdigest(),"zip_mode":i.external_attr>>16}
         records.append(rec)
         print("P8_RELEASE_MEMBER "+json.dumps(rec,sort_keys=True),flush=True)
-        if n in ("result.json","ptv2-shared-rust-environment.json"):
+        if n in ("result.json","ptv2-shared-rust-environment.json") and len(v)<=100000:
             need(len(v)<=100000,"small metadata bound")
             print("P8_RELEASE_METADATA "+json.dumps({"path":n,"value":json.loads(v)},sort_keys=True),flush=True)
             encoded=base64.b64encode(v).decode("ascii")

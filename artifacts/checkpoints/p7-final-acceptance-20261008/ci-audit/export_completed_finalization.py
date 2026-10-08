@@ -88,23 +88,24 @@ headers, chunks = {}, {}
 manifests = []
 closed = False
 for line in original_log.decode("utf-8").splitlines():
-    if "P7_AUDIT_EXPORT_FILE " in line:
+    payload = line if line.startswith("P7_AUDIT_EXPORT_") else line.partition(" ")[2]
+    if payload.startswith("P7_AUDIT_EXPORT_FILE "):
         assert not closed
-        meta = json.loads(line.split("P7_AUDIT_EXPORT_FILE ",1)[1])
+        meta = json.loads(payload[len("P7_AUDIT_EXPORT_FILE "):])
         path = meta["path"]
         assert path not in headers
         headers[path] = meta
         chunks[path] = []
-    elif "P7_AUDIT_EXPORT_CHUNK " in line:
+    elif payload.startswith("P7_AUDIT_EXPORT_CHUNK "):
         assert not closed
-        chunk = json.loads(line.split("P7_AUDIT_EXPORT_CHUNK ",1)[1])
+        chunk = json.loads(payload[len("P7_AUDIT_EXPORT_CHUNK "):])
         path = chunk["path"]
         assert path in headers and chunk["index"] == len(chunks[path])
         assert isinstance(chunk["content"], str)
         chunks[path].append(chunk["content"])
-    elif "P7_AUDIT_EXPORT_MANIFEST " in line:
+    elif payload.startswith("P7_AUDIT_EXPORT_MANIFEST "):
         assert not closed
-        manifests.append(json.loads(line.split("P7_AUDIT_EXPORT_MANIFEST ",1)[1]))
+        manifests.append(json.loads(payload[len("P7_AUDIT_EXPORT_MANIFEST "):]))
         closed = True
 assert closed and len(manifests) == 1
 manifest = manifests[0]

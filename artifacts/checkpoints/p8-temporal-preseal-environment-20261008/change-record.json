@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "kind": "pre_author_workflow_environment_repair",
+  "previous_actual_run": 37752995462,
+  "previous_successful_synthetic_queries": 288,
+  "previous_actual_archive": {
+    "id": 11538793031,
+    "sha256": "e196dd7d19a205cf368e936820d6f3b379911338fb24a14e9aa0b1a3dacf9ee9",
+    "bytes": 405878789
+  },
+  "actual_observation": {
+    "members": 53199,
+    "bytes": 1395874461,
+    "runtime_home_members": 52074
+  },
+  "problem": "The original isolated child HOME caused rustup to install its own pinned-version toolchain while environment() observed parent paths. Parent-version equality alone did not establish identical child executable bytes.",
+  "change": "Only utility workflow now explicitly selects existing hosted-runner RUSTUP_HOME and CARGO_HOME, which unchanged temporal3.1 already forwards. A zero-query probe checks parent and isolated-child rustup routing, actual rustc/cargo path/hash/mode/version and absence of a child installation. Actual original preseal modes will run again before any real author or seal.",
+  "unchanged": [
+    "candidate2cd source and binary package",
+    "all six temporal3.1 files",
+    "all original Rust gates/scorers/normalizers",
+    "all query budgets",
+    "old results and logs"
+  ],
+  "fresh_body_authored": false,
+  "formal_seal": false,
+  "formal_authorization": false,
+  "remaining_original_todos": 32
+}

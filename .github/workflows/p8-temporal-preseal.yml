@@ -25,6 +25,8 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       RUSTUP_TOOLCHAIN: '1.95.0'
+      RUSTUP_HOME: /home/runner/.rustup
+      CARGO_HOME: /home/runner/.cargo
       CANDIDATE_SOURCE: '2cd04485b0e0b23483f64671d56538bbaa47f442'
       HELPER_MAP_SHA256: 'c9e27b4f838d9c39f00fe7af95953d5fc8c596c25ef6b0a1c4d93f9d30c87cb4'
       REQUESTED_MODE: ${{ matrix.mode }}
@@ -92,6 +94,8 @@ jobs:
           test -x /usr/bin/rg
           /usr/bin/rg --version
           python3 -I -S --version
+      - name: Verify same actual parent and isolated child Rust binaries
+        run: python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-temporal-preseal-environment-20261008/shared_rust.py"
       - name: Parse Python without writing source bytecode
         run: |
           python3 -I -S - <<'PY'
@@ -144,4 +148,10 @@ jobs:
           name: p8-prospective-temporal-preseal-${{ matrix.mode }}
           path: ${{ runner.temp }}/ptv2-preseal-output
           include-hidden-files: true
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-prospective-temporal-shared-rust-${{ matrix.mode }}
+          path: ${{ runner.temp }}/ptv2-shared-rust-environment.json
           if-no-files-found: error

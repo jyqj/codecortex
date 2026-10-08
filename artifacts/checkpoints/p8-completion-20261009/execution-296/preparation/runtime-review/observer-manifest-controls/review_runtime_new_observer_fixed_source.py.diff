@@ -1,0 +1,11 @@
+--- a/review_runtime_new_observer_fixed_source.py
++++ b/review_runtime_new_observer_fixed_source.py
+@@ -45,6 +45,8 @@
+  assert r['actual_concurrency']['maximum']<=c
+  assert h(m/'plan.json')==r['plan_sha256'] and h(m/'raw.jsonl')==r['raw_sha256'] and h(m/'parity.json')==r['parity_sha256']
+  assert build['source_before']==build['source_after']==plan['source'] and build['observer_before']==build['observer_after']
++ assert build['observer_before']['source_commit']==head, 'runtime observer manifest HEAD differs'
++ assert set(build['observer_before']['files'])==set(owner.OBSERVER_FILES), 'runtime observer manifest inventory differs'
+  assert build['target_initially_absent'] and build['toolchain_before']==build['toolchain_after'] and build['build_exit_code']==0
+  for name,a in build['artifacts'].items():
+   assert h(b/name)==a['binary_sha256']==a['copy_source']['sha256'] and a['cargo_artifact']['fresh'] is False

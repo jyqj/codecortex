@@ -1,0 +1,73 @@
+{
+  "backfill": {
+    "argv": [
+      "python",
+      "/dev/shm/a217aaae3bde/runtime-review/review_backfill_new_observer_fixed_source.py",
+      "artifact_id/zip_bytes/zip_sha256 manifestJSON",
+      "artifact-root",
+      "exact-head",
+      "exact-frozen-checkout"
+    ],
+    "helper": "/dev/shm/a217aaae3bde/runtime-review/review_backfill_new_observer_fixed_source.py",
+    "observer_manifest_requirements": [
+      "source_commit equals exact execution head",
+      "files key set equals actual Git-bound loaded p8_runtime_build.OBSERVER_FILES",
+      "existing before/after/final equality and each retained/Git byte hash checks retained"
+    ],
+    "original768_request_24_cell_control_and_9observer_bindings_retained": true,
+    "sha256": "9fccfdf458ebe2608f26d899c65cbde6cccb43a97fb0fc8f8574c7446e5344f4"
+  },
+  "expected_new_head": null,
+  "formalTODOclaim": false,
+  "mapping_version": 2,
+  "observer_manifest_controls": {
+    "path": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/control-results.json",
+    "scope": "actual helper manifest gate AST only;10 cases; no full-archive/new-source-run claim",
+    "sha256": "24dc25efba7ac8c8df8f0f36e87719e2d13f0f4a6a173c197652958674d57cdc"
+  },
+  "old599_evidence": "unchanged original ZIPs, reviews and executed helpers; no source relabel",
+  "requirements_before_execution": [
+    "parent supplies exactnewHEAD and readonlyfrozencheckout; verify Git HEAD and every loaded observer file against exact Git blob",
+    "GitHub artifact metadata head/run/id/size/digest match before original ZIP extraction",
+    "new artifact set with strict new build receipt; no receipt rewriting/bypass/newdriver oldreceipt"
+  ],
+  "runtime": {
+    "additional_fields": [
+      "report.parity_exit_code==0",
+      "report.owned_cleanup.worker.status==completed",
+      "report.owned_cleanup.worker.still_running==0",
+      "report.owned_cleanup.worker.cleanup_bound_seconds==70",
+      "report.owned_cleanup.sampler_stopped/product_stopped/comparison_product_stopped==true",
+      "report.artifact_seal_status==sealed",
+      "product/full-product process.json cleanup completed, expected_exit0,actual_exit0 and productbinarydigest"
+    ],
+    "argv": [
+      "python",
+      "/dev/shm/a217aaae3bde/runtime-review/review_runtime_new_observer_fixed_source.py",
+      "[[C,artifact_id,ZIPbytes,ZIPsha256],...] manifestJSON",
+      "artifact-root",
+      "exact-head",
+      "exact-frozen-checkout"
+    ],
+    "cells": [
+      "mixedC1",
+      "mixedC4",
+      "mixedC8",
+      "mixedC16",
+      "actual1hsoakC4"
+    ],
+    "helper": "/dev/shm/a217aaae3bde/runtime-review/review_runtime_new_observer_fixed_source.py",
+    "observer_manifest_requirements": [
+      "source_commit equals exact execution head",
+      "files key set equals actual Git-bound loaded p8_runtime_build.OBSERVER_FILES",
+      "existing before/after/final equality and each retained/Git byte hash checks retained"
+    ],
+    "original_raw_gates_retained": true,
+    "sha256": "c5a168c2b5ce6c08adb6d14bbf5f6f190903d5f9b7cdc9b9ae506390db2149a0"
+  },
+  "status": "prepared_not_executed",
+  "supersedes_mapping": {
+    "path": "/dev/shm/a217aaae3bde/runtime-review/new-observer-acceptance-input-mapping.json",
+    "sha256": "9dddaeff5306cc7bcbe03a046e578d69148c46c1ef8ec16206450748c17e77e8"
+  }
+}

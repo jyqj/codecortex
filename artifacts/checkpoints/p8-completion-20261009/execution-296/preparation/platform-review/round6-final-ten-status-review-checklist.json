@@ -1,0 +1,710 @@
+{
+  "schema_version": 1,
+  "prepared_by": "pr_audit",
+  "created_at_utc": "2026-10-08T21:11:11.855786+00:00",
+  "assessment": "prepared_original_definition_and_dependency_review_only",
+  "baseline_execution_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "authoritative_task_path": "docs/roadmap/code-index-v2/tasks.json",
+  "current_tasks_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+  "original_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+  "original_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+  "original_definition_guard_executed": true,
+  "complete_immutable_192_definition_projection_sha256": "7445d280ab1e71861139fb7b54abe16c7f2ae60bee360ab60ce368f27277acb7",
+  "current_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "statuses": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    }
+  },
+  "closure_order": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "external_hard_dependencies": {
+    "P8-004": "done",
+    "P7-020": "done",
+    "P8-001": "done"
+  },
+  "tasks": [
+    {
+      "task_id": "P8-005",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-005",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-A",
+        "title": "完整规模1k到100k",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/sampler.rs",
+          "crates/cc-eval/tests/index_v2_scale.rs"
+        ],
+        "depends_on": [
+          "P8-004"
+        ],
+        "steps": [
+          "固定seed与release构建测1k/5k/10k/50k/100k",
+          "同时报chunk/edge/vector"
+        ],
+        "deliverables": [
+          "完整规模1k到100k的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "不存在只报文件数或把不同工作量直接算倍数",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": {
+          "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+          "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+          "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+          "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+          "strict_paired_causal_performance": "not_established",
+          "whole_tree_memory_peak": "unknown"
+        }
+      },
+      "immutable_definition_sha256": "1e94f407d6506092fdca0ae3d2cc9e959eed7aceade100853476f597144d3472",
+      "reviewer_scope_owner": "scale_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-004",
+          "current_status": "done",
+          "included_in_this_ten": false
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "1505fa557cede386754e27c145e950a62c4cdbdf8fad895f4674dc58ad6a33b7",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-006",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-006",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-B",
+        "title": "增量规模与fanout曲线",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/mutations.rs",
+          "crates/cc-index/"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "steps": [
+          "测no-op/body/API/config/batch和超预算闭包",
+          "输出各phase计数"
+        ],
+        "deliverables": [
+          "增量规模与fanout曲线的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "时间可归因且闭包完成后full parity，未完成有显式status",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V07",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "65aca517fc2115bfa001afffe75c0ba1a8eaf2635d5085d9d10ad4e620b51f8d",
+      "reviewer_scope_owner": "scale_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P7-020",
+          "current_status": "done",
+          "included_in_this_ten": false
+        },
+        {
+          "task_id": "P8-001",
+          "current_status": "done",
+          "included_in_this_ten": false
+        },
+        {
+          "task_id": "P8-005",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "a69233b8b091e667a3b9f511f7cf069629de6ebeed6b896c500c128ea8fd3366",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-007",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-007",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-B",
+        "title": "多并发与混合负载",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/runner.rs",
+          "crates/cc-server/"
+        ],
+        "depends_on": [
+          "P8-006"
+        ],
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "deliverables": [
+          "多并发与混合负载的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V11",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "b12a4f13e5f8c0520279a6aca3a78e0ea620286f81d1ab38867d88f4bda2c629",
+      "reviewer_scope_owner": "runtime_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-006",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "0039dbdd0f5860b4057251af4e47aba49e7212c604bce1b0d423605a17603c1f",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-008",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-008",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-B",
+        "title": "冷建/重开/热查分层",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/runner.rs",
+          "crates/cc-eval/src/benchmark/statistics.rs"
+        ],
+        "depends_on": [
+          "P8-007"
+        ],
+        "steps": [
+          "分离OS cache、process cold、result-cache hit与uncached warm",
+          "采全部样本"
+        ],
+        "deliverables": [
+          "冷建/重开/热查分层的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "无best-of，sample N/分布/CI齐全",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "8ef3261fef77774871682996b6c633b017bc372d284fdba3de5f9b2744f5ba92",
+      "reviewer_scope_owner": "runtime_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-007",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "beaff6c504742b0b496bc43fa9730a5afd739312ad072e185026e43004bb685b",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-009",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-009",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-B",
+        "title": "内存/磁盘/费用总账",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/sampler.rs",
+          "crates/cc-semantic/"
+        ],
+        "depends_on": [
+          "P8-008"
+        ],
+        "steps": [
+          "分别client/server/process-tree和artifact/FTS大小",
+          "成本reported/estimated分栏"
+        ],
+        "deliverables": [
+          "内存/磁盘/费用总账的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "单位和归属正确，不把unavailable填0或把runner当server",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "c579ac1dc41b3dcdaaa4aed21ef331d5d240feb8b3fcd64337ebe5bd1e50eb0e",
+      "reviewer_scope_owner": "runtime_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-008",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "beaff6c504742b0b496bc43fa9730a5afd739312ad072e185026e43004bb685b",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-010",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-010",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-B",
+        "title": "长时soak与连续修改",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/tests/soak.rs",
+          "crates/cc-eval/src/benchmark/mutations.rs"
+        ],
+        "depends_on": [
+          "P8-009"
+        ],
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "deliverables": [
+          "长时soak与连续修改的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "3ddcb5d70c4fa9861aecf6ace914ef6e650dd51e6e26315d05f13f28ce86f4da",
+      "reviewer_scope_owner": "runtime_closeout",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-009",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "0039dbdd0f5860b4057251af4e47aba49e7212c604bce1b0d423605a17603c1f",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-011",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-011",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-C",
+        "title": "端到端故障与恢复认证",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/tests/semantic_lifecycle.rs",
+          "crates/cc-server/tests/mcp_stdio.rs"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "deliverables": [
+          "端到端故障与恢复认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "107a73744c74d6b7f1dc96a4ba58758190defe7156a0e38037f453ce6ed4263b",
+      "reviewer_scope_owner": "pr_audit",
+      "hard_dependencies": [
+        {
+          "task_id": "P7-020",
+          "current_status": "done",
+          "included_in_this_ten": false
+        },
+        {
+          "task_id": "P8-007",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        },
+        {
+          "task_id": "P8-010",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "8175e6b0cbaab0c2b9199b8d43734ec7b9854615a1d7fff550231c63e61252f5",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-012",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-012",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-C",
+        "title": "MSRV与平台冷构建矩阵",
+        "priority": "normal",
+        "scope": [
+          ".github/workflows/ci.yml",
+          "CONTRIBUTING.md"
+        ],
+        "depends_on": [
+          "P8-011"
+        ],
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "deliverables": [
+          "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "9d659bb5b73a6f1de815b66964d41391a4d0601b235ff842aab135888184d4c8",
+      "reviewer_scope_owner": "pr_audit",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-011",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "112ba827eb0363ed46c12e25d39a4ec9632e7a16b7a65b350f6929db2e183f2a",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-013",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-013",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-C",
+        "title": "指标/门槛与失败退出最终认证",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/src/benchmark/gate.rs",
+          "crates/cc-eval/tests/benchmark_cli.rs"
+        ],
+        "depends_on": [
+          "P8-012"
+        ],
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "deliverables": [
+          "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "fb677c9e5338c3f3a418f3a13e04d3a82091ef10b843fce3ebcfccb029e0953c",
+      "reviewer_scope_owner": "pr_audit",
+      "hard_dependencies": [
+        {
+          "task_id": "P8-012",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "ffc35281f79d1b74c3764e1a937545977865d761301511dc92337b38bdc22040",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    },
+    {
+      "task_id": "P8-016",
+      "current_status": "in_progress",
+      "original_definition": {
+        "id": "P8-016",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-D",
+        "title": "数据库/配置/包回滚演练",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-db/src/index_migrate.rs",
+          "crates/cc-semantic/src/cache.rs",
+          "docs/TROUBLESHOOTING.md"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "deliverables": [
+          "数据库/配置/包回滚演练的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "conditional_dependencies": []
+      },
+      "immutable_definition_sha256": "72249af70bb1f7b49f6e0b6993b561e11b511db7319b81d6b0c18ca08480db36",
+      "reviewer_scope_owner": "pr_audit",
+      "hard_dependencies": [
+        {
+          "task_id": "P7-020",
+          "current_status": "done",
+          "included_in_this_ten": false
+        },
+        {
+          "task_id": "P8-012",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        },
+        {
+          "task_id": "P8-013",
+          "current_status": "in_progress",
+          "included_in_this_ten": true
+        }
+      ],
+      "conditional_dependencies": [],
+      "prior_evidence_sha256": "4f8fff8785591ac7538168b68e6ef142b3a7f1c4866100df1cc65e9f1b05ab64",
+      "status_update_authorized_only_after": "All original own-scope acceptance has actual fixed-source evidence and every original hard dependency is done in the reviewed final state.",
+      "actual_acceptance_not_asserted_here": true
+    }
+  ],
+  "existing_progress_contract": {
+    "task_fields": [
+      "evidence",
+      "implementation_notes",
+      "status"
+    ],
+    "plan_fields": [
+      "current_phase",
+      "execution_note",
+      "last_implementation_date",
+      "next_task",
+      "status"
+    ],
+    "note": "These are the unchanged existing guard allowlists, not newly introduced acceptance conditions."
+  },
+  "independent_final_diff_checks": [
+    "Use the existing current_task_definitions guard against its immutable baseline; preserve all 192 task identities, order, definitions, acceptance, steps, dependencies, conditional dependencies, validations, deliverables, rollback and acceptance_subgates.",
+    "Check original evidence and failures remain present; append current source-bound accepted evidence with precise scope instead of overwriting old attempts or relabelling old source identities.",
+    "For each proposed done status, consume that task owner's actual fixed-source artifact review and verify every original hard dependency is done in the final state; do not infer acceptance from workflow success or scoped source review alone.",
+    "The original scale/lifecycle/resources/platform/recovery/gates observations remain599; the fixed runtime mixed/soak/backfill observations must execute at296. Their bridge is the separately reviewed full1087-product plus actual unchanged-observer applicability proof. Final metadata-only commit must preserve all1087 product and136 validation inputs of296; do not claim that all136 validation inputs equal599 or relabel any original receipt.",
+    "Review the final GitHub CI and actually required merge gates at the final head; branch-protection read permissions are limited, so do not infer no requirements.",
+    "Update explanatory progress counts consistently only after actual accepted task statuses change. If exactly these ten close and no other statuses change, expected totals are 173 done and 19 remaining; that is conditional, not current progress.",
+    "Keep task completion, source approval, quality/heldout evaluation and release certification distinct according to original repository contracts."
+  ],
+  "no_repository_changes": true,
+  "no_task_marked_done": true,
+  "predecessor_checklist": {
+    "path": "/dev/shm/a217aaae3bde/platform-review/final-ten-status-review-checklist.json",
+    "sha256": "ef8832ff1152eb33a7385ed647872d1569589aa96da8e0cf498721482eab8fbd"
+  },
+  "current_fixed_execution_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "execution_scope_mapping": {
+    "599a7050e7d52b5b7b93975c419138e175b3f754": [
+      "P8-005 scale original matrix still pending",
+      "P8-006 scale original matrix still pending",
+      "P8-008 lifecycle scoped raw",
+      "P8-009 lifecycle/resource scoped raw",
+      "P8-011 fault/recovery scope; additionally depends on new runtime",
+      "P8-012 eight platform cells scope; dependencies pending",
+      "P8-013 gate originals scope; dependencies pending",
+      "P8-016 rollback/version pair/cache scope; dependencies pending"
+    ],
+    "29682890c89511dd6f477a6bf48bd969aa1537af": [
+      "P8-007 all C1/4/8/16 mixed and fake-provider backfill required",
+      "P8-010 full actual one-hour soak required",
+      "final current-source CI/P7 regression gates"
+    ]
+  },
+  "applicability_proof": {
+    "path": "/dev/shm/a217aaae3bde/platform-review/round6-execution-applicability-proof.json",
+    "sha256": "323149f82d4aec4941ef592cac42ba1a05e65c1ea0004c3a4a8b5e22db75cf4c"
+  }
+}

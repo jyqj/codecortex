@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "created_utc": "2026-10-08T21:20:04.123362+00:00",
+  "status": "read_only_triage_complete_no_current_success_evidence_blocker_identified",
+  "current_candidate": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "source_blobs": {
+    "scripts/p8_cold_build.py": {
+      "pr161_git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "pr161_sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+      "current296_sha256": "1da7189714959645f83762749d6bb6741e494e7a1ca4b9a2416d9d5366f315a3",
+      "delta_file": "/dev/shm/a217aaae3bde/platform-review/concurrent-prs-2115/p8_cold_build.py.diff",
+      "delta_sha256": "50223fc82632ac282bea56ea4cbf0b58aaaa0c2d69d66e2d8c9e8ee666e0c50b"
+    },
+    "scripts/p8_rollback.py": {
+      "pr161_git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+      "pr161_sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
+      "current296_sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
+      "delta_file": "/dev/shm/a217aaae3bde/platform-review/concurrent-prs-2115/p8_rollback.py.diff",
+      "delta_sha256": "3bb35f8865ed84fd177414e0d3801b48c1b762610f19945bfbf605aa3620f35f"
+    },
+    "scripts/p8_runtime.py": {
+      "pr161_git_blob": "a8f8571f767b4139df85b86e56b8309612f32dc8",
+      "pr161_sha256": "3847472c01ccdfb2a853f97d975ec1b29f783bed88d33fd8aab505252fd3239d",
+      "current296_sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+      "delta_file": "/dev/shm/a217aaae3bde/platform-review/concurrent-prs-2115/p8_runtime.py.diff",
+      "delta_sha256": "3ebb483ee43052a29fc25fe4bdf47051c1c23cd0e896cdbfe830867af3289e4f"
+    },
+    "scripts/tests/test_p8_runtime.py": {
+      "pr161_git_blob": "fd49fa00d5a0fab7cd7f4b92240e5a42bc281443",
+      "pr161_sha256": "52f52bd1525ae4acce1fb25133d54878c07e8ece67b5d11fce0c2d6d0b410adc",
+      "current296_sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0",
+      "delta_file": "/dev/shm/a217aaae3bde/platform-review/concurrent-prs-2115/test_p8_runtime.py.diff",
+      "delta_sha256": "5fbe492253dab5ebb81c084a0543e2d42185e6b0aab20ad6b8b001db15a681ca"
+    }
+  },
+  "pr161": {
+    "number": 161,
+    "head": "44f3c06b1d57709daeaa8bfcc8879f4a15b02570",
+    "base_at_fetch": "599a7050e7d52b5b7b93975c419138e175b3f754",
+    "draft": true,
+    "scope": "Independent acceptance repair supplement; three production Python observers plus their three test files and a separate source-review/pin chain. It does not complete original TODOs.",
+    "task_statuses_all192_equal_current_candidate": true,
+    "distinct_followups": [
+      {
+        "area": "portable collection",
+        "delta": "Recheck eight-cell original selection, selected receipt digest/target ownership and export live_strict marker, plus retain invalid/cancelled collector receipt.",
+        "current_evidence_boundary": "Our accepted599 eight-cell original review already checked original per-cell selections, export/raw lineage and receipt ownership separately; no observed original violates these stronger conditions. Invalid collector receipt retention is the already reviewed followup, not grounds to relabel an original failed matrix passed."
+      },
+      {
+        "area": "rollback manifest",
+        "delta": "Single-read manifest digest/parse, exact integer count, explicit NUL path rejection and same-read schema digest/parse.",
+        "current_evidence_boundary": "Current296 already handles map/list manifests and rejects duplicates/canonical-path drift. Original actual25->24->25 archive has independently retained exact source/schema/config and immutable digests. These strengthen malformed/concurrently modified input handling; no original accepted pair is shown invalid."
+      },
+      {
+        "area": "runtime submit/interruption/raw retention",
+        "delta": "Record a failed offered submit, handshake before an enqueued operation may run, catch KeyboardInterrupt with explicit failed receipt, preserve terminal metadata in a sidecar when original raw budget is exhausted.",
+        "current_evidence_boundary": "296 still fails nonzero on submit/raw retention errors; KeyboardInterrupt propagates nonzero after final cleanup and may leave running/exit2 receipt. Successful actual observations must have complete unique IDs,900/3601 outcomes,statistics,oracle and owned-cleanup seals. No contrary accepted original or false-pass example was established by this static review. These are concrete failure-path followups, not claimed fixed in296."
+      }
+    ],
+    "integration_risks": [
+      "Whole-file runtime replacement would remove296 sampler/product/comparison-product reader/exit-watcher termination checks and parity_exit_code, so its independent fixes must not overwrite the current cleanup contract.",
+      "Its v15 PRODUCT/REVIEW/REGISTRY chain differs and its task evidence is independently authored. Do not merge its chain or task states over the current fixed candidate.",
+      "Any adopted runtime semantics later require their own exact-source review and affected real execution; this triage does not adopt anything."
+    ],
+    "recommendation": "Keep Draft as independent followup; preserve explicit unique failure-path work, avoid whole-branch/whole-file merge, and revisit the minimal delta after current frozen acceptance finishes unless current actual raw demonstrates a blocker."
+  },
+  "engineering": {
+    "head": "728e795a572d355c283be69653e8828138a57dd5",
+    "parent": "f9d5727914331ce191172212702ed72e85aee068",
+    "branch": "task/p8-prefix-window-engineering-20261009",
+    "associated_open_pr_found": false,
+    "scope": "Same-prepare bounded dependency-window optimization in reconcile.rs, focused isolated engineering workflow and partial1k/10k diagnostics; latest commit adopts the same three doc-key index blobs already in296.",
+    "doc_key_three_blobs_identical_to_current": true,
+    "correctness_boundary": "This changes the Rust reconciliation path and therefore does not share the full1087 product identity of599/296. No results from its diagnostics may be pooled into current scale coverage or called causal performance improvement. No evidence in this read-only triage establishes a correctness blocker in the current unoptimized path.",
+    "recommendation": "Keep isolated engineering branch; do not adopt Rust changes or trigger more validation during current frozen matrix."
+  },
+  "method": "Official GitHub commit-associated PR reads, exact branch PR query, two full PR-file pages, exact raw observer blobs checked against Git blob SHA1, static diff against296 and all192 task status comparison. No test, build, workflow dispatch/cancel or remote mutation.",
+  "external_test_claims": "PR text and peer reported371 tests are not treated as our execution evidence. No new controls run.",
+  "todo_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  },
+  "source_or_task_changes": []
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T21:49:08.953644+00:00",
+  "scope": "Read-only issue154 scope, fixed source and already-retained official closeout log; no test rerun and no remote mutation",
+  "plan_record": {
+    "path": "round6-engineering-then-status-pr-assessment.json",
+    "sha256": "014d21024380d50b77534d2dac357dcae645ad3d180daf7cab90069e1e1a0bdb"
+  },
+  "issue": {
+    "number": 154,
+    "url": "https://github.com/jyqj/codecortex/issues/154",
+    "title": "test(server): synchronize cold-client cancellation after initializer ownership handoff",
+    "state_at_get": "open",
+    "updated_at": "2026-10-08T08:22:41Z",
+    "original_metadata_path": "round6-issue154-original.json",
+    "sha256": "5f4e9f878ed84cb7d1ebb952f1e0a9e145eba197e62e9cc9f0c2d96d14cdb2b8",
+    "original_scope": "Deterministic evidence that the blocking initializer owns the cold guard before client cancellation; retain guard/publication assertion; separately cover cancellation before handoff; preserve initial failure; no sleeps/reruns/weakened assertion as repair.",
+    "explicit_roadmap_boundary": "Issue body states this PR-management follow-up is not an additional completed item in the original192-task roadmap. It does not demand complete ten-task/150-shard acceptance."
+  },
+  "fixed_source": {
+    "head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+    "path": "crates/cc-server/src/project_session.rs",
+    "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314",
+    "git_blob": "c10c9e4585a9e192b2af9ed99630096d8c861c18",
+    "observations": [
+      "The cfg(test) oneshot is sent from inside the spawn_blocking closure after the owned cold guard crosses the task boundary.",
+      "Post-handoff test blocks cache lookup, waits for that worker signal, aborts the client, retains try_lock failure ownership assertion and then confirms the published runtime and build gate identity.",
+      "Separate pre-handoff test holds the cold guard, manually polls a pending services future, drops it before handoff, checks no worker signal and no cached runtime, and confirms guard can be acquired after release.",
+      "Timeouts bound test failure; no sleep or repeated rerun is used to infer worker ownership."
+    ]
+  },
+  "actual_regression_evidence": {
+    "run_id": 37844310901,
+    "job_id": 113541229054,
+    "job_name": "closeout",
+    "actual_checkout": "29682890c89511dd6f477a6bf48bd969aa1537af",
+    "job_conclusion": "success",
+    "original_log_path": "/dev/shm/a217aaae3bde/platform-review/round6-ci-review/job-113541229054-original.log",
+    "original_log_sha256": "bcb781ae88881e2614a2ab7e67d0ed9e117c0b2ec185b6c96a62e1b348d4eeee",
+    "actual_test_log_lines": [
+      "2026-10-08T21:29:41.0670685Z test project_session::tests::p5d_cancellation_before_cold_handoff_does_not_start_initializer ... ok",
+      "2026-10-08T21:29:41.1065501Z test project_session::tests::p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication ... ok"
+    ],
+    "existing_review": "round6-ci-review/p7-closeout-independent-review.json"
+  },
+  "conclusion": "The issue154 requested repair is implemented and both exact-source regression tests actually passed. Retaining Fixes #154 in the engineering PR is appropriate once its normal actual merge gates are satisfied; issue154 closure is not ten-task closure and does not depend on the incomplete scale matrix. No need to transfer this specific issue closure to a later status PR.",
+  "pr_body_consistency": "Before choosing an engineering-first merge, root should revise PR159 text that currently promises to remain Draft until full scale/runtime completion, and explicitly distinguish its engineering scope from the later task-status PR. References #158 can remain; this review does not authorize closing another issue.",
+  "task_counts_unchanged": {
+    "done": 163,
+    "total": 192,
+    "remaining": 29
+  },
+  "no_remote_actions_performed": true
+}

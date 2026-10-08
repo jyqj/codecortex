@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "created_utc": "2026-10-08T21:33:00.259918+00:00",
+  "status": "accepted_scoped_historical_observer_addendum",
+  "main_proof": {
+    "path": "/dev/shm/a217aaae3bde/platform-review/round6-execution-applicability-proof.json",
+    "sha256": "323149f82d4aec4941ef592cac42ba1a05e65c1ea0004c3a4a8b5e22db75cf4c"
+  },
+  "reason": "P7 closeout also executes its original immutable lifecycle Python driver from artifacts, outside the136 validation-domain inventory; this addendum explicitly binds it instead of implying that the scripts import closure includes it.",
+  "old_execution": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "new_execution": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "observer": {
+    "path": "artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py",
+    "sha256": "39630b6be2bba3319584af74521863ef5d53a4e7fd723de8c3a454b29e34259c",
+    "bytes": 15294,
+    "git_blob": "c5c92ab8746eebc992335bef18ef05e6b5d5e9ad",
+    "git_mode": "100644",
+    "old_new_git_bytes_equal": true,
+    "imports": [
+      "hashlib",
+      "http.server",
+      "json",
+      "os",
+      "pathlib",
+      "queue",
+      "subprocess",
+      "sys",
+      "tempfile",
+      "threading",
+      "time",
+      "traceback"
+    ],
+    "imports_only_standard_library": true
+  },
+  "workflow_controls": "Unchanged p7-closeout.yml pins this exact hash before original13-checkpoint execution and verifies the same driver hash afterward. Actual new job is currently in that step; this addendum is byte proof, not its completed result.",
+  "checkout_boundary": "p7-engineering and mainCI use the default merge checkout452620b (whole tree equals296). p7-closeout closeout/mechanism/offline explicitly select github.event.pull_request.head.sha, so their actual checkout must be checked as296 in each original log.",
+  "no_execution_by_reviewer": true,
+  "no_original_artifact_identity_changed": true,
+  "remaining_todos": 29
+}

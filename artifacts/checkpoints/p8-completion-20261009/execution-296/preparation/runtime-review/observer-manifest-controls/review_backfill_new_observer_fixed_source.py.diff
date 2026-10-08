@@ -1,0 +1,11 @@
+--- a/review_backfill_new_observer_fixed_source.py
++++ b/review_backfill_new_observer_fixed_source.py
+@@ -26,6 +26,8 @@
+ assert set(r['source_before']['inputs'])==set(subprocess.check_output(['git','ls-tree','-r','--name-only',head,'--','Cargo.toml','Cargo.lock','crates'],cwd=repo,text=True).splitlines())
+ assert len(r['source_before']['inputs'])==1087 and all(hashlib.sha256(g(n)).hexdigest()==v for n,v in r['source_before']['inputs'].items())
+ assert r['observer_before']==r['observer_after']==r['observer_final'] and len(r['observer_before']['files'])==9
++assert r['observer_before']['source_commit']==head, 'backfill observer manifest HEAD differs'
++assert set(r['observer_before']['files'])==set(b.OBSERVER_FILES), 'backfill observer manifest inventory differs'
+ for name,v in r['observer_before']['files'].items():assert h(p/'observer-source'/name)==v['sha256']==hashlib.sha256(g(name)).hexdigest()
+ assert r['toolchain_before']==r['toolchain_after']==r['toolchain_final'] and r['target_initially_absent']
+ assert h(p/'p7_worker_contention')==r['executable_sha256']==r['executable_sha256_after']==r['copy_source']['sha256']

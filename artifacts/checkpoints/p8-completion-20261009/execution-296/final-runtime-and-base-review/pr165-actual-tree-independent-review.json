@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T23:07:13.144189+00:00",
+  "status": "accepted_scoped_exact_evidence_relocation_pending_actual_CI",
+  "pr": 165,
+  "head": "f88a41e6af46ffe67b76f420f1d6b4ef21155946",
+  "parent": "341db995e5f092fd95aed35af84cbc8b69e1af40",
+  "base_tree": "8aa58d629bbac0a416a4e199039a7dd6e9bc2cea",
+  "result_tree": "436e5b6d1df432f74fd8c5fab672ef90f9bc9612",
+  "method": [
+    "Official GitHub Git commit and non-recursive tree GETs. Independently reconstructed each fetched Git tree SHA1 from modes, names and child OIDs.",
+    "Compared complete root/artifacts/checkpoints direct-entry maps; no truncated recursive API reliance.",
+    "Bound all 5 locally readable payloads to exact remote blob SHA1/size/mode and reviewed their meaning.",
+    "Compared all 188 relocation mappings against immutable PR163 manifest and reconstructed original nested tree SHA1."
+  ],
+  "source_metadata": {
+    "path": "/dev/shm/a217aaae3bde/platform-review/main-341-drift/pr165-official-result-trees.json",
+    "sha256": "abb5e84530cb781a8db7d6ea839fdddc5e2129c64c33192c1de12687b53e39e7"
+  },
+  "relocation": {
+    "from": "artifacts/checkpoints/localwidth4-100k-paired-20261003",
+    "to": "artifacts/checkpoints/pr-evidence-archive-163/relocated-originals/localwidth4-100k-paired-20261003",
+    "subtree": "347b848c78278c44622795e1a137987c2ca766aa",
+    "mode": "040000",
+    "files": 188,
+    "bytes": 26428588,
+    "all_nested_trees_blobs_modes_identical": true,
+    "old_path_completely_absent": true,
+    "redirect_left_at_old_path": false
+  },
+  "unchanged_scope": {
+    "other_checkpoint_siblings": 187,
+    "all_other_artifact_entries": true,
+    "all_12_non_artifact_root_entries": true,
+    "product_and_validation_inputs": true,
+    "historical_guard_code_and_CI_selector": true,
+    "original_PR163_long_named_archive_and_README_manifest": true,
+    "task_definitions_and_statuses": true
+  },
+  "added_metadata": [
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/README.md",
+      "bytes": 2136,
+      "sha256": "5031b0c1c27945fd579964a805f6d1c7cdf934a3a63a90b1bdd28eebb775f73c",
+      "git_blob": "d2b7cac3af178e0129164649acf31af896f98986",
+      "mode": "100644",
+      "remote_tree_binding_verified": true
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/proposed-relocation-mapping.json",
+      "bytes": 111054,
+      "sha256": "fc4df67032e02651019c0f211c1f655c24589e3848fc2894f5430058c8d2f35e",
+      "git_blob": "d873d27c707ffb9c8145958ff5b213c4baffe789",
+      "mode": "100644",
+      "remote_tree_binding_verified": true
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/relocation-provenance.json",
+      "bytes": 2255,
+      "sha256": "79679037f46ff252011cd9801b140873e527e6567da1181853963f53e2f7ee80",
+      "git_blob": "9dfa2004715949049235e399c34970d5a49150f6",
+      "mode": "100644",
+      "remote_tree_binding_verified": true
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/reviews/independent-design-review.json",
+      "bytes": 16683,
+      "sha256": "20550fab9adf78904f68273b32a3d08f004f73e394d30c84b78f755920cc99a1",
+      "git_blob": "1e6ea489531f63251db12f2ad4209d842295d084",
+      "mode": "100644",
+      "remote_tree_binding_verified": true
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/reviews/root-existing-guard-path-control.json",
+      "bytes": 1196,
+      "sha256": "f39c2d8eb68bb40a317a80f7dbdffc07616d0e0ea002c6d10fd52bdd8aa3e6e9",
+      "git_blob": "d40794e2081d650126dd3b92937ec21a12ba0c3f",
+      "mode": "100644",
+      "remote_tree_binding_verified": true
+    }
+  ],
+  "metadata_semantics": {
+    "original_PR126_and_head_bound": true,
+    "archive_PR163_origin_correct": true,
+    "188_original_file_mapping_exact": true,
+    "original_failed_timeout_resource_guard_and_not_run_results_preserved": true,
+    "no_completed_paired_300s_or_significance_claim": true,
+    "root_guard_control_is_narrow_fixture_test_not_full_CI": true,
+    "result_tree_bound_externally_without_self_reference": true,
+    "no_TODO_acceptance_claim": true
+  },
+  "root_control_evidence": {
+    "reviewed_as_parent_execution_not_independent_rerun": true,
+    "cases": [
+      {
+        "case": "original_location_present",
+        "result": "rejected",
+        "error": "excluded historical paired directory present"
+      },
+      {
+        "case": "same_fixture_relocated_old_location_absent",
+        "result": "accepted"
+      },
+      {
+        "case": "redirect_at_original_location",
+        "result": "rejected",
+        "error": "excluded historical paired directory present"
+      }
+    ],
+    "source_hashes_match_current_readonly_root": true
+  },
+  "required_followup": [
+    "Run ordinary PR165 CI and applicable required gates against their actual checkout identities; this review is not a CI result.",
+    "Before PR159 integration, freshly verify actual main and prospective merge identities, absence of the excluded path, unchanged historical observers, and applicable actual required checks. Preserve prior 452620b3 CI identity rather than relabeling it.",
+    "Keep original 599 scale and 296 runtime measurements and source identities unchanged."
+  ],
+  "unresolved_source_or_preservation_blockers": [],
+  "task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  },
+  "remote_or_root_mutations_by_reviewer": false
+}

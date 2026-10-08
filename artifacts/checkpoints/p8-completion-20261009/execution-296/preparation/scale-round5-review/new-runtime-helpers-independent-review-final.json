@@ -1,0 +1,40 @@
+{
+  "schema": "runtime-new-observer-helpers-independent-review-mapping-addendum-v1",
+  "reviewer": "scale_closeout",
+  "observed_utc": "2026-10-08T21:08:46.449281+00:00",
+  "status": "accepted_scoped_helper_changes_pending_actual_new_execution",
+  "prior_independent_review": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/new-runtime-helpers-independent-review.json",
+    "sha256": "55d747ac41579673f64cd404af66f8edb0a4737af7613190a3398a7b73a36c7d"
+  },
+  "active_input_mapping": {
+    "path": "/dev/shm/a217aaae3bde/runtime-review/new-observer-acceptance-input-mapping-v2.json",
+    "sha256": "8dc00ecb7b8b34a44d9ddd42306ddf6290ecb2442c439c9955a5239973c8a267",
+    "mapping_version": 2
+  },
+  "helpers": [
+    {
+      "kind": "runtime",
+      "path": "/dev/shm/a217aaae3bde/runtime-review/review_runtime_new_observer_fixed_source.py",
+      "sha256": "c5a168c2b5ce6c08adb6d14bbf5f6f190903d5f9b7cdc9b9ae506390db2149a0",
+      "bytes_unchanged_since_independent_code_and_actual_control_review": true
+    },
+    {
+      "kind": "backfill",
+      "path": "/dev/shm/a217aaae3bde/runtime-review/review_backfill_new_observer_fixed_source.py",
+      "sha256": "9fccfdf458ebe2608f26d899c65cbde6cccb43a97fb0fc8f8574c7446e5344f4",
+      "bytes_unchanged_since_independent_code_and_actual_control_review": true
+    }
+  ],
+  "resolved_blocker": "The active version2 input mapping exactly names both independently reviewed current helper bytes; version1 remains unchanged historical evidence and is superseded.",
+  "required_execution_inputs": [
+    "parent supplies exactnewHEAD and readonlyfrozencheckout; verify Git HEAD and every loaded observer file against exact Git blob",
+    "GitHub artifact metadata head/run/id/size/digest match before original ZIP extraction",
+    "new artifact set with strict new build receipt; no receipt rewriting/bypass/newdriver oldreceipt"
+  ],
+  "scope": "Approves only exact helper differences, actual recorded manifest boundary controls and current whole-CLI wrong-head guards. All prior review scope limits remain applicable. Fresh exact execution HEAD and full new native artifact/statistics/oracle replay are still required.",
+  "actual_native_workloads_executed": 0,
+  "actual_new_observations_accepted": 0,
+  "task_statuses_changed": false,
+  "unresolved_blockers": []
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "runtime-new-observer-helpers-independent-review-v1",
+  "reviewer": "scale_closeout",
+  "observed_utc": "2026-10-08T21:04:34.642307+00:00",
+  "status": "helper_code_accepted_input_mapping_update_pending",
+  "product_source_reviewed": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
+  "helpers": [
+    {
+      "kind": "runtime",
+      "helper": "/dev/shm/a217aaae3bde/runtime-review/review_runtime_new_observer_fixed_source.py",
+      "helper_sha256": "c5a168c2b5ce6c08adb6d14bbf5f6f190903d5f9b7cdc9b9ae506390db2149a0",
+      "mapping_sha256_matches": false,
+      "baseline_helper_sha256": "7d686a699e385cf3eb776a17487a4aa5407e82078a630b7371b84e83ba4e7fc1",
+      "baseline_assert_count": 56,
+      "new_assert_count": 64,
+      "all_baseline_assert_AST_preserved": true,
+      "real_cli_wrong_head_exit_code": 1,
+      "manifest_boundary_controls": [
+        {
+          "case": "clean",
+          "accepted": true,
+          "error": null,
+          "retained_control_input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947"
+        },
+        {
+          "case": "reordered_keys",
+          "accepted": true,
+          "error": null,
+          "retained_control_input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947"
+        },
+        {
+          "case": "missing_member",
+          "accepted": false,
+          "error": "runtime observer manifest inventory differs",
+          "retained_control_input_sha256": "0bcbc1ecd284e2668f10f7c1d041673389c4cb7bcb1c183d94b50cb13ef86386"
+        },
+        {
+          "case": "unknown_member_same_count",
+          "accepted": false,
+          "error": "runtime observer manifest inventory differs",
+          "retained_control_input_sha256": "ac54ccc8177a5684e502da74c8a0a1880fd9561070b11bc307b062ac4409da50"
+        },
+        {
+          "case": "wrong_observer_head",
+          "accepted": false,
+          "error": "runtime observer manifest HEAD differs",
+          "retained_control_input_sha256": "279b2cee48866092512dfe5113cc5bb1061251ca0f33eaab207c1d48ae9dd941"
+        }
+      ],
+      "control_scope": "Actual helper assertion AST only, seeded from unchanged old599 receipt; no mock native/statistics/oracle result and no new observation accepted."
+    },
+    {
+      "kind": "backfill",
+      "helper": "/dev/shm/a217aaae3bde/runtime-review/review_backfill_new_observer_fixed_source.py",
+      "helper_sha256": "9fccfdf458ebe2608f26d899c65cbde6cccb43a97fb0fc8f8574c7446e5344f4",
+      "mapping_sha256_matches": false,
+      "baseline_helper_sha256": "28d4dc8449afddc6c91af8b9d59fb65327c4ca01153a9baaf62f9818fb08326e",
+      "baseline_assert_count": 37,
+      "new_assert_count": 41,
+      "all_baseline_assert_AST_preserved": true,
+      "real_cli_wrong_head_exit_code": 1,
+      "manifest_boundary_controls": [
+        {
+          "case": "clean",
+          "accepted": true,
+          "error": null,
+          "retained_control_input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947"
+        },
+        {
+          "case": "reordered_keys",
+          "accepted": true,
+          "error": null,
+          "retained_control_input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947"
+        },
+        {
+          "case": "missing_member",
+          "accepted": false,
+          "error": "",
+          "retained_control_input_sha256": "0bcbc1ecd284e2668f10f7c1d041673389c4cb7bcb1c183d94b50cb13ef86386"
+        },
+        {
+          "case": "unknown_member_same_count",
+          "accepted": false,
+          "error": "backfill observer manifest inventory differs",
+          "retained_control_input_sha256": "ac54ccc8177a5684e502da74c8a0a1880fd9561070b11bc307b062ac4409da50"
+        },
+        {
+          "case": "wrong_observer_head",
+          "accepted": false,
+          "error": "backfill observer manifest HEAD differs",
+          "retained_control_input_sha256": "279b2cee48866092512dfe5113cc5bb1061251ca0f33eaab207c1d48ae9dd941"
+        }
+      ],
+      "control_scope": "Actual helper assertion AST only, seeded from unchanged old599 receipt; no mock native/statistics/oracle result and no new observation accepted."
+    }
+  ],
+  "expected_observer_files": [
+    "scripts/p8_runtime.py",
+    "scripts/p8_runtime_build.py",
+    "scripts/p7_build_identity.py",
+    "scripts/p8_cold_build.py",
+    "scripts/p8_rollback.py",
+    "scripts/p7_stdio_build_receipt.py",
+    "scripts/p8_backfill.py",
+    "scripts/resource_harness/__init__.py",
+    "scripts/resource_harness/runtime.py"
+  ],
+  "old_and_new_product_observer_set_equal": true,
+  "author_control_results_sha256": "24dc25efba7ac8c8df8f0f36e87719e2d13f0f4a6a173c197652958674d57cdc",
+  "input_mapping_sha256": "9dddaeff5306cc7bcbe03a046e578d69148c46c1ef8ec16206450748c17e77e8",
+  "resolved_finding": "Archived observer manifest exact-set and source-commit enforcement added in both new helpers. Original helpers and original archived observations unchanged.",
+  "preserved_acceptance": [
+    "Full 1087 crate/Cargo inventory equality to exact executed Git blobs",
+    "Actual retained build/executable/source/observer binding and original sealed file inventories",
+    "900 mixed operations at C1/4/8/16 or 3601 actual one-hour soak operations, complete terminal IDs and original RSS/queue/resource/compaction rules",
+    "Actual preserved statistics binary executed on original plan/raw and byte-identical output required",
+    "Actual preserved oracle binary executed on derived copies of both original databases; original full 15-table comparison required without index repair",
+    "Backfill original semantic-feature exact native test, three seeds, two phases, four concurrency cells, 32 requests each, 768 total and original watchdogs retained"
+  ],
+  "added_checks": [
+    "Full exact 40-hex caller execution HEAD equals the single caller supplied frozen checkout before observer imports/artifact admission",
+    "Archive observer source_commit equals that execution HEAD and exact keys equal fixed-source OBSERVER_FILES",
+    "Runtime parity_exit_code=0, owned worker completed with still_running=0 and original cleanup bound70s, sampler/product/comparison process stopped",
+    "Runtime artifact seal explicitly sealed and both product process receipts record completed cleanup, expected/actual exit0 and matching binary digest"
+  ],
+  "operational_inputs": [
+    "The caller must supply the final published execution HEAD and the same immutable read-only frozen checkout throughout replay; final execution pins are still pending at review time.",
+    "The caller supplies authoritative GitHub artifact metadata and its safely extracted original archive as in the existing flow; both helpers retain size/digest/head/ID checks and source provenance.",
+    "Invoke fresh normal Python with assertions enabled, as in the recorded command mapping."
+  ],
+  "actual_native_workloads_executed": 0,
+  "old_full_artifact_replays": 0,
+  "actual_new_observations_accepted": 0,
+  "task_statuses_changed": false,
+  "scope_limits": [
+    "This approves only the reviewed helper differences and actual small admission controls; it does not approve a new runtime/backfill measurement, TODO completion or release.",
+    "All original full statistics/oracle/raw replay remains required on fresh exact-head artifacts.",
+    "Old599 source and evidence retain their original identity; the scale matrix continues independently at fixed599."
+  ],
+  "unresolved_blockers": [
+    "Input mapping still references an earlier helper hash; update before execution."
+  ]
+}

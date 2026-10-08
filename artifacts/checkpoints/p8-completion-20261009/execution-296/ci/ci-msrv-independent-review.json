@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T22:05:54.500387+00:00",
+  "scope": "Independent read-only audit of entire official MSRV log and job metadata; no local compilation or rerun",
+  "status": "accepted_scoped",
+  "run_id": 37844311827,
+  "job_id": 113541232810,
+  "event_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "actual_checkout": "452620b3aed27b7b61b56cae19d25ba315437b93",
+  "checkout_tree": "c75038d358e6c8b881a246bfd3c3111cda86dde0",
+  "whole_tree_equal_to_296": true,
+  "actual_rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "actual_checks": [
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "finished_seconds": 19.96
+    },
+    {
+      "command": "cargo check -p cc-eval --all-targets --features eval-http --locked",
+      "finished_seconds": 11.66
+    }
+  ],
+  "steps": [
+    {
+      "number": 1,
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 2,
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 3,
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 4,
+      "name": "Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 5,
+      "name": "MSRV check",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 6,
+      "name": "MSRV optional benchmark HTTP feature",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 11,
+      "name": "Post Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 12,
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 13,
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "official_log": {
+    "path": "job-113541232810-original.log",
+    "bytes": 38313,
+    "sha256": "2aad212072ae0b981adf977315da4b9dd175e9e838d56a1b41f673a53338474d"
+  },
+  "original_metadata_path": "ci-msrv-job-metadata.json",
+  "limitation": "Both requested compile checks passed. This job is not a runtime test run, does not closeTODOs, and does not replace remaining CI/P7/runtime/scale or actualrequiredgates.",
+  "runner_warning": "Node20 checkout declaration forced byrunner ontoNode24; preserved in full log.",
+  "no_rerun_or_remote_mutation": true
+}

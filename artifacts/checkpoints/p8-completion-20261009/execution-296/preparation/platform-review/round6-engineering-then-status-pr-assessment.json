@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T21:44:56.961567+00:00",
+  "status": "conditionally_acceptable_engineering_then_status_pr_plan",
+  "scope": "Read-only workflow and original-contract assessment; no merge, branch, workflow or source mutation",
+  "fixed_engineering_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "main_at_review": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "conclusion": "Original repository task/benchmark contracts distinguish engineering/source admission from TODO and release acceptance. I found no rule requiring all150 scale shards before an engineering-only merge that keeps163done/29remaining. Such a merge remains conditional on original engineering regressions, all actual required GitHub gates, the planned complete new296 runtime evidence, and the ordinary authorized merge process. This is not current merge approval.",
+  "workflow_event_matrix": {
+    "ci.yml": {
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "trigger_block": "name: CI\n\non:\n  push:\n    branches: [main]\n  pull_request:\n\nenv:\n  CARGO_TERM_COLOR: always\n  RUSTFLAGS: -D warnings\n\n",
+      "expected_engineering_merge_push": true,
+      "expected_metadata_only_new_pr": true
+    },
+    "p8-runtime.yml": {
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+      "trigger_block": "name: P8 runtime observations\n\non:\n  pull_request:\n    paths:\n      - 'crates/**'\n      - 'Cargo.*'\n      - 'scripts/p8_runtime*.py'\n      - 'scripts/tests/test_p8_runtime*.py'\n      - 'scripts/p8_backfill.py'\n      - 'scripts/p8_resources.py'\n      - 'scripts/p7_build_identity.py'\n      - 'scripts/p7_stdio_build_receipt.py'\n      - 'scripts/tests/test_p8_backfill.py'\n      - 'scripts/p8_cold_build.py'\n      - 'scripts/p8_rollback.py'\n      - 'scripts/resource_harness/**'\n      - '.github/workflows/p8-runtime.yml'\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  CARGO_TERM_COLOR: never\n  CARGO_INCREMENTAL: '0'\n  CARGO_BUILD_JOBS: '2'\n  PYTHONDONTWRITEBYTECODE: '1'\n\n",
+      "expected_engineering_merge_push": false,
+      "expected_metadata_only_new_pr": false
+    },
+    "p8-scale.yml": {
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "trigger_block": "name: P8 complete scale measurements\n\non:\n  workflow_dispatch:\n  pull_request:\n    types: [labeled]\n\npermissions:\n  contents: read\n\nenv:\n  CARGO_TERM_COLOR: never\n  CARGO_INCREMENTAL: \"0\"\n  CARGO_BUILD_JOBS: \"2\"\n  RUSTFLAGS: \"\"\n\n",
+      "expected_engineering_merge_push": false,
+      "expected_metadata_only_new_pr": false
+    },
+    "p8-platform.yml": {
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+      "trigger_block": "name: P8 platform cold builds\n\non:\n  pull_request:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  CARGO_TERM_COLOR: never\n  CARGO_INCREMENTAL: \"0\"\n  PYTHONDONTWRITEBYTECODE: \"1\"\n\n",
+      "expected_engineering_merge_push": true,
+      "expected_metadata_only_new_pr": true
+    },
+    "p8-lifecycle.yml": {
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
+      "trigger_block": "name: P8 lifecycle and resource observations\n\non:\n  pull_request:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: p8-lifecycle-${{ github.event.pull_request.number || github.ref }}\n  cancel-in-progress: true\n\n",
+      "expected_engineering_merge_push": true,
+      "expected_metadata_only_new_pr": true
+    },
+    "p8-gates.yml": {
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
+      "trigger_block": "name: P8 original failure gates\n\non:\n  pull_request:\n    paths:\n      - 'crates/**'\n      - 'Cargo.*'\n      - 'scripts/p8_gate_controls.py'\n      - 'scripts/p8_recovery.py'\n      - 'scripts/p8_cold_build.py'\n      - 'scripts/p8_rollback.py'\n      - 'scripts/p7_build_identity.py'\n      - '.github/workflows/p8-gates.yml'\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\n",
+      "expected_engineering_merge_push": false,
+      "expected_metadata_only_new_pr": false
+    },
+    "p7-engineering.yml": {
+      "sha256": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
+      "trigger_block": "name: P7 engineering regressions\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\nenv:\n  CARGO_TERM_COLOR: never\n  CARGO_INCREMENTAL: \"0\"\n  CARGO_PROFILE_DEV_DEBUG: \"0\"\n  CARGO_PROFILE_TEST_DEBUG: \"0\"\n  CARGO_BUILD_JOBS: \"2\"\n  RUSTFLAGS: -D warnings\n\n",
+      "expected_engineering_merge_push": true,
+      "expected_metadata_only_new_pr": true
+    },
+    "p7-closeout.yml": {
+      "sha256": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
+      "trigger_block": "name: P7 closeout evidence\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\nenv:\n  CARGO_TERM_COLOR: never\n  PYTHONDONTWRITEBYTECODE: \"1\"\n  CARGO_INCREMENTAL: \"0\"\n  CARGO_PROFILE_DEV_DEBUG: \"0\"\n  CARGO_PROFILE_TEST_DEBUG: \"0\"\n  CARGO_BUILD_JOBS: \"2\"\n  RUSTFLAGS: -D warnings\n\n",
+      "expected_engineering_merge_push": true,
+      "expected_metadata_only_new_pr": true
+    }
+  },
+  "what_the_plan_avoids": "A fresh status PR based on the actual integrated main and containing onlytasks/docs/artifacts normally has no path match for p8-runtime or p8-gates. The existing large PR full diff continues matching those paths if only metadata is appended to it. Runtime/gates have no push-main trigger.",
+  "what_the_plan_does_not_avoid": "CI,platform,lifecycle,P7engineering andP7closeout are unfiltered for pull_request and push(main). They will run for the engineering merge push, the later status PR, and its later merge push. This is not a CI-only or zero-heavy-rerun plan.",
+  "scale_continuity": {
+    "existing_run": 37835810882,
+    "existing_execution_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+    "original_complete_requirement": "150/150 shards,30 registered repetitions,1500 samples plus original full validators and dependency closure; partial4/150 is not acceptance",
+    "workflow_events": [
+      "workflow_dispatch",
+      "pull_request labeled withp8-scale-run condition"
+    ],
+    "no_push_main_event": true,
+    "no_concurrency_or_cancel_in_progress_config": true,
+    "assessment": "No declared repository workflow event or concurrency group in this file cancels the existing599 run on an unrelated engineering merge. Keep its run, artifacts, commit availability and source identity; do not cancel/re-dispatch or replace incomplete old shards with new-source observations. Observe actual GitHub run continuity; this is configuration-based reasoning, not a promise against external platform termination.",
+    "reachability": "Using a merge commit retains599 as an ancestor of296/main, so later old-run jobs can continue checking out their immutable event head; do not prune originals or evidence."
+  },
+  "required_gate_visibility": {
+    "rulesets?includes_parents=true": [],
+    "branches/main/protection": {
+      "error": "GitHub API error 403: {\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-branch-protection\",\"status\":\"403\"}",
+      "error_code": "FORBIDDEN",
+      "error_data": {
+        "message": "Resource not accessible by integration",
+        "documentation_url": "https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "status": "403"
+      }
+    },
+    "rules/branches/main": {
+      "error": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)",
+      "error_code": "INVALID_ARGUMENT"
+    },
+    "pulls/159": {
+      "head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+      "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "draft": true,
+      "state": "open",
+      "mergeable": null,
+      "mergeable_state": "unknown",
+      "merge_commit_sha": "452620b3aed27b7b61b56cae19d25ba315437b93"
+    }
+  },
+  "required_gate_limit": "rulesets empty does not prove no protection; legacy protection is403 and resolved branch-rules endpoint is unsupported. PR remainsDraft and mergeable unknown. If scale or filtered runtime/gates checks are actually required, satisfy them normally; no admin bypass, green substitution, workflow edits or skip markers. A filtered required check may remainPending and block a metadata-onlyPR.",
+  "sequence_conditions": [
+    "Complete actual296 CI, current required checks and all six runtime jobs; independently review their originalsource,build,observer,statistics,cleanup/seals and full profiles before engineering merge. No missing original regression is waived.",
+    "Merge only the exact reviewed296 engineeringhead using the normal allowed GitHub merge operation and verify resulting main parents/tree. Keep task statuses163/29 and clearly state full scale/TODO/release acceptance remains pending. Do not append changing source/validation metadata to159 before this action.",
+    "Allow automatically triggeredmain push workflows to run under existing unchanged configurations. Keep old599 scale run and all originals active/retained; its source remains599 after main changes.",
+    "After all150 scale shards and all original ten-task acceptances/dependencies are independentlyaccepted, branch from actualmain with onlytasks/evidence/docs updates. Keep all1087 product and136 validation inputs byte-identical to296; retain sourceguard pins/core and historical observers.",
+    "Run the existing task-definition/progress guards, preserve192 original definitions/acceptance_subgates and all original failed evidence. Onlyappend evidence/notes and updateauthorizedtaskstatuses plus generatedviews.",
+    "Observe and satisfy every workflow actually triggered or required for that finalPR; compare actualmain changes again ifmain advanced. Do not assume path filtering guarantees a skipped workflow: GitHub diff timeout can cause a filtered workflow to run. Do not cancel it merely for economy.",
+    "Only after finalstatusPR normalrequired gates and independent finaldiff review may it merge. Exactly10 accepted closures would yield173done/19remaining, not the current count."
+  ],
+  "original_contracts_read": {
+    "CONTRIBUTING.md": {
+      "sha256": "00117f468fc463787e21ac2f413da760fa32eb0b1e382d7bdcf486e8d4c496f4"
+    },
+    "docs/roadmap/code-index-v2/08-HANDOFF.md": {
+      "sha256": "6a7f80537ab9ecb57693a9705a11b0b6bcf3b380e22575672b89280567540ab4"
+    },
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": {
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md": {
+      "sha256": "6baaa02357983d2963556b37e611012208942e0b8c69a9c2d1f4395a941efe6e"
+    }
+  },
+  "authority_boundary": "Repository handoff requires authorized PR/merge actions and complete applicableV evidence beforedone. This assessment proposes no automatic merge and introduces no new user approval flow; parent continues within the user-authorized PR management scope.",
+  "official_references": [
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax",
+      "supports": [
+        "PR paths use three-dot changed-file comparison",
+        "a filteredrequired workflow may remainPending",
+        "diff-generation timeout may run the workflow regardless of paths"
+      ]
+    },
+    {
+      "url": "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency",
+      "supports": [
+        "concurrent workflows are allowed bydefault; declared concurrency policies control cancellation"
+      ]
+    }
+  ],
+  "current_task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  },
+  "actions_performed": []
+}

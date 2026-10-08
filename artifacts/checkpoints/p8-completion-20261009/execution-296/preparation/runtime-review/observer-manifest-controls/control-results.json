@@ -1,0 +1,159 @@
+{
+  "adversarial_rejections": 6,
+  "checks": 10,
+  "control_script_sha256": "0c32d6cf50903b6c07595b74ab7f670de22e97842f8a76a69e178728b5956f48",
+  "expected_inventory_owner_sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
+  "expected_observer_files": [
+    "scripts/p8_runtime.py",
+    "scripts/p8_runtime_build.py",
+    "scripts/p7_build_identity.py",
+    "scripts/p8_cold_build.py",
+    "scripts/p8_rollback.py",
+    "scripts/p7_stdio_build_receipt.py",
+    "scripts/p8_backfill.py",
+    "scripts/resource_harness/__init__.py",
+    "scripts/resource_harness/runtime.py"
+  ],
+  "helpers": [
+    {
+      "cases": [
+        {
+          "case": "clean",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/runtime-clean.json",
+          "input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947",
+          "new_manifest_gate": {
+            "accepted": true
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "reordered_keys",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/runtime-reordered_keys.json",
+          "input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947",
+          "new_manifest_gate": {
+            "accepted": true
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "missing_member",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/runtime-missing_member.json",
+          "input_sha256": "0bcbc1ecd284e2668f10f7c1d041673389c4cb7bcb1c183d94b50cb13ef86386",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": "runtime observer manifest inventory differs"
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "unknown_member_same_count",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/runtime-unknown_member_same_count.json",
+          "input_sha256": "ac54ccc8177a5684e502da74c8a0a1880fd9561070b11bc307b062ac4409da50",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": "runtime observer manifest inventory differs"
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "wrong_observer_head",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/runtime-wrong_observer_head.json",
+          "input_sha256": "279b2cee48866092512dfe5113cc5bb1061251ca0f33eaab207c1d48ae9dd941",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": "runtime observer manifest HEAD differs"
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        }
+      ],
+      "helper": "/dev/shm/a217aaae3bde/runtime-review/review_runtime_new_observer_fixed_source.py",
+      "helper_sha256": "c5a168c2b5ce6c08adb6d14bbf5f6f190903d5f9b7cdc9b9ae506390db2149a0",
+      "kind": "runtime",
+      "seed_receipt": "/dev/shm/a217aaae3bde/ci-artifacts/11575574524/extracted/p8-build/build-receipt.json",
+      "seed_receipt_sha256": "8bf74a422765d74dc75162e49470807cd6a29431d9c96fcf4b8f04d8f246d8f6"
+    },
+    {
+      "cases": [
+        {
+          "case": "clean",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/backfill-clean.json",
+          "input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947",
+          "new_manifest_gate": {
+            "accepted": true
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "reordered_keys",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/backfill-reordered_keys.json",
+          "input_sha256": "f6666a4abb7ebcc4f7b1454075d925e4518a5d0e68f06b7f3ce8e20bb05fb947",
+          "new_manifest_gate": {
+            "accepted": true
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "missing_member",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/backfill-missing_member.json",
+          "input_sha256": "0bcbc1ecd284e2668f10f7c1d041673389c4cb7bcb1c183d94b50cb13ef86386",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": ""
+          },
+          "old_manifest_gate": {
+            "accepted": false,
+            "error": ""
+          }
+        },
+        {
+          "case": "unknown_member_same_count",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/backfill-unknown_member_same_count.json",
+          "input_sha256": "ac54ccc8177a5684e502da74c8a0a1880fd9561070b11bc307b062ac4409da50",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": "backfill observer manifest inventory differs"
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        },
+        {
+          "case": "wrong_observer_head",
+          "input": "/dev/shm/a217aaae3bde/runtime-review/observer-manifest-controls/backfill-wrong_observer_head.json",
+          "input_sha256": "279b2cee48866092512dfe5113cc5bb1061251ca0f33eaab207c1d48ae9dd941",
+          "new_manifest_gate": {
+            "accepted": false,
+            "error": "backfill observer manifest HEAD differs"
+          },
+          "old_manifest_gate": {
+            "accepted": true
+          }
+        }
+      ],
+      "helper": "/dev/shm/a217aaae3bde/runtime-review/review_backfill_new_observer_fixed_source.py",
+      "helper_sha256": "9fccfdf458ebe2608f26d899c65cbde6cccb43a97fb0fc8f8574c7446e5344f4",
+      "kind": "backfill",
+      "seed_receipt": "/dev/shm/a217aaae3bde/ci-artifacts/11576813300/extracted/receipt.json",
+      "seed_receipt_sha256": "0aa602bd6aaca3c8d2bea1079f7d741a1d48468568226c336beba5f1a47be034"
+    }
+  ],
+  "limitation": "Only the actual manifest-boundary AST was executed; this does not claim full synthetic-artifact acceptance or a new-source workload run.",
+  "positive_controls": 4,
+  "scope": "Adversarial controls execute the exact helper manifest-gate AST.\n\nThis is a narrow manifest-boundary control, not full artifact acceptance. Original\nreceipts are read-only seeds; their mutations are retained as explicit controls.\nNo product, observer receipt, ZIP, or historical review is rewritten.\n",
+  "seed_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "status": "passed"
+}

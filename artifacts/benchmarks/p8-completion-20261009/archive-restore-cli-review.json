@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "scope": "Actual archive restoration and existing-output refusal; no extraction or product execution.",
+  "helper_sha256": "9abbf153a5367c50b6bc39a503ca7d49770be90bb570867e77fb17d4c28213fe",
+  "manifest_sha256": "4ea89ee020a8b2a5bdefb05d8d9d0ddf39bad5c4122d790e29502c13fc66dc3d",
+  "original_archive_bytes": 9212603,
+  "original_archive_sha256": "556b83c77379fbd13ee8d7b794b53baa460e735e81889048906f00d05f4cd315",
+  "command_template": [
+    "python3",
+    "artifacts/benchmarks/p8-completion-20261009/restore_archive_parts.py",
+    "artifacts/benchmarks/p8-completion-20261009/scale-599/original-artifacts/11576810573/p8-scale-build-37835810882.zip.parts/archive-parts.json",
+    "NEW_OUTPUT_PATH"
+  ],
+  "successful_cli": {
+    "exit_code": 0,
+    "stdout": "{\n  \"restored\": \"/workspace/scratch/a217aaae3bde/archive-restore-check-u4havgwm/restored-original.zip\",\n  \"bytes\": 9212603,\n  \"sha256\": \"556b83c77379fbd13ee8d7b794b53baa460e735e81889048906f00d05f4cd315\",\n  \"archive_members_extracted\": false\n}\n",
+    "stderr": "",
+    "restored_bytes_equal_original": true
+  },
+  "existing_output_cli": {
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/dev/shm/a217aaae3bde/codecortex/artifacts/benchmarks/p8-completion-20261009/restore_archive_parts.py\", line 19, in <module>\n    assert not output.exists(), 'Refusing to overwrite an existing output file'\n           ^^^^^^^^^^^^^^^^^^^\nAssertionError: Refusing to overwrite an existing output file\n",
+    "original_output_unchanged": true
+  },
+  "temporary_restored_copy_removed_after_verification": true,
+  "original_archive_unchanged": true,
+  "original_task_status_changes": 0,
+  "original_todos_remaining": 29
+}

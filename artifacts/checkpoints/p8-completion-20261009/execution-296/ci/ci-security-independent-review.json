@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T21:53:52.518669+00:00",
+  "scope": "Independent read-only audit of full official security job log and exact job metadata",
+  "status": "accepted_scoped",
+  "run_id": 37844311827,
+  "job_id": 113541232493,
+  "event_head": "29682890c89511dd6f477a6bf48bd969aa1537af",
+  "actual_checkout": "452620b3aed27b7b61b56cae19d25ba315437b93",
+  "checkout_relation": "Independently GET-verified merge parents7354+296 and full treec75038d358e6c8b881a246bfd3c3111cda86dde0 equals296; do not relabel merge execution ashead checkout",
+  "official_log": {
+    "path": "job-113541232493-original.log",
+    "bytes": 64047,
+    "sha256": "2ff8b119a0a485e3a5b545143db94f3c31b1bfd5a8ddf65a7faa3d674573f504"
+  },
+  "job_metadata_path": "ci-security-job-metadata.json",
+  "steps": [
+    {
+      "number": 1,
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 2,
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 3,
+      "name": "Run rustsec/audit-check@v2.0.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 6,
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "number": 7,
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "actual_command": "cargo audit --json --file ./Cargo.lock",
+  "cargo_audit_version": "0.22.2",
+  "audit_result": {
+    "database": {
+      "advisory-count": 1295,
+      "last-commit": "550efd3d587a29b2e2c2b21b17a440da4fede999",
+      "last-updated": "2026-10-08T16:47:14+02:00"
+    },
+    "lockfile": {
+      "dependency-count": 338
+    },
+    "settings": {
+      "target_arch": [],
+      "target_os": [],
+      "severity": null,
+      "ignore": [],
+      "informational_warnings": [
+        "unmaintained",
+        "unsound",
+        "notice"
+      ]
+    },
+    "vulnerabilities": {
+      "found": false,
+      "count": 0,
+      "list": []
+    },
+    "warnings": {}
+  },
+  "runner_warning": "Node20 action declarations forced byrunner ontoNode24; preservedoriginalwarning. Audititselfreportednovulnerabilities/nosecuritywarnings.",
+  "task_and_merge_boundary": "Security job passed. OtherCI/P7/runtime/scale and requiredgates remain separately pending; no task status update or merge approval.",
+  "no_rerun_or_remote_mutation": true
+}

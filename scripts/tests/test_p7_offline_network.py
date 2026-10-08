@@ -66,6 +66,41 @@ class NetworkGuardTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(path.read_bytes(), b"original evidence\n")
 
+    def test_anonymous_unix_stream_ipc_works_under_both_network_policies(self):
+        # Match mio's actual libc socketpair + ordinary read/write boundary.
+        # Python's high-level socket wrapper additionally probes socket metadata;
+        # it is not the signal-IPC implementation being admitted here.
+        code = ("import ctypes,os,socket; libc=ctypes.CDLL(None,use_errno=True); "
+                "libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]; "
+                "fds=(ctypes.c_int*2)(); "
+                "assert libc.socketpair(socket.AF_UNIX,socket.SOCK_STREAM|socket.SOCK_NONBLOCK|socket.SOCK_CLOEXEC,0,fds)==0; "
+                "os.write(fds[0],b'ipc'); assert os.read(fds[1],3)==b'ipc'; os.close(fds[0]); os.close(fds[1])")
+        for action in ('errno', 'kill'):
+            with self.subTest(action=action), tempfile.TemporaryDirectory() as temporary:
+                receipt = Path(temporary) / 'ipc.json'
+                result = subprocess.run([sys.executable, str(SCRIPT), '--action', action,
+                                         '--receipt', str(receipt), '--', sys.executable, '-c', code],
+                                        capture_output=True, text=True, timeout=20)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(receipt.read_text())['local_ipc_policy'], guard.LOCAL_IPC_POLICY)
+
+    def test_external_pair_addressable_unix_socket_and_connect_are_still_fatal(self):
+        for attempt in ('socket.socketpair(socket.AF_INET,socket.SOCK_STREAM,0)',
+                        'socket.socketpair(socket.AF_UNIX,socket.SOCK_STREAM,1)',
+                        'socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)',
+                        "libc.connect(fds[0],None,0)"):
+            with self.subTest(attempt=attempt), tempfile.TemporaryDirectory() as temporary:
+                setup = ("import socket,ctypes; libc=ctypes.CDLL(None); fds=(ctypes.c_int*2)(); "
+                         "libc.socketpair.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(ctypes.c_int)]; "
+                         "assert libc.socketpair(socket.AF_UNIX,socket.SOCK_STREAM,0,fds)==0; "
+                         "print('forbidden syscall reached',flush=True); ")
+                result = subprocess.run([sys.executable, str(SCRIPT), '--action', 'kill',
+                                         '--receipt', str(Path(temporary) / 'denied.json'), '--',
+                                         sys.executable, '-c', setup + attempt],
+                                        capture_output=True, text=True, timeout=20)
+                self.assertEqual(result.stdout.strip(), 'forbidden syscall reached')
+                self.assertEqual(result.returncode, -signal.SIGSYS, result.stderr)
+
     def test_normal_exit_cannot_pass_the_kill_positive_control(self):
         with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
                 guard.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "", "")):

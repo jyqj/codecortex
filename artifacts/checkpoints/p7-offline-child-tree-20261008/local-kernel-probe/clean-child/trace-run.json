@@ -1,0 +1,36 @@
+{
+  "command": [
+    "/usr/bin/strace",
+    "-ff",
+    "-s",
+    "4096",
+    "-e",
+    "trace=process,network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns",
+    "-o",
+    "/dev/shm/codecortex-closeout-996727/codecortex-offline/artifacts/checkpoints/p7-offline-child-tree-20261008/local-kernel-probe/clean-child/syscalls",
+    "--",
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/dev/shm/codecortex-closeout-996727/codecortex-offline/scripts/p7_offline_network.py",
+    "--action",
+    "kill",
+    "--receipt",
+    "/dev/shm/codecortex-closeout-996727/codecortex-offline/artifacts/checkpoints/p7-offline-child-tree-20261008/local-kernel-probe/clean-child.json",
+    "--",
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-c",
+    "import os,signal,socket; child=os.fork()\nif child == 0:\n pass\n os._exit(0)\n_,status=os.waitpid(child,0)\nassert os.waitstatus_to_exitcode(status)==0\nprint('owned child waited; parent exits zero',flush=True)\n"
+  ],
+  "pid_namespace": "pid:[4026532417]",
+  "raw_files": {
+    "stderr.log": "54c4fd1054c5c741ab0218ea148520f87ad3298ea3fac32a7fbfe043550ca21f",
+    "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "syscalls.9": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "returncode": 1,
+  "schema_version": 1,
+  "strace_sha256": "28f957c227012de0b18d1bd7fff2d396cb693ea60ed8013be68de071e84b5001",
+  "strace_version": "strace -- version 6.8",
+  "timeout_seconds": 30,
+  "trace_expression": "process,network,io_uring_setup,io_uring_enter,io_uring_register,unshare,setns",
+  "tracer_namespace_pid": 2
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "implementation_prepared_product_gate_not_run",
+  "parser_controls": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p7_offline_trace.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "tests_passed": 11,
+    "raw_log": "parser-controls-03.log"
+  },
+  "source_files": {
+    "scripts/p7_offline_trace.py": "dff0f424c054d355b29463d2f78066cf4c19500ce976e187a56a63061fee110d",
+    "scripts/tests/test_p7_offline_trace.py": "228d554273631cc9156d46ba098b9ef2c3e7b7edcebe02c1fc05604c296614d5",
+    "scripts/p7_offline_network.py": "dd9eb73281c2411831bc221af082bef4ebf96e08122e850796ae82b82b274742",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "5ae90a24cedf5607db461cc77bd00555ba1c466e193f344dfdb1d58e6d27dd2f",
+    "docs/roadmap/code-index-v2/P7-OFFLINE-RUNNER.md": "d13c3b25ad4ea50c2aebbd9fb6557a09b361408e7dc927e2281442e49613df97"
+  },
+  "real_trace_controls": {
+    "status": "not_run_platform_ptrace_denied",
+    "raw_directory": "local-kernel-probe",
+    "no_permission_override": true
+  },
+  "real_product_matrices": {
+    "default": "not_run",
+    "semantic": "not_run"
+  },
+  "original_failure_exposed": "A socket attempt in a descendant can terminate that descendant with SIGSYS while the product parent exits zero. Raw adapter attempts remain null until a complete independent descendant trace passes.",
+  "pending_runtime_integration": "CI observed Tokio signal AF_UNIX socketpair EPERM. A narrowly classified anonymous local IPC policy adjustment requires real trace evidence; no product completion is claimed here.",
+  "full_P7_017": false,
+  "raw_files": {
+    "local-kernel-probe/clean-child/stderr.log": "54c4fd1054c5c741ab0218ea148520f87ad3298ea3fac32a7fbfe043550ca21f",
+    "local-kernel-probe/clean-child/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-kernel-probe/clean-child/syscalls.9": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-kernel-probe/clean-child/trace-run.json": "975ba2e68092cb45490b3abe216f28571968ee9b23a4799deace9d559bcb0410",
+    "local-kernel-probe/failure.json": "598dedda7ed9c018ef1909873953fe733691535a20e1cc0818e1c253e5a6355f",
+    "parser-controls-01.log": "73878be2fdf3bb6c88444e937c306c1c807f04ab9433885ca7dc9b6c07c15038",
+    "parser-controls-02.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "parser-controls-03.log": "1732f871aed54ec346748db90f3fb13d795f3a860ccddd151e734e66aad335e1"
+  }
+}

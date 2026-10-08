@@ -112,8 +112,11 @@ struct QuarantineReport<'a> {
 /// Both halves are renamed out of the namespace tree, so the address
 /// immediately reads [`crate::cache::CacheRead::Miss`] — the degrade-to-Miss
 /// semantics of the brief. Files already gone (a concurrent GC sweep or a
-/// double quarantine won the race) are tolerated: `Ok(None)` means "nothing
-/// left to isolate", never an error. The quarantine directory is created on
+/// double quarantine won the race), or already repaired by a publisher,
+/// are tolerated: `Ok(None)` means "nothing left to isolate", never an
+/// error. A verified healthy replacement is checked under the mutation
+/// lease and is never moved on the strength of an older corrupt report.
+/// The quarantine directory is created on
 /// first use — this module is its sanctioned creator (P6-008 only fixed the
 /// convention).
 pub fn quarantine_object(
@@ -130,6 +133,18 @@ pub fn quarantine_object(
         return Ok(None);
     }
     let _mutation = cache.lock_mutation()?;
+    // The report predates this lease. A publisher may have repaired and
+    // committed the same address while cleanup was waiting; verify the
+    // current bytes before moving either half. Miss still permits isolating
+    // an incomplete leftover, and I/O errors remain errors. The bounded get
+    // takes no mutation lease itself, so the namespace -> DB lock order is
+    // unchanged and no recursive file lock is introduced.
+    if matches!(
+        cache.get(space, input, spec)?,
+        crate::cache::CacheRead::Hit(_)
+    ) {
+        return Ok(None);
+    }
     let dir = cache
         .root()
         .join(format!("{NAMESPACE_DIR_PREFIX}{}", cache.namespace()))
@@ -411,8 +426,9 @@ impl EmbeddingProvider for BudgetedProvider<'_> {
 
 /// The P6-018 degrade step for one detected-corrupt object: quarantine the
 /// evidence and record the degradation. Returns the quarantine record, or
-/// `Ok(None)` when the object was already gone (the corrupt EVENT is still
-/// recorded — a corrupt read happened, which is what degrades).
+/// `Ok(None)` when the object was already gone or repaired (the corrupt
+/// EVENT is still recorded — a corrupt read happened, which is what
+/// degrades).
 pub fn quarantine_detected(
     cache: &ArtifactCache,
     ledger: &DegradationLedger,
@@ -507,6 +523,24 @@ mod tests {
         cache
             .put(&space, &input, &spec, &[1.0, 2.0], 100)
             .expect("put");
+
+        // The quarantine contract requires actual corrupt evidence. Keep all
+        // original move/report assertions, but do not manufacture a corrupt
+        // report for healthy bytes: that is the stale-report race below.
+        let bin = cache
+            .root()
+            .join("namespace-ns-q")
+            .join(space.digest().unwrap().as_str())
+            .join(input.as_str())
+            .join(spec.as_str())
+            .join(format!("{}.bin", spec.as_str()));
+        let mut payload = std::fs::read(&bin).unwrap();
+        payload[0] ^= 0xff;
+        std::fs::write(&bin, payload).unwrap();
+        assert!(matches!(
+            cache.get(&space, &input, &spec).unwrap(),
+            crate::cache::CacheRead::Corrupt(_)
+        ));
 
         let rec = quarantine_object(&cache, &space, &input, &spec, &corrupt_report(&dir.0), 200)
             .expect("quarantine")

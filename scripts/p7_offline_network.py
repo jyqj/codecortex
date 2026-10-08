@@ -2,7 +2,8 @@
 """Apply process-local seccomp before exec; never weaken inherited restrictions.
 
 The parent test runner uses EPERM probes. Each real product instead uses
-KILL_PROCESS, so a swallowed network error cannot masquerade as zero attempts.
+KILL_PROCESS. A surviving parent can still swallow a descendant's SIGSYS, so
+zero attempts additionally requires p7_offline_trace.py's complete tree check.
 This helper is a test launcher, not the product whose build receipt is checked.
 """
 import argparse
@@ -22,12 +23,19 @@ import sys
 
 
 ALLOW, KILL_PROCESS, ERRNO = 0x7FFF0000, 0x80000000, 0x00050000
+LOCAL_IPC_POLICY = {"syscall": "socketpair", "family": "AF_UNIX", "protocol": 0,
+                    "scope": "anonymous local IPC only; no socket/bind/connect exception"}
 NETWORK_SYSCALLS = (
     "socket", "socketpair", "connect", "bind", "listen", "accept", "accept4",
     "sendto", "recvfrom", "sendmsg", "recvmsg", "sendmmsg", "recvmmsg",
     "getsockname", "getpeername", "setsockopt", "getsockopt", "shutdown",
     "socketcall", "io_uring_setup", "io_uring_enter", "io_uring_register",
 )
+
+
+class ArgumentComparison(ctypes.Structure):
+    _fields_ = [("arg", ctypes.c_uint), ("op", ctypes.c_int),
+                ("datum_a", ctypes.c_uint64), ("datum_b", ctypes.c_uint64)]
 
 
 def digest(path):
@@ -81,7 +89,7 @@ def install_filter(action):
     context = library.seccomp_init(ALLOW)
     if not context:
         raise RuntimeError("seccomp_init failed")
-    denied, unavailable = [], []
+    denied, unavailable, local_ipc = [], [], None
     try:
         # SCMP_FLTATR_ACT_BADARCH = 2. An ABI switch cannot evade the native
         # syscall rules by only terminating one thread in a multithreaded child.
@@ -92,11 +100,25 @@ def install_filter(action):
             if number < 0:
                 unavailable.append(syscall)
                 continue
+            if syscall == "socketpair":
+                # Tokio signal delivery needs an anonymous Unix stream pair.
+                # No endpoint address is supplied by socketpair. All other
+                # domains and nonzero protocols remain denied, as do ordinary
+                # Unix socket/bind/connect calls. Trace acceptance additionally
+                # restricts observed pairs to the actual SOCK_STREAM IPC form.
+                for argument, value in ((0, int(socket.AF_UNIX)), (2, 0)):
+                    comparison = ArgumentComparison(argument, 1, value, 0)  # SCMP_CMP_NE
+                    result = library.seccomp_rule_add_array(context, action, number, 1,
+                                                           ctypes.byref(comparison))
+                    if result != 0:
+                        raise RuntimeError(f"conditional socketpair rule failed: {result}")
+                local_ipc = dict(LOCAL_IPC_POLICY)
+                continue
             result = library.seccomp_rule_add_array(context, action, number, 0, None)
             if result != 0:
                 raise RuntimeError(f"seccomp rule {syscall} failed: {result}")
             denied.append(syscall)
-        if not {"socket", "socketpair", "connect", "io_uring_setup"}.issubset(denied):
+        if not {"socket", "connect", "io_uring_setup"}.issubset(denied) or local_ipc is None:
             raise RuntimeError("essential network syscall rules unavailable")
         libc = ctypes.CDLL(None, use_errno=True)
         libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
@@ -109,7 +131,7 @@ def install_filter(action):
             raise RuntimeError(f"seccomp_load failed: {result}")
     finally:
         library.seccomp_release(context)
-    return denied, unavailable
+    return denied, unavailable, local_ipc
 
 
 def errno_probe(family):
@@ -179,7 +201,7 @@ def main():
         for descriptor in inherited:
             os.close(descriptor)
         record["closed_socket_fds"] = inherited
-        record["denied_syscalls"], record["unavailable_syscalls"] = install_filter(
+        record["denied_syscalls"], record["unavailable_syscalls"], record["local_ipc_policy"] = install_filter(
             KILL_PROCESS if args.action == "kill" else ERRNO | errno.EPERM)
         record["after"] = security_status()
         if (record["after"].get("NoNewPrivs") != "1"

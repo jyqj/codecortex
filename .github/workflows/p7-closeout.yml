@@ -74,26 +74,47 @@ jobs:
             2> "$RUNNER_TEMP/p7-closeout/http-product-build.stderr.log"
           sha256sum "$CARGO_TARGET_DIR/debug/codecortex" > "$RUNNER_TEMP/p7-closeout/http-product.sha256"
           python3 - <<'PY'
-          import hashlib, json, os, pathlib, shutil
+          import hashlib, json, os, pathlib, shutil, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import source_snapshot
+          root = pathlib.Path.cwd()
           out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'
+          before = json.loads((out / 'source-before.json').read_text())
+          after = source_snapshot(root)
+          assert before == after, 'HTTP product source changed during compilation'
           rows = [json.loads(x) for x in (out / 'http-product-build.jsonl').read_text().splitlines()]
           rows = [x for x in rows if x.get('reason') == 'compiler-artifact'
                   and x.get('target', {}).get('name') == 'codecortex'
                   and x.get('target', {}).get('kind') == ['bin'] and x.get('executable')]
           assert len(rows) == 1 and 'semantic-http' in rows[0]['features'], rows
+          artifact = rows[0]
+          assert pathlib.Path(artifact['manifest_path']).resolve() == root / 'crates/cc-server/Cargo.toml'
+          assert pathlib.Path(artifact['target']['src_path']).resolve() == root / 'crates/cc-server/src/main.rs'
+          assert pathlib.Path(artifact['executable']).resolve().is_relative_to(pathlib.Path(os.environ['CARGO_TARGET_DIR']).resolve())
+          assert artifact['profile']['opt_level'] == '0' and artifact['profile']['debug_assertions'] is True
+          assert artifact['profile']['test'] is False
           binary = out / 'http-codecortex'
           shutil.copy2(rows[0]['executable'], binary)
           digest = hashlib.sha256(binary.read_bytes()).hexdigest()
           assert digest == hashlib.sha256(pathlib.Path(rows[0]['executable']).read_bytes()).hexdigest()
           receipt = {'binary_path': str(binary), 'binary_sha256': digest,
                      'build_exit_code': 0, 'cargo_artifact': rows[0],
-                     'source_before': json.loads((out / 'source-before.json').read_text()),
+                     'source_before': before, 'source_after': after,
                      'cargo_log_sha256': hashlib.sha256((out / 'http-product-build.jsonl').read_bytes()).hexdigest()}
           (out / 'http-build-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
           PY
           python3 artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py \
             "$RUNNER_TEMP/p7-closeout/http-codecortex" "$RUNNER_TEMP/p7-closeout/lifecycle" \
             2>&1 | tee "$RUNNER_TEMP/p7-closeout/lifecycle.log"
+
+      - name: Three-seed real product retry, crash, deletion, recovery and automatic GC
+        run: |
+          set -o pipefail
+          python3 scripts/p7_fault_lifecycle_stdio.py \
+            --binary "$RUNNER_TEMP/p7-closeout/http-codecortex" \
+            --build-receipt "$RUNNER_TEMP/p7-closeout/http-build-receipt.json" \
+            --output "$RUNNER_TEMP/p7-closeout/fault-lifecycle" \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/fault-lifecycle.log"
 
       - name: Attributed resources and actual worker contention
         env:
@@ -124,8 +145,50 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: p7-closeout-${{ github.sha }}
+          name: p7-closeout-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/p7-closeout
+          include-hidden-files: true
+          if-no-files-found: error
+
+  mechanism:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Build four independent complete source snapshots
+        env:
+          EXACT_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 scripts/p7_mechanism_build.py --source "$PWD" --expected-head "$EXACT_SOURCE" \
+            --output "$RUNNER_TEMP/p7-019-build" --jobs 2 --discard-targets
+      - name: Actual local, dense-only, hybrid and no-lanes control with paired replay
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p7-019-runner-target
+          P7_MECHANISM_BUILD_MANIFEST: ${{ runner.temp }}/p7-019-build/mechanism-build.json
+          P7_MECHANISM_EVIDENCE_DIR: ${{ runner.temp }}/p7-019-evidence
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/p7-019-runner"
+          cargo test -p cc-eval --features semantic --locked --lib benchmark::ablation::mechanism:: \
+            -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-019-runner/unit.log"
+          cargo test -p cc-eval --features semantic --locked --test p7_strategy_ablation \
+            -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-019-runner/old-ablation.log"
+          cargo test -p cc-eval --features semantic --locked --test p7_mechanism_stdio \
+            -- --ignored --nocapture --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/p7-019-runner/actual-mechanism.log"
+      - name: Archive all arms, build receipts, raw observations and paired statistics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-mechanism-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p7-019-build
+            ${{ runner.temp }}/p7-019-evidence
+            ${{ runner.temp }}/p7-019-runner
+          include-hidden-files: true
           if-no-files-found: error
 
   offline:
@@ -150,6 +213,11 @@ jobs:
             -o "$RUNNER_TEMP/p7-offline/procfs-controls"
           "$RUNNER_TEMP/p7-offline/procfs-controls" --nocapture \
             2>&1 | tee "$RUNNER_TEMP/p7-offline/procfs-controls.log"
+      - name: Install process-tree syscall observer and verify negative controls
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y strace
+          python3 scripts/p7_offline_trace.py controls --output "$RUNNER_TEMP/p7-offline/trace-controls"
       - name: Build exact package with original private target receipt
         run: |
           python3 scripts/p7_stdio_build_receipt.py --package-kind '${{ matrix.package }}' \
@@ -159,13 +227,26 @@ jobs:
         env:
           CARGO_TARGET_DIR: ${{ runner.temp }}/p7-offline-runner-target
         run: |
+          python3 - <<'PY'
+          import os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import json_bytes, source_snapshot
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-offline'
+          (out / 'runner-source-before.json').write_bytes(json_bytes(source_snapshot(pathlib.Path.cwd())))
+          PY
           cargo test -p cc-eval --test benchmark_adapters --locked --no-run \
             --message-format=json-render-diagnostics \
             > "$RUNNER_TEMP/p7-offline/runner-build.jsonl" \
             2> "$RUNNER_TEMP/p7-offline/runner-build.stderr.log"
           python3 - <<'PY'
-          import hashlib, json, os, pathlib
+          import hashlib, json, os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import json_bytes, source_snapshot
           out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-offline'
+          before = json.loads((out / 'runner-source-before.json').read_text())
+          after = source_snapshot(pathlib.Path.cwd())
+          assert before == after, 'runner source changed during compilation'
+          (out / 'runner-source-inputs.json').write_bytes(json_bytes(before['inputs']))
           rows = [json.loads(line) for line in (out / 'runner-build.jsonl').read_text().splitlines()]
           artifacts = [x for x in rows if x.get('reason') == 'compiler-artifact'
                        and x.get('target', {}).get('name') == 'benchmark_adapters'
@@ -173,7 +254,9 @@ jobs:
           assert len(artifacts) == 1, artifacts
           binary = pathlib.Path(artifacts[0]['executable'])
           receipt = {'cargo_artifact': artifacts[0],
-                     'sha256': hashlib.sha256(binary.read_bytes()).hexdigest()}
+                     'sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),
+                     'source_before': {k:v for k,v in before.items() if k != 'inputs'},
+                     'source_after': {k:v for k,v in after.items() if k != 'inputs'}}
           (out / 'runner-identity.json').write_text(json.dumps(receipt, indent=2) + '\n')
           with open(os.environ['GITHUB_ENV'], 'a') as env:
               env.write('P7_OFFLINE_RUNNER=' + str(binary) + '\n')
@@ -186,9 +269,12 @@ jobs:
           CODECORTEX_BENCH_OBSERVATIONS: ${{ runner.temp }}/p7-offline/observations.jsonl
         run: |
           set -o pipefail
-          python3 scripts/p7_offline_network.py --receipt "$RUNNER_TEMP/p7-offline/parent-policy.json" -- \
-            "$P7_OFFLINE_RUNNER" p7_offline::real_stdio_default_disabled_semantic_contract \
-            --ignored --exact --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-offline/product-matrix.log"
+          python3 scripts/p7_offline_trace.py run --package-kind '${{ matrix.package }}' \
+            --product "$RUNNER_TEMP/p7-offline/product/codecortex" \
+            --build-receipt "$RUNNER_TEMP/p7-offline/product/build-receipt.json" \
+            --runner "$P7_OFFLINE_RUNNER" --runner-receipt "$RUNNER_TEMP/p7-offline/runner-identity.json" \
+            --output "$RUNNER_TEMP/p7-offline/trace-matrix" \
+            2>&1 | tee "$RUNNER_TEMP/p7-offline/product-matrix.log"
       - name: Archive package, commands, identities and raw observations
         if: always()
         uses: actions/upload-artifact@v4
@@ -197,4 +283,5 @@ jobs:
           path: |
             ${{ runner.temp }}/p7-offline
             !${{ runner.temp }}/p7-offline/product/cargo-target
+          include-hidden-files: true
           if-no-files-found: error

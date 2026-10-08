@@ -361,7 +361,7 @@ impl ArtifactCache {
         ) {
             (Ok(p), Ok(m)) => (p, m),
             (Err(e), _) | (_, Err(e)) if e.kind() == std::io::ErrorKind::NotFound => {
-                return Ok(CacheRead::Miss)
+                return Ok(CacheRead::Miss);
             }
             (Err(e), _) | (_, Err(e)) => return Err(e.into()),
         };
@@ -409,7 +409,7 @@ impl ArtifactCache {
             None => {
                 return Ok(corrupt(
                     "payload byte length exceeds the requested dimension byte budget".into(),
-                ))
+                ));
             }
         };
         let checksum = bytes_hash(&payload);
@@ -499,8 +499,10 @@ impl ArtifactCache {
 
     /// Discardable semantics: remove both halves of an object so subsequent
     /// reads are [`CacheRead::Miss`]. Returns whether anything was removed.
-    /// Used by callers degrading from [`CacheRead::Corrupt`]; the quarantine
-    /// *move* (preserve-for-diagnostics) is P6-018 and deliberately not here.
+    /// This is an explicit eviction of the current address, including a
+    /// healthy object. For cleanup triggered by an earlier corrupt read,
+    /// use [`crate::degrade::quarantine_object`], which revalidates under the
+    /// mutation lease before preserving the corrupt evidence.
     pub fn discard(
         &self,
         space: &VectorSpace,

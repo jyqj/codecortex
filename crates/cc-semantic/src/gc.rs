@@ -362,13 +362,25 @@ fn peek_meta(meta_path: &Path) -> (Option<i64>, Option<String>) {
 /// Reconstruct mutable filesystem evidence under the namespace lease. Keep
 /// the original object paths even when replaced by a directory: a real
 /// unlink error must still propagate rather than becoming a successful skip.
-fn refresh_entry(entry: &GcEntry) -> GcEntry {
+/// A candidate whose paths are already absent has no protection or deletion
+/// outcome. Only an actual NotFound permits this idempotent skip.
+fn refresh_entry(entry: &GcEntry) -> CcResult<Option<GcEntry>> {
     let mut current = entry.clone();
     let paths = match &entry.kind {
         GcEntryKind::Object {
             bin, meta, spec, ..
-        } => Some((bin.clone(), meta.clone(), spec.clone())),
+        } => {
+            let bin_present = path_present(bin)?;
+            let meta_present = path_present(meta)?;
+            if !bin_present && !meta_present {
+                return Ok(None);
+            }
+            Some((bin.clone(), meta.clone(), spec.clone()))
+        }
         GcEntryKind::Half { path } => {
+            if !path_present(path)? {
+                return Ok(None);
+            }
             let name = path.file_name().and_then(|name| name.to_str());
             let parent = path.parent();
             match (name, parent) {
@@ -376,16 +388,25 @@ fn refresh_entry(entry: &GcEntry) -> GcEntry {
                     let spec = name
                         .strip_suffix(BIN_SUFFIX)
                         .or_else(|| name.strip_suffix(META_SUFFIX));
-                    spec.and_then(|spec| {
+                    if let Some(spec) = spec {
                         let bin = parent.join(format!("{spec}{BIN_SUFFIX}"));
                         let meta = parent.join(format!("{spec}{META_SUFFIX}"));
-                        (bin.exists() && meta.exists()).then(|| (bin, meta, spec.to_string()))
-                    })
+                        let bin_present = path_present(&bin)?;
+                        let meta_present = path_present(&meta)?;
+                        (bin_present && meta_present).then(|| (bin, meta, spec.to_string()))
+                    } else {
+                        None
+                    }
                 }
                 _ => None,
             }
         }
-        GcEntryKind::Temp { .. } => None,
+        GcEntryKind::Temp { path } => {
+            if !path_present(path)? {
+                return Ok(None);
+            }
+            None
+        }
     };
     if let Some((bin, meta, spec)) = paths {
         let (created_at, checksum) = peek_meta(&meta);
@@ -397,7 +418,15 @@ fn refresh_entry(entry: &GcEntry) -> GcEntry {
             checksum,
         };
     }
-    current
+    Ok(Some(current))
+}
+
+fn path_present(path: &Path) -> CcResult<bool> {
+    match std::fs::symlink_metadata(path) {
+        Ok(_) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
 }
 
 /// The protection decision for one non-temp entry against the batch's mark
@@ -459,7 +488,15 @@ fn sweep_batch_with_mark_hook(
         return Ok(counters);
     }
     let _mutation = cache.lock_mutation()?;
-    let entries: Vec<GcEntry> = batch.entries.iter().map(refresh_entry).collect();
+    let mut entries = Vec::with_capacity(batch.entries.len());
+    for entry in &batch.entries {
+        if let Some(current) = refresh_entry(entry)? {
+            entries.push(current);
+        }
+    }
+    if entries.is_empty() {
+        return Ok(counters);
+    }
 
     // Pass 1: freshness (filesystem clock data only).
     let marked: Vec<bool> = entries

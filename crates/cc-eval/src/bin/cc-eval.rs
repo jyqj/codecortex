@@ -50,6 +50,14 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Verify and execute isolated local/dense/hybrid source counterfactuals.
+    /// Includes the no-lanes negative control; literal-loopback fake inputs only.
+    AblateMechanisms {
+        #[arg(long)]
+        plan: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Export JSON Schema from the same Rust types used by the runner.
     Schema {
         #[arg(long)]
@@ -224,6 +232,9 @@ async fn execute(command: Command) -> Result<i32> {
         Command::Ablate { plan, output } => b::ablation::run(&plan, &output).await,
         Command::AblateStrategies { plan, output } => {
             b::ablation::strategy::run(&plan, &output).await
+        }
+        Command::AblateMechanisms { plan, output } => {
+            b::ablation::mechanism::run(&plan, &output).await
         }
         Command::Schema { output } => {
             new_output(&output)?;

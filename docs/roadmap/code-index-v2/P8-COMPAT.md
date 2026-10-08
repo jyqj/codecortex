@@ -1,5 +1,13 @@
 # P8-003：固定输入的兼容运行与对照入口
 
+## 2026-10-08 第 5 轮：固定外部执行已完成
+
+P8-003 的实际外部原输入与四组完整结果现已归档。PR #153 的原固定release/config系列保留各300条及原exit1；本会话F产品/D显式coverage-diagnostic系列另完成4×300 measured及400 warmup，原exit2全部保留，且由原F scorer在副本上逐字节重放。两个系列分别使用各自固定source/binary/config/lock；不互相重标，也不据失效gate形成排行榜。
+
+本会话的[固定运行入口](../../../artifacts/benchmarks/p8-corpus-external-holdout-20261008/index.json)与[完整检查点](../../../artifacts/checkpoints/p8-corpus-external-holdout-20261008/README.md)提供逐组证据。新合流P的检索质量仍not_run。任务状态接受原执行/分报范围，最终同head三套CI及独立审阅通过后才合并；完整V19/G8和发行认证不由此通过。
+
+## 历史准备阶段记录（保留当时未运行的边界）
+
 本轮为原始 `P8-003` 提供可执行的锁检查、真实 `cc-eval` 运行、raw 回放和逐 profile 对照入口。任务要求的外部范围仍是 `cc-switch` 与 Flask；两者的原始输入锁尚未取得，本轮均为 `not_run`。公开 Express dev 控制证明了入口可执行，不能计入外部 200 题的验收或发布认证。
 
 原始范围与接受条件见 [09-BENCHMARK.md](09-BENCHMARK.md) 和 `tasks.json` 中的 `P8-003`。本文件不改变任务验收、评分器、gold、生产排名或统计阈值。

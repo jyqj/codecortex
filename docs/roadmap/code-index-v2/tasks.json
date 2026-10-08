@@ -11439,10 +11439,43 @@
             "sha256": "cd287b390adc1da68704a7d738a60f3b34af08db1d50372bbfefb784a5e0d295"
           },
           "actual_run": 37752879911
+        },
+        {
+          "status": "additional_execution_evidence_for_original_task_already_merged_by_PR153",
+          "product_source": "1ed3c7df574db6d450f79ef29d5148f68556b3db",
+          "review_source": "be8aabc0b35706f6403cc12961eb4149fda50f2c",
+          "installed_guard_source": "714264adc8e3d38f0f25de16669de3fd363adeaa",
+          "measured_product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+          "diagnostic_evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+          "artifact_paths": [
+            "crates/cc-eval/benchmarks/public-dev-20261008/index.json",
+            "crates/cc-eval/benchmarks/manifests/public-dev-20261008.dataset-index.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/corpus/registry-validation.json",
+            "artifacts/benchmarks/p8-corpus-external-holdout-20261008/index.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/source-identities.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/independent-source-review.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-product-validation/final-validation-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/final-P-data-identity.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/benchmark-entry-acceptance-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-S-guard-validation/S-guard-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/v14-installation-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/installation-local-validation-followup.json"
+          ],
+          "scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+          "actual_integration_checks": "At P: new actual dev build, 13 distinct targeted tests with zero ignored, and unchanged workspace/all-targets Clippy passed. Source-specific earlier 19 scanner/config tests, 12 build-binding Python controls, 5 package-path methods and 12 real CLI path cases are retained without summing overlaps. At S, the original v14 CLI executed the preceding v13 proof and passed once; all 1197 observed inputs were unchanged.",
+          "final_merge_gate": "This task-state proposal becomes merged completion only with successful terminal CI, P7 engineering and P7 closeout workflows at the exact final PR #156 head, independent original-task acceptance and a verified merge. See the permanent PR review.",
+          "pull_request": "https://github.com/jyqj/codecortex/pull/156",
+          "limitations": [
+            "Original P615 Rust failures and PR #153 initial CI failure remain preserved.",
+            "The new combined P has no new retrieval-quality or holdout run.",
+            "Historical F/D diagnostic exit 2 and F holdout exit 1 remain failures; full V19/G8 and release are not certified."
+          ],
+          "rollback_status": "Revert the integrated product and matching source-review installation together; preserve original evidence.",
+          "main_accounting": "PR #153 has already merged P8-002/003 at a1158866 (162 done /30 remaining). Only P8-004 is a new done state in PR #156; final 163/29 is conditional on exact-head CI, independent acceptance and merge."
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "2026-10-02 用户拍板（D3）：真实多仓语料采用公开仓 + 固定 commit（延续 09-BENCHMARK 已锁定的 Flask/cc-switch 先例）；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。\n2026-10-08 第一轮：public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重新核对4仓301 native DEV输入与覆盖缺口；Rust/serde、mixed monorepo准入和相应gold复核仍开放。更正派生审计的600-family解释：原D2为初始约600个经审阅问题，family用于split/统计，不新增独立family硬门槛，也不撤销历史已接受的DEV审阅。协调issue #149映射本原任务，未新增任务。\n2026-10-08 当前合流候选正式验收：六仓327 native/282 compat DEV、132源码、509 spans、20许可文件，182 canonical bytes/OID/mode零差异；实际16旧V02+12新freeze+12suite validation与schema通过。独审554edb990b10e910693ae126fa697ddf8753e46b按原条款接受，本项done；约600规划差额、全英文DEV、305相关组件与14未起草reserved slots仍透明，未升级G8/heldout。"
+      "implementation_notes": "2026-10-02 用户拍板（D3）：真实多仓语料采用公开仓 + 固定 commit（延续 09-BENCHMARK 已锁定的 Flask/cc-switch 先例）；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。\n2026-10-08 第一轮：public DEV固定输入、source spans、native/compat投影与覆盖缺口可执行审计。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重新核对4仓301 native DEV输入与覆盖缺口；Rust/serde、mixed monorepo准入和相应gold复核仍开放。更正派生审计的600-family解释：原D2为初始约600个经审阅问题，family用于split/统计，不新增独立family硬门槛，也不撤销历史已接受的DEV审阅。协调issue #149映射本原任务，未新增任务。\n2026-10-08 当前合流候选正式验收：六仓327 native/282 compat DEV、132源码、509 spans、20许可文件，182 canonical bytes/OID/mode零差异；实际16旧V02+12新freeze+12suite validation与schema通过。独审554edb990b10e910693ae126fa697ddf8753e46b按原条款接受，本项done；约600规划差额、全英文DEV、305相关组件与14未起草reserved slots仍透明，未升级G8/heldout。\n\n【本会话最终增补】\n保留 PR #153 的原 327 条公开 DEV 登记、原 source/gold 审阅及运行证据；该集合由历史 301 条和另一线程新增的 Serde 14 条、Vite 12 条组成。本轮另完成固定 600 条公开 DEV 登记：原 301 条保留历史审阅范围和 `commit=null` 快照，新 Serde 150 条与 Vite 149 条使用各自公开固定 Git 源、逐题非作者 source/gold 复核、显式来源与许可说明，以及真实 native/compat freeze 和 validate。新增 299 条的审核未利用运行排名调整题目。600 条覆盖六个仓库、十类问题及规划的 Rust、JavaScript、TypeScript、Python、Go 和混合项目范围；原文要求是“初始约 600 个审阅问题”，没有新增“600 个独立 family”条件。\n\n两套 registry 保持各自冻结入口。按原 ID 及 Unicode NFKC、casefold、空白规范化检查，600 与 327 共享恰好 301 条历史题；这些共享题的题文、gold、范围、分类、语言及顶层 query_family/split 相同，推广副本只更新审阅 annotations 和已经审阅的关联映射。唯一并集为 **626 条 native 问题和 580 条 compat 投影**，其中 46 条 no-answer 仅属 native。不能将 600 + 327 记为 927；compat 投影也不增加问题数。本次没有重新冻结一个 626 条的合并 suite。\n\n原 600 入口的 20 次固定 F validate 全部通过；合流复核又对两套既有入口实际执行 20 + 12 次同一 F validate，全部 exit 0，输入前后未变，没有 freeze 或 retrieval。源文件唯一并集为 309 个，131 个共享源文件字节相同。583 个 family 标签按已有相关关系合并得到 561 个已声明关联组件；它们不是独立样本。另有 20 个 PR #153 新 ID 与原 600 中的题存在 26 对 gold 代码区间交叠，已经透明列出，没有据此提高独立样本数或声称全语义去重。\n\n该任务记录的是已审语料、输入锁和原生校验的执行完成。完整 600 条或 626 条在新合流 P 上的检索质量运行仍为 `not_run`，full V19/G8 和发行认证未通过。本线程的 Serde150/Vite149 审阅与 PR #153 另一线程的 Serde14/Vite12 审阅分别保存；相同角色名不代表同一位作者或本线程再次逐题审阅。"
     },
     {
       "id": "P8-003",
@@ -11524,10 +11557,45 @@
             "sha256": "0a0d547e0f196244b83dda58bdd850dc4fc1cdf15bda34612edfcb781039812a"
           },
           "actual_run": 37749276827
+        },
+        {
+          "status": "additional_execution_evidence_for_original_task_already_merged_by_PR153",
+          "product_source": "1ed3c7df574db6d450f79ef29d5148f68556b3db",
+          "review_source": "be8aabc0b35706f6403cc12961eb4149fda50f2c",
+          "installed_guard_source": "714264adc8e3d38f0f25de16669de3fd363adeaa",
+          "measured_product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+          "diagnostic_evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+          "artifact_paths": [
+            "artifacts/benchmarks/p8-corpus-external-holdout-20261008/index.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/replay-receipt.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-compat/gate.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-native/gate.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/flask-compat/gate.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/flask-native/gate.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/source-identities.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/independent-source-review.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-product-validation/final-validation-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/final-P-data-identity.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/benchmark-entry-acceptance-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-S-guard-validation/S-guard-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/v14-installation-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/installation-local-validation-followup.json"
+          ],
+          "scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+          "actual_integration_checks": "At P: new actual dev build, 13 distinct targeted tests with zero ignored, and unchanged workspace/all-targets Clippy passed. Source-specific earlier 19 scanner/config tests, 12 build-binding Python controls, 5 package-path methods and 12 real CLI path cases are retained without summing overlaps. At S, the original v14 CLI executed the preceding v13 proof and passed once; all 1197 observed inputs were unchanged.",
+          "final_merge_gate": "This task-state proposal becomes merged completion only with successful terminal CI, P7 engineering and P7 closeout workflows at the exact final PR #156 head, independent original-task acceptance and a verified merge. See the permanent PR review.",
+          "pull_request": "https://github.com/jyqj/codecortex/pull/156",
+          "limitations": [
+            "Original P615 Rust failures and PR #153 initial CI failure remain preserved.",
+            "The new combined P has no new retrieval-quality or holdout run.",
+            "Historical F/D diagnostic exit 2 and F holdout exit 1 remain failures; full V19/G8 and release are not certified."
+          ],
+          "rollback_status": "Revert the integrated product and matching source-review installation together; preserve original evidence.",
+          "main_accounting": "PR #153 has already merged P8-002/003 at a1158866 (162 done /30 remaining). Only P8-004 is a new done state in PR #156; final 163/29 is conditional on exact-head CI, independent acceptance and merge."
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "2026-10-08 本会话第2/3轮：完成兼容运行完整query/gold身份、ID×repetition矩阵、raw路径、adapter/profile/退出码绑定修复。63项相关测试通过；原774个Express DEV请求仅重验已有结构，0次新检索，原comparison_not_passed保留。cc-switch/Flask原外部输入登记及实际run/replay仍未完成，见协调issue #150。\n2026-10-08 当前合流候选正式验收：原固定cc-switch/Flask同锁四组各300条，共1200条/4104命中，完整原source/query/suite/raw锁、原评分与replay分别归档核验；构建和相关旧功能实际通过。独审5d961a11f0a0f2a1536cba589f250651d57edc4f按原运行/分报条款接受，本项done。四组原质量gate1及Partial/NoMatch、原driver自动未结项字段保持原bytes，人工条款验收不等于G8/release或外部native语义gold认证。"
+      "implementation_notes": "2026-10-08 本会话第2/3轮：完成兼容运行完整query/gold身份、ID×repetition矩阵、raw路径、adapter/profile/退出码绑定修复。63项相关测试通过；原774个Express DEV请求仅重验已有结构，0次新检索，原comparison_not_passed保留。cc-switch/Flask原外部输入登记及实际run/replay仍未完成，见协调issue #150。\n2026-10-08 当前合流候选正式验收：原固定cc-switch/Flask同锁四组各300条，共1200条/4104命中，完整原source/query/suite/raw锁、原评分与replay分别归档核验；构建和相关旧功能实际通过。独审5d961a11f0a0f2a1536cba589f250651d57edc4f按原运行/分报条款接受，本项done。四组原质量gate1及Partial/NoMatch、原driver自动未结项字段保持原bytes，人工条款验收不等于G8/release或外部native语义gold认证。\n\n【本会话最终增补】\n保留 PR #153 的原外部运行、原固定输入锁、独立审核和原结果，并保留其自己的产品/evaluator/configuration 身份。本轮另实际取得公开 canonical OCE 固定版本，在原 cc-switch 和 Flask 各 100 条题文与 gold 不变的条件下，分别执行 compat 与 native 四套固定输入测量。使用 F 产品及 D coverage-diagnostic evaluator，完成 **4 × 100 × 3 = 1,200 条 measured** 和 400 次 warmup。四套均保留原 `invalid_measurement` / exit 2，未把诊断采集伪装成可进入质量或排行榜比较的有效测量。\n\n非作者审计已覆盖完整 ID × repetition 分母、unknown/missing/duplicate 检查、原输入与配置锁、所有 1,200 条 raw 的 BLAKE3/回显绑定、源覆盖路径及各次原退出码。cc-switch 实际覆盖 912/1030 个锁定文件，Flask 为 94/229；未覆盖路径的格式与隐藏路径归因单独记录。compat 和 native 保持独立报告，不能跨输入、平台 glob、模式或失效 gate 直接比较排行榜。canonical 上游 gold 的适用性争议如实保留，没有改原题、删争议题或改标签以抬高分数。\n\n四套原输出已完整封存，在副本上用原 F scorer 重放；原退出码和失败 gate 保持，四套各 319 个成员、共 1,276 个成员与原件字节一致，没有重跑 retrieval。原 F 严格覆盖拒绝、D 诊断负结果，以及 PR #153 另一组固定配置运行彼此并列，不互相覆盖。新合流 P 的质量运行仍为 `not_run`。该任务记录外部套件执行、失效原因及可追溯证据闭环完成，不代表 full V19/G8、质量阈值或发行门槛通过。"
     },
     {
       "id": "P8-004",
@@ -11535,7 +11603,7 @@
       "phase_name": "规模、质量与发行认证",
       "batch": "P8-A",
       "title": "封存holdout与反过拟合检查",
-      "status": "in_progress",
+      "status": "done",
       "priority": "normal",
       "scope": [
         "crates/cc-eval/benchmarks/manifests/",
@@ -11587,10 +11655,46 @@
           "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained",
           "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history",
           "summary": "2026-10-08 本会话第2/3轮：重验公开DEV泄漏边界，原boundary_review_required/exit1保留。既有117候选至少72已暴露，0个clean认证，另45的custody不能推断为clean；未读protected body或重标gold。独立封存/读者历史/一次冻结执行仍开放，见协调issue #151。"
+        },
+        {
+          "status": "original_task_execution_scope_complete_subject_to_final_PR_merge_gate",
+          "product_source": "1ed3c7df574db6d450f79ef29d5148f68556b3db",
+          "review_source": "be8aabc0b35706f6403cc12961eb4149fda50f2c",
+          "installed_guard_source": "714264adc8e3d38f0f25de16669de3fd363adeaa",
+          "measured_product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+          "diagnostic_evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+          "artifact_paths": [
+            "artifacts/benchmarks/p8-corpus-external-holdout-20261008/index.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/metadata-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/execution-receipt.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/raw-seal.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/aggregate-results.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/report.md",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/evidence-delivery.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/source-identities.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/independent-source-review.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-product-validation/final-validation-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/final-P-data-identity.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/benchmark-entry-acceptance-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/final-S-guard-validation/S-guard-summary.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/v14-installation-independent.json",
+            "artifacts/checkpoints/p8-corpus-external-holdout-20261008/round5/corpus-coexistence/installation-local-validation-followup.json"
+          ],
+          "scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+          "actual_integration_checks": "At P: new actual dev build, 13 distinct targeted tests with zero ignored, and unchanged workspace/all-targets Clippy passed. Source-specific earlier 19 scanner/config tests, 12 build-binding Python controls, 5 package-path methods and 12 real CLI path cases are retained without summing overlaps. At S, the original v14 CLI executed the preceding v13 proof and passed once; all 1197 observed inputs were unchanged.",
+          "final_merge_gate": "This task-state proposal becomes merged completion only with successful terminal CI, P7 engineering and P7 closeout workflows at the exact final PR #156 head, independent original-task acceptance and a verified merge. See the permanent PR review.",
+          "pull_request": "https://github.com/jyqj/codecortex/pull/156",
+          "limitations": [
+            "Original P615 Rust failures and PR #153 initial CI failure remain preserved.",
+            "The new combined P has no new retrieval-quality or holdout run.",
+            "Historical F/D diagnostic exit 2 and F holdout exit 1 remain failures; full V19/G8 and release are not certified."
+          ],
+          "rollback_status": "Revert the integrated product and matching source-review installation together; preserve original evidence.",
+          "main_accounting": "PR #153 has already merged P8-002/003 at a1158866 (162 done /30 remaining). Only P8-004 is a new done state in PR #156; final 163/29 is conditional on exact-head CI, independent acceptance and merge."
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重验公开DEV泄漏边界，原boundary_review_required/exit1保留。既有117候选至少72已暴露，0个clean认证，另45的custody不能推断为clean；未读protected body或重标gold。独立封存/读者历史/一次冻结执行仍开放，见协调issue #151。"
+      "implementation_notes": "\n2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重验公开DEV泄漏边界，原boundary_review_required/exit1保留。既有117候选至少72已暴露，0个clean认证，另45的custody不能推断为clean；未读protected body或重标gold。独立封存/读者历史/一次冻结执行仍开放，见协调issue #151。\n\n【本会话最终增补】\n在 F 产品和 evaluator 固定后，为 walkdir 与 Click 构造新的公开源留出 packet，按作者、非作者审阅者及执行者的角色记录保管过程；此保管证明是共享工作区中的角色与日志分离，不扩大为操作系统级不可访问证明。原历史 custody 报告及其已暴露问题继续保留，不能拿来替代这份新 packet 的状态。新增 64 条题由 32 组中英配对组成，完整非作者 source/gold 与翻译审阅在运行前完成，并按原元数据、分析计划、配置和执行锁封存。\n\n固定 F 对两个仓的两套各 32 条请求只执行一次：N=1、warmup=0、retry=0，总计 **64 条实际请求**，随后封存 raw，再检查结果。原两套均为 `gate_failed` / exit 1，57 条 Partial、7 条 NoMatch；8 条 no-answer 全部失败。运行后没有改 gold、标签、题文或阈值，也没有为保分重跑 retrieval。原 scorer 仅在副本上重放，原封存件和失败结果保留。该 packet 已使用，不再称为未见留出集；新合流 P 不复用它声称新的盲测质量。\n\n32 组中英题在 gold、类别、目标语言、scope 和 holdout split 上一致。已完成的 exact ID、family 标签及规范化题文零碰撞检查只覆盖当时的 **600 条 DEV**，不能自动扩写为合流后 626 条全体，也不能据 exact hash 证明不存在任意语义改写泄漏。两个仓和 7 个保守共享源组件限制推广范围，32 个 family 标签不是 32 个独立样本。零 ASCII 交集等词面统计只按原报告解释，不当作语义能力通过证据。\n\n生产反过拟合边界检查绑定 F 的实际产品源与二进制：区分 cc-eval 评分端和 codecortex 产品端，保留完整输入扫描、实际生产路径检查、原扫描结果和负控。在所审固定生产输入与检查范围内，未发现产品注入 gold 路径表、题目关键词表或题体配置。此边界证据和一次性留出负结果支持原任务执行闭环；新 P 的质量、完整 V19/G8 和发行认证仍不通过或未运行。"
     },
     {
       "id": "P8-005",
@@ -13046,6 +13150,6 @@
   ],
   "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
   "current_phase": "P8",
-  "next_task": "P8-004",
+  "next_task": "P8-005",
   "last_implementation_date": "2026-10-08"
 }

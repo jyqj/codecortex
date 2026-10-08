@@ -54,6 +54,16 @@ def regular(path):
     need(len(raw) == meta.st_size, "input changed while reading")
     return raw
 
+def directory_path(value, *, exists=True):
+    path = Path(value)
+    need(".." not in path.parts, "path traversal not allowed")
+    path = path.absolute()
+    for component in (path, *path.parents):
+        need(not component.is_symlink(), "symlink path not allowed")
+    path = path.resolve(strict=exists)
+    need(not exists or path.is_dir(), "input directory required")
+    return path
+
 def committed(root, source, name):
     need(not Path(name).is_absolute() and all(p not in ("", ".", "..") for p in name.split("/")),
          "relative source path")
@@ -68,7 +78,7 @@ def clean(root, source):
     need(not git(root, "submodule", "status", "--recursive").strip(), "submodules not admitted")
 
 def package(args):
-    root = args.source_root.resolve(strict=True)
+    root = directory_path(args.source_root)
     source = args.expected_source
     need(re.fullmatch("[0-9a-f]{40}", source) is not None, "full fixed source commit required")
     clean(root, source)
@@ -80,9 +90,9 @@ def package(args):
     need(sha(template_raw) == TEMPLATE_SHA256, "original input template drift")
     template = json.loads(template_raw)
     recovery_raw = committed(root, source, RECOVERY)
-    out = args.output.absolute()
-    product = args.product_build.absolute()
-    runner = args.runner_build.absolute()
+    out = directory_path(args.output, exists=False)
+    product = directory_path(args.product_build)
+    runner = directory_path(args.runner_build)
     for path in (root, product, runner):
         need(not (out == path or out.is_relative_to(path) or path.is_relative_to(out)),
              "new output must be disjoint from source/build evidence")

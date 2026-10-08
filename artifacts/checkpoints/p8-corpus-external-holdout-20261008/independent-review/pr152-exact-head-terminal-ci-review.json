@@ -1,0 +1,875 @@
+{
+  "schema_version": 1,
+  "record_type": "pr152_exact_head_terminal_github_review",
+  "observed_utc": "2026-10-08T08:09:11.036Z",
+  "repository": "jyqj/codecortex",
+  "pr": 152,
+  "head": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+  "expected_tree": "2835a50d8f481ea8c5cfe72355334c96b7254205",
+  "pr_metadata": {
+    "url": "https://github.com/jyqj/codecortex/pull/152",
+    "number": 152,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": false,
+    "body": "## 为什么需要这次修复\n\n继续原 P8 TODO 时，发现三个会阻碍规模验证或使测量记录身份不可靠的问题：超过 100000 行的表无法完成原内存 oracle 对比；compat 记录可能在请求数量相同的情况下替换实际 query / gold；10000 文件控制会把已知无转发的普通导入叶节点耗入 forwarding 文件预算。\n\n## 修改与行为\n\n- 新增磁盘排序的完整 streaming oracle，保持原 15 张表、字段投影、重复行、`serde_json::Value` 相等语义及 JSON 数组摘要格式。预算耗尽直接失败，不能把前缀相等记为完整相等。独立审阅发现的 `-0.0` / `+0.0` 语义回归已经修正。\n- compat 绑定完整 query / gold / annotations 快照及 query-ID × repetition 明细，拒绝替换、遗漏、重复、raw 路径复用、adapter / profile 漂移和退出码矛盾。原 774 个留存请求仅重新核验，没有新增检索、重评分或改变原失败结果。\n- forwarding 初始、后续和深度边界统一排除当前 `Known` / `KnownEmpty` 且无 forwards 的叶节点；未知、需数据库读取和实际转发目标继续计费。4096 文件、65536 边、32 轮原限制不变。\n- 新 v14 绑定真实 PRODUCT `df140ad1`、独立 REVIEW `b2a6c135` 和完整 source / validation 清单，在固定历史上下文实际执行旧 v13 双链与 CI 证明。229 个历史保护文件、11 个原测试模块与 139 个原方法体保持原字节。\n- 保存逐次实际 source / command / exit / raw / SHA，补充原任务证据。纠正派生文档把“初始约 600 个经审阅问题”改写成“600 个独立 family”硬门槛的错误，保留历史原始记录。\n\n## 验证\n\n- oracle / defects / scale / route：18 passed（7 个新增），Clippy 通过；大表正负控实际包含 100002 行。\n- P8 Python：221 passed；63 个 compat 相关用例和其中 16 个新增身份负控是该集合的子集。\n- forwarding：4097 个叶节点正控修复前失败、修复后通过；7 个新回归通过。原 cc-eval / cc-index 相关回归 37 passed，另有 2 个原 opt-in ignored；Clippy 通过。\n- 最终固定 `a23bbfe8`：174 项完整 source-integrity 全部通过（0 failed / 0 skipped，1366.363 秒）；v14 CLI、历史集成边界、fmt / plan / facts 均通过。各次早期验证的实际 commit 保留，不改记为最终 head 执行。\n- 两次相同计划的 10k debug / N=1 控制均保留：原运行 exit 2；修复后两次 full build 各解析 10000 文件并产生 55620 symbols / 63619 chunks，但整体 300000 ms 时限耗尽（exit 3 / 301.172 秒），没有完整 parity 或 run-completed 结论。\n\n最终 PR head 的 GitHub CI 另行核查后再合并。本 PR 不认证完整 1k–100k / 30 次重复、clean holdout、外部 cc-switch / Flask、真实 provider、性能或 G8 发布。\n\n## 原 TODO 与证据\n\n本会话第 1 轮已通过合并 #148 完成 7 个原任务：P7-014、015、016、017、019、020、P8-001。第 2 / 3 轮的三项修复不增加原任务完成数。账本保持 192 项，160 done、32 未完成；原定义、依赖和状态不变，仅给 P8-002～006 追加证据。\n\n这仍未达到用户要求的至少 10 个原 TODO 完全完成，当前差 3 项。第四轮按 D3 已有授权继续实际公开 native 语料扩充、canonical OCE 输入登记与本地运行，并核验原 holdout 要求；这些工作当前仍开放，参见 #149、#150、#151；这些 issue 是原任务协调记录，不是新增或关闭的 TODO。\n\n完整说明与证据入口：[`artifacts/checkpoints/p8-oracle-compat-20261008/README.md`](https://github.com/jyqj/codecortex/blob/fb772551cff6b4620a6fcdb94c57b78350cebb33/artifacts/checkpoints/p8-oracle-compat-20261008/README.md)。两个逐成员哈希归档和一个固定源历史 bundle 保留成功、失败及中断记录。\n",
+    "title": "fix(eval,index): preserve complete parity and locked measurement inputs",
+    "base": "main",
+    "base_sha": "1fb51e181d6f7d4b15969d0bf362236ef6e06a58",
+    "head": "work/p8-scale-031390",
+    "head_sha": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+    "head_repo_id": 1249213794,
+    "head_repo_full_name": "jyqj/codecortex",
+    "merge_commit_sha": "632ae630a931ac3883a99ef5ac9b7dcff2e57b41",
+    "user": {
+      "login": "jyqj",
+      "name": "jyqj",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+      "id": 174292474
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-08T07:40:41Z",
+    "updated_at": "2026-10-08T07:40:41Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 5,
+    "changed_files": 49,
+    "additions": 8452,
+    "deletions": 71,
+    "display_url": "https://github.com/jyqj/codecortex/pull/152",
+    "display_title": "fix(eval,index): preserve complete parity and locked measurement inputs"
+  },
+  "workflow_query": "fetch_commit_workflow_runs invoked with exact immutable head SHA; connector filters PR-triggered runs and first page",
+  "workflow_count": 3,
+  "workflows": [
+    {
+      "workflow": {
+        "id": 37744918411,
+        "name": "P7 engineering regressions",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 22,
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918411/jobs",
+        "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918411/logs",
+        "workflow_id": 377627814
+      },
+      "jobs": [
+        {
+          "id": 113204007720,
+          "name": "engineering",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918411,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@stable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Record exact input source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Dense coverage and GC configuration regression",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Original deadline, cache and public retrieval matrix",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Original query encoding and absolute deadline controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Benchmark input lock controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "GC unlink and existing GC controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Worker contention and strategy protocol controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Verify final input identity",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Preserve executed commands and raw output",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workflow": {
+        "id": 37744918464,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 314,
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918464/jobs",
+        "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918464/logs",
+        "workflow_id": 284891610
+      },
+      "jobs": [
+        {
+          "id": 113204008153,
+          "name": "msrv",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918464,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@1.95.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run Swatinem/rust-cache@v2",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "MSRV check",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "MSRV optional benchmark HTTP feature",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Post Run Swatinem/rust-cache@v2",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            }
+          ]
+        },
+        {
+          "id": 113204008276,
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918464,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run rustsec/audit-check@v2.0.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            }
+          ]
+        },
+        {
+          "id": 113204008507,
+          "name": "check",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918464,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@stable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Run Swatinem/rust-cache@v2",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Format check",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Clippy",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Compile every default test target",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Default regression within authorized scope",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Fixed resource driver harmless fixtures and TODO consistency",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Eval suite",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "P0 benchmark optional HTTP contract tests",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "P0 real MCP subprocess adapter",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "P2-A public surface real MCP regression",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "P2-B resolution dependency real MCP regression",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            },
+            {
+              "name": "P2-C durable recovery and freshness MCP regression",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "P2-D multi-language public truth regression",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "P3-A project config recovery real MCP",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "P3-B package and module recovery real MCP",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "P3-C Go package recovery real MCP",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "P3-C available independent module oracles",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            },
+            {
+              "name": "P3-D module boundary and architecture contracts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 22
+            },
+            {
+              "name": "P4-A source fidelity and real MCP indexing",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 23
+            },
+            {
+              "name": "P4-B chunk budgets and live-session policy changes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "P4-C document versions and source freshness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            },
+            {
+              "name": "P4-D identity and chunk-quality gates",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 26
+            },
+            {
+              "name": "P5-A versioned retrieval lanes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27
+            },
+            {
+              "name": "P5-B bounded query execution and cancellation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 28
+            },
+            {
+              "name": "P5-C generation, bounded assembly and final source verification",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29
+            },
+            {
+              "name": "P5-D capabilities, query pins and public policies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 30
+            },
+            {
+              "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31
+            },
+            {
+              "name": "P7 semantic product disabled stdio contract",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 32
+            },
+            {
+              "name": "Post Run Swatinem/rust-cache@v2",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 63
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 64
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 65
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workflow": {
+        "id": 37744918344,
+        "name": "P7 closeout evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 9,
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918344/jobs",
+        "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37744918344/logs",
+        "workflow_id": 378002355
+      },
+      "jobs": [
+        {
+          "id": 113210111861,
+          "name": "closeout",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918344,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@1.95.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Bind current source and isolated build",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Actual cache races, process faults and WAL recovery",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Original default, semantic and HTTP wiring contracts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Original thirteen-checkpoint real stdio lifecycle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Three-seed real product retry, crash, deletion, recovery and automatic GC",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Attributed resources and actual worker contention",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Preserve final source identity",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Archive exact commands and raw evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 22
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 23
+            }
+          ]
+        },
+        {
+          "id": 113210113621,
+          "name": "offline (semantic)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918344,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@1.95.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Check process identity and real network negative controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Install process-tree syscall observer and verify negative controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Build exact package with original private target receipt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Build committed adapter test runner",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Original fourteen tools, initial run and reopen, under fatal network guard",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Build candidate scorer from the same fixed default source",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9
+            },
+            {
+              "name": "Freeze candidate, execute original MCP fixture and replay original scorer",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10
+            },
+            {
+              "name": "Print bounded offline failure diagnostics",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11
+            },
+            {
+              "name": "Archive package, commands, identities and raw observations",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            }
+          ]
+        },
+        {
+          "id": 113210114076,
+          "name": "offline (default)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918344,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@1.95.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Check process identity and real network negative controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Install process-tree syscall observer and verify negative controls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Build exact package with original private target receipt",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Build committed adapter test runner",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Original fourteen tools, initial run and reopen, under fatal network guard",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Build candidate scorer from the same fixed default source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Freeze candidate, execute original MCP fixture and replay original scorer",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Print bounded offline failure diagnostics",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11
+            },
+            {
+              "name": "Archive package, commands, identities and raw observations",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            }
+          ]
+        },
+        {
+          "id": 113210149424,
+          "name": "mechanism",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 37744918344,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run dtolnay/rust-toolchain@1.95.0",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Build four independent complete source snapshots",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Actual local, dense-only, hybrid and no-lanes control with paired replay",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Archive all arms, build receipts, raw observations and paired statistics",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "verdict": "all_three_exact_head_workflows_terminal_success_and_mergeable",
+  "first_failure_preserved": {
+    "run_id": 37744918344,
+    "job_id": 113204008140,
+    "log": "validation-integration/pr152-closeout-first-failure.log",
+    "log_sha256": "79c5b16517ec7ab21f16a057849f8e69ef0e8c2ee5dbf627eebfd35587babd88",
+    "original_test": "project_session::tests::p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication",
+    "retention": "Initial failed run is not overwritten or represented as first-attempt success."
+  },
+  "retry": {
+    "initiator": "/root",
+    "mode": "one recorded failed-jobs rerun after independent diagnosis and unchanged original single-test local success",
+    "reviewer_triggered_remote_reruns": 0,
+    "same_candidate": true,
+    "independent_diagnosis": "validation-integration/pr152-cold-cancel-independent-diagnosis.json",
+    "deterministic_permit_counterexample": "validation-integration/tokio-cold-guard-reservation-control.json",
+    "original_test_not_modified": true
+  },
+  "artifact_review": {
+    "path": "validation-integration/final-artifact-fb772551-independent-review.json",
+    "sha256": "7c4ec8875b7fa4c2c02cad411e174cba7c63a00e3baae37fe23ef3513af7cfb5"
+  },
+  "authorship_boundary": "No self-review of the forwarding implementation; its independent source review is by /root/build_validation.",
+  "todo_completion_claims": {
+    "session_completed": 7,
+    "current_done": 160,
+    "remaining": 32,
+    "new_original_task_completions_by_this_PR": 0
+  },
+  "merge_performed_by_reviewer": false
+}

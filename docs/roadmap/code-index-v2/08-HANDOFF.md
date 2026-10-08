@@ -3,16 +3,15 @@
 ## 1. 当前状态
 
 <!-- code-index-progress:start -->
-Code Index V2 共 **192 项任务：162 done / 17 in_progress / 12 todo / 1 blocked**。
+Code Index V2 共 **192 项任务：163 done / 16 in_progress / 12 todo / 1 blocked**。
 
 当前阶段：**P8｜规模、质量与发行认证**；计划状态：`in_progress`；更新日期：`2026-10-08`。
-下一任务：**P8-004｜封存holdout与反过拟合检查**（硬依赖已完成）。
+下一任务：**P8-005｜完整规模1k到100k**（硬依赖已完成）。
 
 | 当前下一项、进行中任务及其未完成前置 | 状态 | 硬依赖（任务状态） |
 |---|---|---|
 | P7-018｜受授权的真实provider小集认证 | `blocked` | P7-017 (done) |
-| P8-004｜封存holdout与反过拟合检查 | `in_progress` | P8-003 (done) |
-| P8-005｜完整规模1k到100k | `in_progress` | P8-004 (in_progress) |
+| P8-005｜完整规模1k到100k | `in_progress` | P8-004 (done) |
 | P8-006｜增量规模与fanout曲线 | `in_progress` | P7-020 (done)、P8-001 (done)、P8-005 (in_progress) |
 | P8-007｜多并发与混合负载 | `in_progress` | P8-006 (in_progress) |
 | P8-008｜冷建/重开/热查分层 | `in_progress` | P8-007 (in_progress) |
@@ -27,14 +26,20 @@ Code Index V2 共 **192 项任务：162 done / 17 in_progress / 12 todo / 1 bloc
 | P8-017｜删除临时兼容和重复模块 | `in_progress` | P8-016 (in_progress) |
 | P8-018｜文档事实与安装契约同步 | `in_progress` | P8-017 (in_progress) |
 | P8-019｜发布工件与完整报告归档 | `in_progress` | P8-018 (in_progress) |
-| P8-020｜P8发布评审与遗留关闭 | `in_progress` | P8-001 (done)、P8-002 (done)、P8-003 (done)、P8-004 (in_progress)、P8-005 (in_progress)、P8-006 (in_progress)、P8-007 (in_progress)、P8-008 (in_progress)、P8-009 (in_progress)、P8-010 (in_progress)、P8-011 (in_progress)、P8-012 (in_progress)、P8-013 (in_progress)、P8-016 (in_progress)、P8-017 (in_progress)、P8-018 (in_progress)、P8-019 (in_progress) |
+| P8-020｜P8发布评审与遗留关闭 | `in_progress` | P8-001 (done)、P8-002 (done)、P8-003 (done)、P8-004 (done)、P8-005 (in_progress)、P8-006 (in_progress)、P8-007 (in_progress)、P8-008 (in_progress)、P8-009 (in_progress)、P8-010 (in_progress)、P8-011 (in_progress)、P8-012 (in_progress)、P8-013 (in_progress)、P8-016 (in_progress)、P8-017 (in_progress)、P8-018 (in_progress)、P8-019 (in_progress) |
 
 进度入口：[重构总览](README.md) · [逐项 TODO](05-TODO.md) · [唯一任务状态源](tasks.json) · [执行交接](08-HANDOFF.md)。
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`571777a53fd96ec3af918f07d37e0125b00aaa48c37c068ecc23c5b970dbbf33`。
+> 源文件 SHA-256：`0bc63f4bf45a679f285b81e32e46aadf7cb202c5f71e25686086684194f01154`。
 <!-- code-index-progress:end -->
+
+## 本会话第 4–5 轮收尾（2026-10-08）
+
+PR #153 已合入主线a1158866，P8-002/003已done，当前162完成/30剩余。PR #156 保留其完整来源与证据，增补两项的600题与F/D完整测量证据，并完成P8-004的原执行范围；[固定证据与逐轮计数](../../../artifacts/checkpoints/p8-corpus-external-holdout-20261008/README.md) 保留全部来源、原失败和最终审阅入口。600 与 327 两套 DEV 登记去重为626题，分别保留冻结入口；外部四套完整诊断与一次fresh holdout没有改标签或重跑保分。新产品13项定向测试及完整Clippy通过，最终head的三套原CI和独立接受是合并条件。合并后本会话累计完成10个原任务、全表163完成/29剩余；合并前不能把分支提案当作主线实绩。
+
+下一项为P8-005；原P7-018授权限制和其他规模、质量、G8与发行门按原条件继续。留出集已使用，新合流产品质量not_run。不要将本轮任务执行完成解释为失败测量变绿。
 
 ## 本轮继续推进（2026-10-08）
 

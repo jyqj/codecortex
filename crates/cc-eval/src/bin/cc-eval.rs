@@ -90,6 +90,10 @@ enum Command {
         api_key_env: String,
         #[arg(long)]
         allow_external: bool,
+        /// Collect incomplete-coverage diagnostics; preserves readiness and exit 2.
+        /// Requires mcp-stdio and the smoke profile. Never a valid quality run.
+        #[arg(long)]
+        collect_incomplete_coverage: bool,
     },
     Replay {
         #[arg(long)]
@@ -145,6 +149,7 @@ async fn run_one(
     endpoint: Option<&str>,
     key_env: &str,
     allow_external: bool,
+    collect_incomplete_coverage: bool,
 ) -> Result<i32> {
     let loaded = manifest::load(path)?;
     let isolated = manifest::materialize(&loaded)?;
@@ -167,7 +172,18 @@ async fn run_one(
             let bin = binary.ok_or_else(|| invalid("--binary required for mcp-stdio"))?;
             match b::adapters::mcp_stdio::McpStdio::spawn(bin, isolated.path(), timeout).await {
                 Ok(client) => {
-                    b::runner::run(&loaded, client, isolated.path(), out, engine, profile).await
+                    if collect_incomplete_coverage {
+                        b::runner::collect_coverage_diagnostics(
+                            &loaded,
+                            client,
+                            isolated.path(),
+                            out,
+                            engine,
+                        )
+                        .await
+                    } else {
+                        b::runner::run(&loaded, client, isolated.path(), out, engine, profile).await
+                    }
                 }
                 Err(e) => Err(e),
             }
@@ -193,6 +209,21 @@ async fn run_one(
     };
     #[cfg(not(feature = "eval-http"))]
     let _ = (endpoint, key_env, allow_external);
+    if collect_incomplete_coverage {
+        let coverage = match b::coverage_diagnostics::snapshot(
+            isolated.path(),
+            &loaded.input.files,
+            &loaded.suite.engine_config,
+        ) {
+            Ok(value) => value,
+            Err(error) => json!({
+                "schema_version":1,"scope":"coverage-diagnostic",
+                "available":false,"error":error.to_string(),
+                "valid_measurement_eligible":false,
+            }),
+        };
+        report::json(&out.join("coverage-paths.json"), &coverage)?;
+    }
     match result {
         Ok(g) => {
             println!("{}: {} (exit {})", loaded.suite.name, g.status, g.exit_code);
@@ -285,9 +316,15 @@ async fn execute(command: Command) -> Result<i32> {
             endpoint,
             api_key_env,
             allow_external,
+            collect_incomplete_coverage,
         } => {
             if !["smoke", "pr", "quality", "performance"].contains(&profile.as_str()) {
                 return Err(invalid("unknown measurement profile"));
+            }
+            if collect_incomplete_coverage
+                && (!matches!(backend, BackendName::McpStdio) || profile != "smoke")
+            {
+                return Err(invalid("coverage diagnostics require mcp-stdio and --profile smoke; they are never valid quality or performance measurements"));
             }
             if suite.len() == 1 {
                 return run_one(
@@ -299,6 +336,7 @@ async fn execute(command: Command) -> Result<i32> {
                     endpoint.as_deref(),
                     &api_key_env,
                     allow_external,
+                    collect_incomplete_coverage,
                 )
                 .await;
             }
@@ -316,6 +354,7 @@ async fn execute(command: Command) -> Result<i32> {
                     endpoint.as_deref(),
                     &api_key_env,
                     allow_external,
+                    collect_incomplete_coverage,
                 )
                 .await
                 {

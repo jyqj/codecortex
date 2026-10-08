@@ -1,0 +1,143 @@
+{
+  "accepted_findings": [
+    {
+      "area": "configuration",
+      "conclusion": "Both new booleans use serde(default) and Rust Default=false. Omitting the options preserves the default source-admission policy; the switches remain independent."
+    },
+    {
+      "area": "source admission",
+      "conclusion": "Known-language and explicit-include paths retain their existing selection. Newly admitted generic text is bounded by the configured file limit plus one-byte overflow detection and must be UTF-8 without NUL. This is not a claim of AST support or content validation for every recognized-language input."
+    },
+    {
+      "area": "protected source paths",
+      "conclusion": "Either broad option enables the shared protected path policy in final source admission and event ignore rules. Clearing the user ignore list does not override it. The source-only scoped walk retains protected-path pruning."
+    },
+    {
+      "area": "symlinks and scoped walking",
+      "conclusion": "Broad source admission rejects final file symlinks. The scoped walk is anchored at the real project root and uses the ignore walker default of not following directory symlinks; the examined source does not support a parent-symlink bypass claim."
+    },
+    {
+      "area": "watcher",
+      "conclusion": "The changed event predicate extends tracking to opted-in hidden source while still applying IgnoreRules. Existing project-model configuration candidates continue to bypass source-only ignores so cache invalidation is not accidentally treated as source chunk admission."
+    },
+    {
+      "area": "existing controls",
+      "conclusion": "The five PR153 integration methods exercise real full/directory/single-event scanner agreement, independent defaults, generic content and byte limits, a symlink alias, and actual parser/SQLite/FTS update, move, delete, and binary-transition behavior. Two watcher methods exercise real notify event classification and protected/user-ignore decisions. No existing assertion was relaxed by this review."
+    }
+  ],
+  "base": "804e56fe1cb2e1e2b7b9a1e879f84bda048c0a1b",
+  "complete_compiled_rust_delta_paths": [
+    "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs",
+    "crates/cc-eval/src/benchmark/adapters/mod.rs",
+    "crates/cc-eval/src/benchmark/runner.rs",
+    "crates/cc-eval/tests/p8_mcp_readiness.rs",
+    "crates/cc-index/src/scanner.rs",
+    "crates/cc-index/tests/explicit_text_admission.rs",
+    "crates/cc-model/src/config.rs",
+    "crates/cc-server/src/watcher.rs"
+  ],
+  "created_at_utc": "2026-10-08T10:08:12.382665+00:00",
+  "inventory_receipt": {
+    "counts": {
+      "benchmark_inputs": 238,
+      "compiled_rust": 8,
+      "validation_inputs": 9
+    },
+    "path": "/workspace/scratch/031390cf22eb/round4-pr153-review/pr153-complete-source-delta.json",
+    "sha256": "18f3879f97f654006b6fe6eea83c136024b7b70ad69cc7399acc5ce055788d56"
+  },
+  "limits": [
+    "This review covers the original four paths above, not the independent MCP readiness changes, Python registry/data integration, full CI, hidden-source completeness, or any original TODO acceptance.",
+    "The published PR153 source identity was reviewed statically. Red/green runtime receipts bind their own exact merged local commit; they are not relabeled as execution on the original PR153 head.",
+    "Original local P615 failures remain recorded; no source-integrity or previous benchmark result is transferred to a new merged source identity."
+  ],
+  "paths": [
+    {
+      "after": {
+        "bytes": 39339,
+        "git_blob": "6b17dded43f5b6695e20312def6f7e8ec5bc6202",
+        "mode": "100644",
+        "sha256": "46f143b7ff09c22bf4ba3ebae20b920f5ca58bcfdd79aeacaded7b22ef0ff3db"
+      },
+      "before": {
+        "bytes": 35363,
+        "git_blob": "e7999cc627752930b593c45941b20c17e67cb194",
+        "mode": "100644",
+        "sha256": "73c91d7a3c5e00d6de9fe85562924c31321eb11458396afdacddd03f0dfdbc7b"
+      },
+      "kind": "compiled_rust",
+      "path": "crates/cc-index/src/scanner.rs",
+      "status": "M"
+    },
+    {
+      "after": {
+        "bytes": 9282,
+        "git_blob": "0638dc7c3a4069162838fb028e2bece95ba9f3aa",
+        "mode": "100644",
+        "sha256": "b1a2fb693357db057a6d9769f2b44f33aab96656999371469a5fabd8f3b418d2"
+      },
+      "before": null,
+      "kind": "compiled_rust",
+      "path": "crates/cc-index/tests/explicit_text_admission.rs",
+      "status": "A"
+    },
+    {
+      "after": {
+        "bytes": 68900,
+        "git_blob": "93c6c68cadcf8a4b8dcd34951b048c213dc02d72",
+        "mode": "100644",
+        "sha256": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c"
+      },
+      "before": {
+        "bytes": 68379,
+        "git_blob": "078693f50bff1246d3fcd11d83bc1167d30bbb7c",
+        "mode": "100644",
+        "sha256": "c40caeed872c3d728747684977d490e68a1af994bd375be8c2836eaa2ce9cd20"
+      },
+      "kind": "compiled_rust",
+      "path": "crates/cc-model/src/config.rs",
+      "status": "M"
+    },
+    {
+      "after": {
+        "bytes": 37245,
+        "git_blob": "3f45d0eca3044f910454226016aeec13a89c5e9b",
+        "mode": "100644",
+        "sha256": "d37240b3e0a1becd114c7a386d371509091222e5a216abf3e22cd89b8037a7dd"
+      },
+      "before": {
+        "bytes": 34625,
+        "git_blob": "5ec364ce48cfadc598c0dc75aedd0b29221cce7c",
+        "mode": "100644",
+        "sha256": "1b086b26d93e6f396643008927b5b5846fc27e1db56a04da2da5d846d0b4f517"
+      },
+      "kind": "compiled_rust",
+      "path": "crates/cc-server/src/watcher.rs",
+      "status": "M"
+    }
+  ],
+  "reviewer": "/root/build_validation",
+  "schema_version": 1,
+  "scope": "non-author review of the original PR153 config, scanner, watcher, and their added source-admission controls",
+  "source": "a8ea19cd0d628dc6a62f9b06bde0c5d58e041229",
+  "source_tree": "7fb8d5983edd8f61b06634faeb67a7320cf096fe",
+  "unresolved_blockers_for_original_source": [
+    {
+      "effect": "The shared-manifest config token/signature contract differs from the fallback path whenever text or hidden source opt-in is enabled. This is a concrete integration regression, not a claim that all TypeScript extends loading fails; that loader can read referenced config directly.",
+      "finding": "The broad-source filter returns false for protected paths before constructing the shared metadata manifest. That removes config/infra observations which the unchanged standalone fallback walks still consume. On the same fixture, the merged source with the same production scanner returned no protected configuration tokens while the fallback returned six tokens from .env, .config, vendor and build.",
+      "fix_author": "/root/build_validation",
+      "fix_candidate": "2d575c60040d852a7c02e2bf6fa68d21caecd62d",
+      "fix_review_required_from": "/root/pr_audit and/or /root; the fix author does not independently approve their own delta",
+      "function": "Scanner::scan_with_manifest",
+      "id": "SCANNER-SHARED-CONFIG-001",
+      "observed_red_receipts": [
+        "validation/shared-manifest-public-red.json",
+        "validation/shared-manifest-private-red.json"
+      ],
+      "observed_red_source": "82fd2de6b566f7db7e215278dd360e0b6eba0e28",
+      "path": "crates/cc-index/src/scanner.rs",
+      "required_fix": "Preserve the original shared metadata walk independently from source admission. Keep the original protected-hidden depth limit; only eligible opted-in hidden source may need deeper traversal. Final source protection and source-only scoped pruning must remain."
+    }
+  ],
+  "verdict": "changes_requested"
+}

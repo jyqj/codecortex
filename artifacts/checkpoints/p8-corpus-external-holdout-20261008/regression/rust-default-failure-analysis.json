@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-08T09:31:06.568076+00:00",
+  "reviewer": "/root/build_validation",
+  "status": "failed_first_run_retained",
+  "source": {
+    "counts": {
+      "source": 842,
+      "validation_and_policy": 111
+    },
+    "head": "615662bd0e651dc40a9d1d0d6757bc28646b900d",
+    "manifest_sha256": "bcc92f331231b6d4e3cc0cd6250332a1a0899bc7a4e3e56404eaf538596347a1",
+    "tree": "d36023d30673cd3eeb6b7fc146254b57daaf3679"
+  },
+  "argv": [
+    "/workspace/scratch/031390cf22eb/toolchains/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "-p",
+    "cc-eval",
+    "--all-targets",
+    "--locked",
+    "--no-fail-fast"
+  ],
+  "environment_overrides": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/workspace/scratch/031390cf22eb/cargo-cache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/workspace/scratch/031390cf22eb/target-scale",
+    "CARGO_TERM_COLOR": "never",
+    "PATH": "/workspace/scratch/031390cf22eb/toolchains/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:/workspace/scratch/031390cf22eb/cargo-cache/bin:/root/.codex/tmp/arg0/codex-arg0WX7mca:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "RUSTFLAGS": "-D warnings",
+    "RUSTUP_HOME": "/workspace/scratch/031390cf22eb/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "1.95.0"
+  },
+  "command_exit_code": 101,
+  "elapsed_seconds": 279.561752,
+  "source_unchanged": true,
+  "complete_default_results": {
+    "target_count": 83,
+    "totals": {
+      "passed": 398,
+      "failed": 2,
+      "ignored": 57,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    "failures": [
+      {
+        "target": "unittests src/lib.rs",
+        "id": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears"
+      },
+      {
+        "target": "unittests src/lib.rs",
+        "id": "tests::benchmark_fixture"
+      }
+    ]
+  },
+  "original_inputs": [
+    {
+      "path": "/workspace/scratch/031390cf22eb/round4-final-validation/rust-default-all-targets.json",
+      "sha256": "37b9aed4566cd0671c1e8da80bf35488e55f1b5d37dd5520ff8f6ffc7928dc71"
+    },
+    {
+      "path": "/workspace/scratch/031390cf22eb/round4-final-validation/rust-default-all-targets.log",
+      "sha256": "47c0ae79699c7798b2ab6115c5aa017c138671fe000e0b06442ee62aa9f64c4a"
+    },
+    {
+      "path": "/workspace/scratch/031390cf22eb/round4-final-validation/rust-default-all-targets-summary.json",
+      "sha256": "9dd726dd57365ddd1a53ac5b7db42f02aae2a9f3bea026a22ed6ea04641819e8"
+    },
+    {
+      "path": "/workspace/scratch/031390cf22eb/round4-final-validation/procfs-environment-diagnostic.json",
+      "sha256": "db16621ee95bc0dc0d6f41f7d97dea635a92d1cd944a0280315e3fe25537b12a"
+    }
+  ],
+  "unchanged_historical_sources": [
+    {
+      "path": "crates/cc-eval/src/benchmark/sampler.rs",
+      "sha256_by_commit": {
+        "9f6684ac81fa82f2bc99903ff42fb532478c2aaf": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
+        "fb772551cff6b4620a6fcdb94c57b78350cebb33": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
+        "615662bd0e651dc40a9d1d0d6757bc28646b900d": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280"
+      },
+      "unchanged_across_base_F_P": true
+    },
+    {
+      "path": "crates/cc-eval/src/lib.rs",
+      "sha256_by_commit": {
+        "9f6684ac81fa82f2bc99903ff42fb532478c2aaf": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+        "fb772551cff6b4620a6fcdb94c57b78350cebb33": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+        "615662bd0e651dc40a9d1d0d6757bc28646b900d": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b"
+      },
+      "unchanged_across_base_F_P": true
+    }
+  ],
+  "failure_findings": [
+    {
+      "test_id": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+      "panic_path": "crates/cc-eval/src/benchmark/sampler.rs",
+      "panic_line": 892,
+      "panic_message": "live child snapshot unavailable",
+      "observation": "The test child reached its readiness file, then process_snapshot(local_child_pid) returned unavailable for the three-second deadline.",
+      "independent_environment_observation": {
+        "observer_local_pid": 5,
+        "proc_self_link": "824327",
+        "self_status": [
+          "Name:\tpython3",
+          "State:\tR (running)",
+          "Tgid:\t824327",
+          "Pid:\t824327",
+          "PPid:\t824324",
+          "NSpid:\t824327\t5"
+        ],
+        "spawned_local_child_pid": 6,
+        "spawned_child_alive": true,
+        "numeric_child_path_status": [
+          "Name:\tcaas-prefix-tra",
+          "State:\tS (sleeping)",
+          "Tgid:\t6",
+          "Pid:\t6",
+          "PPid:\t1",
+          "NSpid:\t6"
+        ]
+      },
+      "source_inspection": "native_linux_snapshot reads /proc/{pid}/stat directly and validates only the numeric stat pid against the supplied pid. It does not bind the caller PID namespace to the mounted procfs namespace.",
+      "conclusion_scope": "This executor exposes ancestor-namespace procfs to a different local PID namespace. Numeric local PID paths can be missing or identify unrelated processes. The source inspection and independent live child observation support a namespace attribution defect in the unchanged baseline sampler. They do not establish that disk exhaustion caused this panic.",
+      "suggested_followup": "Track correct namespace-bound native process sampling and meaningful live-child verification as an independent existing-source issue; do not silently skip or relax this test."
+    },
+    {
+      "test_id": "tests::benchmark_fixture",
+      "panic_path": "crates/cc-eval/src/lib.rs",
+      "panic_line": 915,
+      "panic_message": "perf regression: tool 'index' warm p95 = 547.91ms (limit 500ms)",
+      "observed_index_warm_p95_ms": 547.91,
+      "unchanged_threshold_ms": 500,
+      "fixture_cases": 94,
+      "conclusion_scope": "A real performance-threshold failure in this first concurrent default suite run. Capacity pressure and concurrent work were observed, but no isolated causal control has been run; no claim that disk or namespace behavior caused the latency excess.",
+      "suggested_followup": "Retain first-run timing and environment. Standard CI on its declared host can supply separate regression evidence; this local result remains failed."
+    }
+  ],
+  "disk_observation": {
+    "observed_free_bytes": 0,
+    "phase": "after all-target compilation, during first library target",
+    "explicit_enospc_in_original_log": false,
+    "causation_claim": "none",
+    "target_scale_cleanup_receipts": [
+      {
+        "path": "/workspace/scratch/031390cf22eb/round4-final-validation/cache-cleanup-completed-default-part1.json",
+        "sha256": "00f53a53961f396cc1edd12a9879913d4c3fab1e7f863e6eefec4b8e0fcbcb51"
+      },
+      {
+        "path": "/workspace/scratch/031390cf22eb/round4-final-validation/cache-cleanup-completed-default-part2.json",
+        "sha256": "611011d4f04cb45e10f2b11667fa821654af6c9818ad9a93ecfc5da5bc6d8f0d"
+      }
+    ],
+    "cleanup_scope": "only 83 completed target-scale test harness executables, all hashes recorded; source, frozen binaries and original evidence preserved"
+  },
+  "no_mutations_or_relabeling": {
+    "product_source_changed": false,
+    "test_assertions_changed": false,
+    "thresholds_relaxed": false,
+    "ignored_as_passed": false,
+    "default_full_suite_retried": false,
+    "remote_issue_or_PR_written": false
+  }
+}

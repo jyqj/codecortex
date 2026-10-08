@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "frozen_before_measurement": true,
+  "native_scores": "Read the original F scores.jsonl and align with normalized case_id/repetition identities; do not replace the scorer. Replay only a copy of the sealed raw run so original artifacts remain unchanged.",
+  "denominators": {
+    "positive_rows": 56,
+    "no_answer_rows": 8,
+    "base_families": 32,
+    "positive_families": 28,
+    "repositories": 2
+  },
+  "aggregation": [
+    "positive micro means of original top1/ndcg10; optional recall/MRR/span scores with explicit available/unavailable denominators",
+    "equal-repository and equal-category macro means; source-target and query-language strata",
+    "paired zh-minus-en family means; never treat paired translations as independent families",
+    "original no_answer_correct plus returned status, separate from positive metrics",
+    "source evidence valid/invalid/unverified counts and all protocol statuses",
+    "predeclared hard-negative overlap observations, separating hits overlapping only negatives from hits also overlapping positive evidence; no new scorer/gate",
+    "facets remain static reviewed annotations; native answer-group and span scores are reported without claiming automatic semantic facet grading"
+  ],
+  "interval_plan": {
+    "resamples": 2000,
+    "seed": 2026100804,
+    "method": "resample whole bilingual families within each repository, retain both variants; percentile 2.5/97.5 interval; also show equal-repo cluster resampling and conservative source-file component counts",
+    "limitations": "Only two repositories and seven source-file-linked components. These are conditional descriptive intervals, not evidence of independent 32-family population sampling, cross-repository generalization or semantic capability gain."
+  },
+  "quality_gate": "Preserve actual F gates and failures; no new passing threshold, relabel or score-guided retries.",
+  "claims_excluded": [
+    "full G8 pass",
+    "live provider evaluation",
+    "performance tail certification",
+    "unseen future reuse after disclosure",
+    "ACL-enforced blindness"
+  ]
+}

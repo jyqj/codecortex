@@ -1,0 +1,101 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling regex-automata v0.4.14
+   Compiling getrandom v0.4.2
+   Compiling parking_lot_core v0.9.12
+   Compiling log v0.4.29
+   Compiling serde_json v1.0.149
+   Compiling parking_lot v0.12.5
+   Compiling tracing-core v0.1.36
+   Compiling tracing v0.1.44
+   Compiling rand v0.10.3
+   Compiling scheduled-thread-pool v0.2.7
+   Compiling regex v1.12.3
+   Compiling r2d2 v0.8.10
+   Compiling cc-model v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-model)
+   Compiling uuid v1.23.0
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling chrono v0.4.44
+   Compiling toml_edit v0.22.27
+   Compiling tree-sitter v0.24.7
+   Compiling globset v0.4.18
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-parsers v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-parsers)
+   Compiling cc-db v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-db)
+   Compiling ignore v0.4.25
+   Compiling toml v0.8.23
+   Compiling tempfile v3.27.0
+   Compiling cc-index v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-closeout/crates/cc-index)
+error[E0603]: module `config_linker` is private
+   --> crates/cc-index/tests/explicit_text_admission.rs:308:30
+    |
+308 |     let fallback = cc_index::config_linker::scan_config_tokens(root.path()).unwrap();
+    |                              ^^^^^^^^^^^^^  ------------------ function `scan_config_tokens` is not publicly re-exported
+    |                              |
+    |                              private module
+    |
+note: the module `config_linker` is defined here
+   --> crates/cc-index/src/lib.rs:10:1
+    |
+ 10 | pub(crate) mod config_linker;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: module `config_linker` is private
+   --> crates/cc-index/tests/explicit_text_admission.rs:310:19
+    |
+310 |         cc_index::config_linker::scan_config_tokens_from_manifest(root.path(), &manifest).unwrap();
+    |                   ^^^^^^^^^^^^^  -------------------------------- function `scan_config_tokens_from_manifest` is not publicly re-exported
+    |                   |
+    |                   private module
+    |
+note: the module `config_linker` is defined here
+   --> crates/cc-index/src/lib.rs:10:1
+    |
+ 10 | pub(crate) mod config_linker;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: module `config_linker` is private
+   --> crates/cc-index/tests/explicit_text_admission.rs:319:44
+    |
+319 |     let canonical = |tokens: Vec<cc_index::config_linker::RawConfigToken>| {
+    |                                            ^^^^^^^^^^^^^  -------------- struct `RawConfigToken` is not publicly re-exported
+    |                                            |
+    |                                            private module
+    |
+note: the module `config_linker` is defined here
+   --> crates/cc-index/src/lib.rs:10:1
+    |
+ 10 | pub(crate) mod config_linker;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: module `config_linker` is private
+   --> crates/cc-index/tests/explicit_text_admission.rs:329:19
+    |
+329 |         cc_index::config_linker::config_files_signature_from_manifest(&manifest),
+    |                   ^^^^^^^^^^^^^  ------------------------------------ function `config_files_signature_from_manifest` is not publicly re-exported
+    |                   |
+    |                   private module
+    |
+note: the module `config_linker` is defined here
+   --> crates/cc-index/src/lib.rs:10:1
+    |
+ 10 | pub(crate) mod config_linker;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0603]: module `config_linker` is private
+   --> crates/cc-index/tests/explicit_text_admission.rs:330:19
+    |
+330 |         cc_index::config_linker::config_files_signature(root.path()),
+    |                   ^^^^^^^^^^^^^  ---------------------- function `config_files_signature` is not publicly re-exported
+    |                   |
+    |                   private module
+    |
+note: the module `config_linker` is defined here
+   --> crates/cc-index/src/lib.rs:10:1
+    |
+ 10 | pub(crate) mod config_linker;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0603`.
+error: could not compile `cc-index` (test "explicit_text_admission") due to 5 previous errors

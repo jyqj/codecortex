@@ -1,0 +1,108 @@
+   Compiling cc-semantic v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-round4-validation/crates/cc-semantic)
+   Compiling cc-server v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-round4-validation/crates/cc-server)
+   Compiling cc-eval v1.0.0 (/workspace/scratch/031390cf22eb/codecortex-round4-validation/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 33.26s
+     Running unittests src/lib.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/cc_eval-71b47c781bd217aa)
+
+running 54 tests
+test benchmark::ablation::mechanism::tests::absent_duplicate_and_unexpected_receipts_cannot_prove_isolation ... ok
+test benchmark::ablation::mechanism::tests::fixed_controls_match_current_product_source_once ... ok
+test benchmark::ablation::tests::matrix_requires_every_cell_and_unique_factor_paths ... ok
+test benchmark::ablation::tests::identical_options_except_target_dir_pass_with_positional_metrics ... ok
+test benchmark::ablation::tests::exact_source_controls_reject_undeclared_edits_and_files ... ok
+test benchmark::ablation::tests::malformed_plan_and_hints_fail_closed ... ok
+test benchmark::ablation::tests::binary_and_compiler_drift_cannot_be_compared ... ok
+test benchmark::ablation::tests::missing_target_dir_is_rejected ... ok
+test benchmark::ablation::mechanism::tests::public_semantic_with_local_lanes_cannot_masquerade_as_dense_only ... ok
+test benchmark::ablation::tests::shared_target_dir_across_cells_is_rejected ... ok
+test benchmark::ablation::tests::rustflags_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::p8_load::artifact_budget_tests::rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries ... ok
+test benchmark::ablation::tests::rustc_version_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::p8_load::artifact_budget_tests::reservation_preserves_counter_on_overflow_or_budget_exhaustion ... ok
+test benchmark::p8_load::stderr_tests::stderr_write_failure_is_visible_and_input_is_still_drained ... ok
+test benchmark::p8_load::artifact_budget_tests::concurrent_reservations_fill_only_whole_reservations_within_the_budget ... ok
+test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+test benchmark::ablation::tests::unknown_build_option_key_fails_closed ... ok
+test benchmark::sampler::process_probe_tests::linux::invalid_units_and_rss_overflow_are_unavailable_cpu_overflow_stays_raw ... ok
+test benchmark::ablation::tests::profile_features_jobs_binding_drift_is_rejected ... ok
+test benchmark::p8_load::stderr_tests::stderr_drain_retains_only_the_bounded_prefix_and_accounts_for_suffix ... ok
+test benchmark::ablation::tests::unknown_projection_kind_or_version_is_rejected ... ok
+test benchmark::p8_load::artifact_budget_tests::contended_reservations_never_exceed_limit_or_lose_successes ... ok
+test benchmark::sampler::process_probe_tests::linux::malformed_dead_or_mismatched_process_is_unavailable ... ok
+test benchmark::sampler::process_probe_tests::linux::proc_stat_handles_parentheses_whitespace_and_documented_units ... ok
+test benchmark::sampler::process_probe_tests::linux::disabled_probe_is_unavailable_in_an_isolated_process ... ok
+test tests::assertion_array_contains_item ... ok
+test tests::assertion_check_field_equals ... ok
+test benchmark::ablation::tests::consistently_missing_required_semantic_key_is_rejected ... ok
+test tests::assertion_check_field_exists ... ok
+test tests::assertion_check_min_results ... ok
+test tests::assertion_expected_error_fail ... ok
+test tests::assertion_check_output_contains ... ok
+test tests::assertion_expected_error_pass ... ok
+test tests::assertion_expected_symbols_enforces_recall_threshold ... ok
+test tests::assertion_negate ... ok
+test tests::assertion_output_not_contains ... ok
+test tests::bench_incremental_dirty_closure ... ignored, measures dirty-closure incremental rebuild latency; run explicitly
+test tests::bench_incremental_noop ... ignored, measures incremental no-op rebuild latency; run explicitly
+test tests::bench_incremental_single_file ... ignored, measures single-file incremental rebuild latency; run explicitly
+test tests::assertion_field_matches_regex ... ok
+test tests::benchmark_incremental_index_report_correctness ... ignored, benchmarks incremental indexing report counters; run explicitly
+test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly
+test tests::corpus_load_new_format ... ok
+test tests::incremental_latency_summary_computation ... ok
+test synth::tests::synth_ground_truth_facts_match_emitted_content ... ok
+test tests::report_summary_computation ... ok
+test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+test benchmark::sampler::process_probe_tests::self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup ... ok
+test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+test synth::tests::synth_generation_is_deterministic ... ok
+test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... FAILED
+test tests::integration_fixtures_and_corpus ... ok
+test tests::benchmark_fixture ... ok
+
+failures:
+
+---- benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears stdout ----
+
+thread 'benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears' (378) panicked at crates/cc-eval/src/benchmark/sampler.rs:892:17:
+live child snapshot unavailable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears
+
+test result: FAILED. 48 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 10.42s
+
+error: test failed, to rerun pass `-p cc-eval --lib`
+     Running tests/p7_strategy_ablation.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/p7_strategy_ablation-0a7738a627fada78)
+
+running 8 tests
+test actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source ... ignored, requires explicit current product path and SHA256; mechanism smoke, no quality certification
+test readiness_requires_checked_space_and_real_dense_coverage_not_file_count ... ok
+test configuration_rejects_implicit_network_remote_endpoint_and_fake_dense_name ... ok
+test paired_effects_use_family_units_and_do_not_label_fake_scores_as_quality ... ok
+test public_budget_checks_policy_final_bytes_and_numeric_scope_without_rewriting_partial ... ok
+test strategy_rejection_keeps_original_public_response_and_replay_cannot_self_authorize ... ok
+test equal_top_k_does_not_hide_different_output_cap_or_hard_scope ... ok
+test pending_dense_readiness_is_bounded_and_close_still_releases_client ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p7_worker_contention.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/p7_worker_contention-0b2ed0af9e6c363b)
+
+running 1 test
+test real_slow_backfill_preserves_local_progress_and_records_every_request ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.13s
+
+     Running tests/semantic_lifecycle.rs (/workspace/scratch/031390cf22eb/target-scale/debug/deps/semantic_lifecycle-a641bde1dad9be53)
+
+running 2 tests
+test partial_backfill_allows_model_switch_and_new_space_progress ... ok
+test partial_backfill_allows_real_local_query_mutation_delete_and_cancel ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+error: 1 target failed:
+    `-p cc-eval --lib`

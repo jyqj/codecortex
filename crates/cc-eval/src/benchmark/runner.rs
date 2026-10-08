@@ -69,11 +69,46 @@ pub fn engine_provenance(binary: Option<&Path>) -> Result<Value> {
 }
 pub async fn run<B: Backend>(
     loaded: &LoadedSuite,
+    backend: B,
+    work: &Path,
+    out: &Path,
+    engine: Value,
+    profile: &str,
+) -> Result<Gate> {
+    run_inner(loaded, backend, work, out, engine, profile, false).await
+}
+
+/// Collect observations despite an incomplete, successfully read coverage state.
+/// This is always an invalid measurement (exit 2), including when coverage is
+/// ready. It shares the strict runner's request loop, normalizer and scorer.
+/// Preparation/protocol failures still stop collection; readiness is never forged.
+pub async fn collect_coverage_diagnostics<B: Backend>(
+    loaded: &LoadedSuite,
+    backend: B,
+    work: &Path,
+    out: &Path,
+    engine: Value,
+) -> Result<Gate> {
+    run_inner(
+        loaded,
+        backend,
+        work,
+        out,
+        engine,
+        "coverage-diagnostic",
+        true,
+    )
+    .await
+}
+
+async fn run_inner<B: Backend>(
+    loaded: &LoadedSuite,
     mut backend: B,
     work: &Path,
     out: &Path,
     engine: Value,
     profile: &str,
+    diagnostic: bool,
 ) -> Result<Gate> {
     std::fs::create_dir(out.join("raw"))?;
     report::jsonl(&out.join("queries.jsonl"), &loaded.queries)?;
@@ -94,12 +129,34 @@ pub async fn run<B: Backend>(
         }
         Err(e) => manifest.infrastructure_failure = Some(e.to_string()),
     }
+    let mut diagnostic_collection = false;
     if manifest.infrastructure_failure.is_none() {
         match backend.readiness(&loaded.input.files).await {
             Ok(state) => {
                 report::json(&out.join("readiness.json"), &state)?;
                 if state.state != State::Ready {
                     manifest.infrastructure_failure = Some("input coverage not ready".into());
+                }
+                if diagnostic {
+                    let reason =
+                        "coverage-diagnostic collection is ineligible for a valid measurement";
+                    manifest.infrastructure_failure = Some(match manifest.infrastructure_failure {
+                        Some(ref previous) => format!("{previous}; {reason}"),
+                        None => reason.into(),
+                    });
+                    report::json(
+                        &out.join("collection-policy.json"),
+                        &json!({
+                            "schema_version": 1,
+                            "mode": "coverage-diagnostic",
+                            "readiness": state,
+                            "changes_source_config_queries_or_gold": false,
+                            "valid_measurement_eligible": false,
+                            "strict_readiness_gate_preserved": true,
+                            "reason": reason,
+                        }),
+                    )?;
+                    diagnostic_collection = true;
                 }
             }
             Err(e) => manifest.infrastructure_failure = Some(e.to_string()),
@@ -109,20 +166,22 @@ pub async fn run<B: Backend>(
         report::json(&out.join("readiness-observation.json"), observation)?;
     }
     resources.push(sampler::sample("after_index", backend.pid()));
-    if manifest.infrastructure_failure.is_none() {
+    let mut may_search = manifest.infrastructure_failure.is_none() || diagnostic_collection;
+    if may_search {
         for _ in 0..loaded.suite.warmup {
             for q in &loaded.queries {
                 if let Err(e) = backend.search(&q.input(loaded.suite.top_k)).await {
                     manifest.infrastructure_failure = Some(format!("warmup: {e}"));
+                    may_search = false;
                     break;
                 }
             }
-            if manifest.infrastructure_failure.is_some() {
+            if !may_search {
                 break;
             }
         }
     }
-    if manifest.infrastructure_failure.is_none() {
+    if may_search {
         for repetition in 0..loaded.suite.repetitions {
             for idx in statistics::order(
                 loaded.queries.len(),

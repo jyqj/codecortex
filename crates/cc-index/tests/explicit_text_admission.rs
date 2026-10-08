@@ -263,3 +263,88 @@ fn real_generic_chunks_fts_updates_hidden_moves_and_deletes_stay_coherent() {
         strings(&["templates/page.html"])
     );
 }
+
+fn assert_source_options_preserve_shared_config_inputs(text: bool, hidden: bool) {
+    let root = tempfile::tempdir().unwrap();
+    for (path, contents) in [
+        ("src/handlers.py", "def handler():\n    return 1\n"),
+        (".env", "APP_MODULE=src.handlers\n"),
+        (".config/settings.yaml", "handler: src.handlers\n"),
+        (".config/a/b/c/at_limit.yaml", "handler: src.at_limit\n"),
+        (".config/a/b/c/d/too_deep.yaml", "handler: src.too_deep\n"),
+        (
+            ".env.fixtures/a/b/c/d/too_deep.env",
+            "APP_MODULE=src.too_deep\n",
+        ),
+        ("vendor/settings.ini", "handler = src.handlers\n"),
+        ("build/Dockerfile", "COPY ./src/handlers.py /app/\n"),
+        (".ssh/key.py", "fixture_only = 1\n"),
+        ("guide.rst", "Ordinary text source.\n"),
+        (".docs/hidden.py", "hidden_fixture = 1\n"),
+        (".docs/a/b/c/d/e/notes.rst", "Deep hidden source.\n"),
+        ("a/b/c/d/e/f/deep.yaml", "handler: src.handlers\n"),
+    ] {
+        write(root.path(), path, contents.as_bytes());
+    }
+    let (source, manifest) = Scanner::new(root.path(), &opted(text, hidden)).scan_with_manifest();
+    let (_, legacy_manifest) =
+        Scanner::new(root.path(), &IndexingConfig::default()).scan_with_manifest();
+    let manifest_paths: BTreeSet<_> = manifest.files.iter().map(|f| f.rel_path.as_str()).collect();
+    let legacy_paths: BTreeSet<_> = legacy_manifest
+        .files
+        .iter()
+        .map(|f| f.rel_path.as_str())
+        .collect();
+    assert_eq!(manifest_paths, legacy_paths, "text={text}, hidden={hidden}");
+    for protected in [
+        ".env",
+        ".config/settings.yaml",
+        ".config/a/b/c/at_limit.yaml",
+        "vendor/settings.ini",
+        "build/Dockerfile",
+        ".ssh/key.py",
+    ] {
+        assert!(manifest_paths.contains(protected), "{protected}");
+        if text || hidden {
+            assert!(source.iter().all(|file| file.rel_path != protected));
+        }
+    }
+    assert!(manifest_paths.contains("a/b/c/d/e/f/deep.yaml"));
+    assert!(!manifest_paths.contains(".docs/a/b/c/d/e/notes.rst"));
+    for protected in [
+        ".config/a/b/c/d/too_deep.yaml",
+        ".env.fixtures/a/b/c/d/too_deep.env",
+    ] {
+        assert!(!manifest_paths.contains(protected));
+        assert!(source.iter().all(|file| file.rel_path != protected));
+    }
+
+    let source_paths: BTreeSet<_> = source.iter().map(|f| f.rel_path.as_str()).collect();
+    assert!(source_paths.contains("src/handlers.py"));
+    assert_eq!(source_paths.contains("guide.rst"), text);
+    assert_eq!(source_paths.contains(".docs/hidden.py"), hidden);
+    assert_eq!(
+        source_paths.contains(".docs/a/b/c/d/e/notes.rst"),
+        text && hidden
+    );
+}
+
+#[test]
+fn default_source_options_preserve_shared_config_inputs() {
+    assert_source_options_preserve_shared_config_inputs(false, false);
+}
+
+#[test]
+fn text_opt_in_preserves_shared_config_inputs() {
+    assert_source_options_preserve_shared_config_inputs(true, false);
+}
+
+#[test]
+fn hidden_opt_in_preserves_shared_config_inputs() {
+    assert_source_options_preserve_shared_config_inputs(false, true);
+}
+
+#[test]
+fn text_and_hidden_opt_ins_preserve_shared_config_inputs() {
+    assert_source_options_preserve_shared_config_inputs(true, true);
+}

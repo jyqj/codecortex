@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "run_group": "p8-corpus-external-holdout-20261008",
+  "checkpoint": "artifacts/checkpoints/p8-corpus-external-holdout-20261008",
+  "runs": [
+    {
+      "run_id": "public-dev-registry-validation-v2-20261008",
+      "task_ids": [
+        "P8-002"
+      ],
+      "actual_validator_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "registry_source_bytes": "615662bd0e651dc40a9d1d0d6757bc28646b900d",
+      "native_questions": 600,
+      "compat_projections": 554,
+      "native_and_compat_suites_validated": 20,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/corpus/registry-validation.json",
+      "scope": "Data registration, locks, source/gold review and actual native CLI validate. Not a full 600-question retrieval-quality run."
+    },
+    {
+      "run_id": "canonical-cc-switch-compat-coverage-diagnostic",
+      "task_ids": [
+        "P8-003"
+      ],
+      "product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+      "original_questions": 100,
+      "measured_rows": 300,
+      "warmups": 100,
+      "exit_code": 2,
+      "gate": "invalid_measurement",
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-compat",
+      "raw_archive": "CodeCortex-P8-External-Evidence.tar.gz",
+      "scope": "Complete fixed-input negative coverage diagnosis; never eligible for a quality or leaderboard pass."
+    },
+    {
+      "run_id": "canonical-cc-switch-native-coverage-diagnostic",
+      "task_ids": [
+        "P8-003"
+      ],
+      "product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+      "original_questions": 100,
+      "measured_rows": 300,
+      "warmups": 100,
+      "exit_code": 2,
+      "gate": "invalid_measurement",
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-native",
+      "raw_archive": "CodeCortex-P8-External-Evidence.tar.gz",
+      "scope": "Complete fixed-input negative coverage diagnosis; never eligible for a quality or leaderboard pass."
+    },
+    {
+      "run_id": "canonical-flask-compat-coverage-diagnostic",
+      "task_ids": [
+        "P8-003"
+      ],
+      "product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+      "original_questions": 100,
+      "measured_rows": 300,
+      "warmups": 100,
+      "exit_code": 2,
+      "gate": "invalid_measurement",
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/flask-compat",
+      "raw_archive": "CodeCortex-P8-External-Evidence.tar.gz",
+      "scope": "Complete fixed-input negative coverage diagnosis; never eligible for a quality or leaderboard pass."
+    },
+    {
+      "run_id": "canonical-flask-native-coverage-diagnostic",
+      "task_ids": [
+        "P8-003"
+      ],
+      "product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+      "original_questions": 100,
+      "measured_rows": 300,
+      "warmups": 100,
+      "exit_code": 2,
+      "gate": "invalid_measurement",
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/flask-native",
+      "raw_archive": "CodeCortex-P8-External-Evidence.tar.gz",
+      "scope": "Complete fixed-input negative coverage diagnosis; never eligible for a quality or leaderboard pass."
+    },
+    {
+      "run_id": "once-20261008-F",
+      "task_ids": [
+        "P8-004"
+      ],
+      "product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "evaluator_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+      "repositories": [
+        "walkdir",
+        "click"
+      ],
+      "families": 32,
+      "measured_rows": 64,
+      "warmups": 0,
+      "retries": 0,
+      "exit_codes": [
+        1,
+        1
+      ],
+      "gate": "gate_failed",
+      "no_answer_correct": 0,
+      "no_answer_total": 8,
+      "evidence": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout",
+      "raw_archive": "CodeCortex-P8-Holdout-Used-Evidence.tar.gz",
+      "scope": "Fresh role-separated packet frozen and executed once; all original failures preserved. Two repositories and seven source-linked components limit generalization."
+    }
+  ],
+  "archives": [
+    {
+      "filename": "CodeCortex-P8-Holdout-Used-Evidence.tar.gz",
+      "bytes": 664093,
+      "sha256": "a5d5d8ff3844d28404b1cd49b728f88fb3a2e3b47472fa17a925b3a43e362f81",
+      "members_including_manifest": 261,
+      "manifest_sha256": "606abdbd8f5c572844927e28f680a35d9fe675182cddd6baca39fefcfde0e702",
+      "delivery_status": "complete_archive_saved_and_available_to_requesting_user",
+      "repository_distribution": "Full canonical and used holdout question/gold/raw bodies remain outside this code repository."
+    },
+    {
+      "filename": "CodeCortex-P8-External-Evidence.tar.gz",
+      "bytes": 53696127,
+      "sha256": "3b5b5260b7b1ef2ea3742a2fae80121fbb506b7210fa4d1f5ebee661062981d5",
+      "members_including_manifest": 2680,
+      "manifest_sha256": "e77cfde4895bdf64da5a5a52d84484ea3bb2a4266ccc2536717cffa05eb5b003",
+      "delivery_status": "complete_archive_saved_and_available_to_requesting_user",
+      "repository_distribution": "Full canonical and used holdout question/gold/raw bodies remain outside this code repository."
+    }
+  ],
+  "validation_scope": {
+    "V02": "Original native locks, source admission, projections and 20 actual validate calls.",
+    "V03_V04": "Full canonical rows, raw/source integrity, original scorer replay on copies, and explicit non-equivalence of profiles.",
+    "V19": "Reviewed development corpus, fixed-source external measurement, production boundary review and used once-only holdout evidence. Complete V19 and G8 certification are not passed."
+  },
+  "regression": "Separate original local failures and actual source/feature/standard-runner gates are recorded in the checkpoint and PR #156; a successful source guard does not erase a failed regression."
+}

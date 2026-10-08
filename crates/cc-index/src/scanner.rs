@@ -320,19 +320,16 @@ impl Scanner {
                     .min(12),
             );
 
-        // Prune hidden subtrees beyond the config-linker depth budget: only
-        // the config pass consumes hidden paths, and it never looked deeper.
+        // Preserve historical config/infra metadata observation independently
+        // of source admission. Only admitted hidden source needs to descend
+        // beyond the config budget; protected hidden subtrees keep that budget.
         let root = self.project_path.clone();
         let include_hidden_files = self.config.include_hidden_files;
-        let broad_source_admission = include_hidden_files || self.config.include_text_files;
         builder.filter_entry(move |entry| {
             let rel = entry.path().strip_prefix(&root).unwrap_or(entry.path());
-            if broad_source_admission
-                && Self::protected_text_path(&rel.to_string_lossy().replace('\\', "/"))
+            if include_hidden_files
+                && !Self::protected_text_path(&rel.to_string_lossy().replace('\\', "/"))
             {
-                return false;
-            }
-            if include_hidden_files {
                 return true;
             }
             let has_hidden = rel.components().any(|c| {
@@ -966,5 +963,85 @@ mod scan_paths_tests {
         std::fs::write(tmp.path().join("main.rs"), "fn main() {}\n").unwrap();
         let scanner = scanner_for(tmp.path());
         assert!(scanner.scan_paths(&[]).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod broad_source_config_contract_tests {
+    use super::*;
+
+    #[test]
+    fn all_source_option_combinations_preserve_config_signatures_and_tokens() {
+        let root = tempfile::tempdir().unwrap();
+        for (path, content) in [
+            ("src/handlers.py", "def handler():\n    return 1\n"),
+            (".env", "APP_MODULE=src.handlers\n"),
+            (".config/settings.yaml", "handler: src.handlers\n"),
+            (".config/a/b/c/at_limit.yaml", "handler: src.at_limit\n"),
+            (".config/a/b/c/d/too_deep.yaml", "handler: src.too_deep\n"),
+            (
+                ".env.fixtures/a/b/c/d/too_deep.env",
+                "APP_MODULE=src.too_deep\n",
+            ),
+            ("vendor/settings.ini", "handler = src.handlers\n"),
+            ("build/Dockerfile", "COPY ./src/handlers.py /app/\n"),
+        ] {
+            let path = root.path().join(path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
+        let fallback = crate::config_linker::scan_config_tokens(root.path()).unwrap();
+        for path in [
+            ".env",
+            ".config/settings.yaml",
+            ".config/a/b/c/at_limit.yaml",
+            "vendor/settings.ini",
+            "build/Dockerfile",
+        ] {
+            assert!(fallback.iter().any(|token| token.config_file == path));
+        }
+        assert!(fallback
+            .iter()
+            .all(|token| !token.config_file.contains("too_deep")));
+        let canonical = |tokens: Vec<crate::config_linker::RawConfigToken>| {
+            let mut values: Vec<_> = tokens
+                .iter()
+                .map(|token| serde_json::to_string(token).unwrap())
+                .collect();
+            values.sort();
+            values
+        };
+        let expected_tokens = canonical(fallback);
+        let expected_signature = crate::config_linker::config_files_signature(root.path());
+        for (text, hidden) in [(false, false), (true, false), (false, true), (true, true)] {
+            let config = IndexingConfig {
+                include_text_files: text,
+                include_hidden_files: hidden,
+                ..Default::default()
+            };
+            let (_, manifest) = Scanner::new(root.path(), &config).scan_with_manifest();
+            assert!(manifest
+                .files
+                .iter()
+                .any(|file| file.rel_path == ".config/a/b/c/at_limit.yaml"
+                    && file.depth == CONFIG_WALK_MAX_DEPTH));
+            assert!(manifest
+                .files
+                .iter()
+                .all(|file| !file.hidden || file.depth <= CONFIG_WALK_MAX_DEPTH));
+            let tokens =
+                crate::config_linker::scan_config_tokens_from_manifest(root.path(), &manifest)
+                    .unwrap();
+            assert_eq!(
+                canonical(tokens),
+                expected_tokens,
+                "text={text}, hidden={hidden}"
+            );
+            assert_eq!(
+                crate::config_linker::config_files_signature_from_manifest(&manifest),
+                expected_signature,
+                "text={text}, hidden={hidden}"
+            );
+        }
     }
 }

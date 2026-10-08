@@ -16,11 +16,11 @@ import verify_reviewed_source_v12 as previous
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "p7-closeout-source-20261008-v13"
 BASE = "47d1939e43455ecd72ccc73e80825d971e3f33e7"
-PRODUCT = "PENDING_FIXED_PRODUCT"
-REVIEW = "PENDING_FIXED_REVIEW"
+PRODUCT = "e7b165b1b121a9b477fe98635000437b8c6e6f24"
+REVIEW = "706198f96a6da352916804c43f31b59f3805cba1"
 REVIEW_PATH = "artifacts/checkpoints/p7-closeout-20261008/independent-source-review.json"
 REGISTRY = ROOT / "scripts/reviewed-source-registry-v13.json"
-REGISTRY_SHA256 = "PENDING_FIXED_REGISTRY"
+REGISTRY_SHA256 = "f95cda953f169115b4ece98fd9431bcf43cb358e882bb6e3748df3054472262e"
 CI_SNAPSHOT = "scripts/source_snapshots/v12_ci"
 FROZEN = (
     "scripts/verify_reviewed_source_v12.py",

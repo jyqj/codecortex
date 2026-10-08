@@ -469,7 +469,11 @@ def run(args):
                                 work_cleanup["retention_errors"].append(str(error))
                             finally:
                                 slots.release()
-                    if product.process.poll() is None: product.process.kill()
+                    if product.process.poll() is None:
+                        try:
+                            product.process.kill()
+                        except ProcessLookupError:
+                            pass  # The owned process may have exited between poll and kill.
                     # Preserve the original post-kill bound without invoking
                     # an executor's implicit unbounded queue drain.
                     _, still_running = wait([f for f in pending if not f.cancelled()], timeout=70)
@@ -556,6 +560,7 @@ def run(args):
                       latency_by_operation={kind: latency_summary([r for r in rows if r["operation"] == kind])
                                             for kind in ("read", "build")}, failures=failures,
                       statistics=statistics_result,
+                      parity_exit_code=result.returncode,
                       parity_sha256=digest(out / "parity.json"), product_sha256=digest(binary),
                       oracle_sha256=digest(oracle), semantic_backfill="not_run_in_default_product_profile",
                       release_approval=False)

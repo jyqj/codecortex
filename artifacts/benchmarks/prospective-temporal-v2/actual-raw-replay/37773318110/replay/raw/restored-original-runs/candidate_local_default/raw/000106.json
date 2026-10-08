@@ -1,0 +1,701 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/deprutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 1,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 3,
+      "omitted_hits": 0,
+      "omitted_nodes": 0,
+      "original_hits": 3,
+      "original_nodes": 5,
+      "partial": false,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 14595
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 3,
+        "hydrate_requested": 3,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 15,
+            "sorts": 0,
+            "statements": 13,
+            "vm_steps": 573
+          },
+          "text": {
+            "cache_hits": 3,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 735,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 2,
+          "grep": 0,
+          "lexical": 2,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 2,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 74
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1238,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 95,
+        "soft_scanned": 95,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 95,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 1551
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 95,
+                "utf8_bytes": 32886,
+                "zstd_decodes": 60
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1238,
+                "utf8_bytes": 583827,
+                "zstd_decodes": 806
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 11664,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1799,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 2,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 2
+          },
+          "elapsed_us": 1144,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "query_expansion_atom_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 8085,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 2,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 2
+          },
+          "elapsed_us": 1935,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 2,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 3
+      },
+      "input_candidates": 3,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 0,
+      "original_ranks": [
+        1,
+        2,
+        3
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 735,
+        "redundant_bytes": 0,
+        "unique_bytes": 735
+      },
+      "requested_limit": 10,
+      "selected": 3,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 735,
+        "redundant_bytes": 0,
+        "unique_bytes": 735
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:boltons/deprutils.py:6",
+        "chunk:boltons/deprutils.py:5"
+      ],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 1,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 2478,
+      "scope": "disk_generation:v1",
+      "validation_work": {
+        "candidate_projection_sql": {
+          "fullscan_steps": 0,
+          "rows": 3,
+          "sorts": 0,
+          "statements": 1,
+          "vm_steps": 106
+        },
+        "coverage": "current final-assembly attempt SELECTs for manifest, symbol identity and candidate projection; excludes prior attempts, transaction control, originating retrieval, generation, dense fence, graph and disk work; not total cost",
+        "schema_version": 1,
+        "source_records_sql": {
+          "fullscan_steps": 0,
+          "rows": 15,
+          "sorts": 0,
+          "statements": 13,
+          "vm_steps": 432
+        }
+      },
+      "verified_hits": 3
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "deprecate_module_member",
+        "chunk_id": "chunk:boltons/deprutils.py:6",
+        "end_line": 63,
+        "file_path": "boltons/deprutils.py",
+        "fused_score": 0.03333333333333334,
+        "graph_score": 0.10986122886681098,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "f9dade91953e654a997ed33df854d9bd36a013ac8cbe6478d43d9f948aa35833",
+            "doc_version": "edb27879720d73e07556425c3ba8a7a6f51fb90f5b0048faaf0d5ceebcadb161",
+            "encoding_key": "d0f0693e619ff40ef202947f90713ee83d324e77e4b345a7790a0cddf808abb6",
+            "entity_key": "a708cda18c84746fecf7120bb771ca4bca00aae3f6cf63577642d34d59b1c4ae"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "deprecate_module_member",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 2477,
+              "start": 2212
+            },
+            "signature": {
+              "end": 2270,
+              "start": 2212
+            },
+            "slice_digest": "12b6af6965eddc1552a69101a8e4de4e9b97b837bf6ee7bb97bc5a6570a26a4f",
+            "source": {
+              "byte_len": 2478,
+              "content_digest": "fb3759ffd634261eed366bea74bfe724f9b89ca6ac102038be0e3c2245b49b93",
+              "encoding": "utf8",
+              "snapshot_id": "c6091addd5889d936003fc625bc977ed0917d5977612e4359197f709ff65b2f1"
+            },
+            "span": {
+              "end": 2478,
+              "start": 2209
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "symbol-exact",
+          "symbol:deprecate_module_member",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.4081098838115585,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.031818181818181815
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.08
+          ],
+          [
+            "boost:graph-rerank",
+            0.03295836866004329
+          ]
+        ],
+        "source": "index",
+        "start_line": 55,
+        "symbol_kind": "function",
+        "symbol_name": "deprecate_module_member",
+        "text": "\n\n\ndef deprecate_module_member(mod_name, name, message):\n    module = sys.modules[mod_name]\n    if not isinstance(module, DeprecatableModule):\n        sys.modules[mod_name] = module = DeprecatableModule(module)\n    module._deprecated_members[name] = message\n    return\n"
+      },
+      {
+        "breadcrumb": "DeprecatableModule > __getattribute__",
+        "chunk_id": "chunk:boltons/deprutils.py:5",
+        "end_line": 55,
+        "file_path": "boltons/deprutils.py",
+        "fused_score": 0.021153846153846155,
+        "graph_score": 0.08931471805599453,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "8f75ef592ab12d1310f4a35b0f6867eabb45e270de6a58656733e800ac9a2d93",
+            "doc_version": "db9a4c295b5f5f118c5266731c4376ce7a1d63962635176db3cfff386add97a7",
+            "encoding_key": "b0f06c82cac5129fa1d03857379342c6b83ce789018254ba0271d76a9dcd63a7",
+            "entity_key": "ec18f0fda24290a997620066fa6e6971ee375f72ab8feb49729175c3f3d58461"
+          },
+          "evidence_priority": "distinctive_source_support",
+          "qname": "DeprecatableModule.__getattribute__",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 2209,
+              "start": 1794
+            },
+            "signature": {
+              "end": 1836,
+              "start": 1794
+            },
+            "slice_digest": "61e7c6bf12e150d95f1ee347d8501cac37c99620d881293b6d23b289cccabf76",
+            "source": {
+              "byte_len": 2478,
+              "content_digest": "fb3759ffd634261eed366bea74bfe724f9b89ca6ac102038be0e3c2245b49b93",
+              "encoding": "utf8",
+              "snapshot_id": "c6091addd5889d936003fc625bc977ed0917d5977612e4359197f709ff65b2f1"
+            },
+            "span": {
+              "end": 2209,
+              "start": 1788
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "symbol:deprecate_module_member",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.19636923568042716,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "overlap",
+            0.031818181818181815
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.08
+          ],
+          [
+            "boost:graph-rerank",
+            0.013397207708399179
+          ]
+        ],
+        "source": "index",
+        "start_line": 43,
+        "symbol_kind": "method",
+        "symbol_name": "__getattribute__",
+        "text": "\n\n    def __getattribute__(self, name):\n        get_attribute = super().__getattribute__\n        try:\n            depros = get_attribute('_deprecated_members')\n        except AttributeError:\n            self._deprecated_members = depros = {}\n        ret = get_attribute(name)\n        message = depros.get(name)\n        if message is not None:\n            warn(message, DeprecationWarning, stacklevel=2)\n        return ret"
+      },
+      {
+        "breadcrumb": "DeprecatableModule [members: __init__, __getattribute__]",
+        "chunk_id": "chunk:boltons/deprutils.py:3",
+        "end_line": 40,
+        "file_path": "boltons/deprutils.py",
+        "fused_score": 0.011538461538461537,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "ce001962c4495265b513063042e3b09365c15f7e6556e5dd880d2b2e4e83a040",
+            "doc_version": "c929c5877bc1970db7914868a09a7fa5ef3de22c5db91d4a532571f97fd54479",
+            "encoding_key": "9988586e3ab89671b3ea0db460868b64bdb0080e3fed4285d81f85de4e5f505c",
+            "entity_key": "d330df25d071f69874cf10d6838f1485f5456da6d69eb9d10fd3d1d75e30ee3d"
+          },
+          "qname": "DeprecatableModule",
+          "source_evidence": {
+            "boundary": "bounded_fallback",
+            "owner": {
+              "end": 2209,
+              "start": 1606
+            },
+            "signature": {
+              "end": 1648,
+              "start": 1606
+            },
+            "slice_digest": "c915adaaf36346a941e7be6d7660cf8626c6a71b40d85958477b6205100e9f46",
+            "source": {
+              "byte_len": 2478,
+              "content_digest": "fb3759ffd634261eed366bea74bfe724f9b89ca6ac102038be0e3c2245b49b93",
+              "encoding": "utf8",
+              "snapshot_id": "c6091addd5889d936003fc625bc977ed0917d5977612e4359197f709ff65b2f1"
+            },
+            "span": {
+              "end": 1648,
+              "start": 1603
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "symbol:deprecate_module_member",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.14153846153846156,
+        "score_trace": [
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.08
+          ]
+        ],
+        "source": "index",
+        "start_line": 36,
+        "symbol_kind": "class",
+        "symbol_name": "DeprecatableModule",
+        "text": "\n\n\nclass DeprecatableModule(ModuleType):\n    "
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "追踪 deprecate_module_member 从登记模块成员到之后读取属性的过程：它如何在保留属性的同时替换模块对象，再发出 DeprecationWarning 并返回原成员值？",
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/deprutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:72f4206e0590cba75f9a104d",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 61,
+      "text": "callee: deprecate_module_member → DeprecatableModule (boltons/deprutils.py:61)",
+      "title": "Callee: DeprecatableModule",
+      "token_estimate": 20
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "boltons/deprutils.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:4abee8d433aa4e10c471b152",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 61,
+      "text": "caller: deprecate_module_member → DeprecatableModule (boltons/deprutils.py:61)",
+      "title": "Caller: deprecate_module_member",
+      "token_estimate": 20
+    }
+  ],
+  "query": "追踪 deprecate_module_member 从登记模块成员到之后读取属性的过程：它如何在保留属性的同时替换模块对象，再发出 DeprecationWarning 并返回原成员值？",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Found 3 indexed code result(s) across 1 file(s) for `追踪 deprecate_module_member 从登记模块成员到之后读取属性的过程：它如何在保留属性的同时替换模块对象，再发出 DeprecationWarning 并返回原成员值？`.",
+  "task": "追踪 deprecate_module_member 从登记模块成员到之后读取属性的过程：它如何在保留属性的同时替换模块对象，再发出 DeprecationWarning 并返回原成员值？",
+  "token_budget": 4000,
+  "token_estimate": 3649
+}

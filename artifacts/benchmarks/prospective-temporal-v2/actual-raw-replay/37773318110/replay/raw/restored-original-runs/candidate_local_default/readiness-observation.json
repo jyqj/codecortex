@@ -1,0 +1,910 @@
+{
+  "generated_control_file": ".codecortex.json",
+  "indexed_paths_and_bytes": {
+    ".github/PULL_REQUEST_TEMPLATE.md": 1529,
+    ".github/workflows/publish.yml": 2638,
+    ".github/workflows/tests.yaml": 1630,
+    ".gitignore": 417,
+    ".omp/skills/release/SKILL.md": 6366,
+    ".readthedocs.yaml": 639,
+    "CHANGELOG.md": 73753,
+    "LICENSE": 1497,
+    "README.md": 5734,
+    "TODO.rst": 2504,
+    "boltons/__init__.py": 25,
+    "boltons/cacheutils.py": 30408,
+    "boltons/debugutils.py": 10320,
+    "boltons/deprutils.py": 2478,
+    "boltons/dictutils.py": 38300,
+    "boltons/easterutils.py": 1798,
+    "boltons/ecoutils.py": 14123,
+    "boltons/excutils.py": 8972,
+    "boltons/fileutils.py": 25539,
+    "boltons/formatutils.py": 12728,
+    "boltons/funcutils.py": 39650,
+    "boltons/gcutils.py": 6229,
+    "boltons/ioutils.py": 18247,
+    "boltons/iterutils.py": 59341,
+    "boltons/jsonutils.py": 10175,
+    "boltons/listutils.py": 12316,
+    "boltons/mathutils.py": 8146,
+    "boltons/mboxutils.py": 5938,
+    "boltons/namedutils.py": 15031,
+    "boltons/pathutils.py": 6497,
+    "boltons/queueutils.py": 7650,
+    "boltons/setutils.py": 34663,
+    "boltons/socketutils.py": 29900,
+    "boltons/statsutils.py": 31109,
+    "boltons/strutils.py": 47294,
+    "boltons/tableutils.py": 22145,
+    "boltons/tbutils.py": 31173,
+    "boltons/timeutils.py": 22962,
+    "boltons/typeutils.py": 5814,
+    "boltons/urlutils.py": 57742,
+    "docs/Makefile": 7413,
+    "docs/_templates/page.html": 294,
+    "docs/architecture.rst": 3460,
+    "docs/cacheutils.rst": 1805,
+    "docs/conf.py": 9737,
+    "docs/debugutils.rst": 142,
+    "docs/dictutils.rst": 139,
+    "docs/ecoutils.rst": 117,
+    "docs/fileutils.rst": 1677,
+    "docs/formatutils.rst": 155,
+    "docs/funcutils.rst": 1139,
+    "docs/gcutils.rst": 143,
+    "docs/index.rst": 4328,
+    "docs/ioutils.rst": 2935,
+    "docs/iterutils.rst": 2940,
+    "docs/jsonutils.rst": 135,
+    "docs/listutils.rst": 141,
+    "docs/make.bat": 7246,
+    "docs/mathutils.rst": 783,
+    "docs/mboxutils.rst": 145,
+    "docs/namedutils.rst": 148,
+    "docs/pathutils.rst": 129,
+    "docs/queueutils.rst": 134,
+    "docs/requirements-rtd.txt": 40,
+    "docs/setutils.rst": 117,
+    "docs/socketutils.rst": 932,
+    "docs/statsutils.rst": 150,
+    "docs/strutils.rst": 133,
+    "docs/tableutils.rst": 138,
+    "docs/tbutils.rst": 128,
+    "docs/timeutils.rst": 1829,
+    "docs/typeutils.rst": 108,
+    "docs/urlutils.rst": 5955,
+    "misc/bench_omd.py": 3191,
+    "misc/linkify_changelog.py": 1310,
+    "misc/table_html_app.py": 5605,
+    "pyproject.toml": 1820,
+    "setup.cfg": 35,
+    "tests/.coveragerc": 228,
+    "tests/__init__.py": 0,
+    "tests/conftest.py": 800,
+    "tests/jsonl_test_data.txt": 39,
+    "tests/newlines_test_data.txt": 38,
+    "tests/test_cacheutils.py": 13996,
+    "tests/test_debugutils_trace.py": 1717,
+    "tests/test_dictutils.py": 15015,
+    "tests/test_ecoutils.py": 1248,
+    "tests/test_fileutils.py": 3168,
+    "tests/test_formatutils.py": 2061,
+    "tests/test_funcutils.py": 3468,
+    "tests/test_funcutils_fb.py": 7931,
+    "tests/test_funcutils_fb_py3.py": 10678,
+    "tests/test_gcutils.py": 732,
+    "tests/test_ioutils.py": 22657,
+    "tests/test_iterutils.py": 21913,
+    "tests/test_jsonutils.py": 4361,
+    "tests/test_listutils.py": 8025,
+    "tests/test_mathutils.py": 4541,
+    "tests/test_namedutils.py": 1288,
+    "tests/test_pathutils.py": 1872,
+    "tests/test_queueutils.py": 1048,
+    "tests/test_setutils.py": 10889,
+    "tests/test_socketutils.py": 11889,
+    "tests/test_statsutils.py": 1564,
+    "tests/test_statsutils_histogram.py": 3782,
+    "tests/test_strutils.py": 16253,
+    "tests/test_tableutils.py": 2527,
+    "tests/test_tbutils.py": 3116,
+    "tests/test_tbutils_parsed_exc.py": 4270,
+    "tests/test_timeutils.py": 5629,
+    "tests/test_typeutils.py": 379,
+    "tests/test_urlutils.py": 17621,
+    "tox.ini": 232
+  },
+  "method": "public_graph_query_keyset_file_inventory",
+  "page_size": 64,
+  "pages": [
+    {
+      "query": "MATCH (f:File) RETURN f.file_path AS path, f.size AS bytes ORDER BY f.file_path LIMIT 64",
+      "result": {
+        "limit_applied": 64,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 5,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "results": [
+          {
+            "bytes": 1529,
+            "path": ".github/PULL_REQUEST_TEMPLATE.md"
+          },
+          {
+            "bytes": 2638,
+            "path": ".github/workflows/publish.yml"
+          },
+          {
+            "bytes": 1630,
+            "path": ".github/workflows/tests.yaml"
+          },
+          {
+            "bytes": 417,
+            "path": ".gitignore"
+          },
+          {
+            "bytes": 6366,
+            "path": ".omp/skills/release/SKILL.md"
+          },
+          {
+            "bytes": 639,
+            "path": ".readthedocs.yaml"
+          },
+          {
+            "bytes": 73753,
+            "path": "CHANGELOG.md"
+          },
+          {
+            "bytes": 1497,
+            "path": "LICENSE"
+          },
+          {
+            "bytes": 5734,
+            "path": "README.md"
+          },
+          {
+            "bytes": 2504,
+            "path": "TODO.rst"
+          },
+          {
+            "bytes": 25,
+            "path": "boltons/__init__.py"
+          },
+          {
+            "bytes": 30408,
+            "path": "boltons/cacheutils.py"
+          },
+          {
+            "bytes": 10320,
+            "path": "boltons/debugutils.py"
+          },
+          {
+            "bytes": 2478,
+            "path": "boltons/deprutils.py"
+          },
+          {
+            "bytes": 38300,
+            "path": "boltons/dictutils.py"
+          },
+          {
+            "bytes": 1798,
+            "path": "boltons/easterutils.py"
+          },
+          {
+            "bytes": 14123,
+            "path": "boltons/ecoutils.py"
+          },
+          {
+            "bytes": 8972,
+            "path": "boltons/excutils.py"
+          },
+          {
+            "bytes": 25539,
+            "path": "boltons/fileutils.py"
+          },
+          {
+            "bytes": 12728,
+            "path": "boltons/formatutils.py"
+          },
+          {
+            "bytes": 39650,
+            "path": "boltons/funcutils.py"
+          },
+          {
+            "bytes": 6229,
+            "path": "boltons/gcutils.py"
+          },
+          {
+            "bytes": 18247,
+            "path": "boltons/ioutils.py"
+          },
+          {
+            "bytes": 59341,
+            "path": "boltons/iterutils.py"
+          },
+          {
+            "bytes": 10175,
+            "path": "boltons/jsonutils.py"
+          },
+          {
+            "bytes": 12316,
+            "path": "boltons/listutils.py"
+          },
+          {
+            "bytes": 8146,
+            "path": "boltons/mathutils.py"
+          },
+          {
+            "bytes": 5938,
+            "path": "boltons/mboxutils.py"
+          },
+          {
+            "bytes": 15031,
+            "path": "boltons/namedutils.py"
+          },
+          {
+            "bytes": 6497,
+            "path": "boltons/pathutils.py"
+          },
+          {
+            "bytes": 7650,
+            "path": "boltons/queueutils.py"
+          },
+          {
+            "bytes": 34663,
+            "path": "boltons/setutils.py"
+          },
+          {
+            "bytes": 29900,
+            "path": "boltons/socketutils.py"
+          },
+          {
+            "bytes": 31109,
+            "path": "boltons/statsutils.py"
+          },
+          {
+            "bytes": 47294,
+            "path": "boltons/strutils.py"
+          },
+          {
+            "bytes": 22145,
+            "path": "boltons/tableutils.py"
+          },
+          {
+            "bytes": 31173,
+            "path": "boltons/tbutils.py"
+          },
+          {
+            "bytes": 22962,
+            "path": "boltons/timeutils.py"
+          },
+          {
+            "bytes": 5814,
+            "path": "boltons/typeutils.py"
+          },
+          {
+            "bytes": 57742,
+            "path": "boltons/urlutils.py"
+          },
+          {
+            "bytes": 7413,
+            "path": "docs/Makefile"
+          },
+          {
+            "bytes": 294,
+            "path": "docs/_templates/page.html"
+          },
+          {
+            "bytes": 3460,
+            "path": "docs/architecture.rst"
+          },
+          {
+            "bytes": 1805,
+            "path": "docs/cacheutils.rst"
+          },
+          {
+            "bytes": 9737,
+            "path": "docs/conf.py"
+          },
+          {
+            "bytes": 142,
+            "path": "docs/debugutils.rst"
+          },
+          {
+            "bytes": 139,
+            "path": "docs/dictutils.rst"
+          },
+          {
+            "bytes": 117,
+            "path": "docs/ecoutils.rst"
+          },
+          {
+            "bytes": 1677,
+            "path": "docs/fileutils.rst"
+          },
+          {
+            "bytes": 155,
+            "path": "docs/formatutils.rst"
+          },
+          {
+            "bytes": 1139,
+            "path": "docs/funcutils.rst"
+          },
+          {
+            "bytes": 143,
+            "path": "docs/gcutils.rst"
+          },
+          {
+            "bytes": 4328,
+            "path": "docs/index.rst"
+          },
+          {
+            "bytes": 2935,
+            "path": "docs/ioutils.rst"
+          },
+          {
+            "bytes": 2940,
+            "path": "docs/iterutils.rst"
+          },
+          {
+            "bytes": 135,
+            "path": "docs/jsonutils.rst"
+          },
+          {
+            "bytes": 141,
+            "path": "docs/listutils.rst"
+          },
+          {
+            "bytes": 7246,
+            "path": "docs/make.bat"
+          },
+          {
+            "bytes": 783,
+            "path": "docs/mathutils.rst"
+          },
+          {
+            "bytes": 145,
+            "path": "docs/mboxutils.rst"
+          },
+          {
+            "bytes": 148,
+            "path": "docs/namedutils.rst"
+          },
+          {
+            "bytes": 129,
+            "path": "docs/pathutils.rst"
+          },
+          {
+            "bytes": 134,
+            "path": "docs/queueutils.rst"
+          },
+          {
+            "bytes": 40,
+            "path": "docs/requirements-rtd.txt"
+          }
+        ],
+        "row_count": 64,
+        "truncated": false,
+        "truncated_reason": null
+      }
+    },
+    {
+      "query": "MATCH (f:File) WHERE f.file_path > 'docs/requirements-rtd.txt' RETURN f.file_path AS path, f.size AS bytes ORDER BY f.file_path LIMIT 64",
+      "result": {
+        "limit_applied": 64,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 5,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "results": [
+          {
+            "bytes": 117,
+            "path": "docs/setutils.rst"
+          },
+          {
+            "bytes": 932,
+            "path": "docs/socketutils.rst"
+          },
+          {
+            "bytes": 150,
+            "path": "docs/statsutils.rst"
+          },
+          {
+            "bytes": 133,
+            "path": "docs/strutils.rst"
+          },
+          {
+            "bytes": 138,
+            "path": "docs/tableutils.rst"
+          },
+          {
+            "bytes": 128,
+            "path": "docs/tbutils.rst"
+          },
+          {
+            "bytes": 1829,
+            "path": "docs/timeutils.rst"
+          },
+          {
+            "bytes": 108,
+            "path": "docs/typeutils.rst"
+          },
+          {
+            "bytes": 5955,
+            "path": "docs/urlutils.rst"
+          },
+          {
+            "bytes": 3191,
+            "path": "misc/bench_omd.py"
+          },
+          {
+            "bytes": 1310,
+            "path": "misc/linkify_changelog.py"
+          },
+          {
+            "bytes": 5605,
+            "path": "misc/table_html_app.py"
+          },
+          {
+            "bytes": 1820,
+            "path": "pyproject.toml"
+          },
+          {
+            "bytes": 35,
+            "path": "setup.cfg"
+          },
+          {
+            "bytes": 228,
+            "path": "tests/.coveragerc"
+          },
+          {
+            "bytes": 0,
+            "path": "tests/__init__.py"
+          },
+          {
+            "bytes": 800,
+            "path": "tests/conftest.py"
+          },
+          {
+            "bytes": 39,
+            "path": "tests/jsonl_test_data.txt"
+          },
+          {
+            "bytes": 38,
+            "path": "tests/newlines_test_data.txt"
+          },
+          {
+            "bytes": 13996,
+            "path": "tests/test_cacheutils.py"
+          },
+          {
+            "bytes": 1717,
+            "path": "tests/test_debugutils_trace.py"
+          },
+          {
+            "bytes": 15015,
+            "path": "tests/test_dictutils.py"
+          },
+          {
+            "bytes": 1248,
+            "path": "tests/test_ecoutils.py"
+          },
+          {
+            "bytes": 3168,
+            "path": "tests/test_fileutils.py"
+          },
+          {
+            "bytes": 2061,
+            "path": "tests/test_formatutils.py"
+          },
+          {
+            "bytes": 3468,
+            "path": "tests/test_funcutils.py"
+          },
+          {
+            "bytes": 7931,
+            "path": "tests/test_funcutils_fb.py"
+          },
+          {
+            "bytes": 10678,
+            "path": "tests/test_funcutils_fb_py3.py"
+          },
+          {
+            "bytes": 732,
+            "path": "tests/test_gcutils.py"
+          },
+          {
+            "bytes": 22657,
+            "path": "tests/test_ioutils.py"
+          },
+          {
+            "bytes": 21913,
+            "path": "tests/test_iterutils.py"
+          },
+          {
+            "bytes": 4361,
+            "path": "tests/test_jsonutils.py"
+          },
+          {
+            "bytes": 8025,
+            "path": "tests/test_listutils.py"
+          },
+          {
+            "bytes": 4541,
+            "path": "tests/test_mathutils.py"
+          },
+          {
+            "bytes": 1288,
+            "path": "tests/test_namedutils.py"
+          },
+          {
+            "bytes": 1872,
+            "path": "tests/test_pathutils.py"
+          },
+          {
+            "bytes": 1048,
+            "path": "tests/test_queueutils.py"
+          },
+          {
+            "bytes": 10889,
+            "path": "tests/test_setutils.py"
+          },
+          {
+            "bytes": 11889,
+            "path": "tests/test_socketutils.py"
+          },
+          {
+            "bytes": 1564,
+            "path": "tests/test_statsutils.py"
+          },
+          {
+            "bytes": 3782,
+            "path": "tests/test_statsutils_histogram.py"
+          },
+          {
+            "bytes": 16253,
+            "path": "tests/test_strutils.py"
+          },
+          {
+            "bytes": 2527,
+            "path": "tests/test_tableutils.py"
+          },
+          {
+            "bytes": 3116,
+            "path": "tests/test_tbutils.py"
+          },
+          {
+            "bytes": 4270,
+            "path": "tests/test_tbutils_parsed_exc.py"
+          },
+          {
+            "bytes": 5629,
+            "path": "tests/test_timeutils.py"
+          },
+          {
+            "bytes": 379,
+            "path": "tests/test_typeutils.py"
+          },
+          {
+            "bytes": 17621,
+            "path": "tests/test_urlutils.py"
+          },
+          {
+            "bytes": 232,
+            "path": "tox.ini"
+          }
+        ],
+        "row_count": 49,
+        "truncated": false,
+        "truncated_reason": null
+      }
+    }
+  ],
+  "readiness": {
+    "failed": 0,
+    "pending": 0,
+    "ready": 113,
+    "state": "ready",
+    "total": 113,
+    "unknown": 0
+  },
+  "schema_version": 1,
+  "status_after": {
+    "diagnostics": {
+      "auto_index_enabled": false,
+      "db_schema_version": 25,
+      "last_indexed_at": "2026-10-08T11:26:06.055386096+00:00",
+      "lock_poison_recovered": false,
+      "query_execution": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "completed": 0,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "retrieval": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_reason": "provider_and_vector_publication_not_implemented",
+        "dense_state": "disabled",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 0,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 1,
+          "incarnation": [
+            251,
+            25,
+            100,
+            130,
+            237,
+            113,
+            77,
+            63,
+            16,
+            190,
+            44,
+            87,
+            254,
+            4,
+            208,
+            29
+          ],
+          "index_epoch": 5,
+          "semantic_epoch": null
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "semantic_disabled",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 5,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": null,
+        "semantic_state": "not_configured",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "schema_version": 25,
+      "search_cache": {
+        "graph_hit_rate": 0.0,
+        "graph_hits": 0,
+        "graph_misses": 0,
+        "result_hit_rate": 0.0,
+        "result_hits": 0,
+        "result_misses": 0
+      },
+      "semantic_configured": false
+    },
+    "index_version": "1.0.0",
+    "indexed_call_edges": 6295,
+    "indexed_chunks": 2149,
+    "indexed_diagnostics": 0,
+    "indexed_files": 113,
+    "indexed_literals": 0,
+    "indexed_route_edges": 0,
+    "indexed_symbol_refs": 19490,
+    "indexed_symbols": 1613,
+    "indexed_test_edges": 58,
+    "last_indexed_at": "2026-10-08T11:26:06.055386096+00:00",
+    "project_path": "/tmp/cc-eval-input-yNdccx",
+    "resolution_freshness": {
+      "basis_epoch": null,
+      "complete": true,
+      "completed_files": 0,
+      "index_epoch": 5,
+      "reason": null,
+      "retry": null,
+      "root_count": 0,
+      "scope": "observed_resolution_invalidations",
+      "status": "ready"
+    },
+    "runtime_evidence": {
+      "distinct_linked_edges": 0,
+      "evidence_rows": 0,
+      "linked_evidence_rows": 0,
+      "total_observations": 0
+    }
+  },
+  "status_before": {
+    "diagnostics": {
+      "auto_index_enabled": false,
+      "db_schema_version": 25,
+      "last_indexed_at": "2026-10-08T11:26:06.055386096+00:00",
+      "lock_poison_recovered": false,
+      "query_execution": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "completed": 0,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "retrieval": {
+        "consistency": "point_in_time",
+        "default_effective_strategy": "local",
+        "default_query_state": "available_with_per_query_checks",
+        "default_strategy": "local",
+        "dense_reason": "provider_and_vector_publication_not_implemented",
+        "dense_state": "disabled",
+        "diagnostic_sources": {
+          "build": "BuildExplain on index response",
+          "graph": "GraphExplain on query response",
+          "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+          "packing": "evidence_summary.packing",
+          "selection": "evidence_summary.selection",
+          "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+          "source": "evidence_summary.source_freshness"
+        },
+        "execution": {
+          "async_admitted": 0,
+          "async_in_flight": 0,
+          "async_limit": 8,
+          "completed": 0,
+          "cpu_admitted": 0,
+          "cpu_in_flight": 0,
+          "cpu_limit": 4,
+          "queue_limit": 32,
+          "rejected": 0
+        },
+        "execution_scope": "process_shared_not_project_local",
+        "generation": {
+          "evidence_epoch": 1,
+          "incarnation": [
+            251,
+            25,
+            100,
+            130,
+            237,
+            113,
+            77,
+            63,
+            16,
+            190,
+            44,
+            87,
+            254,
+            4,
+            208,
+            29
+          ],
+          "index_epoch": 5,
+          "semantic_epoch": null
+        },
+        "generation_scope": "observed_database_snapshot",
+        "identity_validation": "checked_at_observation_boundary",
+        "index_state": "available",
+        "local_state": "available",
+        "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+        "query_coverage": {
+          "scope": "per_query_not_global",
+          "state": "not_measured"
+        },
+        "query_encoding": {
+          "configured_opt_in": false,
+          "network_authorized": false,
+          "reason": "semantic_disabled",
+          "request_scope": "nonlocal_nonempty_only"
+        },
+        "query_pins": 0,
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 5,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "semantic_active_space": null,
+        "semantic_state": "not_configured",
+        "service_state_scope": "process_observed_separately",
+        "spec": "retrieval-capabilities-v2"
+      },
+      "schema_version": 25,
+      "search_cache": {
+        "graph_hit_rate": 0.0,
+        "graph_hits": 0,
+        "graph_misses": 0,
+        "result_hit_rate": 0.0,
+        "result_hits": 0,
+        "result_misses": 0
+      },
+      "semantic_configured": false
+    },
+    "index_version": "1.0.0",
+    "indexed_call_edges": 6295,
+    "indexed_chunks": 2149,
+    "indexed_diagnostics": 0,
+    "indexed_files": 113,
+    "indexed_literals": 0,
+    "indexed_route_edges": 0,
+    "indexed_symbol_refs": 19490,
+    "indexed_symbols": 1613,
+    "indexed_test_edges": 58,
+    "last_indexed_at": "2026-10-08T11:26:06.055386096+00:00",
+    "project_path": "/tmp/cc-eval-input-yNdccx",
+    "resolution_freshness": {
+      "basis_epoch": null,
+      "complete": true,
+      "completed_files": 0,
+      "index_epoch": 5,
+      "reason": null,
+      "retry": null,
+      "root_count": 0,
+      "scope": "observed_resolution_invalidations",
+      "status": "ready"
+    },
+    "runtime_evidence": {
+      "distinct_linked_edges": 0,
+      "evidence_rows": 0,
+      "linked_evidence_rows": 0,
+      "total_observations": 0
+    }
+  },
+  "verification": "exact_paths_and_sizes_checked"
+}

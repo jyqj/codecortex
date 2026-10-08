@@ -1,0 +1,624 @@
+{
+  "evidence_summary": {
+    "files": [
+      "boltons/cacheutils.py",
+      "boltons/iterutils.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15627
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 100,
+            "sorts": 0,
+            "statements": 82,
+            "vm_steps": 3910
+          },
+          "text": {
+            "cache_hits": 14,
+            "legacy_auto_reads": 0,
+            "storage_reads": 10,
+            "utf8_bytes": 23784,
+            "zstd_decodes": 10
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 7119
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 1,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1333,
+        "skipped_duplicates": 1332,
+        "soft_scanned": 1332,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 1332,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 21559
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1332,
+                "utf8_bytes": 616688,
+                "zstd_decodes": 866
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 17
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 2148,
+                "rows": 1333,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 24324
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 25,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 12968,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1682,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 4404,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit_and_query_expansion_budget",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 1333,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 10285,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1553,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "trace",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": "boltons",
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 29,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "trace",
+      "intent_facet_anchors": {
+        "implementation": "chunk:boltons/iterutils.py:29"
+      },
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 23784,
+        "redundant_bytes": 0,
+        "unique_bytes": 23784
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 12245,
+        "redundant_bytes": 0,
+        "unique_bytes": 12245
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "cue_window:v1",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 11,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "details_omitted": true,
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          251,
+          25,
+          100,
+          130,
+          237,
+          113,
+          77,
+          63,
+          16,
+          190,
+          44,
+          87,
+          254,
+          4,
+          208,
+          29
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 334689,
+      "scope": "disk_generation:v1",
+      "verified_hits": 24
+    }
+  },
+  "intent": "trace",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "partition",
+        "chunk_id": "chunk:boltons/iterutils.py:29",
+        "end_line": 817,
+        "file_path": "boltons/iterutils.py",
+        "fused_score": 0.01594202898550725,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.05263157894736842,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "4b7c1e2ba77862715051b15656300bf0fa6cdf683f7ccab3a2174389943f5440",
+            "doc_version": "57548377dcf7e650b716f0c610da88a101df1a272219c2642d48d97b7f2d56c2",
+            "encoding_key": "4e38bce9ba8431972ed469b01eebf23cc16a8a297c9575e81da20b5e80088c9e",
+            "entity_key": "9edb04c6dc0d107f0e9a541d3bfbd53ea85aa0107110f860e577b5fd490f7e5c"
+          },
+          "evidence_priority": "intent_facet",
+          "qname": "partition",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 27987,
+              "start": 25985
+            },
+            "signature": {
+              "end": 26026,
+              "start": 25985
+            },
+            "slice_digest": "1288db18338ab7dc359107699345dce54f2f3d4cfb386fc5ec4d09f40e1e625d",
+            "source": {
+              "byte_len": 59341,
+              "content_digest": "2b420ab8f684c91cdc317370dd12d9755034bb7ff4ec765cbdd95651299d2681",
+              "encoding": "utf8",
+              "snapshot_id": "38e5e99244ef19ca38a909d5c7bb42c5f6e0f967c56d415939e986e78735b8ce"
+            },
+            "span": {
+              "end": 27987,
+              "start": 25982
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@19",
+          "fts-summary",
+          "preselect:fts-summary:+2.07"
+        ],
+        "rerank_score": 0.2801372295442118,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.01594202898550725
+          ],
+          [
+            "overlap",
+            0.13124999999999998
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.08294520055870454
+          ]
+        ],
+        "source": "index",
+        "start_line": 761,
+        "symbol_kind": "function",
+        "symbol_name": "partition",
+        "text": "\n\n\ndef partition(src, key=bool, *keys):\n    \"\"\"No relation to :meth:`str.partition`, ``partition`` is like\n    :func:`bucketize`, but for added convenience returns a collection for\n    each predicate passed.\n\n    ``partition`` now accepts multiple *key* functions and will return\n    ``N + 1`` lists for ``N`` predicates. Each value from *src* is placed\n    into the first list whose predicate evaluates to ``True`` with values\n    that match none of the predicates placed in the last list.\n\n    >>> nonempty, empty = partition(['', '', 'hi', '', 'bye'])\n    >>> nonempty\n    ['hi', 'bye']\n\n    *key* defaults to :class:`bool`, but can be carefully overridden to\n    use either a function that returns either ``True`` or ``False`` or\n    a string name of the attribute on which to partition objects.\n\n    >>> import string\n    >>> is_digit = lambda x: x in string.digits\n    >>> decimal_digits, hexletters = partition(string.hexdigits, is_digit)\n    >>> ''.join(decimal_digits), ''.join(hexletters)\n    ('0123456789', 'abcdefABCDEF')\n\n    Multiple predicates may be supplied to divide into more buckets:\n\n    >>> positive, negative, zero = partition(range(-1, 2),\n    ...                                     lambda i: i > 0,\n    ...                                     lambda i: i < 0)\n    >>> positive, negative, zero\n    ([1], [-1], [0])\n    \"\"\"\n    if not is_iterable(src):\n        raise TypeError('expected an iterable')\n\n    def _make_key_func(k):\n        if isinstance(k, str):\n            return lambda x, k=k: getattr(x, k, False)\n        if callable(k):\n            return k\n        raise TypeError('expected key to be callable or a string')\n\n    key_funcs = [_make_key_func(key)] + [_make_key_func(k) for k in keys]\n    parts = [[] for _ in range(len(key_funcs) + 1)]\n\n    for val in src:\n        for idx, func in enumerate(key_funcs):\n            if func(val):\n                parts[idx].append(val)\n                break\n        else:\n            parts[-1].append(val)\n\n    return tuple(parts)"
+      },
+      {
+        "breadcrumb": "LRU [members: __getitem__]",
+        "chunk_id": "chunk:boltons/cacheutils.py:32",
+        "end_line": 364,
+        "file_path": "boltons/cacheutils.py",
+        "fused_score": 0.017741935483870968,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.08333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "654ab0a6c5784621015ee1497720da3f81eb2f850013ebee804ef27c1fdfef9e",
+            "doc_version": "1851d9135d2e109a264ad68c3b380f2dcd0277ee2940c2dc7e8a9b6c1a085943",
+            "encoding_key": "8852e47b2e4a0924396ae7d01c09a55241d842174357ada7a536f8487d6d4cc5",
+            "entity_key": "61bda36c2b1b3bb3ac87b2ad36e5c5c5e33d8035c733831041da6b394482fe01"
+          },
+          "qname": "LRU",
+          "source_evidence": {
+            "boundary": "signature_documentation",
+            "owner": {
+              "end": 13104,
+              "start": 11348
+            },
+            "signature": {
+              "end": 11368,
+              "start": 11348
+            },
+            "slice_digest": "6d1943a156fb10ac417af0012487b4fab4c7357bfe1555e44f0f5883297d7b43",
+            "source": {
+              "byte_len": 30408,
+              "content_digest": "da940cc875b6f75a4e3f9cf404495d3b24a24c517aa8722690c8be4ffc27fcf4",
+              "encoding": "utf8",
+              "snapshot_id": "e3220213f177acbf0d515eb9d6f59c1e57a60cb24a946a3db719caa64a2c83f1"
+            },
+            "span": {
+              "end": 12691,
+              "start": 11345
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@12",
+          "fts-summary",
+          "preselect:fts-summary:+1.60"
+        ],
+        "rerank_score": 0.24858167440076118,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.017741935483870968
+          ],
+          [
+            "overlap",
+            0.11666666666666665
+          ],
+          [
+            "boost:path-prefix",
+            0.05
+          ],
+          [
+            "boost:stage-a",
+            0.06417307225022355
+          ]
+        ],
+        "source": "index",
+        "start_line": 328,
+        "symbol_kind": "class",
+        "symbol_name": "LRU",
+        "text": "\n\n\nclass LRU(LRI):\n    \"\"\"The ``LRU`` is :class:`dict` subtype implementation of the\n    *Least-Recently Used* caching strategy.\n\n    Args:\n        max_size (int): Max number of items to cache. Defaults to ``128``.\n        values (iterable): Initial values for the cache. Defaults to ``None``.\n        on_miss (callable): a callable which accepts a single argument, the\n            key not present in the cache, and returns the value to be cached.\n\n    >>> cap_cache = LRU(max_size=2)\n    >>> cap_cache['a'], cap_cache['b'] = 'A', 'B'\n    >>> from pprint import pprint as pp\n    >>> pp(dict(cap_cache))\n    {'a': 'A', 'b': 'B'}\n    >>> [cap_cache['b'] for i in range(3)][0]\n    'B'\n    >>> cap_cache['c'] = 'C'\n    >>> print(cap_cache.get('a'))\n    None\n\n    This cache is also instrumented with statistics\n    collection. ``hit_count``, ``miss_count``, and ``soft_miss_count``\n    are all integer members that can be used to introspect the\n    performance of the cache. (\"Soft\" misses are misses that did not\n    raise :exc:`KeyError`, e.g., ``LRU.get()`` or ``on_miss`` was used to\n    cache a default.\n\n    >>> cap_cache.hit_count, cap_cache.miss_count, cap_cache.soft_miss_count\n    (3, 1, 1)\n\n    Other than the size-limiting caching behavior and statistics,\n    ``LRU`` acts like its parent class, the built-in Python :class:`dict`.\n    \"\"\""
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "Which duration parser accepts signed fractional amounts with week, day, hour, minute, or second units, and what older name refers to that same callable?",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/funcutils.py:29",
+        "document": {
+          "doc_key": "193b94d1c645362ab7435fb2ffba97b240d193b85111bbd6e72315d5746e43c4",
+          "doc_version": "c7dc129ab80f162c4fcacd69b10500b5e1eedebc9145ac4d46f961e89a330e7d",
+          "encoding_key": "3beff5fa0c22b71fef3c307362221bc6f9f3cdad7ec06814f5e0faf8d847cf13",
+          "entity_key": "93a647b77d1befff8b21424bd8f330680b7a383bfe778bb22364ccf71535a0a1"
+        },
+        "file_path": "boltons/funcutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "6006741786df7db96335a565ec7f6e78b97388f343baf01447ab5a817502a84d",
+        "source_span": {
+          "end": 27066,
+          "start": 24063
+        },
+        "symbol_kind": "class",
+        "symbol_name": "FunctionBuilder"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:boltons/formatutils.py:21",
+        "document": {
+          "doc_key": "4d1e2c2c83476fb91a115020cb09569e32bc048d50181ae3483b33aa688ad3b9",
+          "doc_version": "13ed54b3cd544b9dea95ae5aa407839a350d0231ef5cd02a83f75b78562d8be3",
+          "encoding_key": "28ae49cf35cdc195964c5ee0e521beb189ccf5ec54a78f649fdd2b4e1186e81c",
+          "entity_key": "3e7c381e262035d8acd7220735a6ed61f80e7cc38727efe96b452137b6557900"
+        },
+        "file_path": "boltons/formatutils.py",
+        "kind": "document_reference",
+        "language": "python",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "af38882f3dadd25c8c12b7d51c764b5eaa385bf38592f66f07158ee227e523c3",
+        "source_span": {
+          "end": 11404,
+          "start": 10153
+        },
+        "symbol_kind": "class",
+        "symbol_name": "DeferredValue"
+      },
+      {
+        "file_path": "boltons/timeutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "de647aa3627630682c7cd6961c77c644e1e05ee456394c8ce1a77837a448044c"
+      },
+      {
+        "file_path": "boltons/ioutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "6447324ce0019c2833f6749a5e74b90da2d8da89393ed8bcc69f7fbcffb776bd"
+      },
+      {
+        "file_path": "boltons/ioutils.py",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary"
+        ],
+        "source_digest": "6447324ce0019c2833f6749a5e74b90da2d8da89393ed8bcc69f7fbcffb776bd"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "Which duration parser accepts signed fractional amounts with week, day, hour, minute, or second units, and what older name refers to that same callable?",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "Which duration parser accepts signed fractional amounts with week, day, hour, minute, or second units, and what older name refers to that same callable?",
+  "token_budget": 4000,
+  "token_estimate": 3907
+}

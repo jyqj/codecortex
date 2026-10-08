@@ -1,7 +1,0 @@
-For namespace template free functions such as `namespace grove { template<class T> T leaf(T x) { return x; } }`, rejecting the preexisting wrong Method hint replaced the public name with return type T. This change follows actual C/C++ declarator name edges and returns leaf/Function with no unsupported qname. Kind guards stay intact; unknown conversion declarators omit names, and native C++ taxonomy remains separately documented debt.
-
-Based on PR136 exact dbeefb478a996b7dd093b3c2eddde571e2c68178. Fixed product aa271e52b9c2aa52e05696af96ac52116963e57e. Independent PR134's strict leaf guard now passes; new declarator counterexamples fail 2/4 on the exact base and pass 4/4 here.
-
-Validation: locked Rust1.95 bounded parser252/index30/public11/search298 = 591 passed, 0 failed, 1 preexisting child helper ignored; strict parser clippy and fmt pass. Real engine/MCP with the original byte-identical driver and unchanged native scorer/gold recover C++ name-only recall10 0→1. Python full ordinary hit fields and Class/Method SQL/source proofs remain correct; C/Go/JS/Rust/TS snapshots preserve native symbols/chunks/identities. Old review failures remain unchanged. Task implementation notes and generated TODO updated, parent statuses remain open.
-
-Evidence: docs/reviews/cpp-boundary-declarator-fix-20261003/README.md and source-manifest.json. Excludes old worker/broad server suites, GC/WAL/kill/staging/EROFS/private/42export, public DEV/scale, priority pressure production files and PR135 CI metadata. No merge/deploy.

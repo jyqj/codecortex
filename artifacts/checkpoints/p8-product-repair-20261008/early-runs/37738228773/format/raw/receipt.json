@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "purpose": "Actual rustfmt on the unaccepted P8 candidate; not source approval, test acceptance or TODO transition.",
+  "git_head": "955ff523c5da744cde0e79ecaf71ac3182e324fa",
+  "source_before_commit": "3e53704c2878562a1c6e9ef1d019cf156104545d",
+  "commands": [
+    {
+      "name": "check-before",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "returncode": 1,
+      "bytes": 27203,
+      "sha256": "6bbdeacf39d56b7f48bc9053d0eed97d6f32ae0d2edf5a129eb05fb9a1a886e9"
+    },
+    {
+      "name": "format",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "returncode": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "check-after",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "returncode": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "changed_paths": [
+    "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs",
+    "crates/cc-eval/tests/p8_mcp_readiness.rs",
+    "crates/cc-index/src/scanner.rs",
+    "crates/cc-index/tests/explicit_text_admission.rs",
+    "crates/cc-server/src/watcher.rs"
+  ],
+  "format_diff": {
+    "bytes": 26462,
+    "sha256": "ef5ee80efb4bffdfa0fc2d09466a0e62e99331f7ff005a2d10c1ab6532a4fbf9"
+  },
+  "files": [
+    {
+      "path": "crates/cc-index/src/scanner.rs",
+      "before": {
+        "bytes": 38800,
+        "sha256": "6c5966138455fa8ea63a64caae8592394126b70b5075d647c3d68fa8b096ee66"
+      },
+      "after": {
+        "bytes": 39339,
+        "sha256": "46f143b7ff09c22bf4ba3ebae20b920f5ca58bcfdd79aeacaded7b22ef0ff3db"
+      },
+      "changed": true
+    },
+    {
+      "path": "crates/cc-index/tests/explicit_text_admission.rs",
+      "before": {
+        "bytes": 8709,
+        "sha256": "169099a55ae03162194f75d7a086b01703f72a391ac4147306a3f98bed6b6b96"
+      },
+      "after": {
+        "bytes": 9302,
+        "sha256": "619f64ea3b6ecb6428d912ad33bd3c8a62876e53454c63ccc0be3322d96b599e"
+      },
+      "changed": true
+    },
+    {
+      "path": "crates/cc-model/src/config.rs",
+      "before": {
+        "bytes": 68900,
+        "sha256": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c"
+      },
+      "after": {
+        "bytes": 68900,
+        "sha256": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c"
+      },
+      "changed": false
+    },
+    {
+      "path": "crates/cc-server/src/watcher.rs",
+      "before": {
+        "bytes": 37126,
+        "sha256": "04b5c6c8e23ccea3ee8748adab1f41103fc84bd40c5d111b5d396c886028c563"
+      },
+      "after": {
+        "bytes": 37245,
+        "sha256": "d37240b3e0a1becd114c7a386d371509091222e5a216abf3e22cd89b8037a7dd"
+      },
+      "changed": true
+    },
+    {
+      "path": "docs/CONFIGURATION.md",
+      "before": {
+        "bytes": 37430,
+        "sha256": "75d72f33f56f2e6742f428fe51af8ef3496fcf36949e5871b540243867591fab"
+      },
+      "after": {
+        "bytes": 37430,
+        "sha256": "75d72f33f56f2e6742f428fe51af8ef3496fcf36949e5871b540243867591fab"
+      },
+      "changed": false
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs",
+      "before": {
+        "bytes": 14505,
+        "sha256": "0ff4bfe99cbfde674f278cb9ad0b457173924b53c843fae51324d7aa82d2ef1a"
+      },
+      "after": {
+        "bytes": 15014,
+        "sha256": "649f6ae03f1c06acf96f5095578c8a2366ccb511061516b49719e1408a24bd6f"
+      },
+      "changed": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/adapters/mod.rs",
+      "before": {
+        "bytes": 828,
+        "sha256": "9a7c9e1bdebf474dc42f9ecf8529183169e1e1730b2555c83dcaec8e1edb934d"
+      },
+      "after": {
+        "bytes": 828,
+        "sha256": "9a7c9e1bdebf474dc42f9ecf8529183169e1e1730b2555c83dcaec8e1edb934d"
+      },
+      "changed": false
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/runner.rs",
+      "before": {
+        "bytes": 10377,
+        "sha256": "b4c273df4763cdddd7cacc5eeb037b516bdba2eb5f4b91d0cebe66b8746451fc"
+      },
+      "after": {
+        "bytes": 10377,
+        "sha256": "b4c273df4763cdddd7cacc5eeb037b516bdba2eb5f4b91d0cebe66b8746451fc"
+      },
+      "changed": false
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_mcp_readiness.rs",
+      "before": {
+        "bytes": 2376,
+        "sha256": "04d0f172757b2de3a2fe4951207f06f554d0055b5e4b209143157e22f4cbb7b1"
+      },
+      "after": {
+        "bytes": 2611,
+        "sha256": "989f664b39b06a65fbe6a5ebe9f1c0f0cdf2cd39e39f67d1743242f2448db76a"
+      },
+      "changed": true
+    }
+  ]
+}

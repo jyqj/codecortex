@@ -1,0 +1,1026 @@
+{
+  "schema_version": 1,
+  "run_id": "public-dev-reauthoring-20261008",
+  "repo": "serde",
+  "upstream_commit": "6693a89cca77e0151437da1c7f890090b9ebf04c",
+  "upstream_tree": "48fd8cbe29a82dc7683136b6dca6f9c75dad11b7",
+  "author": "/root/p7_wiring",
+  "status": "candidate_pending_independent_review",
+  "row_ids": [
+    "v19.serde.f0001.en02",
+    "v19.serde.f0003.en02",
+    "v19.serde.f0004.en02",
+    "v19.serde.f0008.en02",
+    "v19.serde.f0009.en02",
+    "v19.serde.f0010.en02",
+    "v19.serde.f0011.en02",
+    "v19.serde.f0012.en02",
+    "v19.serde.f0013.en02",
+    "v19.serde.f0014.en02",
+    "v19.serde.f0016.en02",
+    "v19.serde.f0017.en02",
+    "v19.serde.f0019.en02",
+    "v19.serde.f0020.en02"
+  ],
+  "native_rows": 14,
+  "compat_rows": 14,
+  "gold_spans": 18,
+  "body_origin": "New source-grounded authoring in a separate run. Previous b356 .en01 bytes were inaccessible. No old byte identity, previous source/gold approval or old component decision is assigned to these .en02 candidates.",
+  "source_scope": "Exact immutable upstream source text subset, not a full checkout/dependency closure or semantic-performance result.",
+  "heldout": {
+    "reserved_unread_undrafted": 6,
+    "bodies_accessed": 0,
+    "slots_not_included": true
+  },
+  "sources": [
+    {
+      "path": "Cargo.toml",
+      "git_blob": "7cc4fdb1d0dc3739390ef753e88ac2e3d8ee74a7",
+      "git_mode": "100644",
+      "bytes": 460,
+      "sha256": "31b3f127c74eb7e16b43efae54fe4091d635f36295cad86246a2cd9ff2c36de3"
+    },
+    {
+      "path": "serde/Cargo.toml",
+      "git_blob": "dda07830d328fc9939f1332722db3ee74f81e8a0",
+      "git_mode": "100644",
+      "bytes": 2252,
+      "sha256": "137d4b56580e6b18d0cad4a86aea12a8b83b8f985a931b089de553161c35af56"
+    },
+    {
+      "path": "serde/src/lib.rs",
+      "git_blob": "c749c001aca0e78d49e2a3d73f69f8e562333ba0",
+      "git_mode": "100644",
+      "bytes": 11417,
+      "sha256": "a9bb976e6012a20443561e113b7ce37e9f3f0293f60a0dc157c5f973f7e80c55"
+    },
+    {
+      "path": "serde/src/private/de.rs",
+      "git_blob": "6f657f50eb3292be32a52c16feb81bd62e56e041",
+      "git_mode": "100644",
+      "bytes": 110746,
+      "sha256": "68ee17774d3bbc693d9f19803747fa2c3afdb7046482e6d94ac6cf7db5a4fe20"
+    },
+    {
+      "path": "serde_core/src/de/ignored_any.rs",
+      "git_blob": "2360a1742362b1e0b31e0fd1f00e5246161851eb",
+      "git_mode": "100644",
+      "bytes": 6154,
+      "sha256": "6480f2b2a83dc4764d01b2eec7309729eef2492eede2e5ee98d23a60b05198eb"
+    },
+    {
+      "path": "serde_core/src/de/impls.rs",
+      "git_blob": "3a1458e8df7e669fac1ddd91bfdbb6956826a353",
+      "git_mode": "100644",
+      "bytes": 97134,
+      "sha256": "2f8e2ef9d343875bb996319e69feae0dee2287e2548cedd8d3c752b64812331c"
+    },
+    {
+      "path": "serde_core/src/de/mod.rs",
+      "git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+      "git_mode": "100644",
+      "bytes": 83879,
+      "sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845"
+    },
+    {
+      "path": "serde_core/src/de/value.rs",
+      "git_blob": "3d5475def127eb1daaeb0a4e991b07a4ee33867d",
+      "git_mode": "100644",
+      "bytes": 48848,
+      "sha256": "fb6fef6d23d95d516c6e1d6b5cefd8b98ba3881214a82a8a7e0a8ffbb0a12083"
+    },
+    {
+      "path": "serde_core/src/private/seed.rs",
+      "git_blob": "bcf267cb09b59bba9133630c3bb3be26709b0e5c",
+      "git_mode": "100644",
+      "bytes": 635,
+      "sha256": "3f6e098c5bd314788370dcaf3ab0152fcd7feb6bcf36a9c51808938cd58071eb"
+    },
+    {
+      "path": "serde_core/src/ser/impls.rs",
+      "git_blob": "a7a175db9465aa6ab4c6931e18448971a4b0b30a",
+      "git_mode": "100644",
+      "bytes": 29535,
+      "sha256": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643"
+    },
+    {
+      "path": "serde_core/src/ser/mod.rs",
+      "git_blob": "62e59d981d4ae7096876293f13245c0c80d007fb",
+      "git_mode": "100644",
+      "bytes": 65231,
+      "sha256": "ec097d92c8545356961e977a4c9650361cadd1d3a243d805ae7b0e0e589ae803"
+    },
+    {
+      "path": "serde_derive/src/de/enum_.rs",
+      "git_blob": "6f5094ff4f7d7c01478a4ea97974dfefffbb0181",
+      "git_mode": "100644",
+      "bytes": 3490,
+      "sha256": "5a099a25034e4f9364d421a53cfb4428ea8a94fd66515c66207bf8bfb7c4db4f"
+    },
+    {
+      "path": "serde_derive/src/de/enum_untagged.rs",
+      "git_blob": "f66d98de1f867e40d07ff1051785ca4edc1924fa",
+      "git_mode": "100644",
+      "bytes": 4858,
+      "sha256": "b66ad3cea36ee786d50270f6648f1075c1e615b5f04173b47f034a251df5220e"
+    },
+    {
+      "path": "serde_derive/src/internals/attr.rs",
+      "git_blob": "c0f08f450676df98419a247827ca7ed3a180d3a2",
+      "git_mode": "100644",
+      "bytes": 67345,
+      "sha256": "7abe82fde303a3c31f967c13e0ee1afe49ea584d882b9d2c32b067888e1c8225"
+    },
+    {
+      "path": "serde_derive/src/internals/case.rs",
+      "git_blob": "8c8c02e75780eadfb8944578ddd2196239ca8d44",
+      "git_mode": "100644",
+      "bytes": 7121,
+      "sha256": "10c8dda2b32d8c6c6b63cf09cdc63d02375af7e95ecefe8fecb34f93b65191bb"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "v19.serde.f0001.en02",
+      "query": "Which repository-level Cargo manifest declares the workspace members serde, serde_core, serde_derive, serde_derive_internals and test_suite, and redirects the three published serde crates to local paths?",
+      "category": "file_exact_match",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "Cargo.toml",
+                "symbol": null,
+                "span": {
+                  "start": 0,
+                  "end": 265
+                }
+              }
+            ]
+          },
+          "path": "Cargo.toml",
+          "span": {
+            "start": 0,
+            "end": 265
+          },
+          "source_git_blob": "7cc4fdb1d0dc3739390ef753e88ac2e3d8ee74a7",
+          "source_sha256": "31b3f127c74eb7e16b43efae54fe4091d635f36295cad86246a2cd9ff2c36de3",
+          "span_sha256": "7ed49b453c5bc297c87ddd4a99ba5f176cdb5c7020e3ffafc6d83705391d0b02",
+          "line_start": 1,
+          "line_end": 16,
+          "text": "[workspace]\nmembers = [\n    \"serde\",\n    \"serde_core\",\n    \"serde_derive\",\n    \"serde_derive_internals\",\n    \"test_suite\",\n]\nresolver = \"2\"\n\n[patch.crates-io]\nserde = { path = \"serde\" }\nserde_core = { path = \"serde_core\" }\nserde_derive = { path = \"serde_derive\" }\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde/Cargo.toml",
+        "span": {
+          "start": 0,
+          "end": 1264
+        },
+        "source_git_blob": "dda07830d328fc9939f1332722db3ee74f81e8a0",
+        "source_sha256": "137d4b56580e6b18d0cad4a86aea12a8b83b8f985a931b089de553161c35af56",
+        "span_sha256": "daca92b8d860b51890ef99dc3220f22575e1b5b38892d73abd8517328cb5e09c",
+        "line_start": 1,
+        "line_end": 38,
+        "text": "[package]\nname = \"serde\"\nversion = \"1.0.229\"\nauthors = [\"Erick Tryzelaar <erick.tryzelaar@gmail.com>\", \"David Tolnay <dtolnay@gmail.com>\"]\nbuild = \"build.rs\"\ncategories = [\"encoding\", \"no-std\", \"no-std::no-alloc\"]\ndescription = \"A generic serialization/deserialization framework\"\ndocumentation = \"https://docs.rs/serde\"\nedition = \"2021\"\nhomepage = \"https://serde.rs\"\nkeywords = [\"serde\", \"serialization\", \"no_std\"]\nlicense = \"MIT OR Apache-2.0\"\nreadme = \"crates-io.md\"\nrepository = \"https://github.com/serde-rs/serde\"\nrust-version = \"1.56\"\n\n[dependencies]\nserde_core = { version = \"=1.0.229\", path = \"../serde_core\", default-features = false, features = [\"result\"] }\nserde_derive = { version = \"1\", optional = true, path = \"../serde_derive\" }\n\n[package.metadata.playground]\nfeatures = [\"derive\", \"rc\"]\n\n[package.metadata.docs.rs]\nfeatures = [\"derive\", \"rc\", \"unstable\"]\ntargets = [\"x86_64-unknown-linux-gnu\"]\nrustdoc-args = [\n    \"--generate-link-to-definition\",\n    \"--generate-macro-expansion\",\n    \"--extern-html-root-url=core=https://doc.rust-lang.org\",\n    \"--extern-html-root-url=alloc=https://doc.rust-lang.org\",\n    \"--extern-html-root-url=std=https://doc.rust-lang.org\",\n]\n\n\n### FEATURES #################################################################\n\n",
+        "reason": "This is the serde package manifest and feature/dependency configuration; it does not declare the repository workspace membership and all three patch.crates-io path overrides."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0003.en02",
+      "query": "Where does the concrete IgnoredAny visitor recursively consume every sequence element and every map key/value pair while discarding their values?",
+      "category": "semantic_feature",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/ignored_any.rs",
+                "symbol": null,
+                "span": {
+                  "start": 5054,
+                  "end": 5560
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/ignored_any.rs",
+          "span": {
+            "start": 5054,
+            "end": 5560
+          },
+          "source_git_blob": "2360a1742362b1e0b31e0fd1f00e5246161851eb",
+          "source_sha256": "6480f2b2a83dc4764d01b2eec7309729eef2492eede2e5ee98d23a60b05198eb",
+          "span_sha256": "c32d21a47e2b97d10a890930bda08ddb8e04d359ff17711a12bd70bfa384bc7e",
+          "line_start": 192,
+          "line_end": 213,
+          "text": "    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>\n    where\n        A: SeqAccess<'de>,\n    {\n        while let Some(IgnoredAny) = tri!(seq.next_element()) {\n            // Gobble\n        }\n        Ok(IgnoredAny)\n    }\n\n    #[inline]\n    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>\n    where\n        A: MapAccess<'de>,\n    {\n        while let Some((IgnoredAny, IgnoredAny)) = tri!(map.next_entry()) {\n            // Gobble\n        }\n        Ok(IgnoredAny)\n    }\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/de/mod.rs",
+        "span": {
+          "start": 60973,
+          "end": 61475
+        },
+        "source_git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+        "source_sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845",
+        "span_sha256": "01c33d65350f1c1026f93761d77a334cf25c48ed97bb04decdfd7773244ab668",
+        "line_start": 1682,
+        "line_end": 1701,
+        "text": "    fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>\n    where\n        A: SeqAccess<'de>,\n    {\n        let _ = seq;\n        Err(Error::invalid_type(Unexpected::Seq, &self))\n    }\n\n    /// The input contains a key-value map.\n    ///\n    /// The default implementation fails with a type error.\n    fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>\n    where\n        A: MapAccess<'de>,\n    {\n        let _ = map;\n        Err(Error::invalid_type(Unexpected::Map, &self))\n    }\n\n",
+        "reason": "Visitor's default sequence/map methods return invalid_type; they do not recursively consume the nested input as IgnoredAny does."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0004.en02",
+      "query": "Which concrete MapDeserializer implementation saves a value when a key is read, takes that saved value on the next value request, and panics if a value is requested before a key?",
+      "category": "error_handling",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/value.rs",
+                "symbol": null,
+                "span": {
+                  "start": 34337,
+                  "end": 35383
+                }
+              },
+              {
+                "path": "serde/src/private/de.rs",
+                "symbol": null,
+                "span": {
+                  "start": 53129,
+                  "end": 54215
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/value.rs",
+          "span": {
+            "start": 34337,
+            "end": 35383
+          },
+          "source_git_blob": "3d5475def127eb1daaeb0a4e991b07a4ee33867d",
+          "source_sha256": "fb6fef6d23d95d516c6e1d6b5cefd8b98ba3881214a82a8a7e0a8ffbb0a12083",
+          "span_sha256": "b3ea37209e89de89b9066b084ea315b40395fe07e25c889fb08c0e11ba0134a1",
+          "line_start": 1353,
+          "line_end": 1387,
+          "text": "impl<'de, I, E> de::MapAccess<'de> for MapDeserializer<'de, I, E>\nwhere\n    I: Iterator,\n    I::Item: private::Pair,\n    First<I::Item>: IntoDeserializer<'de, E>,\n    Second<I::Item>: IntoDeserializer<'de, E>,\n    E: de::Error,\n{\n    type Error = E;\n\n    fn next_key_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>\n    where\n        T: de::DeserializeSeed<'de>,\n    {\n        match self.next_pair() {\n            Some((key, value)) => {\n                self.value = Some(value);\n                seed.deserialize(key.into_deserializer()).map(Some)\n            }\n            None => Ok(None),\n        }\n    }\n\n    fn next_value_seed<T>(&mut self, seed: T) -> Result<T::Value, Self::Error>\n    where\n        T: de::DeserializeSeed<'de>,\n    {\n        let value = self.value.take();\n        // Panic because this indicates a bug in the program rather than an\n        // expected failure.\n        let value = value.expect(\"MapAccess::next_value called before next_key\");\n        seed.deserialize(value.into_deserializer())\n    }\n\n"
+        },
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/value.rs",
+                "symbol": null,
+                "span": {
+                  "start": 34337,
+                  "end": 35383
+                }
+              },
+              {
+                "path": "serde/src/private/de.rs",
+                "symbol": null,
+                "span": {
+                  "start": 53129,
+                  "end": 54215
+                }
+              }
+            ]
+          },
+          "path": "serde/src/private/de.rs",
+          "span": {
+            "start": 53129,
+            "end": 54215
+          },
+          "source_git_blob": "6f657f50eb3292be32a52c16feb81bd62e56e041",
+          "source_sha256": "68ee17774d3bbc693d9f19803747fa2c3afdb7046482e6d94ac6cf7db5a4fe20",
+          "span_sha256": "308b769de293c343d685e92f0fb428eab17faa0aedbc74df7aa7c99dd87523b6",
+          "line_start": 1689,
+          "line_end": 1720,
+          "text": "    #[cfg_attr(not(no_diagnostic_namespace), diagnostic::do_not_recommend)]\n    impl<'de, E> MapAccess<'de> for MapDeserializer<'de, E>\n    where\n        E: de::Error,\n    {\n        type Error = E;\n\n        fn next_key_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>\n        where\n            T: DeserializeSeed<'de>,\n        {\n            match self.next_pair() {\n                Some((key, value)) => {\n                    self.value = Some(value);\n                    seed.deserialize(ContentDeserializer::new(key)).map(Some)\n                }\n                None => Ok(None),\n            }\n        }\n\n        fn next_value_seed<T>(&mut self, seed: T) -> Result<T::Value, Self::Error>\n        where\n            T: DeserializeSeed<'de>,\n        {\n            let value = self.value.take();\n            // Panic because this indicates a bug in the program rather than an\n            // expected failure.\n            let value = value.expect(\"MapAccess::next_value called before next_key\");\n            seed.deserialize(ContentDeserializer::new(value))\n        }\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/de/mod.rs",
+        "span": {
+          "start": 65765,
+          "end": 66303
+        },
+        "source_git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+        "source_sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845",
+        "span_sha256": "d28c03ff6213ed9a9a710c6de68a9b55bd1e859b0e40ac0fff261c716a360bb0",
+        "line_start": 1837,
+        "line_end": 1851,
+        "text": "pub trait MapAccess<'de> {\n    /// The error type that can be returned if some error occurs during\n    /// deserialization.\n    type Error: Error;\n\n    /// This returns `Ok(Some(key))` for the next key in the map, or `Ok(None)`\n    /// if there are no more remaining entries.\n    ///\n    /// `Deserialize` implementations should typically use\n    /// `MapAccess::next_key` or `MapAccess::next_entry` instead.\n    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>\n    where\n        K: DeserializeSeed<'de>;\n\n",
+        "reason": "MapAccess declares the protocol but has no MapDeserializer value slot or value.take()/expect implementation. Its later method documentation permits a panic; it is not the concrete saved-value implementation."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness.",
+      "alternative_resolution": "The public and private concrete implementation both satisfy the unchanged query; both are alternatives in the same primary group, not separate required facets. Original union-of-all-alternative-spans metric semantics are retained."
+    },
+    {
+      "id": "v19.serde.f0008.en02",
+      "query": "Where does the iterator-backed SeqDeserializer reject leftover elements after the visitor returns, reporting the total encountered length and the number the visitor consumed?",
+      "category": "error_handling",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/value.rs",
+                "symbol": null,
+                "span": {
+                  "start": 25796,
+                  "end": 26838
+                }
+              },
+              {
+                "path": "serde/src/private/de.rs",
+                "symbol": null,
+                "span": {
+                  "start": 47535,
+                  "end": 49293
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/value.rs",
+          "span": {
+            "start": 25796,
+            "end": 26838
+          },
+          "source_git_blob": "3d5475def127eb1daaeb0a4e991b07a4ee33867d",
+          "source_sha256": "fb6fef6d23d95d516c6e1d6b5cefd8b98ba3881214a82a8a7e0a8ffbb0a12083",
+          "span_sha256": "48f59a8a2651ba333b56010446a5a97f3549e817aad83f3464eae849c50c9455",
+          "line_start": 1023,
+          "line_end": 1062,
+          "text": "impl<I, E> SeqDeserializer<I, E>\nwhere\n    I: Iterator,\n    E: de::Error,\n{\n    /// Check for remaining elements after passing a `SeqDeserializer` to\n    /// `Visitor::visit_seq`.\n    pub fn end(self) -> Result<(), E> {\n        let remaining = self.iter.count();\n        if remaining == 0 {\n            Ok(())\n        } else {\n            // First argument is the number of elements in the data, second\n            // argument is the number of elements expected by the Deserialize.\n            Err(de::Error::invalid_length(\n                self.count + remaining,\n                &ExpectedInSeq(self.count),\n            ))\n        }\n    }\n}\n\nimpl<'de, I, T, E> de::Deserializer<'de> for SeqDeserializer<I, E>\nwhere\n    I: Iterator<Item = T>,\n    T: IntoDeserializer<'de, E>,\n    E: de::Error,\n{\n    type Error = E;\n\n    fn deserialize_any<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>\n    where\n        V: de::Visitor<'de>,\n    {\n        let v = tri!(visitor.visit_seq(&mut self));\n        tri!(self.end());\n        Ok(v)\n    }\n\n"
+        },
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/value.rs",
+                "symbol": null,
+                "span": {
+                  "start": 25796,
+                  "end": 26838
+                }
+              },
+              {
+                "path": "serde/src/private/de.rs",
+                "symbol": null,
+                "span": {
+                  "start": 47535,
+                  "end": 49293
+                }
+              }
+            ]
+          },
+          "path": "serde/src/private/de.rs",
+          "span": {
+            "start": 47535,
+            "end": 49293
+          },
+          "source_git_blob": "6f657f50eb3292be32a52c16feb81bd62e56e041",
+          "source_sha256": "68ee17774d3bbc693d9f19803747fa2c3afdb7046482e6d94ac6cf7db5a4fe20",
+          "span_sha256": "8e0541ffbbf143b72e630f5027dfbdaa3b3dc36d30a71ee0f40165a889f2dc45",
+          "line_start": 1504,
+          "line_end": 1561,
+          "text": "    struct SeqDeserializer<'de, E> {\n        iter: <Vec<Content<'de>> as IntoIterator>::IntoIter,\n        count: usize,\n        marker: PhantomData<E>,\n    }\n\n    impl<'de, E> SeqDeserializer<'de, E> {\n        fn new(content: Vec<Content<'de>>) -> Self {\n            SeqDeserializer {\n                iter: content.into_iter(),\n                count: 0,\n                marker: PhantomData,\n            }\n        }\n    }\n\n    impl<'de, E> SeqDeserializer<'de, E>\n    where\n        E: de::Error,\n    {\n        fn end(self) -> Result<(), E> {\n            let remaining = self.iter.count();\n            if remaining == 0 {\n                Ok(())\n            } else {\n                // First argument is the number of elements in the data, second\n                // argument is the number of elements expected by the Deserialize.\n                Err(de::Error::invalid_length(\n                    self.count + remaining,\n                    &ExpectedInSeq(self.count),\n                ))\n            }\n        }\n    }\n\n    #[cfg_attr(not(no_diagnostic_namespace), diagnostic::do_not_recommend)]\n    impl<'de, E> Deserializer<'de> for SeqDeserializer<'de, E>\n    where\n        E: de::Error,\n    {\n        type Error = E;\n\n        fn deserialize_any<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>\n        where\n            V: Visitor<'de>,\n        {\n            let v = tri!(visitor.visit_seq(&mut self));\n            tri!(self.end());\n            Ok(v)\n        }\n\n        serde_core::forward_to_deserialize_any! {\n            bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string\n            bytes byte_buf option unit unit_struct newtype_struct seq tuple\n            tuple_struct map struct enum identifier ignored_any\n        }\n    }\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/de/mod.rs",
+        "span": {
+          "start": 63061,
+          "end": 64870
+        },
+        "source_git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+        "source_sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845",
+        "span_sha256": "9cd95104a94ab5334e050bdf46a39a142c98606a859eb3022a021cd153a3b770",
+        "line_start": 1749,
+        "line_end": 1813,
+        "text": "pub trait SeqAccess<'de> {\n    /// The error type that can be returned if some error occurs during\n    /// deserialization.\n    type Error: Error;\n\n    /// This returns `Ok(Some(value))` for the next value in the sequence, or\n    /// `Ok(None)` if there are no more remaining items.\n    ///\n    /// `Deserialize` implementations should typically use\n    /// `SeqAccess::next_element` instead.\n    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>\n    where\n        T: DeserializeSeed<'de>;\n\n    /// This returns `Ok(Some(value))` for the next value in the sequence, or\n    /// `Ok(None)` if there are no more remaining items.\n    ///\n    /// This method exists as a convenience for `Deserialize` implementations.\n    /// `SeqAccess` implementations should not override the default behavior.\n    #[inline]\n    fn next_element<T>(&mut self) -> Result<Option<T>, Self::Error>\n    where\n        T: Deserialize<'de>,\n    {\n        self.next_element_seed(PhantomData)\n    }\n\n    /// Returns the number of elements remaining in the sequence, if known.\n    #[inline]\n    fn size_hint(&self) -> Option<usize> {\n        None\n    }\n}\n\nimpl<'de, A> SeqAccess<'de> for &mut A\nwhere\n    A: ?Sized + SeqAccess<'de>,\n{\n    type Error = A::Error;\n\n    #[inline]\n    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>\n    where\n        T: DeserializeSeed<'de>,\n    {\n        (**self).next_element_seed(seed)\n    }\n\n    #[inline]\n    fn next_element<T>(&mut self) -> Result<Option<T>, Self::Error>\n    where\n        T: Deserialize<'de>,\n    {\n        (**self).next_element()\n    }\n\n    #[inline]\n    fn size_hint(&self) -> Option<usize> {\n        (**self).size_hint()\n    }\n}\n\n////////////////////////////////////////////////////////////////////////////////\n\n",
+        "reason": "SeqAccess describes how to request elements and a size hint; it does not implement SeqDeserializer.end or the post-visitor exhaustion check."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness.",
+      "alternative_resolution": "The public and private concrete implementation both satisfy the unchanged query; both are alternatives in the same primary group, not separate required facets. Original union-of-all-alternative-spans metric semantics are retained."
+    },
+    {
+      "id": "v19.serde.f0009.en02",
+      "query": "Find the concrete Option<T> deserialization visitor that maps both unit and absent-option visits to None, deserializes the present payload into Some, and is passed to deserialize_option.",
+      "category": "component_location",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/impls.rs",
+                "symbol": null,
+                "span": {
+                  "start": 24228,
+                  "end": 25769
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/impls.rs",
+          "span": {
+            "start": 24228,
+            "end": 25769
+          },
+          "source_git_blob": "3a1458e8df7e669fac1ddd91bfdbb6956826a353",
+          "source_sha256": "2f8e2ef9d343875bb996319e69feae0dee2287e2548cedd8d3c752b64812331c",
+          "span_sha256": "9ac62bc54672a9dcf3464fcc891170dd4533661900f2f1321c865334506cbdf7",
+          "line_start": 870,
+          "line_end": 936,
+          "text": "struct OptionVisitor<T> {\n    marker: PhantomData<T>,\n}\n\nimpl<'de, T> Visitor<'de> for OptionVisitor<T>\nwhere\n    T: Deserialize<'de>,\n{\n    type Value = Option<T>;\n\n    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {\n        formatter.write_str(\"option\")\n    }\n\n    #[inline]\n    fn visit_unit<E>(self) -> Result<Self::Value, E>\n    where\n        E: Error,\n    {\n        Ok(None)\n    }\n\n    #[inline]\n    fn visit_none<E>(self) -> Result<Self::Value, E>\n    where\n        E: Error,\n    {\n        Ok(None)\n    }\n\n    #[inline]\n    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        T::deserialize(deserializer).map(Some)\n    }\n\n    fn __private_visit_untagged_option<D>(self, deserializer: D) -> Result<Self::Value, ()>\n    where\n        D: Deserializer<'de>,\n    {\n        Ok(T::deserialize(deserializer).ok())\n    }\n}\n\nimpl<'de, T> Deserialize<'de> for Option<T>\nwhere\n    T: Deserialize<'de>,\n{\n    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        deserializer.deserialize_option(OptionVisitor {\n            marker: PhantomData,\n        })\n    }\n\n    // The Some variant's repr is opaque, so we can't play cute tricks with its\n    // tag to have deserialize_in_place build the content in place unconditionally.\n    //\n    // FIXME: investigate whether branching on the old value being Some to\n    // deserialize_in_place the value is profitable (probably data-dependent?)\n}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/ser/impls.rs",
+        "span": {
+          "start": 2756,
+          "end": 3091
+        },
+        "source_git_blob": "a7a175db9465aa6ab4c6931e18448971a4b0b30a",
+        "source_sha256": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643",
+        "span_sha256": "52ae28d28bb1c94ebfab18412f1d9eb7a555113e7499a643c83d0098600a2c40",
+        "line_start": 99,
+        "line_end": 115,
+        "text": "impl<T> Serialize for Option<T>\nwhere\n    T: Serialize,\n{\n    #[inline]\n    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>\n    where\n        S: Serializer,\n    {\n        match *self {\n            Some(ref value) => serializer.serialize_some(value),\n            None => serializer.serialize_none(),\n        }\n    }\n}\n\n",
+        "reason": "The serialization impl branches on an already-existing Option and calls serialize_some/serialize_none; it does not visit or deserialize incoming data."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0010.en02",
+      "query": "Find the actual blanket Serialize implementation for the standard Option<T> type that dispatches an existing Some payload to serialize_some and None to serialize_none.",
+      "category": "api_usage",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/ser/impls.rs",
+                "symbol": null,
+                "span": {
+                  "start": 2756,
+                  "end": 3091
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/ser/impls.rs",
+          "span": {
+            "start": 2756,
+            "end": 3091
+          },
+          "source_git_blob": "a7a175db9465aa6ab4c6931e18448971a4b0b30a",
+          "source_sha256": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643",
+          "span_sha256": "52ae28d28bb1c94ebfab18412f1d9eb7a555113e7499a643c83d0098600a2c40",
+          "line_start": 99,
+          "line_end": 115,
+          "text": "impl<T> Serialize for Option<T>\nwhere\n    T: Serialize,\n{\n    #[inline]\n    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>\n    where\n        S: Serializer,\n    {\n        match *self {\n            Some(ref value) => serializer.serialize_some(value),\n            None => serializer.serialize_none(),\n        }\n    }\n}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/de/impls.rs",
+        "span": {
+          "start": 24228,
+          "end": 25769
+        },
+        "source_git_blob": "3a1458e8df7e669fac1ddd91bfdbb6956826a353",
+        "source_sha256": "2f8e2ef9d343875bb996319e69feae0dee2287e2548cedd8d3c752b64812331c",
+        "span_sha256": "9ac62bc54672a9dcf3464fcc891170dd4533661900f2f1321c865334506cbdf7",
+        "line_start": 870,
+        "line_end": 936,
+        "text": "struct OptionVisitor<T> {\n    marker: PhantomData<T>,\n}\n\nimpl<'de, T> Visitor<'de> for OptionVisitor<T>\nwhere\n    T: Deserialize<'de>,\n{\n    type Value = Option<T>;\n\n    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {\n        formatter.write_str(\"option\")\n    }\n\n    #[inline]\n    fn visit_unit<E>(self) -> Result<Self::Value, E>\n    where\n        E: Error,\n    {\n        Ok(None)\n    }\n\n    #[inline]\n    fn visit_none<E>(self) -> Result<Self::Value, E>\n    where\n        E: Error,\n    {\n        Ok(None)\n    }\n\n    #[inline]\n    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        T::deserialize(deserializer).map(Some)\n    }\n\n    fn __private_visit_untagged_option<D>(self, deserializer: D) -> Result<Self::Value, ()>\n    where\n        D: Deserializer<'de>,\n    {\n        Ok(T::deserialize(deserializer).ok())\n    }\n}\n\nimpl<'de, T> Deserialize<'de> for Option<T>\nwhere\n    T: Deserialize<'de>,\n{\n    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        deserializer.deserialize_option(OptionVisitor {\n            marker: PhantomData,\n        })\n    }\n\n    // The Some variant's repr is opaque, so we can't play cute tricks with its\n    // tag to have deserialize_in_place build the content in place unconditionally.\n    //\n    // FIXME: investigate whether branching on the old value being Some to\n    // deserialize_in_place the value is profitable (probably data-dependent?)\n}\n\n",
+        "reason": "The OptionVisitor is the reverse direction: it builds Option<T> from deserializer visits. It is not the production Serialize impl. The Serializer trait's documentation also illustrates the same serialization algorithm, so documentation is not designated an unrelated hard negative."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0011.en02",
+      "query": "Which untagged-enum code generator buffers one input as Content, retries each non-skipped variant through a ContentRefDeserializer, returns the first success, and emits a common fallthrough error when none match?",
+      "category": "semantic_feature",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_derive/src/de/enum_untagged.rs",
+                "symbol": null,
+                "span": {
+                  "start": 612,
+                  "end": 2140
+                }
+              }
+            ]
+          },
+          "path": "serde_derive/src/de/enum_untagged.rs",
+          "span": {
+            "start": 612,
+            "end": 2140
+          },
+          "source_git_blob": "f66d98de1f867e40d07ff1051785ca4edc1924fa",
+          "source_sha256": "b66ad3cea36ee786d50270f6648f1075c1e615b5f04173b47f034a251df5220e",
+          "span_sha256": "d16f39354fabacd21d9c5763436aa21497f4cf731eaa990424739f7bc408ed87",
+          "line_start": 22,
+          "line_end": 61,
+          "text": "pub(super) fn deserialize(\n    params: &Parameters,\n    variants: &[Variant],\n    cattrs: &attr::Container,\n    first_attempt: Option<TokenStream>,\n) -> Fragment {\n    let attempts = variants\n        .iter()\n        .filter(|variant| !variant.attrs.skip_deserializing())\n        .map(|variant| Expr(deserialize_variant(params, variant, cattrs)));\n    // TODO this message could be better by saving the errors from the failed\n    // attempts. The heuristic used by TOML was to count the number of fields\n    // processed before an error, and use the error that happened after the\n    // largest number of fields. I'm not sure I like that. Maybe it would be\n    // better to save all the errors and combine them into one message that\n    // explains why none of the variants matched.\n    let fallthrough_msg = format!(\n        \"data did not match any variant of untagged enum {}\",\n        params.type_name()\n    );\n    let fallthrough_msg = cattrs.expecting().unwrap_or(&fallthrough_msg);\n\n    let private2 = private;\n    quote_block! {\n        let __content = _serde::de::DeserializeSeed::deserialize(_serde::#private::de::ContentVisitor::new(), __deserializer)?;\n        let __deserializer = _serde::#private::de::ContentRefDeserializer::<__D::Error>::new(&__content);\n\n        #first_attempt\n\n        #(\n            if let _serde::#private2::Ok(__ok) = #attempts {\n                return _serde::#private2::Ok(__ok);\n            }\n        )*\n\n        _serde::#private::Err(_serde::de::Error::custom(#fallthrough_msg))\n    }\n}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_derive/src/de/enum_.rs",
+        "span": {
+          "start": 1568,
+          "end": 2186
+        },
+        "source_git_blob": "6f5094ff4f7d7c01478a4ea97974dfefffbb0181",
+        "source_sha256": "5a099a25034e4f9364d421a53cfb4428ea8a94fd66515c66207bf8bfb7c4db4f",
+        "span_sha256": "2648a84f7501e21066d3a8d4521cb4489e9ef13bf07a3e38df332e56f2d5992c",
+        "line_start": 39,
+        "line_end": 56,
+        "text": "fn deserialize_homogeneous_enum(\n    params: &Parameters,\n    variants: &[Variant],\n    cattrs: &attr::Container,\n) -> Fragment {\n    match cattrs.tag() {\n        attr::TagType::External => enum_externally::deserialize(params, variants, cattrs),\n        attr::TagType::Internal { tag } => {\n            enum_internally::deserialize(params, variants, cattrs, tag)\n        }\n        attr::TagType::Adjacent { tag, content } => {\n            enum_adjacently::deserialize(params, variants, cattrs, tag, content)\n        }\n        attr::TagType::None => enum_untagged::deserialize(params, variants, cattrs, None),\n    }\n}\n\n",
+        "reason": "The enum dispatcher selects an enum strategy, including untagged, but does not generate Content buffering and the per-variant retry loop."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0012.en02",
+      "query": "Which implementation owns the allowed rename_all spelling table and formats the unknown-rename-rule error with the list of valid spellings?",
+      "category": "configuration_lookup",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_derive/src/internals/case.rs",
+                "symbol": null,
+                "span": {
+                  "start": 1120,
+                  "end": 1768
+                }
+              }
+            ]
+          },
+          "path": "serde_derive/src/internals/case.rs",
+          "span": {
+            "start": 1120,
+            "end": 1768
+          },
+          "source_git_blob": "8c8c02e75780eadfb8944578ddd2196239ca8d44",
+          "source_sha256": "10c8dda2b32d8c6c6b63cf09cdc63d02375af7e95ecefe8fecb34f93b65191bb",
+          "span_sha256": "f20217a432e959e32a669b95da602448f0bb41da76f92308a9f97dff80a01646",
+          "line_start": 33,
+          "line_end": 56,
+          "text": "static RENAME_RULES: &[(&str, RenameRule)] = &[\n    (\"lowercase\", LowerCase),\n    (\"UPPERCASE\", UpperCase),\n    (\"PascalCase\", PascalCase),\n    (\"camelCase\", CamelCase),\n    (\"snake_case\", SnakeCase),\n    (\"SCREAMING_SNAKE_CASE\", ScreamingSnakeCase),\n    (\"kebab-case\", KebabCase),\n    (\"SCREAMING-KEBAB-CASE\", ScreamingKebabCase),\n];\n\nimpl RenameRule {\n    pub fn from_str(rename_all_str: &str) -> Result<Self, ParseError> {\n        for (name, rule) in RENAME_RULES {\n            if rename_all_str == *name {\n                return Ok(*rule);\n            }\n        }\n        Err(ParseError {\n            unknown: rename_all_str,\n        })\n    }\n\n"
+        },
+        {
+          "group": {
+            "id": "g2",
+            "primary": false,
+            "grade": 2,
+            "alternatives": [
+              {
+                "path": "serde_derive/src/internals/case.rs",
+                "symbol": null,
+                "span": {
+                  "start": 4285,
+                  "end": 4787
+                }
+              }
+            ]
+          },
+          "path": "serde_derive/src/internals/case.rs",
+          "span": {
+            "start": 4285,
+            "end": 4787
+          },
+          "source_git_blob": "8c8c02e75780eadfb8944578ddd2196239ca8d44",
+          "source_sha256": "10c8dda2b32d8c6c6b63cf09cdc63d02375af7e95ecefe8fecb34f93b65191bb",
+          "span_sha256": "4ae7fb8a71628f327bb6121d33e6cac4bd66f362f56831ba91a948a34424b060",
+          "line_start": 120,
+          "line_end": 139,
+          "text": "pub struct ParseError<'a> {\n    unknown: &'a str,\n}\n\nimpl<'a> Display for ParseError<'a> {\n    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {\n        f.write_str(\"unknown rename rule `rename_all = \")?;\n        Debug::fmt(self.unknown, f)?;\n        f.write_str(\"`, expected one of \")?;\n        for (i, (name, _rule)) in RENAME_RULES.iter().enumerate() {\n            if i > 0 {\n                f.write_str(\", \")?;\n            }\n            Debug::fmt(name, f)?;\n        }\n        Ok(())\n    }\n}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_derive/src/internals/attr.rs",
+        "span": {
+          "start": 8538,
+          "end": 9662
+        },
+        "source_git_blob": "c0f08f450676df98419a247827ca7ed3a180d3a2",
+        "source_sha256": "7abe82fde303a3c31f967c13e0ee1afe49ea584d882b9d2c32b067888e1c8225",
+        "span_sha256": "ad8f3396e467404e16e2d4b1d1ac03dfe55d421eb926a2b02a971e470d04724a",
+        "line_start": 282,
+        "line_end": 303,
+        "text": "                } else if meta.path == RENAME_ALL {\n                    // #[serde(rename_all = \"foo\")]\n                    // #[serde(rename_all(serialize = \"foo\", deserialize = \"bar\"))]\n                    let one_name = meta.input.peek(Token![=]);\n                    let (ser, de) = get_renames(cx, RENAME_ALL, &meta)?;\n                    if let Some(ser) = ser {\n                        match RenameRule::from_str(&ser.value()) {\n                            Ok(rename_rule) => rename_all_ser_rule.set(&meta.path, rename_rule),\n                            Err(err) => cx.error_spanned_by(ser, err),\n                        }\n                    }\n                    if let Some(de) = de {\n                        match RenameRule::from_str(&de.value()) {\n                            Ok(rename_rule) => rename_all_de_rule.set(&meta.path, rename_rule),\n                            Err(err) => {\n                                if !one_name {\n                                    cx.error_spanned_by(de, err);\n                                }\n                            }\n                        }\n                    }\n",
+        "reason": "The attribute parser invokes RenameRule::from_str and reports its returned error but does not own the accepted spelling table or ParseError Display implementation."
+      },
+      "missing_required_group_control": "Omitting a required supporting group is a facet failure even if primary top1 succeeds.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0013.en02",
+      "query": "Find the concrete generic in-place deserialization seed that wraps &mut T, has Value = (), and forwards directly to T::deserialize_in_place rather than appending elements to a Vec.",
+      "category": "symbol_location",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/private/seed.rs",
+                "symbol": null,
+                "span": {
+                  "start": 62,
+                  "end": 635
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/private/seed.rs",
+          "span": {
+            "start": 62,
+            "end": 635
+          },
+          "source_git_blob": "bcf267cb09b59bba9133630c3bb3be26709b0e5c",
+          "source_sha256": "3f6e098c5bd314788370dcaf3ab0152fcd7feb6bcf36a9c51808938cd58071eb",
+          "span_sha256": "fff77310427a36274e5b37d1fab383a3720f6ce86a2051293988227bad02c1d8",
+          "line_start": 3,
+          "line_end": 21,
+          "text": "/// A DeserializeSeed helper for implementing deserialize_in_place Visitors.\n///\n/// Wraps a mutable reference and calls deserialize_in_place on it.\npub struct InPlaceSeed<'a, T: 'a>(pub &'a mut T);\n\n#[cfg_attr(not(no_diagnostic_namespace), diagnostic::do_not_recommend)]\nimpl<'a, 'de, T> DeserializeSeed<'de> for InPlaceSeed<'a, T>\nwhere\n    T: Deserialize<'de>,\n{\n    type Value = ();\n    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        T::deserialize_in_place(deserializer, self.0)\n    }\n}\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/de/mod.rs",
+        "span": {
+          "start": 26382,
+          "end": 28209
+        },
+        "source_git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+        "source_sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845",
+        "span_sha256": "dda9c027ac3c8753793b6b3ff8b7ad0f8585f6b31fbc249fa7339168086fe02c",
+        "line_start": 705,
+        "line_end": 756,
+        "text": "/// struct ExtendVec<'a, T: 'a>(&'a mut Vec<T>);\n///\n/// impl<'de, 'a, T> DeserializeSeed<'de> for ExtendVec<'a, T>\n/// where\n///     T: Deserialize<'de>,\n/// {\n///     // The return type of the `deserialize` method. This implementation\n///     // appends onto an existing vector but does not create any new data\n///     // structure, so the return type is ().\n///     type Value = ();\n///\n///     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>\n///     where\n///         D: Deserializer<'de>,\n///     {\n///         // Visitor implementation that will walk an inner array of the JSON\n///         // input.\n///         struct ExtendVecVisitor<'a, T: 'a>(&'a mut Vec<T>);\n///\n///         impl<'de, 'a, T> Visitor<'de> for ExtendVecVisitor<'a, T>\n///         where\n///             T: Deserialize<'de>,\n///         {\n///             type Value = ();\n///\n///             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {\n///                 write!(formatter, \"an array of integers\")\n///             }\n///\n///             fn visit_seq<A>(self, mut seq: A) -> Result<(), A::Error>\n///             where\n///                 A: SeqAccess<'de>,\n///             {\n///                 // Decrease the number of reallocations if there are many elements\n///                 if let Some(size_hint) = seq.size_hint() {\n///                     self.0.reserve(size_hint);\n///                 }\n///\n///                 // Visit each element in the inner array and push it onto\n///                 // the existing vector.\n///                 while let Some(elem) = seq.next_element()? {\n///                     self.0.push(elem);\n///                 }\n///                 Ok(())\n///             }\n///         }\n///\n///         deserializer.deserialize_seq(ExtendVecVisitor(self.0))\n///     }\n/// }\n///\n",
+        "reason": "The real ExtendVec documentation example also returns unit and reuses mutable storage, but it appends deserialized elements through a custom sequence visitor. It does not forward generic T to T::deserialize_in_place. serde/src/private/de.rs re-exports InPlaceSeed rather than defining this concrete helper."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0014.en02",
+      "query": "Where does enum deserialization generation split off trailing untagged variants, try the tagged part first, and select external, internal, adjacent or untagged handling for a homogeneous group?",
+      "category": "architecture_understanding",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_derive/src/de/enum_.rs",
+                "symbol": null,
+                "span": {
+                  "start": 459,
+                  "end": 2186
+                }
+              }
+            ]
+          },
+          "path": "serde_derive/src/de/enum_.rs",
+          "span": {
+            "start": 459,
+            "end": 2186
+          },
+          "source_git_blob": "6f5094ff4f7d7c01478a4ea97974dfefffbb0181",
+          "source_sha256": "5a099a25034e4f9364d421a53cfb4428ea8a94fd66515c66207bf8bfb7c4db4f",
+          "span_sha256": "7790bb01a5a1cf31e15ffe5368b2f11adb0f55dac8b66895efddad20fa63a4c3",
+          "line_start": 15,
+          "line_end": 56,
+          "text": "pub(super) fn deserialize(\n    params: &Parameters,\n    variants: &[Variant],\n    cattrs: &attr::Container,\n) -> Fragment {\n    // The variants have already been checked (in ast.rs) that all untagged variants appear at the end\n    match variants.iter().position(|var| var.attrs.untagged()) {\n        Some(variant_idx) => {\n            let (tagged, untagged) = variants.split_at(variant_idx);\n            let tagged_frag = Expr(deserialize_homogeneous_enum(params, tagged, cattrs));\n            // Ignore any error associated with non-untagged deserialization so that we\n            // can fall through to the untagged variants. This may be infallible so we\n            // need to provide the error type.\n            let first_attempt = quote! {\n                if let _serde::#private::Result::<_, __D::Error>::Ok(__ok) = (|| #tagged_frag)() {\n                    return _serde::#private::Ok(__ok);\n                }\n            };\n            enum_untagged::deserialize(params, untagged, cattrs, Some(first_attempt))\n        }\n        None => deserialize_homogeneous_enum(params, variants, cattrs),\n    }\n}\n\nfn deserialize_homogeneous_enum(\n    params: &Parameters,\n    variants: &[Variant],\n    cattrs: &attr::Container,\n) -> Fragment {\n    match cattrs.tag() {\n        attr::TagType::External => enum_externally::deserialize(params, variants, cattrs),\n        attr::TagType::Internal { tag } => {\n            enum_internally::deserialize(params, variants, cattrs, tag)\n        }\n        attr::TagType::Adjacent { tag, content } => {\n            enum_adjacently::deserialize(params, variants, cattrs, tag, content)\n        }\n        attr::TagType::None => enum_untagged::deserialize(params, variants, cattrs, None),\n    }\n}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_derive/src/de/enum_untagged.rs",
+        "span": {
+          "start": 612,
+          "end": 2140
+        },
+        "source_git_blob": "f66d98de1f867e40d07ff1051785ca4edc1924fa",
+        "source_sha256": "b66ad3cea36ee786d50270f6648f1075c1e615b5f04173b47f034a251df5220e",
+        "span_sha256": "d16f39354fabacd21d9c5763436aa21497f4cf731eaa990424739f7bc408ed87",
+        "line_start": 22,
+        "line_end": 61,
+        "text": "pub(super) fn deserialize(\n    params: &Parameters,\n    variants: &[Variant],\n    cattrs: &attr::Container,\n    first_attempt: Option<TokenStream>,\n) -> Fragment {\n    let attempts = variants\n        .iter()\n        .filter(|variant| !variant.attrs.skip_deserializing())\n        .map(|variant| Expr(deserialize_variant(params, variant, cattrs)));\n    // TODO this message could be better by saving the errors from the failed\n    // attempts. The heuristic used by TOML was to count the number of fields\n    // processed before an error, and use the error that happened after the\n    // largest number of fields. I'm not sure I like that. Maybe it would be\n    // better to save all the errors and combine them into one message that\n    // explains why none of the variants matched.\n    let fallthrough_msg = format!(\n        \"data did not match any variant of untagged enum {}\",\n        params.type_name()\n    );\n    let fallthrough_msg = cattrs.expecting().unwrap_or(&fallthrough_msg);\n\n    let private2 = private;\n    quote_block! {\n        let __content = _serde::de::DeserializeSeed::deserialize(_serde::#private::de::ContentVisitor::new(), __deserializer)?;\n        let __deserializer = _serde::#private::de::ContentRefDeserializer::<__D::Error>::new(&__content);\n\n        #first_attempt\n\n        #(\n            if let _serde::#private2::Ok(__ok) = #attempts {\n                return _serde::#private2::Ok(__ok);\n            }\n        )*\n\n        _serde::#private::Err(_serde::de::Error::custom(#fallthrough_msg))\n    }\n}\n\n",
+        "reason": "The untagged generator receives the optional first attempt and handles Content retries, but does not find the split index or dispatch all TagType strategies."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0016.en02",
+      "query": "In Serde's public de::value API, which borrowed-string deserializer holds an &'de str and passes it to visit_borrowed_str from deserialize_any?",
+      "category": "api_usage",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/value.rs",
+                "symbol": null,
+                "span": {
+                  "start": 13746,
+                  "end": 14473
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/value.rs",
+          "span": {
+            "start": 13746,
+            "end": 14473
+          },
+          "source_git_blob": "3d5475def127eb1daaeb0a4e991b07a4ee33867d",
+          "source_sha256": "fb6fef6d23d95d516c6e1d6b5cefd8b98ba3881214a82a8a7e0a8ffbb0a12083",
+          "span_sha256": "67e48ff72c22cd83e669af34a77b70a3cef46745ec8273820ebce240ae4dff92",
+          "line_start": 546,
+          "line_end": 576,
+          "text": "pub struct BorrowedStrDeserializer<'de, E> {\n    value: &'de str,\n    marker: PhantomData<E>,\n}\n\nimpl_copy_clone!(BorrowedStrDeserializer<'de>);\n\nimpl<'de, E> BorrowedStrDeserializer<'de, E> {\n    /// Create a new borrowed deserializer from the given string.\n    pub fn new(value: &'de str) -> BorrowedStrDeserializer<'de, E> {\n        BorrowedStrDeserializer {\n            value,\n            marker: PhantomData,\n        }\n    }\n}\n\nimpl<'de, E> de::Deserializer<'de> for BorrowedStrDeserializer<'de, E>\nwhere\n    E: de::Error,\n{\n    type Error = E;\n\n    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>\n    where\n        V: de::Visitor<'de>,\n    {\n        visitor.visit_borrowed_str(self.value)\n    }\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde/src/private/de.rs",
+        "span": {
+          "start": 99541,
+          "end": 100256
+        },
+        "source_git_blob": "6f657f50eb3292be32a52c16feb81bd62e56e041",
+        "source_sha256": "68ee17774d3bbc693d9f19803747fa2c3afdb7046482e6d94ac6cf7db5a4fe20",
+        "span_sha256": "06a98d3c0c2bf5a0a1b8e48a3b79cce3316648dd7033a0cc40b677eadf57e9a2",
+        "line_start": 3103,
+        "line_end": 3129,
+        "text": "pub struct BorrowedStrDeserializer<'de, E> {\n    value: &'de str,\n    marker: PhantomData<E>,\n}\n\n#[cfg_attr(not(no_diagnostic_namespace), diagnostic::do_not_recommend)]\nimpl<'de, E> Deserializer<'de> for BorrowedStrDeserializer<'de, E>\nwhere\n    E: Error,\n{\n    type Error = E;\n\n    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>\n    where\n        V: Visitor<'de>,\n    {\n        visitor.visit_borrowed_str(self.value)\n    }\n\n    serde_core::forward_to_deserialize_any! {\n        bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string\n        bytes byte_buf option unit unit_struct newtype_struct seq tuple\n        tuple_struct map struct enum identifier ignored_any\n    }\n}\n\n",
+        "reason": "The private module contains another genuine BorrowedStrDeserializer with the same borrowed callback behavior. The question explicitly requires the public de::value API; this private implementation is not in that namespace. Without that qualification both implementations would be legitimate alternatives."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0017.en02",
+      "query": "Find the Serializer default helper that converts an iterator into a sequence by passing its length hint to serialize_seq, serializing every element, and then ending the sequence.",
+      "category": "call_chain",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/ser/mod.rs",
+                "symbol": null,
+                "span": {
+                  "start": 43844,
+                  "end": 44232
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/ser/mod.rs",
+          "span": {
+            "start": 43844,
+            "end": 44232
+          },
+          "source_git_blob": "62e59d981d4ae7096876293f13245c0c80d007fb",
+          "source_sha256": "ec097d92c8545356961e977a4c9650361cadd1d3a243d805ae7b0e0e589ae803",
+          "span_sha256": "13ec675b8054510e36fa5a8284230dbc09f4fe17793031d43897d6d9fc4ba39e",
+          "line_start": 1296,
+          "line_end": 1307,
+          "text": "    fn collect_seq<I>(self, iter: I) -> Result<Self::Ok, Self::Error>\n    where\n        I: IntoIterator,\n        <I as IntoIterator>::Item: Serialize,\n    {\n        let mut iter = iter.into_iter();\n        let mut serializer = tri!(self.serialize_seq(iterator_len_hint(&iter)));\n        tri!(iter.try_for_each(|item| serializer.serialize_element(&item)));\n        serializer.end()\n    }\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/ser/impls.rs",
+        "span": {
+          "start": 4579,
+          "end": 4799
+        },
+        "source_git_blob": "a7a175db9465aa6ab4c6931e18448971a4b0b30a",
+        "source_sha256": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643",
+        "span_sha256": "d40594aa7bdff4c02ead4fa2640fb04e18ada28443ce2017c8ca325b622d1a98",
+        "line_start": 175,
+        "line_end": 188,
+        "text": "impl<T> Serialize for [T]\nwhere\n    T: Serialize,\n{\n    #[inline]\n    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>\n    where\n        S: Serializer,\n    {\n        serializer.collect_seq(self)\n    }\n}\n\n",
+        "reason": "The slice implementation calls collect_seq(self) but does not own the default length-hint/serialize_element/end chain."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0019.en02",
+      "query": "Which trait definition and blanket implementation express that a type can be deserialized for every possible input lifetime, using for<'de> Deserialize<'de>?",
+      "category": "symbol_location",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde_core/src/de/mod.rs",
+                "symbol": null,
+                "span": {
+                  "start": 23508,
+                  "end": 23635
+                }
+              }
+            ]
+          },
+          "path": "serde_core/src/de/mod.rs",
+          "span": {
+            "start": 23508,
+            "end": 23635
+          },
+          "source_git_blob": "2518ae68274a9888dd1c18e05d62a6191d3c86b0",
+          "source_sha256": "5ec8602d593915e0cf480b0ce67b02f6ab066dac34725237d2c7b4a6ef12a845",
+          "span_sha256": "71bf482e5cdb06f18e5b031c0459bea95afb457302b0f863a0afea24a7e094ca",
+          "line_start": 632,
+          "line_end": 635,
+          "text": "pub trait DeserializeOwned: for<'de> Deserialize<'de> {}\nimpl<T> DeserializeOwned for T where T: for<'de> Deserialize<'de> {}\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "serde_core/src/private/seed.rs",
+        "span": {
+          "start": 211,
+          "end": 635
+        },
+        "source_git_blob": "bcf267cb09b59bba9133630c3bb3be26709b0e5c",
+        "source_sha256": "3f6e098c5bd314788370dcaf3ab0152fcd7feb6bcf36a9c51808938cd58071eb",
+        "span_sha256": "5b393b7a05f528e4183fbd67cdd8df1231dc4b849ffce1088b9131320d8791da",
+        "line_start": 6,
+        "line_end": 21,
+        "text": "pub struct InPlaceSeed<'a, T: 'a>(pub &'a mut T);\n\n#[cfg_attr(not(no_diagnostic_namespace), diagnostic::do_not_recommend)]\nimpl<'a, 'de, T> DeserializeSeed<'de> for InPlaceSeed<'a, T>\nwhere\n    T: Deserialize<'de>,\n{\n    type Value = ();\n    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>\n    where\n        D: Deserializer<'de>,\n    {\n        T::deserialize_in_place(deserializer, self.0)\n    }\n}\n",
+        "reason": "InPlaceSeed is parameterized by a particular deserialization lifetime and mutable destination. Its implementation does not define the higher-ranked DeserializeOwned marker or blanket bound."
+      },
+      "missing_required_group_control": "No additional required group.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    },
+    {
+      "id": "v19.serde.f0020.en02",
+      "query": "Which package configuration and library export code together make the derive feature opt into serde_derive and re-export the Serialize and Deserialize derive macros?",
+      "category": "configuration_lookup",
+      "scope": "Source/gold candidate only, no ranking observed and no independent review borrowed.",
+      "gold": [
+        {
+          "group": {
+            "id": "g1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "serde/Cargo.toml",
+                "symbol": null,
+                "span": {
+                  "start": 1264,
+                  "end": 1370
+                }
+              }
+            ]
+          },
+          "path": "serde/Cargo.toml",
+          "span": {
+            "start": 1264,
+            "end": 1370
+          },
+          "source_git_blob": "dda07830d328fc9939f1332722db3ee74f81e8a0",
+          "source_sha256": "137d4b56580e6b18d0cad4a86aea12a8b83b8f985a931b089de553161c35af56",
+          "span_sha256": "4360587d0951868fc9fc71846fce124ea62fb439e172791218ca2101aef5ad76",
+          "line_start": 38,
+          "line_end": 44,
+          "text": "[features]\ndefault = [\"std\"]\n\n# Provide derive(Serialize, Deserialize) macros.\nderive = [\"serde_derive\"]\n\n"
+        },
+        {
+          "group": {
+            "id": "g2",
+            "primary": false,
+            "grade": 2,
+            "alternatives": [
+              {
+                "path": "serde/src/lib.rs",
+                "symbol": null,
+                "span": {
+                  "start": 10769,
+                  "end": 11324
+                }
+              }
+            ]
+          },
+          "path": "serde/src/lib.rs",
+          "span": {
+            "start": 10769,
+            "end": 11324
+          },
+          "source_git_blob": "c749c001aca0e78d49e2a3d73f69f8e562333ba0",
+          "source_sha256": "a9bb976e6012a20443561e113b7ce37e9f3f0293f60a0dc157c5f973f7e80c55",
+          "span_sha256": "f6e1b218994c2b21fa4812167988ddb27636ed05e06d6ff97c980d1afef5b897",
+          "line_start": 263,
+          "line_end": 276,
+          "text": "// Re-export #[derive(Serialize, Deserialize)].\n//\n// The reason re-exporting is not enabled by default is that disabling it would\n// be annoying for crates that provide handwritten impls or data formats. They\n// would need to disable default features and then explicitly re-enable std.\n#[cfg(feature = \"serde_derive\")]\nextern crate serde_derive;\n\n/// Derive macro available if serde is built with `features = [\"derive\"]`.\n#[cfg(feature = \"serde_derive\")]\n#[cfg_attr(docsrs, doc(cfg(feature = \"derive\")))]\npub use serde_derive::{Deserialize, Serialize};\n\n"
+        }
+      ],
+      "hard_negative": {
+        "path": "Cargo.toml",
+        "span": {
+          "start": 0,
+          "end": 265
+        },
+        "source_git_blob": "7cc4fdb1d0dc3739390ef753e88ac2e3d8ee74a7",
+        "source_sha256": "31b3f127c74eb7e16b43efae54fe4091d635f36295cad86246a2cd9ff2c36de3",
+        "span_sha256": "7ed49b453c5bc297c87ddd4a99ba5f176cdb5c7020e3ffafc6d83705391d0b02",
+        "line_start": 1,
+        "line_end": 16,
+        "text": "[workspace]\nmembers = [\n    \"serde\",\n    \"serde_core\",\n    \"serde_derive\",\n    \"serde_derive_internals\",\n    \"test_suite\",\n]\nresolver = \"2\"\n\n[patch.crates-io]\nserde = { path = \"serde\" }\nserde_core = { path = \"serde_core\" }\nserde_derive = { path = \"serde_derive\" }\n\n",
+        "reason": "The workspace manifest lists and patches serde_derive but does not define serde's derive feature or conditionally re-export the macros."
+      },
+      "missing_required_group_control": "Omitting a required supporting group is a facet failure even if primary top1 succeeds.",
+      "same_file_metric_scope": "Native source spans can discriminate within a file; compat is file-only and does not prove span or graph correctness."
+    }
+  ],
+  "metric_limits": [
+    "No retrieval, scoring or provider call was used to select questions, spans or hard negatives.",
+    "Graph constraints remain empty: source ownership/call-chain questions do not claim a separately verified graph oracle.",
+    "Source span and facet obligations are explicit; compatibility scores remain file-only.",
+    "Existing 301 DEV rows and new candidates require a new global component review. Family slot reuse is recorded; no unavailable old body is assumed equivalent."
+  ],
+  "revision": 2,
+  "previous_author_packet_git_blob": "3e499bad76ffd294caa602671b3830aaa7c76cd0"
+}

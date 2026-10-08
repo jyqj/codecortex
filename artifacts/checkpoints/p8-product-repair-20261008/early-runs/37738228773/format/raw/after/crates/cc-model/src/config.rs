@@ -1,0 +1,1790 @@
+use crate::{CcError, CcResult};
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
+
+/// Top-level project configuration (loaded from .codecortex.json).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ProjectConfig {
+    #[serde(default = "IndexingConfig::default")]
+    pub indexing: IndexingConfig,
+    #[serde(default = "SearchConfig::default")]
+    pub search: SearchConfig,
+    #[serde(default)]
+    pub query: crate::query::QueryConfig,
+    #[serde(default)]
+    pub ranking: RankingConfig,
+    #[serde(default)]
+    pub auto_index: AutoIndexConfig,
+    #[serde(default)]
+    pub semantic: SemanticProviderConfig,
+}
+
+/// Semantic embedding-provider configuration (P7-002: the first semantic
+/// keys in `.codecortex.json`; the `semantic.*` namespace follows the
+/// P7 planning draft, TASK-BRIEFS P7-002).
+///
+/// This is the **declared** surface only: what the operator asserts about
+/// the provider/model. Nothing here reads the environment (the
+/// `api_key_ref` is an external *reference* resolved by the credential
+/// policy layer, P7-007 — the secret itself never enters this struct), and
+/// nothing here constructs a provider by itself. Turning the declaration
+/// into a validated [`cc_model`] space + capability happens in
+/// `cc-semantic::capability` (`resolve_provider`), which rejects every
+/// "support difference" explicitly — a mismatch is a config error that
+/// refuses startup, never a silent default.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SemanticProviderConfig {
+    /// Master switch. Default `false` (C14: default no-network): with the
+    /// default, every other field may be present but is *inert* — the
+    /// state stays explainable, no provider is resolved, no network path
+    /// is built.
+    #[serde(default)]
+    pub enabled: bool,
+    /// Embedding model id, e.g. `text-embedding-3-small`. Becomes the
+    /// `model_id` of the frozen `VectorSpace` (part of the space identity).
+    #[serde(default)]
+    pub model_id: String,
+    /// Declared output dimension of the model. Required when `enabled`.
+    #[serde(default)]
+    pub dimensions: Option<u32>,
+    /// Declared distance metric. Only `cosine` is admitted by the frozen
+    /// encoding spec; any other value is a config error (explicit, no
+    /// default drift).
+    #[serde(default = "default_semantic_metric")]
+    pub metric: String,
+    /// `configurable`: the endpoint accepts an explicit `dimensions` field
+    /// in the embedding request body; `fixed`: the model has a single
+    /// native dimension and the field must not be sent. Default
+    /// `configurable`.
+    #[serde(default = "default_semantic_dimensions_mode")]
+    pub dimensions_mode: String,
+    /// Base URL of the OpenAI-compatible endpoint, e.g. `https://host/v1`.
+    /// Never a credential.
+    #[serde(default)]
+    pub endpoint: String,
+    /// External *reference* to the API key (e.g. `env:MY_KEY`). The secret
+    /// is resolved outside this struct by the credential policy layer;
+    /// only the reference name is stored.
+    #[serde(default)]
+    pub api_key_ref: Option<String>,
+    /// Declared per-input token limit of the model. Document/query spec
+    /// `max_tokens` must not exceed it (config error otherwise). Required
+    /// when `enabled` — no generous silent default ("支持差异不能吞").
+    #[serde(default)]
+    pub max_input_tokens: Option<u32>,
+    /// Declared maximum batch size accepted by the endpoint. Required when
+    /// `enabled`; bounded by the probe protocol (a probe sends exactly this
+    /// many tiny inputs).
+    #[serde(default)]
+    pub max_batch_items: Option<u32>,
+    /// Declared supported encoding formats (request `encoding_format`
+    /// values). Must include `float` (the only format the adapter sends).
+    #[serde(default = "default_semantic_encoding_formats")]
+    pub encoding_formats: Vec<String>,
+    /// Whether the model accepts instruction prefixes (task descriptions
+    /// prepended to input text). A document/query spec declaring an
+    /// `instruction` against a model with `supports_instruction: false` is
+    /// a config error.
+    #[serde(default)]
+    pub supports_instruction: bool,
+    /// Process-wide cap on concurrent embedding calls to the provider
+    /// (P7-005). `0` = unlimited and is the default (限流默认关闭): the
+    /// shared gate is assembled in permissive mode and never makes a caller
+    /// wait. A value ≥ 1 turns the gate into a hard semaphore.
+    #[serde(default)]
+    pub max_concurrent: u32,
+    /// Per-project share of the provider (`0` = unlimited, the default).
+    /// When set it must be strictly smaller than `max_concurrent`, so one
+    /// project can never hold every permit and starve the others
+    /// (V20: "单项目不能饿死其他索引").
+    #[serde(default)]
+    pub max_concurrent_per_project: u32,
+    /// Default wait a caller spends trying to acquire a concurrency permit
+    /// before giving up with an explicit timeout (milliseconds). A wall-clock
+    /// budget for the *admission wait only* — it never bounds a running
+    /// provider call and never spans a DB transaction (C11).
+    #[serde(default = "default_semantic_acquire_timeout_ms")]
+    pub acquire_timeout_ms: u64,
+    /// Call-layer retry bound (P7-006): TOTAL provider attempts made by the
+    /// retrying decorator within ONE outbox attempt. `0` = call-layer retry
+    /// disabled (the default, 保守值): every provider call is tried exactly
+    /// once and any failure goes straight back through the fenced DB retry.
+    /// A value ≥ 2 enables bounded, backoff-and-deadline-capped retries at
+    /// the provider-call layer; it never consumes the outbox attempt budget.
+    #[serde(default)]
+    pub retry_max_attempts: u32,
+    /// Exponential-backoff base delay between call-layer retries
+    /// (milliseconds). Only meaningful when `retry_max_attempts` ≥ 2.
+    #[serde(default = "default_semantic_retry_base_backoff_ms")]
+    pub retry_base_backoff_ms: u64,
+    /// Cap of the exponential backoff between call-layer retries
+    /// (milliseconds); must be ≥ `retry_base_backoff_ms`.
+    #[serde(default = "default_semantic_retry_max_backoff_ms")]
+    pub retry_max_backoff_ms: u64,
+    /// Total wall-clock budget of ONE call-layer retry sequence
+    /// (milliseconds): once the sequence would overshoot it, the decorator
+    /// gives up and returns the last error instead of sleeping into it.
+    #[serde(default = "default_semantic_retry_total_deadline_ms")]
+    pub retry_total_deadline_ms: u64,
+    /// Whether a `RateLimited` answer's `Retry-After` duration overrides the
+    /// exponential backoff for that retry (default: honored, `true`).
+    #[serde(default = "default_true_fn")]
+    pub retry_respect_retry_after: bool,
+    /// Cost ceiling for ONE call-layer retry sequence, in abstract cost
+    /// units (placeholder rate: 1 unit per provider attempt until the
+    /// receipt layer, P7-008, reports real costs). `None` = no separate
+    /// cost cap beyond the attempt/deadline bounds (the default).
+    #[serde(default)]
+    pub retry_max_cost_units: Option<u64>,
+    /// Consecutive-failure threshold that trips the process-wide provider
+    /// circuit breaker (P7-006). `0` = breaker disabled (never opens).
+    /// Default 5 (保守值): the breaker only ever reacts to *sustained*
+    /// failure and cannot affect any success path, so unlike the retry keys
+    /// it defaults ON.
+    #[serde(default = "default_semantic_breaker_threshold")]
+    pub breaker_failure_threshold: u32,
+    /// How long a tripped breaker stays open before admitting one half-open
+    /// probe (milliseconds). An `AuthError` trip keeps the circuit open for
+    /// ten times this window. Must be ≥ 1 when the breaker is enabled.
+    #[serde(default = "default_semantic_breaker_open_ms")]
+    pub breaker_open_ms: u64,
+    /// Explicit operator opt-in for building ANY provider network transport
+    /// (P7-007 egress policy). Default `false` = the no-network default:
+    /// assembling a transport without this flag is a startup-refusing config
+    /// error (`cc-semantic::policy::gate_transport_assembly` and the adapter
+    /// constructor both enforce it). `enabled` alone does NOT opt in.
+    #[serde(default)]
+    pub network_opt_in: bool,
+    /// Separate authorization to send query/task text for query embeddings.
+    /// `network_opt_in` alone never authorizes this path. Default false.
+    #[serde(default)]
+    pub allow_query_network: bool,
+    /// Explicit opt-in for plaintext `http://` endpoints (P7-007). Default
+    /// `false` = https only; a plaintext endpoint is rejected by the egress
+    /// policy unless this flag is set.
+    #[serde(default)]
+    pub allow_http: bool,
+    /// Process-lifetime budget of PAID re-embeds for quarantined (corrupt)
+    /// cache inputs (P6-018 degrade facade, wired by P7-014). `None` =
+    /// unbounded (the default, preserving the pre-config-surface behavior);
+    /// a value caps how many provider-paid re-embeds the degradation ledger
+    /// admits this process before further quarantined re-embeds are refused
+    /// before the call and dead-lettered with the reason. First embeddings
+    /// never count against it.
+    #[serde(default)]
+    pub reembed_budget_max: Option<u64>,
+    /// Lease length in seconds of one composition-root worker drain claim
+    /// (P6-007 fencing; wired by P7-014). The claim expires at claim time
+    /// plus this; expiry + reclaim is the crash-recovery path. Must be ≥ 1.
+    #[serde(default = "default_semantic_worker_lease_secs")]
+    pub worker_lease_secs: u64,
+    /// Fresh-timestamp grace of the artifact-cache GC in seconds
+    /// (P6-016 `min_retention_secs`; wired by P7-014). Objects younger than
+    /// this are never collected, so a publish's `put` → manifest-CAS window
+    /// can never race a deletion. Must be ≥ 1 (a zero grace is a config
+    /// error that names the key — the synchronous publish/GC point alone is
+    /// not sufficient at 0, P6-016 口径).
+    #[serde(default = "default_semantic_gc_min_retention_secs")]
+    pub gc_min_retention_secs: u64,
+}
+
+fn default_semantic_worker_lease_secs() -> u64 {
+    600
+}
+
+fn default_semantic_gc_min_retention_secs() -> u64 {
+    3_600
+}
+
+fn default_semantic_acquire_timeout_ms() -> u64 {
+    30_000
+}
+
+fn default_semantic_retry_base_backoff_ms() -> u64 {
+    500
+}
+
+fn default_semantic_retry_max_backoff_ms() -> u64 {
+    8_000
+}
+
+fn default_semantic_retry_total_deadline_ms() -> u64 {
+    30_000
+}
+
+fn default_true_fn() -> bool {
+    true
+}
+
+fn default_semantic_breaker_threshold() -> u32 {
+    5
+}
+
+fn default_semantic_breaker_open_ms() -> u64 {
+    30_000
+}
+
+fn default_semantic_metric() -> String {
+    "cosine".to_owned()
+}
+
+fn default_semantic_dimensions_mode() -> String {
+    "configurable".to_owned()
+}
+
+fn default_semantic_encoding_formats() -> Vec<String> {
+    vec!["float".to_owned()]
+}
+
+impl Default for SemanticProviderConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            model_id: String::new(),
+            dimensions: None,
+            metric: default_semantic_metric(),
+            dimensions_mode: default_semantic_dimensions_mode(),
+            endpoint: String::new(),
+            api_key_ref: None,
+            max_input_tokens: None,
+            max_batch_items: None,
+            encoding_formats: default_semantic_encoding_formats(),
+            supports_instruction: false,
+            max_concurrent: 0,
+            max_concurrent_per_project: 0,
+            acquire_timeout_ms: default_semantic_acquire_timeout_ms(),
+            retry_max_attempts: 0,
+            retry_base_backoff_ms: default_semantic_retry_base_backoff_ms(),
+            retry_max_backoff_ms: default_semantic_retry_max_backoff_ms(),
+            retry_total_deadline_ms: default_semantic_retry_total_deadline_ms(),
+            retry_respect_retry_after: true,
+            retry_max_cost_units: None,
+            breaker_failure_threshold: default_semantic_breaker_threshold(),
+            breaker_open_ms: default_semantic_breaker_open_ms(),
+            network_opt_in: false,
+            allow_query_network: false,
+            allow_http: false,
+            reembed_budget_max: None,
+            worker_lease_secs: default_semantic_worker_lease_secs(),
+            gc_min_retention_secs: default_semantic_gc_min_retention_secs(),
+        }
+    }
+}
+
+/// Auto-indexing configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AutoIndexConfig {
+    /// Enable auto-indexing on first connect (default: true)
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    /// Maximum file count to auto-index (default: 50000)
+    #[serde(default = "default_auto_index_limit")]
+    pub file_limit: usize,
+    /// Idle timeout in seconds before evicting store (default: 60)
+    #[serde(default = "default_idle_timeout")]
+    pub idle_timeout_secs: u64,
+}
+
+fn default_true() -> bool {
+    true
+}
+fn default_auto_index_limit() -> usize {
+    50000
+}
+fn default_idle_timeout() -> u64 {
+    60
+}
+
+impl Default for AutoIndexConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            file_limit: 50000,
+            idle_timeout_secs: 60,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IndexingConfig {
+    #[serde(default = "default_include_patterns")]
+    pub include: Vec<String>,
+    /// Opt in to UTF-8, NUL-free files without a recognized language or include pattern.
+    /// These files use the generic line-based parser; this is not AST support.
+    #[serde(default)]
+    pub include_text_files: bool,
+    /// Opt in to hidden source files. System/cache directories, generated control
+    /// files, and environment-secret paths remain excluded in this mode.
+    #[serde(default)]
+    pub include_hidden_files: bool,
+    #[serde(default = "default_ignore_patterns")]
+    pub ignore: Vec<String>,
+    #[serde(default = "default_max_file_bytes")]
+    pub max_file_bytes: u64,
+    #[serde(default = "default_chunk_line_budget")]
+    pub chunk_line_budget: u32,
+    #[serde(default = "default_chunk_byte_budget")]
+    pub chunk_byte_budget: u32,
+    #[serde(default = "default_chunk_char_budget")]
+    pub chunk_char_budget: u32,
+    #[serde(default = "default_chunk_token_budget")]
+    pub chunk_token_budget: u32,
+    #[serde(default = "default_chunk_merge_min_bytes")]
+    pub chunk_merge_min_bytes: u32,
+    #[serde(default)]
+    pub parse_timeout_micros: Option<u64>,
+    /// SQLite read connection pool size. `None` means derive from repo size tier.
+    #[serde(default)]
+    pub db_read_pool_size: Option<u32>,
+    /// 是否启用增量脏传播（检测导出变化后重新解析引用方）
+    #[serde(default = "default_dirty_propagation")]
+    pub dirty_propagation: bool,
+    /// 脏传播最大影响文件数，超过此数量放弃传播建议全量重建
+    #[serde(default = "default_dirty_propagation_max_files")]
+    pub dirty_propagation_max_files: usize,
+    /// RSS 内存预算占物理内存比例 (0.1-0.95)
+    #[serde(default = "default_memory_budget_fraction")]
+    pub memory_budget_fraction: f64,
+    /// 最大并行 parse 线程数 (None = 使用 rayon 默认)
+    #[serde(default)]
+    pub max_concurrent_parse: Option<usize>,
+    /// 实验性：全量重建时使用 direct SQLite writer（跳过 SQL 解析器）
+    /// 完整实现，默认关闭；可通过 use_direct_writer: true 启用
+    #[serde(default)]
+    pub use_direct_writer: bool,
+    /// 是否启用 dispatch synthesis（event emitter → handler 合成边）
+    #[serde(default = "default_true")]
+    pub dispatch_synthesis: bool,
+    /// 单个 emit 站点匹配到的 on-handler 数量上限（先按 receiver/same-file 收窄）
+    #[serde(default = "default_event_fanout_cap")]
+    pub event_fanout_cap: usize,
+    /// 自定义 event 拒绝列表（空表示使用内置默认列表）
+    #[serde(default)]
+    pub event_denylist: Vec<String>,
+}
+
+fn default_event_fanout_cap() -> usize {
+    6
+}
+
+fn default_dirty_propagation() -> bool {
+    true
+}
+
+fn default_dirty_propagation_max_files() -> usize {
+    200
+}
+
+fn default_memory_budget_fraction() -> f64 {
+    0.5
+}
+
+fn default_include_patterns() -> Vec<String> {
+    vec![
+        "**/*.py".into(),
+        "**/*.js".into(),
+        "**/*.jsx".into(),
+        "**/*.ts".into(),
+        "**/*.tsx".into(),
+        "**/*.vue".into(),
+        "**/*.svelte".into(),
+        "**/*.java".into(),
+        "**/*.go".into(),
+        "**/*.rs".into(),
+        "**/*.md".into(),
+        "**/*.cs".into(),
+        "**/*.php".into(),
+        "**/*.rb".into(),
+        "**/*.swift".into(),
+        "**/*.kt".into(),
+        "**/*.kts".into(),
+        "**/*.dart".into(),
+        "**/*.scala".into(),
+        "**/*.sc".into(),
+        "**/*.lua".into(),
+        "**/*.sql".into(),
+        "**/*.yaml".into(),
+        "**/*.yml".into(),
+        "**/*.toml".into(),
+        "**/Dockerfile".into(),
+        "**/Dockerfile.*".into(),
+    ]
+}
+
+fn default_max_file_bytes() -> u64 {
+    512_000
+}
+
+fn default_chunk_line_budget() -> u32 {
+    80
+}
+
+fn default_chunk_byte_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().bytes
+}
+fn default_chunk_char_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().chars
+}
+fn default_chunk_token_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().estimated_tokens
+}
+fn default_chunk_merge_min_bytes() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().merge_min_bytes
+}
+impl IndexingConfig {
+    pub fn chunk_policy(&self) -> crate::chunk_policy::ChunkPolicy {
+        crate::chunk_policy::ChunkPolicy {
+            lines: self.chunk_line_budget,
+            bytes: self.chunk_byte_budget,
+            chars: self.chunk_char_budget,
+            estimated_tokens: self.chunk_token_budget,
+            merge_min_bytes: self.chunk_merge_min_bytes,
+        }
+    }
+}
+
+impl Default for IndexingConfig {
+    fn default() -> Self {
+        Self {
+            include: default_include_patterns(),
+            include_text_files: false,
+            include_hidden_files: false,
+            ignore: default_ignore_patterns(),
+            max_file_bytes: default_max_file_bytes(),
+            chunk_line_budget: default_chunk_line_budget(),
+            chunk_byte_budget: default_chunk_byte_budget(),
+            chunk_char_budget: default_chunk_char_budget(),
+            chunk_token_budget: default_chunk_token_budget(),
+            chunk_merge_min_bytes: default_chunk_merge_min_bytes(),
+            parse_timeout_micros: None,
+            db_read_pool_size: None,
+            dirty_propagation: true,
+            dirty_propagation_max_files: 200,
+            memory_budget_fraction: 0.5,
+            max_concurrent_parse: None,
+            use_direct_writer: false,
+            dispatch_synthesis: true,
+            event_fanout_cap: 6,
+            event_denylist: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchConfig {
+    #[serde(default = "default_lexical_top_k")]
+    pub lexical_top_k: usize,
+    #[serde(default = "default_exact_symbol_top_k")]
+    pub exact_symbol_top_k: usize,
+    #[serde(default = "default_path_top_k")]
+    pub path_top_k: usize,
+    #[serde(default = "default_grep_top_k")]
+    pub grep_top_k: usize,
+    /// Maximum number of chunk rows the grep lane decompresses per search.
+    /// Bounds the worst case (no-match / rare-term queries) which would
+    /// otherwise zstd-decode every chunk in the repository.
+    #[serde(default = "default_grep_scan_cap")]
+    pub grep_scan_cap: usize,
+    #[serde(default = "default_rrf_k")]
+    pub rrf_k: usize,
+    #[serde(default = "default_lexical_weight")]
+    pub lexical_weight: f64,
+    #[serde(default = "default_exact_symbol_weight")]
+    pub exact_symbol_weight: f64,
+    #[serde(default = "default_path_weight")]
+    pub path_weight: f64,
+    #[serde(default = "default_grep_weight")]
+    pub grep_weight: f64,
+    #[serde(default = "default_rerank_window")]
+    pub rerank_window: usize,
+    #[serde(default = "default_graph_weight")]
+    pub graph_weight: f64,
+    #[serde(default = "default_graph_top_k")]
+    pub graph_top_k: usize,
+}
+
+fn default_lexical_top_k() -> usize {
+    24
+}
+fn default_exact_symbol_top_k() -> usize {
+    24
+}
+fn default_path_top_k() -> usize {
+    24
+}
+fn default_grep_top_k() -> usize {
+    12
+}
+fn default_grep_scan_cap() -> usize {
+    // Shared text-read budget across soft, prefiltered, and hard-scope fallback
+    // stages. Does not bound SQL work, total query memory, or wall-clock time.
+    20_000
+}
+fn default_rrf_k() -> usize {
+    50
+}
+fn default_lexical_weight() -> f64 {
+    1.1
+}
+fn default_exact_symbol_weight() -> f64 {
+    1.1
+}
+fn default_path_weight() -> f64 {
+    1.0
+}
+fn default_grep_weight() -> f64 {
+    0.8
+}
+fn default_rerank_window() -> usize {
+    40
+}
+fn default_graph_weight() -> f64 {
+    0.6
+}
+fn default_graph_top_k() -> usize {
+    12
+}
+
+impl Default for SearchConfig {
+    fn default() -> Self {
+        Self {
+            lexical_top_k: default_lexical_top_k(),
+            exact_symbol_top_k: default_exact_symbol_top_k(),
+            path_top_k: default_path_top_k(),
+            grep_top_k: default_grep_top_k(),
+            grep_scan_cap: default_grep_scan_cap(),
+            rrf_k: default_rrf_k(),
+            lexical_weight: default_lexical_weight(),
+            exact_symbol_weight: default_exact_symbol_weight(),
+            path_weight: default_path_weight(),
+            grep_weight: default_grep_weight(),
+            rerank_window: default_rerank_window(),
+            graph_weight: default_graph_weight(),
+            graph_top_k: default_graph_top_k(),
+        }
+    }
+}
+
+impl SearchConfig {
+    pub fn validate_retrieval(&self) -> CcResult<()> {
+        let weights = [
+            ("lexical_weight", self.lexical_weight),
+            ("exact_symbol_weight", self.exact_symbol_weight),
+            ("path_weight", self.path_weight),
+            ("grep_weight", self.grep_weight),
+            ("graph_weight", self.graph_weight),
+        ];
+        if let Some((name, _)) = weights
+            .into_iter()
+            .find(|(_, value)| !value.is_finite() || *value < 0.0)
+        {
+            return Err(CcError::Config(format!(
+                "search.{name} must be finite and non-negative"
+            )));
+        }
+        Ok(())
+    }
+}
+
+/// Ranking configuration for search result scoring.
+///
+/// Centralizes the tunable scoring weights used by cc-search (chunk rerank,
+/// file preselection, and graph-lane seeding) so tuning happens in one
+/// place instead of scattered literals.  A few structural constants (e.g.
+/// the preselect graph-neighbor increment/cap) deliberately remain literals
+/// at their use sites.  All defaults preserve the historical hard-coded
+/// values exactly.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RankingConfig {
+    /// Weight of graph_score contribution to final rerank_score.
+    /// Range: 0.0 (disabled) to 1.0 (maximum influence).
+    #[serde(default = "default_graph_rerank_weight")]
+    pub graph_rerank_weight: f64,
+
+    // ── Chunk rerank bonuses (plan.rs::hit_from_chunk) ──────────────
+    /// Weight of query-token/text overlap added to the fused score.
+    #[serde(default = "default_overlap_weight")]
+    pub overlap_weight: f64,
+    /// Bonus when a query token exactly matches the chunk's symbol name.
+    #[serde(default = "default_symbol_exact_bonus")]
+    pub symbol_exact_bonus: f64,
+    /// Bonus when the file path starts with the requested path prefix.
+    #[serde(default = "default_path_prefix_bonus")]
+    pub path_prefix_bonus: f64,
+    /// Bonus for project documentation files (README, docs/, ADRs).
+    #[serde(default = "default_doc_file_bonus")]
+    pub doc_file_bonus: f64,
+    /// Bonus for files in the caller's working set (boost_file_paths).
+    #[serde(default = "default_working_set_boost")]
+    pub working_set_boost: f64,
+    /// Bonus for recently-edited files (recent_file_paths).
+    #[serde(default = "default_recent_file_boost")]
+    pub recent_file_boost: f64,
+    /// Bonus for pinned context files (pinned_file_paths).
+    #[serde(default = "default_pinned_context_boost")]
+    pub pinned_context_boost: f64,
+    /// Bonus for overlay/dirty-buffer files (overlay_file_paths).
+    #[serde(default = "default_overlay_neighbor_boost")]
+    pub overlay_neighbor_boost: f64,
+    /// Multiplier mapping the stage-A (preselect) file score into rerank.
+    #[serde(default = "default_stage_a_weight")]
+    pub stage_a_weight: f64,
+    /// Cap on the stage-A file-score contribution to rerank.
+    #[serde(default = "default_stage_a_cap")]
+    pub stage_a_cap: f64,
+    /// Bonus when a `name:` DSL filter matches the hit's symbol name.
+    #[serde(default = "default_dsl_name_bonus")]
+    pub dsl_name_bonus: f64,
+
+    // ── File preselection scores (preselect.rs) ─────────────────────
+    /// Working-set layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_working_set_floor")]
+    pub preselect_working_set_floor: f64,
+    #[serde(default = "default_preselect_working_set_scale")]
+    pub preselect_working_set_scale: f64,
+    /// Recent-files layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_recent_floor")]
+    pub preselect_recent_floor: f64,
+    #[serde(default = "default_preselect_recent_scale")]
+    pub preselect_recent_scale: f64,
+    /// Pinned-files layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_pinned_floor")]
+    pub preselect_pinned_floor: f64,
+    #[serde(default = "default_preselect_pinned_scale")]
+    pub preselect_pinned_scale: f64,
+    /// Overlay (dirty-buffer) layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_overlay_floor")]
+    pub preselect_overlay_floor: f64,
+    #[serde(default = "default_preselect_overlay_scale")]
+    pub preselect_overlay_scale: f64,
+    /// FTS summary layer: `base + relevance/(1+relevance)`, relevance=max(-bm25,0).
+    #[serde(default = "default_preselect_fts_base")]
+    pub preselect_fts_base: f64,
+    /// Per-token symbol-name match: exact name equality.
+    #[serde(default = "default_preselect_symbol_exact_bonus")]
+    pub preselect_symbol_exact_bonus: f64,
+    /// Per-token symbol-name match: substring (fuzzy) match.
+    #[serde(default = "default_preselect_symbol_fuzzy_bonus")]
+    pub preselect_symbol_fuzzy_bonus: f64,
+    /// Per-token path component match.
+    #[serde(default = "default_preselect_path_token_bonus")]
+    pub preselect_path_token_bonus: f64,
+    /// Graph neighbor expansion: base score for 1-hop call-graph neighbors.
+    #[serde(default = "default_preselect_graph_neighbor_base")]
+    pub preselect_graph_neighbor_base: f64,
+    /// Graph neighbor expansion: score added per additional edge reaching
+    /// the same neighbor file.
+    #[serde(default = "default_preselect_graph_edge_increment")]
+    pub preselect_graph_edge_increment: f64,
+    /// Graph neighbor expansion: cap on the accumulated per-file score
+    /// (the base is also clamped to this cap).
+    #[serde(default = "default_preselect_graph_accum_cap")]
+    pub preselect_graph_accum_cap: f64,
+    /// Fallback layer: score for recently-indexed files when nothing matched.
+    #[serde(default = "default_preselect_fallback_score")]
+    pub preselect_fallback_score: f64,
+    /// Score assigned to caller-pinned explicit file scopes (short-circuit).
+    #[serde(default = "default_preselect_explicit_scope_score")]
+    pub preselect_explicit_scope_score: f64,
+
+    // ── Graph retrieval lane (lanes.rs) ─────────────────────────────
+    /// Score decay per hop when expanding from a seed symbol to its
+    /// call-graph neighbors.
+    #[serde(default = "default_graph_neighbor_decay")]
+    pub graph_neighbor_decay: f64,
+    /// Seed relevance for an exact symbol-name match.
+    #[serde(default = "default_graph_seed_exact_score")]
+    pub graph_seed_exact_score: f64,
+    /// Seed relevance for a substring symbol-name match.
+    #[serde(default = "default_graph_seed_fuzzy_score")]
+    pub graph_seed_fuzzy_score: f64,
+}
+
+fn default_graph_rerank_weight() -> f64 {
+    0.3
+}
+fn default_overlap_weight() -> f64 {
+    0.35
+}
+fn default_symbol_exact_bonus() -> f64 {
+    0.18
+}
+fn default_path_prefix_bonus() -> f64 {
+    0.05
+}
+fn default_doc_file_bonus() -> f64 {
+    0.08
+}
+fn default_working_set_boost() -> f64 {
+    0.22
+}
+fn default_recent_file_boost() -> f64 {
+    0.12
+}
+fn default_pinned_context_boost() -> f64 {
+    0.20
+}
+fn default_overlay_neighbor_boost() -> f64 {
+    0.10
+}
+fn default_stage_a_weight() -> f64 {
+    0.04
+}
+fn default_stage_a_cap() -> f64 {
+    0.25
+}
+fn default_dsl_name_bonus() -> f64 {
+    0.25
+}
+fn default_preselect_working_set_floor() -> f64 {
+    2.0
+}
+fn default_preselect_working_set_scale() -> f64 {
+    5.0
+}
+fn default_preselect_recent_floor() -> f64 {
+    1.2
+}
+fn default_preselect_recent_scale() -> f64 {
+    3.5
+}
+fn default_preselect_pinned_floor() -> f64 {
+    2.2
+}
+fn default_preselect_pinned_scale() -> f64 {
+    4.0
+}
+fn default_preselect_overlay_floor() -> f64 {
+    1.5
+}
+fn default_preselect_overlay_scale() -> f64 {
+    3.0
+}
+fn default_preselect_fts_base() -> f64 {
+    1.4
+}
+fn default_preselect_symbol_exact_bonus() -> f64 {
+    2.0
+}
+fn default_preselect_symbol_fuzzy_bonus() -> f64 {
+    1.2
+}
+fn default_preselect_path_token_bonus() -> f64 {
+    1.0
+}
+fn default_preselect_graph_neighbor_base() -> f64 {
+    0.8
+}
+fn default_preselect_graph_edge_increment() -> f64 {
+    0.1
+}
+fn default_preselect_graph_accum_cap() -> f64 {
+    1.2
+}
+fn default_preselect_fallback_score() -> f64 {
+    0.2
+}
+fn default_preselect_explicit_scope_score() -> f64 {
+    10.0
+}
+fn default_graph_neighbor_decay() -> f64 {
+    0.5
+}
+fn default_graph_seed_exact_score() -> f64 {
+    1.0
+}
+fn default_graph_seed_fuzzy_score() -> f64 {
+    0.5
+}
+
+impl Default for RankingConfig {
+    fn default() -> Self {
+        Self {
+            graph_rerank_weight: default_graph_rerank_weight(),
+            overlap_weight: default_overlap_weight(),
+            symbol_exact_bonus: default_symbol_exact_bonus(),
+            path_prefix_bonus: default_path_prefix_bonus(),
+            doc_file_bonus: default_doc_file_bonus(),
+            working_set_boost: default_working_set_boost(),
+            recent_file_boost: default_recent_file_boost(),
+            pinned_context_boost: default_pinned_context_boost(),
+            overlay_neighbor_boost: default_overlay_neighbor_boost(),
+            stage_a_weight: default_stage_a_weight(),
+            stage_a_cap: default_stage_a_cap(),
+            dsl_name_bonus: default_dsl_name_bonus(),
+            preselect_working_set_floor: default_preselect_working_set_floor(),
+            preselect_working_set_scale: default_preselect_working_set_scale(),
+            preselect_recent_floor: default_preselect_recent_floor(),
+            preselect_recent_scale: default_preselect_recent_scale(),
+            preselect_pinned_floor: default_preselect_pinned_floor(),
+            preselect_pinned_scale: default_preselect_pinned_scale(),
+            preselect_overlay_floor: default_preselect_overlay_floor(),
+            preselect_overlay_scale: default_preselect_overlay_scale(),
+            preselect_fts_base: default_preselect_fts_base(),
+            preselect_symbol_exact_bonus: default_preselect_symbol_exact_bonus(),
+            preselect_symbol_fuzzy_bonus: default_preselect_symbol_fuzzy_bonus(),
+            preselect_path_token_bonus: default_preselect_path_token_bonus(),
+            preselect_graph_neighbor_base: default_preselect_graph_neighbor_base(),
+            preselect_graph_edge_increment: default_preselect_graph_edge_increment(),
+            preselect_graph_accum_cap: default_preselect_graph_accum_cap(),
+            preselect_fallback_score: default_preselect_fallback_score(),
+            preselect_explicit_scope_score: default_preselect_explicit_scope_score(),
+            graph_neighbor_decay: default_graph_neighbor_decay(),
+            graph_seed_exact_score: default_graph_seed_exact_score(),
+            graph_seed_fuzzy_score: default_graph_seed_fuzzy_score(),
+        }
+    }
+}
+
+impl RankingConfig {
+    pub fn validate_retrieval(&self) -> CcResult<()> {
+        let values = [
+            ("graph_rerank_weight", self.graph_rerank_weight),
+            ("overlap_weight", self.overlap_weight),
+            ("symbol_exact_bonus", self.symbol_exact_bonus),
+            ("path_prefix_bonus", self.path_prefix_bonus),
+            ("doc_file_bonus", self.doc_file_bonus),
+            ("working_set_boost", self.working_set_boost),
+            ("recent_file_boost", self.recent_file_boost),
+            ("pinned_context_boost", self.pinned_context_boost),
+            ("overlay_neighbor_boost", self.overlay_neighbor_boost),
+            ("stage_a_weight", self.stage_a_weight),
+            ("stage_a_cap", self.stage_a_cap),
+            ("dsl_name_bonus", self.dsl_name_bonus),
+            (
+                "preselect_working_set_floor",
+                self.preselect_working_set_floor,
+            ),
+            (
+                "preselect_working_set_scale",
+                self.preselect_working_set_scale,
+            ),
+            ("preselect_recent_floor", self.preselect_recent_floor),
+            ("preselect_recent_scale", self.preselect_recent_scale),
+            ("preselect_pinned_floor", self.preselect_pinned_floor),
+            ("preselect_pinned_scale", self.preselect_pinned_scale),
+            ("preselect_overlay_floor", self.preselect_overlay_floor),
+            ("preselect_overlay_scale", self.preselect_overlay_scale),
+            ("preselect_fts_base", self.preselect_fts_base),
+            (
+                "preselect_symbol_exact_bonus",
+                self.preselect_symbol_exact_bonus,
+            ),
+            (
+                "preselect_symbol_fuzzy_bonus",
+                self.preselect_symbol_fuzzy_bonus,
+            ),
+            (
+                "preselect_path_token_bonus",
+                self.preselect_path_token_bonus,
+            ),
+            (
+                "preselect_graph_neighbor_base",
+                self.preselect_graph_neighbor_base,
+            ),
+            (
+                "preselect_graph_edge_increment",
+                self.preselect_graph_edge_increment,
+            ),
+            ("preselect_graph_accum_cap", self.preselect_graph_accum_cap),
+            ("preselect_fallback_score", self.preselect_fallback_score),
+            (
+                "preselect_explicit_scope_score",
+                self.preselect_explicit_scope_score,
+            ),
+            ("graph_neighbor_decay", self.graph_neighbor_decay),
+            ("graph_seed_exact_score", self.graph_seed_exact_score),
+            ("graph_seed_fuzzy_score", self.graph_seed_fuzzy_score),
+        ];
+        if let Some((name, _)) = values
+            .into_iter()
+            .find(|(_, value)| !value.is_finite() || *value < 0.0)
+        {
+            return Err(CcError::Config(format!(
+                "ranking.{name} must be finite and non-negative"
+            )));
+        }
+        Ok(())
+    }
+}
+
+/// Repo size tier — drives adaptive limits for explore, search, and budget.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RepoSizeTier {
+    Tiny,
+    Small,
+    Medium,
+    Large,
+}
+
+impl RepoSizeTier {
+    pub fn from_file_count(n: usize) -> Self {
+        if n < 500 {
+            Self::Tiny
+        } else if n < 5000 {
+            Self::Small
+        } else if n < 25000 {
+            Self::Medium
+        } else {
+            Self::Large
+        }
+    }
+
+    pub fn default_token_budget(&self) -> u32 {
+        match self {
+            Self::Tiny => 4000,
+            Self::Small => 6000,
+            Self::Medium => 8000,
+            Self::Large => 12000,
+        }
+    }
+
+    pub fn explore_max_symbols(&self) -> usize {
+        match self {
+            Self::Tiny => 3,
+            Self::Small => 5,
+            Self::Medium => 8,
+            Self::Large => 10,
+        }
+    }
+
+    pub fn search_top_k(&self) -> usize {
+        match self {
+            Self::Tiny => 5,
+            Self::Small => 10,
+            Self::Medium => 15,
+            Self::Large => 20,
+        }
+    }
+
+    pub fn max_source_chars_per_symbol(&self) -> usize {
+        match self {
+            Self::Tiny => 2000,
+            Self::Small => 3000,
+            Self::Medium => 4000,
+            Self::Large => 6000,
+        }
+    }
+
+    pub fn max_output_chars(&self) -> usize {
+        match self {
+            Self::Tiny => 18000,
+            Self::Small => 24000,
+            Self::Medium => 32000,
+            Self::Large => 38000,
+        }
+    }
+
+    /// Suggested SQLite read pool size for this repository tier.
+    pub fn db_read_pool_size(&self) -> u32 {
+        match self {
+            Self::Tiny => 4,
+            Self::Small => 6,
+            Self::Medium => 8,
+            Self::Large => 12,
+        }
+    }
+
+    /// Return an adaptive output budget for the given handler name.
+    pub fn output_budget(&self, handler: &str) -> OutputBudget {
+        let base_chars = self.max_output_chars();
+        let base_items = match handler {
+            "graph_query" => match self {
+                Self::Tiny => 15,
+                Self::Small => 30,
+                Self::Medium => 45,
+                Self::Large => 60,
+            },
+            "trace_path" => match self {
+                Self::Tiny => 10,
+                Self::Small => 15,
+                Self::Medium | Self::Large => 20,
+            },
+            "explore_flow" => match self {
+                Self::Tiny => 15,
+                Self::Small => 20,
+                Self::Medium => 25,
+                Self::Large => 30,
+            },
+            "dead_code" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 50,
+            },
+            "circular_deps" => match self {
+                Self::Tiny => 10,
+                Self::Small => 15,
+                Self::Medium | Self::Large => 20,
+            },
+            "relations" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 50,
+            },
+            "impact" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 50,
+                Self::Large => 80,
+            },
+            "architecture" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 60,
+            },
+            "files" => match self {
+                Self::Tiny => 500,
+                Self::Small => 2000,
+                Self::Medium => 5000,
+                Self::Large => 10000,
+            },
+            _ => self.search_top_k(),
+        };
+        OutputBudget {
+            max_output_chars: base_chars,
+            max_items: base_items,
+            max_snippet_chars: base_chars / 3,
+            max_source_chars_per_symbol: self.max_source_chars_per_symbol(),
+        }
+    }
+}
+
+/// Adaptive output budget returned by [`RepoSizeTier::output_budget`].
+#[derive(Debug, Clone)]
+pub struct OutputBudget {
+    pub max_output_chars: usize,
+    pub max_items: usize,
+    pub max_snippet_chars: usize,
+    pub max_source_chars_per_symbol: usize,
+}
+
+/// Per-file explore output budget, scaled to project size.
+#[derive(Debug, Clone)]
+pub struct ExploreBudget {
+    pub max_output_chars: usize,
+    pub default_max_files: usize,
+    pub max_chars_per_file: usize,
+    pub gap_threshold: usize,
+    pub include_relationships: bool,
+    pub include_additional_files: bool,
+}
+
+impl RepoSizeTier {
+    pub fn explore_budget(&self) -> ExploreBudget {
+        match self {
+            Self::Tiny => ExploreBudget {
+                max_output_chars: 18000,
+                default_max_files: 5,
+                max_chars_per_file: 3800,
+                gap_threshold: 3,
+                include_relationships: false,
+                include_additional_files: false,
+            },
+            Self::Small => ExploreBudget {
+                max_output_chars: 28000,
+                default_max_files: 8,
+                max_chars_per_file: 6500,
+                gap_threshold: 5,
+                include_relationships: true,
+                include_additional_files: true,
+            },
+            Self::Medium => ExploreBudget {
+                max_output_chars: 35000,
+                default_max_files: 12,
+                max_chars_per_file: 7000,
+                gap_threshold: 8,
+                include_relationships: true,
+                include_additional_files: true,
+            },
+            Self::Large => ExploreBudget {
+                max_output_chars: 38000,
+                default_max_files: 15,
+                max_chars_per_file: 7000,
+                gap_threshold: 10,
+                include_relationships: true,
+                include_additional_files: true,
+            },
+        }
+    }
+}
+
+/// Budget limits for graph enrichment in the `context` tool.
+#[derive(Debug, Clone)]
+pub struct GraphEnrichLimits {
+    pub max_resolve: usize,
+    pub callers_per_sym: usize,
+    pub callees_per_sym: usize,
+    pub max_tests: usize,
+    pub max_routes: usize,
+    pub graph_budget_pct: u32,
+}
+
+impl RepoSizeTier {
+    pub fn graph_enrich_limits(&self) -> GraphEnrichLimits {
+        match self {
+            Self::Tiny => GraphEnrichLimits {
+                max_resolve: 3,
+                callers_per_sym: 2,
+                callees_per_sym: 2,
+                max_tests: 2,
+                max_routes: 1,
+                graph_budget_pct: 20,
+            },
+            Self::Small => GraphEnrichLimits {
+                max_resolve: 5,
+                callers_per_sym: 3,
+                callees_per_sym: 3,
+                max_tests: 3,
+                max_routes: 2,
+                graph_budget_pct: 25,
+            },
+            Self::Medium => GraphEnrichLimits {
+                max_resolve: 7,
+                callers_per_sym: 3,
+                callees_per_sym: 3,
+                max_tests: 4,
+                max_routes: 2,
+                graph_budget_pct: 25,
+            },
+            Self::Large => GraphEnrichLimits {
+                max_resolve: 8,
+                callers_per_sym: 4,
+                callees_per_sym: 4,
+                max_tests: 5,
+                max_routes: 3,
+                graph_budget_pct: 30,
+            },
+        }
+    }
+}
+
+/// Resolved filesystem paths for a project.
+#[derive(Debug, Clone)]
+pub struct IndexPaths {
+    pub project_path: PathBuf,
+    pub workdir: PathBuf,
+    pub index_db: PathBuf,
+    pub logs_dir: PathBuf,
+}
+
+impl IndexPaths {
+    pub fn new(project_path: &Path) -> Self {
+        let workdir = std::env::var("CODECORTEX_CACHE_DIR")
+            .ok()
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .map(|base| PathBuf::from(base).join(project_cache_key(project_path)))
+            .unwrap_or_else(|| project_path.join(".codecortex"));
+        Self {
+            project_path: project_path.to_path_buf(),
+            workdir: workdir.clone(),
+            index_db: workdir.join("index.sqlite3"),
+            logs_dir: workdir.join("logs"),
+        }
+    }
+}
+
+fn project_cache_key(project_path: &Path) -> String {
+    let raw = project_path.to_string_lossy();
+    let hash = blake3::hash(raw.as_bytes()).to_hex().to_string();
+    let name = project_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("project")
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    format!("{}-{}", name, &hash[..16])
+}
+
+/// Project statistics from the index.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ProjectStats {
+    pub project_path: String,
+    pub indexed_files: usize,
+    pub indexed_chunks: usize,
+    pub indexed_symbols: usize,
+    pub indexed_symbol_refs: usize,
+    pub indexed_call_edges: usize,
+    pub indexed_test_edges: usize,
+    pub indexed_route_edges: usize,
+    pub indexed_literals: usize,
+    pub indexed_diagnostics: usize,
+    pub last_indexed_at: Option<String>,
+    pub index_version: Option<String>,
+}
+
+// ─── Config loading ─────────────────────────────────────────────────
+
+const CONFIG_FILE_NAME: &str = ".codecortex.json";
+
+fn canonical_start(start: Option<&Path>) -> PathBuf {
+    start
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_default())
+        .canonicalize()
+        .unwrap_or_default()
+}
+
+/// Find the project root by walking up from `start` looking for .git or .codecortex.json.
+///
+/// Returns `None` when no explicit project marker is found. This is safer for
+/// MCP startup than blindly indexing the process working directory, which may
+/// be the user's home directory depending on the client.
+pub fn find_project_root_with_marker(start: Option<&Path>) -> Option<PathBuf> {
+    let current = canonical_start(start);
+    let mut candidate = current.as_path();
+    loop {
+        if candidate.join(".git").exists() || candidate.join(CONFIG_FILE_NAME).exists() {
+            return Some(candidate.to_path_buf());
+        }
+        candidate = candidate.parent()?;
+    }
+}
+
+/// Load project configuration from `.codecortex.json`, with defaults.
+pub fn load_project_config(project_path: &Path) -> ProjectConfig {
+    let config_path = project_path.join(CONFIG_FILE_NAME);
+    let mut config = ProjectConfig::default();
+    {
+        match crate::input_file::read(project_path, CONFIG_FILE_NAME, 1024 * 1024)
+            .map_err(|e| format!("bounded config read rejected: {e:?}"))
+            .and_then(|bytes| {
+                bytes
+                    .map(String::from_utf8)
+                    .transpose()
+                    .map_err(|_| "config is not UTF-8".into())
+            }) {
+            Ok(None) => {}
+            Ok(Some(content)) => {
+                warn_unknown_config_keys(&content, &config_path);
+                match serde_json::from_str::<ProjectConfig>(&content) {
+                    Ok(parsed) => config = parsed,
+                    Err(e) => {
+                        tracing::warn!(
+                            path = %config_path.display(),
+                            error = %e,
+                            "Failed to parse project config; falling back to defaults"
+                        );
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::warn!(
+                    path = %config_path.display(),
+                    error = %e,
+                    "Failed to read project config file; falling back to defaults"
+                );
+            }
+        }
+    }
+
+    apply_env_overrides(&mut config);
+    config
+}
+
+/// Config keys that existed in older releases and were since removed.
+/// Matched against the dotted paths produced by [`collect_unknown_config_keys`].
+const REMOVED_CONFIG_KEYS: &[&str] = &["indexing.parallelism"];
+
+/// Collect unknown key paths in a raw config value by diffing against the
+/// serialized default [`ProjectConfig`] (so the known-key set tracks the
+/// struct definitions and cannot drift). Compares the top level plus one
+/// section level; returns dotted paths like `"serach"` or
+/// `"indexing.parallelism"`.
+fn collect_unknown_config_keys(raw: &serde_json::Value) -> Vec<String> {
+    let known = match serde_json::to_value(ProjectConfig::default()) {
+        Ok(value) => value,
+        Err(_) => return Vec::new(),
+    };
+    let (Some(raw_obj), Some(known_obj)) = (raw.as_object(), known.as_object()) else {
+        return Vec::new();
+    };
+    let mut unknown = Vec::new();
+    for (key, raw_section) in raw_obj {
+        match known_obj.get(key) {
+            None => unknown.push(key.clone()),
+            Some(known_section) => {
+                if let (Some(raw_inner), Some(known_inner)) =
+                    (raw_section.as_object(), known_section.as_object())
+                {
+                    for inner_key in raw_inner.keys() {
+                        if !known_inner.contains_key(inner_key) {
+                            unknown.push(format!("{key}.{inner_key}"));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    unknown
+}
+
+/// Warn (via `tracing`) about unknown keys in the raw config text. Purely
+/// diagnostic: loading stays lenient and unknown keys are still ignored.
+/// Malformed JSON is skipped here — the typed parse reports it.
+fn warn_unknown_config_keys(content: &str, config_path: &Path) {
+    let Ok(raw) = serde_json::from_str::<serde_json::Value>(content) else {
+        return;
+    };
+    for key_path in collect_unknown_config_keys(&raw) {
+        if REMOVED_CONFIG_KEYS.contains(&key_path.as_str()) {
+            tracing::warn!(
+                path = %config_path.display(),
+                key = %key_path,
+                "Config key was removed in a previous release and is ignored; \
+                 please delete it from the config file"
+            );
+        } else {
+            tracing::warn!(
+                path = %config_path.display(),
+                key = %key_path,
+                "Unknown config key is ignored (check for typos or a stale config)"
+            );
+        }
+    }
+}
+
+fn apply_env_overrides(config: &mut ProjectConfig) {
+    if let Ok(val) = std::env::var("CODECORTEX_DIRTY_PROPAGATION") {
+        match val.trim().to_lowercase().as_str() {
+            "0" | "false" | "off" | "no" => config.indexing.dirty_propagation = false,
+            "1" | "true" | "on" | "yes" => config.indexing.dirty_propagation = true,
+            _ => {}
+        }
+    }
+    if let Ok(val) = std::env::var("CODECORTEX_DIRTY_PROPAGATION_MAX_FILES") {
+        if let Ok(parsed) = val.trim().parse::<usize>() {
+            if parsed > 0 {
+                config.indexing.dirty_propagation_max_files = parsed;
+            }
+        }
+    }
+    if let Ok(val) = std::env::var("CODECORTEX_MEMORY_BUDGET_FRACTION") {
+        if let Ok(parsed) = val.trim().parse::<f64>() {
+            let clamped = parsed.clamp(0.1, 0.95);
+            config.indexing.memory_budget_fraction = clamped;
+        }
+    }
+    if let Ok(val) = std::env::var("CODECORTEX_MAX_CONCURRENT_PARSE") {
+        if let Ok(parsed) = val.trim().parse::<usize>() {
+            if parsed > 0 {
+                config.indexing.max_concurrent_parse = Some(parsed);
+            }
+        }
+    }
+    if let Ok(val) = std::env::var("CODECORTEX_USE_DIRECT_WRITER") {
+        match val.trim().to_lowercase().as_str() {
+            "1" | "true" | "on" | "yes" => config.indexing.use_direct_writer = true,
+            "0" | "false" | "off" | "no" => config.indexing.use_direct_writer = false,
+            _ => {}
+        }
+    }
+}
+
+fn default_ignore_patterns() -> Vec<String> {
+    vec![
+        "**/.git/**",
+        "**/.hg/**",
+        "**/.svn/**",
+        "**/.venv/**",
+        "**/venv/**",
+        "**/__pycache__/**",
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/coverage/**",
+        "**/.next/**",
+        "**/.idea/**",
+        "**/.vscode/**",
+        "**/.codecortex/**",
+        "**/target/**", // Rust build
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::{LazyLock, Mutex};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    static ENV_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+    #[test]
+    fn env_overrides_apply_on_top_of_file_config() {
+        let _guard = ENV_LOCK.lock().unwrap();
+
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-config-test-{}", unique));
+        std::fs::create_dir_all(&project_dir).unwrap();
+
+        let config_json = r#"{
+            "indexing": {
+                "dirty_propagation": true,
+                "dirty_propagation_max_files": 50,
+                "memory_budget_fraction": 0.25,
+                "use_direct_writer": false
+            }
+        }"#;
+        std::fs::write(project_dir.join(CONFIG_FILE_NAME), config_json).unwrap();
+
+        let keys = [
+            "CODECORTEX_DIRTY_PROPAGATION",
+            "CODECORTEX_DIRTY_PROPAGATION_MAX_FILES",
+            "CODECORTEX_MEMORY_BUDGET_FRACTION",
+            "CODECORTEX_USE_DIRECT_WRITER",
+        ];
+        let originals: Vec<(String, Option<String>)> = keys
+            .iter()
+            .map(|key| ((*key).to_string(), std::env::var(key).ok()))
+            .collect();
+
+        std::env::set_var("CODECORTEX_DIRTY_PROPAGATION", "false");
+        std::env::set_var("CODECORTEX_DIRTY_PROPAGATION_MAX_FILES", "125");
+        std::env::set_var("CODECORTEX_MEMORY_BUDGET_FRACTION", "0.75");
+        std::env::set_var("CODECORTEX_USE_DIRECT_WRITER", "true");
+
+        let config = load_project_config(&project_dir);
+        assert!(!config.indexing.dirty_propagation);
+        assert_eq!(config.indexing.dirty_propagation_max_files, 125);
+        assert_eq!(config.indexing.memory_budget_fraction, 0.75);
+        assert!(config.indexing.use_direct_writer);
+
+        for (key, value) in originals {
+            if let Some(value) = value {
+                std::env::set_var(&key, value);
+            } else {
+                std::env::remove_var(&key);
+            }
+        }
+        let _ = std::fs::remove_file(project_dir.join(CONFIG_FILE_NAME));
+        let _ = std::fs::remove_dir(&project_dir);
+    }
+
+    #[test]
+    fn partial_config_fills_missing_fields_with_defaults() {
+        // Contract: every config field is optional. A partial .codecortex.json
+        // that overrides one field must deserialize and fall back to defaults
+        // for the rest (previously failed with `missing field chunk_line_budget`).
+        let json = r#"{
+            "indexing": { "max_file_bytes": 1024 },
+            "search": { "lexical_top_k": 8 },
+            "ranking": { "overlap_weight": 0.5 }
+        }"#;
+        let config: ProjectConfig = serde_json::from_str(json).expect("partial config must parse");
+
+        assert_eq!(config.indexing.max_file_bytes, 1024);
+        assert_eq!(
+            config.indexing.chunk_line_budget,
+            default_chunk_line_budget()
+        );
+        assert_eq!(config.indexing.include, default_include_patterns());
+        assert_eq!(config.search.lexical_top_k, 8);
+        assert_eq!(config.search.grep_top_k, default_grep_top_k());
+        assert_eq!(config.search.rrf_k, default_rrf_k());
+        assert_eq!(config.ranking.overlap_weight, 0.5);
+        assert_eq!(
+            config.ranking.graph_rerank_weight,
+            default_graph_rerank_weight()
+        );
+        assert_eq!(config.ranking.symbol_exact_bonus, 0.18);
+        assert_eq!(config.ranking.preselect_working_set_scale, 5.0);
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_flags_unknown_top_level_key() {
+        let raw = serde_json::json!({
+            "indexing": { "max_file_bytes": 1024 },
+            "serach": { "lexical_top_k": 8 }
+        });
+        assert_eq!(
+            collect_unknown_config_keys(&raw),
+            vec!["serach".to_string()]
+        );
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_flags_removed_indexing_parallelism() {
+        let raw = serde_json::json!({
+            "indexing": { "parallelism": "auto", "max_file_bytes": 1024 }
+        });
+        let unknown = collect_unknown_config_keys(&raw);
+        assert_eq!(unknown, vec!["indexing.parallelism".to_string()]);
+        assert!(REMOVED_CONFIG_KEYS.contains(&unknown[0].as_str()));
+    }
+
+    #[test]
+    fn semantic_section_is_inert_by_default_and_fills_defaults_when_partial() {
+        // P7-002: the semantic section is new; a config without it must keep
+        // the disabled default (C14: default no-network), and a partial
+        // section must fall back to per-field defaults.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert!(!without.semantic.enabled);
+        assert_eq!(without.semantic.metric, "cosine");
+        assert_eq!(without.semantic.dimensions_mode, "configurable");
+        assert_eq!(without.semantic.encoding_formats, vec!["float".to_owned()]);
+        assert!(without.semantic.model_id.is_empty());
+        assert!(without.semantic.dimensions.is_none());
+
+        let partial: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "text-embedding-x", "dimensions": 1536}}"#,
+        )
+        .expect("partial semantic section");
+        assert!(partial.semantic.enabled);
+        assert_eq!(partial.semantic.model_id, "text-embedding-x");
+        assert_eq!(partial.semantic.dimensions, Some(1536));
+        assert_eq!(partial.semantic.metric, "cosine");
+        assert!(!partial.semantic.supports_instruction);
+        // P7-005: concurrency keys default to off/conservative — unlimited
+        // (`0`) concurrency, explicit 30s admission-wait budget.
+        assert_eq!(without.semantic.max_concurrent, 0);
+        assert_eq!(without.semantic.max_concurrent_per_project, 0);
+        assert_eq!(without.semantic.acquire_timeout_ms, 30_000);
+        assert_eq!(partial.semantic.max_concurrent, 0);
+        assert_eq!(partial.semantic.max_concurrent_per_project, 0);
+    }
+
+    #[test]
+    fn semantic_concurrency_keys_parse_and_default_off() {
+        // P7-005: the operator can raise the shared provider gate explicitly;
+        // absent keys stay at the off/conservative defaults.
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "max_concurrent": 4, "max_concurrent_per_project": 2,
+                              "acquire_timeout_ms": 500}}"#,
+        )
+        .expect("semantic concurrency keys");
+        assert_eq!(explicit.semantic.max_concurrent, 4);
+        assert_eq!(explicit.semantic.max_concurrent_per_project, 2);
+        assert_eq!(explicit.semantic.acquire_timeout_ms, 500);
+    }
+
+    #[test]
+    fn semantic_retry_and_breaker_keys_parse_with_conservative_defaults() {
+        // P7-006: call-layer retry defaults OFF (single provider attempt per
+        // outbox attempt — the conservative choice, retries cost money and
+        // latency); the breaker defaults ON with a small consecutive-failure
+        // threshold because it only ever reacts to sustained failure and can
+        // never affect a success path.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert_eq!(without.semantic.retry_max_attempts, 0);
+        assert_eq!(without.semantic.retry_base_backoff_ms, 500);
+        assert_eq!(without.semantic.retry_max_backoff_ms, 8_000);
+        assert_eq!(without.semantic.retry_total_deadline_ms, 30_000);
+        assert!(without.semantic.retry_respect_retry_after);
+        assert_eq!(without.semantic.retry_max_cost_units, None);
+        assert_eq!(without.semantic.breaker_failure_threshold, 5);
+        assert_eq!(without.semantic.breaker_open_ms, 30_000);
+
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "retry_max_attempts": 4, "retry_base_backoff_ms": 100,
+                              "retry_max_backoff_ms": 1600, "retry_total_deadline_ms": 5000,
+                              "retry_respect_retry_after": false,
+                              "retry_max_cost_units": 12,
+                              "breaker_failure_threshold": 3, "breaker_open_ms": 1000}}"#,
+        )
+        .expect("semantic retry keys");
+        assert_eq!(explicit.semantic.retry_max_attempts, 4);
+        assert_eq!(explicit.semantic.retry_base_backoff_ms, 100);
+        assert_eq!(explicit.semantic.retry_max_backoff_ms, 1600);
+        assert_eq!(explicit.semantic.retry_total_deadline_ms, 5000);
+        assert!(!explicit.semantic.retry_respect_retry_after);
+        assert_eq!(explicit.semantic.retry_max_cost_units, Some(12));
+        assert_eq!(explicit.semantic.breaker_failure_threshold, 3);
+        assert_eq!(explicit.semantic.breaker_open_ms, 1000);
+    }
+
+    #[test]
+    fn semantic_egress_policy_keys_parse_and_default_closed() {
+        // P7-007: both egress switches default to the closed state — the
+        // no-network default is explicit and plaintext http needs its own
+        // opt-in.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert!(!without.semantic.network_opt_in);
+        assert!(!without.semantic.allow_query_network);
+        assert!(!without.semantic.allow_http);
+
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "network_opt_in": true, "allow_http": true}}"#,
+        )
+        .expect("semantic egress keys");
+        assert!(explicit.semantic.network_opt_in);
+        assert!(
+            !explicit.semantic.allow_query_network,
+            "transport opt-in does not authorize query text"
+        );
+        assert!(explicit.semantic.allow_http);
+        let query_only: ProjectConfig =
+            serde_json::from_str(r#"{"semantic":{"allow_query_network":true}}"#).unwrap();
+        assert!(query_only.semantic.allow_query_network);
+        assert!(!query_only.semantic.network_opt_in);
+        assert!(!query_only.semantic.enabled);
+        assert!(serde_json::from_str::<ProjectConfig>(
+            r#"{"semantic":{"allow_query_network":"true"}}"#
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn semantic_section_keys_are_known_config_keys() {
+        // The unknown-key diagnostics diff against the serialized default
+        // config, so the new section must round-trip cleanly.
+        let raw = serde_json::json!({
+            "semantic": {
+                "enabled": true,
+                "model_id": "m",
+                "dimensions": 8,
+                "metric": "cosine",
+                "dimensions_mode": "fixed",
+                "endpoint": "https://host/v1",
+                "api_key_ref": "env:KEY",
+                "max_input_tokens": 8192,
+                "max_batch_items": 64,
+                "encoding_formats": ["float"],
+                "supports_instruction": true,
+                "max_concurrent": 4,
+                "max_concurrent_per_project": 2,
+                "acquire_timeout_ms": 30000,
+                "retry_max_attempts": 4,
+                "retry_base_backoff_ms": 100,
+                "retry_max_backoff_ms": 1600,
+                "retry_total_deadline_ms": 5000,
+                "retry_respect_retry_after": true,
+                "retry_max_cost_units": 12,
+                "breaker_failure_threshold": 3,
+                "breaker_open_ms": 1000,
+                "network_opt_in": true,
+                "allow_http": false,
+                "reembed_budget_max": 64,
+                "worker_lease_secs": 300,
+                "gc_min_retention_secs": 1800
+            }
+        });
+        assert!(collect_unknown_config_keys(&raw).is_empty());
+        let full = serde_json::to_value(ProjectConfig::default()).unwrap();
+        assert!(collect_unknown_config_keys(&full).is_empty());
+        // P7-014 wiring keys: budget defaults unbounded, lease/grace carry
+        // their conservative defaults.
+        let parsed: ProjectConfig = serde_json::from_value(serde_json::json!({ "semantic": {
+                "reembed_budget_max": 64, "worker_lease_secs": 300,
+                "gc_min_retention_secs": 1800 } }))
+        .unwrap();
+        assert_eq!(parsed.semantic.reembed_budget_max, Some(64));
+        assert_eq!(parsed.semantic.worker_lease_secs, 300);
+        assert_eq!(parsed.semantic.gc_min_retention_secs, 1800);
+        let defaults = SemanticProviderConfig::default();
+        assert_eq!(defaults.reembed_budget_max, None);
+        assert_eq!(defaults.worker_lease_secs, 600);
+        assert_eq!(defaults.gc_min_retention_secs, 3_600);
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_empty_for_fully_valid_config() {
+        let raw = serde_json::json!({
+            "indexing": { "max_file_bytes": 1024, "max_concurrent_parse": 4 },
+            "search": { "lexical_top_k": 8 },
+            "ranking": { "overlap_weight": 0.5 },
+            "auto_index": { "enabled": false }
+        });
+        assert!(collect_unknown_config_keys(&raw).is_empty());
+        // Round-tripping the full default config must also be clean.
+        let full = serde_json::to_value(ProjectConfig::default()).unwrap();
+        assert!(collect_unknown_config_keys(&full).is_empty());
+    }
+
+    #[test]
+    fn index_paths_can_use_external_cache_dir() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let original = std::env::var("CODECORTEX_CACHE_DIR").ok();
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-path-test-{}", unique));
+        let cache_dir = std::env::temp_dir().join(format!("codecortex-cache-test-{}", unique));
+        std::fs::create_dir_all(&project_dir).unwrap();
+
+        std::env::set_var("CODECORTEX_CACHE_DIR", &cache_dir);
+        let paths = IndexPaths::new(&project_dir);
+        assert!(paths.workdir.starts_with(&cache_dir));
+        assert_eq!(paths.index_db, paths.workdir.join("index.sqlite3"));
+        assert_eq!(paths.logs_dir, paths.workdir.join("logs"));
+
+        if let Some(value) = original {
+            std::env::set_var("CODECORTEX_CACHE_DIR", value);
+        } else {
+            std::env::remove_var("CODECORTEX_CACHE_DIR");
+        }
+        let _ = std::fs::remove_dir_all(&project_dir);
+        let _ = std::fs::remove_dir_all(&cache_dir);
+    }
+
+    #[test]
+    fn find_project_root_with_marker_returns_marker_dir() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-root-test-{}", unique));
+        let nested = project_dir.join("src/nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::create_dir_all(project_dir.join(".git")).unwrap();
+
+        let found = find_project_root_with_marker(Some(&nested)).unwrap();
+        assert_eq!(found, project_dir.canonicalize().unwrap());
+
+        let _ = std::fs::remove_dir_all(&project_dir);
+    }
+
+    #[test]
+    fn find_project_root_with_marker_returns_none_without_marker() {
+        // Exercise the end of the ancestor walk directly. A temp directory
+        // can inherit a host marker (for example /tmp/.git in cloud runners).
+        let temp_root = std::env::temp_dir().canonicalize().unwrap();
+        let filesystem_root = temp_root.ancestors().last().unwrap();
+        assert!(!filesystem_root.join(".git").exists());
+        assert!(!filesystem_root.join(CONFIG_FILE_NAME).exists());
+        assert!(find_project_root_with_marker(Some(filesystem_root)).is_none());
+    }
+
+    #[test]
+    fn find_project_root_unmarked_child_preserves_parent_discovery() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-no-root-test-{}", unique));
+        std::fs::create_dir_all(&project_dir).unwrap();
+        assert!(!project_dir.join(".git").exists());
+        assert!(!project_dir.join(CONFIG_FILE_NAME).exists());
+        assert_eq!(
+            find_project_root_with_marker(Some(&project_dir)),
+            find_project_root_with_marker(project_dir.parent()),
+            "an unmarked child must inherit the parent's nearest marker, if any"
+        );
+        let _ = std::fs::remove_dir_all(&project_dir);
+    }
+}

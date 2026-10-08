@@ -1,0 +1,148 @@
+{
+  "checks": {
+    "actual_command_argv_log_exit_timing_and_sql_observations": "retained for completed attempts; plan/progress/logs remain evidence for interrupted attempts",
+    "capacity_admission": "original p8_runner_capacity hosted/context/source/ownedpath rules and original matrix disk preflight",
+    "capacity_profile": "scale_capacity_v1",
+    "contents_read_only": true,
+    "crate_cargo_source_before_after_and_source_commit": "correct original source_snapshot API",
+    "eight_controls_commands_ast_parsed": [
+      [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "-p",
+        "cc-db",
+        "-p",
+        "cc-eval",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--lib",
+        "indexer_phases::reconcile::dependency_window_tests",
+        "--",
+        "--nocapture"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--lib",
+        "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+        "--",
+        "--exact"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--test",
+        "p2d_dependency_cost",
+        "p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes",
+        "--",
+        "--exact"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p2c_reconcile"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p2d_mutations",
+        "pending_changes_rebase_and_shrinker_cannot_certify_incomplete",
+        "--",
+        "--exact"
+      ],
+      [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p8_scale",
+        "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+        "--",
+        "--exact"
+      ]
+    ],
+    "exact_event_sha_checkout_in_both_jobs": true,
+    "exact_test_selectors_exist_in_fixed_git_source": {
+      "crates/cc-db/tests/p2d_dependency_cost.rs": "p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes",
+      "crates/cc-eval/tests/p2d_mutations.rs": "pending_changes_rebase_and_shrinker_cannot_certify_incomplete",
+      "crates/cc-eval/tests/p8_scale.rs": "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+      "crates/cc-index/src/build_plan.rs": "stale_prepared_build_is_rejected_at_commit"
+    },
+    "failure_artifact_steps": "all control/build/capacity/shard uploads have always() and if-no-files-found error",
+    "full_scale_or_N30_acceptance_claimed": false,
+    "job_deadline_minutes": 350,
+    "main_dirty_budget": 200,
+    "main_max_resume": 1024,
+    "native_deadline_ms": 18000000,
+    "old_workflows_changed": false,
+    "one_strict_original_release_build": "original p8_scale_matrix build wrapper and full retained artifact",
+    "only_dedicated_branch_push": true,
+    "partial_scales": [
+      1000,
+      10000
+    ],
+    "registered_repetitions": 30,
+    "registered_shards": 30,
+    "seed": 12648430,
+    "shard_index": 0,
+    "source_fail_or_nonzero_control_prevents_build_and_diagnostics": true
+  },
+  "implementation_review": "833d52596df02aeb428bce526b9a5d4fc19d20ac",
+  "limitations": [
+    "No workflow has executed by this review; no Cargo, scale result or TODO completion inferred.",
+    "An interrupted/timed-out process may leave plan/progress/raw logs without a terminal receipt. Such an attempt must remain incomplete/unsealed rather than commands_completed.",
+    "Clippy here targets cc-index/cc-db/cc-eval as explicit partial engineering controls, not an original full-workspace replacement.",
+    "This workflow runs only global repetition0 of two registered scales. A pass cannot grant full 150 shards/1500 measurements or release approval.",
+    "Final public engineering commit must bind this exact workflow blob with the reviewed Rust blob; original G and G2 workflow runs retain their original identities."
+  ],
+  "schema_version": 1,
+  "status": "accepted_scoped_engineering_workflow_static",
+  "unresolved_static_blockers": [],
+  "workflow": {
+    "bytes": 9335,
+    "path": "/dev/shm/p8-prefix-engineering-workflow-root/p8-prefix-window-engineering.yml",
+    "sha256": "11bfc15d5836459afe2a9137351ea5b46c400b12227eb5adea02c9612fb90658"
+  }
+}

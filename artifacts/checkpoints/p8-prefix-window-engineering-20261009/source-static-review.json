@@ -1,0 +1,56 @@
+{
+  "author": "scale_engineering",
+  "controls_static_review": {
+    "actual_rust_execution": "not_run",
+    "coverage": [
+      "Actual SQLite original pending query as oracle across 401 keys/multiple kinds, duplicates, IN batches, holes/nonexistent exclusions, B=0/1/2/8/40/MAX and alternative admitted subsets",
+      "File-row replacement/removal/reopen through original APIs with read pool1; this is not a physical database-swap or full Indexer prepare execution",
+      "Explicit over-budget fallback branch and remaining overflow witness"
+    ],
+    "diff_check": "independently passed",
+    "format_check": "author-reported rustfmt1.95 pass; not repeated by this reviewer",
+    "new_rust_controls": [
+      "materialized_dependency_window_matches_original_pending_sql",
+      "dependency_window_reloads_after_replacement_removal_and_reopen",
+      "consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ]
+  },
+  "limitations": [
+    "Static nonauthor review only, no Cargo compilation or product execution. New Rust and existing integration/regression gates must actually run before execution acceptance.",
+    "This removes redundant tail lookup only; repeated-prefix and per-resume scan asymptotics remain. No speedup, whole-build complexity improvement, 100k feasibility or deadline compliance claimed.",
+    "Original G matrix continues with its actual source; this change does not retroactively modify or certify those records.",
+    "All native deadlines, capacity budgets, five scales, N30/150 shards/1500 measurements and original task dependencies remain unchanged; no TODO closure."
+  ],
+  "parent": "d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "required_existing_validation_commands": [
+    "cargo test --locked -p cc-index --lib dependency_window_tests -- --nocapture",
+    "cargo test --locked -p cc-db --test p2d_dependency_cost",
+    "cargo test --locked -p cc-eval --test p2c_reconcile",
+    "cargo test --locked -p cc-eval --test p2d_mutations",
+    "cargo test --locked -p cc-eval --test p8_scale bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity -- --exact",
+    "original workspace Clippy and format checks"
+  ],
+  "reviewer": "pr_audit",
+  "schema_version": 1,
+  "semantic_review": {
+    "completed_and_excluded": "Initial units/removals added before window lookup, old completed set exact; post-window completion extension is only promoted. Additional root candidates use a clone so mutating additional cannot change witness. Nonpromotable persisted dependents remain conservatively pending.",
+    "fallback": "If future closure admits more than B paths, return None and run original pending SQL; never certify an exhausted truncated witness.",
+    "scope": "Surface-dependent queries, closure budgets/rounds, epoch fences, durable state schema, per-prepare file scans and all source/validation acceptance thresholds unchanged. No persistent prefix/cache/index or SQL modification.",
+    "snapshot_boundary": "Invocation-local Vec only, no read lease or transaction retained and no state survives next prepare. This is not a cross-statement SQLite snapshot. Concurrent supported index writes/rebuilds remain subject to existing prepared_index_epoch commit fence; next prepare queries afresh.",
+    "window_proof": "Let U be initial dependent paths after old completed exclusions. W is its sorted distinct first B+1 window, bounded by the original helper. This prepare adds only closure.promoted to completed after W, at most B unique files. If |U|>B, at least one member of W remains uncompleted. If W is exhausted, U therefore fitted W and no dependency remains. New pending equals the original limit0 query for unchanged index facts.",
+    "work_accounting": "Only initial actual SQL work merged on normal path; fallback merges actual tail SQL. No invented query counter or cache-hit work. Saves one helper invocation, potentially multiple kind/key-batch SQL statements."
+  },
+  "sole_changed_path": {
+    "bytes": 15578,
+    "git_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+    "mode": "100644",
+    "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "previous_git_blob": "1771f09e5a755baf213c6a59c056fa7e5613f080",
+    "previous_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
+    "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+  },
+  "source_commit": "833d52596df02aeb428bce526b9a5d4fc19d20ac",
+  "status": "accepted_scoped_static_implementation_pending_execution",
+  "tree": "e639d8ec3c7290b71069eb55ce08a9de70c56469",
+  "unresolved_static_blockers": []
+}

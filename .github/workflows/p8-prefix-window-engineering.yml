@@ -1,0 +1,195 @@
+name: P8 dependency window engineering
+
+on:
+  push:
+    branches: [task/p8-prefix-window-engineering-20261009]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
+  PYTHONDONTWRITEBYTECODE: "1"
+  RUSTFLAGS: ""
+  RUSTC_WRAPPER: ""
+  RUSTC_WORKSPACE_WRAPPER: ""
+
+jobs:
+  controls_and_build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          components: clippy, rustfmt
+      - name: Fetch locked dependencies before engineering controls
+        run: cargo fetch --locked
+      - name: Capture fixed-source controls and preserve every attempted command
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          import time
+
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import json_bytes, source_snapshot
+
+          out = Path(os.environ['RUNNER_TEMP']) / 'prefix-controls'
+          out.mkdir(exist_ok=False)
+          observations = out / 'observations'
+          observations.mkdir()
+          env = dict(os.environ)
+          env['CARGO_TARGET_DIR'] = str(Path(os.environ['RUNNER_TEMP']) / 'prefix-controls-cargo')
+          env['CODECORTEX_BENCH_OBSERVATIONS'] = str(observations)
+          commands = [
+              ['cargo', 'fmt', '--all', '--', '--check'],
+              ['cargo', 'clippy', '--locked', '--offline', '-p', 'cc-index', '-p', 'cc-db', '-p', 'cc-eval', '--all-targets', '--', '-D', 'warnings'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--lib', 'indexer_phases::reconcile::dependency_window_tests', '--', '--nocapture'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--lib', 'build_plan::tests::stale_prepared_build_is_rejected_at_commit', '--', '--exact'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'p2d_dependency_cost', 'p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes', '--', '--exact'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2c_reconcile'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p2d_mutations', 'pending_changes_rebase_and_shrinker_cannot_certify_incomplete', '--', '--exact'],
+              ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p8_scale', 'bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity', '--', '--exact'],
+          ]
+          record = {
+              'schema_version': 1,
+              'scope': 'Partial engineering controls only; no N30 matrix, TODO or release approval',
+              'expected_source': os.environ['GITHUB_SHA'],
+              'cwd': str(Path.cwd()),
+              'commands': commands,
+              'results': [],
+              'environment': {key: env.get(key) for key in (
+                  'CARGO_TARGET_DIR', 'CARGO_INCREMENTAL', 'CARGO_BUILD_JOBS',
+                  'CARGO_PROFILE_DEV_DEBUG', 'CARGO_PROFILE_TEST_DEBUG', 'RUSTFLAGS',
+                  'RUSTC_WRAPPER', 'RUSTC_WORKSPACE_WRAPPER', 'CODECORTEX_BENCH_OBSERVATIONS')},
+              'status': 'running',
+          }
+          (out / 'plan.json').write_bytes(json_bytes(record))
+          code = 2
+          try:
+              before = source_snapshot(Path.cwd())
+              (out / 'source-before.json').write_bytes(json_bytes(before))
+              assert before['source_commit'] == os.environ['GITHUB_SHA']
+              for index, command in enumerate(commands):
+                  stem = f'{index:02}'
+                  result = {
+                      'argv': command,
+                      'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                      'stdout': stem + '.stdout',
+                      'stderr': stem + '.stderr',
+                  }
+                  start = time.monotonic_ns()
+                  with (out / result['stdout']).open('xb') as stdout, (out / result['stderr']).open('xb') as stderr:
+                      process = subprocess.run(command, cwd=Path.cwd(), env=env, stdout=stdout, stderr=stderr, check=False)
+                  result.update(exit_code=process.returncode, elapsed_ns=time.monotonic_ns() - start)
+                  record['results'].append(result)
+                  (out / 'progress.json').write_bytes(json_bytes(record))
+                  if process.returncode:
+                      break
+              after = source_snapshot(Path.cwd())
+              (out / 'source-after.json').write_bytes(json_bytes(after))
+              record['source_unchanged'] = before == after
+              assert before == after
+              code = 0 if len(record['results']) == len(commands) and all(row['exit_code'] == 0 for row in record['results']) else 1
+              record['status'] = 'commands_completed' if code == 0 else 'command_failed'
+          except Exception as error:
+              record['status'] = 'invalid_engineering_execution'
+              record['error'] = f'{type(error).__name__}: {error}'
+          finally:
+              record['not_run_command_indices'] = list(range(len(record['results']), len(commands)))
+              record['exit_code'] = code
+              record['files'] = {
+                  path.relative_to(out).as_posix(): {
+                      'bytes': path.stat().st_size,
+                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                  }
+                  for path in sorted(out.rglob('*')) if path.is_file() and path.name != 'receipt.json'
+              }
+              (out / 'receipt.json').write_bytes(json_bytes(record))
+          print(json.dumps({'status': record['status'], 'exit_code': code, 'attempted_commands': len(record['results'])}))
+          raise SystemExit(code)
+          PY
+      - name: Preserve original control source, logs and SQL counters
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-prefix-controls-${{ github.run_id }}
+          path: ${{ runner.temp }}/prefix-controls
+          if-no-files-found: error
+      - name: Build one exact release scale executable after successful controls
+        run: |
+          python3 scripts/p8_scale_matrix.py build --root "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/prefix-scale-build" \
+            --target-directory "$RUNNER_TEMP/prefix-scale-cargo"
+      - name: Preserve original release build and exact executable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-prefix-scale-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/prefix-scale-build
+          if-no-files-found: error
+
+  diagnostic:
+    name: engineering scale ${{ matrix.scale }} repetition 0 only
+    needs: controls_and_build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        scale: [1000, 10000]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-prefix-scale-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/prefix-scale-build
+      - name: Enforce original hosted capacity before the partial diagnostic
+        env:
+          SCALE: ${{ matrix.scale }}
+          P8_EXPECTED_SOURCE: ${{ github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/prefix-capacity-$SCALE" --prepare-ephemeral
+      - name: Preserve capacity observations including refusal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-prefix-capacity-${{ matrix.scale }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/prefix-capacity-${{ matrix.scale }}
+          if-no-files-found: error
+      - name: Execute the original single repetition with every phase and parity check
+        env:
+          SCALE: ${{ matrix.scale }}
+        run: |
+          chmod +x "$RUNNER_TEMP/prefix-scale-build/p8-scale"
+          python3 scripts/p8_scale_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/prefix-scale-build" --scale "$SCALE" \
+            --shard-index 0 --shard-count 30 --repetitions 30 --seed 12648430 \
+            --deadline-ms 18000000 --capacity-profile scale_capacity_v1 \
+            --output "$RUNNER_TEMP/prefix-scale-shard-$SCALE-0"
+      - name: Preserve partial engineering raw without granting a full matrix pass
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-prefix-shard-${{ matrix.scale }}-0-${{ github.run_id }}
+          path: ${{ runner.temp }}/prefix-scale-shard-${{ matrix.scale }}-0
+          if-no-files-found: error

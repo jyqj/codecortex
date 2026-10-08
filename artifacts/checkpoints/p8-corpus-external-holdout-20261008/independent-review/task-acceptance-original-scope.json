@@ -1,0 +1,806 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/p8_corpus_closeout",
+  "observed_utc": "2026-10-08T09:22:14.027619+00:00",
+  "scope": "原P8-002/003/004逐条任务执行验收；公开输入已独审，fresh holdout仅限明确许可的无题体metadata/汇总读取。任务文本、评分、产品与失败gate均未修改。",
+  "status": "accepted_original_task_execution_scope_final_integration_checks_pending",
+  "candidate_identities": {
+    "F_product_and_original_evaluator": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+    "D_coverage_diagnostic_evaluator": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+    "reviewed_final_source_P": "615662bd0e651dc40a9d1d0d6757bc28646b900d",
+    "final_installed_source_S": null
+  },
+  "fixed_binaries_rehashed": {
+    "codecortex": {
+      "sha256": "b9656f63897c1d6df2aafec944e6bf8b71179c67a7c4d81d573f46bdc52207bb",
+      "bytes": 27048408
+    },
+    "cc-eval": {
+      "sha256": "554d1baefeadd367614a0755a94b2db5a6194b284a83c03b7d8fe172368dd33d",
+      "bytes": 31248248
+    },
+    "cc-eval-coverage-diagnostic": {
+      "sha256": "2bca0177846fedd3f889308e57b77f4cec03446817991c9c98b293113839d606",
+      "bytes": 77496640
+    }
+  },
+  "original_authority_files": {
+    "docs/roadmap/code-index-v2/tasks.json": {
+      "sha256": "b13b140bcf3a30c12fd78353c574192dd1571d41aeb410395e4c382f95749c1e",
+      "bytes": 777478,
+      "unchanged_F_to_P": true
+    },
+    "docs/roadmap/code-index-v2/06-VALIDATION.md": {
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "bytes": 10172,
+      "unchanged_F_to_P": true
+    },
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": {
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "bytes": 20488,
+      "unchanged_F_to_P": true
+    },
+    "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json": {
+      "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af",
+      "bytes": 2287,
+      "unchanged_F_to_P": true
+    }
+  },
+  "original_task_fields_verbatim": {
+    "P8-002": {
+      "id": "P8-002",
+      "title": "完成真实多仓native语料认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-001"
+      ],
+      "steps": [
+        "扩至规划语言/仓库覆盖并复核gold",
+        "公开/私有数据分离"
+      ],
+      "acceptance": [
+        "题数、类别、语言、能力缺口和实际审阅范围透明",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "deliverables": [
+        "完成真实多仓native语料认证的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V02, V19 验证证据（实施时生成）"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/native/",
+        "crates/cc-eval/benchmarks/manifests/"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    "P8-003": {
+      "id": "P8-003",
+      "title": "运行外部兼容套件",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-002"
+      ],
+      "steps": [
+        "同输入锁跑cc-switch/Flask",
+        "compat与native独立分报"
+      ],
+      "acceptance": [
+        "无锁/输入不同/平台glob差异不能直接对比排行榜",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "deliverables": [
+        "运行外部兼容套件的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V19 验证证据（实施时生成）"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/adapters/",
+        "artifacts/benchmarks/"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    "P8-004": {
+      "id": "P8-004",
+      "title": "封存holdout与反过拟合检查",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-003"
+      ],
+      "steps": [
+        "审查生产无gold路径/题词典",
+        "一次冻结配置运行heldout"
+      ],
+      "acceptance": [
+        "translation/paraphrase不泄漏，回归后不直接改标签保分",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "deliverables": [
+        "封存holdout与反过拟合检查的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/manifests/",
+        "crates/cc-search/"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    }
+  },
+  "original_document_clauses": [
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 23,
+      "original_text": "读取到的 GitHub license 元数据为 null，列出的 tree 无 LICENSE。它只说明本次未发现可直接依赖的许可证声明，不作法律结论。实施前登记使用方式和权限；默认独立实现方法，外部 benchmark 路径作为用户提供输入，不把整份第三方代码/题库直接复制进本仓库。上游运行器只作为固定外部对照工具。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 132,
+      "original_text": "每题输入至少：id、repo_id、split、category、language、difficulty、query、query_family、intent、hard_scope、gold answer groups、required evidence/facets、optional graph constraints、mutation profile。用 query_family 把改写/中英文配对一起分配 split，避免泄漏。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 144,
+      "original_text": "不能为了分数写题目关键词词典、gold path boost、仓库特判；测试 corpus 不允许进入生产包。数据集变更与引擎调参分开评审，评分器变更必须重算两边，不能拿新评分与旧报告比较。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 151,
+      "original_text": "| D1 | 外部 cc-switch+Flask 兼容集，共 metadata 声明的 200 题；导入前核验 | P0 importer，P1 起连续运行 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 152,
+      "original_text": "| D2 | 6 个以上真实仓库，覆盖 Rust/JS/TS/Python/Go 与至少一个 mixed monorepo；初始约 600 个审阅问题 | P0 方法，P2–P5 扩充 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 155,
+      "original_text": "| D5 | held-out repo/module/query-family；中英改写与自然语言零词面重合；不得被开发集反复调参污染 | P0 分割规则，P8 认证 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 159,
+      "original_text": "每题先阅读固定源码、标主/支持答案，再独立复核；必须包含错误但字面更相近的 hard negatives。LLM 可辅助起草、找遗漏和二次审阅，不能同时由同一个系统生成答案又给自己评分。gold 争议进入 quarantine，版本化记录，不为了回归变绿直接删题。若使用 LLM judge，冻结 prompt/model、保存依据和重复一致性，作为旁证而非核心确定性 gate。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 185,
+      "original_text": "门槛在 P0 基线冻结后预注册。建议起始 guardrails：关键确定性正确性 100%；scope/source/版本泄漏 0；goldens scorer 完全一致；质量类平均退化预算 0.01（绝对 nDCG）与 PrimaryTop1 1 个百分点作为评审触发值，而非任意容忍错误；性能退化超过 10% 进入解释/审批，超过 20% 阻断目标 profile，需满足采样/同环境条件。语义能力要求 held-out 语义类收益 CI 下界>0 且 exact 类无实质退化；不预承诺具体加速倍数/分数。小样本 CI 不确定时结论 inconclusive，而非强行 pass。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 3,
+      "original_text": "> Vxx 为验证包，不代表所有未来场景已认证。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 24,
+      "original_text": "| V02 | benchmark schema/lock | 重复 ID、BOM、坏 JSON、空 gold、路径穿越、dirty、submodule、输入 hash、single/suite 均拒漂移 | L1/L3 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 25,
+      "original_text": "| V03 | scorer goldens | primary/supporting、linear nDCG、重复、glob、空结果、must_contain 注记、native 范围/组/chain | L1 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 26,
+      "original_text": "| V04 | 传输与报告 | MCP 握手/错误/取消、HTTP 失败、readiness、timeout、退出码、raw→metrics/report 可重算 | L2/L3 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 41,
+      "original_text": "| V19 | 检索质量/消融 | compat/native分报，真实公开 corpus，hard negatives、holdout、facet/span、macro/micro/CI | L3/L4 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 58,
+      "original_text": "| G8 | P8 | V01/V18–V21 全量 release profile，holdout及100k、原始报告和回滚演练；blocker=0 |"
+    }
+  ],
+  "authorization_interpretation": {
+    "authority": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+    "D3": "原公开仓+固定commit选择已经解锁来源；本轮正常Git取得并登记的canonical外部输入满足来源方向，不新增用户必须亲手传文件的门槛。",
+    "D1_D2": "本轮不授权付费provider/代码外发，约束live/外部服务路径，不禁止已授权公开仓的本地输入和MCP执行。",
+    "no_added_acceptance_thresholds": [
+      "不将约600审阅问题改为600独立family",
+      "不要求原文未要求的外部custodian或ACL隔离",
+      "不把原运行任务改写为必须质量gate通过",
+      "不把缺少工程实施或审阅时间称外部阻塞"
+    ]
+  },
+  "task_reviews": {
+    "P8-002": {
+      "recommended_task_status_after_final_integration_checks": "done",
+      "accepted_scope": "完成原规划公开DEV语料的准入、固定输入、逐题gold复核和透明能力登记；不将语料准入当作检索质量或发布认证。",
+      "step_reviews": [
+        {
+          "original_text": "扩至规划语言/仓库覆盖并复核gold",
+          "judgment": "satisfied",
+          "basis": "正式registry为6个真实仓库、600条native reviewed questions、10类别，覆盖Rust/JS/TS/Python/Go与Vite mixed monorepo。原301条保留已审历史来源/范围；新Serde150与Vite149共299条均完成非作者全量source/gold/hard-negative复核并绑定精确字节。20个native/compat suite使用固定F validator实际全部exit0。554条compat只是同题投影，不重复计题。557个family标签及历史关联分量透明，不宣称600或557个独立样本。",
+          "evidence_refs": [
+            "dev_registry",
+            "dev_independent_review",
+            "serde_all150_review",
+            "vite_all149_review"
+          ]
+        },
+        {
+          "original_text": "公开/私有数据分离",
+          "judgment": "satisfied",
+          "basis": "D3已选择公开仓+固定commit并登记许可/使用方式。registry只接受固定DEV输入，旧保护题体不进入准入清单，新holdout也不进入DEV600。新仓为clean固定Git checkout；历史仓为183个显式旧Git路径/hash导出的原snapshot，保留commit=null与原source namespace，不将snapshot伪称当前完整checkout。未选择/未授权的私有语料不被计入已认证覆盖。",
+          "evidence_refs": [
+            "dev_registry",
+            "dev_independent_review"
+          ]
+        }
+      ],
+      "acceptance_reviews": [
+        {
+          "original_text": "题数、类别、语言、能力缺口和实际审阅范围透明",
+          "judgment": "satisfied",
+          "basis": "registry及逐套日志公开600/554/46 no_answer、语言/类别分布、6仓308源文件、301历史+299新审范围、来源许可与固定身份。自动facet语义/graph约束、全600在F重新检索评分、广泛语义泛化和full V19不由准入证明，须继续显式未认证。",
+          "evidence_refs": [
+            "dev_registry",
+            "dev_independent_review"
+          ]
+        },
+        {
+          "original_text": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "judgment": "satisfied_for_relevant_executed_regressions",
+          "basis": "实际21个Python控制（6新registry+15原corpus）与固定D的59个CLI/lock/scorer/report/diagnostic Rust回归均通过；新数据未修改产品/原scorer。未运行的full V19、全部600当前候选质量评测、live/cross-platform/release profile保持not_run或blocked，不能借本任务done变为pass。最终S原174 source-integrity与CLI guard尚待独立运行，其结果由另一个固定源收据绑定。",
+          "evidence_refs": [
+            "dev_regressions",
+            "evaluator_regressions",
+            "dev_independent_review"
+          ]
+        }
+      ],
+      "validation_packages": {
+        "V02": "passed_declared_schema_lock_and_20_suite_admission_scope",
+        "V19": "D2_corpus_and_gold_review_complete; full_quality_and_ablation_package_not_passed"
+      },
+      "unresolved_original_execution_blockers": []
+    },
+    "P8-003": {
+      "recommended_task_status_after_final_integration_checks": "done",
+      "accepted_scope": "固定canonical cc-switch/Flask原输入的真实本地MCP执行、完整失败记录、独立compat/native分报与raw重放；原任务是运行和透明报告，不新增通过质量gate的条件。",
+      "step_reviews": [
+        {
+          "original_text": "同输入锁跑cc-switch/Flask",
+          "judgment": "satisfied_with_failed_measurements_retained",
+          "basis": "原F strict运行已实际尝试两套compat并以exit2拒绝不完整readiness。之后固定D评测器仅在显式coverage-diagnostic profile下驱动同一F产品，cc-switch/Flask各100题、compat/native各N=3，总1200 measured rows。独审核全ID×repetition、raw/query echo/BLAKE3、source与query/config lock。D不改F产品、gold、scorer或原失效gate；4套全为invalid_measurement/exit2。诊断完成不表示有效质量或性能测量。",
+          "evidence_refs": [
+            "canonical_strict_ccswitch",
+            "canonical_strict_flask",
+            "canonical_full_audit",
+            "canonical_raw_seal",
+            "canonical_F_replay"
+          ]
+        },
+        {
+          "original_text": "compat与native独立分报",
+          "judgment": "satisfied",
+          "basis": "4套分别保留原run/report、oce-compat-v1或codecortex-native-v1评分标识及非零gate；不能把不同gain/primary规则混成同一排行榜。native为原gold file-pattern的透明投影，未生成未经审阅的symbol/span gold，must_contain仍仅注记。原F对4份raw副本实际replay，1276个原成员字节全部一致，保持exit2。",
+          "evidence_refs": [
+            "canonical_full_audit",
+            "canonical_F_replay"
+          ]
+        }
+      ],
+      "acceptance_reviews": [
+        {
+          "original_text": "无锁/输入不同/平台glob差异不能直接对比排行榜",
+          "judgment": "satisfied_by_locked_inputs_and_explicit_comparison_exclusion",
+          "basis": "OCE d4f10554的原200题和两个目标固定仓均有本地Git输入登记；同repo两profile共用固定source域/原题内容，投影差异明确。独审重做原pattern匹配和实际F scanner覆盖：cc-switch912/1030，Flask94/229，缺口分别102格式+16hidden、118格式+17hidden；Unknown保留Unknown。没有OCE HTTP服务对照或跨平台glob实测，因此不存在可发布的外部服务排名、同预算性能比较或跨平台等价结论。",
+          "evidence_refs": [
+            "canonical_full_audit"
+          ]
+        },
+        {
+          "original_text": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "judgment": "satisfied_for_relevant_executed_regressions",
+          "basis": "固定D的59个实际契约/锁/评分/报告控制通过，包括strict零查询拒绝不完整coverage、diagnostic不升级Unknown、不提升为有效gate、原scorer/原raw重放。实际失败套件标invalid_measurement并保留exit2；没有运行的外部服务/有效release质量腿标not_run，不把已尝试失败写成从未执行。原题争议由200题适用性报告逐ID版本化保留，不改gold/删题/重算修饰分数。最终S source-integrity gate另行待运行。",
+          "evidence_refs": [
+            "evaluator_regressions",
+            "canonical_full_audit",
+            "canonical_ccswitch_gold_review",
+            "canonical_flask_gold_review"
+          ]
+        }
+      ],
+      "validation_packages": {
+        "V03": "passed_21_existing_scoring_goldens_in_declared_local_scope",
+        "V04": "passed_declared_contract_and_raw_replay_scope; real_canonical_readiness_remains_invalid_measurement",
+        "V19": "canonical_compat_native_execution_and_negative_reporting_complete; quality_not_certified"
+      },
+      "unresolved_original_execution_blockers": []
+    },
+    "P8-004": {
+      "recommended_task_status_after_final_integration_checks": "done",
+      "accepted_scope": "固定F生产边界审查，预先冻结并独立复核的全新64条holdout一次运行、完整seal及负结果归档；不表示holdout质量通过或通用无过拟合证明。",
+      "step_reviews": [
+        {
+          "original_text": "审查生产无gold路径/题词典",
+          "judgment": "satisfied_as_bounded_production_review",
+          "basis": "独审核798个真实build inputs、305个codecortex本地编译输入及359源文件生产边界扫描，区分cc-eval评分端与codecortex产品端；800条公开DEV/canonical签名和实际MCP数据流检查未发现生产gold路径表/题词典注入。原扫描exit1的2处lib/utils.js泛用测试fixture命中保留，并以实际cfg(test)位置解释，未把脚本原结果改为pass。原16负控全过；固定F早于fresh题体产生，后续产品/config/scorer不变。",
+          "evidence_refs": [
+            "product_boundary",
+            "boundary_regressions",
+            "fixed_binaries",
+            "holdout_preexecution_custody",
+            "holdout_metadata_summary"
+          ]
+        },
+        {
+          "original_text": "一次冻结配置运行heldout",
+          "judgment": "satisfied_with_original_gate_failures",
+          "basis": "walkdir+click固定公开源码、32双语families/64行（56正例、8no_answer）在固定F和预注册config下每套仅1次，N=1/warmup=0/retry=0。83/83源ready，64条真实raw，57Partial/7NoMatch；两套原strict gate均exit1。执行后先seal107成员，再查看质量、分析原分数和对副本重放；无追加retrieval或分数驱动重试，原文件不变，packet转used/retired。",
+          "evidence_refs": [
+            "holdout_metadata_summary",
+            "holdout_execution_lock",
+            "holdout_once_execution",
+            "holdout_raw_seal_metadata",
+            "holdout_F_replay",
+            "holdout_postseal_independent_review"
+          ]
+        }
+      ],
+      "acceptance_reviews": [
+        {
+          "original_text": "translation/paraphrase不泄漏，回归后不直接改标签保分",
+          "judgment": "satisfied_with_stated_observation_limits",
+          "basis": "非作者完整64条source/gold/翻译静态复核在测量前接受。32双语pairs全部同holdout split，gold/category/target-language/scope一致；与完整600 DEV的ID/family/Unicode NFKC+casefold+空白规范化query SHA碰撞全部0。英语28正例原ASCII零交集3，Camel/Snake拆分后1；中文28正例22个零交集均缺ASCII token，不能据此证明语义能力。freeze后无改源/题/gold/配置/评分、删题保分或重复调参。角色和访问日志隔离有记录，但共享文件系统不提供ACL盲测保证；穷尽所有跨题语义相似没有被证明。原旧117候选custody警告只适用于旧packet，不能移植成新packet污染事实。",
+          "evidence_refs": [
+            "holdout_prescore_independent_attestation",
+            "holdout_preexecution_custody",
+            "holdout_custody_events",
+            "holdout_execution_lock",
+            "holdout_postseal_independent_review",
+            "holdout_F_replay",
+            "product_boundary"
+          ]
+        },
+        {
+          "original_text": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "judgment": "satisfied_for_relevant_executed_regressions",
+          "basis": "原16边界控制和固定D59契约/评分回归通过；新holdout实际使用未改的F release评测器/产品，非zero原gate被逐字节副本重放。8个no_answer全部失败、原Partial均保留；2仓7源文件关联分量、N1、仅local disabled provider等统计范围明示。完整V19、G8、尾延迟、跨平台和live认证均不转绿。最终S原174 source-integrity与CLI guard待另行实际通过。",
+          "evidence_refs": [
+            "boundary_regressions",
+            "evaluator_regressions",
+            "holdout_aggregate_results",
+            "holdout_postseal_independent_review",
+            "holdout_F_replay"
+          ]
+        }
+      ],
+      "validation_packages": {
+        "V19": "fresh_holdout_once_source_integrity_and_reporting_complete; original_quality_gates_failed; full_ablation_and_release_package_not_passed"
+      },
+      "unresolved_original_execution_blockers": []
+    }
+  },
+  "dependency_review": {
+    "P8-001_original_status": "done",
+    "P8-002": "depends_on_original_P8-001",
+    "P8-003": "depends_on_P8-002_execution_acceptance",
+    "P8-004": "depends_on_P8-003_execution_acceptance"
+  },
+  "actual_development_corpus_coverage": {
+    "categories": {
+      "api_usage": 54,
+      "architecture_understanding": 81,
+      "call_chain": 83,
+      "component_location": 36,
+      "configuration_lookup": 34,
+      "cross_language": 5,
+      "error_handling": 102,
+      "file_exact_match": 4,
+      "semantic_feature": 163,
+      "symbol_location": 38
+    },
+    "compat_rows": 554,
+    "compat_rows_are_projections_not_new_questions": true,
+    "cross_repository_family_id_collisions": 0,
+    "current_gold_quality_or_release_certified": false,
+    "distinct_family_labels": 557,
+    "duplicate_id_errors": 0,
+    "families_are_independent_samples": false,
+    "family_split_coverage": {
+      "dev": 557
+    },
+    "historical_correlation_components_rechecked": 280,
+    "historical_reviewed_rows": 301,
+    "historical_source_files": 100,
+    "languages": {
+      "go": 67,
+      "html": 1,
+      "javascript": 70,
+      "json": 2,
+      "mixed": 5,
+      "python": 91,
+      "rust": 145,
+      "toml": 5,
+      "typescript": 214
+    },
+    "missing_categories": [],
+    "missing_core_languages": [],
+    "native_rows": 600,
+    "new_independently_reviewed_rows": 299,
+    "new_source_files": 208,
+    "no_answer_rows": 46,
+    "normalized_duplicate_query_groups": 0,
+    "projection_rows_checked": 554,
+    "protected_body_reads": 0,
+    "repositories": 6,
+    "source_modes": {
+      "historical_repositories": "frozen Git blobs; snapshot commit=null",
+      "new_repositories": "clean fixed upstream Git checkout"
+    }
+  },
+  "canonical_measurement_scope": {
+    "canonical_questions": 200,
+    "profiles_per_repository": 2,
+    "repetitions": 3,
+    "measured_rows": 1200,
+    "strict_F_attempts": {
+      "cc-switch": "attempted_invalid_measurement_exit2",
+      "flask": "attempted_invalid_measurement_exit2"
+    },
+    "all_diagnostic_original_gates": "invalid_measurement_exit2",
+    "source_coverage": {
+      "cc-switch": {
+        "ready": 912,
+        "locked": 1030,
+        "format_excluded": 102,
+        "hidden_excluded": 16
+      },
+      "flask": {
+        "ready": 94,
+        "locked": 229,
+        "format_excluded": 118,
+        "hidden_excluded": 17
+      }
+    },
+    "gold_applicability": {
+      "cc-switch": {
+        "supported": 93,
+        "uncertain": 4,
+        "disputed": 3
+      },
+      "flask": {
+        "supported_at_file_scope": 90,
+        "supported_with_scope_note": 6,
+        "disputed": 4
+      }
+    },
+    "gold_disputes_disposition": "保持逐ID版本化争议/范围注记作为认证解释的quarantine；保留全部原200题及原gold测量，不删题、不修题后声称同canonical、不重算抹去负结果。",
+    "quality_or_performance_eligible": false,
+    "external_OCE_HTTP_service_or_leaderboard_comparison": "not_run"
+  },
+  "fresh_holdout_actual_body_free_findings": {
+    "rows": 64,
+    "positive_rows": 56,
+    "no_answer_rows": 8,
+    "families": 32,
+    "repositories": 2,
+    "source_file_linked_components": 7,
+    "all_bilingual_pairs_same_split": 32,
+    "dev_overlap_comparison": {
+      "all_bilingual_families_same_heldout_split": 32,
+      "all_bilingual_pairs_gold_category_target_language_and_scope_identical": true,
+      "collisions": {
+        "family_label": 0,
+        "id": 0,
+        "normalized_query_sha256": 0
+      },
+      "dev_family_labels": 557,
+      "dev_query_input_sha256": {
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/current/crates/cc-eval/benchmarks/public-dev-20261008/serde/queries.native.dev.jsonl": "4d5ac21c0b42a385ef348da069a1bcd3c9ae547b3ebb3c77b673bd749455f7ec",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/current/crates/cc-eval/benchmarks/public-dev-20261008/vite/queries.native.dev.jsonl": "8be93d5484b2f0f73b8d0afd73cc48bf6ac48d5ac69fdcff7ef5c5094b6f4f7a",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/465e9e0bd435e2e30c08de8702f78a0d10c49c8e/crates/cc-eval/benchmarks/public-v19/express/intake/dev-repair-v1/queries.native.dev.jsonl": "2665287f268b98f9ff4594af3cf9db9a5cbb1129331d6ec6249660697d3c024b",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/4c01f627bd6df73e70bfe1dbdc42b2a9234e797a/crates/cc-eval/benchmarks/public-v19/typescript/blocks/01-migration/queries.native.dev.jsonl": "506954396997114423321eb074c6d0d959083d1628bb13b3776b42e9e78b691d",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/4c01f627bd6df73e70bfe1dbdc42b2a9234e797a/crates/cc-eval/benchmarks/public-v19/typescript/blocks/02/queries.native.dev.jsonl": "4e0779a7f2f30160dbb4103db07e1d963645345ce8b8b1a0d983258e1377dfcb",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/4c01f627bd6df73e70bfe1dbdc42b2a9234e797a/crates/cc-eval/benchmarks/public-v19/typescript/blocks/03/queries.native.dev.jsonl": "04d11ca05377c808b933d310c758cda94c2b36c258b6c00eb95b8b771fb04da7",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/4c01f627bd6df73e70bfe1dbdc42b2a9234e797a/crates/cc-eval/benchmarks/public-v19/typescript/blocks/04/queries.native.dev.jsonl": "38b46121040d36a1dc0bd94f75df632d28c5115342f81132e2b6f9acf4714ecc",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/4c01f627bd6df73e70bfe1dbdc42b2a9234e797a/crates/cc-eval/benchmarks/public-v19/typescript/blocks/05/queries.native.dev.jsonl": "c185ab759003675977d3ea0bf9f278ab0bbd28112534c702062be75640bf516c",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/949a9471f552d496e85b27c460c7b76536f13803/crates/cc-eval/benchmarks/public-v19/gin/queries.native.dev.jsonl": "c7524598e5fa511face9f31d04f49295187f71e22902cb9b2b85c0dbebb738b7",
+        "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/legacy/e49f9ada5826b4206d2128f3bfb8d31603ff42fa/crates/cc-eval/benchmarks/public-v19/requests/queries.native.dev.jsonl": "cb5e52cffad8f8359fbea83903839a37a8cf5223edd073d840433a8b52e9e355"
+      },
+      "dev_rows_compared": 600,
+      "dev_suite_registry_sha256": "a26b68d039a01ab1c3a72e91f1abdf6bd5b4b1083e0b84ad3496965aedcc1413",
+      "fresh_packet_query_sha256": {
+        "click": "d9a962c66c740a7c39c5f7688f60e13d1ee887a8120461f3086ce90b20421cee",
+        "walkdir": "e7785a2538df0191b26db048597b1805873a7ef743b0adeb869da6ebbe38e20a"
+      },
+      "fresh_rows": 64,
+      "lexical_overlap_counts_independently_recomputed": {
+        "en": {
+          "positive_rows": 28,
+          "rows_with_no_ascii_tokens": 0,
+          "zero_camel_snake_split_ascii_overlap": 1,
+          "zero_exact_ascii_overlap": 3
+        },
+        "zh": {
+          "positive_rows": 28,
+          "rows_with_no_ascii_tokens": 22,
+          "zero_camel_snake_split_ascii_overlap": 22,
+          "zero_exact_ascii_overlap": 22
+        }
+      },
+      "literal_overlap_target": "All primary/supporting gold spans, path and optional symbol; no stopword removal/stemming.",
+      "non_author_full_source_grounded_translation_review_sha256": "503b89d6d0ff5c3d27921e59590763e82b00d90914242ade4b661cde924c4a0f",
+      "normalization": "Unicode NFKC, casefold, collapse whitespace, then SHA-256",
+      "scope_limit": "Same-split bilingual membership, exact normalized overlap checks and complete within-pair source/translation review are verified. Zero hash collisions do not certify zero semantic similarity across every DEV/fresh pair, and Chinese lacking ASCII does not establish semantic capability."
+    },
+    "status_counts": {
+      "no_match": 7,
+      "partial": 57
+    },
+    "original_gate_exit_codes": {
+      "click": 1,
+      "walkdir": 1
+    },
+    "no_answer_correct": 0,
+    "no_answer_incorrect": 8,
+    "positive_top1": 0.17857142857142858,
+    "positive_ndcg10": 0.19053028009305686,
+    "original_raw_members": 107,
+    "returned_source_valid_spans": 85,
+    "source_validity_is_not_relevance": true,
+    "full_non_author_review_sha256_attested_not_body_read_here": "503b89d6d0ff5c3d27921e59590763e82b00d90914242ade4b661cde924c4a0f",
+    "sample_and_custody_limits": [
+      "The fixed packet has two repositories and seven source-file-linked components; its 32 labels are not independent population samples.",
+      "Intervals are conditional descriptions of the frozen packet, not broad significance or semantic-provider gain.",
+      "All 85 returned spans are source-valid, while relevance scores and both original gates remain poor/failed.",
+      "N1/warmup0 does not certify performance tails or cache isolation.",
+      "Role/access logs and freeze timestamps were checked as recorded provenance; shared storage is not ACL-enforced blindness.",
+      "This review accepts accurate negative-result reporting and input integrity, not quality or original TODO completion."
+    ]
+  },
+  "regressions_actually_evidenced": {
+    "DEV_registry_and_existing_corpus_Python_controls": {
+      "passed": 21,
+      "new": 6,
+      "existing": 15,
+      "receipt": "dev_regressions"
+    },
+    "fixed_D_Rust_CLI_coverage_defect_lock_report_scoring_controls": {
+      "passed": 59,
+      "failed": 0,
+      "ignored": 0,
+      "by_suite": {
+        "benchmark_cli": 6,
+        "benchmark_coverage_diagnostics": 7,
+        "benchmark_defects": 4,
+        "benchmark_lock": 10,
+        "benchmark_reports": 11,
+        "benchmark_scoring": 21
+      },
+      "receipt": "evaluator_regressions",
+      "log_sha256": "2acd8ad06009fa21e0e93187fb4e6ed8fa589827ca169a3c0cdd3f5ab792cca3"
+    },
+    "fixed_F_original_boundary_controls": {
+      "passed": 16,
+      "receipt": "boundary_regressions"
+    },
+    "final_S_original_174_source_integrity_and_CLI_guard": {
+      "status": "pending_final_S_pins_not_yet_tested",
+      "old_test_predicates_may_be_modified": false
+    }
+  },
+  "claims_that_remain_failed_or_not_run": [
+    {
+      "claim": "canonical有效质量/性能测量及外部排行榜",
+      "status": "invalid_measurement_exit2; leaderboard_not_run"
+    },
+    {
+      "claim": "fresh64检索质量gate",
+      "status": "failed_exit1_on_both_suites; 57Partial7NoMatch; all8no_answer_failed"
+    },
+    {
+      "claim": "全600条在F上完整重新检索/评分认证",
+      "status": "not_run_by_DEV_admission; do_not_infer_from_20_validate_calls"
+    },
+    {
+      "claim": "自动facet语义、graph约束/调用链整体能力",
+      "status": "unsupported_or_not_run_beyond_existing_scorer_and_static_annotations"
+    },
+    {
+      "claim": "完整V19检索质量/消融",
+      "status": "not_passed; declared_data_and_execution_subsets_only"
+    },
+    {
+      "claim": "G8与M4发行认证",
+      "status": "not_passed; no_blocker_zero_or_full_release_claim"
+    },
+    {
+      "claim": "live/provider/语义提升CI/100k/跨平台/尾延迟",
+      "status": "not_certified_by_this_work; live_blocked_by_D1_D2; other_profiles_keep_their_own_existing_status"
+    },
+    {
+      "claim": "共享文件系统上的ACL盲测或穷尽语义无过拟合",
+      "status": "not_proved; recorded_role_and_access_log_scope_only"
+    }
+  ],
+  "release_and_rollback_interpretation": "原rollback保持：不发布未通过候选；保存全部raw与失败gate。合并语料、诊断工具和真实负结果/任务执行证据不等于发布F产品或宣告M4/G8通过。",
+  "evidence_delivery_requirement": "原deliverable的run-id证据应在最终仓库checkpoint/run-index中给出固定路径、原收据/hash及raw归档入口；本审查不把仅prepared脚本或模板当证据，也不把尚未运行的最终S检查算已通过。",
+  "evidence": {
+    "dev_registry": {
+      "path": "/workspace/scratch/031390cf22eb/round4-native-registry/validation-v2/registry-validation.json",
+      "sha256": "5a46c336f1f8125e214a7f3e5ada05a01dd749c1dfe07ac39fcd28c54539d689",
+      "bytes": 186954
+    },
+    "dev_independent_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-native-registry/registry-independent-code-review.json",
+      "sha256": "98dd911544aad7729d5d6417065f52960d503037b3d5b1b29825589c3256cd07",
+      "bytes": 8731
+    },
+    "dev_regressions": {
+      "path": "/workspace/scratch/031390cf22eb/round4-native-registry/registry-final-tests.json",
+      "sha256": "10c732035b707b78886a41da793ebf511ba4c6e860a6d6a9c2112b00bfcdd394",
+      "bytes": 1714
+    },
+    "serde_all150_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-vite-authoring/serde-full150-v2-independent-review.json",
+      "sha256": "2c4cd78aaf31dbe1b042a9100c81c915cad357548cbf7841e6676b6267104fb7",
+      "bytes": 106734
+    },
+    "vite_all149_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-serde-authoring/vite-full149-v2-independent-review.json",
+      "sha256": "a68887734d473bf8222a894b423851bb37d1986416cdfed1db3dc4eebdc0aa26",
+      "bytes": 293443
+    },
+    "fixed_binaries": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/frozen-binaries.json",
+      "sha256": "5c381582f71b63453118a7902a681a5eef4bdcaf78eae1a09a94b51a9e41f301",
+      "bytes": 4014
+    },
+    "canonical_strict_ccswitch": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/canonical-cc-switch-mcp.json",
+      "sha256": "2fd0217630fb4d218d8d527818ec06fa9ed9d7311480c34250f274d734b04a9b",
+      "bytes": 198823
+    },
+    "canonical_strict_flask": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/canonical-flask-mcp.json",
+      "sha256": "195afeda73cd937bbca3f381782cc2cd77b5d61bc9fa0d5ce8307e5dcce28148",
+      "bytes": 198805
+    },
+    "canonical_full_audit": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/canonical-diagnostics-independent/canonical-diagnostics-audit.json",
+      "sha256": "8fd5ba69ff3c34966e768356102d050f8b7889aaae1c35a8d2c3feb5ee6eea8b",
+      "bytes": 766130
+    },
+    "canonical_raw_seal": {
+      "path": "/workspace/scratch/031390cf22eb/round4-external/canonical-sealed-replay/original-seal.json",
+      "sha256": "2e24412b3f532102bf46ce59785e7255f3e67cb3c507ef823d0a333ebc3a7487",
+      "bytes": 200947
+    },
+    "canonical_F_replay": {
+      "path": "/workspace/scratch/031390cf22eb/round4-external/canonical-sealed-replay/replay-receipt.json",
+      "sha256": "285bc8e1ca32cbee885ad9ba9e34fbac5e59844be163535db4318c1b6a0e9f5b",
+      "bytes": 3272
+    },
+    "canonical_ccswitch_gold_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-external/cc-switch-gold-applicability-review.json",
+      "sha256": "80a1739e7b20d13cec8096f77e7c727643e83366f6d94674aa39fca80cf69709",
+      "bytes": 226028
+    },
+    "canonical_flask_gold_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-external/flask-gold-applicability-review.json",
+      "sha256": "af12a1abcd03181fa9116b6d232575c7f1c0e11e12b7529483d200afad8a956e",
+      "bytes": 118976
+    },
+    "evaluator_regressions": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/diagnostic-contract-tests.json",
+      "sha256": "d095248ee6057c3969d4d872859a1f370b60830be0fe5291d0e32322332504d4",
+      "bytes": 199196
+    },
+    "product_boundary": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/production-boundary-independent/production-boundary-review.json",
+      "sha256": "98643422880a267e8d58bcbceaecded6b0502b794bcb1a7084b4e44b2f934fc5",
+      "bytes": 143699
+    },
+    "boundary_regressions": {
+      "path": "/workspace/scratch/031390cf22eb/round4-validation/production-boundary-independent/original-boundary-controls-execution.json",
+      "sha256": "3ca214456bc3e356be8b0d1cd7233df4ab1674fc57dcad37260dd8b2c409a341",
+      "bytes": 706
+    },
+    "holdout_metadata_plan": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/metadata-plan-v2.json",
+      "sha256": "9b4c8468293da30aa8a2f19a77606a70e6a30e208b47ca2e7df67ffc318e9405",
+      "bytes": 24457
+    },
+    "holdout_metadata_summary": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/execution-freeze/metadata-summary.json",
+      "sha256": "ab97a943ad756f02027dc20dcbeccf0a662a92f1972fdb4c59f6207e5898252d",
+      "bytes": 1934
+    },
+    "holdout_execution_lock": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/execution-freeze/execution-lock.json",
+      "sha256": "25262754e2c084ae10a0a088afdc8a7643eb615c9bc48fd8e98efbd917cd4735",
+      "bytes": 24582
+    },
+    "holdout_analysis_plan": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/execution-freeze/analysis-plan.json",
+      "sha256": "ddf603a00b45ee5fac94a6a3dafe231913b09d37288c9b989e15a8fe4983136d",
+      "bytes": 2107
+    },
+    "holdout_preexecution_custody": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/execution-freeze/custody-pre-execution.jsonl",
+      "sha256": "937f941a60c4f611fbc309b63b4b2bd8b1f7effae830ba61b6479ca2723f01a0",
+      "bytes": 4551
+    },
+    "holdout_custody_events": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/custody-events.jsonl",
+      "sha256": "6892f948c0ee573fa465ab05f1abb07c1f0b4c0997b1050bc4fe4380e3dc94a2",
+      "bytes": 5861
+    },
+    "holdout_prescore_independent_attestation": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/independent-review/v2/metadata-attestation.json",
+      "sha256": "6bd0ebb667d9f4ee99288dc161b8edc10a808d49fa432712e0d7a42c401aa68f",
+      "bytes": 785
+    },
+    "holdout_once_execution": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/once-20261008-F/execution-receipt.json",
+      "sha256": "30f2de95cebf00ccaf040f413c6a917a2aace907b3bc2c3b0330f27f284105bd",
+      "bytes": 2726
+    },
+    "holdout_raw_seal_metadata": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/once-20261008-F/raw-seal.json",
+      "sha256": "3bca67e793b1c9b3fde37273d54eeb6c12707d790a4086dee7edb554130c5d5d",
+      "bytes": 17139
+    },
+    "holdout_aggregate_results": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/postseal-analysis/aggregate-results.json",
+      "sha256": "00e84ca65486001600acfdff694f9b257135779678feb3ce5fc4d912cc8253cb",
+      "bytes": 41881
+    },
+    "holdout_report": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/postseal-analysis/report.md",
+      "sha256": "6ab568d9c4dd1bda5b06372b282375b938232f396047b3fae944985f07927852",
+      "bytes": 7934
+    },
+    "holdout_F_replay": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/postseal-analysis/replay-receipt.json",
+      "sha256": "82dfc276822b2e170b3cae0f09599fb38f8bea216a9f8495878a1f74c1810a6f",
+      "bytes": 1979
+    },
+    "holdout_archive_receipt_only": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/postseal-analysis/evidence-package-receipt.json",
+      "sha256": "8fb07337cfed65cdd0ea56a8e4b503372d65c07394f2234d7a3fe25ecc1cfaec",
+      "bytes": 907
+    },
+    "holdout_postseal_independent_review": {
+      "path": "/workspace/scratch/031390cf22eb/round4-holdout/postseal-analysis/independent-summary-review.json",
+      "sha256": "5090815cb2f5b9db2bf60d38625cc0dec5e7af3682bf412d91c3bf8d61d0a128",
+      "bytes": 12162
+    }
+  },
+  "review_access_and_independence": {
+    "fresh_query_or_gold_body_reads": 0,
+    "fresh_suite_or_full_independent_review_body_reads": 0,
+    "used_holdout_archive_or_raw_member_contents_read": false,
+    "holdout_metadata_paths_followed_into_bodies": false,
+    "holdout_per_row_source_gold_and_raw_integrity_basis": "依赖已验SHA的保管者/非作者无题体attestation和postseal独审；本审查者未自行读取fresh正文或重新评分。",
+    "public_corpus_independence_disclosure": "本审查者曾作者Serde150、非作者审Vite149和registry，并独审canonical与生产边界；Serde150由build_validation全量非作者复核。fresh由pr_audit作者、build_validation非作者审，本审查者只核metadata与原任务。",
+    "new_retrieval_or_replay_executions_in_this_task_acceptance_review": 0,
+    "task_file_modifications": 0,
+    "product_or_scoring_modifications": 0
+  },
+  "materializer": {
+    "path": "/workspace/scratch/031390cf22eb/round4-validation/write_task_acceptance_review.py",
+    "sha256": "f8dc6a899994022b42be07475332a4b1e34c7422c45a590ae240976504e0f603"
+  },
+  "evidence_inputs_unchanged_during_materialization": true,
+  "frozen_F_D_worktrees_unchanged": true
+}

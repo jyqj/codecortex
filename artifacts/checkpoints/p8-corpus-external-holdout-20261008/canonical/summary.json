@@ -1,0 +1,1017 @@
+{
+  "schema_version": 1,
+  "candidate_product_source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+  "evaluator_source": "87ddafb409e4854baaa20ac339e97260d2fcb531",
+  "collection": "Actual canonical MCP stdio requests under explicit ineligible coverage-diagnostic mode.",
+  "measured_rows": 1200,
+  "original_questions": 200,
+  "profiles": 2,
+  "repetitions_per_question_per_profile": 3,
+  "warmup_per_question_per_profile": 1,
+  "retry_count": 0,
+  "original_question_or_gold_edits": 0,
+  "source_admission": [
+    {
+      "repository": "cc-switch",
+      "commit": "40cac1a68edf8c9e7b3a89125cf40bb93a348404",
+      "files": 1030,
+      "input_diff": {
+        "upstream_only": [],
+        "codecortex_only": []
+      },
+      "full_admission_sha256": "484a722ca8470fc1aac09eb7ee137835b553adcddf356f1d2eae817b098d00e5"
+    },
+    {
+      "repository": "flask",
+      "commit": "22d924701a6ae2e4cd01e9a15bbaf3946094af65",
+      "files": 229,
+      "input_diff": {
+        "upstream_only": [],
+        "codecortex_only": []
+      },
+      "full_admission_sha256": "d081c04d5221bf83a0bef0fd2909c72c267da17c597b574591805d33d481056e"
+    }
+  ],
+  "runs": [
+    {
+      "repository": "cc-switch",
+      "scoring": "oce-compat-v1",
+      "measured_rows": 300,
+      "status_counts": {
+        "partial": 300
+      },
+      "raw_bytes": 9388177,
+      "readiness": {
+        "total": 1030,
+        "ready": 912,
+        "pending": 0,
+        "failed": 0,
+        "unknown": 118,
+        "state": "unknown"
+      },
+      "coverage_counts": {
+        "format_not_admitted_by_scanner": 102,
+        "hidden_path_excluded_by_scanner": 16,
+        "indexed": 912
+      },
+      "gate": {
+        "exit_code": 2,
+        "status": "invalid_measurement"
+      },
+      "metrics": {
+        "queries": 100,
+        "measured_rows": 300,
+        "mean_top1": 0.24,
+        "mean_ndcg10": 0.25388246084215566,
+        "invalid_hits": 0,
+        "unverified_hits": 0
+      }
+    },
+    {
+      "repository": "cc-switch",
+      "scoring": "codecortex-native-v1",
+      "measured_rows": 300,
+      "status_counts": {
+        "partial": 300
+      },
+      "raw_bytes": 9389740,
+      "readiness": {
+        "total": 1030,
+        "ready": 912,
+        "pending": 0,
+        "failed": 0,
+        "unknown": 118,
+        "state": "unknown"
+      },
+      "coverage_counts": {
+        "format_not_admitted_by_scanner": 102,
+        "hidden_path_excluded_by_scanner": 16,
+        "indexed": 912
+      },
+      "gate": {
+        "exit_code": 2,
+        "status": "invalid_measurement"
+      },
+      "metrics": {
+        "queries": 100,
+        "measured_rows": 300,
+        "mean_top1": 0.11,
+        "mean_ndcg10": 0.2502041296794124,
+        "invalid_hits": 0,
+        "unverified_hits": 0
+      }
+    },
+    {
+      "repository": "flask",
+      "scoring": "oce-compat-v1",
+      "measured_rows": 300,
+      "status_counts": {
+        "partial": 270,
+        "no_match": 30
+      },
+      "raw_bytes": 6582569,
+      "readiness": {
+        "total": 229,
+        "ready": 94,
+        "pending": 0,
+        "failed": 0,
+        "unknown": 135,
+        "state": "unknown"
+      },
+      "coverage_counts": {
+        "format_not_admitted_by_scanner": 118,
+        "hidden_path_excluded_by_scanner": 17,
+        "indexed": 94
+      },
+      "gate": {
+        "exit_code": 2,
+        "status": "invalid_measurement"
+      },
+      "metrics": {
+        "queries": 100,
+        "measured_rows": 300,
+        "mean_top1": 0.52,
+        "mean_ndcg10": 0.517281760612686,
+        "invalid_hits": 0,
+        "unverified_hits": 0
+      }
+    },
+    {
+      "repository": "flask",
+      "scoring": "codecortex-native-v1",
+      "measured_rows": 300,
+      "status_counts": {
+        "partial": 270,
+        "no_match": 30
+      },
+      "raw_bytes": 6596340,
+      "readiness": {
+        "total": 229,
+        "ready": 94,
+        "pending": 0,
+        "failed": 0,
+        "unknown": 135,
+        "state": "unknown"
+      },
+      "coverage_counts": {
+        "format_not_admitted_by_scanner": 118,
+        "hidden_path_excluded_by_scanner": 17,
+        "indexed": 94
+      },
+      "gate": {
+        "exit_code": 2,
+        "status": "invalid_measurement"
+      },
+      "metrics": {
+        "queries": 100,
+        "measured_rows": 300,
+        "mean_top1": 0.46,
+        "mean_ndcg10": 0.514023568963692,
+        "invalid_hits": 0,
+        "unverified_hits": 0
+      }
+    }
+  ],
+  "original_strict_gate": "Both original F strict runs stopped at Unknown readiness with zero measured rows and exit 2; their original evidence is retained.",
+  "replay": "The original F cc-eval scorer replayed copies of all four D-collected runs. All 319 original files per run remained byte-identical, with the same exit 2.",
+  "gold_applicability": [
+    {
+      "repository": "cc-switch",
+      "reviewer": "/root/p8_corpus_closeout",
+      "full_report_sha256": "80a1739e7b20d13cec8096f77e7c727643e83366f6d94674aa39fca80cf69709",
+      "counts": {
+        "supported": 93,
+        "uncertain": 4,
+        "disputed": 3
+      },
+      "questions_reviewed": 100,
+      "dispositions": [
+        {
+          "id": "Q01",
+          "status": "supported"
+        },
+        {
+          "id": "Q02",
+          "status": "supported"
+        },
+        {
+          "id": "Q03",
+          "status": "supported"
+        },
+        {
+          "id": "Q04",
+          "status": "supported"
+        },
+        {
+          "id": "Q05",
+          "status": "supported"
+        },
+        {
+          "id": "Q06",
+          "status": "supported"
+        },
+        {
+          "id": "Q07",
+          "status": "supported"
+        },
+        {
+          "id": "Q08",
+          "status": "supported"
+        },
+        {
+          "id": "Q09",
+          "status": "supported"
+        },
+        {
+          "id": "Q10",
+          "status": "supported"
+        },
+        {
+          "id": "Q11",
+          "status": "supported"
+        },
+        {
+          "id": "Q12",
+          "status": "supported"
+        },
+        {
+          "id": "Q13",
+          "status": "supported"
+        },
+        {
+          "id": "Q14",
+          "status": "supported"
+        },
+        {
+          "id": "Q15",
+          "status": "uncertain"
+        },
+        {
+          "id": "Q16",
+          "status": "supported"
+        },
+        {
+          "id": "Q17",
+          "status": "disputed"
+        },
+        {
+          "id": "Q18",
+          "status": "supported"
+        },
+        {
+          "id": "Q19",
+          "status": "supported"
+        },
+        {
+          "id": "Q20",
+          "status": "supported"
+        },
+        {
+          "id": "Q21",
+          "status": "supported"
+        },
+        {
+          "id": "Q22",
+          "status": "supported"
+        },
+        {
+          "id": "Q23",
+          "status": "supported"
+        },
+        {
+          "id": "Q24",
+          "status": "supported"
+        },
+        {
+          "id": "Q25",
+          "status": "supported"
+        },
+        {
+          "id": "Q26",
+          "status": "supported"
+        },
+        {
+          "id": "Q27",
+          "status": "supported"
+        },
+        {
+          "id": "Q28",
+          "status": "supported"
+        },
+        {
+          "id": "Q29",
+          "status": "supported"
+        },
+        {
+          "id": "Q30",
+          "status": "supported"
+        },
+        {
+          "id": "Q31",
+          "status": "supported"
+        },
+        {
+          "id": "Q32",
+          "status": "supported"
+        },
+        {
+          "id": "Q33",
+          "status": "supported"
+        },
+        {
+          "id": "Q34",
+          "status": "supported"
+        },
+        {
+          "id": "Q35",
+          "status": "supported"
+        },
+        {
+          "id": "Q36",
+          "status": "supported"
+        },
+        {
+          "id": "Q37",
+          "status": "supported"
+        },
+        {
+          "id": "Q38",
+          "status": "supported"
+        },
+        {
+          "id": "Q39",
+          "status": "supported"
+        },
+        {
+          "id": "Q40",
+          "status": "supported"
+        },
+        {
+          "id": "Q41",
+          "status": "supported"
+        },
+        {
+          "id": "Q42",
+          "status": "supported"
+        },
+        {
+          "id": "Q43",
+          "status": "supported"
+        },
+        {
+          "id": "Q44",
+          "status": "supported"
+        },
+        {
+          "id": "Q45",
+          "status": "supported"
+        },
+        {
+          "id": "Q46",
+          "status": "supported"
+        },
+        {
+          "id": "Q47",
+          "status": "supported"
+        },
+        {
+          "id": "Q48",
+          "status": "supported"
+        },
+        {
+          "id": "Q49",
+          "status": "supported"
+        },
+        {
+          "id": "Q50",
+          "status": "supported"
+        },
+        {
+          "id": "Q51",
+          "status": "supported"
+        },
+        {
+          "id": "Q52",
+          "status": "supported"
+        },
+        {
+          "id": "Q53",
+          "status": "supported"
+        },
+        {
+          "id": "Q54",
+          "status": "supported"
+        },
+        {
+          "id": "Q55",
+          "status": "supported"
+        },
+        {
+          "id": "Q56",
+          "status": "supported"
+        },
+        {
+          "id": "Q57",
+          "status": "supported"
+        },
+        {
+          "id": "Q58",
+          "status": "supported"
+        },
+        {
+          "id": "Q59",
+          "status": "supported"
+        },
+        {
+          "id": "Q60",
+          "status": "supported"
+        },
+        {
+          "id": "Q61",
+          "status": "supported"
+        },
+        {
+          "id": "Q62",
+          "status": "supported"
+        },
+        {
+          "id": "Q63",
+          "status": "supported"
+        },
+        {
+          "id": "Q64",
+          "status": "supported"
+        },
+        {
+          "id": "Q65",
+          "status": "supported"
+        },
+        {
+          "id": "Q66",
+          "status": "supported"
+        },
+        {
+          "id": "Q67",
+          "status": "supported"
+        },
+        {
+          "id": "Q68",
+          "status": "uncertain"
+        },
+        {
+          "id": "Q69",
+          "status": "supported"
+        },
+        {
+          "id": "Q70",
+          "status": "disputed"
+        },
+        {
+          "id": "Q71",
+          "status": "supported"
+        },
+        {
+          "id": "Q72",
+          "status": "supported"
+        },
+        {
+          "id": "Q73",
+          "status": "supported"
+        },
+        {
+          "id": "Q74",
+          "status": "supported"
+        },
+        {
+          "id": "Q75",
+          "status": "supported"
+        },
+        {
+          "id": "Q76",
+          "status": "supported"
+        },
+        {
+          "id": "Q77",
+          "status": "supported"
+        },
+        {
+          "id": "Q78",
+          "status": "supported"
+        },
+        {
+          "id": "Q79",
+          "status": "supported"
+        },
+        {
+          "id": "Q80",
+          "status": "supported"
+        },
+        {
+          "id": "Q81",
+          "status": "uncertain"
+        },
+        {
+          "id": "Q82",
+          "status": "supported"
+        },
+        {
+          "id": "Q83",
+          "status": "uncertain"
+        },
+        {
+          "id": "Q84",
+          "status": "supported"
+        },
+        {
+          "id": "Q85",
+          "status": "supported"
+        },
+        {
+          "id": "Q86",
+          "status": "supported"
+        },
+        {
+          "id": "Q87",
+          "status": "supported"
+        },
+        {
+          "id": "Q88",
+          "status": "supported"
+        },
+        {
+          "id": "Q89",
+          "status": "supported"
+        },
+        {
+          "id": "Q90",
+          "status": "supported"
+        },
+        {
+          "id": "Q91",
+          "status": "supported"
+        },
+        {
+          "id": "Q92",
+          "status": "disputed"
+        },
+        {
+          "id": "Q93",
+          "status": "supported"
+        },
+        {
+          "id": "Q94",
+          "status": "supported"
+        },
+        {
+          "id": "Q95",
+          "status": "supported"
+        },
+        {
+          "id": "Q96",
+          "status": "supported"
+        },
+        {
+          "id": "Q97",
+          "status": "supported"
+        },
+        {
+          "id": "Q98",
+          "status": "supported"
+        },
+        {
+          "id": "Q99",
+          "status": "supported"
+        },
+        {
+          "id": "Q100",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "repository": "flask",
+      "reviewer": "/root",
+      "full_report_sha256": "af12a1abcd03181fa9116b6d232575c7f1c0e11e12b7529483d200afad8a956e",
+      "counts": {
+        "supported_at_file_scope": 90,
+        "supported_with_scope_note": 6,
+        "disputed": 4
+      },
+      "questions_reviewed": 100,
+      "dispositions": [
+        {
+          "id": "Q01",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q02",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q03",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q04",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q05",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q06",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q07",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q08",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q09",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q10",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q11",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q12",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q13",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q14",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q15",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q16",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q17",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q18",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q19",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q20",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q21",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q22",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q23",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q24",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q25",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q26",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q27",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q28",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q29",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q30",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q31",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q32",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q33",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q34",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q35",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q36",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q37",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q38",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q39",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q40",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q41",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q42",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q43",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q44",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q45",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q46",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q47",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q48",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q49",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q50",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q51",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q52",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q53",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q54",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q55",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q56",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q57",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q58",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q59",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q60",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q61",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q62",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q63",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q64",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q65",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q66",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q67",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q68",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q69",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q70",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q71",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q72",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q73",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q74",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q75",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q76",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q77",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q78",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q79",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q80",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q81",
+          "status": "disputed"
+        },
+        {
+          "id": "Q82",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q83",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q84",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q85",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q86",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q87",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q88",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q89",
+          "status": "supported_with_scope_note"
+        },
+        {
+          "id": "Q90",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q91",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q92",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q93",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q94",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q95",
+          "status": "disputed"
+        },
+        {
+          "id": "Q96",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q97",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q98",
+          "status": "supported_at_file_scope"
+        },
+        {
+          "id": "Q99",
+          "status": "disputed"
+        },
+        {
+          "id": "Q100",
+          "status": "disputed"
+        }
+      ]
+    }
+  ],
+  "gold_quarantine_policy": "Disputed and uncertain upstream annotations remain separately identified. All 100 original rows per repository remain in the diagnostic denominator; none are promoted to quality certification or repaired from scores.",
+  "profile_semantics": {
+    "compat": "Any expected path can satisfy Top1; ordered expected items use linear gains 2 then 1; paths are deduplicated before rank scoring.",
+    "native": "Only the first projected primary group satisfies Top1. Explicit path alternative groups use native hit ranks; repeated paths can occupy hit ranks. This is a file-only projection with no invented symbol/span/facet/graph gold."
+  },
+  "platform": "Linux x86_64; canonical forward-slash paths; fixed existing fnmatch implementation. No cross-platform or upstream-server ranking equivalence claim.",
+  "performance_scope": "D evaluator is a recorded debug build; F product is release. No cold-OS-cache, stable tail latency, or performance certification.",
+  "resources": "Process probe disabled; unavailable process-tree memory remains null, not zero.",
+  "leaderboard_comparability": false,
+  "oce_http_service_executed": false,
+  "input_readiness_or_quality_passed": false,
+  "full_V19_or_G8_passed": false
+}

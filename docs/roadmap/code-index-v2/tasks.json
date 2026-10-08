@@ -11691,10 +11691,26 @@
           ],
           "rollback_status": "Revert the integrated product and matching source-review installation together; preserve original evidence.",
           "main_accounting": "PR #153 has already merged P8-002/003 at a1158866 (162 done /30 remaining). Only P8-004 is a new done state in PR #156; final 163/29 is conditional on exact-head CI, independent acceptance and merge."
+        },
+        {
+          "target_sha": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+          "artifact_paths": [
+            "artifacts/benchmarks/prospective-temporal-v2/FINAL-REPORT.md",
+            "artifacts/benchmarks/prospective-temporal-v2/index.json",
+            "artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/P8_004_manual_acceptance.json",
+            "artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/actual-raw-input-review.json",
+            "artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/actual-raw-only-replay-review.json",
+            "artifacts/benchmarks/prospective-temporal-v2/actual-execution/37769636440/export-manifest.json",
+            "artifacts/benchmarks/prospective-temporal-v2/actual-raw-replay/37773318110/export-manifest.json"
+          ],
+          "scope": "Additional prospective temporal-v2 evidence for the same original P8-004, already done by PR #156. Preserve all 192 original definitions and all task statuses; no new TODO or done count. Candidate 2cd04485 formal gate_failed/exit1 stays failed; no G8 or quality certification for this candidate or later main product 1ed3c7df.",
+          "review": "Independent source/gold review by fresh temporal_gold_review; finite public327 and complete formal/replay raw review by p7_wiring; final original-procedure manual acceptance by pr_audit, actual 2026-10-08 12:22:38 UTC, blob756b9a81fcc083dd99bfb0889ea7bb3b19945cf5/SHA256ad746bdbd2438f61ada6dc2b08300655980e2d5d8a77023876c2deb165af2f38. Roles and prior source/design contributions disclosed in acceptance; this supplements the already done task without quality promotion.",
+          "rollback_status": "Retain prior verified binary/config; do not release failed candidate; preserve immutable first/data seals, original execution failure, all raw archives, zero-query replay, source-only revision and independent review records.",
+          "summary": "2026-10-08 追加：首次候选/测量逻辑封存后以新作者/独立gold审查建立Boltons12任务48变体；真实零查询freeze/validate、数据封存、一次许可、48×2×3全部288原结果和完整ZIP独审完成。正式候选141Partial/3NoMatch，Top1=0.175、nDCG@10=0.1891629278415609、无答案0/24，原gate1保留。独立raw-only回放run37773318110成功且新增产品查询0；323原输入、18派生文件、288raw与完整报告保持原字节。同一P8-004不重复计数；保持PR156源码/600DEV/说明，未知旧custody与完整V19/G8不认证。"
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重验公开DEV泄漏边界，原boundary_review_required/exit1保留。既有117候选至少72已暴露，0个clean认证，另45的custody不能推断为clean；未读protected body或重标gold。独立封存/读者历史/一次冻结执行仍开放，见协调issue #151。\n\n【本会话最终增补】\n在 F 产品和 evaluator 固定后，为 walkdir 与 Click 构造新的公开源留出 packet，按作者、非作者审阅者及执行者的角色记录保管过程；此保管证明是共享工作区中的角色与日志分离，不扩大为操作系统级不可访问证明。原历史 custody 报告及其已暴露问题继续保留，不能拿来替代这份新 packet 的状态。新增 64 条题由 32 组中英配对组成，完整非作者 source/gold 与翻译审阅在运行前完成，并按原元数据、分析计划、配置和执行锁封存。\n\n固定 F 对两个仓的两套各 32 条请求只执行一次：N=1、warmup=0、retry=0，总计 **64 条实际请求**，随后封存 raw，再检查结果。原两套均为 `gate_failed` / exit 1，57 条 Partial、7 条 NoMatch；8 条 no-answer 全部失败。运行后没有改 gold、标签、题文或阈值，也没有为保分重跑 retrieval。原 scorer 仅在副本上重放，原封存件和失败结果保留。该 packet 已使用，不再称为未见留出集；新合流 P 不复用它声称新的盲测质量。\n\n32 组中英题在 gold、类别、目标语言、scope 和 holdout split 上一致。已完成的 exact ID、family 标签及规范化题文零碰撞检查只覆盖当时的 **600 条 DEV**，不能自动扩写为合流后 626 条全体，也不能据 exact hash 证明不存在任意语义改写泄漏。两个仓和 7 个保守共享源组件限制推广范围，32 个 family 标签不是 32 个独立样本。零 ASCII 交集等词面统计只按原报告解释，不当作语义能力通过证据。\n\n生产反过拟合边界检查绑定 F 的实际产品源与二进制：区分 cc-eval 评分端和 codecortex 产品端，保留完整输入扫描、实际生产路径检查、原扫描结果和负控。在所审固定生产输入与检查范围内，未发现产品注入 gold 路径表、题目关键词表或题体配置。此边界证据和一次性留出负结果支持原任务执行闭环；新 P 的质量、完整 V19/G8 和发行认证仍不通过或未运行。"
+      "implementation_notes": "\n2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 本会话第2/3轮：重验公开DEV泄漏边界，原boundary_review_required/exit1保留。既有117候选至少72已暴露，0个clean认证，另45的custody不能推断为clean；未读protected body或重标gold。独立封存/读者历史/一次冻结执行仍开放，见协调issue #151。\n\n【本会话最终增补】\n在 F 产品和 evaluator 固定后，为 walkdir 与 Click 构造新的公开源留出 packet，按作者、非作者审阅者及执行者的角色记录保管过程；此保管证明是共享工作区中的角色与日志分离，不扩大为操作系统级不可访问证明。原历史 custody 报告及其已暴露问题继续保留，不能拿来替代这份新 packet 的状态。新增 64 条题由 32 组中英配对组成，完整非作者 source/gold 与翻译审阅在运行前完成，并按原元数据、分析计划、配置和执行锁封存。\n\n固定 F 对两个仓的两套各 32 条请求只执行一次：N=1、warmup=0、retry=0，总计 **64 条实际请求**，随后封存 raw，再检查结果。原两套均为 `gate_failed` / exit 1，57 条 Partial、7 条 NoMatch；8 条 no-answer 全部失败。运行后没有改 gold、标签、题文或阈值，也没有为保分重跑 retrieval。原 scorer 仅在副本上重放，原封存件和失败结果保留。该 packet 已使用，不再称为未见留出集；新合流 P 不复用它声称新的盲测质量。\n\n32 组中英题在 gold、类别、目标语言、scope 和 holdout split 上一致。已完成的 exact ID、family 标签及规范化题文零碰撞检查只覆盖当时的 **600 条 DEV**，不能自动扩写为合流后 626 条全体，也不能据 exact hash 证明不存在任意语义改写泄漏。两个仓和 7 个保守共享源组件限制推广范围，32 个 family 标签不是 32 个独立样本。零 ASCII 交集等词面统计只按原报告解释，不当作语义能力通过证据。\n\n生产反过拟合边界检查绑定 F 的实际产品源与二进制：区分 cc-eval 评分端和 codecortex 产品端，保留完整输入扫描、实际生产路径检查、原扫描结果和负控。在所审固定生产输入与检查范围内，未发现产品注入 gold 路径表、题目关键词表或题体配置。此边界证据和一次性留出负结果支持原任务执行闭环；新 P 的质量、完整 V19/G8 和发行认证仍不通过或未运行。\n2026-10-08 本会话封存与回放补充轮：prospective temporal-v2 的一次真实执行、完整原件独审与零新增查询回放证据补充到已完成的 P8-004；固定2cd候选原质量门失败保留，不能认证后来1ed产品。PR #156 的现有源码、600 DEV、说明和验收保留；仍为163 done/29 remaining，下一原任务P8-005。最终手工接受记录见 artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/P8_004_manual_acceptance.json。"
     },
     {
       "id": "P8-005",

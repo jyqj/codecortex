@@ -54,6 +54,59 @@ pub fn high_water_bytes(platform: &str, value: u64) -> Option<u64> {
         _ => None,
     }
 }
+
+/// Kernel-accounted usage of the calling process, including all its threads.
+/// Unlike a numeric `/proc/<pid>` lookup, RUSAGE_SELF remains attributable when
+/// the caller and the mounted procfs use different PID namespaces. This is a
+/// combined owner measurement, not a decomposition of an in-process server,
+/// and the RSS field is a lifetime high-water mark, never current RSS.
+#[derive(Debug, Clone, Serialize)]
+pub struct CurrentProcessUsage {
+    pub pid: u32,
+    pub user_cpu_ns: u64,
+    pub system_cpu_ns: u64,
+    pub peak_resident_bytes: Option<u64>,
+    pub method: &'static str,
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn timeval_ns(seconds: impl TryInto<u64>, microseconds: impl TryInto<u64>) -> Option<u64> {
+    let seconds = seconds.try_into().ok()?;
+    let microseconds = microseconds.try_into().ok()?;
+    if microseconds >= 1_000_000 {
+        return None;
+    }
+    seconds
+        .checked_mul(1_000_000_000)?
+        .checked_add(microseconds.checked_mul(1000)?)
+}
+
+pub fn current_process_usage() -> Option<CurrentProcessUsage> {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();
+        // SAFETY: the kernel initializes this writable rusage on success. SELF
+        // names the caller directly; no process-table identity is inferred.
+        if unsafe { libc::getrusage(libc::RUSAGE_SELF, usage.as_mut_ptr()) } != 0 {
+            return None;
+        }
+        // SAFETY: checked the successful initialization above.
+        let usage = unsafe { usage.assume_init() };
+        Some(CurrentProcessUsage {
+            pid: std::process::id(),
+            user_cpu_ns: timeval_ns(usage.ru_utime.tv_sec, usage.ru_utime.tv_usec)?,
+            system_cpu_ns: timeval_ns(usage.ru_stime.tv_sec, usage.ru_stime.tv_usec)?,
+            peak_resident_bytes: u64::try_from(usage.ru_maxrss)
+                .ok()
+                .and_then(|value| high_water_bytes(std::env::consts::OS, value)),
+            method: "getrusage(RUSAGE_SELF); all caller threads; lifetime RSS high-water",
+        })
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    {
+        None
+    }
+}
 /// A subprocess may stall even in spawn or reap, outside its polling timeout.
 /// Isolate optional introspection from the benchmark with one admitted worker.
 /// A late/stalled worker retains its slot; subsequent samples return unavailable
@@ -718,6 +771,32 @@ pub fn cost_ledger(receipts: &[CostReceipt]) -> super::Result<CostLedger> {
 #[cfg(all(test, unix))]
 mod process_probe_tests {
     use super::*;
+
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[test]
+    fn self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup() {
+        let before = current_process_usage().expect("kernel SELF resource accounting");
+        let started = Instant::now();
+        let mut value = 1_u64;
+        while started.elapsed() < Duration::from_millis(30) {
+            value = std::hint::black_box(value.wrapping_mul(13).wrapping_add(17));
+        }
+        std::hint::black_box(value);
+        let after = current_process_usage().unwrap();
+        assert_eq!(before.pid, std::process::id());
+        assert_eq!(after.pid, before.pid);
+        assert!(after.user_cpu_ns >= before.user_cpu_ns);
+        assert!(after.system_cpu_ns >= before.system_cpu_ns);
+        assert!(
+            after.user_cpu_ns + after.system_cpu_ns > before.user_cpu_ns + before.system_cpu_ns
+        );
+        assert!(after.peak_resident_bytes.is_some_and(|bytes| bytes > 0));
+        assert_eq!(timeval_ns(-1, 0), None);
+        assert_eq!(timeval_ns(0, -1), None);
+        assert_eq!(timeval_ns(0, 1_000_000), None);
+        assert_eq!(timeval_ns(i64::MAX, 0), None);
+        assert_eq!(timeval_ns(1, 42), Some(1_000_042_000));
+    }
 
     #[cfg(target_os = "linux")]
     mod linux {

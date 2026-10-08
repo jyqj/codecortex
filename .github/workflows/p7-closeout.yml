@@ -1,0 +1,69 @@
+name: P7 closeout evidence
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
+  CARGO_BUILD_JOBS: "2"
+  RUSTFLAGS: -D warnings
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Bind current source and isolated build
+        run: |
+          mkdir -p "$RUNNER_TEMP/p7-closeout"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/p7-closeout-target" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import json_bytes, source_snapshot
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'
+          (out / 'source-before.json').write_bytes(json_bytes(source_snapshot(pathlib.Path.cwd())))
+          PY
+
+      - name: Attributed resources and actual worker contention
+        env:
+          CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR: ${{ runner.temp }}/p7-closeout/worker-contention
+        run: |
+          set -o pipefail
+          cargo test -p cc-eval --locked --lib \
+            self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup -- --nocapture \
+            2>&1 | tee "$RUNNER_TEMP/p7-closeout/self-resources.log"
+          cargo test -p cc-eval --features semantic --locked \
+            --test p7_worker_contention --test semantic_lifecycle --test p7_strategy_ablation \
+            -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-closeout/worker-strategy.log"
+
+      - name: Preserve final source identity
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          from p7_build_identity import json_bytes, source_snapshot
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'
+          after = source_snapshot(pathlib.Path.cwd())
+          (out / 'source-after.json').write_bytes(json_bytes(after))
+          assert json.loads((out / 'source-before.json').read_text()) == after
+          PY
+
+      - name: Archive exact commands and raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-closeout-${{ github.sha }}
+          path: ${{ runner.temp }}/p7-closeout
+          if-no-files-found: error

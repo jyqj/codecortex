@@ -190,19 +190,21 @@ fn resources(stage: &str) -> Value {
     let pid = std::process::id();
     let raw = cc_eval::benchmark::sampler::sample(stage, None);
     let snapshot = cc_eval::benchmark::sampler::process_snapshot(pid);
-    // This fixture deliberately reports ownership separately from raw probes.
-    // A matching-looking /proc row is not sufficient evidence of the execution
-    // service's PID mapping, nor can this in-process test split runner/server.
+    let usage = cc_eval::benchmark::sampler::current_process_usage();
+    // RUSAGE_SELF identifies this process directly, independently of procfs's
+    // PID namespace. All three components share this one resource owner. Keep
+    // raw optional PID probes distinct and never sum shared-owner measurements.
     json!({
         "stage":stage,"topology":"runner, CodeIndex and fake provider share one process",
-        "runner":{"pid":pid,"cpu_ns":null,"rss_bytes":null,"status":"unknown: PID attribution not independently established"},
-        "server":{"separate_pid":null,"cpu_ns":null,"rss_bytes":null,"status":"shared with runner; no independent attribution"},
-        "server_tree":{"cpu_ns":null,"rss_bytes":null,"status":"unknown; no complete process-tree observation"},
+        "shared_process_owner":{"components":["test_runner","CodeIndex","fake_provider"],"usage":usage},
+        "server":{"separate_pid":null,"status":"included in shared_process_owner; not separately summed"},
+        "server_tree":{"separate_processes":false,"status":"fixture creates threads, no child server or provider processes"},
         "raw_sampler":raw,"raw_process_snapshot":snapshot,
         "current_executable":std::env::current_exe().ok(),
         "proc_executable":std::fs::read_link(format!("/proc/{pid}/exe")).ok(),
-        "resource_gate":"unknown","cpu_pool_slots":service_factory::query_pool().stats(),
-        "no_zero_fill":true,"no_peak_or_cpu_utilization_claim":true,
+        "resource_gate":if usage.is_some(){"attributed_combined_process"}else{"unavailable"},
+        "cpu_pool_slots":service_factory::query_pool().stats(),
+        "no_zero_fill":true,"no_current_rss_or_component_utilization_claim":true,
     })
 }
 
@@ -306,7 +308,7 @@ async fn run(seed: u64) {
         "worker_local_attempt_width":LOCAL_ATTEMPT_WIDTH,"worker_claim_round_cap":16,
         "operations":["ready backfill","quiet local queries","hold actual provider calls after changed build",
                       "held local queries and DB transaction control","write/delete","retire model","release and drain"],
-        "performance_sla":null,"attributed_cpu_rss":null,"full_task_acceptance":false}),
+        "performance_sla":null,"resource_method":"direct kernel SELF CPU and lifetime RSS high-water; combined in-process owner", "full_task_acceptance":"independent closeout review required"}),
     );
     let root = tempfile::tempdir().unwrap();
     let mut config = ProjectConfig::default();
@@ -363,6 +365,11 @@ async fn run(seed: u64) {
     })
     .await;
     let quiet_resources = resources("quiet-before");
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    assert_eq!(
+        quiet_resources["resource_gate"],
+        "attributed_combined_process"
+    );
     let quiet = samples(index.clone(), seed, "quiet").await;
     provider.hold();
     for i in 0..24 {
@@ -401,6 +408,16 @@ async fn run(seed: u64) {
     assert_eq!(service_factory::query_pool().stats().cpu_in_flight, 0);
     assert_eq!(service_factory::query_pool().stats().cpu_admitted, 0);
     let after_resources = resources("held-after");
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        let before = &quiet_resources["shared_process_owner"]["usage"];
+        let after = &after_resources["shared_process_owner"]["usage"];
+        assert!(after["user_cpu_ns"].as_u64().unwrap() >= before["user_cpu_ns"].as_u64().unwrap());
+        assert!(
+            after["system_cpu_ns"].as_u64().unwrap() >= before["system_cpu_ns"].as_u64().unwrap()
+        );
+        assert!(after["peak_resident_bytes"].as_u64().unwrap() > 0);
+    }
     write(
         root.path(),
         "mutable_00.rs",
@@ -498,7 +515,8 @@ async fn run(seed: u64) {
             "quiet_resources":quiet_resources,"held_after_resources":after_resources,"final_resources":resources("after-model-drain"),
             "fixed_watchdogs":{"local_query_ms":2000,"progress_ms":5000},
             "performance_delta_gate":"not evaluated: no new SLA, stable-device baseline or confidence interval invented",
-            "resource_attribution_gate":"unknown","full_p7_015_complete":false,
+            "resource_attribution_gate":after_resources["resource_gate"],
+            "full_p7_015_complete":"independent closeout review required",
             "scope":"actual CodeIndex/post-index worker; synthetic vectors; existing HTTP fairness and original lifecycle tests are separate controls",
         }),
     );

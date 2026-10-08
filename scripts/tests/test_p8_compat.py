@@ -218,5 +218,168 @@ class CompatLockTests(unittest.TestCase):
         self.assertIn("exit-code mismatch", result["reason"])
 
 
+class CompatRunIdentityTests(unittest.TestCase):
+    """Synthetic retained runs exercise identity checks, never quality claims."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="p8-compat-run-identity-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / "raw").mkdir()
+        self.queries = [{"id": ident, "query_family": "synthetic:" + ident,
+            "category": "api_usage", "difficulty": 2, "language": "rust", "split": "dev",
+            "query": "Find the fictional " + ident + " entry point.", "path_prefix": None,
+            "no_answer": False, "expected_files": [ident + ".rs"], "answers": [], "annotations": {}}
+            for ident in ("first", "second")]
+        self.suite = {"schema_version": 1, "name": "synthetic retained run identity control",
+            "source": {"root": "source", "commit": None, "digest": "a" * 64,
+                       "files": ["first.rs", "second.rs"]},
+            "queries": "queries.dev.jsonl", "queries_digest": "b" * 64, "scoring": "oce-compat-v1",
+            "repetitions": 2, "warmup": 0, "seed": 2, "timeout_ms": 1000, "top_k": 10,
+            "engine_config": {"auto_index": {"enabled": False}}}
+        self.checked = {"suite": self.suite, "query_rows": len(self.queries),
+                        "query_snapshot": copy.deepcopy(self.queries), "backend_kind": "rg"}
+        self.manifest = {"suite": self.suite, "input": {"query_digest": "b" * 64,
+                          "source_digest": "a" * 64}, "adapter": "rg-literal",
+                         "adapter_version": "cc-eval-public-v7", "measurement_profile": "smoke"}
+        self.gate = {"status": "baseline_recorded_not_quality_certified", "exit_code": 0, "reasons": []}
+        self.metrics = {"queries": 2, "measured_rows": 4, "mean_top1": 0.0, "mean_ndcg10": 0.0}
+        self.rows = [{"case_id": q["id"], "repetition": repetition, "status": "no_match",
+                      "raw_path": "raw/" + str(i * 2 + repetition) + ".json"}
+                     for i, q in enumerate(self.queries) for repetition in range(2)]
+        for row in self.rows:
+            (self.root / row["raw_path"]).write_text('{"synthetic":true}\n')
+        (self.root / "report.md").write_text("Synthetic identity test only.\n")
+
+    def check(self, exit_code=0):
+        for filename, data in (("manifest.json", self.manifest), ("gate.json", self.gate),
+                               ("metrics.json", self.metrics)):
+            (self.root / filename).write_text(json.dumps(data) + "\n")
+        for filename, data in (("queries.jsonl", self.queries), ("normalized.jsonl", self.rows)):
+            (self.root / filename).write_text("".join(json.dumps(row) + "\n" for row in data))
+        return compat.check_run(self.root, self.checked, exit_code)
+
+    def test_original_locked_query_and_complete_request_matrix_are_accepted(self):
+        self.assertEqual(self.check()["metrics"]["measured_rows"], 4)
+
+    def test_shuffled_complete_request_matrix_is_still_accepted(self):
+        self.rows.reverse()
+        self.assertEqual(self.check()["metrics"]["measured_rows"], 4)
+
+    def test_optional_query_defaults_do_not_change_locked_identity(self):
+        del self.checked["query_snapshot"][0]["path_prefix"]
+        del self.checked["query_snapshot"][0]["annotations"]
+        self.assertEqual(self.check()["metrics"]["queries"], 2)
+
+    def set_native_gold(self):
+        self.suite["scoring"] = "codecortex-native-v1"
+        for query in self.queries:
+            query["expected_files"] = []
+            query["answers"] = [{"id": "primary", "primary": True, "grade": 3,
+                                  "alternatives": [{"path": query["id"] + ".rs",
+                                                    "symbol": {"name": query["id"]}}]}]
+        self.checked["query_snapshot"] = copy.deepcopy(self.queries)
+
+    def test_optional_native_symbol_and_span_defaults_preserve_identity(self):
+        self.set_native_gold()
+        for query in self.queries:
+            alternative = query["answers"][0]["alternatives"][0]
+            alternative["span"] = None
+            alternative["symbol"].update(kind=None, qname=None)
+        self.assertEqual(self.check()["metrics"]["queries"], 2)
+
+    def test_native_gold_span_and_primary_changes_are_rejected(self):
+        self.set_native_gold()
+        original = copy.deepcopy(self.queries[0]["answers"])
+        for mutation in ("primary", "path", "span", "symbol"):
+            with self.subTest(mutation=mutation):
+                group = self.queries[0]["answers"][0]
+                alternative = group["alternatives"][0]
+                if mutation == "primary":
+                    group["primary"] = False
+                elif mutation == "path":
+                    alternative["path"] = "easier.rs"
+                elif mutation == "span":
+                    alternative["span"] = {"start": 0, "end": 1}
+                else:
+                    alternative["symbol"]["name"] = "easier_symbol"
+                with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+                    self.check()
+                self.queries[0]["answers"] = copy.deepcopy(original)
+
+    def test_same_count_query_identity_replacement_is_rejected(self):
+        self.queries[0]["id"] = "replacement"
+        with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+            self.check()
+
+    def test_same_count_query_text_and_gold_changes_are_rejected(self):
+        mutations = {"query": "An easier fictional replacement question.",
+                     "expected_files": ["easier.rs"], "query_family": "easier-family",
+                     "annotations": {"changed_gold_note": True}}
+        for field, value in mutations.items():
+            with self.subTest(field=field):
+                original = copy.deepcopy(self.queries[0][field])
+                self.queries[0][field] = value
+                with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+                    self.check()
+                self.queries[0][field] = original
+
+    def test_duplicate_output_query_cannot_replace_another_locked_query(self):
+        self.queries[1] = copy.deepcopy(self.queries[0])
+        with self.assertRaisesRegex(compat.Invalid, "query snapshot"):
+            self.check()
+
+    def test_unknown_case_cannot_replace_missing_case_at_same_denominator(self):
+        self.rows[0]["case_id"] = "unrequested"
+        with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+            self.check()
+
+    def test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case(self):
+        self.rows[0].update(case_id="second", repetition=2)
+        with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+            self.check()
+
+    def test_duplicate_case_and_repetition_is_rejected(self):
+        self.rows[1].update(case_id=self.rows[0]["case_id"], repetition=self.rows[0]["repetition"])
+        with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+            self.check()
+
+    def test_out_of_range_and_wrongly_typed_repetitions_are_rejected(self):
+        for repetition in (-1, 2, True, 0.0, "0"):
+            with self.subTest(repetition=repr(repetition)):
+                self.rows[0]["repetition"] = repetition
+                with self.assertRaisesRegex(compat.Invalid, "request matrix"):
+                    self.check()
+
+    def test_missing_request_cannot_pass_with_smaller_metrics_denominator(self):
+        self.rows.pop()
+        self.metrics["measured_rows"] = 3
+        with self.assertRaisesRegex(compat.Invalid, "missing measured rows"):
+            self.check()
+
+    def test_raw_response_path_cannot_be_reused_for_distinct_requests(self):
+        self.rows[1]["raw_path"] = self.rows[0]["raw_path"]
+        with self.assertRaisesRegex(compat.Invalid, "raw response"):
+            self.check()
+
+    def test_pinned_backend_and_profile_cannot_be_relabelled(self):
+        for field, value in (("adapter", "mcp-stdio"), ("measurement_profile", "quality")):
+            with self.subTest(field=field):
+                original = self.manifest[field]
+                self.manifest[field] = value
+                with self.assertRaisesRegex(compat.Invalid, "adapter or measurement profile"):
+                    self.check()
+                self.manifest[field] = original
+
+    def test_exit_code_and_gate_status_must_both_match(self):
+        for patch in ({"exit_code": False}, {"status": "gate_failed"}):
+            with self.subTest(patch=patch):
+                original = copy.deepcopy(self.gate)
+                self.gate.update(patch)
+                with self.assertRaisesRegex(compat.Invalid, "process/gate"):
+                    self.check()
+                self.gate = original
+
+
 if __name__ == "__main__":
     unittest.main()

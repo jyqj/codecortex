@@ -1,0 +1,30 @@
+{
+  "observed_at_utc": "2026-10-08T06:24:12.414852+00:00",
+  "scope": "fixed public DEV integrity and source signature scans only; no holdout body reads or original P8 acceptance",
+  "commands": [
+    {
+      "argv": [
+        "python",
+        "scripts/p8_corpus_audit.py",
+        "--output",
+        "artifacts/checkpoints/p8-corpus-lock-review-20261008/corpus-audit.json"
+      ],
+      "exit_code": 0,
+      "log_sha256": "5b5de538c6270f947c4db2f028e649a7f32afd4b07fb8bcc93018ec145ed7407",
+      "script_sha256": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+      "stdout": "{\"status\": \"passed_local_audit\", \"exit_code\": 0, \"receipt_sha256\": \"ff8c6cca1723e644ce1e2d95a868c25a37dbb5954d7965354c732d8805090bc5\"}\n"
+    },
+    {
+      "argv": [
+        "python",
+        "scripts/p8_leakage_audit.py",
+        "--output",
+        "artifacts/checkpoints/p8-corpus-lock-review-20261008/leakage-audit.json"
+      ],
+      "exit_code": 1,
+      "log_sha256": "3e5c987d8c8688e63c67f316681322d650a8e15f0c3537c9c53e8624c0ecefbc",
+      "script_sha256": "bb909556f80bb47c76957b117a9187e6cbc934f8ce0df82d169a3aa58bcfb77e",
+      "stdout": "{\"status\": \"boundary_review_required\", \"exit_code\": 1, \"receipt_sha256\": \"c2678c5cd18f7b658a796227322dad087f23cfc958ecf1f901032d63fbe297fa\"}\n"
+    }
+  ]
+}

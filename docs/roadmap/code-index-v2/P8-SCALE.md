@@ -52,7 +52,13 @@ SQLite 计数分列 files、symbols、chunks、call_edges、semantic_edges、tes
 
 小规模直接调用既有 `oracle::canonical`：执行原 integrity/FK 检查，比较原 15 个表的完整 canonical rows，只排除原 oracle 已明确排除的物理列。比较先于摘要；证据输出各表两侧行数、完整 digest 和最多 3 个差异示例。`resolution_manifests` 的完整 JSON 排序会因 digest 变化而移动行，因此仅其诊断示例按真实 `file_path` 对齐，导出同文件的两侧完整原始行、差异文件总数与最多 32 条递归 payload 差异；单边缺失明确标记。其他表的示例仍按排序位置配对。所有示例限制和对齐方式只影响诊断输出，不影响完整原 oracle 判等范围。
 
-既有 oracle 的每表 100000 行保护保持不变。驱动在调用前读取真实两侧表计数；超出时输出 **`not_run_oracle_row_budget`、equal=null**，不改阈值、不采样冒充完整 parity、不另造归一化实现。这意味着当前驱动能够执行指定大规模的真实构建与计数，但大矩阵的完整 correctness certification 仍需独立扩展与审阅后的 oracle 能力。
+既有内存 oracle 的每表 100000 行保护保持不变。驱动在调用前读取真实两侧表计数；超过该界限时使用 `oracle::compare_streaming` 的磁盘排序路径。两个路径共用唯一的字段投影和 SQLite 值到 canonical JSON 的转换，仍比较原 15 张表的全部行、保留重复行。每侧先建立只读事务快照并执行原 integrity/FK 检查；临时 SQLite 按完整 canonical JSON 文本的二进制顺序建立覆盖索引，两个有序流逐行比较，随后才计算摘要。数组摘要与旧 oracle 的完整 JSON 数组摘要一致。
+
+磁盘路径固定排序页缓存为 2 MiB，默认每侧每表最多 500 万行、两侧所有表累计 canonical 行文本最多 4 GiB、临时 SQLite 文件最多 8 GiB、单行原始内容与编码后文本各最多 1 MiB。临时库禁用 journal、同步写与 mmap；所有文件仅属于本次诊断，成功或错误返回后清理。覆盖索引随写入维护，比较使用该索引，避免另外产生不受文件页数限额约束的外部排序文件。页缓存不是整个产品或 SQLite 进程峰值声明。行数、字节或磁盘限额耗尽、输入损坏、未知表与 I/O 错误都会失败，不能变成部分采样的 `equal=true`。
+
+每个大表保留最多 3 个按 canonical 顺序对齐的差异示例；单侧示例超过 16 KiB 时仅输出其长度和摘要，并显式标注正文省略。这只限制诊断输出，完整逐行比较继续执行。判等保持原 `serde_json::Value` 语义，例如 `-0.0` 与 `+0.0` 相等；它们的序列化文本、排序位置和摘要仍保留原样，不用摘要相同与否替代事实判等。小表仍保留既有 `resolution_manifests` 按真实 `file_path` 对齐的详细诊断。报告另记录实际 canonical 字节数、临时文件峰值、限额与 `disk_backed_exact_v1` 模式。索引 closure 未完成时即使所有表相同，状态仍为 `incomplete_not_certified`、`equal=false`。
+
+这消除了大规模验证的固定 10 万行阻塞；它自身不代表已经执行完 1k–100k 矩阵、30 次重复、heldout 或 G8 发行认证。
 
 fanout 使用原 mutation_case 保留完整 canonical 事实和独立断言结果；原工具不返回 full rebuild 的阶段 timing，因此该字段明确 unavailable。fanout 的外部 wall time 是整个 fixture replay，包括两侧建库和 oracle；不能当成单次增量耗时。曲线汇总分别保留全部 repetition 的 fixture replay 微秒数、原 IndexReport `elapsed_ms` 跨 resume 总和及实际 build 数；缺失原字段则汇总为 null，不以 0 补齐。这些点与主矩阵外层增量时间分栏，不混用时间范围或单位。
 

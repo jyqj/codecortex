@@ -41,7 +41,7 @@
     "crates/cc-db/src/semantic_publish.rs": "3b7c6af1f94604eed757dd5ceaeb99da5ef2caf91eec98a3f0ec24cb83f53826",
     "crates/cc-db/src/semantic_queue.rs": "78452087441c24209358c7da0bd825e13344735425b151ee72035e9db20023ae",
     "crates/cc-db/src/semantic_rebuild.rs": "181733dc1e55e26964022f3f9b0b0d5096629707055bf75bdcec75fc02d97467",
-    "crates/cc-db/src/semantic_recovery.rs": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9",
+    "crates/cc-db/src/semantic_recovery.rs": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e",
     "crates/cc-db/src/semantic_space_switch.rs": "d0e18001df11af72e59eb3ca2d4501f458a1f45040b76fbea9756df2676d64d4",
     "crates/cc-db/src/signature_agg.rs": "a931651405dace905001548167c05336e798fbcdcd6009a3db51d6a60ab275c0",
     "crates/cc-db/src/snapshot_write_txn.rs": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
@@ -679,10 +679,10 @@
     "crates/cc-semantic/src/providers/fake.rs": "263520b629db0f53ff099d282f42f174d2a64b013e75c302d3f59b38f55a12e8",
     "crates/cc-semantic/src/providers/openai_compatible.rs": "7e65627e2a29fc40436cc8460e93a9a9cc715f8c83b31c7a24d929752acdbca3",
     "crates/cc-semantic/src/publish.rs": "a9b71bf109a09c3bd509d453676400ce45d3ea8d3051feff76d3283904061629",
-    "crates/cc-semantic/src/queue.rs": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d",
+    "crates/cc-semantic/src/queue.rs": "3ef3d0b90260bfb4f3fed94703ed37e6e02324299996a60a64eb560fc9e9a349",
     "crates/cc-semantic/src/reconcile.rs": "16d66527f6e96d95fcd0f64219ab75e06fd5be5e26e4c777dc09b8fbe54d049c",
     "crates/cc-semantic/src/recovery.rs": "21ea2a9f10ab76111439d60fa450f2a90e3eb9e365c78418cb089bb44fbc4708",
-    "crates/cc-semantic/src/space_switch.rs": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b",
+    "crates/cc-semantic/src/space_switch.rs": "f09dde979b3aa1c6aefded96e0cfe5629c9835b88ea344979c69015375d5fb9b",
     "crates/cc-semantic/src/spec.rs": "05c669e51643c9201c231012c8da5df4976ebf8ddb858ecce5d6e8d75c1e9b8e",
     "crates/cc-semantic/src/types.rs": "4fc2f9868474b4e4b664cf63c6958f5bb916360a9c37ca8529d9b8074aaa8b95",
     "crates/cc-semantic/src/vector.rs": "f5b634a1f25bd9206df06eaeb50ba3f31efd589930dbbf8fb96b72866e299bcb",
@@ -694,6 +694,7 @@
     "crates/cc-semantic/tests/gc_concurrent_replacement.rs": "89419449ee27dd0373a8b14403dace732aeb2246a36dafba1c96793a03e6fc93",
     "crates/cc-semantic/tests/gc_unlink_accounting.rs": "8c5f84cd741349158d861f86d361e2ccdb019eb7fc54833921ffbb29fa567cf3",
     "crates/cc-semantic/tests/manifest_exact_integration.rs": "225965736937a01b54d464be0044247d74de2f2eb7ef009c4f61232b3dd92137",
+    "crates/cc-semantic/tests/opportunistic_reclaim.rs": "0718d3a869c0ad17ff486e5f363cc0f2fb980752161934337b7459548d9d5999",
     "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": "39b631321fde931c9ecd979beaf56e06fd41ee1b4a18b169171ce2cb14634751",
     "crates/cc-semantic/tests/p7_crash_preparation.rs": "d11a135d77ad04ea14c316303d4592477d4ce2e0713da176d43ff56c658bd780",
     "crates/cc-semantic/tests/p7_staging_gc_preparation.rs": "d2eaa166e0ff68fe4d293c8b8f354458d97b9d2e558de9ff8c8caeb753dd01e9",
@@ -817,6 +818,10 @@
       "before_sha256": "5d51eea6a372a3ffec951032651dec37b503e758bc94951f92cc237e999714a3",
       "sha256": "0e3a01631be1670ed2bd2168b968f943f3cae6b0d8159877ad1e2731b0634f49"
     },
+    "crates/cc-db/src/semantic_recovery.rs": {
+      "before_sha256": "80b805f0ed4e51c10973366268dd2ca61483d8eab8d17e59353e44430fb48ba9",
+      "sha256": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e"
+    },
     "crates/cc-eval/src/benchmark/ablation.rs": {
       "before_sha256": "2f7e62ae883c4087d99b3c160f8012fbfce37d52fb3299c877531588ebff6aa2",
       "sha256": "cc57dff94bb4f826f01aff6b29fa2287e367f7d47b5696c8a495dc6320587fab"
@@ -885,6 +890,10 @@
       "before_sha256": "266f01841afc452512e70fb273a36cd11e800a1a0be807423872e03c7f2631b2",
       "sha256": "a9b71bf109a09c3bd509d453676400ce45d3ea8d3051feff76d3283904061629"
     },
+    "crates/cc-semantic/src/queue.rs": {
+      "before_sha256": "4edea23156619415c4f27a4aad4e16d8d8cd15d23031c2f43d19213ab8e7524d",
+      "sha256": "3ef3d0b90260bfb4f3fed94703ed37e6e02324299996a60a64eb560fc9e9a349"
+    },
     "crates/cc-semantic/src/reconcile.rs": {
       "before_sha256": "021cbdeb6fde4a0636498dc20b58d19ee7cb289d114ccee4b3172573dff58c35",
       "sha256": "16d66527f6e96d95fcd0f64219ab75e06fd5be5e26e4c777dc09b8fbe54d049c"
@@ -893,9 +902,17 @@
       "before_sha256": "490b833d9f5b4326c12eab64de71fa2356b093516946f91c6fd7284bb6d53bd0",
       "sha256": "21ea2a9f10ab76111439d60fa450f2a90e3eb9e365c78418cb089bb44fbc4708"
     },
+    "crates/cc-semantic/src/space_switch.rs": {
+      "before_sha256": "3ef00ba29b96b8f21c0c00c59a05f6d844a72f7f588dc4cd9003031aac6d8d5b",
+      "sha256": "f09dde979b3aa1c6aefded96e0cfe5629c9835b88ea344979c69015375d5fb9b"
+    },
     "crates/cc-semantic/tests/gc_concurrent_replacement.rs": {
       "before_sha256": null,
       "sha256": "89419449ee27dd0373a8b14403dace732aeb2246a36dafba1c96793a03e6fc93"
+    },
+    "crates/cc-semantic/tests/opportunistic_reclaim.rs": {
+      "before_sha256": null,
+      "sha256": "0718d3a869c0ad17ff486e5f363cc0f2fb980752161934337b7459548d9d5999"
     },
     "crates/cc-semantic/tests/semantic_degrade.rs": {
       "before_sha256": "2ceb2b84c7e334c11ecc33813dc06e1a959b24c2ba5ac390f5df42ab0bb0fd3f",
@@ -923,9 +940,9 @@
     }
   },
   "previous_source_version": "p8-joint-source-20261008-v12",
-  "product_source": "832dc4cbf0469ee4964bb3e4d2a1d085a9d749b1",
-  "review_sha256": "7481551bd2eb200467d5e75b31c1f03168fae81253e628ad3fc4bb6ee96d1c1d",
-  "review_source": "89b9607977b1b7822543852cd267ddffc5d91c9c",
+  "product_source": "09291fdf4d968b0929d598cd5df6a3d1fbd3d6cc",
+  "review_sha256": "d092124dcf5e3c8c2f2559e1fbfffbbdf56d1083a554838cde64d54b05d4e5df",
+  "review_source": "7b5d6f1fa436f4c655b0c0fafc66b521faeb480e",
   "runtime_and_quality_claims": "require_separate_execution_evidence",
   "schema_version": 8,
   "scope": "independently_reviewed_source_and_validation_inputs",

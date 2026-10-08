@@ -19,7 +19,7 @@ import signal
 import subprocess
 import time
 
-from p7_build_identity import file_sha256, json_bytes, source_snapshot
+from p7_build_identity import file_sha256, json_bytes, source_snapshot, verify_release_profile
 from p7_stdio_build_receipt import compiler_environment, toolchain_identity
 import p8_release_evidence as lock
 
@@ -149,6 +149,10 @@ def validate_build(binary, receipt_path, root, expected_source, role):
             and command[command.index("--bin") + 1] == expected_name
             and ("--release" in command) == (profile == "release"),
             "build profile or binary does not match the recorded Cargo command")
+    if profile == "release":
+        require(receipt.get("actual_cargo_profile") == artifact["profile"],
+                "actual release profile differs from Cargo artifact")
+        verify_release_profile(artifact["profile"])
     raw = receipt_path.parent / "cargo-build.jsonl"
     require(artifact_from_log(raw, expected_name) == artifact,
             "receipt artifact differs from the actual retained Cargo output")
@@ -187,6 +191,8 @@ def build_runner(args):
     require(source_snapshot(root) == before and toolchain_identity(root, environment) == toolchain,
             "source/toolchain changed while building cc-eval")
     artifact = artifact_from_log(output / "cargo-build.jsonl", "cc-eval")
+    if args.release:
+        verify_release_profile(artifact["profile"])
     executable = Path(artifact["executable"]).resolve(strict=True)
     require(executable.is_relative_to(target), "Cargo runner artifact escaped the chosen target")
     snapshot = output / "cc-eval"

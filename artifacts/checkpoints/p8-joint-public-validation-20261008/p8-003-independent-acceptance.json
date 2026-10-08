@@ -1,0 +1,652 @@
+{
+  "schema_version": 1,
+  "task": "P8-003",
+  "reviewer": "/root/pr_audit",
+  "role": "Non-author of production changes, compat driver and original release execution; independently reviewed source/utility changes and re-ran the evidence audit against the exact original reports. No product or scorer rerun.",
+  "verdict": "accepted_original_task_execution_and_reporting_scope_quality_gate_failed",
+  "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+  "source_tree": "4db46c8403c0a8687dc01f95ded006e31f842076",
+  "original_contract_review": {
+    "blob": "54aa35f895a8f42f8e70b69fdd55eefeec01f1fb",
+    "sha256": "ac5e424b33b508b9c31b150e94eb402067e84ab41f7f4b1dd23c04989359d658",
+    "baseline": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "protected_contract_fields_unchanged": true
+  },
+  "dependency": {
+    "task": "P8-002",
+    "manual_acceptance_blob": "554edb990b10e910693ae126fa697ddf8753e46b",
+    "sha256": "cd287b390adc1da68704a7d738a60f3b34af08db1d50372bbfefb784a5e0d295"
+  },
+  "original_execution": {
+    "run_id": 37749276827,
+    "job_id": 113218230481,
+    "utility_head": "978698f3d31ed040c9f835a720f0b2421cd26001",
+    "conclusion": "failure",
+    "artifact": {
+      "artifact_id": 11537848186,
+      "artifact_name": "p8-fresh-release-external-revision2",
+      "zip_bytes": 29745796,
+      "zip_sha256": "7c0f7bf7e20d071b49fbd2e5aa1ae2d114bd9b3dc301469ac3160574a855c7a7",
+      "run_id": 37749276827,
+      "workflow_head": "978698f3d31ed040c9f835a720f0b2421cd26001",
+      "candidate_source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "conclusion": "failure"
+    },
+    "package_manifest": {
+      "blob": "35ef118d6a55395df4ab9154e843d98a4d9a05dd",
+      "bytes": 11015,
+      "sha256": "1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b"
+    },
+    "driver_status": "external_measured_gate_failed",
+    "driver_release_certified": false,
+    "driver_P8_003_done": false,
+    "driver_statement_note": "Original automatic flags remain byte-for-byte; this separate manual decision evaluates only the original task's execution/reporting clauses and never changes gate1 into pass."
+  },
+  "actual_raw_evidence": {
+    "commit": "2456756c9543d2b509841982e16ebfbfdaf3a5b6",
+    "prefix": "artifacts/checkpoints/p8-release-evidence-20261008/runs/37749276827/",
+    "prior_independent_review": {
+      "blob": "b594c125d2049dd7bc86106cbf82dda7e5d3bf87",
+      "sha256": "46109b7d5fe1d3456865e933eb52fdfae5ed1be21319a37634f5e9a22b0db7b5"
+    },
+    "readback_provenance_blob": "3309e568cc8a81ad6f2577506d988eb8f38fab83",
+    "audit_script_blob": "c1206f92cd3663a6f599e6205688774c6f55b635",
+    "directly_read_and_hashed_files": [
+      {
+        "path": "raw/candidate-package/manifest.json",
+        "blob": "35ef118d6a55395df4ab9154e843d98a4d9a05dd",
+        "sha256": "1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b",
+        "bytes": 11015
+      },
+      {
+        "path": "raw/external/external-reference-package/index.json",
+        "blob": "32bd2ef1ff56c5547d8fb7f47a754d1ae73f872c",
+        "sha256": "bd8c836716aaf6e3fdf0df8945467d59480b1bbc5e33b6bf1f1ce4396f8851b8",
+        "bytes": 1272787
+      },
+      {
+        "path": "raw/external/external-reference-package/roundtrip.json",
+        "blob": "713eef723a9770880b930e4e24028b48480ff126",
+        "sha256": "e042dcb07f50dcd90be6da80d42ebb04188ed2f774b42c2290f1c7a89969b8e2",
+        "bytes": 266
+      },
+      {
+        "path": "raw/external/sources/cc-switch.json",
+        "blob": "11beb89fbc8cff875010ddb791fb728eeee2d4b8",
+        "sha256": "3b18b3616e40181d3c06ab0124537072ffb2bc8918e99f79bcfcbd3613a5dc53",
+        "bytes": 588900
+      },
+      {
+        "path": "raw/external/locks/cc-switch.json",
+        "blob": "4628051fe71411cfd8c05d6568846459848bc3cb",
+        "sha256": "8430a205e41a4f81947c6eb3beaee4175f8172ab7ce5b3a3168f572245be625a",
+        "bytes": 242627
+      },
+      {
+        "path": "derived-original/cc-switch/receipt.json",
+        "blob": "22882b003edc1c61f6521a33cc9a57a0daf0c303",
+        "sha256": "a06c0ad0bb60077a0ec9db2e0053ebcbb2fa05fb0144aa4497a637a2e5b85bfc",
+        "bytes": 139897
+      },
+      {
+        "path": "derived-original/cc-switch/compat/normalized.jsonl",
+        "blob": "a77573459f147ffa6d6bac27c35c05cb9edf857b",
+        "sha256": "cc66463faf2a83002273b174000e402c31d7ad8a1fd0c86c3b39d7b5d6a51e05",
+        "bytes": 2277008
+      },
+      {
+        "path": "derived-original/cc-switch/compat/scores.jsonl",
+        "blob": "068c847028da35f2e59f957649f1224352afc07e",
+        "sha256": "0707d3364ae9c9da88422520ab2a469d83d5ec990c62d5ae9947da2f4b2f0f13",
+        "bytes": 42000
+      },
+      {
+        "path": "derived-original/cc-switch/compat/metrics.json",
+        "blob": "cf761e141f8b0f80fe3a2f5ecbdddc8c4ef51615",
+        "sha256": "12c204aaace2f5ea9969c7db7ea8a7c11b4aec0b49bec128d42787be3c58404c",
+        "bytes": 17958
+      },
+      {
+        "path": "derived-original/cc-switch/compat/gate.json",
+        "blob": "7ddafb0e2c7f070e53d6504561c33d02ce3e9ca0",
+        "sha256": "82c1a829fd02e990f90ce1ac18aece64e3aa9994797d27c84a74c6eef464e816",
+        "bytes": 5769
+      },
+      {
+        "path": "derived-original/cc-switch/compat/manifest.json",
+        "blob": "d2c60545fcd8f92ecdc81a2365361f59d61c7a91",
+        "sha256": "e03c6402e7dd7d4dcbd710689606ba1972d941f97cc04c729e7110b7ff003c22",
+        "bytes": 238979
+      },
+      {
+        "path": "raw/external/suites/cc-switch/suite.compat.json",
+        "blob": "70c3bf8a937592335a0e88c7c0ef998665257db7",
+        "sha256": "6f8d21412107417aaf451a6fdefc459e51e89f57f0c868f432c55ffbaf2b5a2b",
+        "bytes": 48257
+      },
+      {
+        "path": "derived-original/cc-switch/native/normalized.jsonl",
+        "blob": "1f79b9711682806e9e415cc9edf6f623c23f22ca",
+        "sha256": "d108bf3639f9c552badf213b626b78c2505d2b37e2aa5aa764ff09aa0685ba89",
+        "bytes": 2277007
+      },
+      {
+        "path": "derived-original/cc-switch/native/scores.jsonl",
+        "blob": "c77ae0bb16292df960b24d927552ff33a6077b85",
+        "sha256": "7050a9ca230c428ea482339e04b5b66b6382d01b5e2caa11c911fadbdb813915",
+        "bytes": 41970
+      },
+      {
+        "path": "derived-original/cc-switch/native/metrics.json",
+        "blob": "71312be0c37975b9b9cb4eda2f02676888c0a193",
+        "sha256": "9e800d74990645618052baf239de51ab9e6279d844fdcac7482279fecd34f157",
+        "bytes": 17991
+      },
+      {
+        "path": "derived-original/cc-switch/native/gate.json",
+        "blob": "7ddafb0e2c7f070e53d6504561c33d02ce3e9ca0",
+        "sha256": "82c1a829fd02e990f90ce1ac18aece64e3aa9994797d27c84a74c6eef464e816",
+        "bytes": 5769
+      },
+      {
+        "path": "derived-original/cc-switch/native/manifest.json",
+        "blob": "68b15306cf5cb5850d837b0e09f9ab1d2728d278",
+        "sha256": "149b18df85a8de6cb808178bd3f793214defad22ead536dff17e0a636d257ed1",
+        "bytes": 238986
+      },
+      {
+        "path": "raw/external/suites/cc-switch/suite.native.json",
+        "blob": "d3a3a2ab9bddd449ad6c18eafafda3f04417fc4a",
+        "sha256": "a1a29beb4a7ef3b61d036b9fbe50fc480a16e677cea92b846664c7953c6ecb6d",
+        "bytes": 48264
+      },
+      {
+        "path": "raw/external/sources/flask.json",
+        "blob": "844c2492ffa393616e32c7b4e9a9a7fab9756017",
+        "sha256": "aa2d5cf6b24507e0b647e88ab8913c872d28526dc5df58c22d7c50b587ed3dc9",
+        "bytes": 117445
+      },
+      {
+        "path": "raw/external/locks/flask.json",
+        "blob": "edb76a7ddf5bb43e73935db4e8dba7f972ac5302",
+        "sha256": "e00d6fb368bbc9af401d3ba7d46854ed3cf7b2170d17c93aec215140ecde7c96",
+        "bytes": 52852
+      },
+      {
+        "path": "derived-original/flask/receipt.json",
+        "blob": "1ba8c586a4305d655612fe230db441771dc886ec",
+        "sha256": "432f3211b80a00b229c37e723890f5e9265cafcd3f42f001af26f87028aca3ad",
+        "bytes": 138354
+      },
+      {
+        "path": "derived-original/flask/compat/normalized.jsonl",
+        "blob": "e84e96bc72c0f18ac7e2dbabdb54479f07883a60",
+        "sha256": "1180c8f571f5aa5d86a9cd06c9d8430c2dff2aa3f7d6e781974f7bc3ccf2a17f",
+        "bytes": 1126890
+      },
+      {
+        "path": "derived-original/flask/compat/scores.jsonl",
+        "blob": "e3983bce9c39f97861b6d6190e4efb238e6a4fe5",
+        "sha256": "b789dd8edffe3e30e144e34a3eebf456a04f4ec44e97b3f71fcff599adf38ce2",
+        "bytes": 41889
+      },
+      {
+        "path": "derived-original/flask/compat/metrics.json",
+        "blob": "fc7ff8b59659f8609d8c09454530f02af6eaca0c",
+        "sha256": "c3cb85420f296c3f8922b3eebb85f2d9f4dca05cae1e4d1140f97244622d9348",
+        "bytes": 17577
+      },
+      {
+        "path": "derived-original/flask/compat/gate.json",
+        "blob": "11c34c29e36d6f8c65226228dce90a72d0865c45",
+        "sha256": "a52536a1e3a82a29d19fb20ea58f9887510f96a516443b54bb042c5126dba7f3",
+        "bytes": 5199
+      },
+      {
+        "path": "derived-original/flask/compat/manifest.json",
+        "blob": "c48c4524992abfc7916937d93b94e225b13265d9",
+        "sha256": "b9f010cf0d6fc7f420b495f3feab9a813a31936a4112688b8c9cb86f92e66505",
+        "bytes": 51250
+      },
+      {
+        "path": "raw/external/suites/flask/suite.compat.json",
+        "blob": "cc17d2176ed1ba0b882ac41259e54c2d37969265",
+        "sha256": "c89879772a60af51ba3e26f86ac5b7a1a861be9e94dde9ac5e20fcc9d9d70656",
+        "bytes": 9441
+      },
+      {
+        "path": "derived-original/flask/native/normalized.jsonl",
+        "blob": "4930cf84932a5204c39550423e8dbb691c59f7d4",
+        "sha256": "1fee96d6c637a0e01b42a1d1c88b985262ab9bebb21ec6ea3fb5e6df834bbd3e",
+        "bytes": 1126891
+      },
+      {
+        "path": "derived-original/flask/native/scores.jsonl",
+        "blob": "fe5a850bbc2e47d60e2cc3415ccee61314afe15e",
+        "sha256": "b69c6873a1b035dec5d075a9757ffde6883079608cd05c3f370f55878777f996",
+        "bytes": 41259
+      },
+      {
+        "path": "derived-original/flask/native/metrics.json",
+        "blob": "64641a1be80ae53f00f36d313c3edf0675aec225",
+        "sha256": "c4509de193bc3185899f5e456636525c526afbf995d7a522642aa5fac876d9ff",
+        "bytes": 17551
+      },
+      {
+        "path": "derived-original/flask/native/gate.json",
+        "blob": "11c34c29e36d6f8c65226228dce90a72d0865c45",
+        "sha256": "a52536a1e3a82a29d19fb20ea58f9887510f96a516443b54bb042c5126dba7f3",
+        "bytes": 5199
+      },
+      {
+        "path": "derived-original/flask/native/manifest.json",
+        "blob": "cad33659304a79721b3955174d341b207f01b19b",
+        "sha256": "8212b5a58b74a953b26ce28f1a6e01a078c3a9fe31f44bb73c5a1a5295229a67",
+        "bytes": 51257
+      },
+      {
+        "path": "raw/external/suites/flask/suite.native.json",
+        "blob": "69c325be577bdebfdb64e8699d061e986cba836d",
+        "sha256": "cdb8e9f3922270edc49513ead7a9d207e0202e40923bf9809b99ef3667fd3c59",
+        "bytes": 9448
+      },
+      {
+        "path": "raw/commands/build-product.json",
+        "blob": "d12e8388af15b4cd1a14c3f60866cf753337f612",
+        "sha256": "f769937619275d5db85ede61d2e850d233a195f8ed22b2c62a575b7fe6d7b329",
+        "bytes": 562
+      },
+      {
+        "path": "raw/commands/build-product.log",
+        "blob": "75525d49b8dccade44d7e9b5d04b6013e2f4d393",
+        "sha256": "972190c1d14dd2caa34f182f2fe96f85a1e2683ef1ef0d1c135acebf5583bd52",
+        "bytes": 403
+      },
+      {
+        "path": "raw/commands/build-runner.json",
+        "blob": "da8570763c5c38f46e01d3088eb490bb33b35c35",
+        "sha256": "3aab4d9e2f5ff30d1eb400277e39ef7c526c318e107013e3740a4894109932b7",
+        "bytes": 639
+      },
+      {
+        "path": "raw/commands/build-runner.log",
+        "blob": "510bb3941717a61218699044f14c7108bd66cd1e",
+        "sha256": "203cbda4191021dc76c7efea983bd40164f6e73671569433d42230b519e6643f",
+        "bytes": 437
+      },
+      {
+        "path": "raw/commands/external-revision2.json",
+        "blob": "ad0d8300a1781e9a50892770bc22f77b89838730",
+        "sha256": "c0083440457c6a5ef49b764da42c5d1024f14c3f37fb800cdbbe8087809e5bd1",
+        "bytes": 1034
+      },
+      {
+        "path": "raw/commands/external-revision2.log",
+        "blob": "e2c16afc7f0d25f42b11fe0d6888f6488171ce97",
+        "sha256": "a20e34a9e43b23047a7cc9e4e3fb6c71f2d0319e582d529c97fcc194c87bb813",
+        "bytes": 152
+      },
+      {
+        "path": "raw/commands/package-candidate.json",
+        "blob": "53047c4dc9b6db4e7fbf312ed1a0f9840dca5d64",
+        "sha256": "f4e486db1ab3f10414dcba526c1cea8bd8b0c321a39fa19058862426767f4903",
+        "bytes": 839
+      },
+      {
+        "path": "raw/commands/package-candidate.log",
+        "blob": "2f6e6cb084027383d44a176128fdbaea3015e7e3",
+        "sha256": "b94d754c9247d059f75a5d679c1a43c9c1bff15a90defd1340194cc99cc184e7",
+        "bytes": 295
+      },
+      {
+        "path": "raw/commands/profile.json",
+        "blob": "5d5ed30a8183fe9c6bb616a0c4807efef77a84d4",
+        "sha256": "e40fda7fc8e1894d0073c3495068dad66bb76e77b23daa124d7f1398ae88d011",
+        "bytes": 511
+      },
+      {
+        "path": "raw/commands/profile.log",
+        "blob": "cbe3c3836258fdb5829db60868c0de1b22c2f877",
+        "sha256": "7510e0e3e6011d8452e188ff18d8ab59578155015898a39ead561a470cd368bd",
+        "bytes": 854
+      },
+      {
+        "path": "raw/commands/readiness-real.json",
+        "blob": "f768e821f837490ca92e36784fcc34e38100b3be",
+        "sha256": "625dacd30a69bb95238fc2b0735a704f600d6877dd44a9b82c71d148875e6464",
+        "bytes": 557
+      },
+      {
+        "path": "raw/commands/readiness-real.log",
+        "blob": "4ce0cd0f148c814c0029876b79ee998ed642c862",
+        "sha256": "780df83281863952f254b349c7f267213b5ad0b66a16aafa6560a63e402a5899",
+        "bytes": 6649
+      },
+      {
+        "path": "raw/commands/readiness-unit.json",
+        "blob": "9ab73da711998f153bdb00472f779c0c43a77b0f",
+        "sha256": "8cc510d1475512a298e7b68657c34bca0a3a6cf812df4700a7d55116abf36825",
+        "bytes": 538
+      },
+      {
+        "path": "raw/commands/readiness-unit.log",
+        "blob": "f1a1c8f5ce63a20bb9b0ab3f17b167802aa10067",
+        "sha256": "2a6e17dbd0428cf7febd0c23509da2bc4fa058ed92018fb2c6f389f26836916e",
+        "bytes": 1069
+      },
+      {
+        "path": "raw/commands/rustfmt-check.json",
+        "blob": "48c181565913a7b13f8d8b29d76676ab8ec5f9c1",
+        "sha256": "46635f896674e52004ec0d88f4729b7790d228916a1e6b0f189739ad9bbee9ab",
+        "bytes": 416
+      },
+      {
+        "path": "raw/commands/rustfmt-check.log",
+        "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "raw/commands/scanner.json",
+        "blob": "714b517026239bb0dcc40c1948df689a8e5b88ef",
+        "sha256": "04cf060e2fb376d0c29617f2750cc547942fbe204fa00f2625edb28ba6341532",
+        "bytes": 548
+      },
+      {
+        "path": "raw/commands/scanner.log",
+        "blob": "1e72439ef3407753a250dcd283a3d99471a1048b",
+        "sha256": "e6c9ddb2385bd03e75daeced43a3cd80cd8a63e1dcfe37c4cb02d7d572294373",
+        "bytes": 1702
+      },
+      {
+        "path": "raw/commands/watcher.json",
+        "blob": "1a554a15a6c3de0d860e9f8ef4da4bf20e4518d8",
+        "sha256": "e04432777fcb8a76a5ab688a2a4dd6611c23988dc8ad8cb4015201679dc64185",
+        "bytes": 565
+      },
+      {
+        "path": "raw/commands/watcher.log",
+        "blob": "4a33e3b89e9dcdbea5baad45d314017c739660d7",
+        "sha256": "79e116f4737b94cdec63cb415fdfd51fa24955249596a8470f5b03ada48ddc55",
+        "bytes": 1165
+      },
+      {
+        "path": "raw/commands/wrapper.json",
+        "blob": "f76e1ecef416b0f39d5f76c791d7e3c1336b4788",
+        "sha256": "0797c0fc275ee2b4b78193029e6cb68e0730076acf5647eda69d0a07c2051db8",
+        "bytes": 497
+      },
+      {
+        "path": "raw/commands/wrapper.log",
+        "blob": "c7c1fae78997581f22ac2cb8df1417f1e96f54dd",
+        "sha256": "75ca65313b5db537283d5ee85a4d8c8b5627f56df71ef6da47eb5034bf0bc1c8",
+        "bytes": 6487
+      }
+    ],
+    "readback_scope": "Read 55 exact textual report/command files and recomputed audit. Whole ZIP 38-piece hash/273-file readback is inherited from independently reviewed and actually executed readback plus p7_wiring's byte-level verification, not falsely described as my duplicate ZIP download.",
+    "query_body_access": "No external query snapshots or held-out question bodies fetched or reinserted."
+  },
+  "actual_independent_recomputation": {
+    "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "original_files": 1290,
+    "original_roundtrip": {
+      "all_files_restored_identically": true,
+      "files": 1290,
+      "index_sha256": "bd8c836716aaf6e3fdf0df8945467d59480b1bbc5e33b6bf1f1ce4396f8851b8",
+      "schema_version": 1,
+      "scope": "actual same-run byte equality, not quality acceptance",
+      "total_bytes": 49724321
+    },
+    "profiles": [
+      {
+        "repo": "cc-switch",
+        "profile": "compat",
+        "query_ids": 100,
+        "repetitions": 3,
+        "rows": 300,
+        "unique_pairs": 300,
+        "unique_raw_responses": 300,
+        "statuses": {
+          "partial": 300
+        },
+        "hits": 1368,
+        "all_hit_evidence_valid": true,
+        "all_hit_paths_in_common_locked_source": true,
+        "all_hit_source_digests_and_spans_match_original_source_manifest": true,
+        "all_hit_utf8_slice_lengths_match": true,
+        "invalid_hits": 0,
+        "unverified_hits": 0,
+        "source_files": 1030,
+        "source_bytes": 16498946,
+        "source_digest": "2ac1dd927992360222500f3599a46efd5f8ce81f33115641da440f73a767d4d9",
+        "query_digest": "40e4bbc4d3241169f2b84b2411d63d82059b8cfc2325273b177e298af8d96435",
+        "query_sha256": "97189f27407aff102b6ec3eabfd0d50f77b8b77cd1d798f9233c4ca4378dadcd",
+        "suite_sha256": "be613bd76b5ab36c77030a75cecfa5a745f08eb26c704f55688ac1d902429173",
+        "original_profile_files_bound": 318,
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.26,
+        "ndcg10": 0.2556726944728614
+      },
+      {
+        "repo": "cc-switch",
+        "profile": "native",
+        "query_ids": 100,
+        "repetitions": 3,
+        "rows": 300,
+        "unique_pairs": 300,
+        "unique_raw_responses": 300,
+        "statuses": {
+          "partial": 300
+        },
+        "hits": 1368,
+        "all_hit_evidence_valid": true,
+        "all_hit_paths_in_common_locked_source": true,
+        "all_hit_source_digests_and_spans_match_original_source_manifest": true,
+        "all_hit_utf8_slice_lengths_match": true,
+        "invalid_hits": 0,
+        "unverified_hits": 0,
+        "source_files": 1030,
+        "source_bytes": 16498946,
+        "source_digest": "2ac1dd927992360222500f3599a46efd5f8ce81f33115641da440f73a767d4d9",
+        "query_digest": "254ccd6149b105df20c12104d5bae949ace8d0ea53bf49826443e5ffb877251b",
+        "query_sha256": "68487d5f51e20266b16a3ef2cc1b42c41afb333d120969292320d44cc199ef43",
+        "suite_sha256": "97331d7f5a8225e9958f8b0ef7ee908e7a5f6f0ed1e196efa593dc42ab853126",
+        "original_profile_files_bound": 318,
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.12,
+        "ndcg10": 0.25176020155965245
+      },
+      {
+        "repo": "flask",
+        "profile": "compat",
+        "query_ids": 100,
+        "repetitions": 3,
+        "rows": 300,
+        "unique_pairs": 300,
+        "unique_raw_responses": 300,
+        "statuses": {
+          "partial": 270,
+          "no_match": 30
+        },
+        "hits": 684,
+        "all_hit_evidence_valid": true,
+        "all_hit_paths_in_common_locked_source": true,
+        "all_hit_source_digests_and_spans_match_original_source_manifest": true,
+        "all_hit_utf8_slice_lengths_match": true,
+        "invalid_hits": 0,
+        "unverified_hits": 0,
+        "source_files": 229,
+        "source_bytes": 1552118,
+        "source_digest": "12e049b5928fb9b6981f0c63a26e2348108834d959f92e15c1ed77cf4094f17d",
+        "query_digest": "4f263ceabaf5ec06b1acf34d76513f9ac9c09149ddbad56ab2996ba0a169469b",
+        "query_sha256": "9d4b15544be7e03bfa14639d79a92942c8948ecec0942ad77e30a1b2bf61cd93",
+        "suite_sha256": "cb495030e2d1761052d09d2801e8e6e304f547a56c3b8cdf069a6da52755e2ce",
+        "original_profile_files_bound": 318,
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.49,
+        "ndcg10": 0.4997546423927355
+      },
+      {
+        "repo": "flask",
+        "profile": "native",
+        "query_ids": 100,
+        "repetitions": 3,
+        "rows": 300,
+        "unique_pairs": 300,
+        "unique_raw_responses": 300,
+        "statuses": {
+          "partial": 270,
+          "no_match": 30
+        },
+        "hits": 684,
+        "all_hit_evidence_valid": true,
+        "all_hit_paths_in_common_locked_source": true,
+        "all_hit_source_digests_and_spans_match_original_source_manifest": true,
+        "all_hit_utf8_slice_lengths_match": true,
+        "invalid_hits": 0,
+        "unverified_hits": 0,
+        "source_files": 229,
+        "source_bytes": 1552118,
+        "source_digest": "12e049b5928fb9b6981f0c63a26e2348108834d959f92e15c1ed77cf4094f17d",
+        "query_digest": "f9df32d73dd58db122b5d2b3284d3e4a64b86d2a0b937a61ee4cf786d56d9b27",
+        "query_sha256": "4489a42220329a87fc22473eb8540d8eab5c2baeb6d7f5231d8cc92328201b47",
+        "suite_sha256": "f8d36ec6ec95e08bed7728788884f8bdaae31f33f290c34ac2a5d4b079fd5320",
+        "original_profile_files_bound": 318,
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.44,
+        "ndcg10": 0.49780574827945595
+      }
+    ],
+    "total_rows": 1200,
+    "total_hits": 4104,
+    "scope": "Original complete engineering measurement, quality gate remains failed. No new candidate run, scoring, query insertion, or native semantic gold certification."
+  },
+  "additional_case_score_checks": [
+    {
+      "repo": "cc-switch",
+      "profile": "compat",
+      "all_100_case_metrics_recomputed_from_positional_original_scores": true,
+      "score_identity_note": "Original score rows have no case_id/repetition fields; positional alignment checked against normalized rows through per-case aggregate metrics, not described as embedded score IDs."
+    },
+    {
+      "repo": "cc-switch",
+      "profile": "native",
+      "all_100_case_metrics_recomputed_from_positional_original_scores": true,
+      "score_identity_note": "Original score rows have no case_id/repetition fields; positional alignment checked against normalized rows through per-case aggregate metrics, not described as embedded score IDs."
+    },
+    {
+      "repo": "flask",
+      "profile": "compat",
+      "all_100_case_metrics_recomputed_from_positional_original_scores": true,
+      "score_identity_note": "Original score rows have no case_id/repetition fields; positional alignment checked against normalized rows through per-case aggregate metrics, not described as embedded score IDs."
+    },
+    {
+      "repo": "flask",
+      "profile": "native",
+      "all_100_case_metrics_recomputed_from_positional_original_scores": true,
+      "score_identity_note": "Original score rows have no case_id/repetition fields; positional alignment checked against normalized rows through per-case aggregate metrics, not described as embedded score IDs."
+    }
+  ],
+  "negative_copy_controls": [
+    {
+      "name": "duplicate_pair",
+      "rejected": true,
+      "reason": "duplicate request"
+    },
+    {
+      "name": "invalid_hit",
+      "rejected": true,
+      "reason": "all source evidence valid"
+    },
+    {
+      "name": "foreign_source_path",
+      "rejected": true,
+      "reason": "all source evidence valid"
+    },
+    {
+      "name": "changed_gate",
+      "rejected": true,
+      "reason": "exact original failure reasons"
+    },
+    {
+      "name": "changed_mean",
+      "rejected": true,
+      "reason": "original scores aggregate"
+    },
+    {
+      "name": "changed_original_replay_exit",
+      "rejected": true,
+      "reason": "original replay gate identity"
+    },
+    {
+      "name": "different_query_lock",
+      "rejected": true,
+      "reason": "original suite/query exact hash lock; public suite is canonical JSON copy"
+    }
+  ],
+  "original_command_checks": {
+    "count": 11,
+    "all_receipt_log_sha256_and_bytes_equal": true,
+    "expected_actual_exits": "10 commands0, external-revision2 command1",
+    "tests": {
+      "wrapper": 39,
+      "profile": 4,
+      "scanner": 5,
+      "watcher": 2,
+      "readiness_unit": 5,
+      "readiness_real": 2
+    },
+    "mcp_readiness_ignored_entries": "The two readiness-real ignored-by-default tests were explicitly selected with --ignored and actually ran2passed,0failed,0ignored."
+  },
+  "old_regressions": {
+    "exact_source_required_workflows": [
+      37749230722,
+      37749230693,
+      37749230656
+    ],
+    "all_success": true,
+    "main_check_log_blob": "e421c208c759d68b6fdb3f35a614afb5efd9b14d",
+    "source_integrity_tests": 174,
+    "schema9_complete_inputs": 1038,
+    "selected_actual_scorer_tests": [
+      "compatibility_glob_can_match_nested_path",
+      "compatibility_supporting_is_top1_but_not_primary_grade",
+      "independent_python_fnmatch_goldens",
+      "native_supporting_top1_does_not_answer_primary",
+      "partial_empty_is_not_a_correct_no_answer",
+      "lane_only_incomplete_empty_never_scores_as_correct_no_answer"
+    ]
+  },
+  "clause_mapping": [
+    {
+      "clause": "Run cc-switch and Flask with the same locked input",
+      "finding": "Both fixed repository commits and tracked/common file inventories match actual input locks; four profiles use identical registered budget/config and current release binaries; all100 IDs×3 repetitions are present exactly once per profile."
+    },
+    {
+      "clause": "Report compat/native separately",
+      "finding": "All four original normalized/score/metric/gate/manifest sets are separately preserved and independently rechecked; no score aggregation treats the profiles as interchangeable."
+    },
+    {
+      "clause": "No uncontrolled direct leaderboard comparison",
+      "finding": "No external leaderboard or quality superiority claim. Source/query/suite locks, glob golden regressions, common admitted source sets, mechanical native projection limits and platform/build identity remain explicit."
+    },
+    {
+      "clause": "Related old regressions pass; no unexecuted item reported done",
+      "finding": "Current exact-source CI and targeted release regressions ran successfully. Four actual measurements and original replays completed with exit1 only for preserved Partial reasons; none are reported as gate0. P8-003 execution/reporting can complete without claiming the full quality/G8 target."
+    }
+  ],
+  "limitations": [
+    "All four original quality gates are failed (exit1). cc-switch has300Partial/profile; Flask has270Partial+30NoMatch/profile. No row was dropped or reclassified.",
+    "Native external gold is the original mechanical ordered primary/secondary projection, not independent native semantic-gold certification.",
+    "Private original suites and canonical public JSON copies are semantically bound, not falsely byte-identical; original private suite/query hashes remain in original lock and receipts.",
+    "Hit source paths, UTF8 lengths, spans, manifest content digests and evidence_valid are checked. I did not independently re-download all upstream source or recompute BLAKE3 source/slice digests; original normalizer validation and immutable source evidence remain the underlying proof.",
+    "32 displayed raw fragments are explicitly incomplete. Complete original raw responses are preserved by the original roundtrip/index and lossless archive, not represented by those fragments.",
+    "Full V19/G8 release quality, held-out,100k scale and prospective execution remain unaccepted by this decision.",
+    "Task ledger and root/PR refs were not changed by this review."
+  ]
+}

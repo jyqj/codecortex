@@ -1,0 +1,32 @@
+name: P8 completed public V02 artifact readback
+on:
+  push:
+    branches: [work/p8-public-readback-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  readback:
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download fixed original ZIP and service metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$RUNNER_TEMP/p8-v02-readback"
+          gh api repos/jyqj/codecortex/actions/artifacts/11539125414 > "$RUNNER_TEMP/p8-v02-readback/artifact.json"
+          gh api repos/jyqj/codecortex/actions/runs/37752879911 > "$RUNNER_TEMP/p8-v02-readback/run.json"
+          gh api repos/jyqj/codecortex/actions/artifacts/11539125414/zip > "$RUNNER_TEMP/p8-v02-readback/original.zip"
+      - name: Export original bytes without candidate execution
+        env:
+          READBACK_ROOT: ${{ runner.temp }}/p8-v02-readback
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -I -S artifacts/checkpoints/p8-joint-public-validation-20261008/readback.py --part ${{ matrix.part }}

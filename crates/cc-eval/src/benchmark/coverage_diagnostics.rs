@@ -51,14 +51,17 @@ pub fn snapshot(work: &Path, files: &[FileRecord], config: &Value) -> Result<Val
             let exists = indexed.contains(file.path.as_str());
             let reason = if exists {
                 "indexed"
-            } else if file.path.split('/').any(|part| part.starts_with('.')) {
+            } else if scanned.contains(&file.path) {
+                // Actual admission takes precedence over inferred exclusions.
+                "scanner_admitted_but_not_indexed_reason_unknown"
+            } else if !config.indexing.include_hidden_files
+                && file.path.split('/').any(|part| part.starts_with('.'))
+            {
                 "hidden_path_excluded_by_scanner"
             } else if ignored.is_ignored(&file.path) {
                 "configured_ignore"
             } else if file.bytes > config.indexing.max_file_bytes {
                 "above_product_file_limit"
-            } else if scanned.contains(&file.path) {
-                "scanner_admitted_but_not_indexed_reason_unknown"
             } else if walked.contains(&file.path) {
                 "format_not_admitted_by_scanner"
             } else {

@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "review_kind": "original_contract_scope_clarification_not_task_acceptance",
+  "decision": "P8-002_public_native_corpus_can_be_completed_before_P8-004_clean_holdout_execution",
+  "authority": {
+    "baseline": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+    "current_task_ledger_sha256": "b5a33e7827a6a1b60b71194348d61eb629385c48c1b970f434f330b2244a0812",
+    "original_task_fields_unchanged": true,
+    "files": [
+      {
+        "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+        "sha256": "7c799531fa9bad32b274db107f4808e0e641fe1585e9d5fbbe5fe32ddcb52fd3"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+        "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+        "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+      },
+      {
+        "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+        "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af"
+      }
+    ]
+  },
+  "original_task": {
+    "id": "P8-002",
+    "depends_on": [
+      "P8-001"
+    ],
+    "steps": [
+      "扩至规划语言/仓库覆盖并复核gold",
+      "公开/私有数据分离"
+    ],
+    "acceptance": [
+      "题数、类别、语言、能力缺口和实际审阅范围透明",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validation_packages": [
+      "V02",
+      "V19"
+    ]
+  },
+  "correction_of_prior_overstatement": [
+    "Neither P8-002's own steps nor original04/06/09 require completed clean-holdout execution before accepting the public multi-repository native corpus.",
+    "Original09 line148 labels the dataset table as planned coverage, not completed counts; line152 says initially approximately600 reviewed questions. This is not an exact600 minimum or a requirement to certify600 statistically independent families.",
+    "The100-per-repository and10-per-category statements in09 line21 describe external cc-switch/Flask metadata only. They do not impose those quotas on each new native repository.",
+    "Original documents do not require a named external organization to hold custody. Genuine protected/unexposed held-out provenance is necessary when claiming holdout certification; its proof is not supplied by a split label or unknown exposure history.",
+    "Validation IDs denote packages. P8-002 does not swallow all futureV19 execution, and doing so would improperly move P8-004's explicit work before its own dependencies."
+  ],
+  "acceptance_checklist": [
+    {
+      "id": "source_coverage",
+      "clause": "P8-002 steps;09:152",
+      "check": "Actually expand the declared corpus to the planned six-or-more real repositories, coveringRust/JS/TS/Python/Go and at least one mixed monorepo. Show the concrete source/fixture scope and language/capability evidence for each repository; query-language labels alone cannot establish source-language or mixed-monorepo coverage."
+    },
+    {
+      "id": "fixed_inputs",
+      "clause": "D3;09:130-140",
+      "check": "Fixed upstream commits, license/use records and public/private separation; exact admitted source paths, byte hashes, sizes and inclusion/ignore reasons; query/gold/config/scoring and actual source-manifest locks. A documented public source subset is allowed, but cannot be represented as an entire checkout/dependency closure."
+    },
+    {
+      "id": "reviewed_gold",
+      "clause": "09:157-159",
+      "check": "Retain the ten original categories in actual coverage. Each included question is grounded in the fixed source, with primary/supporting/alternative roles reviewed by a non-author and hard negatives that are lexically plausible but wrong. Version disagreements and quarantine them; do not silently delete hard questions or relabel to preserve scores."
+    },
+    {
+      "id": "native_identity",
+      "clause": "09:66-83,132",
+      "check": "Native IDs, query_family, intent/scope, answer groups, required evidence/facets and applicable spans/symbol/graph constraints must have their declared semantics. File hits cannot be reported as graph correctness. Unsupported capabilities remain explicit and separate from the admitted supported scope."
+    },
+    {
+      "id": "family_split",
+      "clause": "09:132,144,183",
+      "check": "Assign translations/paraphrases by query_family, preserve DEV versus protected material, review global correlated components using the actual current public bytes and report correlations honestly. Repeated questions or mechanical duplicate absence are not proof of independent statistical units."
+    },
+    {
+      "id": "V02_actual",
+      "clause": "06:24;09:35,130-136",
+      "check": "Run the original schema/lock/format path on the complete admitted public candidate; bind exact files and actually reject identity/schema drift. Preserve original scorer version and no-answer/compat denominator differences. A metadata recovery utility alone is insufficient."
+    },
+    {
+      "id": "transparent_report",
+      "clause": "P8-002 acceptance;09:140,148,183",
+      "check": "Report actual rows/families/components, per-repo/category/language coverage, unsupported abilities, gold review scope and any approximate600 planning shortfall separately. Public/native and compat are separate profiles. Report unrun runtime-quality/macros/heldout/live/fullV19/G8 as not_run/blocked/inconclusive as applicable; do not certify those outcomes by closing this corpus task."
+    }
+  ],
+  "may_remain_outside_P8_002": [
+    "Clean held-out execution is the explicit P8-004 step and part of G8; it need not be moved into P8-002.",
+    "External cc-switch/Flask real compatibility execution belongs to P8-003, which becomes eligible only after actual P8-002 acceptance.",
+    "Full100k/release/platform/soak/live semantic effects and completeV19 statistical certification are separate original tasks/gates.",
+    "Approximately600 remains a disclosed plan target; original acceptance does not provide an exact numeric minimum or per-repository native quota."
+  ],
+  "custody_boundary": {
+    "metadata_only_path": "crates/cc-eval/benchmarks/public-v19/protocol/custody/decision.json",
+    "metadata_commit": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+    "metadata_sha256": "a8c88f2479843566d74a8a47f05da81da0588029dffa681c313e64939f344f9c",
+    "status": "custody_blocked",
+    "would_be_holdout_ids": 117,
+    "known_exposed_ids_lower_bound": 72,
+    "clean_holdout_certified": 0,
+    "interpretation": "The other45 IDs are exposure-unknown, not certified clean. The decision records unverifiedACL/principal identity, actual reads, first visibility, exposure hashes, source/gold and semantic family relations. This preserves the holdout limitation without transferring it into a publicDEV source/gold admission precondition.",
+    "required_for_future_holdout_claim": "A genuinely unexposed held-out corpus with verifiable access/read/first-visibility history, independent source/gold/family review and the original one-frozen-configuration execution. A separate external institution is not an original textual requirement; adequate independent protection and evidence are.",
+    "holdout_bodies_read": 0
+  },
+  "current_pending_work": [
+    "The new26 historical question bodies cannot be reconstructed from summaries. A newly authored replacement requires a new identity and fresh independent source/gold and global-component review.",
+    "The recovered public301 inputs and fresh two-repository additions must be joined using actual source/query/gold bytes, complete admission hashes and the original validation path. Old37b global-review hashes are not a substitute for unavailable exact bytes.",
+    "No current corpus task status is changed or accepted by this interpretation record."
+  ],
+  "remaining_dependency_graph": {
+    "unfinished": 32,
+    "ready_by_hard_dependencies_only": [
+      "P7-018",
+      "P8-002"
+    ],
+    "other30_all_have_hard_path_to_P8_002": true,
+    "P7_018": "Independent of P8-002 but explicitly requires live provider authorization and budget; originalD1+D2 declined them for this round, so it remainsblocked.",
+    "P9": "Optional/deferred decisions do not count as implemented task completion and original P8-020 dependencies remain."
+  },
+  "independent_peer_agreement": "/root/todo_acceptance separately read the same original task/04/06/09 clauses and agreed approximately600 is not an exact threshold and P8-004/G8, not P8-002, carry the explicit held-out execution.",
+  "no_product_or_ledger_changes": true
+}

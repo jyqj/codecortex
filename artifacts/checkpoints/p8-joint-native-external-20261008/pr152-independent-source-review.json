@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewer_session": "9967275fe9a7",
+  "repository": "jyqj/codecortex",
+  "pull_request": 152,
+  "head": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+  "base": "1fb51e181d6f7d4b15969d0bf362236ef6e06a58",
+  "decision": "accepted_scoped_static_review_for_integration",
+  "scope": "Read-only independent review of the three concrete fixes and exact v14 historical-context/test machinery; not a merge approval or final combined-source acceptance.",
+  "authorship_disclosure": "This996727 session did not author PR152 changes. PR152 historical receipts use role names /root/pr_audit and /root from a different031390 workspace/session; their authorship or claimed executions are not attributed to this current reviewer. Existing receipts remain original evidence, with session identity preserved.",
+  "fixed_files": {
+    "crates/cc-eval/src/benchmark/oracle.rs": {
+      "git_blob": "7ed4c523fad817cdca63e7151ea09981c5851129",
+      "sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
+      "bytes": 8290
+    },
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+      "git_blob": "632c9b7d2af0be2824063cfd5d1222646986ecbe",
+      "sha256": "dd8fd87c5518375536fea3003dc8ba45c199a595bb64ddbfbb7e74c116fe280c",
+      "bytes": 9919
+    },
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "git_blob": "efba7b74586b1f0df2076200921d02c2349ab681",
+      "sha256": "f475d81683f7f253f855691ea8d5cbb5136428f0e43ec9e64fecebd892704336",
+      "bytes": 41831
+    },
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": {
+      "git_blob": "8aa5c49cf70d78ec372fd0bd7e0f9d215667a2ce",
+      "sha256": "f41e2520995583b7c748627a3c7233cdc4e1529c644f0c7fdb362a13471a5cff",
+      "bytes": 9280
+    },
+    "crates/cc-index/src/indexer_phases/resolve.rs": {
+      "git_blob": "37eaa21c86d5d6098d7c343f37b7aeac87e26f98",
+      "sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
+      "bytes": 39091
+    },
+    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": {
+      "git_blob": "388841c74332a3a63372ef99b8827341d1211380",
+      "sha256": "9a6b4dbda93067c86ed11c630fa24ebb7cf720879cb9a42430596c6310f781db",
+      "bytes": 9143
+    },
+    "scripts/p8_compat.py": {
+      "git_blob": "b487abaf4ee40b2a5151fdd52e82e3a760559c24",
+      "sha256": "6dde4308d7639fd01bddbda8d7e0f68681d0673b54586482a00460b74ca4ccf9",
+      "bytes": 26511
+    },
+    "scripts/tests/test_p8_compat.py": {
+      "git_blob": "f864e1f514c28494d791692177960d4b01b636d0",
+      "sha256": "7923a968d0b30d08adc439d9ec159b130a1b0892393b312d850b3ba5f329c478",
+      "bytes": 20191
+    },
+    "scripts/verify_reviewed_source_v14.py": {
+      "git_blob": "6333f1f714bbd650f2ce87fd9a752b1471a41d22",
+      "sha256": "a0eabd8630ef3b4faf4f3cb8985025624d223b5fcab10955ef0aa9bb4e9db67a",
+      "bytes": 10822
+    },
+    "scripts/v14_historical_context.py": {
+      "git_blob": "48296d55b90f56e8ee97c52dab0430087487f462",
+      "sha256": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6",
+      "bytes": 8532
+    },
+    "tests/source_integrity/v14_historical_test_adapter.py": {
+      "git_blob": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+      "sha256": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
+      "bytes": 3411
+    },
+    "tests/source_integrity/test_reviewed_source_v14.py": {
+      "git_blob": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+      "sha256": "26be23a90a88814781c201e2ad60b0bd618334f82651e1ba55f91ca98d688a0e",
+      "bytes": 25020
+    },
+    "tests/source_integrity/test_v14_historical_context.py": {
+      "git_blob": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+      "sha256": "651632a8fc46bfe97b9cdb4eca1fb8b06d132033e9892402e667337b415c0386",
+      "bytes": 13773
+    }
+  },
+  "findings": [
+    {
+      "id": "COMPAT-IDENTITY",
+      "severity": "resolved_by_proposed_patch",
+      "need": "The old check_run binds counts and manifest digest fields but not the actual queries.jsonl contents or normalized case-ID×repetition membership. Equal-size substitutions can therefore evade that old shape check.",
+      "assessment": "The proposed query_snapshot preserves every locked field, filling only actual Rust serde optional/default fields verified in fixedschema.rs; canonical comparison binds query text, native groups/alternatives/spans/symbols, compatibility expected_files, annotations, family and order. Valid positive integer repetitions and ID set/cardinality/uniqueness prove the complete product matrix; raw paths are distinct members under raw/. Adapter, smoke profile, integer exit and actual gate status are also bound.",
+      "tests": "16 added identity methods retain the original16. Our153 adds7 independent explicit-configuration methods, so the merged target is39 with every original body retained.",
+      "integration": "Merge into our explicit configuration_profile variant without dropping any new identity checks or accepting text/hidden config under local-default."
+    },
+    {
+      "id": "ORACLE-COMPLETE",
+      "severity": "resolved_by_proposed_patch",
+      "need": "Current scale parity explicitly declines comparisons above the legacy per-table100000-row dispatch threshold.",
+      "assessment": "Disk-backed comparison shares the exact15-table projection and duplicate-preserving serialized sort. It compares parsedValue rows before digest, preserving signed-zero equality while retaining original per-side JSON array digest bytes. SQLite read snapshots contain schema/integrity/FK/table reads; private scratch has bounded pages/cache/row/canonical budgets. Exhaustion or malformed input errors never certify a sampled prefix. Incomplete scale closure still forcibly reports incomplete_not_certified/equal=false.",
+      "tests": "7 substantive controls cover legacy type/order/duplicates/digests, signed zero, complete15tables,100002row last-row mutation, row/byte/disk exhaustion and invalidUTF8/schema/FK. No execution claimed by this reviewer.",
+      "integration": "All4 oracle/scale implementation+test files may be taken at their exact reviewed bytes."
+    },
+    {
+      "id": "FORWARDING-LEAVES",
+      "severity": "resolved_by_proposed_patch",
+      "need": "Already parsed Known/KnownEmpty leaves without forwarding edges unnecessarily consume the forwarding-load4096-file budget, blocking large ordinary direct-import sets.",
+      "assessment": "Only already-known current surfaces with forwards.empty are skipped consistently at initial frontier, each round and final depth check. Unknown/current-unproven/persisted-only/missing surfaces still consume original discovery budget; actual forward links retain4096files/65536edges/32rounds. Direct symbol catalog bindings remain and the4097native parser/resolver positive control verifies all bindings.",
+      "tests": "7 added controls retain budgets for actualforwarding,unknown,persisted/missing,33layers and65537edges;32layers ending in a known leaf succeeds. Existing tests are not edited.",
+      "integration": "Both resolve.rs and its new forwarding_budget_tests.rs may be taken exact, with original MODULE_RESOLUTION note retained."
+    },
+    {
+      "id": "HISTORICAL-V14",
+      "severity": "accepted_scoped",
+      "assessment": "New v14 verifies current complete validation bytes before executing historical helpers, binds exact full source and review maps, and executes the real v13 and prior chains in a byte-checked fixed9f668 context. Protected current old guard/registry/test/record bytes remain checked before and after. The test facade forwards constants/functions/deletions/spies to the actualmodule; only omitted default roots are redirected. Explicit negative fixture roots still reach real rejecting predicates. No branch selecting or placeholder-success predicate observed.",
+      "tests": "21 new v14 plus14 history methods, total35; keep all139 old methods and all174 actually execute at the final merged source.",
+      "integration": "Use the full v14 helper/test machinery. Restore oldv13 guard+registry to fixed9f668 bytes and preserve our cc514 repinned versions as historical artifacts. Rebuild complete combined PRODUCT→REVIEW→registry with schema9, exactscope,complete_inputs and independent_reviewers strings. Change only fourv14 pins/path constants after fixed review; keep allfunction/testbytes."
+    }
+  ],
+  "merge_plan": {
+    "recommended": "Preserve both PRs and integrate complete accepted deltas into one newly reviewed candidate before prospective firstseal; no source task/runtime claims inherited automatically.",
+    "source_counts_expected_not_measured": {
+      "core": 1038,
+      "validation": 107,
+      "delta_against_9f668": 252
+    },
+    "exact_counts_require_new_git_inventory": true,
+    "conflicting_files": [
+      "scripts/p8_compat.py",
+      "scripts/tests/test_p8_compat.py",
+      "scripts/verify_reviewed_source_v13.py",
+      "scripts/reviewed-source-registry-v13.json",
+      ".github/workflows/ci.yml"
+    ],
+    "keep_all_artifacts_and_docs": true,
+    "tasks": "Keep original192task definitions/status/dependencies and both appended evidence histories. Current160done/32unfinished; the repair or issue creation itself closes no originalTODO.",
+    "authority_boundary": "No modification to either PR/ref/tasks/product made by this review."
+  },
+  "ci_observed": {
+    "head": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+    "engineering": {
+      "run_id": 37744918411,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "main": {
+      "run_id": 37744918464,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    "closeout": {
+      "run_id": 37744918344,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    "boundary": "One actual API observation, not a predicted terminal outcome. Parent independently monitors final/current head."
+  },
+  "execution_boundary": {
+    "actual_tools_run": "Official GitHub read APIs and JavaScript byte/hash/metadata inspection only",
+    "not_run": [
+      "Rust tests",
+      "Python tests",
+      "scale controls",
+      "current-source guard",
+      "merged runtime/quality"
+    ],
+    "historical_reports": "Read PR metadata, fixed independent-source-review and execution-summary; do not re-label their earlier fixed commits as the new combined candidate."
+  },
+  "required_next_checks": [
+    "Exact merged compat function retains both identity and configuration checks; every one of39 test methods retained unchanged.",
+    "Whole new source/validation map and source-bound independent review; no reuse of PR152's798/105 registry as if it covered the combinedcandidate.",
+    "Actual final174 source-integrity methods, v14CLI, historical-integrations and unchanged requiredworkflows.",
+    "Actual final-candidate V02 validation and freshrelease external runs if used for002/003; priorffdc/cc514 results remain fixed historical evidence.",
+    "No prospective author or firstseal until the finalcandidate/build/config/scorer/helper inputs and actualpreflight are accepted."
+  ],
+  "unresolved_code_blockers": [],
+  "future_runtime_outcome": "unknown"
+}

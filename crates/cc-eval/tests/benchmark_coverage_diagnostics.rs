@@ -301,3 +301,60 @@ fn cli_diagnostics_reject_quality_performance_and_non_mcp_backends() {
         assert!(String::from_utf8_lossy(&result.stderr).contains("coverage diagnostics require"));
     }
 }
+
+fn unindexed_hidden_source_snapshot(include_hidden_files: bool) -> Value {
+    let directory = tempfile::tempdir().unwrap();
+    let work = directory.path();
+    std::fs::create_dir(work.join(".demo")).unwrap();
+    std::fs::write(
+        work.join(".demo/example.py"),
+        "def target():\n    return 1\n",
+    )
+    .unwrap();
+    std::fs::write(work.join(".source.py"), "def source():\n    return 2\n").unwrap();
+    std::fs::create_dir(work.join(".codecortex")).unwrap();
+    let database = work.join(".codecortex/index.sqlite3");
+    let connection = rusqlite::Connection::open(&database).unwrap();
+    connection
+        .execute_batch("CREATE TABLE files(file_path TEXT,language TEXT,parser_tier TEXT);")
+        .unwrap();
+    drop(connection);
+    let before = std::fs::read(&database).unwrap();
+    let files =
+        manifest::inventory(work, &[".demo/example.py".into(), ".source.py".into()]).unwrap();
+    let config = json!({"indexing":{"include_hidden_files":include_hidden_files}});
+    let snapshot = b::coverage_diagnostics::snapshot(work, &files, &config).unwrap();
+    assert_eq!(std::fs::read(&database).unwrap(), before);
+    assert_eq!(snapshot["indexed_files"], 0);
+    assert_eq!(snapshot["valid_measurement_eligible"], false);
+    snapshot
+}
+
+#[test]
+fn default_hidden_sources_keep_the_scanner_exclusion_reason() {
+    let snapshot = unindexed_hidden_source_snapshot(false);
+    assert_eq!(
+        snapshot["reason_counts"]["hidden_path_excluded_by_scanner"],
+        2
+    );
+    for record in snapshot["records"].as_array().unwrap() {
+        assert_eq!(record["scanner_admitted"], false);
+        assert_eq!(record["indexed"], false);
+    }
+}
+
+#[test]
+fn enabled_hidden_sources_admitted_but_not_indexed_have_an_unknown_reason() {
+    let snapshot = unindexed_hidden_source_snapshot(true);
+    assert_eq!(
+        snapshot["reason_counts"]["scanner_admitted_but_not_indexed_reason_unknown"],
+        2
+    );
+    assert!(snapshot["reason_counts"]
+        .get("hidden_path_excluded_by_scanner")
+        .is_none());
+    for record in snapshot["records"].as_array().unwrap() {
+        assert_eq!(record["scanner_admitted"], true);
+        assert_eq!(record["indexed"], false);
+    }
+}

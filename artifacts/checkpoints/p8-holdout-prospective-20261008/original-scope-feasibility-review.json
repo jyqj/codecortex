@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "review_kind": "read_only_original_P8_004_contract_and_fresh_experiment_feasibility",
+  "verdict": "prospective_one_shot_design_is_feasible_under_original_task_scope_but_not_yet_executed_or_accepted",
+  "task": "P8-004",
+  "no_holdout_body_reads": true,
+  "task_status_changed": false,
+  "engine_changed": false,
+  "original_authority": {
+    "baseline": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "85c73442a7d2c01610ccf311b06f6c997d6f7748",
+      "sha256": "a7ebacf3903f3f405e3c5ba4d19f5590107467b55ede35c4d675516c07cf4e68",
+      "record": {
+        "id": "P8-004",
+        "phase": "P8",
+        "phase_name": "规模、质量与发行认证",
+        "batch": "P8-A",
+        "title": "封存holdout与反过拟合检查",
+        "status": "in_progress",
+        "priority": "normal",
+        "scope": [
+          "crates/cc-eval/benchmarks/manifests/",
+          "crates/cc-search/"
+        ],
+        "depends_on": [
+          "P8-003"
+        ],
+        "steps": [
+          "审查生产无gold路径/题词典",
+          "一次冻结配置运行heldout"
+        ],
+        "deliverables": [
+          "封存holdout与反过拟合检查的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "translation/paraphrase不泄漏，回归后不直接改标签保分",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V19"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ],
+        "evidence": [
+          {
+            "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+            "artifact_paths": [
+              "artifacts/checkpoints/p8-next-ten-20261008/corpus/"
+            ],
+            "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+            "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+            "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases",
+            "summary": "生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位"
+          }
+        ],
+        "conditional_dependencies": [],
+        "implementation_notes": "\n2026-10-08 第一轮：生产依赖/字面量与组件split边界审计；保留原始review_required及独立人工定位。只计原始TODO推进，完整前置/验收仍开放。"
+      }
+    },
+    "references": [
+      {
+        "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+        "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+        "lines": [
+          130,
+          132,
+          144,
+          155,
+          159,
+          183,
+          185,
+          189
+        ],
+        "meaning": "Lock candidate/build/config/scorer/source/query/gold/environment; group paraphrases/translations; forbid gold path boosts and question dictionaries; use held-out repository/module/family and zero-lexical-overlap natural language; independent source-gold review; immutable failure evidence and honest statistics."
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+        "sha256": "7c799531fa9bad32b274db107f4808e0e641fe1585e9d5fbbe5fe32ddcb52fd3",
+        "lines": [
+          22,
+          136,
+          145,
+          163
+        ],
+        "meaning": "Preparations may run early, real hard dependencies remain; choose a frozen local release profile; no live claim from local evidence; dataset review and performance execution isolated."
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+        "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+        "lines": [
+          24,
+          41,
+          58,
+          65,
+          67
+        ],
+        "meaning": "V02 drift rejection; V19 proper actual corpus/holdout/facet/span/reporting; G8 remains broader including100k; hard correctness failures block, small sample uncertainty is inconclusive."
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+        "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+        "finding": "No separate external institution/account custody mandate was found."
+      }
+    ]
+  },
+  "distinction_between_authorities": {
+    "original_task": "Depends on P8-003; inspect production for gold paths/question dictionaries and run heldout using one frozen configuration; prevent translation/paraphrase leakage and no post-regression label edits; retain old regressions and do not mark unevidenced items done. No clause names an external institution, separate user account,600 hard minimum, or an absolute heldout quality pass threshold for this specific sealing/check task.",
+    "user_decisions": {
+      "path": "artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json",
+      "baseline": "47d1939e43455ecd72ccc73e80825d971e3f33e7",
+      "sha256": "da7c3719dd2a9684a1c470e4a7e3c2f3401e8742aa55079775524bdfe034e4af",
+      "D3": "Public repositories at fixed commits with license/provenance checks are authorized source direction.",
+      "D1_D2": "No live/paid embedding or LLM provider or private-source egress this round; local evidence and explicit blocked live columns. New heldout work cannot override this."
+    },
+    "later_protocol": "The public-v19 protocol deliberately adds a stronger restricted-custody/access-boundary route. This is real committed policy, not a requirement literally present in tasks004/09 and not merely inferred from the old contamination numbers. It must be preserved and disclosed if a separate prospective protocol is used.",
+    "later_protocol_references": [
+      {
+        "anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+        "path": "crates/cc-eval/benchmarks/public-v19/protocol/AUTHOR-START.md",
+        "git_blob": "fd2412d88388072d4ac0af8e822fb1512dd6449e",
+        "sha256": "86b92b27dbd5e4b1b704dff19a22070a16d3ab67a6a939bb856389fc88248b74",
+        "lines": [
+          18,
+          26,
+          28,
+          30
+        ],
+        "meaning": "Reserve monotonically before drafting; merge same-task variants before deterministic split; no public/shared/tuning-owner holdout bodies; agent instruction and same-workspace directories are not access control."
+      },
+      {
+        "anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+        "path": "crates/cc-eval/benchmarks/public-v19/protocol/PREREGISTRATION.md",
+        "git_blob": "653c895aa49d35f1184d8d25b310b0a78451db48",
+        "sha256": "dc3f5f89933c6bb403cf65908c9922acd5b817cbb5e6c00c7b2e2d442e36a04c",
+        "lines": [
+          11,
+          19,
+          21,
+          51,
+          53
+        ],
+        "meaning": "Separate restricted custody, source/gold independence, frozen runtime/arms, and explicit prospective amendments preserving old commitments/reasons."
+      },
+      {
+        "anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+        "path": "crates/cc-eval/benchmarks/public-v19/protocol/custody/CURRENT-DECISION.md",
+        "git_blob": "165365bbc332ff45ab3ce13f2e1d2f7df195b02b",
+        "sha256": "42a584e2b0e38d0cd8c7d60f308e8465bf49154e1c6eeeeceabf34bef2522073",
+        "meaning": "The observed2026-10-03 Library/shared runtime did not establish independent custody; an isolated task runtime is a possible route if separately verified, not automatically a separate account requirement."
+      },
+      {
+        "anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+        "path": "crates/cc-eval/benchmarks/public-v19/protocol/custody/check_custody.py",
+        "git_blob": "5a310575d2afdc0560f2092bfe6641fa631e6208",
+        "sha256": "f947047aa289478f6f9575dc740a3dec457806a48501f4b4d896a33d9be873c7",
+        "meaning": "It deliberately always returns exit1 and clean count0; complete metadata becomes requires_independent_custody_verification, never an access-control certificate. Do not modify assertions or fabricate a passed result."
+      }
+    ]
+  },
+  "old_contamination_retained": {
+    "anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+    "path": "crates/cc-eval/benchmarks/public-v19/protocol/custody/decision.json",
+    "sha256": "a8c88f2479843566d74a8a47f05da81da0588029dffa681c313e64939f344f9c",
+    "would_be_holdout_ids": 117,
+    "known_exposed_lower_bound": 72,
+    "other_ids_unknown": 45,
+    "clean_certified": 0,
+    "relation_graph": "unknown_relation_graph_required",
+    "rule": "Keep all old disclosure and histories. Neither moving, rekeying, deleting, relabeling nor a new candidate makes those old records clean. This review read only metadata and does not infer unseen contents."
+  },
+  "feasible_routes": [
+    {
+      "id": "A",
+      "name": "original_v1_restricted_custody",
+      "status": "not_currently_verified",
+      "requirements": "An existing authorized isolated runtime/storage boundary with verifiable excluded tuning principals and read/export/first-visibility evidence, independent author and reviewer, then original locked protocol. No external organization is inherently required: isolated runtime is explicitly a candidate route.",
+      "minimum_additional_resource_if_selected": "Actual platform/operator access-boundary evidence for an existing allowed location; a separate account is one possible route, not the original task's unique mandate.",
+      "forbidden_shortcuts": "Do not call task instructions, shared Library/workspace, an encrypted file with the tuning owner's key, or a new public Git blob an ACL boundary."
+    },
+    {
+      "id": "B",
+      "name": "new_prospective_temporal_freeze_one_shot_local_experiment",
+      "status": "design_feasible_not_yet_preregistered_or_executed",
+      "claim": "Fresh tasks independently authored after an immutable final candidate/measurement stack was committed; exactly one predeclared evaluation of that candidate, with no post-exposure tuning or label adjustment. This evaluates generalization for that frozen arm, not reusable secret-custody certification.",
+      "required_protocol_action": "Before creating or inspecting any new body, create a separately named, versioned and independently reviewed prospective protocol explaining temporal rather than ACL isolation. Preserve v1, all old blocked receipts and every old checker. Do not retrospectively label this as v1 custody success.",
+      "minimum_additional_resource": "Fresh context-isolated author and non-author source-gold reviewer tasks plus the existing authorized ordinary Actions execution/readback and immutable Git/artifact receipts. No paid provider, external custodian institution or new account is intrinsically required for this narrower original-task claim.",
+      "remaining_caveat": "A fork_none task is role/context separation, not verified filesystem ACL. State that explicitly; do not use an unproven private-directory claim as evidence."
+    }
+  ],
+  "strict_route_B_sequence": [
+    {
+      "step": 1,
+      "name": "finish_hard_dependencies_and_product_regressions",
+      "requirement": "Actually complete002/003 as applicable, compile/test the final product and measurement stack on publicDEV/synthetic controls, including new source admission and paginated readiness. Do not begin new heldout authoring while those product fixes are still open."
+    },
+    {
+      "step": 2,
+      "name": "elect_and_seal_one_final_candidate_before_any_new_body",
+      "requirement": "Commit exact source/complete inventory, Cargo binary hash/profile/features, runner/adapter/parser/scorer bytes, config/scan policy, model absence, timeout/top-k/budgets, environment/seed/cold-warm/repetition plan, baseline arm and decision/reporting policy. Select the one final candidate by publicDEV evidence only. Hashes and actual trusted service execution/order records must show this freeze predates new author/reviewer work."
+    },
+    {
+      "step": 3,
+      "name": "preregister_fresh_sample_selection_and_scope",
+      "requirement": "Fix repository/module novelty criteria, public licenses/commits/inclusion policy and planned sample/family coverage before observing rankings. Choose genuinely new source/tasks, not old exposed bodies, unseen labels on seenDEV, or paraphrases of knownDEV. Prespecify uncertainty treatment. Do not invent an exact600 threshold; do not claim broad generalization from a small convenience sample."
+    },
+    {
+      "step": 4,
+      "name": "use_fresh_roles_and_control_information_flow",
+      "requirement": "Create fresh fork_none author and independent source-gold reviewer tasks with no inherited engineering/ranking conversation and no history of changing the frozen arm. Supply only approved protocol, public fixed source and relevant publicDEV leakage-reference material. Body-bearing author/review communications stay out of active engineering tasks until the frozen one-shot measurement/reporting boundary specified by the new protocol. Log what roles could read versus what was actually read; never claim an ACL proof from role instructions."
+    },
+    {
+      "step": 5,
+      "name": "draft_review_and_quarantine_before_any_ranking",
+      "requirement": "Use fixed source bytes to create primary/supporting evidence, legitimate alternatives and hard negatives. Independently review all rows; preserve disagreements as versioned quarantine. Link natural-language English/Chinese variants, paraphrases, positive/negative counterparts and same-task templates into one component. Reviewer must check against the actually allowed publicDEV components. Unknown old contaminated-body relations stay unknown; do not assert a full audit of unseen old data."
+    },
+    {
+      "step": 6,
+      "name": "seal_associations_split_and_fresh_manifest",
+      "requirement": "For the retained split-v1 design, reserve opaque serials monotonically without choosing favorable hash keys, associate families before deriving splits, and keep every variant/component together. Do not salt/retry/relabel to get a holdout quota; cross-split relation discovery quarantines the affected component. A new temporal protocol can specify an explicitly distinct prospective sampling design only before drafting and with review, never silently pretend it is split-v1."
+    },
+    {
+      "step": 7,
+      "name": "lock_data_without_reopening_candidate_choices",
+      "requirement": "After independent gold review, add exact source/license/inclusion/query/gold/component/split and suite locks to the run manifest as data commitments. These complete the manifest without changing any preselected engine/runner/scorer/config knob. Verify bytes and schema with the actual unchanged evaluator. Do not use old check.py --custodian to imply a restricted location that does not exist; any new temporal validator must have a distinct identity and retain original public-intake rejection controls."
+    },
+    {
+      "step": 8,
+      "name": "audit_production_no_gold_influence",
+      "requirement": "Review all production deltas and runtime source inclusion for question dictionaries, gold path boosts, repository-specific shortcuts, benchmark imports or metadata entering the product. Index only admitted source and generated control configuration; keep query/gold outside product input. Source-only generic language/hidden/text policy is fixed before bodies and cannot be chosen from scores."
+    },
+    {
+      "step": 9,
+      "name": "execute_the_one_preregistered_experiment",
+      "requirement": "Run exact locked candidate and predeclared local baseline through real publicMCP/declared adapter using identical admitted sources and budgets. 'Once' means one immutable experiment with its preregistered repetition schedule, not selecting the best rerun. Preserve all scheduled rows, errors, deadlines, statuses, raw results and body-bearing records under the declared route; missing/invalid measurements are failures, not exclusions."
+    },
+    {
+      "step": 10,
+      "name": "independently_replay_and_end_confirmatory_use",
+      "requirement": "Recompute all claimed metrics and failure/availability denominators from raw. Treat multilingual variants/repetitions/profiles as repeated outcomes within the same family, not extra independent samples. Keep unsupported facet/graph/live or broad release claims not_run/blocked; use inconclusive for insufficient precision. After any exposure/results, retire this set from confirmatory use for later tuned candidates. Never fix gold or select a new candidate to rescue these scores."
+    }
+  ],
+  "failure_boundaries": [
+    "Product/runner/scorer/config changes after new body exposure defeat the prospective frozen-arm claim; retain failed evidence and use genuinely new source/tasks for a new confirmatory experiment.",
+    "Schema/lock/infra failure must not be reported as low quality or success. Preflight with invented controls before sealed bodies; an actual failed experiment stays failed. A raw-only replay without new product queries is distinguishable from rerunning and remains allowed for verification.",
+    "Source/scope/version leakage, score golden drift or incomplete query scheduling blocks integrity acceptance under the original06 rules.",
+    "Bad or inconclusive quality results are reported as such. Completing a genuine seal/anti-overfitting check does not itself establish semantic benefit, full V19 quality success, a100k profile or G8.",
+    "Current local-only authorization cannot be converted into a paid/live semantic heldout comparison."
+  ],
+  "current_state": {
+    "P8_004": "not_completed",
+    "new_holdout_authored_by_this_review": 0,
+    "new_ranking_runs": 0,
+    "new_candidate_or_future_result_preapproved": false,
+    "old_custody_checker_passed": false,
+    "old_clean_count_changed": false,
+    "user_confirmation_required_by_original_tasks_for_public_local_design": false,
+    "needs_before_execution": [
+      "root's concrete prospective protocol and independent review",
+      "final candidate+measurement stack actual tests and immutable identity",
+      "genuinely fresh author/non-author roles and frozen sample plan",
+      "actual locked data validation and one-shot execution evidence"
+    ]
+  },
+  "conclusion": "There is no original-task mandate to stop solely because an external institution or separate account is absent. A new, honest temporal-freeze one-shot experiment is a legitimate design to investigate for004, but it must be named and preregistered separately from the stronger existing v1 custody route and satisfy the actual original anti-leakage, source-gold, immutable configuration and regression requirements. Neither route currently has fresh execution evidence, so this is feasibility/design only."
+}

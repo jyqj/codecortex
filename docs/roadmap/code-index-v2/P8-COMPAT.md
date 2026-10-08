@@ -41,7 +41,7 @@ python scripts/p8_compat.py compare --left /absolute/run-a --right /absolute/run
 
 Suite 自身的 query/source BLAKE3 digest 由实际 `cc-eval validate` 校验；wrapper 额外绑定原始文件 SHA256。source 清单必须精确一致，不能漏列或增列。重复 query ID、混用 scorer、非 dev split、指向 holdout 的路径、路径越界、符号链接和不同平台声明均被拒绝。expected-path glob 的具体合法性与重叠检查继续交给固定 Rust validator，wrapper 没有另建 glob 匹配器。
 
-当前只接受显式本地默认配置 `{"auto_index":{"enabled":false}}`。run 使用真实 CLI 支持的 `smoke` 测量 profile，写入比较身份；不运行收费 provider。
+默认的 `local-default` 模式只接受显式本地默认配置 `{"auto_index":{"enabled":false}}`。run 使用真实 CLI 支持的 `smoke` 测量 profile，写入比较身份；不运行收费 provider。
 
 外部输入接入仍须满足以下两个固定目标，并准备得到授权的原题库输入和来源锁：
 
@@ -111,3 +111,23 @@ PYTHONDONTWRITEBYTECODE=1 python -m unittest discover \
 16 个测试覆盖实际零退出伪 evaluator 无 raw、零退出 comparator 无结果、信号退出、query/binary/scorer 漂移、错误外部 commit、snapshot 冒充 Flask、实际 Git HEAD/脏目录、平台/glob policy 差异、source 清单差异、native/compat 混报、holdout 指针、符号链接、输出覆盖/重叠、不同身份阻断 compare 与 raw 保留。
 
 `P8-003` 仍缺原外部输入的实际计数、源/题目/import lock、授权使用方式及固定 source 实际运行；V03/V04/V19 的完整外部证据也未取得。本轮没有读取 holdout 正文，没有新增独立人工题目审阅，也没有将公开控制算入外部套件或发布通过数量。
+
+
+## 5. 显式文本与隐藏文件候选模式
+
+新候选的 `local-text-hidden` 模式仅通过显式参数选择；不带参数的默认检查仍保留原配置断言。此模式只接受下列完整配置，compat/native 必须一致。多一个配置键、少一个开关、非布尔值、开启自动索引或添加 provider/query 配置都会被拒绝：
+
+```json
+{"auto_index":{"enabled":false},"indexing":{"include_text_files":true,"include_hidden_files":true}}
+```
+
+```sh
+python scripts/p8_compat.py run --lock /absolute/text-hidden-lock.json \
+  --output /absolute/new-text-hidden-run --configuration-profile local-text-hidden
+```
+
+该模式计入比较身份，仍使用原 `smoke` profile、固定输入与预算、真实 Rust scorer 和原 replay/gate。它不自动更换输入锁、裁剪未索引文件或把 readiness 缺口计为成功；文本与隐藏文件的准入仍受产品的系统、缓存、敏感路径、ignore、大小和内容检查约束。原模式的结果与新模式不属于同一比较身份。
+
+候选应由固定的同一份干净源码分别构建产品与 evaluator，记录真实 Cargo 产物。产品构建脚本新增显式 `--release`，省略时仍使用 dev；evaluator 的 `build-runner --release` 入口沿用现有实现。两个回执都保留实际 Cargo profile、命令、完整 raw 日志、源码与工具链身份。`--release` 是调用方式记录，具体优化设置以 `actual_cargo_profile` 为准。编译成功本身不证明外部套件已经执行或通过。
+
+本节是后续候选入口说明；前面章节的历史控制与其当时的 `not_run` 状态保持原样。首轮外部执行 `37735653177` 的 cc-switch 索引超时和 Flask 输入覆盖缺口均属于 `invalid_measurement`，两份 compat 未产出查询测量，native 未执行。它们的完整失败原件继续保留，不能据此声称排名通过；新模式的实际结果须由另一次完整运行及其回执给出。

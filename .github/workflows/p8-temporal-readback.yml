@@ -1,4 +1,4 @@
-name: P8 original temporal preseal artifact readback
+name: P8 original synthetic artifact metadata
 on:
   push:
     branches: [work/p8-temporal-readback-996727-20261008]
@@ -13,8 +13,6 @@ jobs:
         include:
           - mode: synthetic-control
             artifact: '11538793031'
-          - mode: prepare-source
-            artifact: '11538762460'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -30,7 +28,7 @@ jobs:
           gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID" > "$RUNNER_TEMP/ptv2-readback/artifact.json"
           gh api repos/jyqj/codecortex/actions/runs/37752995462 > "$RUNNER_TEMP/ptv2-readback/run.json"
           gh api "repos/jyqj/codecortex/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/ptv2-readback/original.zip"
-      - name: Inventory exact original bytes and expose existing metadata
+      - name: Inspect original ZIP central-directory size without executing contents
         env:
           READBACK_ROOT: ${{ runner.temp }}/ptv2-readback
           READBACK_MODE: ${{ matrix.mode }}

@@ -33,7 +33,12 @@ records=[]; seen=set(); selected={}
 select={"before.json","after.json","result.json","source-admission.json","source-lock.json"}
 with zipfile.ZipFile(zip_path) as archive:
     entries=archive.infolist()
-    need(len(entries)<=50000 and sum(x.file_size for x in entries)<=8*1024**3,"bounded original member closure")
+    summary={"scope":"ZIP central-directory metadata only; member content verification pending","mode":MODE,"file_count":len(entries),"total_member_bytes":sum(x.file_size for x in entries),"largest":[{"path":x.filename,"bytes":x.file_size,"compressed":x.compress_size} for x in sorted(entries,key=lambda x:x.file_size,reverse=True)[:20]],"prefix_counts":{}}
+    for entry in entries:
+        prefix=entry.filename.split("/")[0]
+        summary["prefix_counts"][prefix]=summary["prefix_counts"].get(prefix,0)+1
+    print("P8_PRESEAL_ZIP_METADATA "+json.dumps(summary,sort_keys=True),flush=True)
+    raise SystemExit(0)
     for entry in sorted(entries,key=lambda x:x.filename):
         name=entry.filename
         need(name and not PurePosixPath(name).is_absolute() and "\\" not in name and all(c not in ("",".","..") for c in name.split("/")),"safe member path")

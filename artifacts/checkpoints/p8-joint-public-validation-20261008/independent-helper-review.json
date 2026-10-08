@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "kind": "joint_current_evaluator_public_V02_helper_static_review",
+  "reviewer": "/root/pr_audit workspace9967275fe9a7",
+  "verdict": "accepted_scoped_static",
+  "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+  "helper": {
+    "git_blob": "3c4c510a86b5315f384b72ee201f08840c0296c5",
+    "sha256": "7d5dc719a2f13b0d89a066f787f3c13b76476eb795db268da54e61e8ea2079ca",
+    "bytes": 10457
+  },
+  "prior_draft": {
+    "git_blob": "3352e3f74ba58d9d425aae8f9b6189b4b87b2439",
+    "sha256": "17fbc8d531914f6ecd80ef378619d16df1f675bb32cd6740cc240f7da4447cf2",
+    "scope": "Retain prior draft; its full build-proof claim required either explicit inheritance or reuse of the actual fixed validator."
+  },
+  "reviewed_reuse": {
+    "candidate_checker": {
+      "path": "scripts/p8_candidate_execution.py",
+      "git_blob": "5fdabc7960669f71cc70e71e6963ee8944fe6a6d",
+      "functions": [
+        "source_summary",
+        "validate_build"
+      ]
+    },
+    "original_replay": {
+      "git_blob": "d063cff82c5d2c09739b47e5cb8c6ca13f431490",
+      "suites": 16
+    },
+    "projection": {
+      "git_blob": "528ed81afb61944566f6df35721811afadad6d7a",
+      "new_suites": 12,
+      "canonical_files": 182
+    },
+    "actual_read": "Read revised helper and actual fixed validator function bodies plus original replay/projection receipt construction and actual archived inventory shape. No Python execution."
+  },
+  "findings": {
+    "closed_build_proof_gap": "Revised helper restores original names cc-eval/build-receipt.json/cargo-build.jsonl/source-inputs.json; validate_build(...,'runner') now binds whole actual source-summary and input map, raw Cargo artifact/default features/profile/command, source paths, binary/receipt/toolchain identities. Explicit release required. Candidate-build-validation status/source and every proof hash match the same reused result.",
+    "retained_check_semantics": "Manifest/archive/member digests and source2cd remain fixed. All16 original V02 validations, all12 original canonical validations/freeze/schema checks run through unchanged helpers. Newly produced182 files must exactly match registered candidate bytes/hashes/modes; source/evaluator unchanged at end.",
+    "scope": "Only previously allowlisted public DEV inputs and exact history refs. No new ranking, source/gold reauthoring, protected body inspection, alternative scorer or task status mutation.",
+    "runtime_environment_requirement": "Invoke with PYTHONDONTWRITEBYTECODE=1 or Python-B, or equivalent sys.dont_write_bytecode=True before candidate imports. Otherwise Python may create candidate bytecode and the final clean-source assertion correctly fails; do not suppress that assertion.",
+    "original_checkout_path": "Keep candidate at original Cargo build manifest/source path; actual validator intentionally refuses relocated compile-time provenance."
+  },
+  "not_yet_verified": [
+    "Actual joint2cd package manifest/archive/build receipts and full current execution outputs require independent readback.",
+    "Actual command exits, schema errors{},16+12 validation receipts,182 byte/mode equality and final clean source must be observed in the forthcoming utility run.",
+    "P8-002 final task disposition, P8-003 real external profiles, quality/G8/release acceptance remain separate."
+  ],
+  "unresolved_static_blockers": [],
+  "task_status_changed": false,
+  "remaining_tasks": 32
+}

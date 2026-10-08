@@ -1,0 +1,67 @@
+name: P8 joint original corpus validation
+on:
+  push:
+    branches: [work/p8-joint-corpus-996727-20261008]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.95.0'
+      CANDIDATE_SOURCE: '2cd04485b0e0b23483f64671d56538bbaa47f442'
+      PACKAGE_MANIFEST_SHA256: '1dce263321c34dc60e69132d7e386ffa90c9d0436c1be5759efd7fefc957958b'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: utility
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          ref: 2cd04485b0e0b23483f64671d56538bbaa47f442
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install original explicit schema dependency
+        run: python3 -m pip install --disable-pip-version-check --quiet jsonschema==4.23.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-fresh-release-external-revision2
+          path: package-input
+          repository: jyqj/codecortex
+          run-id: 37749276827
+          github-token: ${{ github.token }}
+      - name: Execute fixed original public checks and canonical byte comparison
+        run: |
+          python3 -I -S "$GITHUB_WORKSPACE/utility/artifacts/checkpoints/p8-joint-public-validation-20261008/validate.py" \
+            --source-root "$GITHUB_WORKSPACE/candidate" \
+            --manifest "$GITHUB_WORKSPACE/package-input/candidate-package/manifest.json" \
+            --manifest-sha256 "$PACKAGE_MANIFEST_SHA256" \
+            --archive "$GITHUB_WORKSPACE/package-input/candidate-package/candidate-tools.zip" \
+            --output "$RUNNER_TEMP/p8-joint-public-validation"
+      - name: Preserve bounded verdict
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          root=Path(os.environ["RUNNER_TEMP"])/"p8-joint-public-validation"
+          for name in ("failure.json","result.json"):
+              p=root/name
+              if p.is_file():
+                  value=json.loads(p.read_bytes())
+                  keep=("status","error_type","error","source","original_v02_count","canonical_v02_count","totals","ranking_runs")
+                  print(name+" "+json.dumps({k:value[k] for k in keep if k in value},sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-joint-public-validation
+          path: |
+            ${{ runner.temp }}/p8-joint-public-validation
+            !${{ runner.temp }}/p8-joint-public-validation/validator/cc-eval
+          include-hidden-files: true
+          if-no-files-found: error

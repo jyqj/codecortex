@@ -3,6 +3,27 @@ name: P8 opt-in DB acquisition observations
 on:
   create:
   workflow_dispatch:
+  push:
+    branches:
+      - task/p8-db-lock-observation-a217-20261009
+    paths:
+      - .github/workflows/p8-db-lock-observation.yml
+      - crates/cc-db/Cargo.toml
+      - crates/cc-db/src/index_db.rs
+      - crates/cc-db/src/lib.rs
+      - crates/cc-db/src/lock_observation.rs
+      - crates/cc-eval/Cargo.toml
+      - crates/cc-server/Cargo.toml
+      - crates/cc-server/src/handlers/facade.rs
+      - crates/cc-server/src/tools.rs
+      - crates/cc-server/tests/p8_db_lock_observation.rs
+      - docs/P8_DB_LOCK_OBSERVATION.md
+      - scripts/p8_runtime.py
+      - scripts/p8_runtime_build.py
+      - scripts/p8_runtime_lock_observation.py
+      - scripts/reviewed-source-registry-v15.json
+      - scripts/tests/test_p8_runtime_lock_observation.py
+      - scripts/verify_reviewed_source_v15.py
 
 permissions:
   contents: read
@@ -19,7 +40,7 @@ env:
 
 jobs:
   admission_and_controls:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && github.event.ref == 'task/p8-db-lock-observation-a217-20261009')
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && github.event.ref == 'task/p8-db-lock-observation-a217-20261009') || (github.event_name == 'push' && github.ref == 'refs/heads/task/p8-db-lock-observation-a217-20261009')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

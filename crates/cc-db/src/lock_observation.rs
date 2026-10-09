@@ -372,7 +372,11 @@ mod tests {
     fn balanced(metric: &AcquisitionMetric) {
         assert_eq!(
             metric.attempts,
-            metric.acquired + metric.poisoned + metric.failed + metric.would_block + metric.in_flight
+            metric.acquired
+                + metric.poisoned
+                + metric.failed
+                + metric.would_block
+                + metric.in_flight
         );
         assert!(metric.elapsed_ns_total >= metric.elapsed_ns_max);
     }

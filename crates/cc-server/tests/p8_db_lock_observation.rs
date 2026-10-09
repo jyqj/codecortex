@@ -11,7 +11,10 @@ fn default_status_rejects_diagnostic_aspect_and_has_no_observation_field() {
     };
     assert!(params.sanitize().is_err());
     let index = CodeIndex::new(None).unwrap();
-    assert!(index.diagnostics_info().get("db_lock_observation").is_none());
+    assert!(index
+        .diagnostics_info()
+        .get("db_lock_observation")
+        .is_none());
 }
 
 #[cfg(feature = "p8-db-lock-observation")]

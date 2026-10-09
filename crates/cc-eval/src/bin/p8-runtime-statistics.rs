@@ -211,6 +211,24 @@ fn summarize(plan: &Plan, operation: &str, mutation: Option<&str>, rows: &[&Row]
     })
 }
 
+fn legacy_ns(rows: &[Row]) -> Value {
+    let summarize = |operation: Option<&str>| {
+        let values: Vec<_> = rows
+            .iter()
+            .filter(|row| operation.is_none_or(|kind| row.operation == kind))
+            .map(|row| row.finished_ns - row.offered_ns)
+            .collect();
+        statistics::legacy_latency_ns(&values)
+    };
+    json!({
+        "latency": summarize(None),
+        "latency_by_operation": {
+            "read": summarize(Some("read")),
+            "build": summarize(Some("build")),
+        },
+    })
+}
+
 fn replay(plan: &Plan, rows: &[Row]) -> Result<Value> {
     validate(plan, rows)?;
     let mut outcomes = BTreeMap::<&str, usize>::new();
@@ -256,6 +274,7 @@ fn replay(plan: &Plan, rows: &[Row]) -> Result<Value> {
         "exit_code": if successful == rows.len() { 0 } else { 1 },
         "by_operation": by_operation,
         "by_build_mutation": by_mutation,
+        "legacy_ns": legacy_ns(rows),
         "units": "integer microseconds; original nanoseconds retained in raw",
         "statistics_owner": "cc_eval::benchmark::statistics::{distribution,quantile_interval}",
         "statistical_scope": "descriptive all-attempt and successful-attempt observations; existing IID quantile intervals; serial correlation and mixed mutation classes are not certified homogeneous tails",
@@ -406,6 +425,87 @@ mod tests {
         assert_eq!(reads["outcomes"]["queue_rejected"], 1);
         assert_eq!(reads["outcomes"]["error"], 1);
         assert!(reads["successful_offered_to_terminal"]["p99_ci"].is_null());
+    }
+
+    #[test]
+    fn legacy_ns_keeps_every_terminal_outcome_and_original_precision() {
+        let mut failed = row(1);
+        failed.status = "error".into();
+        failed.started_ns = Some(1000);
+        failed.call_started_ns = Some(1000);
+        failed.finished_ns = 2001;
+        failed.response = None;
+        let mut canceled = row(2);
+        canceled.status = "canceled".into();
+        canceled.started_ns = None;
+        canceled.call_started_ns = None;
+        canceled.finished_ns = 1999;
+        canceled.response = None;
+        let mut rejected = row(3);
+        rejected.status = "queue_rejected".into();
+        rejected.started_ns = None;
+        rejected.call_started_ns = None;
+        rejected.finished_ns = 2000;
+        rejected.mutation_ordinal = None;
+        rejected.mutation = None;
+        rejected.response = None;
+        let mut rows = vec![row(0), failed, canceled, rejected];
+        let report = replay(&plan(4), &rows).unwrap();
+        let expected = |n, p50, p95| {
+            json!({
+                "n": n, "p50_ns": p50, "p95_ns": p95, "p99_ns": p95,
+                "maximum_ns": p95,
+                "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+                "tail_stability_claim": false,
+            })
+        };
+        assert_eq!(
+            report["legacy_ns"],
+            json!({
+                "latency": expected(4, 1000, 9000),
+                "latency_by_operation": {
+                    "read": expected(2, 999, 1001),
+                    "build": expected(2, 1000, 9000),
+                },
+            })
+        );
+        assert_eq!(report["exit_code"], 1);
+        assert_eq!(
+            report["outcomes"],
+            json!({
+                "success": 1, "error": 1, "canceled": 1, "queue_rejected": 1,
+            })
+        );
+        // The existing microsecond population and truncation stay unchanged.
+        let reads = &report["by_operation"][0];
+        assert_eq!(
+            reads["all_attempt_offered_to_terminal"]["distribution"],
+            json!({
+                "samples": 2, "p50_us": 0, "p95_us": 1, "max_us": 1,
+                "tail_claim": "insufficient_for_tail_claim",
+            })
+        );
+        assert_eq!(reads["successful_samples"], 0);
+        assert_eq!(reads["non_success_samples"], 2);
+        assert!(reads["successful_offered_to_terminal"]["p99_ci"].is_null());
+        rows.reverse();
+        assert_eq!(replay(&plan(4), &rows).unwrap(), report);
+    }
+
+    #[test]
+    fn legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan() {
+        let report = replay(&plan(1), &[row(0)]).unwrap();
+        assert_eq!(
+            report["legacy_ns"]["latency_by_operation"]["read"],
+            json!({
+                "n": 0, "p50_ns": null, "p95_ns": null, "p99_ns": null,
+                "maximum_ns": null,
+                "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+                "tail_stability_claim": false,
+            })
+        );
+        assert_eq!(report["legacy_ns"]["latency"]["n"], 1);
+        assert!(replay(&plan(0), &[]).is_err());
     }
 
     #[test]

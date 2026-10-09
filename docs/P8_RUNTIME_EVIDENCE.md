@@ -52,7 +52,7 @@ python3 scripts/p8_runtime.py verify \
 
 独立 backfill 的原始测试、三个固定种子、所有并发级别与超时保持不变。其入口现在也绑定全部已提交 observer、原编译器和私有 target 内的实际测试 executable，执行前后同时检查原件与复制件，并封存成功和失败的完整目录。`python3 scripts/p8_backfill.py verify --output /absolute/new-backfill` 只核对文件仍与封存一致，不把失败或受控假 provider 结果改为正式发行通过。
 
-原 mixed 默认每 C 的 600 次 read、300 次 build 全部保留。失败、取消和队列拒绝留在全部投递分母，同时展示成功子集、缺失阶段时间及各自分布/95% 分位区间。区间使用原有 IID 假设，无法确定的端点保持 null；样本少的 mutation 层保留原统计状态，不增加整个 mixed 失败条件。全部 raw 仍以 ns 保存，新重放按现有统计接口使用整数 μs。保留原 `latency`、`latency_by_operation` 字段，并新增独立 `statistics` 工件引用。
+原 mixed 默认每 C 的 600 次 read、300 次 build 全部保留。失败、取消和队列拒绝留在全部投递分母，同时展示成功子集、缺失阶段时间及各自分布/95% 分位区间。区间使用原有 IID 假设，无法确定的端点保持 null；样本少的 mutation 层保留原统计状态，不增加整个 mixed 失败条件。全部 raw 仍以 ns 保存，分布和分位区间继续按现有统计接口使用整数 μs。原 `latency`、`latency_by_operation` 的 ns 字段、精度、空值和全部终态分母保持不变：Rust 重放器从原 `finished_ns - offered_ns` 生成独立 `legacy_ns`，其 `legacy_latency_ns` 适配器调用同一 `nearest_rank` owner，Python 仅复制结果，不再另算分位数，也不由 μs 反推 ns。独立 `statistics` 工件引用保持原含义。
 
 冷构建、全新进程重开、未命中和缓存命中的分层统计由独立 lifecycle 流程负责。这里的 mixed 分位数和 CI 是描述性观测；并发下的缓存状态未隔离、build 主类包含不同修改、时间序列可能相关，这些边界不会因 N 足够而自动消失。原 RSS、等待、完整 parity 和终态门保持原值，统计重放不引入质量评分、稳定尾延迟声明或新性能门槛。
 

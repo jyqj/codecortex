@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "author": "/root/runtime_closeout",
+  "observed_at": "2026-10-09 06:26:04 UTC",
+  "status": "accepted_scoped",
+  "scope": "independent_static_review_of_five_exact_P8_017_changes_and_actual_Git_assembly",
+  "product_source": "bbe7a9e77f332448b610c54460b355c5936e8c2a",
+  "product_tree": "4a061990255eca685305655495443034d23e6b86",
+  "parent": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "historical_base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "files": [
+    {
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "mode": "100644",
+      "before_blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "after_blob": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+      "bytes": 15854,
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "mode": "100644",
+      "before_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "after_blob": "3d76b95d6364d03298a17b6f25e1f295fd78818d",
+      "bytes": 20516,
+      "sha256": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "mode": "100644",
+      "before_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "after_blob": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+      "bytes": 58530,
+      "sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime.py",
+      "mode": "100644",
+      "before_blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+      "after_blob": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+      "bytes": 53872,
+      "sha256": "cc0255c3d6a5396f61ca0d080401da1c936bcef1dff741437a1c6ce155a3ee2f"
+    },
+    {
+      "path": "docs/P8_RUNTIME_EVIDENCE.md",
+      "mode": "100644",
+      "before_blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+      "after_blob": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+      "bytes": 8911,
+      "sha256": "ca11059f1da6060ac9b31320efd8a4637d2b5a16968ee2e2795c3341f1b54a9d"
+    }
+  ],
+  "actual_git_checks": {
+    "official_commit_parent_and_tree_match": true,
+    "official_compare_exactly_five_modified_paths": true,
+    "official_compare_after_blobs_match_all_five": true,
+    "root_entries_before": 13,
+    "root_entries_after": 13,
+    "only_changed_root_trees": [
+      "crates",
+      "docs",
+      "scripts"
+    ],
+    "other_ten_root_entries_mode_type_oid_unchanged": true,
+    "definition_and_workflow_changes_in_exact_compare": 0,
+    "guard_and_registry_changes_in_exact_compare": 0
+  },
+  "manifest_composition": {
+    "product_inputs": 1089,
+    "validation_inputs": 138,
+    "source_delta_paths_from_historical_base": 41,
+    "product_input_changes": [
+      {
+        "path": "crates/cc-eval/src/benchmark/statistics.rs",
+        "before_sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+        "after_sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264",
+        "historical_before_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6"
+      },
+      {
+        "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "before_sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+        "after_sha256": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437",
+        "historical_before_sha256": null
+      }
+    ],
+    "validation_input_changes": [
+      {
+        "path": "scripts/p8_runtime.py",
+        "before_sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+        "after_sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b"
+      },
+      {
+        "path": "scripts/tests/test_p8_runtime.py",
+        "before_sha256": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
+        "after_sha256": "cc0255c3d6a5396f61ca0d080401da1c936bcef1dff741437a1c6ce155a3ee2f"
+      }
+    ],
+    "unchanged_product_inputs": 1087,
+    "unchanged_validation_inputs": 136,
+    "unchanged_historical_delta_entries": 39,
+    "basis": "Counts and inheritance derive from the previously independently checked complete main60 manifests plus the official exact five-modified-path compare. No new input path is introduced. This review does not claim a fresh semantic re-review of the other 39 inherited source deltas."
+  },
+  "findings": [
+    {
+      "area": "Rust algorithm owner",
+      "result": "Both Rust diffs are additions only. Existing nearest_rank, microsecond distributions, confidence intervals, validation and replay exit behavior remain byte-for-byte unchanged. New legacy_latency_ns sorts exact u64 durations and calls the existing nearest_rank implementation; no conversion through microseconds or floating-point durations occurs."
+    },
+    {
+      "area": "Terminal denominator",
+      "result": "The Rust replay validates rows before computing finished_ns-offered_ns. New legacy_ns filters by operation only, preserving success/error/canceled/queue_rejected. Empty operation subsets retain n=0 and null quantiles; an empty plan remains rejected."
+    },
+    {
+      "area": "Python one-time bound copy",
+      "result": "The old active Python latency_summary implementation and its math import are removed. Existing replay_statistics is unchanged. The driver reads statistics.json once for this copy, checks SHA256 of those exact bytes against statistics_result.sha256, parses those same bytes, and copies the Rust-owned legacy_ns wire fields. No fallback or second quantile implementation is added."
+    },
+    {
+      "area": "Wire compatibility",
+      "result": "Existing report latency and latency_by_operation field shape, integer nanosecond precision, empty nulls, scope and tail_stability_claim remain. The Rust replay adds legacy_ns while retaining existing microsecond layers. The independent statistics reference API is unchanged."
+    },
+    {
+      "area": "Meaningful regression sources",
+      "result": "Two statistics Rust tests cover empty/single/u64::MAX/submicrosecond and nearest-rank boundaries. Two actual-replay Rust tests cover every terminal status, read/build/all, original nanosecond precision, old microsecond behavior, deterministic input ordering and empty-operation behavior. Python controls prove exact sentinel wire copying and rejection after statistics bytes are altered following verification; synthetic data is explicitly marked, not treated as measured evidence."
+    },
+    {
+      "area": "v4 correction",
+      "result": "The final test blob 797dda75 restores the original success60 outcomes assertion to test_equal_oracle_retains_successful_observation. The displaced assertion in v3 e5129b is not accepted. The original direct Python algorithm test is replaced by the Rust replay denominator tests, rather than retaining two algorithm owners."
+    },
+    {
+      "area": "Documentation and compatibility",
+      "result": "Only the explanatory ownership paragraph changes in P8_RUNTIME_EVIDENCE.md. It preserves the ns wire / microsecond-layer distinction and does not claim tests, CI, measurements or task completion have passed. These five base blobs match the corresponding E and main60 inputs; the final patch is compatible with the observed main60 versions."
+    }
+  ],
+  "execution": {
+    "rust_compile": "not_run",
+    "rust_new_tests": "not_run",
+    "python_new_tests": "not_run",
+    "native_measurements": "not_run",
+    "source_guard_cli": "not_run",
+    "reason": "Read-only static/Git review during the local executor outage. Actual original CI and the named new regression tests must supply execution evidence."
+  },
+  "unresolved_source_blockers": [],
+  "task_boundary": {
+    "task": "P8-017",
+    "original_definition_changed": false,
+    "entire_task_accepted": false,
+    "depends_on": "P8-016",
+    "formal_todo_completion": false,
+    "done": 163,
+    "remaining": 29,
+    "claim": "Accepts this concrete active nanosecond ownership cleanup for source admission. It does not establish that every P8-017 cleanup target, its regression condition, or its hard dependency has completed."
+  },
+  "persistence": {
+    "local_file_written": false,
+    "reason": "Executor remains unavailable; exact candidate blobs and actual P are durable Git objects. Review raw metadata and report are retained in this agent session pending root preservation."
+  }
+}

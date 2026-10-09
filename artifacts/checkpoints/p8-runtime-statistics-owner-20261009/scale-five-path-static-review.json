@@ -1,0 +1,73 @@
+{
+  "schema": "P8-017-runtime-ns-owner-five-blob-independent-static-admission-v1",
+  "reviewer": "scale_closeout",
+  "reviewed_at_utc": "2026-10-09T06:18:36.463Z",
+  "status": "accepted_scoped",
+  "baseline": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "files": [
+    {
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "git_blob_sha1": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+      "bytes": 15854,
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "git_blob_sha1": "3d76b95d6364d03298a17b6f25e1f295fd78818d",
+      "bytes": 20516,
+      "sha256": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "git_blob_sha1": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+      "bytes": 58530,
+      "sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime.py",
+      "git_blob_sha1": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+      "bytes": 53872,
+      "sha256": "cc0255c3d6a5396f61ca0d080401da1c936bcef1dff741437a1c6ce155a3ee2f"
+    },
+    {
+      "path": "docs/P8_RUNTIME_EVIDENCE.md",
+      "git_blob_sha1": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+      "bytes": 8911,
+      "sha256": "ca11059f1da6060ac9b31320efd8a4637d2b5a16968ee2e2795c3341f1b54a9d"
+    }
+  ],
+  "findings": [
+    "New LegacyLatencyNs wire adapter preserves n, exact nanosecond p50/p95/p99/max, empty nulls, fixed scope and false tail claim; all three ranks call the unchanged shared nearest_rank owner.",
+    "Runtime binary builds overall/read/build legacy_ns only after existing complete-plan/raw validation; uses original u64 finished_ns-offered_ns without /1000 and without successful-only filtering. Existing microsecond summaries, intervals, population validation and outcome exits retain their source code.",
+    "Python removes math and the active second ranking function. After original twice-identical Rust replay, one read_bytes value must match the returned statistics SHA256; JSON parsed from those same bytes is copied into the original two wire fields. No Python recalculation or fallback. Original cleanup, failure and sealing code is unchanged.",
+    "Four new Rust control definitions cover empty/single/u64/submicrosecond/20/100 rank boundaries and all terminal outcomes/empty operation group; two new Python driver controls cover exact synthetic wire copying and post-verification byte mutation rejection. These controls were read only, not compiled/executed.",
+    "Actual independent review found v3 test insertion moved the original successful-outcome assertion into the new mutation-error test, where outcomes is absent. Final v4 test blob moves precisely that one assertion back. Entire original successful-observation test method is byte-equal to E again; old erroneous blob retained as history.",
+    "Documentation updates one explanatory paragraph while preserving mixed workload, microsecond confidence intervals, precision, failures and no-tail/no-release limits."
+  ],
+  "resolved_findings": [
+    {
+      "old_git_blob": "e5129b67282d180ca507264d784bbcb913bcc9ca",
+      "new_git_blob": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+      "finding": "Misplaced original outcomes assertion; restored to original successful-observation method, removed from hash-error test."
+    }
+  ],
+  "validation": {
+    "official_immutable_blob_reads": true,
+    "all_five_utf8_bytes_sha256_match_author_pins": true,
+    "all_five_differences_from_exact_E_reviewed": true,
+    "actual_product_or_test_execution": false,
+    "local_filesystem_operations": false,
+    "remote_mutations_by_reviewer": false
+  },
+  "limits": [
+    "Static scoped admission only, no full original TODO acceptance, fresh source/binary evidence or performance certification.",
+    "Full candidate source/observer inventory and source admission guard bindings are integration responsibility; old E accepted data retain E identity.",
+    "No temporary-branch/schema/existing-different-scorer blanket cleanup claim; P8-017 hard dependencies and remaining original acceptance still apply."
+  ],
+  "formal_task_completion": false,
+  "counts": {
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

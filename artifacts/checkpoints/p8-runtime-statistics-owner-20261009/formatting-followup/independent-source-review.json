@@ -1,5 +1,36 @@
 {
-  "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "actual_change": {
+    "after_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+    "after_bytes": 20760,
+    "after_sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+    "before_blob": "3d76b95d6364d03298a17b6f25e1f295fd78818d",
+    "before_sha256": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437",
+    "formatter_hunks": 2,
+    "mode": "100644",
+    "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "production_before_cfg_test_byte_identical": true,
+    "semantics": "Rustfmt wraps the JSON-producing test closure in an equivalent tail-expression block and lays out assert_eq! macro arguments. Expected values, assertions, control coverage and production behavior are unchanged."
+  },
+  "actual_failure_evidence": {
+    "checkout_commit": "71d5f8fe85da29df0f0be490aac50bed1c2bb727",
+    "checkout_tree": "fa6cd9511a9bebd7699eddd9c98d47438416005d",
+    "command": "cargo fmt --all -- --check",
+    "exit_code": 1,
+    "failure_at_utc": "2026-10-09T06:33:09.9496887Z",
+    "job_id": 113701134990,
+    "no_test_success_inferred_from_skipped_steps": true,
+    "original_log": {
+      "bytes": 42309,
+      "git_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+      "path": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/first-check-failure.log",
+      "sha256": "175e41777d2dc3180943bbdea0eb36be259fc44ba0eeabe88a5a313854ceaec1"
+    },
+    "retained_as_failure": true,
+    "run_id": 37894025756,
+    "source_head": "9a52cd24337294e70281badc861bda7bdf0a9f0a",
+    "status": "failed"
+  },
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
   "complete_inputs": {
     "Cargo.lock": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
     "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
@@ -723,7 +754,7 @@
     "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c",
     "crates/cc-index/src/indexer_phases/mod.rs": "5cc7765d277afdb23e1f40c2e44e6d6ae621c1bbd9ba96f8a1ef88b248133a33",
     "crates/cc-index/src/indexer_phases/postprocess.rs": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
-    "crates/cc-index/src/indexer_phases/reconcile.rs": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88",
+    "crates/cc-index/src/indexer_phases/reconcile.rs": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
     "crates/cc-index/src/indexer_phases/resolve.rs": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
     "crates/cc-index/src/indexer_phases/snapshot.rs": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
     "crates/cc-index/src/indexer_phases/write.rs": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
@@ -1091,7 +1122,33 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "delta": {
+  "execution_admission": {
+    "changed_guard_components": "Four original v15 identity constants and complete registry only; guard logic, VERSION, BASE, exclusions and all original workflows unchanged.",
+    "local_execution_claim": false,
+    "next_required_result": "The exact updated head must pass the original formatter, v15/historical/task integrity, build/lint/tests and configured native workflows.",
+    "old_failed_head_result_not_relabelled": true,
+    "old_native_results_not_relabelled": true,
+    "status": "source_review_only"
+  },
+  "independent_review": {
+    "basis": "The reviewer fetched the complete original job log and both actual Git blobs, parsed both rustfmt sections, required unique before-context matches and independently applied them. The complete resulting file equals blob 6273b16ebc403602b5aaf3eb0a9699b5cdfdca70. The actual P2 commit, sole parent and one-path Git diff also match.",
+    "local_formatter_or_tests_executed_by_reviewer": false,
+    "production_prefix_checked": true,
+    "reviewer": "/root/pr_audit",
+    "scope": "Exact recorded formatter output only; prior semantic approval retained.",
+    "status": "accepted_scoped",
+    "test_values_and_arguments_preserved": true
+  },
+  "independent_reviewers": [
+    "/root/pr_audit"
+  ],
+  "integration_base": "9a52cd24337294e70281badc861bda7bdf0a9f0a",
+  "known_open_work": [
+    "Original task dependencies and full acceptance remain open.",
+    "Original complete scale study remains failed/incomplete; no scale sample is added by this formatting change.",
+    "The original Mac failure is not resolved by these Rust test formatting changes."
+  ],
+  "paths": {
     "crates/cc-db/src/index_db_multi_insert.rs": {
       "before_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
       "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
@@ -1218,7 +1275,7 @@
     },
     "crates/cc-index/src/indexer_phases/reconcile.rs": {
       "before_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
-      "sha256": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88"
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
     },
     "crates/cc-index/src/indexer_phases/resolve.rs": {
       "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
@@ -1257,14 +1314,30 @@
       "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
     }
   },
-  "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "96be195d23ff50b199bedc227dbca7e3638a6678",
-  "review_sha256": "9abc675a226918b66dcae92b49c1d85298ab89023c11829f6338e4f04d81b6c6",
-  "review_source": "79eec417ad9fd357a2265abb05cf4701ee50b73f",
-  "runtime_and_quality_claims": "require_separate_execution_evidence",
-  "schema_version": 10,
+  "previous_fixed_review": {
+    "product_source": "bbe7a9e77f332448b610c54460b355c5936e8c2a",
+    "registry_sha256": "e61b792289beca8ef42581d816f5fc1ae824788fe9cf9127ac555ba0e3f76aca",
+    "retained_scope": "The complete original five-path cleanup and its two independent review records remain unchanged except the exact formatter output in the test section of the Rust replay binary. All other 1088 product inputs and all 138 validation inputs retain their previous bytes.",
+    "review_path": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/independent-source-review.json",
+    "review_sha256": "fe7677709b105120e9a130c7943e1be30d28a3234a5b38d52758acf740637f99",
+    "review_source": "4e4671482333c1762efa9c5ab9aeceadc0f3e295"
+  },
+  "recorded_at_utc": "2026-10-09 06:40:14 UTC",
+  "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source_version": "p8-completion-source-20261009-v15",
+  "source": "98173d7bf3a4709d0309907ec85ff5674c23c921",
+  "source_tree": "98b1bd6ddc631f00e77936689685f78c314f958e",
+  "task_and_release_boundary": {
+    "G8_live_provider_quality_release_approval": false,
+    "P8_017_formal_completion": false,
+    "done": 163,
+    "new_TODOs_closed": 0,
+    "original_task_definitions_status_dependencies_and_P8_005_subgates": "unchanged",
+    "original_tasks_total": 192,
+    "remaining": 29
+  },
+  "unresolved_blocker_scope": "Narrow reviewed formatting delta only.",
+  "unresolved_blockers": [],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
@@ -1273,7 +1346,6 @@
     ".github/workflows/p8-platform.yml": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
     ".github/workflows/p8-runtime.yml": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
     ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
-    ".github/workflows/p8-surface-window-controls.yml": "f27250c1c66238aa2b60b7ff53c013611198e8653227851c76311f2efa56ed0a",
     "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
     "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
     "scripts/code_index_plan.py": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c",
@@ -1405,5 +1477,6 @@
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
     "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
-  }
+  },
+  "verdict": "accepted_scoped"
 }

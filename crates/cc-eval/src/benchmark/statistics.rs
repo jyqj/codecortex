@@ -25,6 +25,34 @@ pub(crate) fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
         .copied()
 }
 
+/// Legacy runtime wire adapter. Values are offered-to-terminal nanoseconds for
+/// every outcome, including rejections and failures; no microsecond conversion
+/// or successful-only filtering belongs here.
+#[derive(Debug, Clone, Serialize)]
+pub struct LegacyLatencyNs {
+    pub n: usize,
+    pub p50_ns: Option<u64>,
+    pub p95_ns: Option<u64>,
+    pub p99_ns: Option<u64>,
+    pub maximum_ns: Option<u64>,
+    pub scope: &'static str,
+    pub tail_stability_claim: bool,
+}
+
+pub fn legacy_latency_ns(values: &[u64]) -> LegacyLatencyNs {
+    let mut sorted = values.to_vec();
+    sorted.sort_unstable();
+    LegacyLatencyNs {
+        n: sorted.len(),
+        p50_ns: nearest_rank(&sorted, 0.5),
+        p95_ns: nearest_rank(&sorted, 0.95),
+        p99_ns: nearest_rank(&sorted, 0.99),
+        maximum_ns: sorted.last().copied(),
+        scope: "all_offered_terminal_outcomes_including_rejections_and_failures",
+        tail_stability_claim: false,
+    }
+}
+
 pub fn distribution(values: &[u64]) -> Distribution {
     let mut v = values.to_vec();
     v.sort_unstable();
@@ -344,4 +372,53 @@ pub fn latency_layers(samples: &[LatencySample], expected_samples: usize) -> Lat
         timeout_semantics: "elapsed attempt durations retained; timeout is deadline-censored time to completion; failure denominators include every recorded attempt",
         os_page_cache: "unknown_not_cold_disk",
         layers }
+}
+
+#[cfg(test)]
+mod legacy_latency_ns_tests {
+    use super::legacy_latency_ns;
+    use serde_json::json;
+
+    #[test]
+    fn preserves_empty_single_and_submicrosecond_wire_values() {
+        assert_eq!(
+            serde_json::to_value(legacy_latency_ns(&[])).unwrap(),
+            json!({
+                "n": 0, "p50_ns": null, "p95_ns": null, "p99_ns": null,
+                "maximum_ns": null,
+                "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+                "tail_stability_claim": false,
+            })
+        );
+        let single = legacy_latency_ns(&[u64::MAX]);
+        assert_eq!(single.n, 1);
+        assert_eq!(single.p50_ns, Some(u64::MAX));
+        assert_eq!(single.p95_ns, Some(u64::MAX));
+        assert_eq!(single.p99_ns, Some(u64::MAX));
+        assert_eq!(single.maximum_ns, Some(u64::MAX));
+        let boundary = legacy_latency_ns(&[1001, 999, 1000, 999]);
+        assert_eq!(boundary.n, 4);
+        assert_eq!(boundary.p50_ns, Some(999));
+        assert_eq!(boundary.p95_ns, Some(1001));
+        assert_eq!(boundary.p99_ns, Some(1001));
+        assert_eq!(boundary.maximum_ns, Some(1001));
+    }
+
+    #[test]
+    fn preserves_nearest_rank_boundaries_without_rounding_to_microseconds() {
+        let twenty: Vec<_> = (1..=20).rev().map(|n| n * 1000 + 1).collect();
+        let summary = legacy_latency_ns(&twenty);
+        assert_eq!(summary.n, 20);
+        assert_eq!(summary.p50_ns, Some(10001));
+        assert_eq!(summary.p95_ns, Some(19001));
+        assert_eq!(summary.p99_ns, Some(20001));
+        assert_eq!(summary.maximum_ns, Some(20001));
+        let hundred: Vec<_> = (1..=100).rev().map(|n| n * 1000 + 999).collect();
+        let summary = legacy_latency_ns(&hundred);
+        assert_eq!(summary.n, 100);
+        assert_eq!(summary.p50_ns, Some(50999));
+        assert_eq!(summary.p95_ns, Some(95999));
+        assert_eq!(summary.p99_ns, Some(99999));
+        assert_eq!(summary.maximum_ns, Some(100999));
+    }
 }

@@ -1,0 +1,39 @@
+{
+  "cases": [
+    {
+      "case": "batch_1-actual-validator-envelope",
+      "outcome": "accepted_synthetic"
+    },
+    {
+      "case": "fanout-actual-validator-envelope",
+      "outcome": "accepted_synthetic"
+    },
+    {
+      "case": "failed-terminal",
+      "outcome": "rejected_synthetic",
+      "reason": "native supervisor did not complete successfully"
+    },
+    {
+      "case": "wrong-run",
+      "outcome": "rejected_synthetic",
+      "reason": "profile shard belongs to another study/observer"
+    },
+    {
+      "case": "changed-seed-cap",
+      "outcome": "rejected_synthetic",
+      "reason": "worker seed cache environment differs"
+    },
+    {
+      "case": "worker-is-parent",
+      "outcome": "rejected_synthetic",
+      "reason": "worker temporary root is not the supervisor-owned child on the registered filesystem"
+    },
+    {
+      "case": "wrong-build",
+      "outcome": "rejected_synthetic",
+      "reason": "profile shard used another outer build"
+    }
+  ],
+  "schema": "profile-peer-envelope-controls-v1",
+  "scope": "Only synthetic receipts; driver snapshot and native digest mocked, all actual profile/full validators run. No native/binary/old artifact."
+}

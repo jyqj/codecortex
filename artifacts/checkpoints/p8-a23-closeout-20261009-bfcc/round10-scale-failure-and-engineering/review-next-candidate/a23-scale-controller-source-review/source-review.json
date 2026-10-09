@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "observed_utc": "2026-10-09T06:18:59.915724+00:00",
+  "reviewer": "/root/pr_triage",
+  "scope": "Read-only exact-a23 launcher/controller process-group and timeout source analysis; no workflow/test/measurement rerun.",
+  "verdict": "no_source_evidence_for_killing_the_existing_runner_group; actual_failure_cause_unresolved",
+  "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "source_files": [
+    {
+      "path": "source/.github/workflows/p8-scale.yml",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    {
+      "path": "source/scripts/p8_scale_matrix.py",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "path": "source/scripts/p8_runner_capacity.py",
+      "bytes": 11164,
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    {
+      "path": "source/crates/cc-eval/src/benchmark/p8_scale.rs",
+      "bytes": 46139,
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+    },
+    {
+      "path": "source/crates/cc-eval/tests/p8_scale.rs",
+      "bytes": 19815,
+      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+    },
+    {
+      "path": "source/scripts/tests/test_p8_runner_capacity.py",
+      "bytes": 6730,
+      "sha256": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292"
+    }
+  ],
+  "job_id": 113638100879,
+  "run_id": 37872522779,
+  "job_metadata": {
+    "path": "review-next-candidate/a23-scale-terminal/job.raw",
+    "bytes": 2482,
+    "sha256": "66cd42ba7db2be8284c6c223e936923aaee48eb0e898b39f7eea489d295fd2ac"
+  },
+  "annotation_metadata": {
+    "path": "review-next-candidate/a23-scale-terminal/annotations.raw",
+    "bytes": 452,
+    "sha256": "bc1ad4395886b208c0d13e493a95e17c657285fdf659c4f8c26021e1add629bc"
+  },
+  "job_conclusion": "failure",
+  "step_7_actual_record": {
+    "name": "Execute all phases for this registered single-repetition capacity slice",
+    "status": "in_progress",
+    "conclusion": null,
+    "number": 7,
+    "started_at": "2026-10-09T02:24:01Z",
+    "completed_at": null
+  },
+  "capacity_preparation_actual_step": {
+    "name": "Observe and prepare the registered capacity on this disposable hosted VM",
+    "status": "completed",
+    "conclusion": "success",
+    "number": 5,
+    "started_at": "2026-10-09T02:24:00Z",
+    "completed_at": "2026-10-09T02:24:00Z"
+  },
+  "capacity_preservation_actual_step": {
+    "name": "Preserve capacity observations and any unsuccessful preparation",
+    "status": "completed",
+    "conclusion": "success",
+    "number": 6,
+    "started_at": "2026-10-09T02:24:00Z",
+    "completed_at": "2026-10-09T02:24:01Z"
+  },
+  "source_findings": [
+    {
+      "id": "worker_own_group",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs:242-279",
+      "detail": "Unix launch explicitly sets command.process_group(0) before spawn. The child process ID names its new group; a failed spawn returns infrastructure_error before a ChildGuard exists. Parent runner/shell/supervisor is not deliberately moved into that group."
+    },
+    {
+      "id": "targeted_cleanup",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs:203-224,312-340",
+      "detail": "Cleanup sends SIGKILL to negative known child PID, then kills/waits that child. It does not use kill(0), kill(-1), getpgrp(), pkill or a runner PID. Called on output overflow, 5h worker deadline and after worker exit to terminate pipe-holding descendants. Static evidence supports targeting worker-owned group; failed runner supplied no actual PID/PGID/signal record."
+    },
+    {
+      "id": "outer_driver",
+      "path": "scripts/p8_scale_matrix.py:375-431",
+      "detail": "Python subprocess.run invokes the native supervisor argv directly (shell default false), timeout=deadline/1000+120=18120s, no group-wide signal call or new session here. Python timeout kills/waits its direct child. If this fallback kills an unresponsive native supervisor, Rust Drop is not guaranteed and its separately grouped worker could be left alive; that is a residual cleanup limitation, not proof of runner termination or this failure cause."
+    },
+    {
+      "id": "capacity_launcher",
+      "path": "scripts/p8_runner_capacity.py:89-126",
+      "detail": "Earlier capacity prep uses sudo -n timeout --signal=TERM --kill-after=5s 300s for fixed du/rm commands, no --foreground. GNU documented default creates a separate program group. Actual capacity and upload steps completed success at02:24:00/01, before native step; these success records do not supply running native process telemetry. Unresponsive outer capacity supervisor is explicitly unsealed/cleanup-unconfirmed by source."
+    },
+    {
+      "id": "timing_bound",
+      "observed_step_start_to_job_failure_seconds": 13681,
+      "registered_worker_deadline_seconds": 18000,
+      "outer_driver_timeout_seconds": 18120,
+      "workflow_timeout_minutes": 350,
+      "inference": "Native timer starts inside step7, so reported failure13681s after step start precedes nominal5h native deadline and5h+120s outer timeout under ordinary clock behavior. This timestamp inference cannot identify native exit, signal sender or loss-of-contact instant."
+    },
+    {
+      "id": "group_identifier_lifetime",
+      "detail": "Numeric PGID is retained and stop may run after leader has been reaped; no pidfd/group-lifetime token or kill return-code evidence is recorded. General PID/PGID reuse and descendants deliberately escaping group remain limits of static proof. No evidence shows either occurred, and source does not target the existing runner group."
+    }
+  ],
+  "primary_api_references": [
+    {
+      "url": "https://doc.rust-lang.org/std/os/unix/process/trait.CommandExt.html#tymethod.process_group",
+      "role": "Official documented process_group(0) semantics; current docs, not a runtime attestation of this lost job."
+    },
+    {
+      "url": "https://docs.python.org/3/library/subprocess.html#subprocess.run",
+      "role": "Official run timeout direct-child kill/wait semantics; actual Python/runtime identity remains original-job evidence."
+    },
+    {
+      "url": "https://www.gnu.org/software/coreutils/manual/html_node/timeout-invocation.html",
+      "role": "Official default separate group and --foreground distinction; actual hosted timeout binary not inspected here."
+    }
+  ],
+  "not_established": [
+    "OOM, CPU pressure, disk exhaustion, network outage, hosted service fault or product bug root cause.",
+    "Native worker completion, native summary, 100k shard or original report exit status.",
+    "Infrastructure exemption, rerun eligibility or passing study status.",
+    "Any failure attribution to the new FTS candidate, which was not the source of this a23 run."
+  ],
+  "artifacts_and_credit": "Retain original failure and missing native shard. This report gives no scale/TODO/release credit and does not change budgets or source."
+}

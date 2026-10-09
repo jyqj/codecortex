@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T06:19:16.990357+00:00",
+  "reviewer": "/root/todo_audit",
+  "mode": "read_only_protocol_recovery_boundary",
+  "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "source_files": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "equals_frozen_commit_blob": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "equals_frozen_commit_blob": true
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "equals_frozen_commit_blob": true
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "equals_frozen_commit_blob": true
+    },
+    {
+      "path": "scripts/tests/test_p8_scale_matrix.py",
+      "bytes": 34929,
+      "sha256": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
+      "equals_frozen_commit_blob": true
+    }
+  ],
+  "incident_context": {
+    "run_id": 37872522779,
+    "run_attempt": 1,
+    "status": "Incident metadata supplied by root/execution_recon; reviewer did not download/reinspect GitHub incident annotations or artifacts. No independent root-cause conclusion in this report."
+  },
+  "conclusion": "No explicit infrastructure exemption or replacement-primary rule found in the inspected frozen protocol/registration. Existing failed/missing slot cannot be silently discarded, overwritten, selected around, or recounted as passed.",
+  "authoritative_constraints": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        67,
+        81
+      ],
+      "rule": "Every output must be new; original run is not overwritten, old failure is not rewritten. Exit2 classifies invalid input/protocol/tool/binary/infrastructure evidence but does not waive full acceptance."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        149,
+        160
+      ],
+      "rule": "Original complete raw required; duplicate/missing/truncated/budget-stop/failure/identity mismatch rejected, old data/failure not rewritten."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        250,
+        256
+      ],
+      "rule": "Host/CPU/kernel strata preserve all sample membership; no faster-host selection; original failure/missing/duplicate/full parity rules remain."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        261,
+        281
+      ],
+      "rule": "Five initial shards are registered repetition0, not extra smoke; they are not resampled in remaining phase. Any first-shard failure blocks145; aggregate still requires150. Text explicitly excludes automatic retry and preserves failures/partial/source records."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        134,
+        136
+      ],
+      "rule": "General raw query records include run/case/repetition; infra-invalid exit2 is a classification, no replacement permission; timeouts are availability failures and deadline-censored observations, not deleted."
+    }
+  ],
+  "mechanical_bindings": [
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        107,
+        115
+      ],
+      "fact": "write_new uses xb; new_directory requires absent output. Local original artifact overwrite is rejected."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        337,
+        355
+      ],
+      "fact": "registered_plan binds scale/shard/count/repetitions/seed/budgets/fanout/profile; does not bind GitHub run_id or run_attempt."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        370,
+        400
+      ],
+      "fact": "Shard repetition is fixed global range; receipt binds exact build receipt SHA, source/binary/driver/environment. No separate attempt or replacement identity."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        550,
+        552
+      ],
+      "fact": "Expected sample IDs are scale-<scale>/repetition-<r>."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        754,
+        771
+      ],
+      "fact": "Only passed exit0 sealed original shard accepted; complete inventory, build.json SHA, source/binary/driver and original plans required."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        861,
+        914
+      ],
+      "fact": "Matrix key=(scale,shard index), duplicates rejected; complete150 and exact0..29 sample membership required. These conditions alone cannot distinguish an unauthorized replacement if an original failing record is excluded."
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "lines": [
+        82,
+        106
+      ],
+      "fact": "always upload capacity/shard artifact names bind scale/shard/github.run_id; no run_attempt or overwrite input configured."
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "lines": [
+        168,
+        212
+      ],
+      "fact": "Collector downloads one build by run_id and every matching shard artifact by run_id; writes run_id-only matrix artifact. No attempt-aware collector policy or infrastructure-exemption procedure."
+    }
+  ],
+  "recovery_boundary": {
+    "permitted_read_only_actions": [
+      "Retain and inventory attempt1 originals, official job identity/annotation and all obtainable logs with complete digests.",
+      "Classify known evidence as failed/incomplete, with runner communication loss only to extent official metadata supports it; do not infer OOM or timeout without evidence.",
+      "Preserve four successful first-shard outputs as their original limited attempt1 evidence, not full150 acceptance.",
+      "Inspect protocol/source and plan a separately named future full execution without mutating the frozen failed study."
+    ],
+    "not_authorized_by_existing_protocol": [
+      "Automatic retry or silent replacement of failed registered repetition0.",
+      "Delete or overwrite original failure/partial evidence.",
+      "Drop old failed slot and count a selectively repeated slot as the same original primary.",
+      "Mix successful old slices with a new build receipt or relabel any old receipt to new source.",
+      "Assume same-name artifact handling or collector acceptance grants protocol permission."
+    ],
+    "fresh_execution_option": "An explicitly coordinated, separately identified complete study can retain the old failed study and bind a fixed full SHA, a fresh build receipt, fresh artifact identities and the full registered population. Existing text permits separate complete executions but does not grant retroactive replacement of this failed study. No new execution was started here.",
+    "same_run_retry_option": "No affirmative replacement-primary authorization identified. Any contemplated retry needs an explicit prospective recovery decision preserving original attempt membership/history; code acceptance alone is insufficient."
+  },
+  "search_limit": "Inspected fixed P8-SCALE and general09-BENCHMARK, exact scale driver/workflow/tests. No claim of unrestricted whole-repository absence. No platform-default upload overwrite semantics inferred from missing YAML input.",
+  "remote_writes": false,
+  "measurements_or_reruns_started": false,
+  "source_modified": false,
+  "task_status_changed": false,
+  "todo_credit": 0,
+  "remaining_original_todos": 29
+}

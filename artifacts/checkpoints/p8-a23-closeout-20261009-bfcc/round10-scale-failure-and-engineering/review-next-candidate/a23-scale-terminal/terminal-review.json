@@ -1,0 +1,117 @@
+{
+  "schema": "a23-scale-original-terminal-evidence-review-v1",
+  "created_at": "2026-10-09T06:20:25.596705+00:00",
+  "identity": {
+    "run_id": 37872522779,
+    "attempt": 1,
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "workflow": ".github/workflows/p8-scale.yml",
+    "run_status": "completed",
+    "run_conclusion": "failure",
+    "failed_primary_job": 113638100879,
+    "sample_coordinate": "scale-100000 / repetition-0 / shard-index-0"
+  },
+  "observed_failure": {
+    "official_annotation": "The hosted runner lost communication with the server. Anything in your workflow that terminates the runner process, starves it for CPU/Memory, or blocks its network access can cause this error.",
+    "only_established_diagnostic": "GitHub reports hosted runner communication loss. Underlying process, kernel, memory, disk and network cause is not established.",
+    "job_started_at": "2026-10-09T02:23:45Z",
+    "job_completed_at": "2026-10-09T06:12:02Z",
+    "job_conclusion": "failure",
+    "worker_exit_code": "unavailable",
+    "worker_stage_after_last_step_start": "unavailable",
+    "native_guard_terminal_receipt": "unavailable"
+  },
+  "raw_inconsistencies_preserved": [
+    "Failed job is completed while its native step remains in_progress with no end timestamp; later upload/post steps remain pending. These raw fields do not establish the child process state.",
+    "Skipped measure job API completed_at is one second earlier than started_at. Original JSON retained without normalization."
+  ],
+  "logs_and_artifacts": {
+    "job_log_get": {
+      "actual_exit_code": 1,
+      "server_body": "BlobNotFound",
+      "receipt": {
+        "path": "review-next-candidate/a23-scale-terminal/logs.receipt.json",
+        "bytes": 476,
+        "sha256": "18685a8eee63123fbfa7f4cddefcb668c55c33fc62f1ac59ada55decc7a2ca66"
+      },
+      "response": {
+        "path": "review-next-candidate/a23-scale-terminal/logs.raw",
+        "bytes": 215,
+        "sha256": "3600df56c396d2f924e612316d33adc97c688f3c32f912925142baec27424318"
+      }
+    },
+    "run_log_archive": {
+      "path": "review-next-candidate/a23-scale-terminal/run-logs.raw",
+      "bytes": 76602,
+      "sha256": "8d7be069100c6a129a652260ca29f69d7390c82fc1327a17e7752598ce856a0e"
+    },
+    "run_log_members": {
+      "path": "review-next-candidate/a23-scale-terminal/run-log-members.json",
+      "bytes": 771,
+      "sha256": "86af182076e27e5884189979fe2a2e37ddeea36d26ba1f01dc34cdeb0cf6a565"
+    },
+    "no_100k_member_in_downloaded_archive": true,
+    "scope_limit": "No accessible GitHub 100k shard/log artifact was found at retrieval; this does not prove no partial raw files ever existed on the hosted runner.",
+    "artifacts_observed": 11,
+    "measurement_shard_artifacts": 4,
+    "capacity_100k_artifact_id": 11592230167,
+    "aggregate_artifact_id": 11599136237,
+    "aggregate_zip": {
+      "path": "review-next-candidate/a23-scale-terminal/matrix-original.zip",
+      "bytes": 580,
+      "sha256": "6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3"
+    },
+    "aggregate_zip_matches_official_sha256": true,
+    "aggregate_log": {
+      "path": "review-next-candidate/a23-scale-terminal/aggregate-validation.log",
+      "bytes": 3584,
+      "sha256": "41d80b53093eac1d327eac61ff436a1512cd0d503040a614f9095d7412fe4fcc"
+    },
+    "matrix_raw": {
+      "path": "review-next-candidate/a23-scale-terminal/matrix-extracted-matrix.json",
+      "bytes": 1978,
+      "sha256": "c14cf58287f4cb49cd942e5b26150ab46156375a19157d17426eb8301d2ae6ea"
+    }
+  },
+  "matrix_result": {
+    "status": "failed",
+    "passed": false,
+    "release_certification": "not_run",
+    "missing_shards": 146,
+    "missing_primary_100k_rep0": true,
+    "measure_job": "skipped; remaining145 never executed",
+    "accepted_existing_scope": "Only previously independently accepted 4/150 shards and41/1500 phase samples. Full study failed/incomplete; no original TODO completion."
+  },
+  "deadline_observation": {
+    "native_step_start": "2026-10-09T02:24:01Z",
+    "job_end": "2026-10-09T06:12:02Z",
+    "wall_seconds": 13681,
+    "registered_native_deadline_seconds": 18000,
+    "python_outer_timeout_seconds": 18120,
+    "workflow_job_timeout_minutes": 350,
+    "conclusion": "Observed wall interval is below all those configured upper bounds. This is not evidence that a registered timeout fired; actual worker monotonic/exit data are missing."
+  },
+  "independent_source_reviews": [
+    {
+      "path": "review-next-candidate/a23-scale-failure-recovery-boundary-review.json",
+      "bytes": 7830,
+      "sha256": "c76090ae7ad076cce632a33befa94c0cda428a31ddbd4cb840626e3d7dd52f19"
+    },
+    {
+      "path": "review-next-candidate/a23-scale-controller-source-review/source-review.json",
+      "bytes": 7040,
+      "sha256": "4826c5924d54729ae45eeb36089d189ddf0444a8129afdf3e821f3e2fbd4d4ad"
+    }
+  ],
+  "recovery_decision_boundary": [
+    "No automatic infrastructure exemption or permission to replace failed registered repetition0 was found. Infrastructure classification in 09-BENCHMARK distinguishes invalid measurements; it does not authorize discarding/replacing an original primary.",
+    "Do not use rerun-failed-jobs as completion of this old study. Protocol says first slices are original rep0, cannot be removed as smoke or resampled; all150 raw shards remain required.",
+    "Workflow artifact names contain run_id but not run_attempt; source records/aggregate do not independently enforce workflow-attempt identity. Mechanical acceptance of a substituted slot would not be protocol permission.",
+    "Existing capacity/build/matrix artifact names also create an unresolved rerun name-conflict risk under upload-artifact default immutable semantics. Do not set overwrite or delete original evidence to make a retry fit.",
+    "Any root-authorized re-execution used to diagnose runtime loss must use separate diagnostic identity/output, preserve attempt1 failure, retain original workload and budgets, and receive no original study credit.",
+    "After a genuinely new reviewed/fixed candidate has its own P/R/G and required engineering checks, root may authorize a separate preregistered full150 study on its exact immutable head/build. It must retain this failed study and cannot import old primary samples as new-source evidence. Same-source fresh investigation is not automatically a replacement certification.",
+    "No rerun/cancel/dispatch, budget expansion, source modification or remote mutation was performed during this investigation."
+  ],
+  "underlying_root_cause": "unknown; not labelled OOM, disk exhaustion, process-group kill or platform-wide outage without native/host evidence",
+  "remaining_original_todos": 29
+}

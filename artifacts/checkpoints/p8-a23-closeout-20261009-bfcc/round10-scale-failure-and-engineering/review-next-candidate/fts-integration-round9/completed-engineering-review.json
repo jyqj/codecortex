@@ -1,0 +1,231 @@
+{
+  "schema": "fts-round9-completed-engineering-review-v1",
+  "created_at": "2026-10-09T06:25:16.098436+00:00",
+  "outcome": "All four original engineering commands completed successfully; product-only commit fixed by explicit root authorization. No formal P8 scale or TODO completion credit.",
+  "parent": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+  "P": "e963d5b424217f507e980fa66b987109d5d89e1d",
+  "tree": "07691d68b62e0086d1354fcf678dc47c2e99e0ec",
+  "scope": {
+    "crates/cc-db/src/index_db_snapshot_insert.rs": "M",
+    "crates/cc-db/src/index_db_write_batch.rs": "M",
+    "crates/cc-db/src/snapshot_write_txn.rs": "M",
+    "crates/cc-index/src/indexer_phases/snapshot.rs": "M",
+    "crates/cc-db/src/snapshot_fts_tests.rs": "A"
+  },
+  "execution_identity": "Actual native Mac invocation used parent G plus these five uncommitted files. The later P commit exactly preserves their modes/blobs and all other parent paths; execution is not re-labelled as a direct P checkout.",
+  "native_job": "wc_job_xnGuaaCmvlWP5P5J",
+  "platform": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/fts-integration-1.95-sdk154-round9",
+    "CARGO_BUILD_JOBS": "4",
+    "test_threads": "default; RUST_TEST_THREADS unset; no harness --test-threads",
+    "parent": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+    "source_input_count": 1214,
+    "source_input_digest": "595ca1c056369c64a7d50b07f67bdc9e382cfd3aaf0c3f99ac96741b3d809924",
+    "rustc_verbose": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+  },
+  "original_commands": [
+    {
+      "name": "fmt",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:12:31.625809+00:00",
+      "finished_at": "2026-10-09T06:12:33.160985+00:00",
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/fmt.json",
+        "bytes": 1226,
+        "sha256": "7a49065ff9b96f3f828f4d3311ca5e8708deac2c28b73f7a50780831e4bd5310"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/fmt.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/fmt.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:12:33.306940+00:00",
+      "finished_at": "2026-10-09T06:13:10.081347+00:00",
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/clippy.json",
+        "bytes": 1273,
+        "sha256": "865b92bfece16f5a662759b0c038cf9b87858fec635d6847fcb841e71521807f"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/clippy.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/clippy.stderr",
+        "bytes": 6682,
+        "sha256": "c5bb6fc180a23bb2c6e213402ae1e2cdacf22bb7138bdf436653672f90047801"
+      }
+    },
+    {
+      "name": "workspace-tests",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:13:10.283683+00:00",
+      "finished_at": "2026-10-09T06:21:45.806285+00:00",
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/workspace-tests.json",
+        "bytes": 1230,
+        "sha256": "10bc2d62bf6edeb887a5c323d3c7c0f0438c5c00ad23dd05912feae6d3f0d2ba"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/workspace-tests.stdout",
+        "bytes": 239033,
+        "sha256": "f55d32080c3a5f2854ed1713ec2fcea294b3528d2f92e0a46cba9e3293f1b81f"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/workspace-tests.stderr",
+        "bytes": 141582,
+        "sha256": "3a72af8b97f3c2e6ef0cb638fe99ddf0f59b9d6b566306267e9f1616f69ef9b1"
+      }
+    },
+    {
+      "name": "final-fixture",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "-p",
+        "cc-eval",
+        "--",
+        "integration_fixtures_and_corpus"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:21:46.019801+00:00",
+      "finished_at": "2026-10-09T06:21:49.260767+00:00",
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/final-fixture.json",
+        "bytes": 1281,
+        "sha256": "557d0e3b66402ab1a37c840557f6ed81905db1acc88216a1bfe75be218254a2e"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/final-fixture.stdout",
+        "bytes": 10125,
+        "sha256": "90a39e9ceebefe61f14d805457efe7c6c343516bf7e2c95b7c379a505a0bdb89"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-integration-round9/attempt01/final-fixture.stderr",
+        "bytes": 17568,
+        "sha256": "0196c0d46f1a3ae572eee716fab23585d22e0fbeda6e4397274fba3f8a5ee324"
+      }
+    }
+  ],
+  "workspace_counts": {
+    "summary_groups": 218,
+    "passed": 2721,
+    "failed": 0,
+    "ignored": 73,
+    "filtered": 0
+  },
+  "final_fixture_counts": {
+    "summary_groups": 89,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 474
+  },
+  "count_boundary": "Final fixture is already included in workspace total and is not counted as a new2722nd test. The73 original ignored tests are not claimed executed. No new ignore/skip or test-thread override.",
+  "new_FTS_tests_actually_passed": [
+    "index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+    "index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback",
+    "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+    "index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+    "index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+    "index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs",
+    "index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+    "index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+    "index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors"
+  ],
+  "non_timing_MAX_control": {
+    "raw": {
+      "path": "review-next-candidate/fts-integration-round9/attempt01/max-rowid-control-original.json",
+      "bytes": 3253,
+      "sha256": "7326fcfb83e8d8d507732bd150d55b778dcdb1b044d64d33c908d5a645dddb2d"
+    },
+    "all_six_max_fullscan_steps_zero": true,
+    "both_257row_sum_controls_fullscan_steps": 256,
+    "Last_opcode_present": true,
+    "boundary": "Exact same bundled SQLite actual execution, not wallclock measurement; bypassed Prev may remain in EXPLAIN. No performance sample or whole-peak conclusion."
+  },
+  "semantics": {
+    "old_public_API": "Original write_file_data408-byte method remains unchanged and performs no new schema query.",
+    "new_opt_in_API": "write_file_data_for_rebuild used only at the existing shared cc-index snapshot caller; borrowed connection does not enforce Rust transaction ownership. Owner must propagate any Err, abandon failed staging and prevent publication.",
+    "DirectWriter": "No physical rollback guarantee under journal OFF is asserted.",
+    "guards": "Canonical non-index schema/TEMP checks; autocommit and unsafe checked rowid capacity retain original insertion; actual surviving rowids preserve duplicate/cross-file literals.",
+    "tests": "Eight historical correctness/failure controls retained byte-for-byte; ordinary30-pair timing test removed only from new shipping source; no historical raw altered."
+  },
+  "scope_proofs": {
+    "frozen_five_paths": {
+      "path": "review-next-candidate/fts-integration-round9/frozen-five-path-source.json",
+      "bytes": 1705,
+      "sha256": "22b408d270d983a40c76f3a442ac89f84a0d609484ad933a898a5f616056b92e"
+    },
+    "full_input_map": {
+      "path": "review-next-candidate/fts-integration-round9/execution-full-product-validation-inputs.json",
+      "bytes": 472037,
+      "sha256": "fa5ebb967f0faa6e0d3942367ae009560c4703b349715ff6bedbd7b5f5e18013"
+    },
+    "commit_bridge": {
+      "path": "review-next-candidate/fts-integration-round9/product-commit/source-bridge.json",
+      "bytes": 1556,
+      "sha256": "06f03c7313fe71ddde541fc29f34f178cef4342d1e34ce71a36741b2a9499c8c"
+    },
+    "complete_products": 1090,
+    "ordinary_validation": 138,
+    "per_command_capture": "1214 inputs include every1090 product and121 ordinary validation input plus3live-binding inputs. The17source-integrity files use unchanged parent/pre-exec exact-scope and post full-map verification, not a claimed per-command capture.",
+    "all_other_parent_tree_paths_modes_blobs_unchanged": true
+  },
+  "independent_source_review": {
+    "path": "review-next-candidate/fts-integration-round9-independent/independent-source-review.json",
+    "bytes": 8949,
+    "sha256": "52cc9c105257853437efc6a21c59e95c76c27c63c071f2e328754604ddfff7c5"
+  },
+  "preserved_prior_failures": [
+    "Initial public API prototype catch-and-commit real101, subsequent A fix0, and old baseline Mac cc-index Clippy101 remain at original source identities.",
+    "Old30paired timings remain prototype-only; no speed-up value is transferred to this P.",
+    "Original a23 full-scale study failure and missing100k primary remain separate; this engineering success does not repair that study."
+  ],
+  "limitations": [
+    "Only file count<=256 is bounded by FTS window; no measured wholepeak or internal FTS buffer limit.",
+    "No new formal1k/100k/150study, release certification, source-admission R/G or remote push performed.",
+    "New original TODO completions0, remaining29."
+  ]
+}

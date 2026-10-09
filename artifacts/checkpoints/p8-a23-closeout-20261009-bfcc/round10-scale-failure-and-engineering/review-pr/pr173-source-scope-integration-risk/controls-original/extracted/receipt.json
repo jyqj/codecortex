@@ -1,0 +1,336 @@
+{
+  "commands": [
+    [
+      "python3",
+      "scripts/verify_reviewed_source_v15.py",
+      "--source-version",
+      "p8-completion-source-20261009-v15"
+    ],
+    [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-db",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "indexer_phases::reconcile::surface_window_tests"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "indexer_phases::reconcile::dependency_window_tests"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+      "--",
+      "--exact"
+    ]
+  ],
+  "cwd": "/home/runner/work/codecortex/codecortex",
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/home/runner/work/_temp/surface-window-controls-cargo",
+    "CODECORTEX_BENCH_OBSERVATIONS": "/home/runner/work/_temp/surface-window-controls/observations",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTFLAGS": ""
+  },
+  "exit_code": 0,
+  "expected_product_input_count": 1089,
+  "expected_product_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+  "expected_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "expected_test_count": 10,
+  "expected_tests": {
+    "3": [
+      "indexer_phases::reconcile::surface_window_tests::materialized_surface_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_requires_exact_queried_basis_and_bounded_admission",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::surface_window_tests::prepare_reuses_surface_window_without_changing_promotions",
+      "indexer_phases::reconcile::surface_window_tests::prepare_requeries_surface_when_propagation_adds_a_seed",
+      "indexer_phases::reconcile::surface_window_tests::reused_surface_window_keeps_external_write_epoch_fence"
+    ],
+    "4": [
+      "indexer_phases::reconcile::dependency_window_tests::materialized_dependency_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::dependency_window_tests::dependency_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::dependency_window_tests::consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ],
+    "5": [
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit"
+    ]
+  },
+  "files": {
+    "00.stderr": {
+      "bytes": 1626,
+      "sha256": "7530c5b63fd05edb0143d92bf099792fa7d1751fcd6ac93ce78173a345ec9b30"
+    },
+    "00.stdout": {
+      "bytes": 572,
+      "sha256": "a49e714a702bf5dd78d7a849f2aeccbbe0cfce0e3c5a71ae3dad0605ae418aa0"
+    },
+    "01.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "01.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "02.stderr": {
+      "bytes": 6169,
+      "sha256": "1583649ad21a354df025598e9445a831e620e985d748c919c8f1542a60f75fa9"
+    },
+    "02.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "03.stderr": {
+      "bytes": 3249,
+      "sha256": "c3c1dd3db3e68a3f3d77920bcea903282ca7f26f82756904b43d56de4437e18c"
+    },
+    "03.stdout": {
+      "bytes": 832,
+      "sha256": "e0f08aa9228c7d7d9d62b5d9a18e40dc9846e2b35ccdb8897ee731eba822c587"
+    },
+    "04.stderr": {
+      "bytes": 188,
+      "sha256": "18814a88fbc338d33bd7fbc1c13c5c660133330932f82d5607a3aaa79e171f0f"
+    },
+    "04.stdout": {
+      "bytes": 498,
+      "sha256": "f83d224fdad2502469f156c724fc4118f4ce30b8ebaf3c7af5fb3677515324da"
+    },
+    "05.stderr": {
+      "bytes": 188,
+      "sha256": "18814a88fbc338d33bd7fbc1c13c5c660133330932f82d5607a3aaa79e171f0f"
+    },
+    "05.stdout": {
+      "bytes": 188,
+      "sha256": "3e048ee3a5d595dcb0286334b23e4cef5ca6ffc1df214c4255b3d563c0c1fbd1"
+    },
+    "observations/p8-prepare-dependency-window-work.json": {
+      "bytes": 16858,
+      "sha256": "3018c4b149949ba2511ba2e3b0320f9e00fce1e722f793e7f8ae3acf38c09ed3"
+    },
+    "observations/p8-prepare-surface-window-work.json": {
+      "bytes": 25471,
+      "sha256": "9ac2b55c208c72a234184287a18721448a04d5ace6c225b1ca0b6dc28de74f28"
+    },
+    "observer-after.json": {
+      "bytes": 427,
+      "sha256": "05430ca8d079c45f3593b2bd0133611074cfc4b468ee3fe3b1ed49cbd17d2cfb"
+    },
+    "observer-before.json": {
+      "bytes": 427,
+      "sha256": "05430ca8d079c45f3593b2bd0133611074cfc4b468ee3fe3b1ed49cbd17d2cfb"
+    },
+    "plan.json": {
+      "bytes": 3216,
+      "sha256": "71c3f1f86fc272b89539bd0d34c9000077907e6fb95f986985ac9504289850db"
+    },
+    "progress.json": {
+      "bytes": 7410,
+      "sha256": "9a1a9ff5f55ceb5d12e2974307a004f855426deb5d8bc382a16b9509405e7363"
+    },
+    "source-after.json": {
+      "bytes": 146411,
+      "sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9"
+    },
+    "source-before.json": {
+      "bytes": 146411,
+      "sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9"
+    }
+  },
+  "not_run_command_indices": [],
+  "observers_unchanged": true,
+  "results": [
+    {
+      "accepted": true,
+      "argv": [
+        "python3",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "elapsed_ns": 99272202173,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:54:10.704247+00:00",
+      "stderr": "00.stderr",
+      "stdout": "00.stdout"
+    },
+    {
+      "accepted": true,
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "elapsed_ns": 2043632706,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:55:49.976754+00:00",
+      "stderr": "01.stderr",
+      "stdout": "01.stdout"
+    },
+    {
+      "accepted": true,
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "-p",
+        "cc-db",
+        "-p",
+        "cc-eval",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "elapsed_ns": 54355487449,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:55:52.020733+00:00",
+      "stderr": "02.stderr",
+      "stdout": "02.stdout"
+    },
+    {
+      "accepted": true,
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--lib",
+        "indexer_phases::reconcile::surface_window_tests"
+      ],
+      "elapsed_ns": 21438200869,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:56:46.376729+00:00",
+      "stderr": "03.stderr",
+      "stdout": "03.stdout",
+      "test_population": {
+        "actual_names": [
+          "indexer_phases::reconcile::surface_window_tests::materialized_surface_window_matches_original_pending_sql",
+          "indexer_phases::reconcile::surface_window_tests::prepare_requeries_surface_when_propagation_adds_a_seed",
+          "indexer_phases::reconcile::surface_window_tests::prepare_reuses_surface_window_without_changing_promotions",
+          "indexer_phases::reconcile::surface_window_tests::reused_surface_window_keeps_external_write_epoch_fence",
+          "indexer_phases::reconcile::surface_window_tests::surface_window_reloads_after_replacement_removal_and_reopen",
+          "indexer_phases::reconcile::surface_window_tests::surface_window_requires_exact_queried_basis_and_bounded_admission"
+        ],
+        "expected_count": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 6
+      }
+    },
+    {
+      "accepted": true,
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--lib",
+        "indexer_phases::reconcile::dependency_window_tests"
+      ],
+      "elapsed_ns": 236464496,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:57:07.815738+00:00",
+      "stderr": "04.stderr",
+      "stdout": "04.stdout",
+      "test_population": {
+        "actual_names": [
+          "indexer_phases::reconcile::dependency_window_tests::consuming_more_than_the_registered_window_budget_requires_fresh_sql",
+          "indexer_phases::reconcile::dependency_window_tests::dependency_window_reloads_after_replacement_removal_and_reopen",
+          "indexer_phases::reconcile::dependency_window_tests::materialized_dependency_window_matches_original_pending_sql"
+        ],
+        "expected_count": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 3
+      }
+    },
+    {
+      "accepted": true,
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--lib",
+        "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+        "--",
+        "--exact"
+      ],
+      "elapsed_ns": 345811979,
+      "exit_code": 0,
+      "started_utc": "2026-10-09T05:57:08.052777+00:00",
+      "stderr": "05.stderr",
+      "stdout": "05.stdout",
+      "test_population": {
+        "actual_names": [
+          "build_plan::tests::stale_prepared_build_is_rejected_at_commit"
+        ],
+        "expected_count": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1
+      }
+    }
+  ],
+  "schema_version": 2,
+  "scope": "Source approval plus ten targeted engineering methods only; ordinary CI still required; no benchmark, N30 matrix, TODO or release approval",
+  "source_unchanged": true,
+  "status": "controls_completed"
+}

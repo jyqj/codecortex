@@ -1,0 +1,811 @@
+diff --git a/crates/cc-db/src/index_db_snapshot_insert.rs b/crates/cc-db/src/index_db_snapshot_insert.rs
+index 2188f67d83d44b49c3015598c7001d231fd22428..c4eee424e815aafce896379387fb894d99d490e6 100644
+--- a/crates/cc-db/src/index_db_snapshot_insert.rs
++++ b/crates/cc-db/src/index_db_snapshot_insert.rs
+@@ -1,7 +1,8 @@
+ //! Full-snapshot leaf inserts bounded within one file and one original table loop.
+ //!
+-//! No row survives into another file/table. Parent inserts, FTS mirrors, document
++//! No leaf row survives into another file/table. Parent inserts, document
+ //! validation and identity survivor checks remain in their original positions.
++//! The snapshot-only FTS helper below mirrors bounded file windows by rowid.
+ //! Existing incremental binders execute each bounded window using their unchanged
+ //! 64/8/1 tiers, conflict clauses and parameter order.
+ use crate::index_db::IndexDb;
+@@ -15,6 +16,136 @@ use rusqlite::{
+ const MAX_ROWS: usize = 64;
+ const MAX_BOUND_BYTES: usize = 64 * 1024;
+ 
++type SchemaDefinition = (String, String, String, Option<String>);
++
++fn non_index_schema(conn: &Connection) -> CcResult<Vec<SchemaDefinition>> {
++    let mut statement = conn
++        .prepare("SELECT type,name,tbl_name,sql FROM main.sqlite_schema WHERE type <> 'index' ORDER BY type,name,tbl_name,sql")
++        .map_err(db_err)?;
++    let rows = statement
++        .query_map([], |row| {
++            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
++        })
++        .map_err(db_err)?;
++    rows.collect::<rusqlite::Result<Vec<_>>>().map_err(db_err)
++}
++
++/// Compare the actual connection against a fresh canonical schema made by the
++/// same SQLite library. Ignore only indexes (staging deliberately drops them).
++/// Unexpected tables, views, triggers, FK definitions or TEMP objects retain
++/// the old per-row path; a name-only trigger check would not be sufficient.
++pub(crate) fn can_defer_snapshot_fts(conn: &Connection) -> CcResult<bool> {
++    if conn.is_autocommit() {
++        return Ok(false);
++    }
++    let temporary_objects: i64 = conn
++        .query_row("SELECT count(*) FROM sqlite_temp_schema", [], |row| {
++            row.get(0)
++        })
++        .map_err(db_err)?;
++    if temporary_objects != 0 {
++        return Ok(false);
++    }
++    static CANONICAL: std::sync::OnceLock<Result<Vec<SchemaDefinition>, String>> =
++        std::sync::OnceLock::new();
++    let expected = CANONICAL.get_or_init(|| {
++        let reference = Connection::open_in_memory().map_err(|error| error.to_string())?;
++        reference
++            .execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
++            .map_err(|error| error.to_string())?;
++        non_index_schema(&reference).map_err(|error| error.to_string())
++    });
++    let expected = expected
++        .as_ref()
++        .map_err(|error| CcError::Database(format!("snapshot schema reference: {error}")))?;
++    Ok(non_index_schema(conn)? == *expected)
++}
++
++/// One bounded snapshot window. The canonical index schema never deletes or
++/// replaces files/literal_index during per-file insertion; both use implicit
++/// rowids. Keep this private to that write path, not incremental replacements.
++pub(crate) struct SnapshotFtsWindow {
++    files_before: i64,
++    literals_before: i64,
++}
++
++fn has_rowid_capacity(before: i64, candidates: usize) -> bool {
++    i64::try_from(candidates)
++        .ok()
++        .and_then(|count| before.checked_add(count))
++        .is_some_and(|after| after < i64::MAX)
++}
++
++impl SnapshotFtsWindow {
++    pub(crate) fn begin(
++        conn: &Connection,
++        files: &[crate::index_db::FileWriteUnit],
++    ) -> CcResult<Option<Self>> {
++        // The public seam can also wrap an autocommit connection. Preserve its
++        // original per-file visibility and failure behavior in that case.
++        if conn.is_autocommit() || files.is_empty() {
++            return Ok(None);
++        }
++        let Some(literal_candidates) = files.iter().try_fold(0usize, |count, file| {
++            count.checked_add(file.outcome.literal_index.len())
++        }) else {
++            return Ok(None);
++        };
++        let files_before = conn
++            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
++                row.get(0)
++            })
++            .map_err(db_err)?;
++        let literals_before = conn
++            .query_row(
++                "SELECT coalesce(max(rowid),0) FROM literal_index",
++                [],
++                |row| row.get(0),
++            )
++            .map_err(db_err)?;
++        // Count every attempted literal, including potential OR IGNORE
++        // conflicts. Never reach SQLite's random-rowid fallback at i64::MAX.
++        if !has_rowid_capacity(files_before, files.len())
++            || !has_rowid_capacity(literals_before, literal_candidates)
++        {
++            return Ok(None);
++        }
++        Ok(Some(Self {
++            files_before,
++            literals_before,
++        }))
++    }
++
++    pub(crate) fn flush(self, conn: &Connection) -> CcResult<()> {
++        let files_after: i64 = conn
++            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
++                row.get(0)
++            })
++            .map_err(db_err)?;
++        let literals_after: i64 = conn
++            .query_row(
++                "SELECT coalesce(max(rowid),0) FROM literal_index",
++                [],
++                |row| row.get(0),
++            )
++            .map_err(db_err)?;
++        // The rowid B-tree survives staging's secondary-index removal.
++        // Selecting actual new rows preserves OR IGNORE winners even when a
++        // literal belongs to a file inserted in a previous window.
++        IndexDb::execute_cached(
++            conn,
++            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) SELECT rowid,file_path,summary,content_excerpt FROM files WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
++            rusqlite::params![self.files_before, files_after],
++        )?;
++        IndexDb::execute_cached(
++            conn,
++            "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
++            rusqlite::params![self.literals_before, literals_after],
++        )?;
++        Ok(())
++    }
++}
++
+ fn value_bytes(value: ValueRef<'_>) -> usize {
+     match value {
+         ValueRef::Null => 0,
+@@ -268,6 +399,10 @@ pub(crate) fn dispatch_sites(
+     )
+ }
+ 
++#[cfg(test)]
++#[path = "snapshot_fts_tests.rs"]
++mod snapshot_fts_tests;
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+diff --git a/crates/cc-db/src/index_db_write_batch.rs b/crates/cc-db/src/index_db_write_batch.rs
+index 2758481da50748be45f9c35a35832d2f2bc9b851..32ed0414d16321032a45aa6b8f0a5333da7acf81 100644
+--- a/crates/cc-db/src/index_db_write_batch.rs
++++ b/crates/cc-db/src/index_db_write_batch.rs
+@@ -810,6 +810,16 @@ impl IndexDb {
+         Self::insert_file_data_impl(conn, file, chunk_blobs, false, true)
+     }
+ 
++    /// Snapshot leaf batching with only files/literal FTS deferred. Pair with
++    /// a checked SnapshotFtsWindow in the same transaction.
++    pub(crate) fn insert_snapshot_file_data_deferred_fts(
++        conn: &Connection,
++        file: &FileWriteUnit,
++        chunk_blobs: Option<&[Option<Vec<u8>>]>,
++    ) -> CcResult<()> {
++        Self::insert_file_data_impl(conn, file, chunk_blobs, true, true)
++    }
++
+     fn insert_file_data_impl(
+         conn: &Connection,
+         file: &FileWriteUnit,
+diff --git a/crates/cc-db/src/snapshot_write_txn.rs b/crates/cc-db/src/snapshot_write_txn.rs
+index 20dc6ffc60d2a63320b56d1bd8e010e2937ffe26..e850a30b549fcd1f0bda38fb2900d61add6db029 100644
+--- a/crates/cc-db/src/snapshot_write_txn.rs
++++ b/crates/cc-db/src/snapshot_write_txn.rs
+@@ -77,6 +77,50 @@ impl<'a> SnapshotWriteTxn<'a> {
+         Ok(())
+     }
+ 
++    /// Opt in to bounded files/literal FTS mirrors during a full rebuild.
++    ///
++    /// Unlike `write_file_data`, this can leave earlier files in the current
++    /// window without their mirrors when a later write fails. It does not own
++    /// or roll back the borrowed connection's transaction.
++    ///
++    /// The rebuild owner MUST propagate any error, abandon the entire staging
++    /// transaction/database, and prevent publication. Do not catch an error
++    /// and commit partial work. The existing full-rebuild adapters provide
++    /// this failure boundary; general callers should use `write_file_data`.
++    pub fn write_file_data_for_rebuild(
++        &self,
++        write_units: &[FileWriteUnit],
++        chunk_blobs: &PrecompressedChunks,
++    ) -> CcResult<()> {
++        if write_units.is_empty() {
++            return Ok(());
++        }
++        // Only these two FTS mirrors cross a file boundary. Leaf binders and
++        // all base/identity writes retain their original order and bounds.
++        // FTS errors can occur after later base writes in this window; the
++        // owner must abandon the staging transaction/database and prevent publication.
++        let can_defer = crate::index_db_snapshot_insert::can_defer_snapshot_fts(self.conn)?;
++        for files in write_units.chunks(256) {
++            let mirror = if can_defer {
++                crate::index_db_snapshot_insert::SnapshotFtsWindow::begin(self.conn, files)?
++            } else {
++                None
++            };
++            for unit in files {
++                let blobs = chunk_blobs.get(&unit.rel_path).map(Vec::as_slice);
++                if mirror.is_some() {
++                    IndexDb::insert_snapshot_file_data_deferred_fts(self.conn, unit, blobs)?;
++                } else {
++                    IndexDb::insert_snapshot_file_data_precompressed(self.conn, unit, blobs)?;
++                }
++            }
++            if let Some(mirror) = mirror {
++                mirror.flush(self.conn)?;
++            }
++        }
++        Ok(())
++    }
++
+     /// Write route nodes.
+     pub fn write_route_nodes(
+         &self,
+diff --git a/crates/cc-index/src/indexer_phases/snapshot.rs b/crates/cc-index/src/indexer_phases/snapshot.rs
+index f54e02421b71259abd6c2b3b1e0ab6de48f7c883..7aefc0bb357b97df3c8ba45257d2b45509f3e483 100644
+--- a/crates/cc-index/src/indexer_phases/snapshot.rs
++++ b/crates/cc-index/src/indexer_phases/snapshot.rs
+@@ -108,7 +108,7 @@ impl Indexer {
+         chunk_blobs: &PrecompressedChunks,
+     ) -> CcResult<()> {
+         // Write main file data (chunk payloads pre-compressed during prepare).
+-        txn.write_file_data(write_units, chunk_blobs)?;
++        txn.write_file_data_for_rebuild(write_units, chunk_blobs)?;
+ 
+         // Route nodes.
+         txn.write_route_nodes(route_nodes)?;
+diff --git a/crates/cc-db/src/snapshot_fts_tests.rs b/crates/cc-db/src/snapshot_fts_tests.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8
+--- /dev/null
++++ b/crates/cc-db/src/snapshot_fts_tests.rs
+@@ -0,0 +1,554 @@
++//! Differential controls for the snapshot-only FTS window; no scale-study credit.
++use super::{can_defer_snapshot_fts, has_rowid_capacity, SnapshotFtsWindow};
++use crate::index_db::{FileWriteUnit, IndexDb, PrecompressedChunks};
++use crate::SnapshotWriteTxn;
++use cc_model::{Language, LiteralRecord, ParseOutcome, ParserTier};
++use rusqlite::{types::Value, Connection, StatementStatus};
++
++const TABLES: &[&str] = &[
++    "document_manifest",
++    "resolution_frontier",
++    "semantic_edges",
++    "dispatch_sites",
++    "resolution_manifests",
++    "resolution_dependencies",
++    "public_surfaces",
++    "files",
++    "symbols",
++    "imports",
++    "symbol_refs",
++    "call_edges",
++    "chunks",
++    "test_edges",
++    "routes",
++    "chunk_symbol_identity",
++    "literal_index",
++    "files_fts",
++    "chunks_fts",
++    "literal_fts",
++    "symbols_fts",
++    "file_paths_fts",
++];
++
++fn connection() -> Connection {
++    let conn = Connection::open_in_memory().unwrap();
++    conn.execute_batch("PRAGMA foreign_keys=ON").unwrap();
++    conn.execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
++        .unwrap();
++    // Match the actual staging adapter's removal of explicit secondary indexes.
++    conn.execute_batch(&crate::direct_writer::drop_index_statements(
++        crate::index_migrate::FULL_SCHEMA_SQL,
++    ))
++    .unwrap();
++    conn.set_prepared_statement_cache_capacity(64);
++    conn
++}
++
++fn literal(id: &str, path: &str, text: &str) -> LiteralRecord {
++    LiteralRecord {
++        literal_id: id.into(),
++        file_path: path.into(),
++        literal: text.into(),
++        literal_kind: "string".into(),
++        line: 1,
++        container: None,
++        confidence: 0.8,
++        enclosing_symbol_uid: None,
++        key_path: None,
++    }
++}
++
++fn units(count: usize) -> Vec<FileWriteUnit> {
++    (0..count)
++        .map(|n| {
++            let path = format!("src/f{n:04}.rs");
++            let mut outcome = ParseOutcome {
++                summary: format!("summarymarker {n}"),
++                ..Default::default()
++            };
++            outcome.chunks.push(cc_model::ChunkRecord {
++                source: None,
++                chunk_id: format!("chunk:{n}"),
++                file_path: path.clone(),
++                language: Language::Rust,
++                chunk_index: 0,
++                start_line: 1,
++                end_line: 2,
++                breadcrumb: "root".into(),
++                text: format!("chunkmarker {n}"),
++                symbol_name: None,
++                symbol_kind: None,
++                token_estimate: 4,
++                parser_tier: ParserTier::Generic,
++                parser_confidence: 0.8,
++            });
++            outcome
++                .literal_index
++                .push(literal(&format!("literal:{n}"), &path, "literalmarker"));
++            FileWriteUnit {
++                rel_path: path,
++                language: Language::Rust,
++                content_hash: format!("hash{n}"),
++                mtime: 1.0,
++                size: 1,
++                outcome,
++            }
++        })
++        .collect()
++}
++
++fn original(conn: &Connection, files: &[FileWriteUnit]) -> cc_model::CcResult<()> {
++    // The retained original snapshot entry includes the same leaf batching.
++    for file in files {
++        IndexDb::insert_snapshot_file_data_precompressed(conn, file, None)?;
++    }
++    Ok(())
++}
++
++fn candidate(conn: &Connection, files: &[FileWriteUnit]) -> cc_model::CcResult<()> {
++    SnapshotWriteTxn::new(conn).write_file_data_for_rebuild(files, &PrecompressedChunks::new())
++}
++
++fn rows(conn: &Connection, table: &str) -> Vec<Vec<Value>> {
++    let mut statement = conn
++        .prepare(&format!("SELECT rowid,* FROM {table} ORDER BY rowid"))
++        .unwrap();
++    // indexed_at is produced by the unchanged wall clock independently on each
++    // writer call. No other physical column or rowid is omitted.
++    let columns: Vec<_> = statement
++        .column_names()
++        .iter()
++        .enumerate()
++        .filter_map(|(n, name)| (!(table == "files" && *name == "indexed_at")).then_some(n))
++        .collect();
++    statement
++        .query_map([], |row| columns.iter().map(|&n| row.get(n)).collect())
++        .unwrap()
++        .collect::<rusqlite::Result<_>>()
++        .unwrap()
++}
++
++fn dump(conn: &Connection) -> Vec<(String, Vec<Vec<Value>>)> {
++    // pragma_table_list distinguishes logical virtual tables from their
++    // physical shadow tables without maintaining an incomplete table allowlist.
++    let names: Vec<String> = conn
++        .prepare("SELECT name FROM pragma_table_list WHERE schema='main' AND type IN ('table','virtual') AND name NOT LIKE 'sqlite_%' ORDER BY name")
++        .unwrap().query_map([], |row| row.get(0)).unwrap()
++        .collect::<rusqlite::Result<_>>().unwrap();
++    names
++        .into_iter()
++        .map(|table| {
++            let values = rows(conn, &table);
++            (table, values)
++        })
++        .collect()
++}
++
++fn count(conn: &Connection, table: &str) -> i64 {
++    conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |row| {
++        row.get(0)
++    })
++    .unwrap()
++}
++
++fn hits(conn: &Connection, table: &str, needle: &str) -> Vec<i64> {
++    conn.prepare(&format!(
++        "SELECT rowid FROM {table} WHERE {table} MATCH ?1 ORDER BY rowid"
++    ))
++    .unwrap()
++    .query_map([needle], |row| row.get(0))
++    .unwrap()
++    .collect::<rusqlite::Result<_>>()
++    .unwrap()
++}
++
++fn assert_mirrors(conn: &Connection) {
++    for (base, fts, columns) in [
++        (
++            "files",
++            "files_fts",
++            "rowid,file_path,summary,content_excerpt",
++        ),
++        (
++            "literal_index",
++            "literal_fts",
++            "rowid,literal_id,file_path,literal,literal_kind",
++        ),
++    ] {
++        let query = |table| {
++            let mut s = conn
++                .prepare(&format!("SELECT {columns} FROM {table} ORDER BY rowid"))
++                .unwrap();
++            let n = s.column_count();
++            s.query_map([], |r| {
++                (0..n)
++                    .map(|c| r.get::<_, Value>(c))
++                    .collect::<rusqlite::Result<Vec<_>>>()
++            })
++            .unwrap()
++            .collect::<rusqlite::Result<Vec<_>>>()
++            .unwrap()
++        };
++        assert_eq!(query(base), query(fts));
++    }
++    assert_eq!(count(conn, "files"), count(conn, "file_paths_fts"));
++    assert_eq!(count(conn, "chunks"), count(conn, "chunks_fts"));
++    assert!(conn
++        .prepare("PRAGMA foreign_key_check")
++        .unwrap()
++        .query([])
++        .unwrap()
++        .next()
++        .unwrap()
++        .is_none());
++}
++
++#[test]
++fn windows_preserve_all_rows_fts_search_and_cross_path_survivors() {
++    for n in [0, 1, 199, 200, 255, 256, 257, 513] {
++        let old = connection();
++        let new = connection();
++        let mut files = units(n);
++        if n > 0 {
++            // Within-outcome duplicate: first original base row must win.
++            let path = files[0].rel_path.clone();
++            files[0]
++                .outcome
++                .literal_index
++                .push(literal("literal:0", &path, "shouldnotwin"));
++        }
++        if n > 256 {
++            let path = files[0].rel_path.clone();
++            // A later window can insert a new literal belonging to an old file.
++            files[256]
++                .outcome
++                .literal_index
++                .push(literal("cross-window", &path, "crossmarker"));
++            files[256]
++                .outcome
++                .literal_index
++                .push(literal("literal:0", &path, "shouldnotwin"));
++        }
++        let a = old.unchecked_transaction().unwrap();
++        let b = new.unchecked_transaction().unwrap();
++        assert!(can_defer_snapshot_fts(&b).unwrap());
++        original(&a, &files).unwrap();
++        candidate(&b, &files).unwrap();
++        assert_eq!(dump(&a), dump(&b), "file count {n}");
++        assert_mirrors(&b);
++        for (table, needle) in [
++            ("files_fts", "summarymarker"),
++            ("chunks_fts", "chunkmarker"),
++            ("literal_fts", "literalmarker"),
++            ("literal_fts", "crossmarker"),
++            ("literal_fts", "shouldnotwin"),
++            ("file_paths_fts", "src"),
++        ] {
++            assert_eq!(
++                hits(&a, table, needle),
++                hits(&b, table, needle),
++                "{table} count={n}"
++            );
++        }
++        assert!(hits(&b, "literal_fts", "shouldnotwin").is_empty());
++        a.commit().unwrap();
++        b.commit().unwrap();
++        assert_eq!(dump(&old), dump(&new));
++    }
++}
++
++#[test]
++fn checked_capacity_and_near_maximum_rowids_use_original_fallback() {
++    assert!(has_rowid_capacity(0, 256));
++    assert!(!has_rowid_capacity(i64::MAX - 1, 2));
++    assert!(!has_rowid_capacity(i64::MAX - 1, 1));
++    assert!(!has_rowid_capacity(i64::MAX - 1, usize::MAX));
++    assert!(!has_rowid_capacity(i64::MAX, 0));
++    for base in ["files", "literal_index"] {
++        let conn = connection();
++        let tx = conn.unchecked_transaction().unwrap();
++        original(&tx, &units(1)).unwrap();
++        if base == "files" {
++            for table in ["files", "files_fts", "file_paths_fts"] {
++                tx.execute(
++                    &format!("UPDATE {table} SET rowid=?1 WHERE rowid=1"),
++                    [i64::MAX - 1],
++                )
++                .unwrap();
++            }
++        } else {
++            for table in ["literal_index", "literal_fts"] {
++                tx.execute(
++                    &format!("UPDATE {table} SET rowid=?1 WHERE rowid=1"),
++                    [i64::MAX - 1],
++                )
++                .unwrap();
++            }
++        }
++        let files = units(3).into_iter().skip(1).collect::<Vec<_>>();
++        assert!(SnapshotFtsWindow::begin(&tx, &files).unwrap().is_none());
++        candidate(&tx, &files).unwrap(); // includes SQLite's normal random-rowid path
++        assert_mirrors(&tx);
++        assert_eq!(count(&tx, "files"), 3);
++        assert_eq!(count(&tx, "literal_index"), 3);
++        tx.commit().unwrap();
++    }
++}
++
++#[test]
++fn public_entry_preserves_partial_state_when_caller_commits_after_error() {
++    let old = connection();
++    let new = connection();
++    let mut files = units(2);
++    files[1].outcome.literal_index[0].file_path = "missing.rs".into();
++    {
++        let a = old.unchecked_transaction().unwrap();
++        let b = new.unchecked_transaction().unwrap();
++        assert!(original(&a, &files).is_err());
++        // This explicitly tests the old public API, independently of the
++        // opt-in rebuild helper used by the other candidate comparisons.
++        assert!(SnapshotWriteTxn::new(&b)
++            .write_file_data(&files, &PrecompressedChunks::new())
++            .is_err());
++        a.commit().unwrap();
++        b.commit().unwrap();
++    }
++    assert_eq!(count(&old, "files_fts"), 2);
++    assert_eq!(count(&old, "literal_fts"), 1);
++    assert_eq!(dump(&old), dump(&new));
++}
++
++#[test]
++fn autocommit_keeps_original_partial_failure_and_immediate_mirrors() {
++    let old = connection();
++    let new = connection();
++    let mut files = units(1);
++    files[0].outcome.literal_index[0].file_path = "missing.rs".into();
++    assert!(!can_defer_snapshot_fts(&new).unwrap());
++    assert!(original(&old, &files).is_err());
++    assert!(candidate(&new, &files).is_err());
++    assert_eq!(dump(&old), dump(&new));
++    assert_eq!(count(&new, "files"), 1);
++    assert_eq!(count(&new, "files_fts"), 1);
++}
++
++#[test]
++fn noncanonical_or_temp_schema_falls_back_without_losing_mirrors() {
++    for mutation in [
++        "CREATE TRIGGER replace_prior AFTER INSERT ON files WHEN new.file_path='src/f0001.rs' BEGIN DELETE FROM literal_index WHERE file_path='src/f0000.rs'; DELETE FROM literal_fts WHERE file_path='src/f0000.rs'; END;",
++        "CREATE TEMP TRIGGER observe_insert AFTER INSERT ON main.files BEGIN SELECT 1; END;",
++        "CREATE TABLE extra_fk(file_path TEXT REFERENCES files(file_path) ON DELETE CASCADE);",
++        "CREATE TEMP TABLE files(rowid INTEGER);",
++    ] {
++        let old=connection(); let new=connection();
++        old.execute_batch(mutation).unwrap(); new.execute_batch(mutation).unwrap();
++        let a=old.unchecked_transaction().unwrap(); let b=new.unchecked_transaction().unwrap();
++        assert!(!can_defer_snapshot_fts(&b).unwrap(),"{mutation}");
++        let x=original(&a,&units(2)); let y=candidate(&b,&units(2));
++        assert_eq!(x.is_ok(),y.is_ok());
++        // TEMP shadowing intentionally makes both original calls fail; compare
++        // error class without querying its deliberately incompatible columns.
++        if !mutation.contains("TEMP TABLE") { assert_eq!(dump(&a),dump(&b)); }
++        else { assert!(x.is_err()); }
++    }
++}
++
++#[test]
++fn late_failure_rolls_back_flushed_windows_and_preserves_live_generation() {
++    let files = units(257);
++    for duplicate in [false, true] {
++        let conn = connection();
++        let mut bad = files.clone();
++        if duplicate {
++            bad[256].rel_path = bad[0].rel_path.clone();
++        } else {
++            bad[256].outcome.literal_index[0].file_path = "missing.rs".into();
++        }
++        {
++            let tx = conn.unchecked_transaction().unwrap();
++            assert!(candidate(&tx, &bad).is_err());
++            // The first complete window really was flushed before the error.
++            assert!(count(&tx, "files_fts") >= 256);
++        }
++        for table in TABLES {
++            assert_eq!(count(&conn, table), 0, "{table}");
++        }
++    }
++    let dir = tempfile::tempdir().unwrap();
++    let path = dir.path().join("live.db");
++    let db = IndexDb::open(&path).unwrap().0;
++    db.replace_files_batch(&units(1)).unwrap();
++    let generation = db.generation().unwrap();
++    let before = dump(&db.read_conn().unwrap());
++    let mut bad = files;
++    bad[256].outcome.literal_index[0].file_path = "missing.rs".into();
++    let result = db.rebuild_with_temp_db(|conn| {
++        assert!(can_defer_snapshot_fts(conn)?);
++        candidate(conn, &bad)
++    });
++    assert!(result.is_err());
++    assert_eq!(db.generation().unwrap(), generation);
++    assert_eq!(dump(&db.read_conn().unwrap()), before);
++    drop(db);
++    let reopened = IndexDb::open(&path).unwrap().0;
++    assert_eq!(dump(&reopened.read_conn().unwrap()), before);
++}
++
++#[test]
++fn private_fts_flush_full_error_abandons_actual_rebuild_without_publication() {
++    // This injects an error between private base writes and flush inside the
++    // real rebuild owner. It is not public-entry end-to-end fault injection or
++    // evidence of DirectWriter's physical rollback with journal_mode=OFF.
++    let dir = tempfile::tempdir().unwrap();
++    let path = dir.path().join("live.db");
++    let db = IndexDb::open(&path).unwrap().0;
++    db.replace_files_batch(&units(1)).unwrap();
++    let generation = db.generation().unwrap();
++    let before = dump(&db.read_conn().unwrap());
++    let mut files = units(1);
++    files[0].outcome.summary = (0..131_072)
++        .map(|n| format!("flush{n:08} "))
++        .collect::<String>();
++    let reached_flush = std::cell::Cell::new(false);
++    let result = db.rebuild_with_temp_db(|conn| {
++        assert!(can_defer_snapshot_fts(conn)?);
++        let mirror = SnapshotFtsWindow::begin(conn, &files)?
++            .expect("canonical owned transaction must select the rowid window");
++        IndexDb::insert_snapshot_file_data_deferred_fts(conn, &files[0], None)?;
++        assert_eq!(count(conn, "files"), 1);
++        assert_eq!(count(conn, "files_fts"), 0);
++        let pages: i64 = conn.query_row("PRAGMA page_count", [], |row| row.get(0)).unwrap();
++        let free: i64 = conn.query_row("PRAGMA freelist_count", [], |row| row.get(0)).unwrap();
++        let page_size: i64 = conn.query_row("PRAGMA page_size", [], |row| row.get(0)).unwrap();
++        assert!(files[0].outcome.summary.len() as i64 > free * page_size);
++        let cap: i64 = conn
++            .query_row(&format!("PRAGMA max_page_count={pages}"), [], |row| row.get(0))
++            .unwrap();
++        assert_eq!(cap, pages);
++        reached_flush.set(true);
++        let error = mirror.flush(conn).expect_err("FTS content must exceed the fixed page cap");
++        // The existing production db_err deliberately stores SQLite's display
++        // message, not its numeric code. Assert that exact SQLITE_FULL message.
++        assert!(
++            matches!(&error, cc_model::CcError::Database(message) if message == "database or disk is full"),
++            "unexpected flush error: {error:?}"
++        );
++        eprintln!(
++            "P8_FTS_FLUSH_FULL={}",
++            serde_json::json!({
++                "scope":"private flush plus actual temp rebuild owner",
++                "page_count_before_flush":pages,"freelist_count":free,
++                "page_size":page_size,"max_page_count":cap,
++                "summary_bytes":files[0].outcome.summary.len(),
++                "actual_mapped_error":error.to_string(),
++                "public_end_to_end_injection":false,
++                "direct_writer_physical_rollback_claim":false
++            })
++        );
++        Err(error)
++    });
++    assert!(reached_flush.get());
++    assert!(result.is_err());
++    assert_eq!(db.generation().unwrap(), generation);
++    assert_eq!(dump(&db.read_conn().unwrap()), before);
++    drop(db);
++    let reopened = IndexDb::open(&path).unwrap().0;
++    assert_eq!(reopened.generation().unwrap(), generation);
++    assert_eq!(dump(&reopened.read_conn().unwrap()), before);
++}
++
++#[test]
++fn max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control() {
++    use std::io::Write;
++
++    let mut observations = Vec::new();
++    for n in [0, 1, 257] {
++        let conn = connection();
++        let tx = conn.unchecked_transaction().unwrap();
++        original(&tx, &units(n)).unwrap();
++        for table in ["files", "literal_index"] {
++            let sql = format!("SELECT coalesce(max(rowid),0) FROM {table}");
++            let mut statement = tx.prepare(&sql).unwrap();
++            statement.reset_status(StatementStatus::FullscanStep);
++            let maximum: i64 = statement.query_row([], |row| row.get(0)).unwrap();
++            let max_steps = statement.get_status(StatementStatus::FullscanStep);
++            assert_eq!(maximum, n as i64, "{table} at {n} rows");
++            assert_eq!(max_steps, 0, "MAX must not traverse {table} rows");
++            let plan = tx
++                .prepare(&format!("EXPLAIN {sql}"))
++                .unwrap()
++                .query_map([], |row| {
++                    Ok((
++                        row.get::<_, i64>(0)?,
++                        row.get::<_, String>(1)?,
++                        row.get::<_, i64>(2)?,
++                        row.get::<_, i64>(3)?,
++                        row.get::<_, i64>(4)?,
++                        row.get::<_, Option<String>>(5)?,
++                    ))
++                })
++                .unwrap()
++                .collect::<rusqlite::Result<Vec<_>>>()
++                .unwrap();
++            assert!(plan.iter().any(|op| op.1 == "Last"), "{plan:?}");
++            // A bypassed Prev can remain in VDBE after min/max early-out.
++            // Check executed traversal counters, not opcode absence.
++            let mut control = tx
++                .prepare(&format!("SELECT coalesce(sum(rowid),0) FROM {table}"))
++                .unwrap();
++            control.reset_status(StatementStatus::FullscanStep);
++            let sum: i64 = control.query_row([], |row| row.get(0)).unwrap();
++            let scan_steps = control.get_status(StatementStatus::FullscanStep);
++            assert_eq!(sum, (n * (n + 1) / 2) as i64);
++            if n > 1 {
++                assert!(scan_steps > 0, "scan counter must observe the SUM control");
++            }
++            observations.push(serde_json::json!({
++                "table":table,"rows":n,"maximum":maximum,
++                "max_fullscan_steps":max_steps,"sum_fullscan_steps":scan_steps,
++                "explain":plan
++            }));
++        }
++    }
++    // Direct stderr preserves non-timing control evidence even under the
++    // default Rust test harness; no --nocapture or benchmark option is needed.
++    writeln!(
++        std::io::stderr().lock(),
++        "P8_FTS_MAX_ROWID_CONTROL={}",
++        serde_json::json!({"timing_measurement":false,"observations":observations})
++    )
++    .unwrap();
++}
++
++#[test]
++fn rowid_range_uses_primary_key_and_reduces_mirror_statement_runs() {
++    let old = connection();
++    let new = connection();
++    let files = units(257);
++    let a = old.unchecked_transaction().unwrap();
++    let b = new.unchecked_transaction().unwrap();
++    original(&a, &files).unwrap();
++    candidate(&b, &files).unwrap();
++    let details:Vec<String>=b.prepare("EXPLAIN QUERY PLAN SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid")
++        .unwrap().query_map([0,1000],|r|r.get(3)).unwrap().collect::<rusqlite::Result<_>>().unwrap();
++    assert!(details.iter().any(|s| s.contains("INTEGER PRIMARY KEY")));
++    assert!(!details.iter().any(|s| s.contains("SCAN literal_index")));
++    let old_files =
++        "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) VALUES(?1,?2,?3,?4)";
++    let old_literals="INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4,?5)";
++    let new_files="INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) SELECT rowid,file_path,summary,content_excerpt FROM files WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid";
++    let new_literals="INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid";
++    let runs = |c: &Connection, s: &str| {
++        c.prepare_cached(s)
++            .unwrap()
++            .get_status(StatementStatus::Run)
++    };
++    assert_eq!(runs(&a, old_files), 257);
++    assert_eq!(runs(&a, old_literals), 257);
++    assert_eq!(runs(&b, new_files), 2);
++    assert_eq!(runs(&b, new_literals), 2);
++    assert_eq!(dump(&a), dump(&b));
++    eprintln!(
++        "snapshot FTS diagnostic: original mirror runs=514 candidate=4; query_plan={details:?}"
++    );
++}

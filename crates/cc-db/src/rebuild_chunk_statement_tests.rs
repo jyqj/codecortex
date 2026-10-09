@@ -457,3 +457,100 @@ fn rebuild_chunk_statements_release_cost_probe() {
         }
     }
 }
+
+type ChunkCostReference = (Vec<Vec<Value>>, Vec<Vec<Value>>);
+
+fn equal_lifetime_cost_round(
+    conn: &Connection,
+    file: &FileWriteUnit,
+    blobs: &[Option<Vec<u8>>],
+    retained: bool,
+    reference: &ChunkCostReference,
+) -> (u128, usize, usize) {
+    // Keep the original timer, SELECTs and transaction lifecycle in cost_round.
+    // Only the untimed ownership of its complete readback differs here.
+    let (elapsed, base, fts) = cost_round(conn, file, blobs, retained);
+    assert_eq!((&base, &fts), (&reference.0, &reference.1));
+    let base_rows = base.len();
+    let fts_rows = fts.len();
+    drop(base);
+    drop(fts);
+    (elapsed, base_rows, fts_rows)
+}
+
+#[test]
+#[ignore = "independent equal-lifetime release cost observation; no performance assertion or scale credit"]
+fn rebuild_chunk_statements_equal_lifetime_release_cost_probe() {
+    for (case, count, compress) in [
+        ("single_plain", 1, false),
+        ("short_plain_6", 6, false),
+        ("mixed_32", 32, false),
+        ("compressed_64", 64, true),
+    ] {
+        let mut file = unit(count);
+        let mut blobs = Vec::new();
+        for (n, chunk) in file.outcome.chunks.iter_mut().enumerate() {
+            if compress || (case == "mixed_32" && n % 2 == 0) {
+                chunk.text = format!("compressible text {n} λ\0").repeat(128);
+                blobs.push(Some(compress_chunk_text(&chunk.text).unwrap()));
+            } else {
+                if n % 3 == 0 {
+                    chunk.text.clear();
+                }
+                blobs.push(None);
+            }
+        }
+        let old = connection();
+        let new = connection();
+        seed_parent(&old);
+        seed_parent(&new);
+        // Warm the original path once and retain this single immutable,
+        // untimed reference throughout both sides of every recorded pair.
+        let (_, base, fts) = cost_round(&old, &file, &blobs, false);
+        let reference = (base, fts);
+        let reference_digest =
+            blake3::hash(format!("{:?}", (&reference.0, &reference.1)).as_bytes())
+                .to_hex()
+                .to_string();
+        // Warm the retained path once; its readback is checked and dropped.
+        equal_lifetime_cost_round(&new, &file, &blobs, true, &reference);
+        for round in 0..20 {
+            // Each helper returns only scalars after fully verifying and
+            // dropping both output Vecs, before the next side starts timing.
+            let (original, retained) = if round % 2 == 0 {
+                (
+                    equal_lifetime_cost_round(&old, &file, &blobs, false, &reference),
+                    equal_lifetime_cost_round(&new, &file, &blobs, true, &reference),
+                )
+            } else {
+                let retained = equal_lifetime_cost_round(&new, &file, &blobs, true, &reference);
+                let original = equal_lifetime_cost_round(&old, &file, &blobs, false, &reference);
+                (original, retained)
+            };
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schema": "p8-rebuild-chunk-statements-equal-lifetime-cost-v1",
+                    "case": case,
+                    "round": round,
+                    "chunks": count,
+                    "first": if round % 2 == 0 { "original" } else { "retained" },
+                    "original_ns": original.0.to_string(),
+                    "retained_ns": retained.0.to_string(),
+                    "reference_typed_rows_debug_blake3": reference_digest,
+                    "original_typed_rows_match_reference": true,
+                    "retained_typed_rows_match_reference": true,
+                    "original_base_rows": original.1,
+                    "original_fts_rows": original.2,
+                    "retained_base_rows": retained.1,
+                    "retained_fts_rows": retained.2,
+                    "timed_scope": "chunk-loop including compression selection and both inserts; excludes begin/readback/rollback",
+                    "output_lifetime": "each side fully checked against one immutable untimed reference and both output Vecs explicitly dropped before next side timing",
+                    "order_limit": "connection and allocator/cache history remain; no reset or isolation claim",
+                    "comparison_protocol": "independent equal-lifetime probe; not a relabel of cost-v1",
+                    "performance_threshold": null
+                })
+            );
+        }
+    }
+}

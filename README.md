@@ -39,7 +39,7 @@ Code Index V2 共 **192 项任务：163 done / 16 in_progress / 12 todo / 1 bloc
 任务完成数不等同发布认证；以各任务证据和适用验证范围为准。
 
 > 本块由 `scripts/code_index_plan.py --write` 从 `tasks.json` 生成；无参运行校验全部进度入口。
-> 源文件 SHA-256：`657ef21329f4ed629c06bea62531388b096f17441a1d190fa1e815a99a0d1689`。
+> 源文件 SHA-256：`ff7991663d42a31f8dae5200dc02c78a042ad9444d62a3b4978c0ff3ba8fdf8e`。
 <!-- code-index-progress:end -->
 
 ## 快速开始
@@ -56,6 +56,13 @@ CLI、OpenCode、VS Code、Zed）：
 ```bash
 codecortex install
 ```
+
+Codex CLI 的配置写入 `~/.codex/config.toml`。重复安装会更新
+`mcp_servers.codecortex` 的可执行文件路径和 `args`，保留已有的环境变量、
+超时设置、其他服务及注释。卸载使用 `codecortex uninstall`，只移除该服务
+及其子表。配置无法读取或解析时会报告失败并保留原文件；安装和卸载只要有
+一个目标失败，命令就返回非零退出码。具体处置见
+[安装排障](docs/TROUBLESHOOTING.md#codex-cli-安装或卸载失败)。
 
 agent 连接时 MCP 服务器自动启动。也可以手动拉起：
 

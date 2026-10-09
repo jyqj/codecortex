@@ -1,0 +1,32 @@
+{
+  "schema": "independent-installer-comment-loss-behavior-v1",
+  "reviewer": "/root/scale_acceptance",
+  "observed_at_utc": "2026-10-09T09:22:33.025286+00:00",
+  "binary": "/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex",
+  "binary_sha256": "166f584b99afd6d782be38400466be5fa18febb7401f8ee8ef8ac1859d75017a",
+  "binary_unchanged": true,
+  "compiled_by_reviewer": false,
+  "source_run_reference": "validation/round2/commands.json installer-cli finished 2026-10-09T09:19:56.980167+00:00",
+  "cases": [
+    {
+      "name": "standard_table_key_comments",
+      "input": "[mcp_servers.codecortex]\n# KEEP_COMMAND_RATIONALE\n\"command\" = '/old/bin' # KEEP_VALUE_SUFFIX\n# KEEP_ARGS_RATIONALE\n'args' = ['old']\n# KEEP_ENABLED_RATIONALE\nenabled = false\n",
+      "exit_code": 0,
+      "output_config": "[mcp_servers.codecortex]\ncommand = \"/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex\" # KEEP_VALUE_SUFFIX\nargs = [\"mcp\"]\n# KEEP_ENABLED_RATIONALE\nenabled = false\n",
+      "command_comment_preserved": false,
+      "args_comment_preserved": false,
+      "stdout": "  Configured Codex CLI\n\n1 agent(s) configured.\n",
+      "stderr": ""
+    },
+    {
+      "name": "dotted_key_comments",
+      "input": "# KEEP_COMMAND_RATIONALE\nmcp_servers.codecortex.command = '/old/bin'\n# KEEP_ARGS_RATIONALE\nmcp_servers.codecortex.args = ['old']\nmcp_servers.other.command = 'keep-other'\n",
+      "exit_code": 0,
+      "output_config": "mcp_servers.codecortex.command = \"/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex\"\nmcp_servers.codecortex.args = [\"mcp\"]\nmcp_servers.other.command = 'keep-other'\n",
+      "command_comment_preserved": false,
+      "args_comment_preserved": false,
+      "stdout": "  Configured Codex CLI\n\n1 agent(s) configured.\n",
+      "stderr": ""
+    }
+  ]
+}

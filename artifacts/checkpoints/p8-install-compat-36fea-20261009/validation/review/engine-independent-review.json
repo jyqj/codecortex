@@ -1,0 +1,140 @@
+{
+  "reviewer": "/root/pr_triage",
+  "scope": "independent byte and source review, not runtime execution",
+  "base": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "current_engine_sha256": "5b2cf052a1eb7b5d5b837d979759522aed5a06e91630ec14c148c65c4154ec4a",
+  "unchanged_production_sha256": "4cc88b93e3db27bc5de0b9de4865df9db1299d7b9cc1d43b37ea5c2a51abc3fa",
+  "canonical_sha256": "f6313e0a098f04be0692c9791927f0190d5cf6c3f3ae11a089372e584eb0e0a8",
+  "remaining_engine_tests_byte_identical": [
+    "cache_key_includes_context_fields",
+    "graph_search_cache_hit_returns_shared_arc",
+    "graph_search_cache_key_covers_budget_and_limits",
+    "graph_search_cache_misses_on_evidence_epoch_bump",
+    "graph_search_cache_misses_on_index_epoch_bump",
+    "graph_search_degraded_result_is_not_cached",
+    "grep_lane_prefilter_keeps_midtoken_matches_via_full_scan",
+    "grep_prefilter_phrase_tokenizes_like_unicode61",
+    "lexical_search_applies_path_prefix_before_limit",
+    "run_lanes_parallel_preserves_slice_order_and_runs_all",
+    "run_lanes_parallel_propagates_first_error_in_slice_order",
+    "score_trace_replays_rerank_after_graph_rerank",
+    "score_trace_replays_rerank_for_grep_and_graph_mix",
+    "score_trace_replays_rerank_for_pure_lexical_hit",
+    "score_trace_replays_rerank_with_dsl_name_bonus",
+    "score_trace_replays_rerank_with_preselect_and_multiple_boosts",
+    "search_completes_with_read_pool_size_one"
+  ],
+  "duplicate_rows": [
+    {
+      "name": "default_lanes_registry_keeps_fusion_order",
+      "retained_owner": "engine_lane_tests::default_lanes_registry_keeps_fusion_order",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "fuse_outcomes_accumulates_rrf_generically",
+      "retained_owner": "engine_lane_tests::fuse_outcomes_accumulates_rrf_generically",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_adapter_ranks_seed_above_one_hop_neighbor",
+      "retained_owner": "engine_lane_tests::graph_lane_adapter_ranks_seed_above_one_hop_neighbor",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_disabled_when_weight_is_zero",
+      "retained_owner": "engine_lane_tests::graph_lane_disabled_when_weight_is_zero",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_expands_caller_direction_at_decay",
+      "retained_owner": "engine_lane_tests::graph_lane_expands_caller_direction_at_decay",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_maps_symbol_to_smallest_containing_chunk",
+      "retained_owner": "engine_lane_tests::graph_lane_maps_symbol_to_smallest_containing_chunk",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_respects_languages_filter_by_file_extension",
+      "retained_owner": "engine_lane_tests::graph_lane_respects_languages_filter_by_file_extension",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_scores_fuzzy_seed_below_exact_seed",
+      "retained_owner": "engine_lane_tests::graph_lane_scores_fuzzy_seed_below_exact_seed",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_lane_seeds_short_tokens_by_exact_name",
+      "retained_owner": "engine_lane_tests::graph_lane_seeds_short_tokens_by_exact_name",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "graph_search_returns_empty_for_no_symbols",
+      "retained_owner": "engine_lane_tests::graph_search_returns_empty_for_no_symbols",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "grep_lane_adapter_ranks_matches_and_caches_only_hits",
+      "retained_owner": "engine_lane_tests::grep_lane_adapter_ranks_matches_and_caches_only_hits",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "grep_lane_disabled_when_request_excludes_grep",
+      "retained_owner": "engine_lane_tests::grep_lane_disabled_when_request_excludes_grep",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "grep_lane_scan_budget_truncates_recency_first_and_deterministically",
+      "retained_owner": "engine_lane_tests::grep_lane_scan_budget_truncates_recency_first_and_deterministically",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "lane_opting_out_of_annotation_stays_fusion_only",
+      "retained_owner": "engine_lane_tests::lane_opting_out_of_annotation_stays_fusion_only",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "lexical_lane_adapter_matches_inline_ranking",
+      "retained_owner": "engine_lane_tests::lexical_lane_adapter_matches_inline_ranking",
+      "bytes_equal_after_module_indent": false,
+      "sole_difference": "--- \n+++ \n@@ -34,8 +34,7 @@\n     );\n \n     let hits = lane.run(&context).unwrap();\n-    // P5-A preserves native BM25 in lane diagnostics; the legacy rank\n-    // projection and candidate order remain unchanged.\n+    // Native diagnostic score is now separate from the legacy rank slot.\n     assert!(hits.iter().all(|(_, raw)| raw.is_finite() && *raw < 0.0));\n     let ranks: Vec<_> = hits\n         .iter()\n"
+    },
+    {
+      "name": "new_lane_declaring_score_slot_projects_without_plan_edits",
+      "retained_owner": "engine_lane_tests::new_lane_declaring_score_slot_projects_without_plan_edits",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "new_lane_opting_into_annotation_gets_generic_hit_reasons",
+      "retained_owner": "engine_lane_tests::new_lane_opting_into_annotation_gets_generic_hit_reasons",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    },
+    {
+      "name": "run_lanes_iterates_collection_and_skips_disabled_lane_before_work",
+      "retained_owner": "engine_lane_tests::run_lanes_iterates_collection_and_skips_disabled_lane_before_work",
+      "bytes_equal_after_module_indent": true,
+      "sole_difference": null
+    }
+  ],
+  "test_count_before": 35,
+  "test_count_after": 17,
+  "execution_pending_root_shared_target": true
+}

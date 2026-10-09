@@ -1,0 +1,56 @@
+{
+  "schema": "independent-installer-comment-fix-behavior-v1",
+  "reviewer": "/root/scale_acceptance",
+  "observed_at_utc": "2026-10-09T09:28:18.653882+00:00",
+  "compiled_by_reviewer": false,
+  "source_sha256": "e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27",
+  "binary": "/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex",
+  "binary_sha256": "c8e35e35b025c49c519a0f3c9a9784888694157f4c9979f04c48e9886fe63538",
+  "source_and_binary_unchanged": true,
+  "bound_root_receipts": "validation/final-source/commands.json and its 1090 equal source-before/source-after entries",
+  "old_bug_source_sha256": "102ec1b704b51b04b6dd505a78008d637a8495f6728eb93935f6b8b6dc3f5a7a",
+  "old_bug_binary_sha256": "166f584b99afd6d782be38400466be5fa18febb7401f8ee8ef8ac1859d75017a",
+  "old_reproducer_unchanged_sha256": "206a543690f71ef96bfd43614b7f2c351375d46cf03cd88bf97f10f1ce13c2f8",
+  "cases": [
+    {
+      "name": "standard_table_key_comments",
+      "input": "[mcp_servers.codecortex]\n# KEEP_COMMAND_RATIONALE\n\"command\" = '/old/bin' # KEEP_VALUE_SUFFIX\n# KEEP_ARGS_RATIONALE\n'args' = ['old']\n# KEEP_ENABLED_RATIONALE\nenabled = false\n",
+      "first_exit": 0,
+      "second_exit": 0,
+      "output_config": "[mcp_servers.codecortex]\n# KEEP_COMMAND_RATIONALE\n\"command\" = \"/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex\" # KEEP_VALUE_SUFFIX\n# KEEP_ARGS_RATIONALE\n'args' = [\"mcp\"]\n# KEEP_ENABLED_RATIONALE\nenabled = false\n",
+      "checks": {
+        "both_cli_calls_succeeded": true,
+        "command_comment_preserved": true,
+        "args_comment_preserved": true,
+        "command_exact": true,
+        "args_exact": true,
+        "repeat_install_byte_idempotent": true,
+        "quoted_command_key_preserved": true,
+        "quoted_args_key_preserved": true,
+        "value_suffix_preserved": true,
+        "enabled_comment_and_value_preserved": true
+      },
+      "stdout": "  Configured Codex CLI\n\n1 agent(s) configured.\n",
+      "stderr": ""
+    },
+    {
+      "name": "dotted_key_comments",
+      "input": "# KEEP_COMMAND_RATIONALE\nmcp_servers.codecortex.command = '/old/bin'\n# KEEP_ARGS_RATIONALE\nmcp_servers.codecortex.args = ['old']\nmcp_servers.other.command = 'keep-other'\n",
+      "first_exit": 0,
+      "second_exit": 0,
+      "output_config": "# KEEP_COMMAND_RATIONALE\nmcp_servers.codecortex.command = \"/workspace/scratch/36fea31f96e3/target-validation/debug/codecortex\"\n# KEEP_ARGS_RATIONALE\nmcp_servers.codecortex.args = [\"mcp\"]\nmcp_servers.other.command = 'keep-other'\n",
+      "checks": {
+        "both_cli_calls_succeeded": true,
+        "command_comment_preserved": true,
+        "args_comment_preserved": true,
+        "command_exact": true,
+        "args_exact": true,
+        "repeat_install_byte_idempotent": true,
+        "unrelated_server_unchanged": true
+      },
+      "stdout": "  Configured Codex CLI\n\n1 agent(s) configured.\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true
+}

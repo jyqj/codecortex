@@ -1,0 +1,181 @@
+[
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--offline",
+      "--locked",
+      "--",
+      "integration_fixtures_and_corpus"
+    ],
+    "elapsed_seconds": 90.8366735510026,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:39:49.903911+00:00",
+    "free_bytes_after": 0,
+    "free_bytes_before": 2407424000,
+    "name": "corpus",
+    "started_at": "2026-10-09T09:38:19.067211+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "clean",
+      "--target-dir",
+      "/workspace/scratch/36fea31f96e3/target-validation",
+      "-p",
+      "cc-eval"
+    ],
+    "elapsed_seconds": 0.8045188649994088,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:39:50.711850+00:00",
+    "free_bytes_after": 2181689344,
+    "free_bytes_before": 0,
+    "name": "clean-eval-cache",
+    "started_at": "2026-10-09T09:39:49.907278+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-search",
+      "--lib",
+      "--offline",
+      "--locked"
+    ],
+    "elapsed_seconds": 37.17184895800165,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:27.887398+00:00",
+    "free_bytes_after": 1013981184,
+    "free_bytes_before": 2180718592,
+    "name": "index-search-libs",
+    "started_at": "2026-10-09T09:39:50.715549+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--bin",
+      "codecortex",
+      "--offline",
+      "--locked",
+      "installer::",
+      "--",
+      "--test-threads=1"
+    ],
+    "elapsed_seconds": 1.435361734998878,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:29.325943+00:00",
+    "free_bytes_after": 1605939200,
+    "free_bytes_before": 1017581568,
+    "name": "installer-unit",
+    "started_at": "2026-10-09T09:40:27.890580+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--test",
+      "installer_cli",
+      "--offline",
+      "--locked",
+      "--",
+      "--test-threads=1"
+    ],
+    "elapsed_seconds": 1.545960527000716,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:30.873082+00:00",
+    "free_bytes_after": 1536425984,
+    "free_bytes_before": 1605939200,
+    "name": "installer-cli",
+    "started_at": "2026-10-09T09:40:29.327120+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--lib",
+      "--offline",
+      "--locked",
+      "benchmark::statistics"
+    ],
+    "elapsed_seconds": 0.26488043300196296,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:31.141078+00:00",
+    "free_bytes_after": 1536421888,
+    "free_bytes_before": 1536425984,
+    "name": "statistics-lib",
+    "started_at": "2026-10-09T09:40:30.876197+00:00"
+  },
+  {
+    "command": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--bin",
+      "p8-runtime-statistics",
+      "--offline",
+      "--locked"
+    ],
+    "elapsed_seconds": 1.213171160001366,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:32.357510+00:00",
+    "free_bytes_after": 1530994688,
+    "free_bytes_before": 1536421888,
+    "name": "statistics-bin",
+    "started_at": "2026-10-09T09:40:31.144339+00:00"
+  },
+  {
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "scripts.tests.test_p8_runtime"
+    ],
+    "elapsed_seconds": 0.19192282800213434,
+    "exit_code": 1,
+    "finished_at": "2026-10-09T09:40:32.550421+00:00",
+    "free_bytes_after": 1530597376,
+    "free_bytes_before": 1530994688,
+    "name": "runtime-python",
+    "started_at": "2026-10-09T09:40:32.358496+00:00"
+  },
+  {
+    "command": [
+      "python",
+      "scripts/code_index_plan.py"
+    ],
+    "elapsed_seconds": 0.07037418300024001,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:32.621790+00:00",
+    "free_bytes_after": 1530589184,
+    "free_bytes_before": 1530593280,
+    "name": "plan",
+    "started_at": "2026-10-09T09:40:32.551415+00:00"
+  },
+  {
+    "command": [
+      "python",
+      "scripts/p8_facts.py",
+      "--check"
+    ],
+    "elapsed_seconds": 0.06305704199985485,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T09:40:32.687485+00:00",
+    "free_bytes_after": 1530585088,
+    "free_bytes_before": 1530589184,
+    "name": "facts",
+    "started_at": "2026-10-09T09:40:32.624428+00:00"
+  }
+]

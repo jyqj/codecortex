@@ -1,0 +1,78 @@
+--- published-wave001/workflow.yml
++++ candidate-wave002/workflow.yml
+@@ -1,7 +1,7 @@
+-name: P8 D0 registered recovery wave 001
++name: P8 D0 registered recovery wave 002
+ on:
+   push:
+-    branches: [task/p8-d0-recovery-28fe-20261009]
++    branches: [task/p8-d0-recovery-wave002-28fe-20261009]
+ permissions:
+   contents: read
+   actions: read
+@@ -10,7 +10,7 @@
+   cancel-in-progress: false
+ jobs:
+   supplement:
+-    name: D0 100000 repetition 8 supplemental ordinal 1
++    name: D0 100000 repetition 8 supplemental ordinal 2
+     runs-on: ubuntu-24.04
+     timeout-minutes: 350
+     env:
+@@ -21,7 +21,7 @@
+       RUSTFLAGS: ''
+       RUSTC_WRAPPER: ''
+       RUSTC_WORKSPACE_WRAPPER: ''
+-      P8_RECOVERY_REGISTRATION_SHA256: d968cb6aaa680b877fea26e6270bb9a651d7262958f6730fa97b13d71c59dec1
++      P8_RECOVERY_REGISTRATION_SHA256: b1a33c916da5d5f9b61bc9227411db462db644edf517a30bbf953e1c230d517f
+     steps:
+       - name: Refuse unregistered workflow reruns
+         run: test "${GITHUB_RUN_ATTEMPT:-}" = 1
+@@ -30,12 +30,12 @@
+           ref: ${{ github.sha }}
+           path: controller
+           persist-credentials: false
+-      - name: Admit only the fixed terminal predecessor and first wave
++      - name: Admit only the fixed pre-native capacity failure and final ordinal
+         id: admit
+         env:
+           GH_TOKEN: ${{ github.token }}
+         run: |
+-          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-20261009-28fe/recovery.py" admit \
++          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-wave002-20261009-28fe/recovery.py" admit \
+             --controller-root "$GITHUB_WORKSPACE/controller" --output "$RUNNER_TEMP/p8-d0-recovery-admission"
+       - uses: actions/checkout@v4
+         with:
+@@ -57,6 +57,7 @@
+           P8_EXPECTED_SOURCE: d0cb69c601e530dcef738af0c2dffb8d3b8bcf28
+           P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+         run: |
++          GITHUB_WORKSPACE="$GITHUB_WORKSPACE/measured" \
+           python3 -B scripts/p8_runner_capacity.py --scale 100000 \
+             --output "$RUNNER_TEMP/p8-d0-recovery-capacity" --prepare-ephemeral
+       - name: Execute exactly the unchanged D0 cell once and replay its raw
+@@ -64,7 +65,7 @@
+         env:
+           GH_TOKEN: ${{ github.token }}
+         run: |
+-          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-20261009-28fe/recovery.py" execute \
++          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-wave002-20261009-28fe/recovery.py" execute \
+             --controller-root "$GITHUB_WORKSPACE/controller" \
+             --admission "$RUNNER_TEMP/p8-d0-recovery-admission" \
+             --root "$GITHUB_WORKSPACE/measured" --build "$RUNNER_TEMP/p8-d0-original-build" \
+@@ -74,13 +75,13 @@
+         env:
+           GH_TOKEN: ${{ github.token }}
+         run: |
+-          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-20261009-28fe/recovery.py" recheck \
++          python3 -B "$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-d0-recovery-wave002-20261009-28fe/recovery.py" recheck \
+             --controller-root "$GITHUB_WORKSPACE/controller" --output "$RUNNER_TEMP/p8-d0-recovery-recheck"
+       - name: Preserve all admission, capacity, execution and revocation evidence
+         if: always()
+         uses: actions/upload-artifact@v4
+         with:
+-          name: p8-d0-recovery-wave001-100000-8-ordinal1-${{ github.run_id }}-attempt${{ github.run_attempt }}
++          name: p8-d0-recovery-wave002-100000-8-ordinal2-${{ github.run_id }}-attempt${{ github.run_attempt }}
+           path: |
+             ${{ runner.temp }}/p8-d0-recovery-admission
+             ${{ runner.temp }}/p8-d0-recovery-capacity

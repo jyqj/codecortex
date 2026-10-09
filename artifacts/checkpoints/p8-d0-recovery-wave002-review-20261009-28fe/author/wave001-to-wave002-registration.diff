@@ -1,0 +1,183 @@
+--- published-wave001/registration.json
++++ candidate-wave002/registration.json
+@@ -1,24 +1,41 @@
+ {
+   "all_initial_cells": 150,
+   "base_controller_commit": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+-  "branch": "task/p8-d0-recovery-28fe-20261009",
++  "branch": "task/p8-d0-recovery-wave002-28fe-20261009",
++  "capacity_fix": "single capacity-command process GITHUB_WORKSPACE points to the fixed measured checkout; original helper and deletion/capacity guards unchanged",
+   "combined_declared_scheduling_upper_bound": 21,
+   "complete_coverage_required_samples": 1500,
+   "controller_inputs": {
+     "37854240827-jobs1.json": "1a04dda4406e17df880b5ecceb1b01a2d1efd7d3c4ee4d03478b2e4f77dbcf89",
+     "37854240827-jobs2.json": "ea601a309d7e37dae6b453ef236e5160d6670e997144494de67b4aa806c355c5",
+     "37854240827-run.json": "385206c526e685fad61f681aad9e2c51aa18bd42d6d6d1c7c2d014a81332a10d",
+-    "README.md": "d2bbd1194e78406e1d8aff7727d99d01ddc3661af590cb1a9d93ac17fbefbec6",
++    "README.md": "cfb1d31ae0d0d9ba66cc86e73fd7483b5647eacd69a29fd424c03e30c9102613",
++    "current-original-artifacts.json": "2f1b7cc29bb4d0464550e753834949d637b708982fed42e72102fa7c4a52e418",
++    "current-original-jobs1.json": "2e27d338f7c48f4d1a6c5ce5f760879143c3762e2534386a2f9135bac208d76e",
++    "current-original-jobs2.json": "ea601a309d7e37dae6b453ef236e5160d6670e997144494de67b4aa806c355c5",
++    "fixed-build-artifacts.json": "de747f25526196ffed9a33db520ae19fbd60dad27fe7c80e89d5d2e061f5f38b",
+     "initial-identities.json": "d52cf254e0941ba6b1a029629dc1792ad2673cf0d1eb35e8b267f347e8f079fe",
++    "original-capacity-observer.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
++    "original-capture001-receipt.json": "993496adfbb7c1237f550a7e439ffc16ca5cd43d40ffdd5834e38d310cb5744d",
+     "original-registration.json": "4a56e31e9838f0db1d83a3efd4a10d0a51f8b443dbce4413e68253881740eebc",
++    "predecessor-admission.json": "20d94bc4798c2a6277fb7782307c868283b581b545460ac12d82ced2ce4163e8",
+     "predecessor-original-job.json": "c4918d8e648c738db1b08207129c98d2e4f6c747f5577eb07ce12bac2b340267",
+     "predecessor-original-job.log": "c33de85feff3143d794ed4d337affdbfa6010979fe32fbb9883579acc80941cf",
+-    "recovery.py": "2a6468f4e3d8cf8a24e22b7a4517ab197be34018148f0f25cf241f8431806c54",
+-    "test_recovery.py": "78891bd40e094ba2a48f7c6584e4d88c1b2e6442125a0b0ee1be9a8b2bc4abfc"
++    "prior-receiver-receipt.json": "eccffe7a89abdf3686306ddf0e54bab190fe429abb57861cd5a35b1ea8311d4a",
++    "prior-wave001-artifacts.json": "b9db38efd00281a2190775c88843bb7114bca7afcf8d5312cd1f59053bc5a221",
++    "prior-wave001-controller.py": "2a6468f4e3d8cf8a24e22b7a4517ab197be34018148f0f25cf241f8431806c54",
++    "prior-wave001-job.log": "c6bff143a47130982bb65e673ac7a08828140080947fdc101fd0de12379e2727",
++    "prior-wave001-jobs.json": "96d5ac1bd270f0e1ca4469f7da3bdd8e339858fc4b5a658d28dfa974fbe85998",
++    "prior-wave001-registration.json": "d968cb6aaa680b877fea26e6270bb9a651d7262958f6730fa97b13d71c59dec1",
++    "prior-wave001-run.json": "5a779ea35f3ab03c08d66c966ea3b3032282b451b381312903b0389c20a7bfaa",
++    "prior-wave001-workflow.yml": "486d726c9c573a4e5e9b8be4383696d9cf5983fad4431b44370e115ffe8d9c4f",
++    "prior-wave001.zip.base64": "7aa09916bb455b6c98e65bf9f6739e9b9b63db1ed369ba2d00d4a6ba0748bbc9",
++    "recovery.py": "bcfc1e3882b262ffbaf64ee58553dc1069573b76847896984539cfa71b4ca649",
++    "test_recovery.py": "39f5a9848691a65317202672ff689ccad337d82cfa9e42c9178fd4fe43af172c"
+   },
+   "coverage_accepted": false,
+-  "first_wave_only": true,
+-  "future_full_external_receiver_and_coverage": "not_implemented_or_accepted_by_this_first_wave_controller",
++  "fixed_wave_only": true,
++  "future_full_external_receiver_and_coverage": "Requires separately reviewed receiver-v6 and original validators, complete raw coverage, all-history and partial reconciliation gates; not accepted here",
+   "future_late_evidence_can_revoke": true,
+   "global_supplement_limit": 300,
+   "native_oracle_seed_and_budgets": "unchanged original D0 registration and validators",
+@@ -27,28 +44,120 @@
+   "original_TODO_remaining": 29,
+   "original_controller": "ca72a2dde363e35203f7b3cb30ed00729d460fd7",
+   "original_max_parallel": 20,
++  "original_predecessor_log_sha256": "c33de85feff3143d794ed4d337affdbfa6010979fe32fbb9883579acc80941cf",
+   "original_run": 37854240827,
+-  "predecessor_log_sha256": "c33de85feff3143d794ed4d337affdbfa6010979fe32fbb9883579acc80941cf",
+-  "prior_supplement_scope": "New controlled lineage initial state, bound to exact branch/workflow and live complete run inventory. No claim to enumerate arbitrary undeclared outside experiments.",
+-  "prior_supplemental_attempt_count": 0,
+-  "prior_supplemental_attempts": [],
++  "predecessor_admission": {
++    "artifact": {
++      "controller_source": "ad840759ba337608d3e33f2c1558042a4d5283c8",
++      "digest": "sha256:69639897e691c708dba91be441a7807df7d076ac12aea9afd7e8a280a439ef01",
++      "id": 11588924279,
++      "name": "p8-d0-recovery-wave001-100000-8-ordinal1-37865643378-attempt1",
++      "run_id": 37865643378,
++      "size_in_bytes": 60953
++    },
++    "attempt": {
++      "controller_source": "ad840759ba337608d3e33f2c1558042a4d5283c8",
++      "job_id": 113611597284,
++      "ordinal": 1,
++      "repetition": 8,
++      "run_attempt": 1,
++      "run_id": 37865643378,
++      "scale": 100000
++    },
++    "capacity_error": "RuntimeError: capacity observer belongs to another checkout",
++    "capacity_exit_code": 2,
++    "capacity_observer_sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
++    "classification_scope": "this_fixed_attempt_only",
++    "kind": "pre_native_capacity_observer_checkout_mismatch",
++    "native_measurement_started": false,
++    "native_outcome": null,
++    "next_ordinal": 2,
++    "observed_errors": [
++      "observed_native_budget_parity_source_evidence_error",
++      "raw_or_original_validator_failure:supplemental archive omitted/added evidence directory"
++    ],
++    "observed_initial_free_bytes": 88661061632,
++    "official_job_canonical_sha256": "efaecebcaff5106ebd59df5213077969a17dbd44c0ef43bc7d2e78fbde6327da",
++    "official_job_log_bytes": 62014,
++    "official_job_log_sha256": "c6bff143a47130982bb65e673ac7a08828140080947fdc101fd0de12379e2727",
++    "original_wave_controller_sha256": "2a6468f4e3d8cf8a24e22b7a4517ab197be34018148f0f25cf241f8431806c54",
++    "original_wave_registration_sha256": "d968cb6aaa680b877fea26e6270bb9a651d7262958f6730fa97b13d71c59dec1",
++    "original_wave_workflow_sha256": "486d726c9c573a4e5e9b8be4383696d9cf5983fad4431b44370e115ffe8d9c4f",
++    "preserved_state": "invalid",
++    "prior_receiver_receipt_sha256": "eccffe7a89abdf3686306ddf0e54bab190fe429abb57861cd5a35b1ea8311d4a",
++    "receipts": {
++      "admission": {
++        "archive_member": "p8-d0-recovery-admission/receipt.json",
++        "bytes": 71304,
++        "sha256": "9f31f6e41af4bba74dbdf9cd72c2082fac1851e496132287f4b116d0ecb4441f"
++      },
++      "capacity": {
++        "archive_member": "p8-d0-recovery-capacity/receipt.json",
++        "bytes": 1100,
++        "sha256": "188293a2c3eb13779215422712e95a5fa912e95e2ff03ada4365d5efa29d4198"
++      },
++      "recheck": {
++        "archive_member": "p8-d0-recovery-recheck/receipt.json",
++        "bytes": 71314,
++        "sha256": "ec0eec5230f1b0925d49c540e8ac2fff48bd7f6711f4feb55c1915ba81e69643"
++      }
++    },
++    "required_free_bytes": 30509367296,
++    "schema": "p8-D0-pre-native-capacity-evidence-v1"
++  },
++  "predecessor_log_sha256": "c6bff143a47130982bb65e673ac7a08828140080947fdc101fd0de12379e2727",
++  "prior_capture_receipts": [
++    "993496adfbb7c1237f550a7e439ffc16ca5cd43d40ffdd5834e38d310cb5744d"
++  ],
++  "prior_receiver_receipt_sha256": "eccffe7a89abdf3686306ddf0e54bab190fe429abb57861cd5a35b1ea8311d4a",
++  "prior_supplement_scope": "Complete prior receiver eccffe7a retained; current complete inventories of both fixed branches required. No claim to enumerate arbitrary undeclared outside experiments.",
++  "prior_supplemental_attempt_count": 1,
++  "prior_supplemental_attempts": [
++    {
++      "artifact_ids": [
++        11588924279
++      ],
++      "classification_notes": [],
++      "completed_at": "2026-10-09T01:23:14Z",
++      "controller_source": "ad840759ba337608d3e33f2c1558042a4d5283c8",
++      "cost": null,
++      "job_id": 113611597284,
++      "known_errors": [
++        "observed_native_budget_parity_source_evidence_error",
++        "raw_or_original_validator_failure:supplemental archive omitted/added evidence directory"
++      ],
++      "log_sha256": "c6bff143a47130982bb65e673ac7a08828140080947fdc101fd0de12379e2727",
++      "native_duration_ms": null,
++      "native_outcome": null,
++      "official_conclusion": "failure",
++      "official_status": "completed",
++      "ordinal": 1,
++      "repetition": 8,
++      "run_attempt": 1,
++      "run_id": 37865643378,
++      "scale": 100000,
++      "selected_for_coverage": false,
++      "started_at": "2026-10-09T01:21:54Z",
++      "state": "invalid"
++    }
++  ],
+   "quota_scope": "new prospective protocol choice, not an original project permanent retry prohibition",
+-  "registered_at_utc": "2026-10-09T00:30:14.190470+00:00",
++  "registered_at_utc": "2026-10-09T02:29:06.362836+00:00",
+   "repository": "jyqj/codecortex",
+-  "schema": "p8-D0-continuation-wave-v1",
+-  "scope": "retrospective adoption of every fixed initial identity plus prospectively registered supplementary attempts; first-wave scheduling only",
++  "schema": "p8-D0-continuation-wave-v2",
++  "scope": "retrospective adoption of all 150 original identities and the retained failed ordinal1 plus prospective fixed ordinal2; scheduling only",
+   "source": "d0cb69c601e530dcef738af0c2dffb8d3b8bcf28",
+   "supplements_per_cell": 2,
+   "wave": [
+     {
+-      "ordinal": 1,
+-      "predecessor_job_id": 113580044384,
++      "ordinal": 2,
++      "predecessor_job_id": 113611597284,
+       "predecessor_run_attempt": 1,
+-      "predecessor_run_id": 37854240827,
++      "predecessor_run_id": 37865643378,
+       "repetition": 8,
+       "scale": 100000
+     }
+   ],
+-  "wave_id": "wave-001",
+-  "workflow_template_sha256": "c273b95d05fbea2881db71ec1f30c7f6841c49b74bfe186a82aa76ec890e73bd"
++  "wave_id": "wave-002",
++  "workflow_template_sha256": "09da91c50c4e8f0bc307c99c04f008b4eb4c9bf2deb1c37a9b930d833cd892e8"
+ }

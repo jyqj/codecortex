@@ -1,0 +1,56 @@
+{
+  "status": "passed_path_and_environment_controls_capacity_remains_unavailable",
+  "results": [
+    {
+      "case": "unchanged real-directory guard accepts owned real directory and rejects symlink ancestor",
+      "passed": true
+    },
+    {
+      "case": "fixed SDK whitelist rejects root, source/evidence and temporary caller paths",
+      "passed": true
+    },
+    {
+      "case": "original hosted-context guard rejects local path spoof and self-hosted context",
+      "passed": true
+    },
+    {
+      "case": "original requirement, whitelist and supervised argv unchanged; argv inspected only",
+      "passed": true
+    },
+    {
+      "case": "exact candidate capacity shell command parses without executing it",
+      "passed": true
+    },
+    {
+      "case": "actual process assignment uses measured path with spaces and leaves parent workspace unchanged",
+      "passed": true,
+      "scope": "Python environment-print stand-in; no capacity or native command executed",
+      "observed_child": {
+        "workspace": "/workspace/scratch/28fef0db5e01/recovery-audit/round14-wave002/capacity-path-followup/workspace with spaces/measured",
+        "cwd": "/workspace/scratch/28fef0db5e01/recovery-audit/round14-wave002/capacity-path-followup/workspace with spaces/measured"
+      },
+      "observed_parent": {
+        "workspace": "/workspace/scratch/28fef0db5e01/recovery-audit/round14-wave002/capacity-path-followup/workspace with spaces",
+        "cwd": "/workspace/scratch/28fef0db5e01/recovery-audit/round14-wave002/capacity-path-followup/workspace with spaces/measured"
+      }
+    }
+  ],
+  "original_observer_sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+  "original_capacity_assertion_failure_preserved": true,
+  "initial_probe_files": {
+    "capacity-local.log": {
+      "bytes": 318,
+      "sha256": "95fb1af90ea80715b441b2a104d56b5f45361f06354f708d2cc274907c3186d4"
+    },
+    "capacity_local_probe.py": {
+      "bytes": 5904,
+      "sha256": "de8931b6e9f4af4f73e2afa4448acc1aede2d952c70f3687a47ba96aebdbc400"
+    }
+  },
+  "prior_correct_workspace_receipt_sha256": "22987d4216589d8d0811a7e541f199050d8618b2f8908ee79e549ecab2adb4ea",
+  "prior_wrong_workspace_receipt_sha256": "ab8325f55f3e3d56ae61a904563aae3d68b6e256b2ee596b865706cd1593ae7b",
+  "hosted_capacity_available_claim": false,
+  "actual_local_capacity_available": false,
+  "SDK_commands_executed": false,
+  "native_measurements_executed": false
+}

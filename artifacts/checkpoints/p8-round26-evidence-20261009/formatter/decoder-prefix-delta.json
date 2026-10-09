@@ -1,0 +1,41 @@
+{
+  "schema": "p8-candidate-rustfmt-BOM-prefix-fix-v1",
+  "before": {
+    "blob": "9c3a43e3f7ae25beca29f7766364447ea2080587",
+    "bytes": 8061,
+    "sha256": "f188427b5eff82bb103d040820e00eeb6eaecc991d41cef4eb0e0b30285c96fd"
+  },
+  "after": {
+    "blob": "dc839f8a15d4ea9f958ea3dc6383996e4a0c42b6",
+    "bytes": 8068,
+    "sha256": "e3e1993b83f5fbd57a2c9e82adcd6054a8368625950b27c7fef93a5d211bbef5"
+  },
+  "replacements": [
+    {
+      "before": "original.replace(/^\\d{4}-",
+      "after": "original.replace(/^\\uFEFF?\\d{4}-",
+      "occurrences": 1
+    }
+  ],
+  "inverse_full_body_equal": true,
+  "scope": "Only zero or one U+FEFF before an otherwise exact GitHub timestamp prefix. Frame JSON/payload/hash/base64/UTF8/population and bounds unchanged.",
+  "first_real_failure": {
+    "decoder": "9c3a43e3f7ae25beca29f7766364447ea2080587",
+    "log": {
+      "blob": "29060bb29fa45058ccb0757cb82f7b275dcc4b8a",
+      "bytes": 2991393,
+      "sha256": "c4ea00fb57daa3e432e16c9d538f18bd14eb77b1ebca2396c75d5e210778b05e"
+    },
+    "physical_line": 1511,
+    "codepoint_offsets": [
+      0,
+      2098721
+    ],
+    "error": {
+      "status": "failed",
+      "error": "SyntaxError: Unexpected token BOM at JSON.parse; decoder source unchanged",
+      "decoder": "9c3a43e3f7ae25beca29f7766364447ea2080587"
+    }
+  },
+  "originals_preserved": true
+}

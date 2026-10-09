@@ -1,0 +1,261 @@
+{
+  "schema": "p8-round26-root-native-db21-actual-acceptance-v1",
+  "reviewer": "/root",
+  "source": {
+    "head": "ae033369f015c416cd7995709c1853497773cf6a",
+    "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+    "status": ""
+  },
+  "execution_job": "wc_job_w6acnxdJr2fkkiet",
+  "execution_manifest": {
+    "bytes": 12552,
+    "sha256": "54f598eb9a0b3a6c10276d7d703c44a0e76d0551bd720c1c12c9035a7b9e1f8b"
+  },
+  "expected_source_population": "6d03c6ca6356e2d5cda2942bf2bbc5600b1dc76a",
+  "status": "accepted_scoped_original_db21",
+  "actual_checks": [
+    {
+      "name": "direct-writer",
+      "exact_unique_methods": [
+        "direct_writer::tests::extract_index_stmts",
+        "direct_writer::tests::split_sql_handles_comments_and_strings",
+        "direct_writer::tests::drop_index_stmts_match_create_set",
+        "direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions",
+        "direct_writer::tests::direct_writer_write_fn_error_propagates",
+        "direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail",
+        "direct_writer::tests::direct_writer_creates_valid_db",
+        "direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes",
+        "direct_writer::tests::direct_writer_handles_fts_tables",
+        "direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input",
+        "direct_writer::tests::direct_writer_bulk_insert_perf"
+      ],
+      "count": 11,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 186,
+      "stdout": {
+        "bytes": 989,
+        "sha256": "374b85e4856ae420f3a623850e4c6b2119286b5060f4650ccea761db842e216e"
+      },
+      "stderr": {
+        "bytes": 2267,
+        "sha256": "e7235fa18fc35442feaad66f09957e79bad4b09efd6024e2fe609800dd5b398a"
+      },
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "direct_writer::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      }
+    },
+    {
+      "name": "index-migrate",
+      "exact_unique_methods": [
+        "index_migrate::tests::old_version_returns_mismatch",
+        "index_migrate::tests::fresh_db_initializes_schema",
+        "index_migrate::tests::matching_version_returns_up_to_date",
+        "index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch",
+        "index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild"
+      ],
+      "count": 5,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 192,
+      "stdout": {
+        "bytes": 478,
+        "sha256": "f16fbde5c2e739688996d84d04bdaeaa0c7e30e346a6f5cff1b2e38dac33c152"
+      },
+      "stderr": {
+        "bytes": 242,
+        "sha256": "1d93b4c5cce5f6a54bf43116797efddd4fdbd8767637d45b1acebb8096eacda8"
+      },
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "index_migrate::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      }
+    },
+    {
+      "name": "schema-guard",
+      "exact_unique_methods": [
+        "fresh_index_really_initializes_current_schema",
+        "nonadjacent_versions_still_require_rebuild",
+        "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+        "committed_v24_requires_rebuild_and_invalidates_legacy_rows",
+        "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade"
+      ],
+      "count": 5,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "stdout": {
+        "bytes": 456,
+        "sha256": "fb7269d7721b85e94c99177c086b51fd2ab8afd1cda747714116113f46a1b19c"
+      },
+      "stderr": {
+        "bytes": 410,
+        "sha256": "b9545a1947c30bdc3a68fb578770266c105859fdb8d12e7f6c263823ee71d84b"
+      },
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--test",
+        "ci_schema_guard_contract",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      }
+    }
+  ],
+  "total_unique_methods": 21,
+  "versions": {
+    "python": {
+      "argv": [
+        "/usr/bin/python3",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Python 3.9.6\n",
+      "stderr": ""
+    },
+    "cargo": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": ""
+    },
+    "rustc": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "rustfmt": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustfmt",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.9.0-stable (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "clippy": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "clippy 0.1.95 (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "git": {
+      "argv": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "git version 2.50.1 (Apple Git-155)\n",
+      "stderr": ""
+    },
+    "clang": {
+      "argv": [
+        "/Library/Developer/CommandLineTools/usr/bin/clang",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "stderr": ""
+    },
+    "ld": {
+      "argv": [
+        "/Library/Developer/CommandLineTools/usr/bin/ld",
+        "-version_details"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n\t\"version\": \"1267\",\n\t\"architectures\": [\n\t\t\"armv6\",\n\t\t\"armv7\",\n\t\t\"armv7s\",\n\t\t\"arm64\",\n\t\t\"arm64e\",\n\t\t\"arm64_32\",\n\t\t\"i386\",\n\t\t\"x86_64\",\n\t\t\"x86_64h\",\n\t\t\"armv6m\",\n\t\t\"armv7k\",\n\t\t\"armv7m\",\n\t\t\"armv7em\",\n\t\t\"armv8m.main\",\n\t\t\"armv8.1m.main\"\n\t],\n\t\"lto\": {\n\t\t\"runtime_api_version\": 30,\n\t\t\"static_api_version\": 30,\n\t\t\"version_string\": \"LLVM version 21.0.0\"\n\t},\n\t\"tapi\": {\n\t\t\"version\": \"21.0.0\",\n\t\t\"version_string\": \"Apple TAPI version 21.0.0 (tapi-2100.0.2.6)\"\n\t}\n}\n",
+      "stderr": ""
+    }
+  },
+  "sdk": {
+    "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+    "libSystem_tbd": {
+      "bytes": 334178,
+      "sha256": "20cfce043f11a083e2eb6111efe3579919a8082fa4cc912a7bd839af2010ec57"
+    }
+  },
+  "scope": "Actual execution of the exact original11/5/5 database methods on G ae033. No original scale workload, original entire CI or current/new-main execution is claimed. Both previous workspace Clippy attempts remain failed. The unchanged inherited bulk_insert_perf method inserts10000 database rows for integrity; it is not the10000-file scale benchmark.",
+  "clippy_attempts": [
+    {
+      "path": "validation-results/manifest.json",
+      "status": "failed",
+      "reason": "SDK27 ld/TAPI architecture mismatch"
+    },
+    {
+      "path": "validation-sdk26-results/manifest.json",
+      "status": "failed",
+      "reason": "Five macOS cfg warnings in cc-index"
+    }
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

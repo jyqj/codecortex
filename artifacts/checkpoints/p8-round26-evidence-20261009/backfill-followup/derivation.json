@@ -1,0 +1,70 @@
+{
+  "schema_version": "p8_backfill_actual_formatted_context_propagation_followup_v1",
+  "role": "original two-helper propagation patch author; no independent or dynamic acceptance claim",
+  "repository_path": "crates/cc-eval/tests/p7_worker_contention.rs",
+  "actual_formatter_output": {
+    "blob": "c2550d4513f86f25ee08851c6ea4aa23e06e69a2",
+    "bytes": 24339,
+    "sha256": "e34b7110e407fbff8a5edc2e2819f0bf42d7e82250f7c2c46866bd29c17cc198",
+    "unchanged": true
+  },
+  "original_preformatter_input": {
+    "blob": "a4728eb6bb33e10c42a502dcc3a36361215aa6b2",
+    "bytes": 23980,
+    "sha256": "99d3d927362009852ea6889bbee0fa3198db491dcd4245e86c87eec1cf73597c"
+  },
+  "previous_accepted_helper_patch": {
+    "blob": "2da55eff6dbf6c3b41d998d20e6c47250500f2f2",
+    "bytes": 24494,
+    "sha256": "b4be5cf51e03c8f167dbb8eb353aae17f49e4dc872d09730c95f02b67277496e",
+    "independent_review": "51fe5f49e1233e27c81c82022f86c34dd5f2d053"
+  },
+  "new_candidate": {
+    "blob": "4928e5500264cecf2bf37e77be275dab95a6f692",
+    "bytes": 24853,
+    "sha256": "18b935ad7fcb7ab4ddd27a56aef0faae78c7017de9cd49d03af65e4581b187a9"
+  },
+  "exact_replacements": [
+    {
+      "helper": "build",
+      "before": "async fn build(index: SharedCodeIndex, full: bool) -> u64 {\n    let start = Instant::now();\n    tokio::time::timeout(\n        PROGRESS_BOUND,\n        tokio::task::spawn_blocking(move || core::build_index(index, full)),\n    )\n    .await\n    .expect(\"local indexing progresses while actual worker awaits provider\")\n    .unwrap()\n    .unwrap();\n    start.elapsed().as_micros() as u64\n}\n",
+      "after": "async fn build(index: SharedCodeIndex, full: bool) -> u64 {\n    let start = Instant::now();\n    let diagnostic_span = tracing::Span::current();\n    let diagnostic_dispatch = tracing::dispatcher::get_default(Clone::clone);\n    tokio::time::timeout(\n        PROGRESS_BOUND,\n        tokio::task::spawn_blocking(move || {\n            tracing::dispatcher::with_default(&diagnostic_dispatch, || {\n                diagnostic_span.in_scope(|| core::build_index(index, full))\n            })\n        }),\n    )\n    .await\n    .expect(\"local indexing progresses while actual worker awaits provider\")\n    .unwrap()\n    .unwrap();\n    start.elapsed().as_micros() as u64\n}\n",
+      "expected_before_occurrences": 1,
+      "expected_after_occurrences": 1,
+      "before_identity": {
+        "bytes": 383,
+        "sha256": "7d9372ca16cdbae500e2111488eed4d126569a102ab5b76a63b125328ea49e99"
+      },
+      "after_identity": {
+        "bytes": 658,
+        "sha256": "9dec1f05d9a933175c1c273f614c66269dc5ffa4fbb10d2cbb3b7f04fc86a776"
+      }
+    },
+    {
+      "helper": "db_control",
+      "before": "async fn db_control(db: Arc<IndexDb>) -> Value {\n    tokio::time::timeout(LOCAL_QUERY_BOUND, tokio::task::spawn_blocking(move || {\n        let generation = db.reads().read_generation().unwrap();\n        let checkout_start = Instant::now();\n        let reader = db.read_conn().unwrap();\n        let read_checkout_us = checkout_start.elapsed().as_micros() as u64;\n        let read_start = Instant::now();\n        let count: i64 = reader.query_row(\"SELECT COUNT(*) FROM document_manifest\", [], |row| row.get(0)).unwrap();\n        let read_statement_us = read_start.elapsed().as_micros() as u64;\n        drop(reader);\n        let writer = rusqlite::Connection::open(db.admin().db_path()).unwrap();\n        // Original independent production fairness control: no provider wait\n        // holds a writer transaction; the probe itself rolls back every time.\n        writer.busy_timeout(Duration::from_millis(100)).unwrap();\n        let writer_start = Instant::now();\n        writer.execute_batch(\"BEGIN IMMEDIATE; ROLLBACK;\").unwrap();\n        let writer_acquire_and_rollback_us = writer_start.elapsed().as_micros() as u64;\n        let after = db.reads().read_generation().unwrap();\n        assert_eq!(after, generation);\n        json!({\"single_read_pool_checkout_us\":read_checkout_us,\"read_statement_us\":read_statement_us,\n               \"read_rows\":count,\"writer_acquire_and_rollback_us\":writer_acquire_and_rollback_us,\n               \"writer_busy_timeout_ms\":100,\"generation_before\":generation,\"generation_after\":after,\n               \"generation_unchanged\":true})\n    })).await.expect(\"single read connection and writer stay available during provider wait\").unwrap()\n}\n",
+      "after": "async fn db_control(db: Arc<IndexDb>) -> Value {\n    let diagnostic_span = tracing::Span::current();\n    let diagnostic_dispatch = tracing::dispatcher::get_default(Clone::clone);\n    tokio::time::timeout(LOCAL_QUERY_BOUND, tokio::task::spawn_blocking(move || {\n        tracing::dispatcher::with_default(&diagnostic_dispatch, || diagnostic_span.in_scope(|| {\n        let generation = db.reads().read_generation().unwrap();\n        let checkout_start = Instant::now();\n        let reader = db.read_conn().unwrap();\n        let read_checkout_us = checkout_start.elapsed().as_micros() as u64;\n        let read_start = Instant::now();\n        let count: i64 = reader.query_row(\"SELECT COUNT(*) FROM document_manifest\", [], |row| row.get(0)).unwrap();\n        let read_statement_us = read_start.elapsed().as_micros() as u64;\n        drop(reader);\n        let writer = rusqlite::Connection::open(db.admin().db_path()).unwrap();\n        // Original independent production fairness control: no provider wait\n        // holds a writer transaction; the probe itself rolls back every time.\n        writer.busy_timeout(Duration::from_millis(100)).unwrap();\n        let writer_start = Instant::now();\n        writer.execute_batch(\"BEGIN IMMEDIATE; ROLLBACK;\").unwrap();\n        let writer_acquire_and_rollback_us = writer_start.elapsed().as_micros() as u64;\n        let after = db.reads().read_generation().unwrap();\n        assert_eq!(after, generation);\n        json!({\"single_read_pool_checkout_us\":read_checkout_us,\"read_statement_us\":read_statement_us,\n               \"read_rows\":count,\"writer_acquire_and_rollback_us\":writer_acquire_and_rollback_us,\n               \"writer_busy_timeout_ms\":100,\"generation_before\":generation,\"generation_after\":after,\n               \"generation_unchanged\":true})\n        }))\n    })).await.expect(\"single read connection and writer stay available during provider wait\").unwrap()\n}\n",
+      "expected_before_occurrences": 1,
+      "expected_after_occurrences": 1,
+      "before_identity": {
+        "bytes": 1666,
+        "sha256": "a110c5e7b14f7e5976af3b9ee97319d30d54541679bdfbb8f8d9a4815a3824d3"
+      },
+      "after_identity": {
+        "bytes": 1905,
+        "sha256": "dd1658561cfe38bfa3b42c34d7bca7a58c936f6970ea86abbeffc28f1f6fa3ea"
+      }
+    }
+  ],
+  "performed_pure_byte_checks": {
+    "all_three_inputs_complete_git_get_and_sha256": true,
+    "both_actual_formatted_helper_bodies_equal_original_preformatter_bodies": true,
+    "same_two_exact_replacements_on_a472_produce_entire_2da55": true,
+    "same_two_replacements_on_c255_produce_new_candidate": true,
+    "inverse_replacements_restore_entire_c255_bytes": true,
+    "new_candidate_complete_git_get_equal": true
+  },
+  "preserved": "All bytes outside the two helper replacements equal actual formatter c255 output. Original build/db_control timeout, call body, SQLite fairness probe, samples, assertions and output are unchanged. Only current Span/Dispatch capture and synchronous blocking-closure entry are added, with no guard across await.",
+  "execution_boundary": "New candidate has not been re-run through rustfmt, compiler, tests or product execution. Existing formatter result and all prior failed/static objects retain exact identities. Normal engineering cargo fmt --check and actual regression execution remain future gates.",
+  "publication": "Unreferenced blob only; no tree, commit, ref, workflow dispatch, Cargo or measurement was created/run by this follow-up."
+}

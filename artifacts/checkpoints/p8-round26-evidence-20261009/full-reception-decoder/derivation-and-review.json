@@ -1,0 +1,75 @@
+{
+  "schema": "p8-full15-BOM-prefix-static-review-v1",
+  "status": "accepted_scoped_transport_prefix_only",
+  "author": "/root/pr_audit",
+  "root_independent_review_pending": true,
+  "old": {
+    "blob": "dc62ec41cd36a266a007dd8b015f34dfaf8f9bdf",
+    "bytes": 9219,
+    "sha256": "582f898d4364df44336ce7d92394d37622373c4da94fb5a32f6c24dad5a498a7"
+  },
+  "new": {
+    "blob": "ce616b34f9186870d1cc7fdafc38f88b79701997",
+    "bytes": 9226,
+    "sha256": "90ea5f48fa3133ee1ba3cbd052f7ee6be94510f8037c3cc60119e5a436b525ed"
+  },
+  "replacement": {
+    "before": ".replace(/^\\d{4}-",
+    "after": ".replace(/^\\uFEFF?\\d{4}-",
+    "count": 1
+  },
+  "full_inverse_equal": true,
+  "unchanged": "Original15 names/order/schema/streaming/hash/base64/UTF8/strict JSON/all missing and duplicate frame checks unchanged. 4MiB per ordinary file/16MiB matrix/24MiB total/64MiB log/24620 frame limits unchanged.",
+  "reason": "Actual formatter joblog 37920790271/113787941943 inserted a BOM before an otherwise exact timestamp at start and midstream. Frame payload bytes themselves unchanged.",
+  "control_source": {
+    "blob": "ba7f3373621d776fd115d6258f29dde830249174",
+    "bytes": 2658,
+    "sha256": "ed4b72de85d09a47f7e7ee6cdbd2533b818446604c9a0d09dddca8a481325372"
+  },
+  "actual_small_controls": {
+    "schema": "p8-full15-BOM-boundary-controls-v1",
+    "cases": [
+      {
+        "name": "all15_clean_small_fixture_old_and_new_metadata_and_bytes_equal",
+        "passed": true
+      },
+      {
+        "name": "old_decoder_rejects_start_and_midstream_BOM",
+        "passed": true
+      },
+      {
+        "name": "single_BOM_before_timestamp_at_start_and_midstream_all15_bytes_equal",
+        "passed": true
+      },
+      {
+        "name": "double_prefix_BOM_rejected",
+        "passed": true
+      },
+      {
+        "name": "payload_BOM_rejected",
+        "passed": true
+      },
+      {
+        "name": "BOM_without_timestamp_rejected",
+        "passed": true
+      },
+      {
+        "name": "missing_final_end_rejected",
+        "passed": true
+      },
+      {
+        "name": "duplicate_final_end_rejected",
+        "passed": true
+      }
+    ],
+    "total": 8,
+    "all_passed": true,
+    "fixture_files": 15,
+    "fixture_frames": 41,
+    "fixture_raw_bytes": 33,
+    "fixture_log_bytes": 9852,
+    "scope": "Synthetic transport only; original large24MiB controls not rerun; no receiver/native/product/network execution."
+  },
+  "original_large_control_result": "2b4dccd2422a0a59a41fa1d944314d7802b7bdfa retained; not rerun",
+  "execution": "No actual full301 reception, product, Cargo, network or native operation; only JS byte parser control."
+}

@@ -1,0 +1,271 @@
+{
+  "schema": "p8-pr184-native-db21-independent-review-v1",
+  "verdict": "accepted_scoped_for_exact_original_G_three_DB_groups",
+  "reviewer": "pr_audit; independent of the three cc-db source changes and native execution runner",
+  "role_boundary": "I authored the later python_inventory.rs cfg candidate, which was not applied to this fixed-G execution and is not certified by these tests.",
+  "source": {
+    "head": "ae033369f015c416cd7995709c1853497773cf6a",
+    "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+    "status": ""
+  },
+  "product_manifest_sha256": "32a36f7a3a80789c686b807a324e5cf0b9b4c183d46b42f6373ae78b33164b53",
+  "execution": {
+    "owner": "root",
+    "reported_job_id": "wc_job_w6acnxdJr2fkkiet",
+    "reported_job_terminal": "completed/exit0",
+    "job_status_provenance": "Root executor notification; reviewer did not observe or execute the job. Independently read each actual command receipt and original stdout/stderr.",
+    "started_at_utc": "2026-10-09T11:56:19.504887+00:00",
+    "completed_at_utc": "2026-10-09T11:56:37.940384+00:00",
+    "platform": "darwin",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+    "sdk": {
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+      "libSystem_tbd": {
+        "bytes": 334178,
+        "sha256": "20cfce043f11a083e2eb6111efe3579919a8082fa4cc912a7bd839af2010ec57"
+      }
+    },
+    "environment_overrides": {
+      "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin",
+      "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/cargo-target",
+      "CARGO_TERM_COLOR": "never",
+      "CARGO_BUILD_JOBS": "4",
+      "RUSTFLAGS": "-D warnings",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk"
+    }
+  },
+  "expectation": {
+    "blob": "6d03c6ca6356e2d5cda2942bf2bbc5600b1dc76a",
+    "bytes": 9308,
+    "sha256": "756c9e65585a69288868b96a00bfbaff977da2be1ac956847161e1037cbdae70"
+  },
+  "actual_commands": [
+    {
+      "name": "direct-writer",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "direct_writer::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 186,
+      "exact_names": [
+        "direct_writer::tests::extract_index_stmts",
+        "direct_writer::tests::split_sql_handles_comments_and_strings",
+        "direct_writer::tests::drop_index_stmts_match_create_set",
+        "direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions",
+        "direct_writer::tests::direct_writer_write_fn_error_propagates",
+        "direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail",
+        "direct_writer::tests::direct_writer_creates_valid_db",
+        "direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes",
+        "direct_writer::tests::direct_writer_handles_fts_tables",
+        "direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input",
+        "direct_writer::tests::direct_writer_bulk_insert_perf"
+      ],
+      "stdout": {
+        "bytes": 989,
+        "sha256": "374b85e4856ae420f3a623850e4c6b2119286b5060f4650ccea761db842e216e"
+      },
+      "stderr": {
+        "bytes": 2267,
+        "sha256": "e7235fa18fc35442feaad66f09957e79bad4b09efd6024e2fe609800dd5b398a"
+      }
+    },
+    {
+      "name": "index-migrate",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "index_migrate::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 192,
+      "exact_names": [
+        "index_migrate::tests::old_version_returns_mismatch",
+        "index_migrate::tests::fresh_db_initializes_schema",
+        "index_migrate::tests::matching_version_returns_up_to_date",
+        "index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch",
+        "index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild"
+      ],
+      "stdout": {
+        "bytes": 478,
+        "sha256": "f16fbde5c2e739688996d84d04bdaeaa0c7e30e346a6f5cff1b2e38dac33c152"
+      },
+      "stderr": {
+        "bytes": 242,
+        "sha256": "1d93b4c5cce5f6a54bf43116797efddd4fdbd8767637d45b1acebb8096eacda8"
+      }
+    },
+    {
+      "name": "schema-guard",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--test",
+        "ci_schema_guard_contract",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "exact_names": [
+        "fresh_index_really_initializes_current_schema",
+        "nonadjacent_versions_still_require_rebuild",
+        "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+        "committed_v24_requires_rebuild_and_invalidates_legacy_rows",
+        "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade"
+      ],
+      "stdout": {
+        "bytes": 456,
+        "sha256": "fb7269d7721b85e94c99177c086b51fd2ab8afd1cda747714116113f46a1b19c"
+      },
+      "stderr": {
+        "bytes": 410,
+        "sha256": "b9545a1947c30bdc3a68fb578770266c105859fdb8d12e7f6c263823ee71d84b"
+      }
+    }
+  ],
+  "exact_population": {
+    "unique_methods": 21,
+    "passed": 21,
+    "failed": 0,
+    "ignored": 0,
+    "groups": [
+      11,
+      5,
+      5
+    ],
+    "all_expected_names_each_exactly_once": true,
+    "all_three_commands_exit_zero": true
+  },
+  "checks": [
+    "Read the complete fixed 8248-byte runner, complete 12552-byte terminal manifest, and all six original command streams with native read_files; every read returned has_more=false and no truncation.",
+    "Reconstructed the unique exact raw stream bytes using the declared byte length and SHA256; read_files line presentation may omit the final LF. All six bytes/SHA pairs matched. Root independently confirmed manifest length and SHA.",
+    "Every argv after the absolute cargo proxy exactly equals the prior 6d03 expectation. Only the three original cc-db targets run; no --exact prefix filter or added ignored tests.",
+    "Parsed every /^test (\\S+) \\.\\.\\. (\\S+)$/m line; required exact expected method set, unique names, all status ok and exactly one matching libtest summary per stdout.",
+    "Summaries were exactly 11/5/5 passed, zero failed/ignored/measured. Filtered out 186/192/0 belongs to other lib methods, not omitted expected methods.",
+    "Every command receipt has actual exit_code=0, timed_out=false, source_unchanged=true, identical before/after HEAD/tree and empty Git porcelain. Final source equals baseline.",
+    "Read both original failed execution manifests by complete Git blob and verified their byte/SHA bindings to this continuation. Their Clippy outcomes remain exit101; inherited first source-guard/historical/fmt records are byte-for-value unchanged.",
+    "Reviewed runner: fresh exclusive result directory; exact source before/after each command; unchanged SDK26 environment override only for these processes; original streams captured to exclusive files; failures stop later commands; no global developer setting changes.",
+    "Full Git create/readback of the runner, manifest and six streams equals the native bytes. Existing root custody deduplicates the same objects."
+  ],
+  "preserved_failures": [
+    {
+      "manifest": "9c18a1a55315b04076152d7284fb169f74eb9f41",
+      "bytes": 6970,
+      "sha256": "7004a27dbb49a212df1442b01935d432d2e017852c3d9d7e269de43dfc9ecb16",
+      "clippy_exit_code": 101,
+      "stderr": {
+        "blob": "77160f474303e2b9e978b8b83437b4b63347a388",
+        "bytes": 9240,
+        "sha256": "da33fcf53996ad817740ec2f36b921c19b30e3047ccc8103a61343888cbe730a"
+      },
+      "cause_scope": "Default macOS27 SDK libSystem.B.tbd contains arm64e.x1 unsupported by the installed linker; cc-db tests were not reached."
+    },
+    {
+      "manifest": "a8e0ae8b28d9a84ee987fbaf01afa6ed85406f13",
+      "bytes": 9406,
+      "sha256": "60ad0727c4e37da2e2a78d2374deab4c1a090adedc42d4208937102190605185",
+      "clippy_exit_code": 101,
+      "stderr": {
+        "blob": "1b2f0f4966b59d90413f958e842da88696586269",
+        "bytes": 5805,
+        "sha256": "a3c8075997b74b8f09036d5730c23d801b3f75d7d510c9e306209af8f84a3ff9"
+      },
+      "cause_scope": "SDK26.5 allowed linking to proceed; original whole-workspace Clippy then found five macOS cfg warnings in cc-index/python_inventory.rs. That command remains failed."
+    }
+  ],
+  "originals": [
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-runner.py",
+      "blob": "4e791cb8c93a4c4fd29b35f21ceb47c8ac7fe5ff",
+      "bytes": 8248,
+      "sha256": "af9f7f8b1fbb9e27301c5a7c3ca03a923103b1b225b082de7a69c74139eb4e42"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/manifest.json",
+      "blob": "7a3d16330ec96346a80f6ef1f35362f57bcf50d1",
+      "bytes": 12552,
+      "sha256": "54f598eb9a0b3a6c10276d7d703c44a0e76d0551bd720c1c12c9035a7b9e1f8b"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/direct-writer.stdout.log",
+      "blob": "d840a4988cca9ee5d5aa1c5ebb20e4d098c757de",
+      "bytes": 989,
+      "sha256": "374b85e4856ae420f3a623850e4c6b2119286b5060f4650ccea761db842e216e"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/direct-writer.stderr.log",
+      "blob": "b65ccf5f5ca32bf37f5d091262bf5c600d7e47e9",
+      "bytes": 2267,
+      "sha256": "e7235fa18fc35442feaad66f09957e79bad4b09efd6024e2fe609800dd5b398a"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/index-migrate.stdout.log",
+      "blob": "2aad0e8fe0533f16bb0862df0a4d06a4191fd38f",
+      "bytes": 478,
+      "sha256": "f16fbde5c2e739688996d84d04bdaeaa0c7e30e346a6f5cff1b2e38dac33c152"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/index-migrate.stderr.log",
+      "blob": "bbd64f1af9ad07db075be77a11982d7416367717",
+      "bytes": 242,
+      "sha256": "1d93b4c5cce5f6a54bf43116797efddd4fdbd8767637d45b1acebb8096eacda8"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/schema-guard.stdout.log",
+      "blob": "75027ffe03c251cca80982cfdfd806af6546c879",
+      "bytes": 456,
+      "sha256": "fb7269d7721b85e94c99177c086b51fd2ab8afd1cda747714116113f46a1b19c"
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-db21-results/schema-guard.stderr.log",
+      "blob": "0a6ccbc6f4b3f8e12e79be24735f5d42c941b2db",
+      "bytes": 410,
+      "sha256": "b9545a1947c30bdc3a68fb578770266c105859fdb8d12e7f6c263823ee71d84b"
+    }
+  ],
+  "common_custody": {
+    "blob": "619a9b587597be8b13949e5a4d03925dbab3d28d",
+    "bytes": 6907,
+    "sha256": "cbfbcbb0f88e5cc1fdcbf0dcf45f601027e0e9aaee47b1e88119262e36872b98"
+  },
+  "scope": [
+    "Confirms the exact original G ae033 three-group cc-db behavior regression on aarch64 macOS with Rust1.95 and SDK26.5. The later cfg candidate and newer main are not relabeled as tested.",
+    "Inherited sourceguard/historical/fmt passes remain their original executions; this report does not repeat their semantic audit.",
+    "Two failed Clippy attempts do not become passes. There is no whole-workspace lint or full CI success claim.",
+    "direct_writer_bulk_insert_perf is the inherited 10000-row integrity test, not a formal file-scale benchmark or performance certification.",
+    "No measurement, source mutation, job observation, Cargo execution, ref update or rerun by this reviewer. No original task is closed."
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

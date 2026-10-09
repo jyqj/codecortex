@@ -1,0 +1,350 @@
+{
+  "schema": "p8-pr184-native-two-original-guards-independent-reception-v1",
+  "reviewed_utc": "2026-10-09 11:48:44 UTC",
+  "reviewer": "/root/acceptance_audit",
+  "verdict": "accepted_scoped_actual_original_guards_and_fmt_only",
+  "source": {
+    "head": "ae033369f015c416cd7995709c1853497773cf6a",
+    "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+    "status": "",
+    "source_version": "p8-completion-source-20261009-v15",
+    "product_source": "09f9c9ced22d3b1b1bf3118e59d28030a1afc8dc",
+    "review_source": "5da3c193e71c05db1b882dde3389e982bd608d3f",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "complete_product_inputs": 1092
+  },
+  "original_execution": {
+    "project": "agent:device-50ff77e723614e43:codecortex-rust-2c9da139",
+    "session": "wc_sess_elC4fp-zntK_1UNM",
+    "job": "wc_job_8wrGEGyp5W4RyYB3",
+    "platform": "darwin",
+    "versions": {
+      "python": {
+        "argv": [
+          "/usr/bin/python3",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "Python 3.9.6\n",
+        "stderr": ""
+      },
+      "cargo": {
+        "argv": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+        "stderr": ""
+      },
+      "rustc": {
+        "argv": [
+          "/Users/jin/.cargo/bin/rustc",
+          "+1.95.0",
+          "-vV"
+        ],
+        "exit_code": 0,
+        "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+        "stderr": ""
+      },
+      "rustfmt": {
+        "argv": [
+          "/Users/jin/.cargo/bin/rustfmt",
+          "+1.95.0",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "rustfmt 1.9.0-stable (59807616e1 2026-04-14)\n",
+        "stderr": ""
+      },
+      "clippy": {
+        "argv": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "clippy",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "clippy 0.1.95 (59807616e1 2026-04-14)\n",
+        "stderr": ""
+      },
+      "git": {
+        "argv": [
+          "git",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stdout": "git version 2.50.1 (Apple Git-155)\n",
+        "stderr": ""
+      }
+    },
+    "started_at_utc": "2026-10-09T11:35:56.465448+00:00",
+    "completed_at_utc": "2026-10-09T11:46:00.067295+00:00",
+    "overall_status": "failed"
+  },
+  "independent_operations": {
+    "tool": "webcodex.read_files",
+    "native_execution_started": false,
+    "observe_job_called": false,
+    "product_or_cargo_run": false,
+    "guard_modified": false,
+    "git_refs_modified": false,
+    "full_manifest_lines": 233,
+    "all_seven_requested_files_success": true,
+    "read_result_truncated": false,
+    "method": "Read the full terminal manifest, both complete original guard stdout/stderr files, and both fmt streams. Independently match reconstructed raw stream bytes/SHA256 against the command receipts; inspect actual JSON outputs and fixed source-before/after."
+  },
+  "runner": {
+    "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-runner.py",
+    "bytes": 5717,
+    "sha256": "f6df1cce1d0bf39021e6124ac5c8aaa597630889342eb68f23b10e8527665aa2",
+    "independent_full_body_read": true,
+    "expected_identity_match": true,
+    "behavior": "Fixed original commands in order; writes complete streams to an owned external directory; source identity and clean status before/after each command; stops on first nonzero/timeout/source change; no guard or product modifications. Version checks are separate from validation outcomes."
+  },
+  "commands": [
+    {
+      "name": "source-guard",
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T11:35:56.494104+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T11:45:44.864811+00:00",
+      "elapsed_seconds": 588.402109875,
+      "stdout": {
+        "bytes": 572,
+        "sha256": "f17ce1f1b50dcd639738e92d62897ac2fc2d6dcfb88e8ca6997c2b69dbfee932"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_unchanged": true,
+      "stdout_body_independently_read": true,
+      "stderr_body_independently_read": true,
+      "scope": "Original complete streams read and hashes matched."
+    },
+    {
+      "name": "historical-integrations",
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/verify_historical_integrations_v2.py"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T11:45:44.952902+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T11:45:57.615716+00:00",
+      "elapsed_seconds": 12.662201957999969,
+      "stdout": {
+        "bytes": 3231,
+        "sha256": "1b7407394095d3987d77862d221591bc826de4b0a0cbdaaf0bdf648f633bc34c"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_unchanged": true,
+      "stdout_body_independently_read": true,
+      "stderr_body_independently_read": true,
+      "scope": "Original complete streams read and hashes matched."
+    },
+    {
+      "name": "fmt",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 300,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T11:45:57.695510+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T11:45:59.227752+00:00",
+      "elapsed_seconds": 1.5317502499999591,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_unchanged": true,
+      "stdout_body_independently_read": true,
+      "stderr_body_independently_read": true,
+      "scope": "Original complete streams read and hashes matched."
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 2400,
+      "source_before": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T11:45:59.291489+00:00",
+      "status": "failed",
+      "exit_code": 101,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T11:46:00.033185+00:00",
+      "elapsed_seconds": 0.7412836660000721,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 9240,
+        "sha256": "da33fcf53996ad817740ec2f36b921c19b30e3047ccc8103a61343888cbe730a"
+      },
+      "source_after": {
+        "head": "ae033369f015c416cd7995709c1853497773cf6a",
+        "tree": "1b393dc8582e0ad5193c671124bea94beb38e061",
+        "status": ""
+      },
+      "source_unchanged": true,
+      "stdout_body_independently_read": false,
+      "stderr_body_independently_read": false,
+      "scope": "Failure recorded from full manifest only; stderr cause investigation belongs to root."
+    }
+  ],
+  "raw_streams": [
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/source-guard.stdout.log",
+      "bytes": 572,
+      "sha256": "f17ce1f1b50dcd639738e92d62897ac2fc2d6dcfb88e8ca6997c2b69dbfee932",
+      "git_blob": "2b8aba9cfc773fa9e4500e6f735beb9bdf349709",
+      "native_read_revision": 7928562570315996,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/source-guard.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "native_read_revision": 7928562570315991,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/historical-integrations.stdout.log",
+      "bytes": 3231,
+      "sha256": "1b7407394095d3987d77862d221591bc826de4b0a0cbdaaf0bdf648f633bc34c",
+      "git_blob": "6fe3936c7d96abf5ac169511867bfc298aa61e79",
+      "native_read_revision": 7928562570315994,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/historical-integrations.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "native_read_revision": 7928562570315993,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/fmt.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "native_read_revision": 7928562570315999,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    },
+    {
+      "path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-results/fmt.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "native_read_revision": 7928562570315998,
+      "git_blob_note": "Computed content identity; this report alone does not claim a separate raw blob publication."
+    }
+  ],
+  "original_stdout_bodies": {
+    "source-guard": "{\"schema_version\": 10, \"source_version\": \"p8-completion-source-20261009-v15\", \"previous_source_version\": \"p8-oracle-compat-source-20261008-v14\", \"base_source\": \"7354db236c9d9850a75f31672697ae9eab44565e\", \"product_source\": \"09f9c9ced22d3b1b1bf3118e59d28030a1afc8dc\", \"review_source\": \"5da3c193e71c05db1b882dde3389e982bd608d3f\", \"scope\": \"independently_reviewed_source_and_validation_inputs\", \"runtime_and_quality_claims\": \"require_separate_execution_evidence\", \"status\": \"passed\", \"complete_inputs\": 1092, \"executed_previous_proof\": \"p8-oracle-compat-source-20261008-v14\"}\n",
+    "historical-integrations": "{\"status\": \"passed\", \"task_count\": 192, \"states\": {\"done\": 163, \"blocked\": 1, \"in_progress\": 16, \"todo\": 12}, \"task_sha256\": \"e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063\", \"views\": 4}\n{\"V19\": \"open\", \"current_plan_check\": \"passed\", \"current_task_sha256\": \"e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063\", \"e3_imported_files\": 58, \"e3_inputs\": 708, \"e3_integration\": \"88f2cf099c8b81f3acef485fd5ac9b01c63ce790\", \"e3_source\": \"e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207\", \"evidence_content_acceptance\": \"not_granted_by_this_verifier\", \"fault_runtime_tests\": \"not_run\", \"full_P7\": \"open\", \"legacy_files_unchanged\": 9, \"packing_evidence_files\": 246, \"packing_inputs\": 731, \"packing_integration\": \"37dd042eaa1209a86e0cafdcd92ae77e036e76f5\", \"packing_source\": \"90858afae647a513537bf118932a7ba5020ee98b\", \"quality_and_100k\": \"not_inherited\", \"schema_version\": 2, \"scope\": \"historical_integrity_and_current_task_definitions_only\", \"state_changes_since_baseline\": [{\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-011\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-012\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-013\"}, {\"baseline\": \"in_progress\", \"current\": \"done\", \"task_id\": \"P7-014\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-015\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-016\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-017\"}, {\"baseline\": \"todo\", \"current\": \"blocked\", \"task_id\": \"P7-018\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-019\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P7-020\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P8-001\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P8-002\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P8-003\"}, {\"baseline\": \"todo\", \"current\": \"done\", \"task_id\": \"P8-004\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-005\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-006\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-007\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-008\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-009\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-010\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-011\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-012\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-013\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-014\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-015\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-016\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-017\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-018\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-019\"}, {\"baseline\": \"todo\", \"current\": \"in_progress\", \"task_id\": \"P8-020\"}], \"status\": \"passed\", \"task_count\": 192, \"task_definition_base\": \"6d02d77f018a5965a6f289b0b43558ed4b9f8322\", \"task_definition_base_sha256\": \"cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc\", \"verifier_version\": \"historical-integrations-v2\"}\n"
+  },
+  "transport_line_boundary": "read_files strips the last physical LF. For each nonempty stdout, exactly one terminal LF reconstructs the original manifest byte count and SHA256; empty streams remain empty. No JSON reserialization is used for stream hashes.",
+  "verified_scopes": {
+    "v15": "Original CLI actually exit0; current source and validation inputs accepted; original v14 historical proof reported executed. Runtime and quality claims explicitly require separate execution evidence.",
+    "historical": "Original CLI actually exit0; historical integrity and current task definitions only. Packing inputs731/evidence246; E3 inputs708/imported58; legacy9. Original output leaves full_P7 and V19 open, runtime faults not_run, quality_and_100k not_inherited.",
+    "fmt": "Original cargo +1.95.0 fmt --all -- --check actually exit0; empty stdout/stderr and exact clean G before/after.",
+    "sparse_checkout": "Root preserved full source/validation/docs/root files and expanded the exact288 artifact inputs. Original guards ran unchanged; no GIT_NO_LAZY_FETCH relaxation was introduced."
+  },
+  "remaining_commands_not_run": [
+    "direct-writer",
+    "index-migrate",
+    "schema-guard"
+  ],
+  "preserved_distinctions": [
+    "Earlier empty-index preflight failed before zero validation commands; that record is not replaced by this actual run.",
+    "This overall run failed at Clippy exit101; there is no all-seven-command or DB21 pass claim.",
+    "No missing historical blob error was observed in these two successful original guard commands; no hydration or rerun was performed by this reviewer.",
+    "No scale, runtime, release, G8 or TODO completion inferred."
+  ],
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

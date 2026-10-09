@@ -1,0 +1,140 @@
+{
+  "schema": "p8-candidate-rustfmt-BOM-boundary-controls-v1",
+  "old_small_controls": {
+    "schema": "p8-candidate-rustfmt-decoder-small-controls-v1",
+    "scope": "synthetic transport only; no rustfmt, Cargo, tests or product execution",
+    "tests": 15,
+    "cases": [
+      {
+        "name": "six_files_unicode_multichunk_empty_stderr_exact_bytes",
+        "status": "passed"
+      },
+      {
+        "name": "timestamps_and_unrelated_log_are_allowed",
+        "status": "passed"
+      },
+      {
+        "name": "failed_receipt_decodes_without_claiming_success",
+        "status": "passed"
+      },
+      {
+        "name": "missing_chunk_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "duplicate_complete_file_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "wrong_file_order_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "wrong_schema_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "changed_chunk_hash_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "end_header_mismatch_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "duplicate_frame_keys_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "per_file_4m_plus_one_rejected_before_allocation",
+        "status": "passed"
+      },
+      {
+        "name": "fractional_header_count_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "invalid_utf8_rejected_with_valid_transport_hashes",
+        "status": "passed"
+      },
+      {
+        "name": "noncanonical_base64_padding_rejected",
+        "status": "passed"
+      },
+      {
+        "name": "invalid_json_body_rejected_with_valid_transport_hashes",
+        "status": "passed"
+      }
+    ],
+    "all_passed": true,
+    "fixture_raw_bytes": 2315,
+    "fixture_log_bytes": 6834,
+    "fixture_frames": 19,
+    "unexecuted_capacity_boundaries": [
+      "12MiB cumulative maximum",
+      "32MiB log maximum",
+      "12305 maximum frame population",
+      "4MiB positive maximum"
+    ]
+  },
+  "additional_cases": [
+    {
+      "name": "single_BOM_before_timestamps_at_start_and_midstream_preserves_all_six_bodies",
+      "passed": true
+    },
+    {
+      "name": "double_BOM_before_timestamp_rejected",
+      "passed": true
+    },
+    {
+      "name": "BOM_in_JSON_payload_rejected",
+      "passed": true
+    },
+    {
+      "name": "BOM_without_timestamp_rejected",
+      "passed": true
+    }
+  ],
+  "actual_real_frame_decode": {
+    "frames": 1859,
+    "files": [
+      {
+        "name": "formatted-sources.json",
+        "bytes": 1188371,
+        "sha256": "35300872e2833c1a5f0cd143975495e04c30e39b3e6c837cd8a45d5d5e7d4f8c",
+        "count": 1161
+      },
+      {
+        "name": "commands.json",
+        "bytes": 685314,
+        "sha256": "61b87801414a96c69212541fd09c6538ca86727de95b34422104467d520f9592",
+        "count": 670
+      },
+      {
+        "name": "stderr.log",
+        "bytes": 206,
+        "sha256": "8cdcd6a9b54d04207665b8a3bb18c918a82117e89a827c6ac0b49608817462b3",
+        "count": 1
+      },
+      {
+        "name": "source-before.json",
+        "bytes": 6116,
+        "sha256": "698d47b95ba57545099f31377566b40a3c8fac99f0e392bf2c3374bd0991b66b",
+        "count": 6
+      },
+      {
+        "name": "source-after.json",
+        "bytes": 6116,
+        "sha256": "698d47b95ba57545099f31377566b40a3c8fac99f0e392bf2c3374bd0991b66b",
+        "count": 6
+      },
+      {
+        "name": "receipt.json",
+        "bytes": 2471,
+        "sha256": "bff5602544d37ee83ac18ec147d6243df4e78c478b928546c2c57dd483d91de6",
+        "count": 3
+      }
+    ]
+  },
+  "scope": "transport only; no formatter, Cargo, test or product execution"
+}

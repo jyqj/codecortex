@@ -1,0 +1,116 @@
+{
+  "cases": [
+    {
+      "actual_accept": true,
+      "detail": null,
+      "expected_accept": true,
+      "name": "complete_git_tree_with_directory_sort"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Git tree contents do not match reported SHA",
+      "expected_accept": false,
+      "name": "changed_oid_without_changed_tree_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "truncated_capture_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "duplicate_entry_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Git tree contents do not match reported SHA",
+      "expected_accept": false,
+      "name": "changed_mode_rejected"
+    },
+    {
+      "actual_accept": true,
+      "detail": null,
+      "expected_accept": true,
+      "name": "existing_path_exact_oid"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Missing published path: a/part-002",
+      "expected_accept": false,
+      "name": "missing_part_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Missing complete ancestor tree: 6b0a29fb3f165bc4341889cf43193cb16ad71008",
+      "expected_accept": false,
+      "name": "missing_ancestor_capture_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "parent_traversal_rejected"
+    },
+    {
+      "actual_accept": true,
+      "detail": null,
+      "expected_accept": true,
+      "name": "complete_recursive_response_reconstructs_children"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Git tree contents do not match reported SHA",
+      "expected_accept": false,
+      "name": "recursive_missing_part_rejected_by_child_oid"
+    },
+    {
+      "actual_accept": true,
+      "detail": null,
+      "expected_accept": true,
+      "name": "exact_commit_ref_root_binding"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "ref_mismatch_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "root_mismatch_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "Require recorded normal ref update",
+      "expected_accept": false,
+      "name": "non_normal_update_rejected"
+    },
+    {
+      "actual_accept": false,
+      "detail": "",
+      "expected_accept": false,
+      "name": "wrong_branch_rejected"
+    }
+  ],
+  "control_source": {
+    "bytes": 4319,
+    "git_blob_sha1": "ca0bcd4ed01930fbac83a4a97b91fdc2aeb6c4a6",
+    "path": "/workspace/scratch/a217aaae3bde/checkpoint-round19-prep/benchmark-publication-binding/check_binding_controls.py",
+    "sha256": "8da7c5329b02b9b63249b45d7c2269e5ffcb520a91654b4e1bf8e87969b9bfa0"
+  },
+  "helper": {
+    "bytes": 14916,
+    "git_blob_sha1": "3d42f4ef0d8a2d683b42e769f1906acdd146557a",
+    "path": "/workspace/scratch/a217aaae3bde/checkpoint-round19-prep/benchmark-publication-binding/prepare_publication_binding.py",
+    "sha256": "b362f5626ac518634fbcec4d329bebfb91be5bcb98fe4e90f58d619eb4e1b7aa"
+  },
+  "native_or_workload_or_original_zip_replay": false,
+  "passed": 16,
+  "publication_proof_created": false,
+  "schema": "synthetic-publication-binding-metadata-controls-v1"
+}

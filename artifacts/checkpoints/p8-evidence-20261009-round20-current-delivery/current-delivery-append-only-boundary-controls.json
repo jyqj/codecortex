@@ -1,0 +1,143 @@
+{
+  "schema": "synthetic-current-delivery-append-only-boundary-controls-v1",
+  "helper_path": "/workspace/scratch/a217aaae3bde/checkpoint-round19-prep/benchmark-publication-binding/prepare_current_delivery.py",
+  "helper_sha256": "6777b9bbad4817105fd3859fadf891a5bf75470e9c07fd3af847eda1f95b8b66",
+  "actual_original_assert_ast": [
+    "assert parent_entry['type'] == 'tree' and parent_entry['mode'] == '040000'",
+    "assert parent_entry['sha'] in trees, 'Missing complete target directory capture'",
+    "assert not {'CURRENT-DELIVERY.json', 'CURRENT-DELIVERY.md'} & set(trees[parent_entry['sha']]), 'Current status already exists; append a versioned successor instead'"
+  ],
+  "controls": [
+    {
+      "name": "empty_target",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {}
+      },
+      "expected_accept": true,
+      "actual_accept": true,
+      "assertion_message": null,
+      "passed": true
+    },
+    {
+      "name": "existing_other_files",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {
+          "README.md": {},
+          "PUBLICATION-GUARD.json": {}
+        }
+      },
+      "expected_accept": true,
+      "actual_accept": true,
+      "assertion_message": null,
+      "passed": true
+    },
+    {
+      "name": "blob_target",
+      "parent_entry": {
+        "type": "blob",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {}
+      },
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "",
+      "passed": true
+    },
+    {
+      "name": "wrong_mode",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "100644",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {}
+      },
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "",
+      "passed": true
+    },
+    {
+      "name": "uncaptured_directory",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {},
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "Missing complete target directory capture",
+      "passed": true
+    },
+    {
+      "name": "existing_json",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {
+          "CURRENT-DELIVERY.json": {}
+        }
+      },
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "Current status already exists; append a versioned successor instead",
+      "passed": true
+    },
+    {
+      "name": "existing_md",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {
+          "CURRENT-DELIVERY.md": {}
+        }
+      },
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "Current status already exists; append a versioned successor instead",
+      "passed": true
+    },
+    {
+      "name": "existing_both",
+      "parent_entry": {
+        "type": "tree",
+        "mode": "040000",
+        "sha": "T"
+      },
+      "trees": {
+        "T": {
+          "CURRENT-DELIVERY.json": {},
+          "CURRENT-DELIVERY.md": {}
+        }
+      },
+      "expected_accept": false,
+      "actual_accept": false,
+      "assertion_message": "Current status already exists; append a versioned successor instead",
+      "passed": true
+    }
+  ],
+  "scope": "Execute the three exact source Assert AST statements only. Not full prepare, source/native validation, original ZIP replay, public ref verification or delivery generation.",
+  "case_count": 8,
+  "passed": true
+}

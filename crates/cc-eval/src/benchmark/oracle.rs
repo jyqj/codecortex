@@ -236,7 +236,10 @@ impl<'a> RowProjection<'a> {
             }
             let borrowed = BorrowedProjectedRow {
                 cols: self.cols,
-                order: self.serialization_order.as_deref().expect("layout initialized"),
+                order: self
+                    .serialization_order
+                    .as_deref()
+                    .expect("layout initialized"),
                 cells: &cells,
             };
             serde_json::to_string(&borrowed).map_err(Into::into)

@@ -451,29 +451,40 @@ mod tests {
         rejected.response = None;
         let mut rows = vec![row(0), failed, canceled, rejected];
         let report = replay(&plan(4), &rows).unwrap();
-        let expected = |n, p50, p95| json!({
-            "n": n, "p50_ns": p50, "p95_ns": p95, "p99_ns": p95,
-            "maximum_ns": p95,
-            "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
-            "tail_stability_claim": false,
-        });
-        assert_eq!(report["legacy_ns"], json!({
-            "latency": expected(4, 1000, 9000),
-            "latency_by_operation": {
-                "read": expected(2, 999, 1001),
-                "build": expected(2, 1000, 9000),
-            },
-        }));
+        let expected = |n, p50, p95| {
+            json!({
+                "n": n, "p50_ns": p50, "p95_ns": p95, "p99_ns": p95,
+                "maximum_ns": p95,
+                "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+                "tail_stability_claim": false,
+            })
+        };
+        assert_eq!(
+            report["legacy_ns"],
+            json!({
+                "latency": expected(4, 1000, 9000),
+                "latency_by_operation": {
+                    "read": expected(2, 999, 1001),
+                    "build": expected(2, 1000, 9000),
+                },
+            })
+        );
         assert_eq!(report["exit_code"], 1);
-        assert_eq!(report["outcomes"], json!({
-            "success": 1, "error": 1, "canceled": 1, "queue_rejected": 1,
-        }));
+        assert_eq!(
+            report["outcomes"],
+            json!({
+                "success": 1, "error": 1, "canceled": 1, "queue_rejected": 1,
+            })
+        );
         // The existing microsecond population and truncation stay unchanged.
         let reads = &report["by_operation"][0];
-        assert_eq!(reads["all_attempt_offered_to_terminal"]["distribution"], json!({
-            "samples": 2, "p50_us": 0, "p95_us": 1, "max_us": 1,
-            "tail_claim": "insufficient_for_tail_claim",
-        }));
+        assert_eq!(
+            reads["all_attempt_offered_to_terminal"]["distribution"],
+            json!({
+                "samples": 2, "p50_us": 0, "p95_us": 1, "max_us": 1,
+                "tail_claim": "insufficient_for_tail_claim",
+            })
+        );
         assert_eq!(reads["successful_samples"], 0);
         assert_eq!(reads["non_success_samples"], 2);
         assert!(reads["successful_offered_to_terminal"]["p99_ci"].is_null());
@@ -484,12 +495,15 @@ mod tests {
     #[test]
     fn legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan() {
         let report = replay(&plan(1), &[row(0)]).unwrap();
-        assert_eq!(report["legacy_ns"]["latency_by_operation"]["read"], json!({
-            "n": 0, "p50_ns": null, "p95_ns": null, "p99_ns": null,
-            "maximum_ns": null,
-            "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
-            "tail_stability_claim": false,
-        }));
+        assert_eq!(
+            report["legacy_ns"]["latency_by_operation"]["read"],
+            json!({
+                "n": 0, "p50_ns": null, "p95_ns": null, "p99_ns": null,
+                "maximum_ns": null,
+                "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+                "tail_stability_claim": false,
+            })
+        );
         assert_eq!(report["legacy_ns"]["latency"]["n"], 1);
         assert!(replay(&plan(0), &[]).is_err());
     }

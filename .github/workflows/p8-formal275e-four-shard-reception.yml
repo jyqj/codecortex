@@ -1,0 +1,85 @@
+name: P8 fixed275e original four-shard reception
+
+on:
+  push:
+    branches: [task/p8-formal275e-four-shard-reception-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONOPTIMIZE: "0"
+  PYTHONUTF8: "1"
+
+jobs:
+  receive_originals:
+    if: github.repository == 'jyqj/codecortex' && github.event_name == 'push' && github.ref == 'refs/heads/task/p8-formal275e-four-shard-reception-20261009' && github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout immutable receiver
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-round20-evidence-20261009/consumer/consumer.py
+            /artifacts/checkpoints/p8-round21-formal275e-four-shard-reception-20261009/
+            /.github/workflows/p8-formal275e-four-shard-reception.yml
+      - name: Checkout the exact original measured source for complete1089 validation
+        uses: actions/checkout@v4
+        with:
+          ref: 275e8799d4947d297329073eaa3ca675d3fd0777
+          path: source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Cargo.toml
+            /Cargo.lock
+            /crates/
+            /scripts/p8_scale_matrix.py
+            /scripts/p7_build_identity.py
+            /scripts/p8_runner_capacity.py
+            /.github/workflows/p8-scale.yml
+      - name: Receive only the registered ten original ZIPs with full API populations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          P8_RECEPTION_MODE: prepare
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, os, pathlib, runpy, sys
+          path = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "controller/artifacts/checkpoints/p8-round21-formal275e-four-shard-reception-20261009/replay.py"
+          raw = path.read_bytes()
+          if sys.flags.optimize or len(raw) != 19657 or hashlib.sha256(raw).hexdigest() != "c3f1cf066fd400443a5801c5dfa10b87974618d799a0305f902de15420edc35b":
+              raise SystemExit("fixed receiver mismatch")
+          sys.argv = [str(path), os.environ["P8_RECEPTION_MODE"]]
+          runpy.run_path(str(path), run_name="__main__")
+          PY
+      - name: Validate originals without credentials or network operations
+        env:
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
+          ACTIONS_RUNTIME_TOKEN: ""
+          P8_RECEPTION_MODE: replay
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, os, pathlib, runpy, sys
+          path = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "controller/artifacts/checkpoints/p8-round21-formal275e-four-shard-reception-20261009/replay.py"
+          raw = path.read_bytes()
+          if sys.flags.optimize or len(raw) != 19657 or hashlib.sha256(raw).hexdigest() != "c3f1cf066fd400443a5801c5dfa10b87974618d799a0305f902de15420edc35b":
+              raise SystemExit("fixed receiver mismatch")
+          sys.argv = [str(path), os.environ["P8_RECEPTION_MODE"]]
+          runpy.run_path(str(path), run_name="__main__")
+          PY
+      - name: Preserve all original ZIPs, expanded members and review outputs including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-formal275e-four-shard-reception-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-formal275e-four-shard-reception-${{ github.run_id }}
+          if-no-files-found: error
+          include-hidden-files: true

@@ -84,11 +84,9 @@ pub(in crate::resolver) fn dotted_prefix_match(a: &str, b: &str) -> bool {
 /// two file paths. Extensions are stripped first so that `a.py` vs `a.ts`
 /// in the same directory still count as co-located.
 pub(in crate::resolver) fn common_path_prefix_len(a: &str, b: &str) -> usize {
-    let seg_a: Vec<&str> = strip_ext(a).split('/').collect();
-    let seg_b: Vec<&str> = strip_ext(b).split('/').collect();
-    seg_a
-        .iter()
-        .zip(seg_b.iter())
+    strip_ext(a)
+        .split('/')
+        .zip(strip_ext(b).split('/'))
         .take_while(|(x, y)| x == y)
         .count()
 }
@@ -150,18 +148,22 @@ pub(in crate::resolver) fn import_distance_candidates(
     candidates: &[usize],
     file: &str,
 ) -> Vec<usize> {
-    let max = candidates
-        .iter()
-        .map(|&i| common_path_prefix_len(&entries[i].file_path, file))
-        .max();
-    stable_candidates(
-        entries,
-        &candidates
-            .iter()
-            .copied()
-            .filter(|&i| Some(common_path_prefix_len(&entries[i].file_path, file)) == max)
-            .collect::<Vec<_>>(),
-    )
+    let mut best = Vec::new();
+    let mut longest = None;
+    for &idx in candidates {
+        let distance = common_path_prefix_len(&entries[idx].file_path, file);
+        match longest {
+            Some(max) if distance < max => {}
+            Some(max) if distance == max => best.push(idx),
+            _ => {
+                longest = Some(distance);
+                best.clear();
+                best.push(idx);
+            }
+        }
+    }
+    // Preserve the original stable ordering, identity deduplication and ties.
+    stable_candidates(entries, &best)
 }
 
 // ---------------------------------------------------------------------------
@@ -355,3 +357,115 @@ mod type_atom_regression_tests {
 #[cfg(test)]
 #[path = "type_atom_identifier_tests.rs"]
 mod type_atom_identifier_tests;
+
+#[cfg(test)]
+mod import_distance_regression_tests {
+    use super::*;
+
+    fn legacy_prefix(a: &str, b: &str) -> usize {
+        let a: Vec<_> = strip_ext(a).split('/').collect();
+        let b: Vec<_> = strip_ext(b).split('/').collect();
+        a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
+    }
+
+    fn legacy_candidates(
+        entries: &[CatalogEntry],
+        candidates: &[usize],
+        file: &str,
+    ) -> Vec<usize> {
+        let max = candidates
+            .iter()
+            .map(|&idx| legacy_prefix(&entries[idx].file_path, file))
+            .max();
+        stable_candidates(
+            entries,
+            &candidates
+                .iter()
+                .copied()
+                .filter(|&idx| Some(legacy_prefix(&entries[idx].file_path, file)) == max)
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    fn entry(file: &str, id: &str, qname: &str) -> CatalogEntry {
+        CatalogEntry {
+            symbol_id: id.to_string(),
+            symbol_uid: Some(format!("uid:{id}")),
+            name: id.to_string(),
+            file_path: file.to_string(),
+            kind: SymbolKind::Function,
+            container: None,
+            qname: Some(qname.to_string()),
+            is_default_export: false,
+            start_line: 1,
+            end_line: 1,
+            scope_id: None,
+        }
+    }
+
+    #[test]
+    fn streamed_prefix_matches_original_path_segment_semantics() {
+        let paths = [
+            "",
+            "/",
+            "a.py",
+            "a.ts",
+            "a.tsx",
+            "a.py.ts",
+            "a.unknown",
+            "a.PY",
+            "src/a.py",
+            "src/a/b.rs",
+            "src//a.py",
+            "./src/a.py",
+            "/src/a.py",
+            "src/a/",
+            "数据/类型.py",
+            "src\\a.py",
+        ];
+        for a in paths {
+            for b in paths {
+                assert_eq!(
+                    common_path_prefix_len(a, b),
+                    legacy_prefix(a, b),
+                    "{a:?} {b:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn one_pass_distance_preserves_original_ties_duplicates_and_order() {
+        let entries = [
+            entry("src/pkg/a.py", "a", "A"),
+            entry("src/pkg/b.ts", "b", "B"),
+            entry("src/other/c.rs", "c", "C"),
+            entry("elsewhere/d.py", "d", "D"),
+            entry("src/pkg/a.py", "a", "A"),
+            entry("src/pkg/a.py", "a", "OtherQName"),
+        ];
+        for file in ["", "src/pkg/query.py", "src/pkg/a.ts", "elsewhere/x.py", "/"] {
+            // Exhaust all input sequences of length 0..=4, including repeated
+            // indices, different identities, duplicate rows and tied distances.
+            for len in 0..=4 {
+                for mut code in 0..entries.len().pow(len) {
+                    let mut candidates = Vec::new();
+                    for _ in 0..len {
+                        candidates.push(code % entries.len());
+                        code /= entries.len();
+                    }
+                    let expected = legacy_candidates(&entries, &candidates, file);
+                    assert_eq!(
+                        import_distance_candidates(&entries, &candidates, file),
+                        expected,
+                        "{file:?} {candidates:?}"
+                    );
+                    assert_eq!(
+                        best_by_import_distance(&entries, &candidates, file),
+                        (expected.len() == 1).then(|| expected[0])
+                    );
+                }
+            }
+        }
+    }
+}

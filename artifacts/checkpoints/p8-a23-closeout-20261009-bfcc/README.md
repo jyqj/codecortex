@@ -19,7 +19,7 @@ The CI merge checkout is recorded as actually observed. Official Git commit meta
 
 | Original acceptance area | Verified evidence at this snapshot | Still needed for original task closure |
 | --- | --- | --- |
-| P8-005 / 006 scale and fanout | Original 1k, 5k and 10k index-0 shards: 3/150 shards, 32/1500 samples independently reviewed; five original capacity receipts | Original 50k/100k preflight, remaining 145 shards, strict complete aggregate and hard dependency closure |
+| P8-005 / 006 scale and fanout | Original 1k, 5k, 10k and 50k index-0 shards: 4/150 shards, 41/1500 samples independently accepted, including exact original Linux validate_build/validate_shard replay; five original capacity receipts | Original 100k preflight, remaining 145 shards, strict complete aggregate and hard dependency closure |
 | P8-007 mixed load / backfill | Four original C1/4/8/16 jobs, 900/900 operations each; actual peaks 1/4/7/12; 768 fake-provider backfill requests; complete raw/stdio/statistics/parity review | P8-005/006 dependency closure |
 | P8-008 / 009 lifecycle / resources | 1230 original samples, 1261 resource snapshots, physical/logical storage attribution and null/unknown cost boundaries independently checked | Original prior-task dependency closure |
 | P8-010 soak | Original one-hour workload began at 02:48:58 UTC on 2026-10-09 | Actual terminal run, all offered operations, original resource trends, four completion-time cache windows and unrepaired final parity |
@@ -40,9 +40,21 @@ Other original ZIPs remain identified by their official artifact IDs, names, siz
 
 ## PR and queue management
 
-PR #167 is the frozen measured candidate tracked by this checkpoint. PR #168 is a separate later source under its own review and execution; none of its results are credited here. Exact scope inventories for #160 and #161 are retained under `round4-reviewed-progress/review-pr/`; matching engineering files do not imply matching historical evidence or new a23 measurement credit. Their old branches and original records are retained pending final disposition.
+PR #167 is the frozen measured candidate tracked by this checkpoint. PR #168 (G1) and its separate successor #169 (G2) use their own frozen sources; none of their results are credited here. PR #161 later advanced to 34aa and includes new product changes; the earlier e95 adoption inventory is not reused for that new head. Exact scope inventories for #160 and #161 are retained under `round4-reviewed-progress/review-pr/`; matching engineering files do not imply matching historical evidence or new a23 measurement credit. Their old branches and original records are retained pending final disposition.
 
 The two already-invalid historical scale studies G (`37830173594`) and D0 (`37854240827`), plus the old e95 runtime (`37859755918`), were administratively stopped to release queue capacity. This was a resource-management decision outside their measurement protocols. Original failures and final aggregate rejections remain failures; active interrupted work is cancelled, queued work was not run, and no primary was replaced or retried. Before/after API captures and original aggregate logs are retained in this checkpoint.
+
+## Round 4 completion and Round 5 start
+
+Round 4 newly completed **zero original TODOs**: the canonical ledger remains **163 done / 29 remaining**. The original 50k index-zero shard succeeded with native wall time 4,214,047 ms. Its nine original samples and all four completed shards passed unchanged original Linux validation. The final original 100k preflight, remaining 145 shards and complete aggregate are still required; the original one-hour soak also awaits its terminal evidence.
+
+The [Round 4 completion manifest](round4-completion-reviewed/copied-audit-manifest.json) preserves the exact new inputs. The [Linux original-function replay summary](round4-completion-reviewed/review-scale/linux-native-replay-summary.json) includes fixed official Python image manifest/config provenance, network-disabled execution, read-only source/original mounts, original native BLAKE3 calls, before/after byte checks, and both earlier environment-observation errors. These replays create no new primary measurements. The [original 50k ZIP](round4-completion-reviewed/raw/11593548201/original.zip) is 2,964,759 bytes with SHA-256 d0163f3421ea9abf3d544edad56a9386aec2db55fef0aa11155e30e10a27b06d.
+
+The [current PR management record](round4-completion-reviewed/review-pr/round4-pr-management-observation.json) captures 35 open PRs and the exact heads observed in this round. The [30 historical PR inventory](round4-completion-reviewed/review-pr/historical-pr-main-adoption-inventory-v1.json) compares original PR deltas against main by exact mode/blob. None has all non-archive paths identical at main; this inventory is not automatic semantic closure approval, and their branches remain retained. The [new PR161 delta](round4-completion-reviewed/review-runtime/pr161-e95-to34aa-delta-review.json) separates its 859 archival, eight crates and two scripts changes from the earlier e95 source.
+
+The [PR168/169 coordination review](round4-completion-reviewed/review-pr/pr168-readonly-coordination-review.json) preserves G1's actual E0282 failure, G1 Python50's bounded success, P2's one-line type fix and G2's exact source identity. It identifies three a23 validation protections absent from G1/P2/G2 and links their exact blobs and original controls. Follow-up comments are recorded in [#168](https://github.com/jyqj/codecortex/pull/168#issuecomment-6073667411) and [#169](https://github.com/jyqj/codecortex/pull/169#issuecomment-6073711634); the existing frozen heads and original runs were not changed.
+
+Round 5 continues actual scale/soak acceptance while preparing a minimal, separately reviewed candidate that retains a23 validation protections and incorporates the bounded snapshot batching product changes. Any new candidate keeps an independent source chain and measurement identity. The [P8-007 through P8-010 evidence append draft](round4-completion-reviewed/review-runtime/p8-007-010-evidence-append-draft.json) remains a draft with original dependencies and missing soak terminal fields explicit; it is not a task state change.
 
 ## Completion and rollback
 

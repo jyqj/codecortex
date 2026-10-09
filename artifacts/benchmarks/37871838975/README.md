@@ -1,3 +1,0 @@
-# Lifecycle workflow run37871838975
-
-The lifecycle/ directory contains eight exact small JSON members from original artifact11591607348, executed at E=a23bb72d3c954f385b99fe81ce9189885c208557. It is not a replacement for the full original ZIP. Its original plan/receipt/report and native build identities are unchanged. See ../37871838957/delivery-manifest.json and ../37871838957/PUBLICATION-GUARD.json for all-part identity and current pending publication status. The complete original ZIP includes raw fixtures,1200 query witnesses,process logs,source,SQLite/WAL/SHM and both receipt-bound executables. Restore complete ZIP to a fresh directory before the original verify --output-dir <restored>/measurement. No native operation or acceptance was rerun for this delivery.

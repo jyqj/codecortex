@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09T00:01:32.103599+00:00",
+  "status": "accepted_scoped_complete_historical_v2_read_closure_and_exact_path_projection_plan",
+  "original_closure": {
+    "path": "/workspace/scratch/a217aaae3bde/prospective-combined-tree-prep/historical-v2-complete-read-closure.json",
+    "sha256": "79dc86d4145c9156cae20c0462c954726aae7feb3bd5280512e8e3afb1065f85"
+  },
+  "enumerator_source": {
+    "path": "/workspace/scratch/a217aaae3bde/prospective-combined-tree-prep/enumerate_historical_v2_inputs.py",
+    "sha256": "8b5f4884ec92d9e34ec40d6230f7a25b114333f4b1aedc1a717b0174a35ed738"
+  },
+  "prospective_tree": "aa6977a0c4d609ac4409889446a28d0bbfa8c7bf",
+  "provisional_parents": [
+    "29682890c89511dd6f477a6bf48bd969aa1537af",
+    "f88a41e6af46ffe67b76f420f1d6b4ef21155946"
+  ],
+  "method": "Independently derived all current-file and fixed Git (ref,path) read sets from original v2 source, exact four original manifests and normal plan CLI source; compared complete sets against proposed closure. Did not execute v2 or its plan subprocess.",
+  "checks": {
+    "current_file_count": 323,
+    "all_current_paths_modes_sizes_SHA256_Git_blob_SHA1_match_actual_prospective_tree": true,
+    "unique_git_blob_reads": 2492,
+    "all_fixed_git_reads_resolve_to_real_blobs": true,
+    "fixed_provenance_commits": 17,
+    "all_fixed_refs_locally_present_commits": true,
+    "three_historical_crates_Cargo_inventory_reads_match": true,
+    "new_paths": 825,
+    "new_paths_all_checkpoint_additions_against296": true,
+    "new_paths_intersection_with_current_read_set": [],
+    "all_nonartifact_toplevel_entries_same296": true
+  },
+  "forbidden_direct_tree_check": {
+    "path": "artifacts/checkpoints/localwidth4-100k-paired-20261003",
+    "parent_tree_path": "artifacts/checkpoints",
+    "direct_entry_count": 189,
+    "direct_all_modes_types_raw_sha256": "48cc6c64dcb6199c1bce5911e293c3f310174a0dee603406123043f76a69d085",
+    "forbidden_leaf_absent_from_all_direct_entries": true,
+    "exact_path_git_ls_tree_empty": true,
+    "includes_tree_emptytree_symlink_modes": true,
+    "note": "Supplements the first enumerator record whose absence assertion used flattened blob paths; no original record or guard was rewritten."
+  },
+  "execution_preconditions": [
+    "Wait for fresh actualmain afterPR165merge and verify actualcombined tree applicability.",
+    "Use the copied original script inside the declared projection as python -B scripts/verify_historical_integrations_v2.py; __file__/ROOT andcwd must both identify the projection.",
+    "Keep every required-file byte/mode and fixed Git input exact; no placeholders, monkeypatching, source/threshold changes, or falsely claimed completecheckout.",
+    "Record originalCLI stdout/stderr/exit and projection inventory; source control does not grant TODO/release completion.",
+    "Normal GitHub CI on actual complete checkouts and applicable realrequired merge gates remain unchanged."
+  ],
+  "guard_executed_by_this_review": false,
+  "full_combined_checkout_claim": false,
+  "formal_todo_completion": false,
+  "task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  },
+  "root_or_remote_mutations": false,
+  "unresolved_read_closure_blockers": []
+}

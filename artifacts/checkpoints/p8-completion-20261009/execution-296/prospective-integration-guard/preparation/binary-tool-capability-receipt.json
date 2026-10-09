@@ -1,0 +1,53 @@
+{
+  "schema": "github_binary_read_capability_observations",
+  "no_binary_obtained": true,
+  "attempts": [
+    {
+      "tool": "github_fetch",
+      "sha": "8086a7c5772d0bec99db91bba7ff9ecde0bb5a97",
+      "expected_bytes": 210,
+      "error": "HTTPError: 400: GitHub Fetch only accepts UTF-8 text."
+    },
+    {
+      "tool": "github_fetch",
+      "sha": "2013df1920c634f5252c04bd38873ee8cfa95e65",
+      "expected_bytes": 4763775,
+      "error": "HTTPError: 400: GitHub Fetch only accepts UTF-8 text."
+    },
+    {
+      "tool": "github_fetch_blob",
+      "sha": "8086a7c5772d0bec99db91bba7ff9ecde0bb5a97",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "UnicodeDecodeError: 'utf-8' codec can't decode byte 0x8b in position 1: invalid start byte"
+          }
+        ],
+        "structuredContent": {
+          "error": "UnicodeDecodeError: 'utf-8' codec can't decode byte 0x8b in position 1: invalid start byte",
+          "error_code": "UNKNOWN"
+        },
+        "isError": true
+      }
+    },
+    {
+      "tool": "github_fetch_blob",
+      "sha": "2013df1920c634f5252c04bd38873ee8cfa95e65",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "UnicodeDecodeError: 'utf-8' codec can't decode byte 0x8b in position 1: invalid start byte"
+          }
+        ],
+        "structuredContent": {
+          "error": "UnicodeDecodeError: 'utf-8' codec can't decode byte 0x8b in position 1: invalid start byte",
+          "error_code": "UNKNOWN"
+        },
+        "isError": true
+      }
+    }
+  ],
+  "no_alternate_binary_route_attempted": true
+}

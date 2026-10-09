@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "observed_utc": "2026-10-08T23:56:07.952887+00:00",
+  "assessment": "accepted_conservative_required_file_projection_alternative",
+  "prior_optional_full_checkout_plan": {
+    "path": "/dev/shm/a217aaae3bde/platform-review/prospective-combined-tree-minimal-guard-check-plan.json",
+    "sha256": "52c112a9eaaaf6a1dd197bcb36c1ff1663967bd30e3d35a1cadafa955e1010ed"
+  },
+  "reported_tool_limit": {
+    "new_archival_files": 825,
+    "new_archival_bytes_approx": 89960000,
+    "unavailable_blob_count_reported_by_parent": 696,
+    "unavailable_blob_bytes_approx": 88150000,
+    "specific_binary_read_failures": "Official fetch UTF8-only400; fetch_blob UnicodeDecodeError on originalgzip. No binary workaround or authorization escalation proposed."
+  },
+  "reasoning": "The discovered concrete interaction is an explicit filesystem absence test. Complete canonicalGit tree+mode identities establish added/removed path sets without decoding every unreferenced binary. The unchanged verifier uses named current files, manifest-enumerated historical evidence and fixed Git objects; its child code_index_plan.py reads fixed task/validation/navigation/view files and has no broad artifact filesystem enumeration.",
+  "required_conditions": [
+    "Bind actual full candidate tree and parents independently from complete official Git tree metadata; preserve original unavailable binary blobs and their OIDs/modes rather than substitute data.",
+    "Derive the complete originalguard+childscript read closure from exact source and manifests, including Git object reads, current gate/task docs and four derived views.",
+    "Show every new archival path is disjoint from positive file/object read inputs, and the originalFORBIDDEN path is absent with no symlink/redirect.",
+    "Materialize exactly that declared required-file projection from fixed blob bytes/modes; no placeholder or empty-file substitutes. Preserve scripts and thresholds byte-for-byte.",
+    "Ensure all named historical commit/blob inputs needed by the original verifier are readable locally; do not change its GitObjects access or bypass source verification.",
+    "Run the unmodified originalv2 CLI, capture actual exits/full logs/source identity and projection inventory, report it explicitly as a projection check not completecheckout or fullCI.",
+    "Recheck applicability against fresh actualmain after165merge; any actualsource/path drift invalidates earlier provisional combination assumptions."
+  ],
+  "normal_merge_and_CI_policy": "Do not add a new approval or heavyweight requirement due solely to local binary read limitations. Existing PR165 checks, PR159 known engineering gates and actual repository-required checks remain mandatory. If GitHub requires current-base or new-combination checks before merging, satisfy that requirement normally. Otherwise normal main-push CI after the authorized engineering merge executes the actual full combination checkout; preserve its actual identity/result.",
+  "source_inspected": [
+    {
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "sha256": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288"
+    },
+    {
+      "path": "scripts/code_index_plan.py",
+      "sha256": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c"
+    }
+  ],
+  "not_executed_by_this_review": true,
+  "no_guard_source_threshold_changes": true,
+  "new_task_acceptance_gate": false,
+  "formal_todo_completion": false,
+  "counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  }
+}

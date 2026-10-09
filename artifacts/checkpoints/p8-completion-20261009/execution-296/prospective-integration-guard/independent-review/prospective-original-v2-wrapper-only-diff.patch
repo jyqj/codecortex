@@ -1,0 +1,29 @@
+--- preserved-preflight1
+
++++ actual-attempt2
+
+@@ -4,7 +4,7 @@
+
+ P=pathlib.Path('/workspace/scratch/a217aaae3bde/prospective-combined-tree-prep')
+ W=pathlib.Path('/dev/shm/a217aaae3bde/prospective-combined-tree-prep/checkout')
+ G=pathlib.Path('/dev/shm/a217aaae3bde/prospective-combined-tree-prep/git')
+-RUN=P/'prospective-original-v2-cli'
++RUN=P/'prospective-original-v2-cli-attempt2'
+ RUN.mkdir(exist_ok=False)
+ def sha(raw):return hashlib.sha256(raw).hexdigest()
+ def ref(path):
+@@ -37,9 +37,12 @@
+
+     assert all(len(s.split())==3 and s.split()[1]=='blob' for s in lines)
+     for commit in closure['fixed_provenance_commits']:
+         subprocess.check_call(['git','cat-file','-e',commit+'^{commit}'],cwd=W)
++    refs=subprocess.run(['git','show-ref'],cwd=W,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
++    assert refs.returncode in (0,1) and not refs.stderr
+     return {'files':rows,'git_pairs_batch_check_sha256':sha(result),'git_pairs_resolved_count':len(lines),
+       'all17_fixed_provenance_commits_present':True,'private_HEAD':git('rev-parse','HEAD').decode().strip(),
+-      'private_index_sha256':sha((G/'index').read_bytes()),'private_refs_output_sha256':sha(git('show-ref'))}
++      'private_index_sha256':sha((G/'index').read_bytes()),'private_refs_output_sha256':sha(refs.stdout),
++      'private_show_ref_exit':refs.returncode}
+ 
+ before=snapshot();(RUN/'inputs-before.json').write_text(json.dumps(before,indent=2)+'\n')
+ command=['python','-B','scripts/verify_historical_integrations_v2.py']

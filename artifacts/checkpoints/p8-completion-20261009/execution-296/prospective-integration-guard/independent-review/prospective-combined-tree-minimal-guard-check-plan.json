@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "observed_utc": "2026-10-08T23:46:24.457884+00:00",
+  "assessment": "appropriate_minimal_joint_tree_check_plan_not_executed",
+  "concrete_interaction_risk": "Main341 added the originalFORBIDDEN live directory, independently observed to violate unchanged historicalv2/current_gate_checks. PR165 relocates it; old4526 CI could not observe this new filesystem state.",
+  "proposed_when": "After PR165 normal CI/required checks and actual merge, once fresh main and the prospective main+PR159296 combination tree are fixed.",
+  "proposed_steps": [
+    "Record actual parent commits and full combinedtree. Independently compare all1087 product and136 validation inputs to296 plus original historical observer inputs. Do not infer currentmain from cached PR base/merge fields.",
+    "Create a separate actual combined-tree checkout with isolated Git directory/index and readonly object alternates as appropriate. Materialize exact required bytes without placeholders or misleading claims of complete checkout. Preserve root source, refs, index and all frozen599/296 executions.",
+    "Check every fixed provenance commit and blob required by the unchanged verifier exists locally; its ensure() may fetch named missing commits, so satisfy local object prerequisites before execution. Do not alter the verifier or replace its GitObjects layer.",
+    "Run original command python -B scripts/verify_historical_integrations_v2.py in the isolated combined tree. Capture complete stdout/stderr, actual exit, command, tree/source identity and before/after digests.",
+    "Retain unchanged results including full_P7=open,V19=open,quality_and_100k=not_inherited,fault_runtime_tests=not_run,evidence_content_acceptance=not_granted_by_this_verifier.",
+    "Continue applicable normal GitHub CI/required gates; this narrow verifier does not substitute for remaining296mechanism or PR165 checks. Expand only if a concrete additional interaction/failure is found."
+  ],
+  "source_inspected": {
+    "path": "/dev/shm/a217aaae3bde/codecortex-round6-frozen/scripts/verify_historical_integrations_v2.py",
+    "sha256": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288",
+    "lines_of_interest": {
+      "GitObjects_ensure": 115,
+      "current_gate_checks": 219,
+      "forbidden_absence": 226,
+      "verify": 229,
+      "normal_plan_check": 302,
+      "main": 318
+    }
+  },
+  "workload_boundary": "The unchanged verifier reads fixed historical inputs and current task/gate documents and runs the original code_index_plan.py default check. It does not compile Rust or execute benchmark/runtime workloads.",
+  "full_CLI_not_executed_now": true,
+  "guard_source_thresholds_unchanged": true,
+  "new_task_gate_introduced": false,
+  "formal_task_completion": false,
+  "counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29
+  }
+}

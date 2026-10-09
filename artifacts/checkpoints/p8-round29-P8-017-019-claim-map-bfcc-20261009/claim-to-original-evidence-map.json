@@ -1,0 +1,838 @@
+{
+  "schema_version": 1,
+  "author": "/root/todo_audit",
+  "generated_at": "2026-10-09T23:14:24.163081+00:00",
+  "scope": "finite claim-to-existing-evidence mapping; no product execution",
+  "main": "a406a4968c46ab005225666e60e81acddaa77de8",
+  "apply_now": false,
+  "task_status_changes": 0,
+  "remaining_todo": 28,
+  "definitions": [
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-016"
+      ],
+      "steps": [
+        "清临时旧branch/重复评分器/多份schema来源",
+        "保留必要外部wire兼容"
+      ],
+      "acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ]
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-017"
+      ],
+      "steps": [
+        "从schema/capabilities生成可核查事实",
+        "更新安装/故障/默认离线说明"
+      ],
+      "acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ]
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-018"
+      ],
+      "steps": [
+        "归档精确binary/checksum/manifest/raw/gates",
+        "latest只指向run"
+      ],
+      "acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V04",
+        "V21"
+      ]
+    }
+  ],
+  "evidence": {
+    "current_ci": {
+      "source": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "run": 37994312848,
+      "job": 114036304013,
+      "checkout": "3f9d8f7a4448d0a75c43eda87850e5a7955e461a",
+      "log": {
+        "path": "round28-PR195-b8ab-terminal-recovery/check.original-decoded.log",
+        "bytes": 1086267,
+        "sha256": "09cc0fccf27ffb61efdbcc3ab9d6df4a1ee166164b478e631bc55a289bc32721",
+        "git_blob": "dda53d175bbe34d0b285b462dd6ca8016dce1d56"
+      },
+      "peer_git": "8d26efe448ab5a3140c3692d31ccca7530ee9eb3",
+      "scope": "Actual original debug/test/normal authorized default plus relevant HTTP/real MCP controls; no new-head execution or cold release inferred"
+    },
+    "current_source_bridge": {
+      "git_blob": "b891354b19c3354cec4b8792ac21127d85d0d000",
+      "source": "a406a4968c46ab005225666e60e81acddaa77de8",
+      "same_product_validation_as": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "official_compare_changed_only_5_P8005_progress_docs": true,
+      "whole_tree_equal": false
+    },
+    "owner_review": {
+      "report_git": "0e5fd5de6599825486e60cea567572c8010fd23a",
+      "support_git": "8480e193ee7a4b9880da467d3f92cafc20b2f7d3",
+      "original_cleanup_source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+      "original_lane_source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "current_named_control_log_git": "2ec9f3f4a724d064bdaf02ac179ee61d7f8fb0ef",
+      "current_run": 37995531210,
+      "current_job": 114040465849,
+      "current_checkout": "eee3b5326b9c4afff2400f2e8b7ac46f66fd46d0",
+      "scope": "16 named owner controls and 35 overlapping engine/other names all present ok; no fabricated unique summed count"
+    },
+    "installer_and_declared_facts": {
+      "source": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+      "source_tree": "24df8be11955fda1f2e320de483e9eb4ddd1ffb3",
+      "log_git": "907b9a33cb22d7a13b947e4fac6aaa121c594d55",
+      "support_zip_git": "1fc494aa4dc149d4c85b97b4bb8ec2dfd9aa024a",
+      "installer_unit": 56,
+      "installer_cli": 5,
+      "facts_line": 5777,
+      "scope": "Existing exact PR196 execution; later b8ab original lines also retained independently, no execution relabel"
+    },
+    "platform_rollback": {
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run": 37890757129,
+      "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "evidence_commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea",
+      "platform_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/platform/root-independent-reception.json",
+      "recovery_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/recovery/root-independent-original-evidence-review.json",
+      "scope": "Already accepted original 8 fresh-target Linux/macOS x1.95/stable xdefault/semantic cells; version25→24→25→originalbackup real stdio, cache isolation and package switching. Original dev/SDK/source identities retained; not current release certification; no reread/replay by this review"
+    },
+    "archive": {
+      "source": "379099a4a7b09ebe9928c190017bae53d8d1edf6",
+      "archive_source_git": "79c8ab476d1c9fb17a190a1c280f82c614a5dc1a",
+      "report_source_git": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "scope_originals_git": "5c2770c4f920e844bafa9c4088cbd26ef4728bb9",
+      "doc_peer_git": "383b475fed125e507bf1add78c1b7d287ceb029e",
+      "original_controls": 42,
+      "archive_test_lines": [
+        5564,
+        5605
+      ],
+      "replay_control_group": "benchmark_reports 11 passed; default/HTTP duplicate identities not added together"
+    },
+    "PR198": {
+      "url": "https://github.com/jyqj/codecortex/pull/198",
+      "head": "335237cf35f0972431fc37a8c6237a1ae51dbd75",
+      "base": "a406a4968c46ab005225666e60e81acddaa77de8",
+      "status_as_of_creation": "open/not_merged",
+      "readback_report_git": "9bb06d978271b599414dd50f85e0aeb0f7622055",
+      "paths": {
+        "docs/BENCHMARK.md": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+        "docs/roadmap/code-index-v2/P8-OWNERSHIP.md": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+        "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+      },
+      "current_CI": "root owner; no new observation by this review"
+    }
+  },
+  "claim_map": [
+    {
+      "id": "017-owner",
+      "task": "P8-017",
+      "original_claim": "清临时旧branch/重复评分器/多份schema来源；运行路径只有一个事实与算法所有者",
+      "evidence_keys": [
+        "owner_review"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需再造删除或额外测试；保留已审ownership来源矩阵；PR198仅将矩阵落地。",
+      "boundary": "Rust与Python legacy统计、lane目录、DDL来源已收口；compat/native和test-only参考不是必须删除的重复算法；没有强制穷尽全仓callgraph的新门。"
+    },
+    {
+      "id": "017-deletion",
+      "task": "P8-017",
+      "original_claim": "删除有回归证据",
+      "evidence_keys": [
+        "owner_review",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需重跑旧303+1、427/301或16命名控制。",
+      "boundary": "18重复测试移除、17其余测试保留及后续实际原回归分别保留source，不把prepare-only四variant计运行。"
+    },
+    {
+      "id": "shared-V18",
+      "task": "P8-017/P8-018",
+      "original_claim": "14工具/旧mode/参数schema-sanitize-dispatch-status/默认无网络无key",
+      "evidence_keys": [
+        "current_ci",
+        "installer_and_declared_facts"
+      ],
+      "status": "accepted_relevant_existing_controls",
+      "minimum_next_action": "复用下附精确原log行；无新live/provider或全矩阵要求。",
+      "boundary": "真实stdio参数/模式/策略覆盖已实跑；ignored首遍与随后显式执行分开，不能用进程内测试冒称stdio。"
+    },
+    {
+      "id": "shared-V21",
+      "task": "P8-017/P8-018/P8-019",
+      "original_claim": "新旧schema受控重建、cache不误读、default/semantic两包、SDK/MSRV",
+      "evidence_keys": [
+        "platform_rollback",
+        "current_ci"
+      ],
+      "status": "accepted_original_component_evidence",
+      "minimum_next_action": "引用已接受平台/回滚来源和本次current-schema/cache回归；等待各原task依赖按序关闭。",
+      "boundary": "原8格和25→24→25演练保持275e/277f/dev身份，不能标a406或新发行包；没有每个文档修改重跑8格的原门。"
+    },
+    {
+      "id": "017-dependency",
+      "task": "P8-017",
+      "original_claim": "depends_on P8-016",
+      "evidence_keys": [
+        "platform_rollback"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等原P8-016依赖闭合；当前已接受自身范围不归零。",
+      "boundary": "没有发现新增生产实现或必需删除控制缺口；task仍in_progress。"
+    },
+    {
+      "id": "018-facts",
+      "task": "P8-018",
+      "original_claim": "从schema/capabilities生成可核查事实；设计与实现分开",
+      "evidence_keys": [
+        "installer_and_declared_facts",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "沿原p8_facts真实passed引用，不要求运行时导出不存在文件。",
+      "boundary": "8crates/schema25/30base+5FTS/14MCP等声明范围；runtime_certified=false。"
+    },
+    {
+      "id": "018-doc-drift",
+      "task": "P8-018",
+      "original_claim": "文档表数/schema/工具数不再漂移",
+      "evidence_keys": [
+        "PR198"
+      ],
+      "status": "reviewed_fix_awaits_publication",
+      "minimum_next_action": "root按已授权流程完成PR198普通文档整合；不增加代码/新数值。",
+      "boundary": "唯一已证明本次漂移是mutation-case十四→15表，14MCP工具没有变化。"
+    },
+    {
+      "id": "018-install",
+      "task": "P8-018",
+      "original_claim": "安装/故障/默认离线说明与相关回归",
+      "evidence_keys": [
+        "installer_and_declared_facts",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无新发现安装说明实现缺口；复用原56+5与当前配置保留/无效不写入控制。",
+      "boundary": "不把安装配置回归当打包或付费provider认证；历史not_run不改写。"
+    },
+    {
+      "id": "018-convention",
+      "task": "P8-018",
+      "original_claim": "CONTRIBUTING数字改动后的update-doc-baselines约定",
+      "evidence_keys": [
+        "current_ci"
+      ],
+      "status": "documented_process_check_not_run",
+      "minimum_next_action": "root明确处置这一贡献流程差异；不得以现CI或p8_facts冒称脚本通过。未来若需执行原脚本，先保持当前已授权测试范围。",
+      "boundary": "脚本不检查oracle表数；直接cargo all-targets会超出currentCI故障测试范围；这是现成约定的未执行记录，不新增150/全release硬门，也不自动抹去上述原任务证据。"
+    },
+    {
+      "id": "018-dependency",
+      "task": "P8-018",
+      "original_claim": "depends_on P8-017",
+      "evidence_keys": [
+        "owner_review"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等017；文档修正整合与贡献约定处置后，自身无已识别生产缺口。",
+      "boundary": "不可此刻置done。"
+    },
+    {
+      "id": "019-custody",
+      "task": "P8-019",
+      "original_claim": "精确binary/checksum/manifest/raw/gates；历史run不被覆盖；latest只指向run",
+      "evidence_keys": [
+        "archive",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需新增归档实现或重复42控制；复用精确归档、无覆盖、latest条件和失败保持原件。",
+      "boundary": "caller build声明不等于构建证明；本地latest不是发布频道，非文件系统WORM。"
+    },
+    {
+      "id": "019-replay",
+      "task": "P8-019",
+      "original_claim": "报告可重算；V04 raw到metrics/report及错误状态",
+      "evidence_keys": [
+        "archive",
+        "current_ci",
+        "PR198"
+      ],
+      "status": "accepted_own_component_with_doc_clarification_pending_publication",
+      "minimum_next_action": "合入PR198副本/单run路径说明即可；没有原文要求再加一次组合E2E测试。",
+      "boundary": "archive integrity和numerical replay分别验；old native tests已实跑；不要求各外层gate不同schema逐字相同。"
+    },
+    {
+      "id": "019-V01",
+      "task": "P8-019",
+      "original_claim": "SHA/dirty/binary/toolchain与旧测试/真实stdio；原fresh-target构建",
+      "evidence_keys": [
+        "platform_rollback",
+        "current_ci",
+        "archive"
+      ],
+      "status": "accepted_applicable_original_evidence",
+      "minimum_next_action": "按原平台/构建/stdio收据分别引用，不把普通test profile说成cold release。",
+      "boundary": "这项归档功能不额外要求新的100k/live/holdout研究。"
+    },
+    {
+      "id": "019-dependency",
+      "task": "P8-019",
+      "original_claim": "depends_on P8-018",
+      "evidence_keys": [
+        "archive"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等018；自身实现和相关既存控制没有新增已识别阻塞。",
+      "boundary": "不自动声明完整G8发行通过。"
+    }
+  ],
+  "baseline_script_observation": {
+    "contributing_git": "e70d34871f78f394578a6e4273df75dd92afa35f",
+    "script_git": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+    "workflow_git": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "raw_log_search": [
+      {
+        "original": {
+          "path": "round28-PR195-b8ab-terminal-recovery/check.original-decoded.log",
+          "bytes": 1086267,
+          "sha256": "09cc0fccf27ffb61efdbcc3ab9d6df4a1ee166164b478e631bc55a289bc32721",
+          "git_blob": "dda53d175bbe34d0b285b462dd6ca8016dce1d56"
+        },
+        "exact_terms_found": {
+          "update-doc-baselines.sh": false,
+          "=== Collecting baselines ===": false,
+          "All baselines match docs/TEST_PLAN.md": false,
+          "DRIFT:": false
+        }
+      },
+      {
+        "original": {
+          "path": "round28-PR197-main-terminal/check.original-decoded.log",
+          "bytes": 1081782,
+          "sha256": "1f05eace561c8b66d433b8e3785f5b5f1147737d53940cd512be262d79fd8397",
+          "git_blob": "2ec9f3f4a724d064bdaf02ac179ee61d7f8fb0ef"
+        },
+        "exact_terms_found": {
+          "update-doc-baselines.sh": false,
+          "=== Collecting baselines ===": false,
+          "All baselines match docs/TEST_PLAN.md": false,
+          "DRIFT:": false
+        }
+      },
+      {
+        "original": {
+          "path": "round29-P8-018-document-facts/original/PR196-maincheck.original-decoded.log",
+          "bytes": 1081030,
+          "sha256": "9ccadfda3f610035295f27e229fbdbd4ac5b5f570b84168cfd112b33fa041370",
+          "git_blob": "907b9a33cb22d7a13b947e4fac6aaa121c594d55"
+        },
+        "exact_terms_found": {
+          "update-doc-baselines.sh": false,
+          "=== Collecting baselines ===": false,
+          "All baselines match docs/TEST_PLAN.md": false,
+          "DRIFT:": false
+        }
+      }
+    ],
+    "current_workflow_calls_script": false,
+    "current_workflow_instead": "Compile all default targets without execution; execute workspace excluding cc-semantic plus declared normal semantic targets; p8_facts --check. CI comment explicitly excludes process-fault/GC-WAL/recoverable-retry execution.",
+    "original_script_command": "cargo test --workspace --all-targets",
+    "compares": [
+      "cc-db passed count",
+      "total passed",
+      "total ignored",
+      "corpus count"
+    ],
+    "prints_not_compares": [
+      "schema version",
+      "MCP count",
+      "resolver count"
+    ],
+    "does_not_read_or_check": "oracle TABLES count or BENCHMARK fifteen-table sentence",
+    "drift_exit_detail": "sets DRIFT=1 and prints differences but never exit \"$DRIFT\"; a process exit0 alone cannot prove no drift",
+    "no_mock_or_output_substitution": true
+  },
+  "existing_log_excerpts": {
+    "V18-tool-params": [
+      {
+        "name": "all_fourteen_parameter_types_deny_unknown_and_keep_default_requests",
+        "original_ok_records": [
+          {
+            "line": 1538,
+            "text": "2026-10-09T21:50:00.5516228Z test all_fourteen_parameter_types_deny_unknown_and_keep_default_requests ... ok"
+          },
+          {
+            "line": 7614,
+            "text": "2026-10-09T22:04:10.6971887Z test all_fourteen_parameter_types_deny_unknown_and_keep_default_requests ... ok"
+          }
+        ]
+      },
+      {
+        "name": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults",
+        "original_ok_records": [
+          {
+            "line": 4703,
+            "text": "2026-10-09T21:51:48.3707497Z test advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults ... ok"
+          }
+        ]
+      },
+      {
+        "name": "search_modes_optional_nulls_and_utf8_sanitize_are_stable",
+        "original_ok_records": [
+          {
+            "line": 1537,
+            "text": "2026-10-09T21:50:00.5515789Z test search_modes_optional_nulls_and_utf8_sanitize_are_stable ... ok"
+          },
+          {
+            "line": 7613,
+            "text": "2026-10-09T22:04:10.6970011Z test search_modes_optional_nulls_and_utf8_sanitize_are_stable ... ok"
+          }
+        ]
+      },
+      {
+        "name": "p1c_fourteen_tools_valid_unknown_schema_and_modes",
+        "original_ok_records": [
+          {
+            "line": 8434,
+            "text": "2026-10-09T22:06:22.2748647Z test p1c_fourteen_tools_valid_unknown_schema_and_modes ... ok"
+          }
+        ]
+      }
+    ],
+    "V18-propagation": [
+      {
+        "name": "handle_status_all_includes_capabilities_and_schema",
+        "original_ok_records": [
+          {
+            "line": 3971,
+            "text": "2026-10-09T21:51:32.0302319Z test handlers::facade::tests::handle_status_all_includes_capabilities_and_schema ... ok"
+          }
+        ]
+      },
+      {
+        "name": "stdio_status_capabilities_and_schema",
+        "original_ok_records": [
+          {
+            "line": 4477,
+            "text": "2026-10-09T21:51:46.0968205Z test stdio_status_capabilities_and_schema ... ok"
+          }
+        ]
+      },
+      {
+        "name": "explore_params_sanitize_clamps_new_optionals",
+        "original_ok_records": [
+          {
+            "line": 4065,
+            "text": "2026-10-09T21:51:33.3733420Z test tools::tests::explore_params_sanitize_clamps_new_optionals ... ok"
+          }
+        ]
+      },
+      {
+        "name": "policy_parameters_are_optional_strict_and_documented",
+        "original_ok_records": [
+          {
+            "line": 1944,
+            "text": "2026-10-09T21:50:37.0718899Z test policy_parameters_are_optional_strict_and_documented ... ok"
+          },
+          {
+            "line": 8021,
+            "text": "2026-10-09T22:04:48.1166398Z test policy_parameters_are_optional_strict_and_documented ... ok"
+          },
+          {
+            "line": 9553,
+            "text": "2026-10-09T22:06:57.1129480Z test policy_parameters_are_optional_strict_and_documented ... ok"
+          }
+        ]
+      },
+      {
+        "name": "real_stdio_policy_override_and_capability_state",
+        "original_ok_records": [
+          {
+            "line": 9597,
+            "text": "2026-10-09T22:06:58.7714926Z test real_stdio_policy_override_and_capability_state ... ok"
+          }
+        ]
+      },
+      {
+        "name": "real_mcp_preserves_tool_schema_and_exposes_offline_query_policy",
+        "original_ok_records": [
+          {
+            "line": 9436,
+            "text": "2026-10-09T22:06:51.4944929Z test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ok"
+          }
+        ]
+      }
+    ],
+    "V18-offline": [
+      {
+        "name": "real_stdio_default_disabled_semantic_contract",
+        "original_ok_records": [
+          {
+            "line": 8344,
+            "text": "2026-10-09T22:06:21.0567090Z test p7_offline::real_stdio_default_disabled_semantic_contract ... ok"
+          },
+          {
+            "line": 9691,
+            "text": "2026-10-09T22:07:52.3606117Z test p7_offline::real_stdio_default_disabled_semantic_contract ... ok"
+          }
+        ]
+      }
+    ],
+    "V21-schema-cache": [
+      {
+        "name": "fresh_index_really_initializes_current_schema",
+        "original_ok_records": [
+          {
+            "line": 947,
+            "text": "2026-10-09T21:49:30.9276458Z test fresh_index_really_initializes_current_schema ... ok"
+          }
+        ]
+      },
+      {
+        "name": "nonadjacent_versions_still_require_rebuild",
+        "original_ok_records": [
+          {
+            "line": 948,
+            "text": "2026-10-09T21:49:30.9489397Z test nonadjacent_versions_still_require_rebuild ... ok"
+          }
+        ]
+      },
+      {
+        "name": "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+        "original_ok_records": [
+          {
+            "line": 949,
+            "text": "2026-10-09T21:49:31.0921901Z test committed_v21_upgrade_invalidates_legacy_rows_and_incarnation ... ok"
+          }
+        ]
+      },
+      {
+        "name": "committed_v24_requires_rebuild_and_invalidates_legacy_rows",
+        "original_ok_records": [
+          {
+            "line": 950,
+            "text": "2026-10-09T21:49:31.1078713Z test committed_v24_requires_rebuild_and_invalidates_legacy_rows ... ok"
+          }
+        ]
+      },
+      {
+        "name": "v21_file_database_requires_reindex",
+        "original_ok_records": [
+          {
+            "line": 1155,
+            "text": "2026-10-09T21:49:43.0054179Z test v21_file_database_requires_reindex ... ok"
+          }
+        ]
+      },
+      {
+        "name": "different_spaces_never_cross_hit",
+        "original_ok_records": [
+          {
+            "line": 5127,
+            "text": "2026-10-09T21:52:04.7440379Z test different_spaces_never_cross_hit ... ok"
+          }
+        ]
+      },
+      {
+        "name": "namespaces_are_isolated",
+        "original_ok_records": [
+          {
+            "line": 5133,
+            "text": "2026-10-09T21:52:04.7476984Z test namespaces_are_isolated ... ok"
+          }
+        ]
+      },
+      {
+        "name": "spec_change_routes_to_a_new_object",
+        "original_ok_records": [
+          {
+            "line": 5141,
+            "text": "2026-10-09T21:52:04.7550588Z test spec_change_routes_to_a_new_object ... ok"
+          }
+        ]
+      },
+      {
+        "name": "meta_tampering_is_detected_as_corrupt",
+        "original_ok_records": [
+          {
+            "line": 5137,
+            "text": "2026-10-09T21:52:04.7510576Z test meta_tampering_is_detected_as_corrupt ... ok"
+          }
+        ]
+      }
+    ],
+    "installation-preservation": [
+      {
+        "name": "reinstall_updates_command_and_keeps_user_options_and_comments",
+        "original_ok_records": [
+          {
+            "line": 4126,
+            "text": "2026-10-09T21:51:42.2470337Z test installer::targets::codex_cli::tests::reinstall_updates_command_and_keeps_user_options_and_comments ... ok"
+          }
+        ]
+      },
+      {
+        "name": "install_does_not_silently_replace_existing_url_transport",
+        "original_ok_records": [
+          {
+            "line": 4119,
+            "text": "2026-10-09T21:51:42.2446347Z test installer::targets::codex_cli::tests::install_does_not_silently_replace_existing_url_transport ... ok"
+          }
+        ]
+      },
+      {
+        "name": "malformed_or_wrong_typed_config_is_rejected_without_writing",
+        "original_ok_records": [
+          {
+            "line": 4124,
+            "text": "2026-10-09T21:51:42.2460547Z test installer::targets::codex_cli::tests::malformed_or_wrong_typed_config_is_rejected_without_writing ... ok"
+          }
+        ]
+      },
+      {
+        "name": "uninstall_without_server_preserves_original_bytes",
+        "original_ok_records": [
+          {
+            "line": 4130,
+            "text": "2026-10-09T21:51:42.2477742Z test installer::targets::codex_cli::tests::uninstall_without_server_preserves_original_bytes ... ok"
+          }
+        ]
+      }
+    ],
+    "V04-replay-errors": [
+      {
+        "name": "raw_replay_reconstructs_identical_metrics",
+        "original_ok_records": [
+          {
+            "line": 1403,
+            "text": "2026-10-09T21:49:54.6072354Z test raw_replay_reconstructs_identical_metrics ... ok"
+          },
+          {
+            "line": 7476,
+            "text": "2026-10-09T22:04:04.7763259Z test raw_replay_reconstructs_identical_metrics ... ok"
+          }
+        ]
+      },
+      {
+        "name": "raw_replay_reconstructs_costs_without_inventing_missing_measurements",
+        "original_ok_records": [
+          {
+            "line": 1401,
+            "text": "2026-10-09T21:49:54.6044940Z test raw_replay_reconstructs_costs_without_inventing_missing_measurements ... ok"
+          },
+          {
+            "line": 7475,
+            "text": "2026-10-09T22:04:04.7762386Z test raw_replay_reconstructs_costs_without_inventing_missing_measurements ... ok"
+          }
+        ]
+      },
+      {
+        "name": "raw_and_normalized_drift_are_rejected",
+        "original_ok_records": [
+          {
+            "line": 1400,
+            "text": "2026-10-09T21:49:54.6030521Z test raw_and_normalized_drift_are_rejected ... ok"
+          },
+          {
+            "line": 7472,
+            "text": "2026-10-09T22:04:04.7680821Z test raw_and_normalized_drift_are_rejected ... ok"
+          }
+        ]
+      },
+      {
+        "name": "cancelled_run_is_never_green",
+        "original_ok_records": [
+          {
+            "line": 1407,
+            "text": "2026-10-09T21:49:54.6263684Z test cancelled_run_is_never_green ... ok"
+          },
+          {
+            "line": 7471,
+            "text": "2026-10-09T22:04:04.7650062Z test cancelled_run_is_never_green ... ok"
+          }
+        ]
+      },
+      {
+        "name": "readiness_failure_keeps_missing_measurements_in_gate",
+        "original_ok_records": [
+          {
+            "line": 1404,
+            "text": "2026-10-09T21:49:54.6102054Z test readiness_failure_keeps_missing_measurements_in_gate ... ok"
+          },
+          {
+            "line": 7480,
+            "text": "2026-10-09T22:04:04.7806477Z test readiness_failure_keeps_missing_measurements_in_gate ... ok"
+          }
+        ]
+      },
+      {
+        "name": "timeout_is_distinct_from_empty_results",
+        "original_ok_records": [
+          {
+            "line": 7390,
+            "text": "2026-10-09T22:04:01.1550222Z test http::timeout_is_distinct_from_empty_results ... ok"
+          }
+        ]
+      },
+      {
+        "name": "errors_do_not_log_credentials_or_response_body",
+        "original_ok_records": [
+          {
+            "line": 7377,
+            "text": "2026-10-09T22:04:00.9555452Z test http::errors_do_not_log_credentials_or_response_body ... ok"
+          }
+        ]
+      }
+    ]
+  },
+  "declared_facts_original_output": [
+    {
+      "line": 5791,
+      "record": {
+        "errors": [],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "97fb618da9eaff1088998942fcc1396c3c515314e048ac6081515c83447a873c",
+          "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+          "crates/cc-model/src/config.rs": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "7808969f63a3da11106471fea722f715a91b48f35086473df756b25c8576f742",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "passed"
+      }
+    }
+  ],
+  "conclusion": "017 and019 have no newly identified self-implementation/test gap in the assembled original scopes; original dependency chain remains. 018 has the real one-sentence fix awaiting PR198 publication and an explicit contributor-script not_run disposition; do not report that script passed or silently require unrelated restricted tests. Existing applicable V18/V21 components remain accepted at their original identities. No new benchmark or regression gate added."
+}

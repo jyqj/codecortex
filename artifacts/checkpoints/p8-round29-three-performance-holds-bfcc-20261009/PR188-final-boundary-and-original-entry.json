@@ -1,0 +1,38 @@
+{
+  "schema": "PR188-no-small-safe-adoption-fix-v1",
+  "original_source_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f",
+  "current_main_read_pool_blob": "f29aac1e787c60d86db46fbbdc10b4cf5103fa39",
+  "conclusion": "No already established small semantics-preserving patch resolves the performance HOLD. Stop further design expansion in this review.",
+  "observed_facts": [
+    "JSON already serialized once per call; moving it out of inner loop is not a new fix.",
+    "Read pool enforces query_only=ON; a TEMP-table population would cross current read-only boundary.",
+    "A MATERIALIZED CTE inside each batch remains statement-local, not call-global.",
+    "Consolidating into one SQL statement could reduce repeat membership for multiple batches, but changes batching/error-observation and has not been implemented/reviewed. It also cannot by itself remove the adverse one-statement dense and sparse cases."
+  ],
+  "existing_probe": {
+    "checkpoint": "80d7979da10ae242ed4706cd04be74c62194261a",
+    "archive_path": "artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009/SQL-hold-evidence.tar.gz",
+    "archive_git": "ed9926ae31c28ed892b6e10640783941d4f60149",
+    "member": "sql-cost/probe.py",
+    "member_sha256": "8fc0f9b69c50d6f19be2c01edbcdd1bc209dadfe6ba07ea977eda68b6097519f",
+    "entry": "python3 probe.py after explicitly restoring its five fixed source inputs; original script embeds another host's ROOT. No portable CLI arguments and no exact-G4 Rust cost entry.",
+    "scope": "Four constructed Python SQLite cases,20 alternating observations, execute/fetch and Python boundary only; JSON serialization and plan construction outside timer. M7 source includes extra NULL/BINARY and surface query; not exact G4. Read here only; never executed."
+  },
+  "existing_Rust_controls": {
+    "target": "cargo test --locked -p cc-db --test p2b_resolution_store",
+    "new_named": [
+      "dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness",
+      "dependency_exclusion_avoids_returning_completed_prefix_and_reduces_dense_case_sql_work"
+    ],
+    "coverage": "Arbitrary/scattered/duplicate/missing/Unicode/NUL paths;410 events across kinds/batches;limits0/1/3/200/usizeMAX;epoch equality;empty path exact old SQL work;dense600/580 compares reference outputs,returned rows,relative VM.",
+    "limits": "Ordinary correctness/VM controls, no paired wall or total JSON allocation cost; --nocapture does not create missing wall measurement."
+  },
+  "design_only_not_authorized_or_implemented": "A one-statement read-only all-(kind,key) join plus one excluded set materialization is a possible design topic, not an accepted minimal fix; cross-batch output/error semantics, missing/sparse cost and total setup require review. No new code produced.",
+  "parent_direction": "Stop188 expansion; keep HOLD and prioritize already archived190 equal-lifetime candidate recovery.",
+  "operations": {
+    "production_run": false,
+    "test_run": false,
+    "study_run": false,
+    "product_edit": false
+  }
+}

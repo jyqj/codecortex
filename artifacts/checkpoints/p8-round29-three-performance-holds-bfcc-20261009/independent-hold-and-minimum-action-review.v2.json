@@ -1,0 +1,314 @@
+{
+  "schema": "round29-three-performance-holds-readonly-review-v1",
+  "reviewer": "/root/pr_triage",
+  "observed_at_utc": "2026-10-09T23:05:11Z",
+  "completed_source_read_at_utc": "2026-10-09T23:08:47Z",
+  "repository": "jyqj/codecortex",
+  "comparison_main": "a406a4968c46ab005225666e60e81acddaa77de8",
+  "status": "recommendations_only_no_adoption_no_task_credit",
+  "scope": {
+    "metadata_and_complete_discussion": true,
+    "formal_reviews": [
+      {
+        "pr": 188,
+        "count": 0
+      },
+      {
+        "pr": 190,
+        "count": 0
+      },
+      {
+        "pr": 191,
+        "count": 0
+      }
+    ],
+    "comments": [
+      {
+        "pr": 188,
+        "count": 4
+      },
+      {
+        "pr": 190,
+        "count": 0
+      },
+      {
+        "pr": 191,
+        "count": 1
+      }
+    ],
+    "exact_relevant_source_reads": true,
+    "new_test_or_benchmark_execution": false,
+    "old_log_redownload": false,
+    "original_zip_download": false,
+    "heldout_or_live_provider_access": false,
+    "ref_comment_label_mutation": false
+  },
+  "findings": [
+    {
+      "pr": 188,
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "base": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+      "state": "open",
+      "draft": true,
+      "original_requirement_sources": [
+        "issuecomment-6084188223",
+        "issuecomment-6085910767",
+        "issuecomment-6087608757",
+        "41548474fe51a80f3c9f27236982730e8a43dc0a:artifacts/checkpoints/p8-round37-progress-28fe-20261009/review/pr188-current-independent-review.json"
+      ],
+      "explicit_hold": "Output semantics and 26/26 historical engineering checks accepted; unconditional performance adoption held. The latest substantive review asks to avoid per-statement large JSON membership reconstruction, then evaluate current-source dense/sparse/multi-batch wall/rows/VM including Rust JSON allocation. The latest administrative comment retains Draft and says no representative equivalent end-to-end benefit yet.",
+      "exact_production": {
+        "path": "crates/cc-db/src/resolution_dependency_store.rs",
+        "blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f",
+        "lines": "119-193",
+        "mechanism": "serde_json::to_string happens once per call at 136-140; the same parameter is bound to a NOT IN (SELECT value FROM json_each(...)) for each kind/key batch at 145-176. prepare_cached caches a prepared statement, not proof that the bound membership results survive executions."
+      },
+      "actual_evidence": {
+        "historical_CI": "G4 run37947395888; all26 success per retained independent review. Nine DB tests and original v15 passed; current work did not redownload logs.",
+        "exact_G4_dense": "600 rows/580 exclusions: output parity, rows590->10, test asserted lower VM; successful log has no numeric VM and no paired Rust wall.",
+        "exact_strategy_sparse_python": {
+          "old_vm": 132988,
+          "new_vm": 163001,
+          "increase_percent": 22.57
+        },
+        "separate_M7_python": {
+          "not_exact_G4": true,
+          "not_Rust": true,
+          "not_serialization_timed": true,
+          "ratios": {
+            "dense_prefix": 1.4678475521304293,
+            "sparse_two_keys": 93.54671839637892,
+            "sparse_400_keys_three_batches": 11.186430537040934,
+            "surface_outside_PR188": 12.710213641499479
+          }
+        }
+      },
+      "new_correctness_defect_found": false,
+      "minimum_now": [
+        "Documentation-only: put current Draft/performance-HOLD first; retain earlier ready/pending passages explicitly as history and separate the M7 five-file numbers from exact G4. Keep no 100k-timeout-fix claim.",
+        "A new production candidate, if desired, must solve or avoid membership rebuilding rather than merely cache the existing prepared statement or move the existing once-per-call serialization. A read-lease-compatible design is required; do not introduce TEMP-table writes or a guessed density threshold as an unreviewed shortcut.",
+        "Before adopting a claimed optimization, prepare an exact-current-source finite mechanism comparison retaining dense, sparse and multi-batch negatives, full outputs and setup/serialization/allocation cost. This is a proposed next separate experiment, not a request to rerun the original registered scale study."
+      ],
+      "not_safely_concluded_now": "No small code change can be certified to remove the performance HOLD from existing results alone. A finite redesigned mechanism result could support a limited adoption decision; it would not prove the historical five-hour failure fixed or establish current-source scale speed.",
+      "parallelism": "Can prepare documentation/design independently of190/191; any new bindings must be based on the actual new composition, not copied from the old fixed-base PR."
+    },
+    {
+      "pr": 190,
+      "head": "9ddae045f6925140a4d652c5f28f64add459eff1",
+      "base": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+      "state": "open",
+      "draft": true,
+      "original_requirement_sources": [
+        "PR190 current body; no conversation comments or formal reviews returned",
+        "e5d381667d19922b006f45075fc077f8a73197c3:artifacts/checkpoints/p8-round40-a217-20261009/payload-manifest.json"
+      ],
+      "explicit_hold": "Default adoption held despite actual correctness CI; original multiple_text result mixed and order-associated. Equal-lifetime alternative already prepared and archived, not triggered.",
+      "exact_production": {
+        "path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "head_blob": "1b2cc162d888706a46ca9a3b4e2dd9275b86352b",
+        "current_main_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68"
+      },
+      "actual_evidence": {
+        "CI": "37961137036/check113923960385 completed success; four new controls passed in default and HTTP. Ignored cost probe not run by ordinary CI.",
+        "cost_source": "eded24951c3e99693410ce959a627ab575f66bec",
+        "run": 37956976406,
+        "paired_records": 100,
+        "case_count": 5,
+        "per_case_pairs": 20,
+        "multiple_text": {
+          "median_ratio": 1.0664289,
+          "faster_pairs": "10/20",
+          "original_first_median": 1.2050854,
+          "borrowed_first_median": 0.9557795
+        },
+        "other_four_cases": "20/20 faster each, limited local serializer observation"
+      },
+      "confirmed_probe_boundary": "Head oracle.rs lines676-686 retains first-side Vec<String> while timing second side; this is a concrete lifetime asymmetry, not proof that it caused all direction changes. The original probe also records a field named original_streaming_source_blob whose4c7f OID is oracle.rs, already corrected only in the independent v2 schema.",
+      "existing_minimum_candidate": {
+        "manifest_git": "1b99d8c9d5d90432f945462cd2ff7927251ca9d1",
+        "peer_git": "437bee5163ed027dcdd45c05706c4f530202354a",
+        "candidate_source_git": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a",
+        "workflow_git": "89c434b3ed7eeea90600583e8837bf5a40d5117f",
+        "base": "9ddae045f6925140a4d652c5f28f64add459eff1",
+        "changes": "Existing production prefix and old probe unchanged; new ignored method uses common immutable reference, compares every serialized row, hashes and drops side output before returning scalar timings/length/digest; new independent label/schema/artifact namespace. Retains20 pairs x5cases and both execution orders.",
+        "status": "Static nonauthor review accepted; no new Rust formatter/compiler/probe run claimed by this read-only review."
+      },
+      "minimum_now": [
+        "Reuse and read the already archived equal-lifetime candidate rather than reimplementing it; verify exact current-base integration and keep old probe/source/results untouched.",
+        "Documentation-only: provide the exact candidate manifest and peer locator in the current HOLD section, clearly state Rust/probe execution absent and that allocator/cache/order effects remain even after Vec lifetime symmetry.",
+        "If later authorized, the next meaningful observation is this bounded separately named candidate, not a full150 study or a rerun relabeled as the old source. A local serializer win still does not assert full parity/indexing speed."
+      ],
+      "new_correctness_defect_found": false,
+      "parallelism": "Highest-readiness preparation: candidate already exists and production file differs from188/191. It can be reviewed alongside them; no new measurement is authorized here."
+    },
+    {
+      "pr": 191,
+      "head": "7da43a80bc00698101de5619dd486a3393a667a3",
+      "base": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+      "state": "open",
+      "draft": true,
+      "original_requirement_sources": [
+        "issuecomment-6086719778",
+        "PR191 current body",
+        "24e85e6ed5eaccc82b52e02e05953d20b1eea65b:artifacts/benchmarks/original-custody-chunk87c-37960889762-a217-20261009/root-original-cost-intake-and-statistics.json"
+      ],
+      "explicit_hold": "Current-main engineering correctness accepted on its fixed source; performance adoption held because four cost cases have mixed direction and order association, no full-rebuild improvement. No requirement for an additional full scale study is stated in this review.",
+      "exact_source": {
+        "production_path": "crates/cc-db/src/index_db_write_batch.rs",
+        "head_blob": "708cacdf9660254c0a8d21f68677978b5372535b",
+        "current_main_blob": "8beb3cd41d5472429cc3d7e08df79032cbbb4ba5",
+        "probe_path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+        "probe_blob": "4096905f967bab0cd50003c663f85efc7942c682"
+      },
+      "actual_evidence": {
+        "CI": "37963897699/check113933295910 completed success; six new controls actual pass, old ignored cost probe remains ignored. Later MSRV/security success recorded in body; no repeated log download.",
+        "cost_source": "87c2274e497c3d0c9d40de4b538794318672e028",
+        "cost_run": 37960889762,
+        "paired_records": 80,
+        "case_count": 4,
+        "per_case_pairs": 20,
+        "summary": [
+          {
+            "by_first": {
+              "original": {
+                "median_ratio": 0.933772944355757,
+                "pairs": 10,
+                "retained_faster_pairs": 9
+              },
+              "retained": {
+                "median_ratio": 1.1283900820499264,
+                "pairs": 10,
+                "retained_faster_pairs": 0
+              }
+            },
+            "case": "single_plain",
+            "chunks_each": 1,
+            "original_median_ns": 7911,
+            "paired_ratio_max": 1.4027672955974844,
+            "paired_ratio_min": 0.6788129226145755,
+            "paired_retained_over_original_ratio_median": 1.0734027656579417,
+            "paired_rounds": 20,
+            "retained_faster_pairs": 9,
+            "retained_median_ns": 8167
+          },
+          {
+            "by_first": {
+              "original": {
+                "median_ratio": 0.8236330198332786,
+                "pairs": 10,
+                "retained_faster_pairs": 10
+              },
+              "retained": {
+                "median_ratio": 1.0378765089262407,
+                "pairs": 10,
+                "retained_faster_pairs": 0
+              }
+            },
+            "case": "short_plain_6",
+            "chunks_each": 6,
+            "original_median_ns": 21682,
+            "paired_ratio_max": 1.1153973745320127,
+            "paired_ratio_min": 0.7971093422706326,
+            "paired_retained_over_original_ratio_median": 0.9307709518386011,
+            "paired_rounds": 20,
+            "retained_faster_pairs": 10,
+            "retained_median_ns": 20473.5
+          },
+          {
+            "by_first": {
+              "original": {
+                "median_ratio": 0.9824246215386294,
+                "pairs": 10,
+                "retained_faster_pairs": 9
+              },
+              "retained": {
+                "median_ratio": 0.9974520269568428,
+                "pairs": 10,
+                "retained_faster_pairs": 5
+              }
+            },
+            "case": "mixed_32",
+            "chunks_each": 32,
+            "original_median_ns": 335186,
+            "paired_ratio_max": 1.1256091254752851,
+            "paired_ratio_min": 0.8839340552771942,
+            "paired_retained_over_original_ratio_median": 0.9880642469605365,
+            "paired_rounds": 20,
+            "retained_faster_pairs": 14,
+            "retained_median_ns": 332813.5
+          },
+          {
+            "by_first": {
+              "original": {
+                "median_ratio": 0.979179285176297,
+                "pairs": 10,
+                "retained_faster_pairs": 10
+              },
+              "retained": {
+                "median_ratio": 0.9899213194851375,
+                "pairs": 10,
+                "retained_faster_pairs": 7
+              }
+            },
+            "case": "compressed_64",
+            "chunks_each": 64,
+            "original_median_ns": 1222488.5,
+            "paired_ratio_max": 1.098478231221831,
+            "paired_ratio_min": 0.9461238036198787,
+            "paired_retained_over_original_ratio_median": 0.985218954539969,
+            "paired_rounds": 20,
+            "retained_faster_pairs": 17,
+            "retained_median_ns": 1201072.5
+          }
+        ]
+      },
+      "confirmed_probe_boundary": "cost_round lines364-382 times inserts only, then returns full base/FTS row vectors after readback and rollback. At417-427 the first returned row vectors remain live during the second timing. Warm reference vectors also remain in scope equally. This adds a possible allocator/state asymmetry to already observed order dependence; causal size is unknown.",
+      "custody_boundary": "Published original intake explicitly says original observer hashed its actual ELF but original ZIP contains no ELF, so a later independent rehash cannot be obtained merely by reopening that ZIP. Earlier comment's 'ELF not yet independently accepted' must not turn into an impossible retrospective requirement or a false seal claim.",
+      "minimum_now": [
+        "Documentation-only: append the exact ELF-unavailable boundary and timing/readback lifetime asymmetry to existing HOLD while preserving all80 records and the historical comment.",
+        "Use the already available by_first10/10 distributions when assessing the local claim. Do not pool cases, trim rounds, invent a threshold or assert end-to-end gains.",
+        "If preparing a future diagnostic patch, add a separately named ignored probe with symmetric per-side readback/output lifetimes and common untimed equality reference; retain existing timer boundaries and original probe. This can be authored/reviewed without running a full study, but no new results exist yet.",
+        "No production fix is justified solely by the small noisy timings: lazy initialization, error cleanup and per-file statement lifetime are already implemented and tested. Do not add a guessed chunk-count activation cutoff.",
+        "Any eventual current-main integration must merge retained-statement changes with main's existing immutable-payload/prevalidated-frontier changes in the same write_batch file; replacing the file wholesale with the old PR would lose adopted work."
+      ],
+      "new_correctness_defect_found": false,
+      "parallelism": "The documentation and separately named probe preparation can proceed alongside190; product integration into main needs an explicit same-file merge review and actual future CI. No study/ref action here."
+    }
+  ],
+  "overall": {
+    "recommended_order": [
+      "190:reuse existing equal-lifetime candidate, no duplicate implementation",
+      "191:document custody/lifetime limits and prepare symmetric probe only if desired",
+      "188:keep production adoption held; document adverse results and design read-only membership alternative before new cost evidence"
+    ],
+    "no_claim_that_docs_clear_performance_hold": true,
+    "no_original_task_closed": true,
+    "task_counts": {
+      "done": 164,
+      "total": 192,
+      "remaining": 28,
+      "new_from_this_review": 0
+    },
+    "source_comment_results_preserved_completely": true
+  },
+  "retrieval_limitations": [
+    {
+      "operation": "fetch archived member blob a7e7573a65c1924cae67c3534f42a0744d069fc8",
+      "result": "404; manifest member may be archive-only. Not retried, not interpreted as absent archive or invalid actual admission; manifest+static peer sufficient for recommendation. No tar download."
+    }
+  ],
+  "adoption_vs_performance": {
+    "fixed_main": "a406a4968c46ab005225666e60e81acddaa77de8",
+    "current_main_core_blobs": {
+      "oracle": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "streaming": "70394ba06bf714bce1af64a9b9c400f0e0584a46",
+      "write_batch": "8beb3cd41d5472429cc3d7e08df79032cbbb4ba5",
+      "resolution_dependency_store": "97d3d9519fe10ed7cd30b9783164348998c02abc"
+    },
+    "common_adopted_baseline": "RowProjection map/key reuse and streaming scratch INSERT_TIERS [64,8,1] / PENDING_BYTES64KiB are in main. These predate or are distinct from the three PR-specific deltas.",
+    "PR188": "Main resolution_store129 probe_cap=cap+excluded.len and163 Rust filtering remain. PR1886a875 applies json_each exclusion before LIMIT. Unique production behavior not adopted; an already absorbed BENCHMARK historical section is not full supersession.",
+    "PR190": "Main RowProjection119 has cols/values and serialize_row164 calls self.project. PR190 adds serialization_order, ProjectedCell/BorrowedProjectedRow and borrowed Text. Reuse of the RowProjection type name does not mean the borrowed-text proposal was adopted.",
+    "PR191": "Main write_batch retains prepared_frontier at337/462 and the old chunks+FTS loop878. It has no insert_rebuild_chunks/execute_rebuild_chunk_statement. PR191 retains two cached business-chunk INSERT handles for a rebuild-owned file. Oracle scratch-spool batching64/8/1 is a different table/path and does not supersede it.",
+    "closure_recommendation": "No full-supersession close is supported for188/190/191. Preserve unique candidates separately; document common already-adopted baseline and unproven speed claims rather than keep a false general 'nothing adopted' claim."
+  }
+}

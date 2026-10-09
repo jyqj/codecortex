@@ -1,0 +1,336 @@
+{
+  "schema": "PR190-exact-label-event-side-effect-review-v1",
+  "reviewer": "/root/execution_recon",
+  "observed_at": "2026-10-09T23:20:41.991911+00:00",
+  "source_G": "f6750cad0df45af4ec2dddc456e76cc188f3a35a",
+  "observed_PR": {
+    "number": 190,
+    "head": "9ddae045f6925140a4d652c5f28f64add459eff1",
+    "head_ref": "task/p8-oracle-borrowing-a217-20261009",
+    "base": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+    "base_ref": "base/p8-M7F-a217-20261009",
+    "draft": true,
+    "mergeable": true,
+    "labels": [
+      "p8-oracle-cost-run"
+    ]
+  },
+  "proposed_new_label": "p8-oracle-equal-lifetime-cost-run",
+  "verdict": "new_label_only_selects_equal_lifetime_observe_no_old_cost_scale_or_soak_job",
+  "labeled_workflow_count": 3,
+  "labeled_event_decisions": [
+    {
+      "workflow": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml",
+      "line": 27,
+      "job": "observe",
+      "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-equal-lifetime-cost-run'",
+      "new_label_condition": true,
+      "other_jobs": []
+    },
+    {
+      "workflow": ".github/workflows/p8-oracle-serialization-cost.yml",
+      "line": 27,
+      "job": "observe",
+      "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-cost-run'",
+      "new_label_condition": false,
+      "other_jobs": []
+    },
+    {
+      "workflow": ".github/workflows/p8-scale.yml",
+      "line": 19,
+      "job": "build",
+      "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-run'",
+      "new_label_condition": false,
+      "downstream": {
+        "preflight": "needs build -> skipped",
+        "measure": "needs build,preflight -> skipped",
+        "aggregate": "always() && needs.build.result == 'success' -> false when build skipped"
+      }
+    }
+  ],
+  "jobs_eligible_from_this_label_only": [
+    {
+      "workflow": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml",
+      "job": "observe",
+      "timeout_minutes": 90
+    }
+  ],
+  "existing_old_label_effect": "Current p8-oracle-cost-run remains on PR, but oldcost uses event.label.name, not membership of the full current labels. Adding the new label does not reselect oldcost.",
+  "no_PR_label_collection_predicate_in_all12_workflows": true,
+  "ordinary_workflows_not_subscribed_to_labeled": [
+    "ci.yml",
+    "p7-closeout.yml",
+    "p7-engineering.yml",
+    "p8-gates.yml",
+    "p8-lifecycle.yml",
+    "p8-platform.yml",
+    "p8-runtime.yml"
+  ],
+  "other_non_PR_workflows": [
+    "p8-db-lock-observation.yml",
+    "p8-surface-window-controls.yml"
+  ],
+  "separate_head_fast_forward_event": {
+    "type": "pull_request synchronize",
+    "actual_compare": {
+      "base": "9ddae045f6925140a4d652c5f28f64add459eff1",
+      "merge_base": "9ddae045f6925140a4d652c5f28f64add459eff1",
+      "status": "ahead",
+      "ahead_by": 3,
+      "behind_by": 0,
+      "files": [
+        {
+          "path": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml",
+          "status": "added",
+          "sha": "89c434b3ed7eeea90600583e8837bf5a40d5117f"
+        },
+        {
+          "path": "crates/cc-eval/src/benchmark/oracle.rs",
+          "status": "modified",
+          "sha": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a"
+        },
+        {
+          "path": "scripts/reviewed-source-registry-v15.json",
+          "status": "modified",
+          "sha": "d07fe235d4ade806d42edb292a27dbed81b5068f"
+        },
+        {
+          "path": "scripts/verify_reviewed_source_v15.py",
+          "status": "modified",
+          "sha": "bee2a76281d836ac5b66823f787c996b04d1a10a"
+        }
+      ]
+    },
+    "warning": "Advancing9dd->f675 can trigger ordinary existing CI, including runtime soak, independently of the label. It changes crates/cc-eval/src/benchmark/oracle.rs and matches crates/** path filters. No attempt to suppress, alter, or relabel these runs is made.",
+    "eligible_job_definitions": {
+      "ci.yml": [
+        "check",
+        "msrv",
+        "security"
+      ],
+      "p7-closeout.yml": [
+        "closeout",
+        "mechanism",
+        "offline"
+      ],
+      "p7-engineering.yml": [
+        "engineering"
+      ],
+      "p8-gates.yml": [
+        "gate_controls"
+      ],
+      "p8-lifecycle.yml": [
+        "lifecycle"
+      ],
+      "p8-platform.yml": [
+        "recovery",
+        "cold-build (original matrix)",
+        "complete-matrix (after cold-build)"
+      ],
+      "p8-runtime.yml": [
+        "mixed (original matrix)",
+        "soak",
+        "fake_backfill"
+      ]
+    },
+    "ordinary_path_filter_scope": "Eligibility from unchanged workflow definitions and actual product-path delta; not a claim that jobs have been scheduled or executed. Candidate fixed base is M7F, no main retarget.",
+    "compare_scope_note": "17 originalchanged files;13 historical artifact additions omitted from this compact path projection; the4 displayed paths include oracle source/newworkflow/2bindings."
+  },
+  "default_event_semantics": {
+    "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request",
+    "fact": "Unspecified pull_request activity types default to opened,synchronize,reopened; labeled requires explicit types.",
+    "mergeability_boundary": "GitHub may block pull_request execution on a merge conflict; this static review does not promise scheduling or execution."
+  },
+  "all12_workflow_identity_and_relevant_lines": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "declared_bytes": 11046,
+      "job_keys": [
+        "check",
+        "msrv",
+        "security"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p7-closeout.yml",
+      "git_blob": "356e1abbb1d7eee729af9effbc23d143328fd76c",
+      "declared_bytes": 21396,
+      "job_keys": [
+        "closeout",
+        "mechanism",
+        "offline"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p7-engineering.yml",
+      "git_blob": "f99933edf0bd03c0d9fa5ba520ed94dfbbd49e12",
+      "declared_bytes": 5428,
+      "job_keys": [
+        "engineering"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-db-lock-observation.yml",
+      "git_blob": "be748aa8c8ee902661fa81bc1be3683a508e9d27",
+      "declared_bytes": 5547,
+      "job_keys": [
+        "admission_and_controls",
+        "mixed"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 43,
+          "text": "    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && github.event.ref == 'task/p8-db-lock-observation-a217-20261009') || (github.event_name == 'push' && github.ref == 'refs/heads/task/p8-db-lock-observation-a217-20261009')"
+        },
+        {
+          "line": 84,
+          "text": "    needs: admission_and_controls"
+        }
+      ],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-gates.yml",
+      "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+      "declared_bytes": 1255,
+      "job_keys": [
+        "gate_controls"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "git_blob": "577ba891ec1eb56da364087c1ad180045185f61c",
+      "declared_bytes": 5387,
+      "job_keys": [
+        "lifecycle"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-oracle-serialization-cost.yml",
+      "git_blob": "8783b06e765ce32386def8f567393fdb82a4dc10",
+      "declared_bytes": 13226,
+      "job_keys": [
+        "observe"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 27,
+          "text": "    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-cost-run'"
+        }
+      ],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml",
+      "git_blob": "89c434b3ed7eeea90600583e8837bf5a40d5117f",
+      "declared_bytes": 14589,
+      "job_keys": [
+        "observe"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 27,
+          "text": "    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-equal-lifetime-cost-run'"
+        }
+      ],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-platform.yml",
+      "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+      "declared_bytes": 6812,
+      "job_keys": [
+        "recovery",
+        "cold-build",
+        "complete-matrix"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 139,
+          "text": "    needs: cold-build"
+        },
+        {
+          "line": 140,
+          "text": "    if: always()"
+        }
+      ],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-runtime.yml",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "declared_bytes": 5782,
+      "job_keys": [
+        "mixed",
+        "soak",
+        "fake_backfill"
+      ],
+      "job_gate_lines": [],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "declared_bytes": 8621,
+      "job_keys": [
+        "build",
+        "preflight",
+        "measure",
+        "aggregate"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 19,
+          "text": "    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-run'"
+        },
+        {
+          "line": 49,
+          "text": "    needs: build"
+        },
+        {
+          "line": 109,
+          "text": "    needs: [build, preflight]"
+        },
+        {
+          "line": 169,
+          "text": "    if: always() && needs.build.result == 'success'"
+        },
+        {
+          "line": 170,
+          "text": "    needs: [build, preflight, measure]"
+        }
+      ],
+      "uses_PR_label_collection": false
+    },
+    {
+      "path": ".github/workflows/p8-surface-window-controls.yml",
+      "git_blob": "34a96f91e550313659cd598ce3466b82bfc310d8",
+      "declared_bytes": 12090,
+      "job_keys": [
+        "controls"
+      ],
+      "job_gate_lines": [
+        {
+          "line": 23,
+          "text": "    if: github.run_attempt == 1"
+        }
+      ],
+      "uses_PR_label_collection": false
+    }
+  ],
+  "no_new_runs_or_downloads_or_refs_or_labels": true,
+  "new_probe_semantics_or_archived_execution_rereviewed": false,
+  "root_confirmed_scope": "Root explicitly accepts the normal synchronize CI/runtime/soak for newheadGf675, without counting those as an old independent study or manually rerunning/cancelling studies.",
+  "full_local_source_support_sha256": "b729b257134729e3d8d381f31e2f908fb4343a555a53f29f9231af68fcdeb5c5"
+}

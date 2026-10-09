@@ -1,0 +1,98 @@
+{
+  "schema": "PR198-root-bounded-document-review-and-process-scope-v1",
+  "head": "335237cf35f0972431fc37a8c6237a1ae51dbd75",
+  "reviewed_at": "2026-10-09 23:21:35 UTC",
+  "exact_three_diff_reviewed": true,
+  "source_and_validation_guard_inputs_unchanged": true,
+  "current_main_scope_review": "b891354b19c3354cec4b8792ac21127d85d0d000",
+  "facts": "Mutation-case uses the current 15-table oracle list; 14 MCP tools unchanged. Ownership evidence uses original named source/run/test scopes; archive replay runs in a separate per-suite copy with original gate and failure state preserved.",
+  "contribution_baseline_check": {
+    "status": "not_run",
+    "contributing_blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+    "script_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+    "reason": "Original script invokes the whole workspace/all-targets including historical cases outside the current CI's allowed regression scope; it checks TEST_PLAN test/corpus counts rather than this oracle table list. Current CI and p8_facts are not represented as execution of that script.",
+    "root_disposition": "Record this bounded process difference explicitly in PR198. Do not change or emulate the old script and do not expand unrelated measurement/semantic execution for this three-document change.",
+    "drift_exit_note": "Script prints DRIFT but does not exit with DRIFT; a future zero exit alone would not certify no drift."
+  },
+  "original_tool_observations": [
+    {
+      "i": 0,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "content": "# 贡献指南\n\n## 最低 Rust 版本\n\n1.95（2021 edition）。由 rusqlite 0.40（libsqlite3-sys 0.38 使用\n`cfg_select!`，1.95 才稳定）决定，CI 强制。\n\n## 构建\n\n```bash\ncargo build\ncargo build --release    # 带 thin LTO 的优化二进制\n```\n\n## 测试\n\n```bash\ncargo test                 # 全部 crate\ncargo test -p cc-model     # 单个 crate\ncargo test -p cc-eval      # 评测套件（fixture + 语料）\n```\n\n依赖严格单向，每个 crate 都能独立编译测试——`cargo test -p cc-db`、\n`cargo test -p cc-index` 不需要构建整个工作区。\n\n测试布局与 eval 语料见 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)。\n\n## Lint 与格式化\n\n```bash\ncargo fmt --all -- --check\ncargo clippy --workspace --all-targets -- -D warnings\n```\n\n## 提交前检查\n\n未配置 pre-commit 钩子。提交前运行：\n\n```bash\ncargo fmt --all -- --check \\\n  && cargo clippy --workspace --all-targets -- -D warnings \\\n  && cargo test --workspace \\\n  && cargo test -p cc-eval -- integration_fixtures_and_corpus\n```\n\n真实工作区性能回归检查：\n\n```bash\nCODECORTEX_WRITE_REAL_BENCHMARK=1 \\\n  cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture\n```\n\n基准细节见 [docs/BENCHMARK.md](docs/BENCHMARK.md)。\n\n### Code Index V2 / P0 评测底座\n\n新的开发用 `cc-eval` binary 提供 `validate/run/replay/compare/import-oce/mutate/schema`；生产 `codecortex` CLI 不变。使用方法见 [P0 USAGE](crates/cc-eval/benchmarks/USAGE.md)，失败口径见 [KNOWN-FAILURES](crates/cc-eval/benchmarks/KNOWN-FAILURES.md)。真实协议测试需要显式指定当前构建的产品二进制，不能把进程内 duplex 测试称为子进程 stdio。\n\n本机遇到 SDK/TAPI 不兼容时，只为构建子进程指定兼容 SDK，不切换系统全局设置：\n\n```sh\npython3 scripts/p0-validation.py \\\n  --sdkroot /path/to/compatible/MacOSX.sdk \\\n  --target-dir target/p0-validation \\\n  --evidence-dir artifacts/benchmarks/a-new-validation-run \\\n  --product-binary /path/to/exact/codecortex\n```\n\n该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。\n\n记录平台结论时同时注明源码、实际 OS/架构、Rust 工具链与所选 SDK；没有采集的 SDK\n版本写明 unknown，不从构建成功推断。新 target 的产品冷构建、完整 workspace 测试、\n单个测试和独立诊断各自保留命令、退出码与前置条件；使用预先执行过的 helper 时明确\n记录准备步骤，不能据此重标首次执行 helper 的旧失败。已知范围见\n[平台证据边界](docs/BENCHMARK.md#p8-平台证据边界2026-10-09)。\n\n## 文档约定\n\n- 文档语言为简体中文；代码标识符、命令、日志、错误信息保留原文。\n  `docs/benchmarks/` 下的报告由测试生成（英文），不手工编辑。\n- 文档里的可核对数字（测试数、语料数、schema 版本等）改动后运行\n  `scripts/update-doc-baselines.sh` 核对 `docs/TEST_PLAN.md` 的基线。\n- 跨 crate 的结构性决策写 ADR，约定见\n  [docs/adr/README.md](docs/adr/README.md)。\n\n## CLI 命令\n\n```\ncodecortex mcp [--project-path PATH]   启动 MCP stdio 服务器\ncodecortex install [--force]           为检测到的 AI agent 安装 MCP 配置\ncodecortex uninstall                   从所有 AI agent 移除 MCP 配置\n```\n",
+            "encoding": "utf-8",
+            "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+            "display_url": "https://github.com/jyqj/codecortex/blob/a406a4968c46ab005225666e60e81acddaa77de8/CONTRIBUTING.md",
+            "display_title": "CONTRIBUTING.md"
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "i": 1,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "content": "[]",
+            "title": "comments",
+            "modified_date": null,
+            "url": "https://api.github.com/repos/jyqj/codecortex/issues/198/comments?per_page=100",
+            "display_url": "https://api.github.com/repos/jyqj/codecortex/issues/198/comments?per_page=100",
+            "display_title": "comments",
+            "structuredContent": {
+              "title": "comments",
+              "content": "[]",
+              "display_url": "https://api.github.com/repos/jyqj/codecortex/issues/198/comments?per_page=100"
+            }
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "i": 2,
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "content": "[]",
+            "title": "reviews",
+            "modified_date": null,
+            "url": "https://api.github.com/repos/jyqj/codecortex/pulls/198/reviews?per_page=100",
+            "display_url": "https://api.github.com/repos/jyqj/codecortex/pulls/198/reviews?per_page=100",
+            "display_title": "reviews",
+            "structuredContent": {
+              "title": "reviews",
+              "content": "[]",
+              "display_url": "https://api.github.com/repos/jyqj/codecortex/pulls/198/reviews?per_page=100"
+            }
+          },
+          "isError": false
+        }
+      }
+    }
+  ],
+  "task_status_change": false
+}

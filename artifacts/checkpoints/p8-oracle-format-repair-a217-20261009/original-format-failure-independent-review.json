@@ -1,0 +1,366 @@
+{
+  "actual_checkout": "19a8bc964ae766095b45d25acefd3d506a48ed13",
+  "actual_tree": "b95b5d069cf35f0181c0534ea7855ca48c503cc4",
+  "attempt": 1,
+  "exit_code": 1,
+  "failed_command": "cargo fmt --all -- --check",
+  "failure_timestamp": "2026-10-09T16:18:12.5892425Z",
+  "formal_new_tasks": 0,
+  "formatter_log_lines": [
+    477,
+    478,
+    479,
+    480,
+    481,
+    482,
+    483,
+    484,
+    485,
+    486,
+    487,
+    488
+  ],
+  "hunk": [
+    "2026-10-09T16:18:10.4172334Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/oracle.rs:236:",
+    "2026-10-09T16:18:10.4173227Z              }",
+    "2026-10-09T16:18:10.4173693Z              let borrowed = BorrowedProjectedRow {",
+    "2026-10-09T16:18:10.4174247Z                  cols: self.cols,",
+    "2026-10-09T16:18:10.4174964Z -                order: self.serialization_order.as_deref().expect(\"layout initialized\"),",
+    "2026-10-09T16:18:10.4175851Z +                order: self",
+    "2026-10-09T16:18:10.4176303Z +                    .serialization_order",
+    "2026-10-09T16:18:10.4176786Z +                    .as_deref()",
+    "2026-10-09T16:18:10.4177267Z +                    .expect(\"layout initialized\"),",
+    "2026-10-09T16:18:10.4177795Z                  cells: &cells,",
+    "2026-10-09T16:18:10.4178210Z              };",
+    "2026-10-09T16:18:10.4185045Z              serde_json::to_string(&borrowed).map_err(Into::into)"
+  ],
+  "job_id": 113909849529,
+  "official_job": {
+    "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113909849529",
+    "completed_at": "2026-10-09T16:18:14Z",
+    "conclusion": "failure",
+    "created_at": "2026-10-09T16:08:54Z",
+    "head_branch": "task/p8-oracle-borrowing-a217-20261009",
+    "head_sha": "eded24951c3e99693410ce959a627ab575f66bec",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/37956976194/job/113909849529",
+    "id": 113909849529,
+    "labels": [
+      "ubuntu-latest"
+    ],
+    "name": "check",
+    "node_id": "CR_kwDOSnV9Ys8AAAAahY5duQ",
+    "run_attempt": 1,
+    "run_id": 37956976194,
+    "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37956976194",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions",
+    "runner_id": 1000006090,
+    "runner_name": "GitHub Actions 1000006090",
+    "started_at": "2026-10-09T16:17:27Z",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-10-09T16:17:28Z",
+        "conclusion": "success",
+        "name": "Set up job",
+        "number": 1,
+        "started_at": "2026-10-09T16:17:27Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:17:59Z",
+        "conclusion": "success",
+        "name": "Run actions/checkout@v4",
+        "number": 2,
+        "started_at": "2026-10-09T16:17:28Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:17:59Z",
+        "conclusion": "success",
+        "name": "Run dtolnay/rust-toolchain@stable",
+        "number": 3,
+        "started_at": "2026-10-09T16:17:59Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:08Z",
+        "conclusion": "success",
+        "name": "Run Swatinem/rust-cache@v2",
+        "number": 4,
+        "started_at": "2026-10-09T16:17:59Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "failure",
+        "name": "Format check",
+        "number": 5,
+        "started_at": "2026-10-09T16:18:08Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Clippy",
+        "number": 6,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Compile every default test target",
+        "number": 7,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Default regression within authorized scope",
+        "number": 8,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Fixed resource driver harmless fixtures and TODO consistency",
+        "number": 9,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+        "number": 10,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Eval suite",
+        "number": 11,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P0 benchmark optional HTTP contract tests",
+        "number": 12,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P0 real MCP subprocess adapter",
+        "number": 13,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P2-A public surface real MCP regression",
+        "number": 14,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P2-B resolution dependency real MCP regression",
+        "number": 15,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P2-C durable recovery and freshness MCP regression",
+        "number": 16,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P2-D multi-language public truth regression",
+        "number": 17,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P3-A project config recovery real MCP",
+        "number": 18,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P3-B package and module recovery real MCP",
+        "number": 19,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P3-C Go package recovery real MCP",
+        "number": 20,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P3-C available independent module oracles",
+        "number": 21,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P3-D module boundary and architecture contracts",
+        "number": 22,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P4-A source fidelity and real MCP indexing",
+        "number": 23,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P4-B chunk budgets and live-session policy changes",
+        "number": 24,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P4-C document versions and source freshness",
+        "number": 25,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P4-D identity and chunk-quality gates",
+        "number": 26,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P5-A versioned retrieval lanes",
+        "number": 27,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P5-B bounded query execution and cancellation",
+        "number": 28,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P5-C generation, bounded assembly and final source verification",
+        "number": 29,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P5-D capabilities, query pins and public policies",
+        "number": 30,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+        "number": 31,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "P7 semantic product disabled stdio contract",
+        "number": 32,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "skipped",
+        "name": "Post Run Swatinem/rust-cache@v2",
+        "number": 63,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "success",
+        "name": "Post Run actions/checkout@v4",
+        "number": 64,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T16:18:12Z",
+        "conclusion": "success",
+        "name": "Complete job",
+        "number": 65,
+        "started_at": "2026-10-09T16:18:12Z",
+        "status": "completed"
+      }
+    ],
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113909849529",
+    "workflow_name": "CI"
+  },
+  "original_log": {
+    "bytes": 37711,
+    "git_blob": "a5ff3aa11701c550de94ee0956f2f0c4609ebc55",
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowing-integration/current-ci/job-113909849529/original.log",
+    "sha256": "733c845c273c648452e0c342398ea910ba89df4c2befd97892481a145599cae5"
+  },
+  "other_execution_boundary": "Separate exact-head release cost job successful; not a substitute for this normal CI failure",
+  "path": "crates/cc-eval/src/benchmark/oracle.rs",
+  "remaining_tasks": 29,
+  "reviewed_at_utc": "2026-10-09T16:21:33.126603+00:00",
+  "reviewer": "/root/pr_audit",
+  "run": 37956976194,
+  "run_head": "eded24951c3e99693410ce959a627ab575f66bec",
+  "schema_version": 1,
+  "source_line": 236,
+  "source_modified_by_reviewer": false,
+  "subsequent_check_steps": "skipped; no clippy/workspace/normal controls results from this job",
+  "tree_exact_run_head": true,
+  "unique_formatter_hunks": 1,
+  "verdict": "actual_original_format_failure"
+}

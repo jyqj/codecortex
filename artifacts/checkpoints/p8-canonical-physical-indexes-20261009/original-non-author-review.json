@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09 09:42:16 UTC",
+  "verdict": "accepted_scoped_static_for_normal_source_review_and_existing_regression_execution",
+  "unresolved_blockers": [],
+  "task": "P8-017",
+  "scope": "three-file canonical physical-index maintenance definition consolidation; not task completion",
+  "author_plan": {
+    "git_blob": "678025c8db07d1ade5a23153d94f8da229a365c4",
+    "bytes": 14016,
+    "sha256": "dea5d9d8ea5f8a698619518a0ba227ebc63b5ec6dbec360edc7996919dad6a8d"
+  },
+  "patch": {
+    "git_blob": "6b2abd25a5420d5e902ef5cee5cc64641fa33086",
+    "bytes": 7788,
+    "sha256": "42a348a320fa6ceb0c9988e4fa4433d40ede00eefbe358fab97de036f32a5012"
+  },
+  "fixed_original_parent": "8da6bd93d6bd735e30daba11d821726a21ad8424",
+  "current_main_leaf_bridge": [
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "current_main": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "before_blob": "681c500b4ddd203582e87a874d268be68db3c1fe",
+      "body_sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+      "bytes": 21881,
+      "exact_old": true
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "current_main": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "before_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "body_sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "bytes": 7941,
+      "exact_old": true
+    },
+    {
+      "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+      "current_main": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "before_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+      "body_sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
+      "bytes": 12152,
+      "exact_old": true
+    }
+  ],
+  "files": [
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "mode": "100644",
+      "before": {
+        "git_blob": "681c500b4ddd203582e87a874d268be68db3c1fe",
+        "bytes": 21881,
+        "sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be"
+      },
+      "after": {
+        "git_blob": "603e8060ad36c0a46242184e74d4e56805e1d8d9",
+        "bytes": 24666,
+        "sha256": "f524cf3f23f3bb3b7d1926605681d78010f7a056b7c8766561db4a8030971e5b"
+      },
+      "full_get_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "mode": "100644",
+      "before": {
+        "git_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+        "bytes": 7941,
+        "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+      },
+      "after": {
+        "git_blob": "55ce1194ab0e890ad43793077cf1238ab150da5d",
+        "bytes": 8481,
+        "sha256": "97fb618da9eaff1088998942fcc1396c3c515314e048ac6081515c83447a873c"
+      },
+      "full_get_equal": true
+    },
+    {
+      "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+      "mode": "100644",
+      "before": {
+        "git_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+        "bytes": 12152,
+        "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+      },
+      "after": {
+        "git_blob": "f581c77eb8f6d414712c584fbf66ae24fc50a049",
+        "bytes": 12307,
+        "sha256": "db47e6215a7cead2e28d04a9df26e96e97d1c2737f27502e15566001767254c4"
+      },
+      "full_get_equal": true
+    }
+  ],
+  "whole_patch_reconstruction": [
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "whole_patch_exact": true
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "whole_patch_exact": true
+    },
+    {
+      "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+      "whole_patch_exact": true
+    }
+  ],
+  "findings": [
+    {
+      "area": "canonical definitions",
+      "conclusion": "The existing canonical SQL has exactly the original two IF NOT EXISTS definitions with byte-identical DDL bodies. Existing matching-schema migration duplicates those bodies. Candidate selects only semantic_outbox_fifo_pending then chunk_symbol_identity_doc_key, preserving old execution order even though canonical file order differs.",
+      "canonical_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "canonical_lines": [
+        560,
+        120
+      ]
+    },
+    {
+      "area": "SQL selection",
+      "conclusion": "Uses existing sqlite3_complete statement boundary splitting and existing index classification/name extraction. Preserves selected statement text/predicate and ignores trigger-contained string plus unrelated index. Missing/repeated definitions or repeated requested name returns None; caller raises Database error before any maintenance statement. This is a deliberate fail-closed maintenance-schema contract.",
+      "boundary": "Not a new general-purpose SQL parser; arbitrary quoted/modified future name syntax is not certified. Current fixed canonical unquoted names and line comments match exactly. Future incompatible canonical change fails rather than silently skipping indexes."
+    },
+    {
+      "area": "cache",
+      "conclusion": "OnceLock caches only immutable compiled canonical SQL selection, not connection, database state, generation, transaction or read snapshot. Every current-schema open still executes the two original SQLite statements and then original read_generation::ensure."
+    },
+    {
+      "area": "original behavior",
+      "conclusion": "Fresh schema SQL/user_version25, mismatch/rebuild path, SchemaStatus variants, read-only refusal and original SQL error mapping are retained. DirectWriter existing production functions and existing parser bodies are unchanged. No data/epoch/incarnation rewrite or new DDL definition is introduced."
+    },
+    {
+      "area": "regressions",
+      "conclusion": "One new real-SQLite unit method checks caller order, unique/nonunique type, partial predicate containing semicolon, trigger-string exclusion, missing/repeated selection rejection. Existing integration now drops both access paths, compares full sqlite_schema SQL with fresh schema after two normal opens and retains all typed rows, generation metadata, read-only refusal, real FK cascade and EXPLAIN assertions. Original historical v21/v24 controls retained."
+    }
+  ],
+  "static_population": {
+    "direct_writer": 11,
+    "index_migrate": 5,
+    "ci_schema_guard_contract": 5,
+    "total": 21,
+    "new_methods": 1,
+    "ignored": 0,
+    "meaning": "source-defined methods only, not executions or passes"
+  },
+  "validation_required": "Normal unchanged fmt/Clippy and relevant original test targets still need actual execution on a fixed candidate. No new scale or performance prerequisite added. No source approval, published commit or merge authority inferred from this narrow review.",
+  "limitations": [
+    "No Rust, Cargo, SQLite, native, product or new test executed here; only fixed Git body reads, hashes and exact pure-JS patch reconstruction.",
+    "No measured speedup or complete repository-wide duplicate-owner audit certification.",
+    "The three actual current-main old bodies exactly equal the draft old bodies, so rebasing this same patch on fixed mainf7 does not require inventing a code merge. Any later source change needs fresh verification.",
+    "No TODO status changed; P8-017 dependency and broader acceptance remain open."
+  ],
+  "TODO": {
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

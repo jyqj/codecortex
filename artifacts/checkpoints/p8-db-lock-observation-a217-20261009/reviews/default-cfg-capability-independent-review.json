@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/scale_closeout",
+  "reviewed_utc": "2026-10-09T10:20:38.877596+00:00",
+  "verdict": "accepted_scoped_static_source_and_capability_review",
+  "scope": "Fifteen frozen candidate files, exact actual LP composition, default-off Rust and scale capability, explicit changed runtime observer identity. No new compilation, native workload or repetition of existing artifact acceptance.",
+  "product_commit": "48be21414e3e04cb542615157eef25fbffae4a17",
+  "product_tree": "421fabe282497ea00a22091b1c8630a8dc3fb913",
+  "sole_parent": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "actual_git_composition": {
+    "changed_paths": 15,
+    "bindings": [
+      {
+        "path": "crates/cc-db/Cargo.toml",
+        "change": "M",
+        "bytes": 467,
+        "sha256": "db903ff906d648cdabcd8261d0119a42f391370739e15313abba44ead01e2622",
+        "git_blob": "bed1ee2a9d36d85300ab737b63deeaa62361c3b8",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/lib.rs",
+        "change": "M",
+        "bytes": 2010,
+        "sha256": "4009224185a44950145f92df84b4dde27cba7279f7960674903b10e532da56cf",
+        "git_blob": "1d1fc26adbf3c344b8088e528772e5db09013693",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/index_db.rs",
+        "change": "M",
+        "bytes": 51685,
+        "sha256": "2fa3230ab5b25167b7db3d2052636058fe2adabbcc9030427547cd390fe0d539",
+        "git_blob": "f29aac1e787c60d86db46fbbdc10b4cf5103fa39",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/lock_observation.rs",
+        "change": "A",
+        "bytes": 20954,
+        "sha256": "77c1ffa0f042fb249afe16aca06469ebbed96a3eabc9fb7b0cf9c7e7131d9aa4",
+        "git_blob": "0e1401576f3ae0196ce402b07af955e17775c7d4",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-server/Cargo.toml",
+        "change": "M",
+        "bytes": 1491,
+        "sha256": "8438b1863748a482f69c8796128a397364380a462bd7fd18b9f1415b0e7c1a38",
+        "git_blob": "b9d61547fa3be800f8f9cfa56280a553cfe360dd",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-eval/Cargo.toml",
+        "change": "M",
+        "bytes": 1809,
+        "sha256": "c92cd2e0d3d8c48501849c4a1a4b411b4cee68c9d9ac7423f79e9203166e0e1d",
+        "git_blob": "ebe1c0288f2fd76442f968fb4170824d4f085378",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-server/src/handlers/facade.rs",
+        "change": "M",
+        "bytes": 30170,
+        "sha256": "ba187d5cfa9bef00bcc71dbfa517bac6c5d7b6330d3b89c1fbbad9d2a1974c54",
+        "git_blob": "b06674c3a67d67f3c851bc88fb3ac6d3e2f2bead",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-server/src/tools.rs",
+        "change": "M",
+        "bytes": 43452,
+        "sha256": "0307443fc5eedaca49691035b93c2d3606eabb5c29c7405ddc6da73e687b5b44",
+        "git_blob": "feed786f65f51f25960a72805d75bab8f331777e",
+        "mode": "100644"
+      },
+      {
+        "path": "crates/cc-server/tests/p8_db_lock_observation.rs",
+        "change": "A",
+        "bytes": 2663,
+        "sha256": "6d62a0503c41fdfc28e12d1621931ffbcd07c31030093047ea55e69dc0d09eea",
+        "git_blob": "07fea420a3a92566d605fa9267f72d2e9e8b19e6",
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_runtime.py",
+        "change": "M",
+        "bytes": 61672,
+        "sha256": "4b47808208702e9d5b20fbb95499e6b9973265b82f491bfc1288ca91f62cb14b",
+        "git_blob": "d8b24c6c1d21d6c80118b4f9ca49f17ff809a401",
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_runtime_build.py",
+        "change": "M",
+        "bytes": 19175,
+        "sha256": "b32d96aa467a2ceb2cbf12780c00e443d011685965b35d15a424279f5a98c9d9",
+        "git_blob": "394d63e0ee9c74dfbdcebf70cbc7290b2695a596",
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_runtime_lock_observation.py",
+        "change": "A",
+        "bytes": 9494,
+        "sha256": "b3277cfe4d93747221bc3baded67cc18c2a324332b79a0f4cfeb6141c150253b",
+        "git_blob": "2b1e901cf462bb36c34daf1f34bbd7ca7c0cbf36",
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/tests/test_p8_runtime_lock_observation.py",
+        "change": "A",
+        "bytes": 10389,
+        "sha256": "77c2be224f3cedf6e531eeb5dddf19a17d4046fbc4777ad88688b4caef7b0a50",
+        "git_blob": "bfa66a5862698d30dc65eadfce54395139a824a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".github/workflows/p8-db-lock-observation.yml",
+        "change": "A",
+        "bytes": 4641,
+        "sha256": "efbcb37a0805083c2a61a07f884c3ca74a1ce4dc2db7b6ae80ed1a7986e27d8c",
+        "git_blob": "051025f69a5fc24ec683d32f0c823e70ae4beb68",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/P8_DB_LOCK_OBSERVATION.md",
+        "change": "A",
+        "bytes": 5337,
+        "sha256": "3c1db09ebebddfa0b1e3e382c63150b228a6cd286e18d9de6195d8c6d11d1570",
+        "git_blob": "9940a077ea43148bd435377023aaea0cb3714977",
+        "mode": "100644"
+      }
+    ],
+    "all_other_parent_leaves_unchanged_by_exact_git_diff": true,
+    "not_claimed": "No new per-byte read of all unchanged product/validation files."
+  },
+  "author_manifests": [
+    {
+      "path": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/attribution-gap-review/implementation-checkpoint-v2.json",
+      "bytes": 3476,
+      "sha256": "c34fece5ecbe9fe50dfe0343cb14d38fe40efc69a5d4784777c67c50a2067a0c"
+    },
+    {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/lock-observation-harness-implementation-facts-v2.json",
+      "bytes": 8883,
+      "sha256": "cabffd961dffacf6a8a41094d7834d2292a697603068722060d8f73c148187a2"
+    }
+  ],
+  "default_feature_graph": [
+    {
+      "path": "crates/cc-db/Cargo.toml",
+      "only_new_feature": [],
+      "all_other_toml_values_equal": true,
+      "normalization": "Absent [features] and empty [features] treated identically; no Cargo defaults or dependencies removed."
+    },
+    {
+      "path": "crates/cc-server/Cargo.toml",
+      "only_new_feature": [
+        "cc-db/p8-db-lock-observation"
+      ],
+      "all_other_toml_values_equal": true,
+      "normalization": "Absent [features] and empty [features] treated identically; no Cargo defaults or dependencies removed."
+    },
+    {
+      "path": "crates/cc-eval/Cargo.toml",
+      "only_new_feature": [
+        "cc-server/p8-db-lock-observation",
+        "cc-db/p8-db-lock-observation"
+      ],
+      "all_other_toml_values_equal": true,
+      "normalization": "Absent [features] and empty [features] treated identically; no Cargo defaults or dependencies removed."
+    }
+  ],
+  "static_default_off_findings": [
+    "cc-db lock_observation module and all associated statics, TLS, clocks, snapshots, wrapper calls and instance-recording call are excluded when the feature is absent.",
+    "IndexDb default-active field list, types and order remain the original Mutex<Connection> and other original fields; constructor uses the original Mutex::new. Original read_conn body is unchanged behind cfg(not(feature)). This is a source-structural result, not measured compiled layout equivalence.",
+    "Server StatusParams fields/serde annotations and original validation remain unchanged. New aspect, early acceptance and observer scope are cfg-on only; original status match arms are unchanged.",
+    "Parsed all three Cargo manifests: removing only the new feature (normalizing absent/empty features table) restores the complete original parsed contents, including existing default/features/dependency settings. No feature enables diagnostics implicitly.",
+    "Original scale build_command remains cargo build --release --locked -p cc-eval --bin p8-scale with its original target/message-format flags and no diagnostic feature. Cargo artifact acceptance still restricts features to [] or [default].",
+    "The new diagnostic workflow is separate and uses an explicit feature build/receipt. Existing scale workflow, plan, seed, repetitions, capacity profile, 5-hour native limit, 350-minute job bound, parallelism and aggregate acceptance are unchanged."
+  ],
+  "unchanged_scale_inputs": [
+    {
+      "path": "scripts/p7_build_identity.py",
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "unchanged_from_C": true
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "unchanged_from_C": true
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "unchanged_from_C": true
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90",
+      "unchanged_from_C": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "unchanged_from_C": true
+    }
+  ],
+  "real_changes_and_limits": [
+    "Three Cargo files and Rust source bytes change. Source inventory, feature declarations/check-cfg inputs, panic/source line locations, compiler symbol salts or binary bytes may change. No bit-for-bit executable, machine layout, timing or statistical equivalence is asserted.",
+    "Default Python runtime observer/build code really changes: conditional diagnostic branches and receipt checks are added and OBSERVER_FILES includes the new helper for all builds (10 versus original C 9). The validation domain is not byte-identical to C.",
+    "Current C scale run and all its eventual accepted samples retain exact C/source/binary/driver identity. They must never be relabeled as LP samples. Their relevance to the unchanged default scale capability is an explicit applicability argument, conditional on actual relevant default/off regressions; this review does not claim LP itself measured 150 shards.",
+    "The feature-on binary adds real atomic/clock accounting overhead while original guards may remain held. Its four mixed workloads and counter results are a distinct diagnostic capability, not additional default latency samples.",
+    "The compiled-on module is const initialized (the prior OnceLock hidden initialization-blocking issue was fixed). CAS retry time has no hard wall-time bound. Acquisition times include uncontended call/checkout overhead; they do not measure SQLite busy or pure scheduler blocked time."
+  ],
+  "feature_on_boundary_review": [
+    "ObservedMutex preserves the original std LockResult<MutexGuard> and poison outcome; no second observer mutex was introduced. Synchronous status uses role-local TLS to separate its own DB acquisitions; retired handles remain in process-global counters.",
+    "Six fixed atomic counter groups are marked coherent only across a stable SeqCst sequence with no active recorder/overflow. In-flight acquisition counts are distinct from recorder activity.",
+    "Before/after raw snapshots bind the owned child PID, enclose the offered mixed interval and require drained coherent monotonic counters. Lifetime maximum is not subtracted into an interval maximum. Failed snapshots remain failed and do not suppress original oracle/statistics/failure artifacts.",
+    "Default and feature receipts are explicitly separated and cannot be interchanged; original offered operations, denominators, endpoint parity, owned cleanup and seals remain required."
+  ],
+  "actual_existing_python_control_evidence": {
+    "receipt": {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/lock-observation-python-controls-final.json",
+      "bytes": 5778,
+      "sha256": "98da40fdf85ffe04a031ea7186b7d1c7ab1ff43f2acba0449c7d448e7580da37"
+    },
+    "log": {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/lock-observation-python-controls-final.log",
+      "bytes": 13572,
+      "sha256": "dc1e7a637449d09dbe13006c08c625c2d1701b51fb467792c1b925009b090cc2"
+    },
+    "tests": 77,
+    "exit_code": 0,
+    "seconds": 21.571,
+    "ten_code_workflow_inputs_before_after_and_current_equal": true,
+    "review_action": "Read and hash original receipt/log and compare current hashes; did not rerun these controls.",
+    "scope": "Python protocol and driver controls only, not Rust compilation or native measurements."
+  },
+  "required_actual_validation_pending": [
+    "Rust formatting/compilation of cfg-off and cfg-on paths",
+    "Original default-off server aspect rejection control",
+    "Eight feature-on real-acquisition cc-db controls and feature-on no-SQL server control",
+    "Four original mixed C=1/4/8/16 diagnostic runs and complete retained-source/build/raw verification"
+  ],
+  "capability_disposition": {
+    "continue_existing_C_full_scale": true,
+    "automatically_restart_150_due_only_to_new_git_sha": false,
+    "basis": "No identified default scale execution-semantic change after static cfg and feature-graph review; five original scale inputs remain byte-identical. Preserve exact C evidence and require actual relevant regression results before final applicability conclusion.",
+    "LP_default_runtime_automatically_inherits_all_C_acceptance": false,
+    "new_observer_count": 10,
+    "original_C_observer_count": 9,
+    "todo_completion": false,
+    "remaining_todos": 29
+  },
+  "review_process_note": "An initial parsed-TOML comparison rejected an absent-versus-empty features table representation after removing the new feature. Corrected only the comparison normalization, then all three complete parsed contents matched. No source file was changed by this review."
+}

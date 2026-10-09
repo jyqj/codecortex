@@ -1,8 +1,9 @@
 //! Index database schema management (rebuild-on-mismatch strategy).
 
 use crate::sql_util::db_err;
-use cc_model::CcResult;
+use cc_model::{CcError, CcResult};
 use rusqlite::Connection;
+use std::sync::OnceLock;
 
 /// v7: scan/diff content hashes switched from SHA-256 to blake3 (hex width
 /// unchanged). Stored hashes are not comparable across algorithms, so the
@@ -44,6 +45,27 @@ pub const CURRENT_SCHEMA_VERSION: u32 = 25;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
+/// Only immutable compiled SQL is cached, never a database state or read epoch.
+/// Normal writable opens keep executing the original two statements in order.
+fn physical_index_maintenance_sql() -> CcResult<&'static str> {
+    static SQL: OnceLock<Option<String>> = OnceLock::new();
+    SQL.get_or_init(|| {
+        crate::direct_writer::selected_index_statements(
+            FULL_SCHEMA_SQL,
+            &[
+                "semantic_outbox_fifo_pending",
+                "chunk_symbol_identity_doc_key",
+            ],
+        )
+    })
+    .as_deref()
+    .ok_or_else(|| {
+        CcError::Database(
+            "canonical physical index maintenance requires one definition per index".into(),
+        )
+    })
+}
+
 /// Check the stored schema version and apply the full schema if needed.
 ///
 /// Returns `Ok(Initialized)` if the database was freshly created (version was 0).
@@ -62,10 +84,8 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
         // Keep this separate from semantic migrations: no reparse, version bump,
         // row rewrite, incarnation replacement or epoch movement. Errors propagate
         // through the normal writable open seam; never bypass read-only refusal.
-        conn.execute_batch(
-            "CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending';
-             CREATE INDEX IF NOT EXISTS chunk_symbol_identity_doc_key ON chunk_symbol_identity(doc_key);",
-        ).map_err(db_err)?;
+        conn.execute_batch(physical_index_maintenance_sql()?)
+            .map_err(db_err)?;
         crate::read_generation::ensure(conn)?;
         return Ok(SchemaStatus::UpToDate);
     }

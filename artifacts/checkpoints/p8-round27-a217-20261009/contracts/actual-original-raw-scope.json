@@ -1,0 +1,232 @@
+{
+  "schema": "P8-007-010-existing-attribution-contract-review-v1",
+  "reviewer": "/root/runtime_closeout",
+  "observed_source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "original_execution_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "external_claim": {
+    "head": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+    "git_blob": "055fe9425d1c2536600299bd78ddd43f173520e9",
+    "treatment": "Read as a claim and checked against original contract/current code/existing original members; not authority to add acceptance gates."
+  },
+  "method": {
+    "readback": "existing-original-field-readback.json",
+    "sha256": "02c1b0d14d1813b838d31e5afd33d6fb1e9ef69436f466367873e48d73a8aab8",
+    "size": 62607,
+    "coverage": "Five existing 173 runtime raw streams/report/statistics plus all three backfill seeds' summary/held-before/quiet and held rows; 27 original member hashes; current C source bytes equal Git for 16 read paths.",
+    "excluded": "No workload/native/statistics recomputation, no unchanged acceptance rerun, no source/status/CI modification. Current C has no raw yet. Existing ZIP whole verification was not repeated."
+  },
+  "conclusion": {
+    "requirement": "The original section 9 mixed-load attribution requirement applies to P8-007/V20 now; it is not conditional on G8 or paid/live authorization.",
+    "confirmed_gap": "Mixed read/build C1/4/8/16 originals do not record actual operation-path database lock-acquisition waits. The separate backfill read-pool and BEGIN/ROLLBACK availability probe is real evidence but cannot be renamed as mixed-workload lock-wait attribution. Current C has the same missing observation seam.",
+    "narrower_than_external_claim": "The literal says queue+service+end-to-end, DB lock wait and worker contention. It does not specify a full per-request backend-span tree, a unique RPC-ID extension, timing every lock, or independent worker-capacity/admission/service distributions. Those are possible instrumentation designs, not additional mandatory gates. Existing client phases and held-worker evidence must be retained and credited at their actual scope.",
+    "service_boundary": "Existing dispatch/admission/call durations form an honest client-side decomposition. They do not separate backend queue from backend service. Requiring an additional backend-internal split is an interpretation of service, not an explicit extra word in the original clause. A completion claim must state the measured boundary and cannot relabel client call elapsed as pure backend service.",
+    "task_010": "No new four-concurrency one-hour matrix or mandatory repetition of every mixed-load attribution measure is imposed on P8-010. Its actual one-hour, cache/worker reuse, memory/queue and endpoint-parity observations remain valid for their original source. P8-007's real gap blocks downstream final completion through the original hard dependencies.",
+    "status": "No task closure; 163 done / 29 remaining. Original scoped helper successes remain successes of their recorded narrower scopes."
+  },
+  "contract_anchors": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "task": "P8-007",
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 175,
+      "literal": "并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。",
+      "interpretation": "No conditional qualifier in this sentence. Backend/per-RPC/exhaustive internal spans are not literal words."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 42,
+      "literal": "| V20 | 性能/资源/成本 | 1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用 | L3/L5 |",
+      "interpretation": "Summary row does not waive the explicitly linked benchmark specification."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "task": "P8-010",
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "depends_on": [
+        "P8-009"
+      ],
+      "dependency_path_from_gap": [
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010"
+      ]
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "line": 122,
+      "clause": "C15: index reports are user-triggered evidence, no continuously persisted product telemetry database; benchmark independently collects raw/resources."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "line": 126,
+      "clause": "C16: current target SHA evidence remains required with actual source applicability; no old record relabeling."
+    }
+  ],
+  "observed_fields": [
+    {
+      "scope": "173 four mixed + soak",
+      "evidence": "All five original statistics.json latency_scope explicitly says client observations include transport, admission and validation; no separated backend service or queue claim.",
+      "fields": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "source": "crates/cc-eval/src/bin/p8-runtime-statistics.rs:170-207,283",
+      "meaning": "started-offered; call_started-started; finished-call_started; finished-offered; finished-scheduled. They retain all terminal denominators and are not backend-exclusive clocks."
+    },
+    {
+      "scope": "original raw resource and status",
+      "fields": [
+        "cpu_in_flight",
+        "cpu_admitted",
+        "async_in_flight",
+        "async_admitted",
+        "rejected",
+        "completed",
+        "cpu_limit",
+        "async_limit",
+        "queue_limit"
+      ],
+      "source": "crates/cc-search/src/execution.rs:53-110; scripts/p8_runtime.py:579-581",
+      "meaning": "Sampled executor occupancy/counts and bounded capacities; no accumulated wait or service duration. Not continuous peak and not per-operation attribution."
+    },
+    {
+      "scope": "build responses",
+      "fields": [
+        "build_timing",
+        "phase_timing",
+        "dirty_plan"
+      ],
+      "source": "scripts/p8_runtime.py:622-634",
+      "meaning": "Actual build-stage timing/counters preserved. prepare/commit/postprocess elapsed includes work; it does not isolate mutex or SQLite lock wait."
+    },
+    {
+      "scope": "backfill all three seeds",
+      "artifact_id": 11597519732,
+      "fields": [
+        "caller_schedule_us",
+        "capture_admission_us",
+        "retrieval_us",
+        "offered_to_api_return_us"
+      ],
+      "source": "crates/cc-eval/tests/p7_worker_contention.rs:239-268",
+      "meaning": "128 quiet +128 held calls per seed across C1/4/8/16. Original rows explicitly deny separated backend queue/service timing. This is meaningful real CodeIndex/API progress evidence."
+    },
+    {
+      "scope": "backfill held-worker contention",
+      "fields": [
+        "provider.active",
+        "provider.waiting",
+        "provider.maximum_active",
+        "queue.pending",
+        "queue.claimed",
+        "old_provider",
+        "queue_final"
+      ],
+      "source": "raw/seed-{7,19,43}/{held-before,summary}.json",
+      "meaning": "Actual four worker calls held at controlled fake provider, quiet/held request populations and terminal drain. This is actual contention/progress evidence; original requirement does not specifically demand worker-duration histograms."
+    },
+    {
+      "scope": "backfill DB availability",
+      "fields": [
+        "single_read_pool_checkout_us",
+        "read_statement_us",
+        "writer_acquire_and_rollback_us"
+      ],
+      "source": "crates/cc-eval/tests/p7_worker_contention.rs:213-237",
+      "example_seed7": {
+        "single_read_pool_checkout_us": 2,
+        "read_statement_us": 9,
+        "writer_acquire_and_rollback_us": 23,
+        "writer_busy_timeout_ms": 100
+      },
+      "meaning": "One same-source probe per seed while provider is held, before all held query waves. Writer measurement includes BEGIN and ROLLBACK; it is not pure SQLite busy wait and not a timing distribution for actual mixed read/build operations."
+    }
+  ],
+  "production_seams": [
+    {
+      "path": "crates/cc-search/src/execution.rs",
+      "lines": "113-181",
+      "fact": "run_cpu/run_async acquire admission and capacity, then execute work. Current ExecutionStats exposes counts/occupancy only."
+    },
+    {
+      "path": "crates/cc-server/src/query_handle.rs",
+      "lines": "146-161",
+      "fact": "capture_for_request uses the query pool before QueryHandle capture; capture obtains the CodeIndex read lock. Caller capture elapsed conflates these steps."
+    },
+    {
+      "path": "crates/cc-server/src/handlers/mod.rs",
+      "lines": "38-91",
+      "fact": "Actual CodeIndex read/write lock helpers have no timing."
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "lines": "18-36",
+      "fact": "Real index requests acquire a build gate before split build; no separate gate-wait record."
+    },
+    {
+      "path": "crates/cc-db/src/index_db.rs",
+      "lines": "713-725",
+      "fact": "read_conn obtains pool read lock then pool.get(), with no acquisition-time record."
+    },
+    {
+      "path": "crates/cc-db/src/unit_of_work.rs",
+      "lines": "59-64",
+      "fact": "Actual write mutex and SQLite BEGIN IMMEDIATE are separate operations but their waits are not observed separately."
+    }
+  ],
+  "minimum_completion_path": {
+    "immediate_no_source_work": "Retain the original measured phases, error/timeout denominator, build stages, queue occupancy and held-worker controls. Append this gap disposition rather than changing their raw or passed statuses. Do not rename old fields.",
+    "necessary_new_observation": "Add bounded, explicitly scoped actual mixed-workload database acquisition observations. Use the real selected read-pool/write-mutex acquisition sites, preserve all failure/cancellation paths and record observed/not-observed separately. A run-level or per-operation bounded diagnostic is permissible; the original contract does not force an exhaustive span hierarchy.",
+    "recommended_companion": "If the claim will include separated backend service/queue, instrument the actual query executor's admission/capacity wait and executed closure duration rather than deriving them from client timestamps. This is the smallest unambiguous resolution of the service-boundary uncertainty, not a new latency threshold.",
+    "sqlite_caveat": "Time around BEGIN IMMEDIATE includes acquisition/SQL execution and must be named accordingly. Do not change SQLite busy_timeout/backoff/transaction semantics merely to count waits or report missing observations as zero. DB mutex/pool waits and SQLite engine busy wait are distinct.",
+    "worker_caveat": "Reuse existing real held-worker quiet/held controls for contention at that declared scope. Extra capacity/service timers are useful only if claimed; do not require an invented per-worker timing matrix.",
+    "evidence": "Bind diagnostics to the new exact build/observer, save raw snapshots/row linkage and original count/time/error denominators, preserve original C1/4/8/16 workload sizes, no best-of, original queue/deadline/raw budgets and cleanup. Add meaningful held-lock/queued-worker/cancel/error/no-observation controls before the actual source-bound mixed run. Existing uninstrumented raw cannot reconstruct absent waits.",
+    "soak": "Do not start another hour merely because section 9 has mixed-load timings. An eventual new-source soak decision depends on the patch's actual effect on the original memory/queue/cache/worker paths and the normal current-source workflow, not an invented extra attribution requirement.",
+    "current_runs": "Current C3ff original runs remain frozen and continue. No cancellation/restart/new workload performed or requested by this review."
+  },
+  "scale_impact": {
+    "actual_path": "p8_scale.rs:640-645 calls CodeIndexBackend::build_index_report; runner.rs:131-132 sends the real index MCP tool over an in-process rmcp connection; handlers/core.rs executes the same gate/split build and underlying DB paths.",
+    "consequence": "Instrumentation in shared cc-db or index handlers is inside the scale native executable and exercised build path, not an observer-only external edit. Even optional disabled diagnostics alter source/binary identity; an unchanged result cannot simply be rebranded as the new binary.",
+    "boundary": "No patch exists yet, so no blanket claim that all scale evidence must rerun and no blanket source-equivalence claim is justified. Preserve ongoing C scale and all its samples at C. A future diff-specific closure review must identify whether/how measured path and enabled diagnostic behavior change; no mixing new/old shard populations, counts or timings.",
+    "no_new_gates": "This review adds no G8, live provider, paid call, 4x-hour soak, exhaustive lock tracing, new performance margin, or requirement to reach configured C as observed peak."
+  },
+  "peer_contract_review": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/P8-007-010-original-attribution-contract-scoped-review.json",
+    "sha256": "9bfd52f945f628183d67ca667fb7e09472f161d08f9d2724c7ed2a62138da878",
+    "scope": "Independent original contract interpretation only, not this fresh raw readback or product acceptance."
+  },
+  "limitations": [
+    "The external record's claim of absent fully separated backend data is factually consistent; its assertion that every listed internal timing is mandatory needs the narrower literal/measurement distinction above.",
+    "No current C raw exists at last official poll09:44:59; conclusions about its missing fields derive from exact current code, not fabricated execution.",
+    "A bounded observation success is not stable-tail certification or causal speedup.",
+    "Formal task completion remains false; original definitions, dependencies and historical evidence are unchanged."
+  ]
+}
+

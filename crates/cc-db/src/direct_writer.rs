@@ -154,6 +154,31 @@ pub(crate) fn extract_index_statements(sql: &str) -> String {
     result
 }
 
+/// Select explicitly maintained indexes from the canonical schema, in caller order.
+/// Missing or repeated names fail closed rather than silently changing maintenance.
+pub(crate) fn selected_index_statements(sql: &str, names: &[&str]) -> Option<String> {
+    let statements = split_sql_statements(sql);
+    let mut result = String::new();
+    for (position, name) in names.iter().enumerate() {
+        if names[..position].contains(name) {
+            return None;
+        }
+        let mut matching = statements.iter().copied().filter(|stmt| {
+            matches!(
+                classify_statement(stmt),
+                StmtKind::CreateIndex | StmtKind::CreateUniqueIndex
+            ) && index_name(stmt) == Some(*name)
+        });
+        let statement = matching.next()?;
+        if matching.next().is_some() {
+            return None;
+        }
+        result.push_str(statement);
+        result.push_str(";\n");
+    }
+    Some(result)
+}
+
 /// Emit `DROP INDEX IF EXISTS <name>;` for every index defined in `sql`.
 ///
 /// Derived from the same schema as [`extract_index_statements`] so the bulk-
@@ -279,6 +304,43 @@ mod tests {
         INSERT INTO "source;table" VALUES(2, 'seed;two');
         -- trailing ; comment
     "#;
+
+    #[test]
+    fn selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions() {
+        let schema = "
+            CREATE TABLE items(id INTEGER PRIMARY KEY, value TEXT);
+            CREATE TRIGGER audit AFTER INSERT ON items BEGIN
+                UPDATE items SET value='CREATE INDEX hidden ON items(id);' WHERE id=new.id;
+            END;
+            -- Preserve the partial predicate, including its quoted semicolon.
+            CREATE INDEX second ON items(value) WHERE value='a;b';
+            CREATE UNIQUE INDEX first ON items(id);
+            CREATE INDEX unrelated ON items(value,id);
+        ";
+        let selected = selected_index_statements(schema, &["first", "second"]).unwrap();
+        assert!(selected.find("INDEX first").unwrap() < selected.find("INDEX second").unwrap());
+        assert!(selected.contains("WHERE value='a;b'"));
+        assert!(!selected.contains("CREATE TRIGGER"));
+        assert!(!selected.contains("INDEX unrelated"));
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch("CREATE TABLE items(id INTEGER PRIMARY KEY, value TEXT);")
+            .unwrap();
+        conn.execute_batch(&selected).unwrap();
+        assert_eq!(
+            conn.query_row(
+                "SELECT count(*) FROM sqlite_schema WHERE type='index'",
+                [],
+                |row| row.get::<_, i64>(0),
+            )
+            .unwrap(),
+            2
+        );
+        assert!(selected_index_statements(schema, &["missing"]).is_none());
+        assert!(selected_index_statements(schema, &["hidden"]).is_none());
+        assert!(selected_index_statements(schema, &["first", "first"]).is_none());
+        let repeated = format!("{schema}\nCREATE INDEX first ON items(value);");
+        assert!(selected_index_statements(&repeated, &["first"]).is_none());
+    }
 
     #[test]
     fn sqlite_boundaries_preserve_triggers_quotes_comments_and_tail() {

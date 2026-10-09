@@ -412,13 +412,14 @@ def sample_coverage(samples, start_ns, end_ns, maximum_gap_ns=5_000_000_000):
                 method="monotonic sample starts including work start and end gaps")
 
 
-def verify_build(root, binary, receipt_path, oracle=None, statistics=None):
+def verify_build(root, binary, receipt_path, oracle=None, statistics=None, lock_observation=False):
     receipt = json.loads(receipt_path.read_text())
     binaries = {"codecortex": binary,
                 "p8-oracle": oracle or Path(receipt["oracle_path"]),
                 "p8-runtime-statistics": statistics or Path(receipt["statistics_path"])}
-    verified = verify_receipt(root, receipt_path, binaries)
-    return dict(binary_path=str(binary), binary_sha256=digest(binary), package_kind="default",
+    verified = verify_receipt(root, receipt_path, binaries, lock_observation)
+    return dict(binary_path=str(binary), binary_sha256=digest(binary),
+                package_kind="p8-db-lock-observation" if lock_observation else "default",
                 build_identity=verified)
 
 
@@ -468,10 +469,17 @@ def terminal_operation_metadata(row):
 
 
 def run(args):
+    lock_observation = getattr(args, "lock_observation", False)
     require(args.concurrency in (1, 4, 8, 16), "C must be 1/4/8/16")
     require(60 <= args.operations <= 10000 and 8 <= args.files <= 10000,
             "operation/file bounds exceeded")
     require(0 < args.interval_ms <= 60000, "invalid fixed offered interval")
+    if lock_observation:
+        require(args.profile == "mixed" and args.operations == 900 and args.files == 1000
+                and args.interval_ms == 500,
+                "lock observation requires the original fixed mixed workload")
+        from p8_runtime_lock_observation import capture, summarize
+        from p8_runtime_build import LOCK_OBSERVATION_PROFILE
     if args.profile == "soak":
         require((args.operations - 1) * args.interval_ms >= 3_600_000,
                 "long soak requires at least one hour of actual offered work")
@@ -480,7 +488,10 @@ def run(args):
     receipt_path = args.build_receipt.resolve(strict=True)
     build_receipt = json.loads(receipt_path.read_text())
     statistics = Path(getattr(args, "statistics", None) or build_receipt["statistics_path"]).resolve(strict=True)
-    identity = verify_build(root, binary, receipt_path, oracle, statistics)
+    if lock_observation:
+        identity = verify_build(root, binary, receipt_path, oracle, statistics, True)
+    else:
+        identity = verify_build(root, binary, receipt_path, oracle, statistics)
     binaries = {"codecortex": binary, "p8-oracle": oracle, "p8-runtime-statistics": statistics}
     out = new_directory(args.output)
     plan = dict(schema_version=1, profile=args.profile, concurrency=args.concurrency,
@@ -493,6 +504,13 @@ def run(args):
     plan["offer_schedule"] = "uniform" if args.profile == "soak" else "fixed_concurrency_sized_bursts"
     plan["mutation_schedule"] = "six-action cycle in serialized write-admission order"
     plan["observer_concurrency_scope"] = "one separate status RPC; excluded from workload C and latency"
+    if lock_observation:
+        plan["diagnostic_profile"] = LOCK_OBSERVATION_PROFILE
+        plan["db_lock_observation"] = dict(
+            feature="p8-db-lock-observation", native_scope="instrumented owned product process only",
+            acquisition_boundaries="two no-SQL status snapshots outside the offered workload interval",
+            ordinary_status_scope="existing resource status RPCs charged separately as observer acquisitions",
+            latency_scope="original operation denominator and Rust replay; diagnostic feature samples only, not default performance samples")
     if args.profile == "soak":
         reads = args.operations - (args.operations + 2) // 3
         plan["read_protocol"] = dict(
@@ -538,6 +556,7 @@ def run(args):
     rejected_submissions = set()
     begun = time.monotonic_ns()
     report = dict(schema_version=1, status="running", exit_code=2, task_complete=False)
+    lock_before = lock_after = lock_summary = None
     def elapsed(): return time.monotonic_ns() - begun
     def product_writers_stopped(owned):
         return owned is None or (owned.process.poll() is not None
@@ -569,6 +588,8 @@ def run(args):
         require(initial.get("parse_errors") == []
                 and initial.get("resolution_freshness", {}).get("complete") is True,
                 "initial parse/closure report is not complete")
+        if lock_observation:
+            lock_before = capture(product, raw, "before_work", elapsed)
         def sample():
             while not stop.is_set():
                 at = elapsed()
@@ -746,6 +767,16 @@ def run(args):
         sampler.join(timeout=35)
         require(not sampler.is_alive(), "resource sampler failed to drain")
         require(not sampler_errors, "resource raw retention failed: " + repr(sampler_errors))
+        if lock_observation:
+            try:
+                lock_after = capture(product, raw, "after_work_and_sampler_drain", elapsed)
+                lock_summary = summarize(lock_before, lock_after)
+            except Exception as error:
+                # Preserve the observation failure without skipping the original
+                # offered-outcome statistics or the independent endpoint oracle.
+                lock_summary = dict(status="incomplete_observation", error=f"{type(error).__name__}: {error}")
+                failures.append("DB acquisition observation incomplete")
+            write_json(out / "db-lock-observation.json", lock_summary)
         endpoint_status = diagnostics(product)
         raw.emit("endpoint_status", response=endpoint_status)
         # This copy happens only after the last incremental write. There is no
@@ -825,6 +856,8 @@ def run(args):
                       oracle_sha256=digest(oracle), semantic_backfill="not_run_in_default_product_profile",
                       release_approval=False)
         if args.profile == "soak": report["cache_reuse"] = cache_reuse
+        if lock_observation:
+            report["db_lock_observation"] = lock_summary
     except (Exception, KeyboardInterrupt) as error:
         report.update(status="failed", exit_code=2, error=f"{type(error).__name__}: {error}",
                       offered_terminal_rows=len(rows), failures=failures)
@@ -869,7 +902,10 @@ def run(args):
             report.update(status="failed", exit_code=2, unfinished_work=unfinished,
                           artifact_seal_error="owned workload still running; no completed archive seal")
         try:
-            final_identity = verify_receipt(root, receipt_path, binaries)
+            if lock_observation:
+                final_identity = verify_receipt(root, receipt_path, binaries, True)
+            else:
+                final_identity = verify_receipt(root, receipt_path, binaries)
             require(final_identity == identity["build_identity"],
                     "runtime source, observer, copy source or retained artifact changed during observation")
             require(artifact_inventory(proof, exclude=None) == expected_proof,
@@ -883,6 +919,12 @@ def run(args):
         report["artifact_seal"] = "seal.json" if writers_stopped else None
         report["artifact_seal_status"] = "sealed" if writers_stopped else "unsealed_owned_writers"
         report["elapsed_ns"] = elapsed()
+        if lock_observation:
+            report["diagnostic_profile"] = LOCK_OBSERVATION_PROFILE
+            report.setdefault("db_lock_observation", dict(status="incomplete_observation",
+                              before_boundary_retained=lock_before is not None,
+                              after_boundary_retained=lock_after is not None,
+                              scope="original failure remains failed; no reconstruction or default-sample fallback"))
         finalize_artifacts(out, report, writers_stopped)
     return report
 
@@ -958,6 +1000,9 @@ def main():
                 verify_output(args.build_output)
                 require(digest(args.build_output / "seal.json") == plan["build_identity"]["build_seal_sha256"],
                         "supplied build archive differs from the observed artifact set")
+            if "diagnostic_profile" in plan or "diagnostic_profile" in report:
+                from p8_runtime_lock_observation import verify_retained
+                verify_retained(args.output, plan, report)
             print(json.dumps(dict(status="sealed_artifacts_verified", files=len(seal["artifact_inventory"]),
                                   observation_status=report.get("status"), observation_exit_code=report.get("exit_code"))))
             return 0
@@ -975,6 +1020,8 @@ def main():
     parser.add_argument("--operations", type=int, default=900)
     parser.add_argument("--files", type=int, default=1000)
     parser.add_argument("--interval-ms", type=int, default=50)
+    parser.add_argument("--lock-observation", action="store_true",
+                        help="require the separately bound opt-in diagnostic build and original mixed plan")
     args = parser.parse_args()
     try:
         report = run(args)

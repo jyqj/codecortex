@@ -506,7 +506,8 @@ def verify_archive(root, expected=None):
 
 def update_latest(output, manifest):
     latest = path(output.parent / "latest.json", exists=False)
-    if latest.exists():
+    replace_owned = latest.exists()
+    if replace_owned:
         old = read_json(latest)
         require(old.get("kind") == "p8_local_latest" and old.get("scope") == SCOPE,
                 "refusing to replace an unrelated latest file")
@@ -516,7 +517,14 @@ def update_latest(output, manifest):
                           "candidate_sha256": manifest["candidate_sha256"]})
     try:
         path(latest, exists=False)
-        os.replace(temporary, latest)
+        if replace_owned:
+            os.replace(temporary, latest)
+        else:
+            # Both files share a directory/filesystem. Link publication is an
+            # atomic create-if-absent: a concurrent first publisher (or user
+            # file) wins without being overwritten. Another exists() check
+            # followed by replace() would retain the check/write race.
+            os.link(temporary, latest)
     finally:
         temporary.unlink(missing_ok=True)
 

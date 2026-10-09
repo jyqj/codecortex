@@ -24,6 +24,7 @@ impl Indexer {
     ) -> CcResult<DirtyPropagationOutcome> {
         self.run_dirty_propagation_with_inputs(
             actions,
+            &HashSet::new(),
             write_units,
             removed_files,
             basis_epoch,
@@ -34,6 +35,7 @@ impl Indexer {
     pub(crate) fn run_dirty_propagation_with_inputs(
         &self,
         actions: &mut HashMap<String, FileAction>,
+        scanned_paths: &HashSet<String>,
         write_units: &[FileWriteUnit],
         removed_files: &[String],
         basis_epoch: u64,
@@ -180,6 +182,7 @@ impl Indexer {
         }
         self.plan_dirty_reconciliation(
             actions,
+            scanned_paths,
             write_units,
             removed_files,
             export_changed_files,

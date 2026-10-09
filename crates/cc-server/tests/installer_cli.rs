@@ -66,3 +66,96 @@ fn install_and_uninstall_round_trip_the_exact_server_entry() {
     );
     assert_eq!(document["model"].as_str(), Some("test-model"));
 }
+
+#[test]
+fn claude_install_and_uninstall_preserve_user_hooks_in_shared_groups() {
+    let home = tempfile::tempdir().unwrap();
+    let settings_path = home.path().join(".claude/settings.json");
+    std::fs::create_dir_all(settings_path.parent().unwrap()).unwrap();
+    let user_hook = serde_json::json!({
+        "matcher": "Grep|Glob|Search",
+        "hooks": [{ "type": "command", "command": "/usr/local/bin/codecortex-audit" }]
+    });
+    std::fs::write(
+        &settings_path,
+        serde_json::to_vec(&serde_json::json!({ "hooks": { "PreToolUse": [user_hook] } })).unwrap(),
+    )
+    .unwrap();
+
+    let installed = run(home.path(), "install");
+    assert!(installed.status.success(), "{installed:?}");
+    let mut settings: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&settings_path).unwrap()).unwrap();
+    let entries = settings["hooks"]["PreToolUse"].as_array_mut().unwrap();
+    assert_eq!(
+        entries.len(),
+        2,
+        "the user command must not suppress installation"
+    );
+    assert_eq!(entries[0], user_hook);
+    let sibling = serde_json::json!({ "type": "command", "command": "/usr/local/bin/user-linter" });
+    entries[1]["hooks"]
+        .as_array_mut()
+        .unwrap()
+        .push(sibling.clone());
+    std::fs::write(&settings_path, serde_json::to_vec(&settings).unwrap()).unwrap();
+
+    let removed = run(home.path(), "uninstall");
+    assert!(removed.status.success(), "{removed:?}");
+    let settings: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&settings_path).unwrap()).unwrap();
+    let entries = settings["hooks"]["PreToolUse"].as_array().unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(entries[0], user_hook);
+    assert_eq!(entries[1]["hooks"], serde_json::json!([sibling]));
+}
+
+#[test]
+fn malformed_claude_hook_configuration_fails_without_modifying_other_installation_files() {
+    let home = tempfile::tempdir().unwrap();
+    let settings_path = home.path().join(".claude/settings.json");
+    let mcp_path = home.path().join(".claude/.mcp.json");
+    let gate_path = home.path().join(".claude/hooks/codecortex-discovery-gate");
+    std::fs::create_dir_all(gate_path.parent().unwrap()).unwrap();
+    let settings = br#"{"hooks":{"PreToolUse":{"user":"keep"}}}"#;
+    let mcp = br#"{"mcpServers":{"codecortex":{"command":"old"}}}"#;
+    let gate = b"existing gate bytes\n";
+    std::fs::write(&settings_path, settings).unwrap();
+    std::fs::write(&mcp_path, mcp).unwrap();
+    std::fs::write(&gate_path, gate).unwrap();
+
+    for action in ["install", "uninstall"] {
+        let result = run(home.path(), action);
+        assert!(
+            !result.status.success(),
+            "{action} unexpectedly succeeded: {result:?}"
+        );
+        assert!(String::from_utf8_lossy(&result.stderr).contains("Claude Code"));
+        assert_eq!(std::fs::read(&settings_path).unwrap(), settings);
+        assert_eq!(std::fs::read(&mcp_path).unwrap(), mcp);
+        assert_eq!(std::fs::read(&gate_path).unwrap(), gate);
+    }
+}
+
+#[test]
+fn json_uninstall_rejects_wrong_types_and_preserves_configs_without_our_entry() {
+    for (original, succeeds) in [
+        (" [ ]\n", false),
+        ("{\"mcpServers\" : [ ]}\n", false),
+        (
+            "{\"mcpServers\" : {\"other\": {\"command\": \"keep\"}}}\n",
+            true,
+        ),
+    ] {
+        let home = tempfile::tempdir().unwrap();
+        let config = home.path().join(".cursor/mcp.json");
+        std::fs::create_dir_all(config.parent().unwrap()).unwrap();
+        std::fs::write(&config, original).unwrap();
+        let result = run(home.path(), "uninstall");
+        assert_eq!(result.status.success(), succeeds, "{result:?}");
+        if !succeeds {
+            assert!(String::from_utf8_lossy(&result.stderr).contains("Cursor"));
+        }
+        assert_eq!(std::fs::read_to_string(&config).unwrap(), original);
+    }
+}

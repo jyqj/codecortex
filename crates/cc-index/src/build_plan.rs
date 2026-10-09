@@ -749,11 +749,7 @@ impl DirtyClosed {
         basis_epoch: u64,
         input_changes: &[String],
     ) -> CcResult<Self> {
-        let mut actions = indexer.build_actions_map(
-            write_units,
-            &scan_result.existing,
-            &scan_result.scanned_paths,
-        );
+        let mut actions = indexer.build_write_actions(write_units, &scan_result.existing);
 
         // Full builds never promote skipped files; incremental builds may
         // close over importers whose dependency exports changed OR whose
@@ -761,6 +757,7 @@ impl DirtyClosed {
         let (dirty_count, dirty_propagation, reconcile, dirty_plan) = if mode.is_incremental() {
             let outcome = indexer.run_dirty_propagation_with_inputs(
                 &mut actions,
+                &scan_result.scanned_paths,
                 write_units,
                 &scan_result.to_remove,
                 basis_epoch,

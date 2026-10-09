@@ -1,0 +1,222 @@
+{
+  "schema": "p8_R20_original_receiver_hosted_controls_execution_plan_v2",
+  "status": "unreferenced_draft_pending_nonauthor_review_and_root_first_publication",
+  "repository": "jyqj/codecortex",
+  "purpose": "Remove the observed offline-device execution blocker for the unchanged receiver AST and eleven synthetic metadata/path controls. This is evidence-handler testing, not a product or scale measurement.",
+  "branch": "task/p8-original-receiver-controls-20261009",
+  "intended_parent": "The R20 evidence checkpoint, after root supplies cutoff and publishes it; no parent commit or execution ID has been guessed.",
+  "publication_boundary": {
+    "tree_created": false,
+    "commit_created": false,
+    "ref_created": false,
+    "workflow_triggered": false,
+    "only_root_may_first_publish_after_review": true
+  },
+  "required_archive_inputs": [
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/consumer.py",
+      "blob": "fbd6ca6c27adc7af855fc4e4ece25c95d6195213",
+      "bytes": 38114,
+      "sha256": "dd19c6c07ddbde0cf797828c2860d2df81bd0e144465f1afdd17930863e0fecc"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/operator.py",
+      "blob": "ca9f49761b80d1cc0cf95b9720667763f2a4eb0e",
+      "bytes": 9745,
+      "sha256": "60a65b720fd94901fea51dd02f98e7f05d0fa1fdf41038ec79b4714d84a928cd"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/test_contract.py",
+      "blob": "161db232dce15211761551861a7a13248801c2b0",
+      "bytes": 8728,
+      "sha256": "6736aea1c2d056c7ea8bd2040300506718fcccc7510d8812a8d288c84ddd3bfa"
+    }
+  ],
+  "new_fixed_files": [
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer-controls/run.py",
+      "blob": "d05c610ce411c9a4734c83eaafb499b1febf8b66",
+      "bytes": 10718,
+      "sha256": "1002fd8037246b9f54dd082485501e75977a7f2e70874f0bae9e4b13e2a7eedd"
+    },
+    {
+      "path": ".github/workflows/p8-original-receiver-controls.yml",
+      "blob": "87235e34e8b1960f2bc86db9a8d7e0ab07e0e829",
+      "bytes": 2024,
+      "sha256": "e0a4620502f4f0da837aa686365c8a19fd4c4948f1490f0192a0ec57c2cb3650"
+    }
+  ],
+  "this_plan_path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer-controls/execution-plan.json",
+  "original_static_review": {
+    "blob": "5af3adf460bcbc3671b99a52a38eb53153bfde3f",
+    "bytes": 18033,
+    "sha256": "5608cbd32e4b690d24efbcea5c793921f725f35b0c91f16e827b11db51370b73"
+  },
+  "preserved_failures": [
+    {
+      "blob": "b3b6819ba2a477016390b55aaa08baaa807ca3fd",
+      "cause": "tunnel_client_not_connected",
+      "dynamic_execution_observed": false
+    },
+    {
+      "blob": "4be5a668598015d369cd3eeb8f1ac155de3b0dcb",
+      "cause": "tunnel_client_not_seen",
+      "dynamic_execution_observed": false
+    }
+  ],
+  "github_execution": {
+    "on": {
+      "push": {
+        "branches": [
+          "task/p8-original-receiver-controls-20261009"
+        ]
+      }
+    },
+    "absent_triggers": [
+      "workflow_dispatch",
+      "schedule",
+      "pull_request",
+      "workflow_run"
+    ],
+    "expected_attempt": 1,
+    "jobs": 1,
+    "runner": "standard GitHub-hosted ubuntu-24.04",
+    "timeout_minutes": 10,
+    "permissions": {
+      "contents": "read"
+    },
+    "checkout": "actions/checkout@v4",
+    "artifact_upload": "actions/upload-artifact@v4",
+    "action_version_basis": {
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "path": ".github/workflows/p8-scale.yml",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    "persist_credentials": false,
+    "sparse_paths": [
+      "artifacts/checkpoints/p8-round20-evidence-20261009/",
+      ".github/workflows/p8-original-receiver-controls.yml"
+    ],
+    "actual_identity": "First actual GITHUB_SHA, checkout HEAD, push event, exact branch, run ID and attempt must agree. IDs remain unknown before root publishes.",
+    "subprocess": "Runner-resolved Linux sys.executable -B consumer/test_contract.py --controller <fixed consumer.py> --operator <fixed operator.py> --output <fresh owned controls-report.json>",
+    "subprocess_timeout_seconds": 90,
+    "subprocess_environment": {
+      "PATH": "/usr/bin:/bin",
+      "LC_ALL": "C.UTF-8",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONHASHSEED": "0"
+    },
+    "output_directory": "RUNNER_TEMP/p8-original-receiver-controls-<actual run ID>; fresh mkdir, existing path refuses; only a successful owned mkdir sets created=True and permits final evidence writes",
+    "source_binding": "Registered three full Git blob IDs + UTF8 bytes + SHA256; three source files, wrapper, plan and workflow match actual HEAD bytes before and after. Checkout credentials are not persisted and no token is passed to the synthetic subprocess.",
+    "no_actions": [
+      "consumer main",
+      "operator main",
+      "real artifact download",
+      "real ZIP read",
+      "original aggregate or real validate_shard",
+      "Docker",
+      "ELF execution",
+      "Cargo",
+      "product/provider/scale workload",
+      "native-device request",
+      "poll/retry/rerun"
+    ]
+  },
+  "exact_method_ids": [
+    "__main__.ReceptionContractTests.test_301_core_and_failed_aggregate_job_not_rejected",
+    "__main__.ReceptionContractTests.test_artifact_and_job_source_mismatch_rejected",
+    "__main__.ReceptionContractTests.test_duplicate_extra_and_expired_artifacts_rejected",
+    "__main__.ReceptionContractTests.test_exact_full_directory_relocation",
+    "__main__.ReceptionContractTests.test_missing_original_is_reported_not_counted",
+    "__main__.ReceptionContractTests.test_new_upload_not_added_to_selected_batch",
+    "__main__.ReceptionContractTests.test_optional_remote_artifact_retained",
+    "__main__.ReceptionContractTests.test_previously_received_original_identity_pinned",
+    "__main__.ReceptionContractTests.test_relocation_rejects_missing_duplicate_extra_field",
+    "__main__.ReceptionContractTests.test_selected_identity_change_refused",
+    "__main__.ReceptionContractTests.test_wrong_source_or_attempt_or_created_time_rejected"
+  ],
+  "acceptance": {
+    "original_suite": "Run unchanged 161db232dce15211761551861a7a13248801c2b0 once. It parses/compiles both fixed modules and calls only register, selected_entries_unchanged and canonical_matrix with fabricated data.",
+    "must_equal": {
+      "actual_tests": 11,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "exact_original_status": "passed_static_and_synthetic_only",
+    "exact_per_method": "Actual original report methods and eleven verbose '... ok' lines must equal the listed ordered IDs.",
+    "module_results": "Original report requires both pinned modules' AST_and_compile=passed, executed_as_operation=false; receiver_executed=false and operator_executed=false.",
+    "failures": "Original nonzero exit, incomplete report, source mismatch, changed bytes, missing or extra methods, ignore, timeout or output bound failure rejects. Original stdout/stderr and any report remain in always-upload evidence.",
+    "after_success": "Only AST plus eleven synthetic controls become executed; no full150 source/raw acceptance or task completion follows automatically."
+  },
+  "transport": {
+    "artifact_name": "p8-original-receiver-controls-<actual run ID>",
+    "files": [
+      "controls-report.json",
+      "stdout.log",
+      "stderr.log",
+      "source-before.json",
+      "source-after.json",
+      "execution-receipt.json"
+    ],
+    "upload_if": "always",
+    "include_hidden_files": true,
+    "if_no_files_found": "error",
+    "log_schema": "p8-original-receiver-controls-frame-v1",
+    "frame_names": [
+      "controls-report.json",
+      "stdout.log",
+      "stderr.log",
+      "source-before.json",
+      "source-after.json",
+      "execution-receipt.json"
+    ],
+    "raw_chunk_bytes": 1024,
+    "maximum_whole_evidence_file_bytes": 262144,
+    "maximum_complete_json_log_line_bytes": 2048,
+    "byte_contract": "Frames encode each original file's raw bytes, never a reserialized parsed JSON object. A header gives name/bytes/SHA256/count; ordered zero-based chunks give index/count/bytes/SHA256/base64; an end repeats the complete bytes/SHA256/count.",
+    "decoder": "After stripping only the Actions timestamp prefix, parse exact schema/name. Require exactly one header and end per expected present name; receive every zero-based index once and in order; strict base64 decode; verify each raw chunk size/hash, final count/bytes/hash and header=end; then parse the recovered original JSON bytes. Keep all failure stdout/stderr bytes. Reject duplicate/missing/out-of-order/corrupted chunks. Empty files have count0 and SHA256(empty).",
+    "secrets": "No private artifact URL or token is requested or emitted. Subprocess receives only four explicit benign environment variables. Wrapper error output is type plus basename/function/line, without exception values/argv. Full logs are from fixed synthetic code only."
+  },
+  "author_pre_execution_validation": {
+    "source_files_changed": false,
+    "original_controls_changed": false,
+    "original_11_methods_textually_enumerated": true,
+    "native_attempts_added": 0,
+    "Python_AST_executed": false,
+    "synthetic_tests_executed": false,
+    "YAML_runtime_executed": false,
+    "scope": "Author source inspection only; fixed drafts require nonauthor review then a first actual hosted run. No new control pass is claimed."
+  },
+  "TODO": {
+    "new_done": 0,
+    "remaining": 29
+  },
+  "study_separation": {
+    "original_measured_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "original_run": 37896198208,
+    "mutated": false,
+    "new_study": false
+  },
+  "preserved_pre_execution_drafts": {
+    "runner": {
+      "blob": "b879778796e8ce6adc2d0c5f08dee1136b98d640",
+      "bytes": 10704,
+      "sha256": "bef4f63dcf02df9e5bbeaa7dfc50aae76add13635aa84bfa25a23dcda109fecd"
+    },
+    "workflow": {
+      "blob": "1d7464ce2e151f16a3b7048ba5b6f0d9cbcaffe5",
+      "bytes": 2024,
+      "sha256": "16203499deab680306bd9997a877aae9bd07b4273e391d5a7cf4962dffc82911"
+    },
+    "plan": {
+      "blob": "a0343d8f0ed23ec0d46f516c863e39a9567f480c",
+      "bytes": 9624,
+      "sha256": "79c54758512770d0b1b4890f6d792673b9a0c0796e385636e41cfdeb5425a42c"
+    },
+    "blocker": "v1 finally could write a pre-existing output directory after fresh-path rejection. No v1 workflow was published or executed.",
+    "fix": "Only successful new-directory creation enables finally evidence access; exact three runner substitutions plus two workflow pin substitutions.",
+    "runner_inverse_to_v1_exact": true,
+    "workflow_inverse_to_v1_exact": true
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "schema": "p8_original_receiver_hosted_controls_independent_static_review_v2",
+  "reviewer": "/root/acceptance_audit",
+  "status": "accepted_scoped_static_for_first_hosted_controls_only",
+  "unresolved_blockers": [],
+  "candidate": [
+    {
+      "blob": "d05c610ce411c9a4734c83eaafb499b1febf8b66",
+      "bytes": 10718,
+      "sha256": "1002fd8037246b9f54dd082485501e75977a7f2e70874f0bae9e4b13e2a7eedd"
+    },
+    {
+      "blob": "87235e34e8b1960f2bc86db9a8d7e0ab07e0e829",
+      "bytes": 2024,
+      "sha256": "e0a4620502f4f0da837aa686365c8a19fd4c4948f1490f0192a0ec57c2cb3650"
+    },
+    {
+      "blob": "60604f85c3677b8ed464e8236291f3a0dceca925",
+      "bytes": 10686,
+      "sha256": "d0062062521e81003da97547f60fc832e8526164832b9361c1058114b75e9eb0"
+    }
+  ],
+  "repository": "jyqj/codecortex",
+  "branch": "task/p8-original-receiver-controls-20261009",
+  "scope": "Review of hosted wrapper/workflow and precise unchanged original11 synthetic test population. No original full150 reception, source acceptance, artifact download or product measurement is performed or certified.",
+  "author_independence": "scale_engineering authored the new hosted wrapper/workflow. acceptance_audit is not their author; the existing fixed receiver and tests retain prior non-author review5af3. This review does not present prior code review as test execution.",
+  "full_body_hash_checks": [
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/consumer.py",
+      "blob": "fbd6ca6c27adc7af855fc4e4ece25c95d6195213",
+      "bytes": 38114,
+      "sha256": "dd19c6c07ddbde0cf797828c2860d2df81bd0e144465f1afdd17930863e0fecc",
+      "full_Git_body_read_and_SHA_checked": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/operator.py",
+      "blob": "ca9f49761b80d1cc0cf95b9720667763f2a4eb0e",
+      "bytes": 9745,
+      "sha256": "60a65b720fd94901fea51dd02f98e7f05d0fa1fdf41038ec79b4714d84a928cd",
+      "full_Git_body_read_and_SHA_checked": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer/test_contract.py",
+      "blob": "161db232dce15211761551861a7a13248801c2b0",
+      "bytes": 8728,
+      "sha256": "6736aea1c2d056c7ea8bd2040300506718fcccc7510d8812a8d288c84ddd3bfa",
+      "full_Git_body_read_and_SHA_checked": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round20-evidence-20261009/consumer-controls/run.py",
+      "blob": "d05c610ce411c9a4734c83eaafb499b1febf8b66",
+      "bytes": 10718,
+      "sha256": "1002fd8037246b9f54dd082485501e75977a7f2e70874f0bae9e4b13e2a7eedd",
+      "full_Git_body_read_and_SHA_checked": true
+    },
+    {
+      "path": ".github/workflows/p8-original-receiver-controls.yml",
+      "blob": "87235e34e8b1960f2bc86db9a8d7e0ab07e0e829",
+      "bytes": 2024,
+      "sha256": "e0a4620502f4f0da837aa686365c8a19fd4c4948f1490f0192a0ec57c2cb3650",
+      "full_Git_body_read_and_SHA_checked": true
+    }
+  ],
+  "original_suite": {
+    "blob": "161db232dce15211761551861a7a13248801c2b0",
+    "unchanged": true,
+    "exact_ids": [
+      "__main__.ReceptionContractTests.test_301_core_and_failed_aggregate_job_not_rejected",
+      "__main__.ReceptionContractTests.test_artifact_and_job_source_mismatch_rejected",
+      "__main__.ReceptionContractTests.test_duplicate_extra_and_expired_artifacts_rejected",
+      "__main__.ReceptionContractTests.test_exact_full_directory_relocation",
+      "__main__.ReceptionContractTests.test_missing_original_is_reported_not_counted",
+      "__main__.ReceptionContractTests.test_new_upload_not_added_to_selected_batch",
+      "__main__.ReceptionContractTests.test_optional_remote_artifact_retained",
+      "__main__.ReceptionContractTests.test_previously_received_original_identity_pinned",
+      "__main__.ReceptionContractTests.test_relocation_rejects_missing_duplicate_extra_field",
+      "__main__.ReceptionContractTests.test_selected_identity_change_refused",
+      "__main__.ReceptionContractTests.test_wrong_source_or_attempt_or_created_time_rejected"
+    ],
+    "actual_static_enumeration_count": 11,
+    "execution_graph": "Original test script AST-parses and compiles both fixed modules. It executes the consumer namespace as synthetic_receiver, which defines constants and functions; its __main__ guard does not fire. It does not exec the operator module. The tests call register/selected_entries_unchanged/canonical_matrix using fabricated metadata and paths; neither operation main nor original aggregate is called.",
+    "retained_negative_cases": [
+      "wrong source/attempt/time",
+      "job/artifact identity mismatch",
+      "duplicate/extra/expired artifact",
+      "missing core original is incomplete",
+      "changed previously pinned original",
+      "new artifact not silently folded into saved batch",
+      "selected original digest change",
+      "missing/duplicate/unregistered relocation evidence"
+    ],
+    "original_test_script_executed_by_this_reviewer": false
+  },
+  "workflow": {
+    "only_push_exact_branch": true,
+    "job_repository_event_ref_attempt1_checks": true,
+    "checkout_actual_github_sha": true,
+    "contents_read_only": true,
+    "persist_credentials": false,
+    "sparse_paths": [
+      "artifacts/checkpoints/p8-round20-evidence-20261009/",
+      ".github/workflows/p8-original-receiver-controls.yml"
+    ],
+    "ubuntu": "24.04",
+    "job_timeout_minutes": 10,
+    "subprocess_timeout_seconds": 90,
+    "runner_pin_full_bytes_and_SHA": true,
+    "no_workflow_dispatch_or_schedule_or_PR_or_workflow_run": true,
+    "artifact_always": true,
+    "hidden_files": true,
+    "source_before_after": "Runner compares each of the three inputs plus self, plan and workflow to actual HEAD full bytes/OID before and after; original three pins also exactly equal the fixed external identities.",
+    "subprocess_environment": {
+      "PATH": "/usr/bin:/bin",
+      "LC_ALL": "C.UTF-8",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTHONHASHSEED": "0"
+    },
+    "no_credentials_in_subprocess": true
+  },
+  "population_gate": {
+    "actual_report_status": "passed_static_and_synthetic_only",
+    "testsRun": 11,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "ordered_report_IDs_and_eleven_verbose_ok_lines_must_equal": true,
+    "both_module_AST_compile_results_must_exactly_match_pinned_bytes_SHA_and_false_operation_flags": true,
+    "zero_or_partial_population_not_accepted": true,
+    "command_nonzero_or_timeout_or_source_change_refuses": true
+  },
+  "ownership_fix": {
+    "initial_blocked": {
+      "runner": "b879778796e8ce6adc2d0c5f08dee1136b98d640",
+      "workflow": "1d7464ce2e151f16a3b7048ba5b6f0d9cbcaffe5",
+      "plan": "a0343d8f0ed23ec0d46f516c863e39a9567f480c",
+      "blockers": [
+        "out assigned before mkdir ownership proof; existing directory refusal can still enter finally and write an execution receipt in old evidence"
+      ],
+      "tests_executed": false,
+      "method_ids": [
+        "__main__.ReceptionContractTests.test_301_core_and_failed_aggregate_job_not_rejected",
+        "__main__.ReceptionContractTests.test_artifact_and_job_source_mismatch_rejected",
+        "__main__.ReceptionContractTests.test_duplicate_extra_and_expired_artifacts_rejected",
+        "__main__.ReceptionContractTests.test_exact_full_directory_relocation",
+        "__main__.ReceptionContractTests.test_missing_original_is_reported_not_counted",
+        "__main__.ReceptionContractTests.test_new_upload_not_added_to_selected_batch",
+        "__main__.ReceptionContractTests.test_optional_remote_artifact_retained",
+        "__main__.ReceptionContractTests.test_previously_received_original_identity_pinned",
+        "__main__.ReceptionContractTests.test_relocation_rejects_missing_duplicate_extra_field",
+        "__main__.ReceptionContractTests.test_selected_identity_change_refused",
+        "__main__.ReceptionContractTests.test_wrong_source_or_attempt_or_created_time_rejected"
+      ],
+      "other_static_blockers": []
+    },
+    "fixed": "The only path entering final evidence reads/writes is created=True, set only after successful fresh mkdir. Existing-directory or mkdir failure keeps created=False and emits only failed_before_output stdout. No old evidence directory is written by the fixed finally.",
+    "inverse": {
+      "runner_three_substitutions_exact": true,
+      "workflow_two_pin_literals_exact": true,
+      "plan_only_schema_fixed_file_metadata_output_description_and_preserved_v1_record": true
+    },
+    "v1_preserved_unpublished_unexecuted": true
+  },
+  "transport": {
+    "original_file_bytes_not_JSON_reserialization": true,
+    "max_file_bytes": 262144,
+    "raw_chunk_bytes": 1024,
+    "max_JSON_line_bytes": 2048,
+    "per_file_header_and_end_full_size_SHA_count": true,
+    "per_chunk_ordered_index_count_size_SHA_base64": true,
+    "empty_file_count_zero": true,
+    "pure_JS_maximum_line_check": [
+      {
+        "name": "controls-report.json",
+        "maximum_chunk_line_bytes": 1589
+      },
+      {
+        "name": "stdout.log",
+        "maximum_chunk_line_bytes": 1579
+      },
+      {
+        "name": "stderr.log",
+        "maximum_chunk_line_bytes": 1579
+      },
+      {
+        "name": "source-before.json",
+        "maximum_chunk_line_bytes": 1587
+      },
+      {
+        "name": "source-after.json",
+        "maximum_chunk_line_bytes": 1586
+      },
+      {
+        "name": "execution-receipt.json",
+        "maximum_chunk_line_bytes": 1591
+      }
+    ],
+    "maximum_computed_ascii_chunk_line_bytes": 1591,
+    "not_Python_execution": true,
+    "failed_partial_outputs_kept_if_present": true,
+    "exception_output": "Only type and traceback basename/function/line; no exception values or real signed URL exists in the fixed synthetic inputs.",
+    "receiving_rule": "A green job or parsed summary alone is insufficient. Accept actual tests only after checking first-run identity, complete six expected successful files, all original full bytes/digests, 11 IDs/0fail/0error/0skip, command exit0 and source-before==source-after. Reassemble frames in exact order with strict complete header/end/chunk hash/count validation. An absent or incomplete frame/artifact delivery remains pending."
+  },
+  "preserved_environment_failures": [
+    {
+      "blob": "b3b6819ba2a477016390b55aaa08baaa807ca3fd",
+      "cause": "tunnel_client_not_connected",
+      "dynamic_execution_observed": false
+    },
+    {
+      "blob": "4be5a668598015d369cd3eeb8f1ac155de3b0dcb",
+      "cause": "tunnel_client_not_seen",
+      "dynamic_execution_observed": false
+    }
+  ],
+  "publication_conditions": [
+    "Root must create and independently verify actual controller commit/tree and exact inherited three R20 input blobs before first publishing the new branch.",
+    "The R20 archive parent is not guessed here; exact actual ancestry is a future publication check.",
+    "Only the fixed original11 synthetic suite runs once. No full150 original reception, real ZIP, Docker, ELF, Cargo, provider or scale workload is allowed by this workflow.",
+    "Original study source275e/run37896198208 and its samples are untouched.",
+    "No retry/rerun is approved. Preserve the first actual failure if any; later changes require their own fixed source and review."
+  ],
+  "execution": {
+    "Git_full_body_reads_and_hashes": true,
+    "mechanical_JS_inverse_checks": true,
+    "pure_JS_frame_size_bound": true,
+    "Python_AST_or_compile": false,
+    "Python_tests": false,
+    "YAML_runtime": false,
+    "Cargo": false,
+    "product": false,
+    "real_artifact_download": false,
+    "new_tree": false,
+    "new_commit": false,
+    "refs_changed": false
+  },
+  "TODO": {
+    "new_done": 0,
+    "remaining": 29
+  }
+}

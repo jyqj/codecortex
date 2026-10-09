@@ -1,0 +1,51 @@
+name: P8 original receiver AST and synthetic controls
+
+on:
+  push:
+    branches: [task/p8-original-receiver-controls-20261009]
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONOPTIMIZE: "0"
+  PYTHONUTF8: "1"
+
+jobs:
+  original_controls:
+    if: github.repository == 'jyqj/codecortex' && github.event_name == 'push' && github.ref == 'refs/heads/task/p8-original-receiver-controls-20261009' && github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the immutable evidence controller
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-round20-evidence-20261009/
+            /.github/workflows/p8-original-receiver-controls.yml
+      - name: Run only the fixed original AST and eleven synthetic controls
+        env:
+          P8_RUNNER_SHA256: 1002fd8037246b9f54dd082485501e75977a7f2e70874f0bae9e4b13e2a7eedd
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, os, pathlib, runpy, sys
+          if sys.flags.optimize:
+              raise SystemExit("optimized Python forbidden")
+          path = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "artifacts/checkpoints/p8-round20-evidence-20261009/consumer-controls/run.py"
+          raw = path.read_bytes()
+          if len(raw) != 10718 or hashlib.sha256(raw).hexdigest() != os.environ["P8_RUNNER_SHA256"]:
+              raise SystemExit("fixed controller mismatch")
+          runpy.run_path(str(path), run_name="__main__")
+          PY
+      - name: Preserve original small outputs including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-original-receiver-controls-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-original-receiver-controls-${{ github.run_id }}
+          if-no-files-found: error
+          include-hidden-files: true

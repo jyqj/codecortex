@@ -1,0 +1,837 @@
+{
+  "schema": "P3-engineering-results-independent-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T09:55:36.711915+00:00",
+  "verdict": "accepted_actual_selected_P3_engineering_receipt_and_six_original_logs",
+  "scope": "Pure local file reads, strict JSON parsing, hash comparison and original log parsing only. Exactly receipt.json and six named logs were read. No Cargo, Git, source verifier, test or product command was executed; no additional source files were inspected.",
+  "actual_source": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+  "actual_source_tree": "7e5ea7972eef08fe2a1874ed8d2b9af977d26358",
+  "original_receipt": {
+    "path": "validation/main-f7-integration/engineering-checks/receipt.json",
+    "bytes": 302830,
+    "sha256": "0374ee3412334355afbe67a3ba5c0287976da8803d37144151bc5aa2c7cb15d4",
+    "started_at_utc": "2026-10-09T09:48:32.028491+00:00",
+    "completed_at_utc": "2026-10-09T09:50:07.526653+00:00",
+    "all_six_selected_command_exits_zero": true
+  },
+  "source_binding": {
+    "source_before_and_after_records_equal": true,
+    "commit_before_and_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+    "tree_before_and_after": "7e5ea7972eef08fe2a1874ed8d2b9af977d26358",
+    "every_command_HEAD_before_and_after_equal_P3": true,
+    "complete_recorded_input_count": 1091,
+    "crates_input_count": 1089,
+    "other_recorded_inputs": [
+      "Cargo.lock",
+      "Cargo.toml"
+    ],
+    "all_recorded_paths_content_SHA256_values_and_order_equal": true,
+    "no_duplicate_JSON_keys": true,
+    "all_content_hashes_are_full_SHA256_strings": true,
+    "reported_manifest_sha256_before_and_after": "617a115d9fe6a1cfecd6de92023e7fe5ef30f7902705c62d003d76f100020dac",
+    "independent_canonical_map_sha256": "92ff43c0cee2d5f6634fe5808c25781ad0d04b322896ac5b498d4572409d5736",
+    "independent_map_serialization": "UTF-8 JSON, ensure_ascii=False, sort_keys=True, separators=(comma,colon); independently derived equality digest, not a relabeling of the producer manifest encoding.",
+    "eight_composition_file_hashes_match_prior_fixed_P3_object_review": {
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
+      "crates/cc-index/src/indexer_phases/snapshot.rs": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5",
+      "crates/cc-index/tests/full_snapshot_empty_config.rs": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+      "crates/cc-index/src/resolver/catalog.rs": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be",
+      "crates/cc-index/src/resolver/helpers.rs": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88",
+      "crates/cc-eval/src/benchmark/statistics.rs": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264",
+      "crates/cc-eval/src/bin/p8-runtime-statistics.rs": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9"
+    },
+    "source_scope": "Complete recorded crates/** plus Cargo.toml/Cargo.lock input map; this log review does not create a new source snapshot or rerun source admission."
+  },
+  "actual_commands": [
+    {
+      "name": "format",
+      "actual_argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 3.0583727859993814,
+      "log": "format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "test_targets": 0
+    },
+    {
+      "name": "clippy",
+      "actual_argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 22.03356267199706,
+      "log": "clippy.log",
+      "log_sha256": "f056457997498500982d3a9aaf88d65a55de0ebf80b5f6af5fac2e4319907098",
+      "log_bytes": 423,
+      "test_targets": 0
+    },
+    {
+      "name": "index-all-targets",
+      "actual_argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-index",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 32.71958760200141,
+      "log": "index-all-targets.log",
+      "log_sha256": "dd9e17dfc772bed0c5163b28b43abb961d3071ac90354014be64945b901241f4",
+      "log_bytes": 55394,
+      "test_targets": 23
+    },
+    {
+      "name": "statistics-lib-controls",
+      "actual_argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "legacy_latency_ns_tests"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 23.285013002998312,
+      "log": "statistics-lib-controls.log",
+      "log_sha256": "00a7e2fb69586ef3764d8793d50df49e33992faae167173dcdb94623e511e238",
+      "log_bytes": 804,
+      "test_targets": 1
+    },
+    {
+      "name": "runtime-statistics-bin",
+      "actual_argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--bin",
+        "p8-runtime-statistics",
+        "--locked",
+        "--offline"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 10.840796830001636,
+      "log": "runtime-statistics-bin.log",
+      "log_sha256": "3cb05c2183aa3d40efa6282dfc53046efd93797b5c8baed6e333c578587e6cdc",
+      "log_bytes": 834,
+      "test_targets": 1
+    },
+    {
+      "name": "eval-corpus-lib",
+      "actual_argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "integration_fixtures_and_corpus"
+      ],
+      "recorded_exit_code": 0,
+      "head_before": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "head_after": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "elapsed_seconds": 3.1820741159972386,
+      "log": "eval-corpus-lib.log",
+      "log_sha256": "2968ed73cf66b3300d78aa50be1f800d686f73eb336e6fd9bb41af7af240f5b8",
+      "log_bytes": 342,
+      "test_targets": 1
+    }
+  ],
+  "cc_index": {
+    "targets": 23,
+    "totals": {
+      "passed": 594,
+      "failed": 0,
+      "ignored": 3,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    "actual_method_rows": 597,
+    "actual_ok_method_rows": 594,
+    "actual_ignored_method_rows": 3,
+    "every_target_method_count_matches_its_original_summary": true,
+    "per_target_summaries": [
+      {
+        "target": "unittests src/lib.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/cc_index-d8dafc938f874f85",
+        "header_line": 3,
+        "summary": {
+          "passed": 435,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 443,
+        "reported_seconds": 13.12
+      },
+      {
+        "target": "tests/explicit_text_admission.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/explicit_text_admission-76ea2c381bc500fd",
+        "header_line": 445,
+        "summary": {
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 458,
+        "reported_seconds": 0.29
+      },
+      {
+        "target": "tests/full_snapshot_empty_config.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/full_snapshot_empty_config-876f77dab421ee7f",
+        "header_line": 460,
+        "summary": {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 466,
+        "reported_seconds": 0.27
+      },
+      {
+        "target": "tests/independent_qname_parser_public.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/independent_qname_parser_public-e1e6d52816440ec6",
+        "header_line": 468,
+        "summary": {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 476,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/independent_qname_repair_guard.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/independent_qname_repair_guard-a3abb4ab904a68fe",
+        "header_line": 478,
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 485,
+        "reported_seconds": 0.07
+      },
+      {
+        "target": "tests/p3a_project_model.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p3a_project_model-8d5a96534e9b070f",
+        "header_line": 487,
+        "summary": {
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 507,
+        "reported_seconds": 0.71
+      },
+      {
+        "target": "tests/p3b_modules.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p3b_modules-6f90e2011fa39ac9",
+        "header_line": 509,
+        "summary": {
+          "passed": 19,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 532,
+        "reported_seconds": 0.1
+      },
+      {
+        "target": "tests/p3c_modules.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p3c_modules-c7521446f9700064",
+        "header_line": 534,
+        "summary": {
+          "passed": 14,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 552,
+        "reported_seconds": 0.11
+      },
+      {
+        "target": "tests/p3d_boundaries.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p3d_boundaries-dc72e2ee88c942cd",
+        "header_line": 554,
+        "summary": {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 570,
+        "reported_seconds": 0.04
+      },
+      {
+        "target": "tests/p4b_render.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p4b_render-b6d7b99bc41f6960",
+        "header_line": 572,
+        "summary": {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 578,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/p4c_identity.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p4c_identity-8cd13ee7cd0f0c16",
+        "header_line": 580,
+        "summary": {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 586,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/python_declaration_identity.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_declaration_identity-252f7a8414c5b82b",
+        "header_line": 588,
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 595,
+        "reported_seconds": 0.04
+      },
+      {
+        "target": "tests/python_identity_resource_integration.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_identity_resource_integration-94015429fb3709dc",
+        "header_line": 597,
+        "summary": {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 607,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/python_inventory_capture.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_inventory_capture-4482a2ab9dce3fdc",
+        "header_line": 609,
+        "summary": {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 624,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/python_inventory_resource_integration.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_inventory_resource_integration-751dcaa243b400fc",
+        "header_line": 626,
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 633,
+        "reported_seconds": 0.01
+      },
+      {
+        "target": "tests/python_inventory_revalidation.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_inventory_revalidation-4c83f83adda2f699",
+        "header_line": 635,
+        "summary": {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 650,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/python_provenance_independent_review.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/python_provenance_independent_review-973226008284bc24",
+        "header_line": 652,
+        "summary": {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 660,
+        "reported_seconds": 0.21
+      },
+      {
+        "target": "tests/qname_db_independent_review.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/qname_db_independent_review-5968fd20b8799dc3",
+        "header_line": 662,
+        "summary": {
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 673,
+        "reported_seconds": 0.31
+      },
+      {
+        "target": "tests/qname_identity_proof.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/qname_identity_proof-9234e05753a08c5b",
+        "header_line": 675,
+        "summary": {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 683,
+        "reported_seconds": 0.04
+      },
+      {
+        "target": "tests/qname_identity_transaction.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/qname_identity_transaction-aae1a6c37b3ad1f7",
+        "header_line": 685,
+        "summary": {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 691,
+        "reported_seconds": 0.11
+      },
+      {
+        "target": "tests/qname_owner_diagnostic.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/qname_owner_diagnostic-4cc9b7a8621c5927",
+        "header_line": 693,
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 700,
+        "reported_seconds": 0.03
+      },
+      {
+        "target": "tests/snapshot_leaf_batching.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/snapshot_leaf_batching-29cf951cd52bafd7",
+        "header_line": 702,
+        "summary": {
+          "passed": 6,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 712,
+        "reported_seconds": 1.4
+      },
+      {
+        "target": "tests/type_catalog_bench.rs",
+        "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/type_catalog_bench-76932d867aba40d7",
+        "header_line": 714,
+        "summary": {
+          "passed": 17,
+          "failed": 0,
+          "ignored": 1,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        "summary_line": 736,
+        "reported_seconds": 0.0
+      }
+    ],
+    "original_P2_ten_controls_all_actually_passed": true,
+    "original_PR179_four_controls_all_actually_passed": true,
+    "required_control_lines": [
+      {
+        "source_control_group": "P2",
+        "test_name": "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+        "target": "tests/full_snapshot_empty_config.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 464
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "typed_module_config_still_resolves_when_heuristic_tokens_are_empty",
+        "target": "tests/full_snapshot_empty_config.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 463
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 39
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::no_calls_still_returns_before_reading_symbols_or_implements",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 43
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 48
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::disabled_pass_does_not_read_or_schedule_cleanup",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 34
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 38
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::malformed_symbols_are_not_hidden_by_empty_implements",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 37
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::malformed_implements_and_query_errors_propagate_after_the_original_guards",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 44
+      },
+      {
+        "source_control_group": "P2",
+        "test_name": "dispatch_synthesis::interface_dispatch::tests::prior_call_overlay_reaches_implementors_and_preserves_fanout_cap",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 47
+      },
+      {
+        "source_control_group": "PR179",
+        "test_name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_for_alias_collisions",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 320
+      },
+      {
+        "source_control_group": "PR179",
+        "test_name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_after_remove_and_readd",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 317
+      },
+      {
+        "source_control_group": "PR179",
+        "test_name": "resolver::helpers::import_distance_regression_tests::streamed_prefix_matches_original_path_segment_semantics",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 321
+      },
+      {
+        "source_control_group": "PR179",
+        "test_name": "resolver::helpers::import_distance_regression_tests::one_pass_distance_preserves_original_ties_duplicates_and_order",
+        "target": "unittests src/lib.rs",
+        "actual_outcome": "ok",
+        "log": "index-all-targets.log",
+        "log_line": 328
+      }
+    ],
+    "retained_ignored_tests": [
+      {
+        "target": "unittests src/lib.rs",
+        "name": "resolver::catalog::catalog_build_bench::bench_catalog_build_scaling",
+        "outcome": "ignored",
+        "reason": "catalog build/lookup micro-benchmark; run with --release --nocapture",
+        "line": 316
+      },
+      {
+        "target": "tests/p3d_boundaries.rs",
+        "name": "special_config_child",
+        "outcome": "ignored",
+        "reason": "child-process harness exercised by the bounded FIFO parent tests",
+        "line": 562
+      },
+      {
+        "target": "tests/type_catalog_bench.rs",
+        "name": "bench_type_catalog_build_from_symbols",
+        "outcome": "ignored",
+        "reason": "benchmark only: cargo test -p cc-index --release --test type_catalog_bench -- --ignored --nocapture",
+        "line": 717
+      }
+    ]
+  },
+  "cc_eval_selected_targets": [
+    {
+      "command": "statistics-lib-controls",
+      "target": "unittests src/lib.rs",
+      "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/cc_eval-9de7fea66c53aad8",
+      "header_line": 5,
+      "methods": [
+        {
+          "name": "benchmark::statistics::legacy_latency_ns_tests::preserves_nearest_rank_boundaries_without_rounding_to_microseconds",
+          "outcome": "ok",
+          "reason": null,
+          "line": 8
+        },
+        {
+          "name": "benchmark::statistics::legacy_latency_ns_tests::preserves_empty_single_and_submicrosecond_wire_values",
+          "outcome": "ok",
+          "reason": null,
+          "line": 9
+        }
+      ],
+      "summary": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 65
+      },
+      "reported_seconds": 0.0,
+      "summary_line": 11
+    },
+    {
+      "command": "runtime-statistics-bin",
+      "target": "unittests src/bin/p8-runtime-statistics.rs",
+      "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/p8_runtime_statistics-5e64abac81565380",
+      "header_line": 3,
+      "methods": [
+        {
+          "name": "tests::missing_duplicate_reversed_and_false_success_rows_are_rejected",
+          "outcome": "ok",
+          "reason": null,
+          "line": 6
+        },
+        {
+          "name": "tests::legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan",
+          "outcome": "ok",
+          "reason": null,
+          "line": 7
+        },
+        {
+          "name": "tests::rejected_and_failed_attempts_keep_the_original_denominator",
+          "outcome": "ok",
+          "reason": null,
+          "line": 8
+        },
+        {
+          "name": "tests::legacy_ns_keeps_every_terminal_outcome_and_original_precision",
+          "outcome": "ok",
+          "reason": null,
+          "line": 9
+        },
+        {
+          "name": "tests::mutation_views_are_separate_and_never_added_to_the_primary_population",
+          "outcome": "ok",
+          "reason": null,
+          "line": 10
+        }
+      ],
+      "summary": {
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0
+      },
+      "reported_seconds": 0.0,
+      "summary_line": 12
+    },
+    {
+      "command": "eval-corpus-lib",
+      "target": "unittests src/lib.rs",
+      "binary": "/workspace/scratch/50c364fd60b1/target-final/debug/deps/cc_eval-9de7fea66c53aad8",
+      "header_line": 2,
+      "methods": [
+        {
+          "name": "tests::integration_fixtures_and_corpus",
+          "outcome": "ok",
+          "reason": null,
+          "line": 5
+        }
+      ],
+      "summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 66
+      },
+      "reported_seconds": 2.94,
+      "summary_line": 7
+    }
+  ],
+  "format_and_clippy": {
+    "format": "Original cargo fmt --all -- --check receipt exit0; original output empty.",
+    "clippy": "Original cargo clippy --workspace --all-targets --locked --offline -- -D warnings receipt exit0 and terminal Finished dev profile retained.",
+    "not_a_clean_compile_or_timing_benchmark_claim": true
+  },
+  "corpus_scope": {
+    "actual_argv": [
+      "cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--lib",
+      "--locked",
+      "--offline",
+      "integration_fixtures_and_corpus"
+    ],
+    "actual_target": "cc-eval lib",
+    "actual_test": "tests::integration_fixtures_and_corpus",
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 66,
+    "distinction": "This invocation explicitly selects --lib. It validates that original named library corpus test and does not claim the earlier broader Cargo invocation or the other cc-eval targets.",
+    "original_receipt_scope": "The existing named corpus test is in the cc-eval lib target; this run explicitly selects --lib and does not claim the old broader Cargo invocation."
+  },
+  "run_profile_from_original_receipt": {
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "selected_environment": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_TARGET_DIR": "/workspace/scratch/50c364fd60b1/target-final"
+    }
+  },
+  "scope_limits": {
+    "unfiltered_workspace_tests_on_P3": "not_run",
+    "receipt_workspace_scope": "not_run_on_P3; retained P2 exit 101 and original G CI retain their own identities",
+    "earlier_P2_workspace_and_isolated_sampler_exit101": "Retained under the original P2 identity. Neither renamed, waived nor converted to a pass by these selected P3 commands.",
+    "prior_G275_CI": "Retains its own actual checkout and source-equivalence bridge; not relabeled as P3.",
+    "scale_platform_provider_release_or_full_task_acceptance": false,
+    "previous_semantic_report": "The prior semantic-composition-review.json remains frozen with its then-static/null engineering-result identity. This separate review supplies the later actual selected engineering evidence.",
+    "supervisor_observation": "Command exits are independently checked from the original receipt and matched logs; this reviewer did not supervise or rerun the producer commands."
+  },
+  "input_file_inventory": [
+    {
+      "path": "validation/main-f7-integration/engineering-checks/clippy.log",
+      "bytes": 423,
+      "sha256": "f056457997498500982d3a9aaf88d65a55de0ebf80b5f6af5fac2e4319907098"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/eval-corpus-lib.log",
+      "bytes": 342,
+      "sha256": "2968ed73cf66b3300d78aa50be1f800d686f73eb336e6fd9bb41af7af240f5b8"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/index-all-targets.log",
+      "bytes": 55394,
+      "sha256": "dd9e17dfc772bed0c5163b28b43abb961d3071ac90354014be64945b901241f4"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/receipt.json",
+      "bytes": 302830,
+      "sha256": "0374ee3412334355afbe67a3ba5c0287976da8803d37144151bc5aa2c7cb15d4"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/runtime-statistics-bin.log",
+      "bytes": 834,
+      "sha256": "3cb05c2183aa3d40efa6282dfc53046efd93797b5c8baed6e333c578587e6cdc"
+    },
+    {
+      "path": "validation/main-f7-integration/engineering-checks/statistics-lib-controls.log",
+      "bytes": 804,
+      "sha256": "00a7e2fb69586ef3764d8793d50df49e33992faae167173dcdb94623e511e238"
+    }
+  ],
+  "todo_accounting": {
+    "original_total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0,
+    "selected_engineering_success_is_not_task_closure": true
+  }
+}

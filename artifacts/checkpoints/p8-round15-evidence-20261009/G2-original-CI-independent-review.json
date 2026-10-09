@@ -1,0 +1,4171 @@
+{
+  "schema": 1,
+  "status": "accepted_scoped_actual_original_CI_execution",
+  "reviewer": "/root/pr_audit",
+  "observed_at": "2026-10-09 03:42:10 UTC",
+  "source_head": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+  "source_tree": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+  "run": 37877611353,
+  "attempt": 1,
+  "event": "pull_request",
+  "actual_checkout": "fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b",
+  "actual_checkout_tree_bridge": {
+    "blob": "e5701a5077690347d25dda341b8b3a9f57923dfa",
+    "sha256": "71f8b3e5c67c0ea4a6af6b03d93a1ddbaaee1629c3ee6d11a8cefabe0fbc9a7f",
+    "parents": [
+      "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "0272a1fb152fd76a7cfb22386a580629d4038a64"
+    ],
+    "full_tree_equals_head": true
+  },
+  "jobs": [
+    {
+      "id": 113649687331,
+      "name": "msrv",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "started_at": "2026-10-09T03:06:59Z",
+      "completed_at": "2026-10-09T03:08:16Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T03:07:00Z",
+          "completed_at": "2026-10-09T03:07:01Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T03:07:01Z",
+          "completed_at": "2026-10-09T03:07:25Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T03:07:25Z",
+          "completed_at": "2026-10-09T03:07:37Z"
+        },
+        {
+          "name": "Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T03:07:37Z",
+          "completed_at": "2026-10-09T03:07:42Z"
+        },
+        {
+          "name": "MSRV check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T03:07:42Z",
+          "completed_at": "2026-10-09T03:08:02Z"
+        },
+        {
+          "name": "MSRV optional benchmark HTTP feature",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T03:08:02Z",
+          "completed_at": "2026-10-09T03:08:14Z"
+        },
+        {
+          "name": "Post Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T03:08:14Z",
+          "completed_at": "2026-10-09T03:08:14Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T03:08:14Z",
+          "completed_at": "2026-10-09T03:08:14Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T03:08:14Z",
+          "completed_at": "2026-10-09T03:08:14Z"
+        }
+      ]
+    },
+    {
+      "id": 113649687536,
+      "name": "check",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "started_at": "2026-10-09T03:12:17Z",
+      "completed_at": "2026-10-09T03:33:58Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T03:12:18Z",
+          "completed_at": "2026-10-09T03:12:19Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T03:12:19Z",
+          "completed_at": "2026-10-09T03:12:41Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T03:12:41Z",
+          "completed_at": "2026-10-09T03:12:42Z"
+        },
+        {
+          "name": "Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T03:12:42Z",
+          "completed_at": "2026-10-09T03:12:56Z"
+        },
+        {
+          "name": "Format check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T03:12:56Z",
+          "completed_at": "2026-10-09T03:12:58Z"
+        },
+        {
+          "name": "Clippy",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T03:12:58Z",
+          "completed_at": "2026-10-09T03:13:14Z"
+        },
+        {
+          "name": "Compile every default test target",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T03:13:14Z",
+          "completed_at": "2026-10-09T03:16:11Z"
+        },
+        {
+          "name": "Default regression within authorized scope",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-09T03:16:11Z",
+          "completed_at": "2026-10-09T03:19:14Z"
+        },
+        {
+          "name": "Fixed resource driver harmless fixtures and TODO consistency",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-09T03:19:14Z",
+          "completed_at": "2026-10-09T03:27:44Z"
+        },
+        {
+          "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-09T03:27:44Z",
+          "completed_at": "2026-10-09T03:28:12Z"
+        },
+        {
+          "name": "Eval suite",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T03:28:12Z",
+          "completed_at": "2026-10-09T03:28:15Z"
+        },
+        {
+          "name": "P0 benchmark optional HTTP contract tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T03:28:15Z",
+          "completed_at": "2026-10-09T03:31:42Z"
+        },
+        {
+          "name": "P0 real MCP subprocess adapter",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T03:31:42Z",
+          "completed_at": "2026-10-09T03:32:35Z"
+        },
+        {
+          "name": "P2-A public surface real MCP regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-09T03:32:35Z",
+          "completed_at": "2026-10-09T03:32:35Z"
+        },
+        {
+          "name": "P2-B resolution dependency real MCP regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-09T03:32:35Z",
+          "completed_at": "2026-10-09T03:32:35Z"
+        },
+        {
+          "name": "P2-C durable recovery and freshness MCP regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-09T03:32:35Z",
+          "completed_at": "2026-10-09T03:32:36Z"
+        },
+        {
+          "name": "P2-D multi-language public truth regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-09T03:32:36Z",
+          "completed_at": "2026-10-09T03:32:36Z"
+        },
+        {
+          "name": "P3-A project config recovery real MCP",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-09T03:32:36Z",
+          "completed_at": "2026-10-09T03:32:37Z"
+        },
+        {
+          "name": "P3-B package and module recovery real MCP",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-09T03:32:37Z",
+          "completed_at": "2026-10-09T03:32:37Z"
+        },
+        {
+          "name": "P3-C Go package recovery real MCP",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-09T03:32:37Z",
+          "completed_at": "2026-10-09T03:32:37Z"
+        },
+        {
+          "name": "P3-C available independent module oracles",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-09T03:32:37Z",
+          "completed_at": "2026-10-09T03:32:38Z"
+        },
+        {
+          "name": "P3-D module boundary and architecture contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-10-09T03:32:38Z",
+          "completed_at": "2026-10-09T03:32:39Z"
+        },
+        {
+          "name": "P4-A source fidelity and real MCP indexing",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-10-09T03:32:39Z",
+          "completed_at": "2026-10-09T03:32:41Z"
+        },
+        {
+          "name": "P4-B chunk budgets and live-session policy changes",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-10-09T03:32:41Z",
+          "completed_at": "2026-10-09T03:32:41Z"
+        },
+        {
+          "name": "P4-C document versions and source freshness",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-10-09T03:32:41Z",
+          "completed_at": "2026-10-09T03:32:42Z"
+        },
+        {
+          "name": "P4-D identity and chunk-quality gates",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-10-09T03:32:42Z",
+          "completed_at": "2026-10-09T03:32:43Z"
+        },
+        {
+          "name": "P5-A versioned retrieval lanes",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-10-09T03:32:43Z",
+          "completed_at": "2026-10-09T03:32:45Z"
+        },
+        {
+          "name": "P5-B bounded query execution and cancellation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-10-09T03:32:45Z",
+          "completed_at": "2026-10-09T03:32:59Z"
+        },
+        {
+          "name": "P5-C generation, bounded assembly and final source verification",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-10-09T03:32:59Z",
+          "completed_at": "2026-10-09T03:33:03Z"
+        },
+        {
+          "name": "P5-D capabilities, query pins and public policies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-09T03:33:03Z",
+          "completed_at": "2026-10-09T03:33:07Z"
+        },
+        {
+          "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-09T03:33:07Z",
+          "completed_at": "2026-10-09T03:33:08Z"
+        },
+        {
+          "name": "P7 semantic product disabled stdio contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-10-09T03:33:08Z",
+          "completed_at": "2026-10-09T03:33:55Z"
+        },
+        {
+          "name": "Post Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 63,
+          "started_at": "2026-10-09T03:33:55Z",
+          "completed_at": "2026-10-09T03:33:56Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 64,
+          "started_at": "2026-10-09T03:33:56Z",
+          "completed_at": "2026-10-09T03:33:56Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 65,
+          "started_at": "2026-10-09T03:33:56Z",
+          "completed_at": "2026-10-09T03:33:56Z"
+        }
+      ]
+    },
+    {
+      "id": 113649687571,
+      "name": "security",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "started_at": "2026-10-09T03:13:35Z",
+      "completed_at": "2026-10-09T03:16:54Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T03:13:36Z",
+          "completed_at": "2026-10-09T03:13:38Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T03:13:38Z",
+          "completed_at": "2026-10-09T03:14:00Z"
+        },
+        {
+          "name": "Run rustsec/audit-check@v2.0.0",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T03:14:00Z",
+          "completed_at": "2026-10-09T03:16:51Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T03:16:51Z",
+          "completed_at": "2026-10-09T03:16:51Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T03:16:51Z",
+          "completed_at": "2026-10-09T03:16:51Z"
+        }
+      ]
+    }
+  ],
+  "original_logs": {
+    "check": {
+      "bytes": 1057200,
+      "sha256": "92139e2a2f04101ccbf9d45cc08f3ad5bd775f7cff3a48bb2cb6259b2dfd0ef3"
+    },
+    "msrv": {
+      "bytes": 38663,
+      "sha256": "30c5522f0e1d9153f6ef5ff64450ad0519f22a9f0e42cec5a040129f6e6f2c57"
+    },
+    "security": {
+      "bytes": 64495,
+      "sha256": "f0107c62fb39adb2a182d0210508572cc247b73840b8fe9b4186c37fd0357347"
+    },
+    "provenance": "Complete decoded official job-log API bodies read in memory; full hashes cover every byte returned by API. Only reviewed excerpts and structured method lists are in this report, not full logs."
+  },
+  "checkout": {
+    "113649687536": [
+      {
+        "line": 157,
+        "text": "2026-10-09T03:12:41.1809259Z HEAD is now at fa6c6c6 Merge 0272a1fb152fd76a7cfb22386a580629d4038a64 into 4775bf44dc09c11cea88211e06ccec97c4de44aa"
+      },
+      {
+        "line": 160,
+        "text": "2026-10-09T03:12:41.2535684Z fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b"
+      }
+    ],
+    "113649687331": [
+      {
+        "line": 179,
+        "text": "2026-10-09T03:07:25.5695353Z HEAD is now at fa6c6c6 Merge 0272a1fb152fd76a7cfb22386a580629d4038a64 into 4775bf44dc09c11cea88211e06ccec97c4de44aa"
+      },
+      {
+        "line": 182,
+        "text": "2026-10-09T03:07:25.5929267Z fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b"
+      }
+    ],
+    "113649687571": [
+      {
+        "line": 181,
+        "text": "2026-10-09T03:14:00.2308930Z HEAD is now at fa6c6c6 Merge 0272a1fb152fd76a7cfb22386a580629d4038a64 into 4775bf44dc09c11cea88211e06ccec97c4de44aa"
+      },
+      {
+        "line": 184,
+        "text": "2026-10-09T03:14:00.2503357Z fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b"
+      }
+    ]
+  },
+  "source_integrity": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v",
+    "command_occurrences": 1,
+    "summary_occurrences": 1,
+    "single_process": true,
+    "reported": 181,
+    "unique": 181,
+    "seconds": 401.956,
+    "all_visible_outcomes": "ok",
+    "skipped": 0,
+    "full_method_set_matches_frozen_original181": true,
+    "methods": [
+      {
+        "method": "test_current_source.CurrentSourceTests.test_altered_lint_transformation",
+        "short": "test_altered_lint_transformation",
+        "outcome": "ok",
+        "line": 5647
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_altered_manifest_pin",
+        "short": "test_altered_manifest_pin",
+        "outcome": "ok",
+        "line": 5648
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_altered_r1_patch",
+        "short": "test_altered_r1_patch",
+        "outcome": "ok",
+        "line": 5649
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_altered_source_pin",
+        "short": "test_altered_source_pin",
+        "outcome": "ok",
+        "line": 5650
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_changed_file",
+        "short": "test_changed_file",
+        "outcome": "ok",
+        "line": 5651
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_changed_lock",
+        "short": "test_changed_lock",
+        "outcome": "ok",
+        "line": 5652
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_diff_serialization_independent_of_git_abbreviation",
+        "short": "test_diff_serialization_independent_of_git_abbreviation",
+        "outcome": "ok",
+        "line": 5653
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_independent_declared_sha_verification",
+        "short": "test_independent_declared_sha_verification",
+        "outcome": "ok",
+        "line": 5654
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_missing_file_on_disk",
+        "short": "test_missing_file_on_disk",
+        "outcome": "ok",
+        "line": 5655
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_removed_tracked_file",
+        "short": "test_removed_tracked_file",
+        "outcome": "ok",
+        "line": 5656
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_stale_registry",
+        "short": "test_stale_registry",
+        "outcome": "ok",
+        "line": 5657
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_symlink_rejected",
+        "short": "test_symlink_rejected",
+        "outcome": "ok",
+        "line": 5658
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_unknown_tracked_file",
+        "short": "test_unknown_tracked_file",
+        "outcome": "ok",
+        "line": 5659
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_unknown_untracked_file",
+        "short": "test_unknown_untracked_file",
+        "outcome": "ok",
+        "line": 5660
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_valid_exact_current",
+        "short": "test_valid_exact_current",
+        "outcome": "ok",
+        "line": 5661
+      },
+      {
+        "method": "test_current_source.CurrentSourceTests.test_wrong_registry_version",
+        "short": "test_wrong_registry_version",
+        "outcome": "ok",
+        "line": 5662
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_capture_symlink_rejected",
+        "short": "test_capture_symlink_rejected",
+        "outcome": "ok",
+        "line": 5668
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0",
+        "short": "test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0",
+        "outcome": "ok",
+        "line": 5669
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_complete_manifest_cannot_omit_unknown_or_known_input",
+        "short": "test_complete_manifest_cannot_omit_unknown_or_known_input",
+        "outcome": "ok",
+        "line": 5670
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_complete_union_passes",
+        "short": "test_complete_union_passes",
+        "outcome": "ok",
+        "line": 5671
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_each_capture_and_cargo_disk_removal",
+        "short": "test_each_capture_and_cargo_disk_removal",
+        "outcome": "ok",
+        "line": 5672
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_each_capture_and_cargo_mutation",
+        "short": "test_each_capture_and_cargo_mutation",
+        "outcome": "ok",
+        "line": 5673
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_each_capture_and_cargo_tracked_removal",
+        "short": "test_each_capture_and_cargo_tracked_removal",
+        "outcome": "ok",
+        "line": 5674
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_fixture_pin_cannot_follow_head",
+        "short": "test_fixture_pin_cannot_follow_head",
+        "outcome": "ok",
+        "line": 5675
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_independent_capture_hash_check",
+        "short": "test_independent_capture_hash_check",
+        "outcome": "ok",
+        "line": 5676
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_old_source_mutation",
+        "short": "test_old_source_mutation",
+        "outcome": "ok",
+        "line": 5677
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_registry_cannot_self_authorize_head_or_unknown_version",
+        "short": "test_registry_cannot_self_authorize_head_or_unknown_version",
+        "outcome": "ok",
+        "line": 5678
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_review_contract_digest_checked",
+        "short": "test_review_contract_digest_checked",
+        "outcome": "ok",
+        "line": 5679
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_unknown_disk_addition",
+        "short": "test_unknown_disk_addition",
+        "outcome": "ok",
+        "line": 5680
+      },
+      {
+        "method": "test_current_source_v2.CaptureSourceTests.test_unknown_tracked_addition",
+        "short": "test_unknown_tracked_addition",
+        "outcome": "ok",
+        "line": 5681
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_ci_selector_only_change_and_historical_p0_preserved",
+        "short": "test_ci_selector_only_change_and_historical_p0_preserved",
+        "outcome": "ok",
+        "line": 5682
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_complete_manifest_addition_and_omission_rejected",
+        "short": "test_complete_manifest_addition_and_omission_rejected",
+        "outcome": "ok",
+        "line": 5683
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_complete_union_passes",
+        "short": "test_complete_union_passes",
+        "outcome": "ok",
+        "line": 5684
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_delta_hash_and_inventory_cannot_authorize_new_code",
+        "short": "test_delta_hash_and_inventory_cannot_authorize_new_code",
+        "outcome": "ok",
+        "line": 5685
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_history_hash_pin_and_omission_rejected",
+        "short": "test_history_hash_pin_and_omission_rejected",
+        "outcome": "ok",
+        "line": 5686
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_owner_cargo_and_previous_capture_mutations",
+        "short": "test_owner_cargo_and_previous_capture_mutations",
+        "outcome": "ok",
+        "line": 5687
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_owner_cargo_removals",
+        "short": "test_owner_cargo_removals",
+        "outcome": "ok",
+        "line": 5688
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_owner_symlink_rejected",
+        "short": "test_owner_symlink_rejected",
+        "outcome": "ok",
+        "line": 5689
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_registry_cannot_follow_head_latest_or_old_version",
+        "short": "test_registry_cannot_follow_head_latest_or_old_version",
+        "outcome": "ok",
+        "line": 5690
+      },
+      {
+        "method": "test_current_source_v3.OwnerSourceTests.test_unknown_disk_and_tracked_additions",
+        "short": "test_unknown_disk_and_tracked_additions",
+        "outcome": "ok",
+        "line": 5691
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_acceptance_dependencies_conditions_and_subgates_cannot_change",
+        "short": "test_acceptance_dependencies_conditions_and_subgates_cannot_change",
+        "outcome": "ok",
+        "line": 5692
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_actual_current_definitions_and_legal_progress_are_accepted",
+        "short": "test_actual_current_definitions_and_legal_progress_are_accepted",
+        "outcome": "ok",
+        "line": 5693
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_cli_rejects_optimized_python_and_pin_overrides_before_verification",
+        "short": "test_cli_rejects_optimized_python_and_pin_overrides_before_verification",
+        "outcome": "ok",
+        "line": 5694
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_definition_comparison_distinguishes_json_boolean_from_integer",
+        "short": "test_definition_comparison_distinguishes_json_boolean_from_integer",
+        "outcome": "ok",
+        "line": 5695
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_fixed_historical_snapshots_match_their_own_manifests",
+        "short": "test_fixed_historical_snapshots_match_their_own_manifests",
+        "outcome": "ok",
+        "line": 5696
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_frozen_manifest_and_missing_or_changed_evidence_are_rejected",
+        "short": "test_frozen_manifest_and_missing_or_changed_evidence_are_rejected",
+        "outcome": "ok",
+        "line": 5697
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_original_current_gates_and_excluded_directory_remain_enforced",
+        "short": "test_original_current_gates_and_excluded_directory_remain_enforced",
+        "outcome": "ok",
+        "line": 5698
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_progress_shape_and_current_completion_gate_remain_enforced",
+        "short": "test_progress_shape_and_current_completion_gate_remain_enforced",
+        "outcome": "ok",
+        "line": 5699
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_symlink_file_or_parent_cannot_substitute_for_fixed_bytes",
+        "short": "test_symlink_file_or_parent_cannot_substitute_for_fixed_bytes",
+        "outcome": "ok",
+        "line": 5700
+      },
+      {
+        "method": "test_historical_integrations_v2.HistoricalIntegrationsV2Tests.test_task_inventory_unknown_and_missing_fields_are_rejected",
+        "short": "test_task_inventory_unknown_and_missing_fields_are_rejected",
+        "outcome": "ok",
+        "line": 5701
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_completed_plan_renders_without_next_task_or_dependency_table",
+        "short": "test_completed_plan_renders_without_next_task_or_dependency_table",
+        "outcome": "ok",
+        "line": 5702
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_completed_plan_requires_finished_tasks_and_explicit_null_navigation",
+        "short": "test_completed_plan_requires_finished_tasks_and_explicit_null_navigation",
+        "outcome": "ok",
+        "line": 5703
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_deferred_next_task_is_rejected_without_repair",
+        "short": "test_deferred_next_task_is_rejected_without_repair",
+        "outcome": "ok",
+        "line": 5704
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_done_dependency_guard_is_still_enforced",
+        "short": "test_done_dependency_guard_is_still_enforced",
+        "outcome": "ok",
+        "line": 5705
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_each_view_drift_is_rejected_without_writing",
+        "short": "test_each_view_drift_is_rejected_without_writing",
+        "outcome": "ok",
+        "line": 5706
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_invalid_navigation_metadata_is_rejected_without_repair",
+        "short": "test_invalid_navigation_metadata_is_rejected_without_repair",
+        "outcome": "ok",
+        "line": 5707
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_markers_fail_before_any_write_even_in_last_entry",
+        "short": "test_markers_fail_before_any_write_even_in_last_entry",
+        "outcome": "ok",
+        "line": 5708
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_progress_keeps_transitive_unfinished_dependencies_visible",
+        "short": "test_progress_keeps_transitive_unfinished_dependencies_visible",
+        "outcome": "ok",
+        "line": 5709
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_source_only_change_invalidates_all_derived_hashes",
+        "short": "test_source_only_change_invalidates_all_derived_hashes",
+        "outcome": "ok",
+        "line": 5710
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_valid_chosen_next_task_is_not_replaced_by_first_unfinished",
+        "short": "test_valid_chosen_next_task_is_not_replaced_by_first_unfinished",
+        "outcome": "ok",
+        "line": 5711
+      },
+      {
+        "method": "test_plan_progress.PlanProgressTests.test_write_updates_four_views_without_mutating_source_or_history",
+        "short": "test_write_updates_four_views_without_mutating_source_or_history",
+        "outcome": "ok",
+        "line": 5712
+      },
+      {
+        "method": "test_reviewed_base.ExplicitReviewedBaseTests.test_base_bytes_must_equal_already_accepted_input",
+        "short": "test_base_bytes_must_equal_already_accepted_input",
+        "outcome": "ok",
+        "line": 5713
+      },
+      {
+        "method": "test_reviewed_base.ExplicitReviewedBaseTests.test_explicit_immutable_base_accepts_exact_reviewed_delta",
+        "short": "test_explicit_immutable_base_accepts_exact_reviewed_delta",
+        "outcome": "ok",
+        "line": 5714
+      },
+      {
+        "method": "test_reviewed_base.ExplicitReviewedBaseTests.test_final_product_cannot_smuggle_unreviewed_base_bytes",
+        "short": "test_final_product_cannot_smuggle_unreviewed_base_bytes",
+        "outcome": "ok",
+        "line": 5715
+      },
+      {
+        "method": "test_reviewed_base.ExplicitReviewedBaseTests.test_source_diff_cannot_add_an_undeclared_path",
+        "short": "test_source_diff_cannot_add_an_undeclared_path",
+        "outcome": "ok",
+        "line": 5716
+      },
+      {
+        "method": "test_reviewed_base.ExplicitReviewedBaseTests.test_unreviewed_other_base_bytes_are_not_imported",
+        "short": "test_unreviewed_other_base_bytes_are_not_imported",
+        "outcome": "ok",
+        "line": 5717
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_ci_only_allows_explicit_selector_and_local_p8_checks",
+        "short": "test_ci_only_allows_explicit_selector_and_local_p8_checks",
+        "outcome": "ok",
+        "line": 5718
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_cli_never_accepts_head_or_latest_as_version",
+        "short": "test_cli_never_accepts_head_or_latest_as_version",
+        "outcome": "ok",
+        "line": 5719
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_complete_fixed_product_matches",
+        "short": "test_complete_fixed_product_matches",
+        "outcome": "ok",
+        "line": 5720
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_current_changes_cannot_grant_themselves_approval",
+        "short": "test_current_changes_cannot_grant_themselves_approval",
+        "outcome": "ok",
+        "line": 5721
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_delta_pins_paths_and_before_after_digests_rejected",
+        "short": "test_delta_pins_paths_and_before_after_digests_rejected",
+        "outcome": "ok",
+        "line": 5722
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_explicit_delta_base_needs_matching_registry_pin",
+        "short": "test_explicit_delta_base_needs_matching_registry_pin",
+        "outcome": "ok",
+        "line": 5723
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_floating_refs_in_future_constants_fail_closed",
+        "short": "test_floating_refs_in_future_constants_fail_closed",
+        "outcome": "ok",
+        "line": 5724
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_historical_helpers_cannot_be_rewritten_or_symlinked",
+        "short": "test_historical_helpers_cannot_be_rewritten_or_symlinked",
+        "outcome": "ok",
+        "line": 5725
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_missing_delta_and_complete_manifest_rejected",
+        "short": "test_missing_delta_and_complete_manifest_rejected",
+        "outcome": "ok",
+        "line": 5726
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_optimized_python_cannot_disable_inherited_guards",
+        "short": "test_optimized_python_cannot_disable_inherited_guards",
+        "outcome": "ok",
+        "line": 5727
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_overlapping_reviewed_deltas_rejected",
+        "short": "test_overlapping_reviewed_deltas_rejected",
+        "outcome": "ok",
+        "line": 5728
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_registry_cannot_choose_a_new_delta_base",
+        "short": "test_registry_cannot_choose_a_new_delta_base",
+        "outcome": "ok",
+        "line": 5729
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_registry_digest_and_immutable_identities_rejected",
+        "short": "test_registry_digest_and_immutable_identities_rejected",
+        "outcome": "ok",
+        "line": 5730
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_review_digest_rejected",
+        "short": "test_review_digest_rejected",
+        "outcome": "ok",
+        "line": 5731
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_symlink_input_rejected",
+        "short": "test_symlink_input_rejected",
+        "outcome": "ok",
+        "line": 5732
+      },
+      {
+        "method": "test_reviewed_source.ReviewedSourceTests.test_unknown_and_missing_membership_rejected",
+        "short": "test_unknown_and_missing_membership_rejected",
+        "outcome": "ok",
+        "line": 5733
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_both_historical_approval_snapshots_remain_original",
+        "short": "test_both_historical_approval_snapshots_remain_original",
+        "outcome": "ok",
+        "line": 5734
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_combined_product_preserves_all_785_inputs",
+        "short": "test_combined_product_preserves_all_785_inputs",
+        "outcome": "ok",
+        "line": 5735
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_complete_manifest_cannot_hide_or_add_inputs",
+        "short": "test_complete_manifest_cannot_hide_or_add_inputs",
+        "outcome": "ok",
+        "line": 5736
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_current_tree_must_match_the_independent_fixed_source",
+        "short": "test_current_tree_must_match_the_independent_fixed_source",
+        "outcome": "ok",
+        "line": 5737
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_current_workflows_have_only_the_explicit_migration",
+        "short": "test_current_workflows_have_only_the_explicit_migration",
+        "outcome": "ok",
+        "line": 5738
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_every_delta_before_and_after_is_checked",
+        "short": "test_every_delta_before_and_after_is_checked",
+        "outcome": "ok",
+        "line": 5739
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_independent_review_is_pinned_and_cannot_be_symlinked",
+        "short": "test_independent_review_is_pinned_and_cannot_be_symlinked",
+        "outcome": "ok",
+        "line": 5740
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_omitted_or_self_added_delta_cannot_change_the_inventory",
+        "short": "test_omitted_or_self_added_delta_cannot_change_the_inventory",
+        "outcome": "ok",
+        "line": 5741
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_optimized_python_and_floating_version_are_rejected",
+        "short": "test_optimized_python_and_floating_version_are_rejected",
+        "outcome": "ok",
+        "line": 5742
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_p7_adoption_and_the_exact_override_are_required",
+        "short": "test_p7_adoption_and_the_exact_override_are_required",
+        "outcome": "ok",
+        "line": 5743
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_p8_approved_base_cannot_be_replaced",
+        "short": "test_p8_approved_base_cannot_be_replaced",
+        "outcome": "ok",
+        "line": 5744
+      },
+      {
+        "method": "test_reviewed_source_v10.SequentialReviewTests.test_registry_tampering_and_floating_identity_are_rejected",
+        "short": "test_registry_tampering_and_floating_identity_are_rejected",
+        "outcome": "ok",
+        "line": 5745
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_before_after_and_inherited_bytes_remain_bound",
+        "short": "test_before_after_and_inherited_bytes_remain_bound",
+        "outcome": "ok",
+        "line": 5746
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_complete_manifest_cannot_omit_add_or_mutate",
+        "short": "test_complete_manifest_cannot_omit_add_or_mutate",
+        "outcome": "ok",
+        "line": 5747
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_current_ci_and_every_old_step_are_preserved",
+        "short": "test_current_ci_and_every_old_step_are_preserved",
+        "outcome": "ok",
+        "line": 5748
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_optimized_python_and_unknown_selection_fail_closed",
+        "short": "test_optimized_python_and_unknown_selection_fail_closed",
+        "outcome": "ok",
+        "line": 5749
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_production_and_extra_test_delta_are_rejected",
+        "short": "test_production_and_extra_test_delta_are_rejected",
+        "outcome": "ok",
+        "line": 5750
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_review_digest_mutation_and_symlink_are_rejected",
+        "short": "test_review_digest_mutation_and_symlink_are_rejected",
+        "outcome": "ok",
+        "line": 5751
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_single_test_delta_preserves_other_784_inputs",
+        "short": "test_single_test_delta_preserves_other_784_inputs",
+        "outcome": "ok",
+        "line": 5752
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_stale_registry_and_floating_pins_are_rejected",
+        "short": "test_stale_registry_and_floating_pins_are_rejected",
+        "outcome": "ok",
+        "line": 5753
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_unknown_current_source_cannot_hide_behind_fixture_review",
+        "short": "test_unknown_current_source_cannot_hide_behind_fixture_review",
+        "outcome": "ok",
+        "line": 5754
+      },
+      {
+        "method": "test_reviewed_source_v11.WorkerFixtureReviewTests.test_v10_snapshots_and_proof_cannot_be_bypassed",
+        "short": "test_v10_snapshots_and_proof_cannot_be_bypassed",
+        "outcome": "ok",
+        "line": 5755
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_all_aliases_and_previous_snapshots_remain_byte_frozen",
+        "short": "test_all_aliases_and_previous_snapshots_remain_byte_frozen",
+        "outcome": "ok",
+        "line": 5756
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_before_and_after_digests_are_checked_for_both_parents",
+        "short": "test_before_and_after_digests_are_checked_for_both_parents",
+        "outcome": "ok",
+        "line": 5757
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_both_proofs_produce_the_reviewed_785_input_merge",
+        "short": "test_both_proofs_produce_the_reviewed_785_input_merge",
+        "outcome": "ok",
+        "line": 5758
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_complete_manifest_cannot_omit_add_or_mutate",
+        "short": "test_complete_manifest_cannot_omit_add_or_mutate",
+        "outcome": "ok",
+        "line": 5759
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_current_ci_preserves_all_old_steps_and_private_binary_binding",
+        "short": "test_current_ci_preserves_all_old_steps_and_private_binary_binding",
+        "outcome": "ok",
+        "line": 5760
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_current_source_cannot_self_authorize_or_hide_a_new_input",
+        "short": "test_current_source_cannot_self_authorize_or_hide_a_new_input",
+        "outcome": "ok",
+        "line": 5761
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_delta_and_joint_overrides_cannot_expand_or_disappear",
+        "short": "test_delta_and_joint_overrides_cannot_expand_or_disappear",
+        "outcome": "ok",
+        "line": 5762
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_each_full_approval_chain_is_required",
+        "short": "test_each_full_approval_chain_is_required",
+        "outcome": "ok",
+        "line": 5763
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_each_inherited_inventory_and_bytes_are_bound",
+        "short": "test_each_inherited_inventory_and_bytes_are_bound",
+        "outcome": "ok",
+        "line": 5764
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_fixed_review_digest_bytes_and_symlink_are_checked",
+        "short": "test_fixed_review_digest_bytes_and_symlink_are_checked",
+        "outcome": "ok",
+        "line": 5765
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_floating_pins_and_wrong_parent_products_fail_closed",
+        "short": "test_floating_pins_and_wrong_parent_products_fail_closed",
+        "outcome": "ok",
+        "line": 5766
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_incoming_registry_uses_its_explicit_original_bytes",
+        "short": "test_incoming_registry_uses_its_explicit_original_bytes",
+        "outcome": "ok",
+        "line": 5767
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_independent_review_cannot_omit_a_parent_or_a_delta",
+        "short": "test_independent_review_cannot_omit_a_parent_or_a_delta",
+        "outcome": "ok",
+        "line": 5768
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_independent_review_rows_cannot_disagree_with_either_parent",
+        "short": "test_independent_review_rows_cannot_disagree_with_either_parent",
+        "outcome": "ok",
+        "line": 5769
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_joint_ci_is_executed_in_addition_to_frozen_snapshot_checks",
+        "short": "test_joint_ci_is_executed_in_addition_to_frozen_snapshot_checks",
+        "outcome": "ok",
+        "line": 5770
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_optimized_python_and_unknown_selection_fail_closed",
+        "short": "test_optimized_python_and_unknown_selection_fail_closed",
+        "outcome": "ok",
+        "line": 5771
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_original_incoming_ci_method_runs_all_its_unchanged_controls",
+        "short": "test_original_incoming_ci_method_runs_all_its_unchanged_controls",
+        "outcome": "ok",
+        "line": 5772
+      },
+      {
+        "method": "test_reviewed_source_v12.DualSourceReviewTests.test_stale_registry_and_every_identity_are_rejected",
+        "short": "test_stale_registry_and_every_identity_are_rejected",
+        "outcome": "ok",
+        "line": 5773
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_added_script_workflow_or_test_is_detected_on_disk",
+        "short": "test_added_script_workflow_or_test_is_detected_on_disk",
+        "outcome": "ok",
+        "line": 5774
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_all_four_unchanged_historical_methods_execute_in_exact_context",
+        "short": "test_all_four_unchanged_historical_methods_execute_in_exact_context",
+        "outcome": "ok",
+        "line": 5775
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_complete_source_manifest_is_not_regenerated_from_the_checkout",
+        "short": "test_complete_source_manifest_is_not_regenerated_from_the_checkout",
+        "outcome": "ok",
+        "line": 5776
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_current_ci_and_historical_proof_steps_cannot_drift",
+        "short": "test_current_ci_and_historical_proof_steps_cannot_drift",
+        "outcome": "ok",
+        "line": 5777
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_delta_cannot_expand_disappear_or_change_before_after_digests",
+        "short": "test_delta_cannot_expand_disappear_or_change_before_after_digests",
+        "outcome": "ok",
+        "line": 5778
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_every_historical_approval_function_executes_and_can_reject",
+        "short": "test_every_historical_approval_function_executes_and_can_reject",
+        "outcome": "ok",
+        "line": 5779
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_fixed_source_and_complete_validation_are_reconstructed",
+        "short": "test_fixed_source_and_complete_validation_are_reconstructed",
+        "outcome": "ok",
+        "line": 5780
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_optimized_python_and_implicit_or_floating_selectors_fail",
+        "short": "test_optimized_python_and_implicit_or_floating_selectors_fail",
+        "outcome": "ok",
+        "line": 5781
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_registry_bytes_identity_and_floating_pins_fail_closed",
+        "short": "test_registry_bytes_identity_and_floating_pins_fail_closed",
+        "outcome": "ok",
+        "line": 5782
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_review_before_after_and_validation_rows_cannot_be_rewritten",
+        "short": "test_review_before_after_and_validation_rows_cannot_be_rewritten",
+        "outcome": "ok",
+        "line": 5783
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_review_cannot_omit_independence_scope_or_delta_rows",
+        "short": "test_review_cannot_omit_independence_scope_or_delta_rows",
+        "outcome": "ok",
+        "line": 5784
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_review_digest_bytes_and_symlink_are_mandatory",
+        "short": "test_review_digest_bytes_and_symlink_are_mandatory",
+        "outcome": "ok",
+        "line": 5785
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_source_tree_tracks_new_missing_changed_and_symlink_inputs",
+        "short": "test_source_tree_tracks_new_missing_changed_and_symlink_inputs",
+        "outcome": "ok",
+        "line": 5786
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_unproven_inherited_bytes_inventory_and_removed_inputs_rejected",
+        "short": "test_unproven_inherited_bytes_inventory_and_removed_inputs_rejected",
+        "outcome": "ok",
+        "line": 5787
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_v12_source_tests_and_both_ci_snapshot_files_are_byte_frozen",
+        "short": "test_v12_source_tests_and_both_ci_snapshot_files_are_byte_frozen",
+        "outcome": "ok",
+        "line": 5788
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_validation_deletion_edit_and_same_byte_symlink_fail",
+        "short": "test_validation_deletion_edit_and_same_byte_symlink_fail",
+        "outcome": "ok",
+        "line": 5789
+      },
+      {
+        "method": "test_reviewed_source_v13.CompleteSourceReviewTests.test_validation_manifest_is_complete_even_if_review_omits_the_same_path",
+        "short": "test_validation_manifest_is_complete_even_if_review_omits_the_same_path",
+        "outcome": "ok",
+        "line": 5790
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_actual_v13_ci_and_helper_rejections_reach_the_new_guard",
+        "short": "test_actual_v13_ci_and_helper_rejections_reach_the_new_guard",
+        "outcome": "ok",
+        "line": 5791
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_added_script_workflow_or_test_is_detected_on_disk",
+        "short": "test_added_script_workflow_or_test_is_detected_on_disk",
+        "outcome": "ok",
+        "line": 5792
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_complete_source_manifest_is_not_regenerated_from_the_checkout",
+        "short": "test_complete_source_manifest_is_not_regenerated_from_the_checkout",
+        "outcome": "ok",
+        "line": 5793
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_current_ci_and_historical_proof_steps_cannot_drift",
+        "short": "test_current_ci_and_historical_proof_steps_cannot_drift",
+        "outcome": "ok",
+        "line": 5794
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_delta_cannot_expand_disappear_or_change_before_after_digests",
+        "short": "test_delta_cannot_expand_disappear_or_change_before_after_digests",
+        "outcome": "ok",
+        "line": 5795
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_every_historical_approval_function_executes_and_can_reject",
+        "short": "test_every_historical_approval_function_executes_and_can_reject",
+        "outcome": "ok",
+        "line": 5796
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_fixed_source_and_complete_validation_are_reconstructed",
+        "short": "test_fixed_source_and_complete_validation_are_reconstructed",
+        "outcome": "ok",
+        "line": 5797
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_installed_old_guard_keeps_explicit_ci_fixture_rejections",
+        "short": "test_installed_old_guard_keeps_explicit_ci_fixture_rejections",
+        "outcome": "ok",
+        "line": 5798
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_new_review_must_bind_the_complete_source_manifest",
+        "short": "test_new_review_must_bind_the_complete_source_manifest",
+        "outcome": "ok",
+        "line": 5799
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_old_protection_bytes_cannot_hide_behind_the_historical_context",
+        "short": "test_old_protection_bytes_cannot_hide_behind_the_historical_context",
+        "outcome": "ok",
+        "line": 5800
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_optimized_python_and_implicit_or_floating_selectors_fail",
+        "short": "test_optimized_python_and_implicit_or_floating_selectors_fail",
+        "outcome": "ok",
+        "line": 5801
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_parent_directory_symlinks_cannot_supply_unchanged_validation_or_review",
+        "short": "test_parent_directory_symlinks_cannot_supply_unchanged_validation_or_review",
+        "outcome": "ok",
+        "line": 5802
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_registry_bytes_identity_and_floating_pins_fail_closed",
+        "short": "test_registry_bytes_identity_and_floating_pins_fail_closed",
+        "outcome": "ok",
+        "line": 5803
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_review_before_after_and_validation_rows_cannot_be_rewritten",
+        "short": "test_review_before_after_and_validation_rows_cannot_be_rewritten",
+        "outcome": "ok",
+        "line": 5804
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_review_cannot_omit_independence_scope_or_delta_rows",
+        "short": "test_review_cannot_omit_independence_scope_or_delta_rows",
+        "outcome": "ok",
+        "line": 5805
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_review_digest_bytes_and_symlink_are_mandatory",
+        "short": "test_review_digest_bytes_and_symlink_are_mandatory",
+        "outcome": "ok",
+        "line": 5806
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_source_tree_tracks_new_missing_changed_and_symlink_inputs",
+        "short": "test_source_tree_tracks_new_missing_changed_and_symlink_inputs",
+        "outcome": "ok",
+        "line": 5807
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_unproven_inherited_bytes_inventory_and_removed_inputs_rejected",
+        "short": "test_unproven_inherited_bytes_inventory_and_removed_inputs_rejected",
+        "outcome": "ok",
+        "line": 5808
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_validation_deletion_edit_and_same_byte_symlink_fail",
+        "short": "test_validation_deletion_edit_and_same_byte_symlink_fail",
+        "outcome": "ok",
+        "line": 5809
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_validation_is_checked_before_any_historical_approval",
+        "short": "test_validation_is_checked_before_any_historical_approval",
+        "outcome": "ok",
+        "line": 5810
+      },
+      {
+        "method": "test_reviewed_source_v14.OracleCompatSourceReviewTests.test_validation_manifest_is_complete_even_if_review_omits_the_same_path",
+        "short": "test_validation_manifest_is_complete_even_if_review_omits_the_same_path",
+        "outcome": "ok",
+        "line": 5811
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_complete_current_bytes_and_validation_are_bound",
+        "short": "test_complete_current_bytes_and_validation_are_bound",
+        "outcome": "ok",
+        "line": 5815
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_current_inventory_tamper_is_rejected",
+        "short": "test_current_inventory_tamper_is_rejected",
+        "outcome": "ok",
+        "line": 5816
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_historical_context_is_real_and_current_protection_cannot_change",
+        "short": "test_historical_context_is_real_and_current_protection_cannot_change",
+        "outcome": "ok",
+        "line": 5817
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_old_approval_rejection_propagates",
+        "short": "test_old_approval_rejection_propagates",
+        "outcome": "ok",
+        "line": 5818
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_old_ci_rejection_propagates",
+        "short": "test_old_ci_rejection_propagates",
+        "outcome": "ok",
+        "line": 5819
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_only_exact_historical_review_metadata_exception_is_allowed",
+        "short": "test_only_exact_historical_review_metadata_exception_is_allowed",
+        "outcome": "ok",
+        "line": 5820
+      },
+      {
+        "method": "test_reviewed_source_v15.P8CompletionSourceTests.test_registry_and_floating_source_pin_rejected",
+        "short": "test_registry_and_floating_source_pin_rejected",
+        "outcome": "ok",
+        "line": 5821
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_actual_v13_ci_rejection_also_propagates",
+        "short": "test_actual_v13_ci_rejection_also_propagates",
+        "outcome": "ok",
+        "line": 5822
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_actual_v13_result_matches_the_fixed_historical_source",
+        "short": "test_actual_v13_result_matches_the_fixed_historical_source",
+        "outcome": "ok",
+        "line": 5823
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_added_historical_snapshot_input_is_rejected_on_every_use",
+        "short": "test_added_historical_snapshot_input_is_rejected_on_every_use",
+        "outcome": "ok",
+        "line": 5824
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_context_tamper_after_the_real_proof_cannot_be_reported_as_passed",
+        "short": "test_context_tamper_after_the_real_proof_cannot_be_reported_as_passed",
+        "outcome": "ok",
+        "line": 5825
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_current_frozen_files_cannot_hide_behind_the_pristine_snapshot",
+        "short": "test_current_frozen_files_cannot_hide_behind_the_pristine_snapshot",
+        "outcome": "ok",
+        "line": 5826
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_dynamic_function_patch_and_restore_affect_the_real_module",
+        "short": "test_dynamic_function_patch_and_restore_affect_the_real_module",
+        "outcome": "ok",
+        "line": 5827
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_every_actual_historical_approval_is_called_and_can_reject",
+        "short": "test_every_actual_historical_approval_is_called_and_can_reject",
+        "outcome": "ok",
+        "line": 5828
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_explicit_positional_and_keyword_fixture_roots_are_never_redirected",
+        "short": "test_explicit_positional_and_keyword_fixture_roots_are_never_redirected",
+        "outcome": "ok",
+        "line": 5829
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_floating_pin_and_protected_paths_are_rejected_before_git",
+        "short": "test_floating_pin_and_protected_paths_are_rejected_before_git",
+        "outcome": "ok",
+        "line": 5830
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_guard_constant_patch_reads_and_writes_real_function_globals",
+        "short": "test_guard_constant_patch_reads_and_writes_real_function_globals",
+        "outcome": "ok",
+        "line": 5831
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_nested_proxy_spies_and_inner_real_rejection_preserve_instrumentation",
+        "short": "test_nested_proxy_spies_and_inner_real_rejection_preserve_instrumentation",
+        "outcome": "ok",
+        "line": 5832
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_original_v13_constant_and_dual_chain_test_bodies_execute",
+        "short": "test_original_v13_constant_and_dual_chain_test_bodies_execute",
+        "outcome": "ok",
+        "line": 5833
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_proxy_and_real_module_wraps_spies_call_real_bodies_without_recursion",
+        "short": "test_proxy_and_real_module_wraps_spies_call_real_bodies_without_recursion",
+        "outcome": "ok",
+        "line": 5834
+      },
+      {
+        "method": "test_v14_historical_context.HistoricalContextTests.test_same_byte_parent_directory_symlink_is_rejected",
+        "short": "test_same_byte_parent_directory_symlink_is_rejected",
+        "outcome": "ok",
+        "line": 5835
+      }
+    ]
+  },
+  "p8_python": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v",
+    "reported": 385,
+    "unique": 385,
+    "seconds": 22.162,
+    "all_visible_outcomes": "ok",
+    "skipped": 0,
+    "counts_by_module": {
+      "test_p8_backfill": 2,
+      "test_p8_candidate_execution": 8,
+      "test_p8_compat": 39,
+      "test_p8_corpus_audit": 15,
+      "test_p8_external_candidate": 5,
+      "test_p8_judge_evidence": 18,
+      "test_p8_leakage_audit": 16,
+      "test_p8_lifecycle": 9,
+      "test_p8_native_registry": 6,
+      "test_p8_platform": 45,
+      "test_p8_platform_independent_review": 13,
+      "test_p8_recovery": 24,
+      "test_p8_release_evidence": 39,
+      "test_p8_release_review": 19,
+      "test_p8_resources": 6,
+      "test_p8_runner_capacity": 8,
+      "test_p8_runtime": 14,
+      "test_p8_runtime_cache": 13,
+      "test_p8_runtime_evidence": 15,
+      "test_p8_runtime_finalization": 8,
+      "test_p8_scale_matrix": 39,
+      "test_p8_semantic_certification": 24
+    },
+    "methods": [
+      {
+        "method": "test_p8_backfill.BackfillBuildTests.test_failed_build_uses_private_target_and_retains_sealed_failure",
+        "short": "test_failed_build_uses_private_target_and_retains_sealed_failure",
+        "outcome": "ok",
+        "line": 5239
+      },
+      {
+        "method": "test_p8_backfill.BackfillBuildTests.test_reused_or_foreign_target_test_executable_is_rejected",
+        "short": "test_reused_or_foreign_target_test_executable_is_rejected",
+        "outcome": "ok",
+        "line": 5240
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_cli_refuses_existing_output_without_adding_a_failure_record",
+        "short": "test_cli_refuses_existing_output_without_adding_a_failure_record",
+        "outcome": "ok",
+        "line": 5241
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_dev_cannot_be_relabelled_as_release",
+        "short": "test_dev_cannot_be_relabelled_as_release",
+        "outcome": "ok",
+        "line": 5242
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_drift_controls_only_mutate_disposable_copies",
+        "short": "test_drift_controls_only_mutate_disposable_copies",
+        "outcome": "ok",
+        "line": 5243
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_exact_binding_accepts_only_the_supplied_fixture_bytes",
+        "short": "test_exact_binding_accepts_only_the_supplied_fixture_bytes",
+        "outcome": "ok",
+        "line": 5244
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_failed_build_finish_and_escaped_source_manifest_are_rejected",
+        "short": "test_failed_build_finish_and_escaped_source_manifest_are_rejected",
+        "outcome": "ok",
+        "line": 5245
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_mixed_source_and_changed_raw_artifact_are_rejected",
+        "short": "test_mixed_source_and_changed_raw_artifact_are_rejected",
+        "outcome": "ok",
+        "line": 5246
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_printed_pass_does_not_replace_real_process_exit",
+        "short": "test_printed_pass_does_not_replace_real_process_exit",
+        "outcome": "ok",
+        "line": 5247
+      },
+      {
+        "method": "test_p8_candidate_execution.CandidateExecutionTests.test_test_artifact_or_semantic_features_cannot_impersonate_default_product",
+        "short": "test_test_artifact_or_semantic_features_cannot_impersonate_default_product",
+        "outcome": "ok",
+        "line": 5248
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_actual_zero_exit_fake_evaluator_cannot_fake_a_completed_run",
+        "short": "test_actual_zero_exit_fake_evaluator_cannot_fake_a_completed_run",
+        "outcome": "ok",
+        "line": 5249
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_bound_synthetic_control_is_explicitly_a_control",
+        "short": "test_bound_synthetic_control_is_explicitly_a_control",
+        "outcome": "ok",
+        "line": 5250
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_cli_requires_the_named_opt_in",
+        "short": "test_cli_requires_the_named_opt_in",
+        "outcome": "ok",
+        "line": 5251
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_comparison_identity_difference_is_nonzero_before_comparator",
+        "short": "test_comparison_identity_difference_is_nonzero_before_comparator",
+        "outcome": "ok",
+        "line": 5252
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_compat_native_require_the_same_explicit_configuration",
+        "short": "test_compat_native_require_the_same_explicit_configuration",
+        "outcome": "ok",
+        "line": 5253
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_existing_output_is_never_overwritten",
+        "short": "test_existing_output_is_never_overwritten",
+        "outcome": "ok",
+        "line": 5254
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_explicit_mode_still_rejects_zero_exit_without_real_artifacts",
+        "short": "test_explicit_mode_still_rejects_zero_exit_without_real_artifacts",
+        "outcome": "ok",
+        "line": 5255
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_external_git_head_and_dirty_state_are_actually_checked",
+        "short": "test_external_git_head_and_dirty_state_are_actually_checked",
+        "outcome": "ok",
+        "line": 5256
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_external_name_cannot_relabel_control_source_as_flask",
+        "short": "test_external_name_cannot_relabel_control_source_as_flask",
+        "outcome": "ok",
+        "line": 5257
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_holdout_file_pointer_and_symlink_source_are_rejected",
+        "short": "test_holdout_file_pointer_and_symlink_source_are_rejected",
+        "outcome": "ok",
+        "line": 5258
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_native_profile_cannot_use_compat_scorer",
+        "short": "test_native_profile_cannot_use_compat_scorer",
+        "outcome": "ok",
+        "line": 5259
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_negative_signal_exit_cannot_be_maxed_into_a_green_comparison",
+        "short": "test_negative_signal_exit_cannot_be_maxed_into_a_green_comparison",
+        "outcome": "ok",
+        "line": 5260
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_original_default_profile_keeps_original_identity_and_predicate",
+        "short": "test_original_default_profile_keeps_original_identity_and_predicate",
+        "outcome": "ok",
+        "line": 5261
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_output_cannot_overlap_or_replace_inputs",
+        "short": "test_output_cannot_overlap_or_replace_inputs",
+        "outcome": "ok",
+        "line": 5262
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_platform_and_glob_policy_mismatch_are_rejected",
+        "short": "test_platform_and_glob_policy_mismatch_are_rejected",
+        "outcome": "ok",
+        "line": 5263
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_query_or_binary_or_scorer_mutation_rejects_before_spawn",
+        "short": "test_query_or_binary_or_scorer_mutation_rejects_before_spawn",
+        "outcome": "ok",
+        "line": 5264
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_raw_copy_preserves_original_and_rejects_later_drift",
+        "short": "test_raw_copy_preserves_original_and_rejects_later_drift",
+        "outcome": "ok",
+        "line": 5265
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_source_manifest_extra_or_omitted_file_is_rejected",
+        "short": "test_source_manifest_extra_or_omitted_file_is_rejected",
+        "outcome": "ok",
+        "line": 5266
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_text_hidden_is_explicit_and_does_not_widen_default_inspection",
+        "short": "test_text_hidden_is_explicit_and_does_not_widen_default_inspection",
+        "outcome": "ok",
+        "line": 5267
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_text_hidden_profile_rejects_missing_extra_or_network_configuration",
+        "short": "test_text_hidden_profile_rejects_missing_extra_or_network_configuration",
+        "outcome": "ok",
+        "line": 5268
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_unknown_configuration_mode_is_rejected_before_process_creation",
+        "short": "test_unknown_configuration_mode_is_rejected_before_process_creation",
+        "outcome": "ok",
+        "line": 5269
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_wrong_external_commit_is_not_accepted",
+        "short": "test_wrong_external_commit_is_not_accepted",
+        "outcome": "ok",
+        "line": 5270
+      },
+      {
+        "method": "test_p8_compat.CompatLockTests.test_zero_exit_comparator_must_emit_a_comparison_artifact",
+        "short": "test_zero_exit_comparator_must_emit_a_comparison_artifact",
+        "outcome": "ok",
+        "line": 5271
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_duplicate_case_and_repetition_is_rejected",
+        "short": "test_duplicate_case_and_repetition_is_rejected",
+        "outcome": "ok",
+        "line": 5272
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_duplicate_output_query_cannot_replace_another_locked_query",
+        "short": "test_duplicate_output_query_cannot_replace_another_locked_query",
+        "outcome": "ok",
+        "line": 5273
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_exit_code_and_gate_status_must_both_match",
+        "short": "test_exit_code_and_gate_status_must_both_match",
+        "outcome": "ok",
+        "line": 5274
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case",
+        "short": "test_missing_case_cannot_be_hidden_by_extra_repetition_of_another_case",
+        "outcome": "ok",
+        "line": 5275
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_missing_request_cannot_pass_with_smaller_metrics_denominator",
+        "short": "test_missing_request_cannot_pass_with_smaller_metrics_denominator",
+        "outcome": "ok",
+        "line": 5276
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_native_gold_span_and_primary_changes_are_rejected",
+        "short": "test_native_gold_span_and_primary_changes_are_rejected",
+        "outcome": "ok",
+        "line": 5277
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_optional_native_symbol_and_span_defaults_preserve_identity",
+        "short": "test_optional_native_symbol_and_span_defaults_preserve_identity",
+        "outcome": "ok",
+        "line": 5278
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_optional_query_defaults_do_not_change_locked_identity",
+        "short": "test_optional_query_defaults_do_not_change_locked_identity",
+        "outcome": "ok",
+        "line": 5279
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_original_locked_query_and_complete_request_matrix_are_accepted",
+        "short": "test_original_locked_query_and_complete_request_matrix_are_accepted",
+        "outcome": "ok",
+        "line": 5280
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_out_of_range_and_wrongly_typed_repetitions_are_rejected",
+        "short": "test_out_of_range_and_wrongly_typed_repetitions_are_rejected",
+        "outcome": "ok",
+        "line": 5281
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_pinned_backend_and_profile_cannot_be_relabelled",
+        "short": "test_pinned_backend_and_profile_cannot_be_relabelled",
+        "outcome": "ok",
+        "line": 5282
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_raw_response_path_cannot_be_reused_for_distinct_requests",
+        "short": "test_raw_response_path_cannot_be_reused_for_distinct_requests",
+        "outcome": "ok",
+        "line": 5283
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_same_count_query_identity_replacement_is_rejected",
+        "short": "test_same_count_query_identity_replacement_is_rejected",
+        "outcome": "ok",
+        "line": 5284
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_same_count_query_text_and_gold_changes_are_rejected",
+        "short": "test_same_count_query_text_and_gold_changes_are_rejected",
+        "outcome": "ok",
+        "line": 5285
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_shuffled_complete_request_matrix_is_still_accepted",
+        "short": "test_shuffled_complete_request_matrix_is_still_accepted",
+        "outcome": "ok",
+        "line": 5286
+      },
+      {
+        "method": "test_p8_compat.CompatRunIdentityTests.test_unknown_case_cannot_replace_missing_case_at_same_denominator",
+        "short": "test_unknown_case_cannot_replace_missing_case_at_same_denominator",
+        "outcome": "ok",
+        "line": 5287
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_compat_text_and_primary_order_drift_are_separate_errors",
+        "short": "test_compat_text_and_primary_order_drift_are_separate_errors",
+        "outcome": "ok",
+        "line": 5288
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_duplicate_id_is_not_hidden_by_dictionary_overwrite",
+        "short": "test_duplicate_id_is_not_hidden_by_dictionary_overwrite",
+        "outcome": "ok",
+        "line": 5289
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_duplicate_json_key_and_unknown_schema_are_rejected",
+        "short": "test_duplicate_json_key_and_unknown_schema_are_rejected",
+        "outcome": "ok",
+        "line": 5290
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_omitted_compat_answer_is_not_silently_accepted",
+        "short": "test_omitted_compat_answer_is_not_silently_accepted",
+        "outcome": "ok",
+        "line": 5291
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_query_parser_rejects_nondev_before_echoing_a_body",
+        "short": "test_query_parser_rejects_nondev_before_echoing_a_body",
+        "outcome": "ok",
+        "line": 5292
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_source_evidence_hash_detects_equal_length_corruption",
+        "short": "test_source_evidence_hash_detects_equal_length_corruption",
+        "outcome": "ok",
+        "line": 5293
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_source_outside_domain_cannot_be_counted_as_valid_span",
+        "short": "test_source_outside_domain_cannot_be_counted_as_valid_span",
+        "outcome": "ok",
+        "line": 5294
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_source_span_and_utf8_boundaries_are_checked",
+        "short": "test_source_span_and_utf8_boundaries_are_checked",
+        "outcome": "ok",
+        "line": 5295
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_unsafe_and_protected_paths_rejected",
+        "short": "test_unsafe_and_protected_paths_rejected",
+        "outcome": "ok",
+        "line": 5296
+      },
+      {
+        "method": "test_p8_corpus_audit.CorpusRulesTests.test_valid_projection_keeps_no_answer_out_of_compat_denominator",
+        "short": "test_valid_projection_keeps_no_answer_out_of_compat_denominator",
+        "outcome": "ok",
+        "line": 5297
+      },
+      {
+        "method": "test_p8_corpus_audit.PinnedGitTests.test_byte_limit_rejects_before_git_show",
+        "short": "test_byte_limit_rejects_before_git_show",
+        "outcome": "ok",
+        "line": 5298
+      },
+      {
+        "method": "test_p8_corpus_audit.PinnedGitTests.test_read_is_exact_historical_blob_not_current_mutable_file",
+        "short": "test_read_is_exact_historical_blob_not_current_mutable_file",
+        "outcome": "ok",
+        "line": 5299
+      },
+      {
+        "method": "test_p8_corpus_audit.PinnedGitTests.test_symlink_git_mode_rejected_even_with_matching_content_hash",
+        "short": "test_symlink_git_mode_rejected_even_with_matching_content_hash",
+        "outcome": "ok",
+        "line": 5300
+      },
+      {
+        "method": "test_p8_corpus_audit.PinnedGitTests.test_unlisted_and_protected_entries_never_call_git",
+        "short": "test_unlisted_and_protected_entries_never_call_git",
+        "outcome": "ok",
+        "line": 5301
+      },
+      {
+        "method": "test_p8_corpus_audit.PinnedGitTests.test_wrong_digest_is_rejected_without_adding_verified_cache",
+        "short": "test_wrong_digest_is_rejected_without_adding_verified_cache",
+        "outcome": "ok",
+        "line": 5302
+      },
+      {
+        "method": "test_p8_external_candidate.ExternalCandidatePathTests.test_build_directory_aliases_are_rejected_before_new_output",
+        "short": "test_build_directory_aliases_are_rejected_before_new_output",
+        "outcome": "ok",
+        "line": 5303
+      },
+      {
+        "method": "test_p8_external_candidate.ExternalCandidatePathTests.test_disjoint_new_directory_reaches_build_validation",
+        "short": "test_disjoint_new_directory_reaches_build_validation",
+        "outcome": "ok",
+        "line": 5304
+      },
+      {
+        "method": "test_p8_external_candidate.ExternalCandidatePathTests.test_existing_output_and_direct_overlaps_are_rejected",
+        "short": "test_existing_output_and_direct_overlaps_are_rejected",
+        "outcome": "ok",
+        "line": 5305
+      },
+      {
+        "method": "test_p8_external_candidate.ExternalCandidatePathTests.test_output_parent_symlinks_are_rejected_before_any_creation",
+        "short": "test_output_parent_symlinks_are_rejected_before_any_creation",
+        "outcome": "ok",
+        "line": 5306
+      },
+      {
+        "method": "test_p8_external_candidate.ExternalCandidatePathTests.test_parent_traversal_cannot_enter_source_or_build",
+        "short": "test_parent_traversal_cannot_enter_source_or_build",
+        "outcome": "ok",
+        "line": 5307
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_caller_repinning_malformed_mapping_still_gets_failure_receipt",
+        "short": "test_caller_repinning_malformed_mapping_still_gets_failure_receipt",
+        "outcome": "ok",
+        "line": 5308
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_cli_has_explicit_local_status_and_retains_failure_receipt",
+        "short": "test_cli_has_explicit_local_status_and_retains_failure_receipt",
+        "outcome": "ok",
+        "line": 5309
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_duplicate_json_nonfinite_and_size_limits_are_enforced",
+        "short": "test_duplicate_json_nonfinite_and_size_limits_are_enforced",
+        "outcome": "ok",
+        "line": 5310
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_duplicate_missing_or_unknown_candidate_system_is_rejected",
+        "short": "test_duplicate_missing_or_unknown_candidate_system_is_rejected",
+        "outcome": "ok",
+        "line": 5311
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_evidence_hash_and_line_contracts_reject_false_bindings",
+        "short": "test_evidence_hash_and_line_contracts_reject_false_bindings",
+        "outcome": "ok",
+        "line": 5312
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_existing_output_is_never_reused",
+        "short": "test_existing_output_is_never_reused",
+        "outcome": "ok",
+        "line": 5313
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_fixed_packet_binds_model_prompt_gold_and_original_mapping",
+        "short": "test_fixed_packet_binds_model_prompt_gold_and_original_mapping",
+        "outcome": "ok",
+        "line": 5314
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_floating_revision_is_not_a_fixed_model",
+        "short": "test_floating_revision_is_not_a_fixed_model",
+        "outcome": "ok",
+        "line": 5315
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_heldout_empty_and_duplicate_cases_are_not_admitted",
+        "short": "test_heldout_empty_and_duplicate_cases_are_not_admitted",
+        "outcome": "ok",
+        "line": 5316
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_known_name_leak_is_rejected_without_redacting_source",
+        "short": "test_known_name_leak_is_rejected_without_redacting_source",
+        "outcome": "ok",
+        "line": 5317
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_prepare_preserves_untrusted_text_as_data_and_blinds_metadata",
+        "short": "test_prepare_preserves_untrusted_text_as_data_and_blinds_metadata",
+        "outcome": "ok",
+        "line": 5318
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_prompt_name_leak_and_unknown_plan_fields_are_rejected",
+        "short": "test_prompt_name_leak_and_unknown_plan_fields_are_rejected",
+        "outcome": "ok",
+        "line": 5319
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_reconcile_rejects_false_execution_claim_and_model_revision_drift",
+        "short": "test_reconcile_rejects_false_execution_claim_and_model_revision_drift",
+        "outcome": "ok",
+        "line": 5320
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_reconcile_rejects_unknown_duplicate_and_missing_verdict_rows",
+        "short": "test_reconcile_rejects_unknown_duplicate_and_missing_verdict_rows",
+        "outcome": "ok",
+        "line": 5321
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_reconcile_rejects_wrong_external_pin_and_private_mapping_drift",
+        "short": "test_reconcile_rejects_wrong_external_pin_and_private_mapping_drift",
+        "outcome": "ok",
+        "line": 5322
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_reconcile_routes_every_opinion_to_manual_review_without_gold_changes",
+        "short": "test_reconcile_routes_every_opinion_to_manual_review_without_gold_changes",
+        "outcome": "ok",
+        "line": 5323
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_run_id_cannot_reveal_compared_system_names",
+        "short": "test_run_id_cannot_reveal_compared_system_names",
+        "outcome": "ok",
+        "line": 5324
+      },
+      {
+        "method": "test_p8_judge_evidence.JudgeEvidenceTests.test_traversal_symlink_and_missing_references_fail_closed",
+        "short": "test_traversal_symlink_and_missing_references_fail_closed",
+        "outcome": "ok",
+        "line": 5325
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_body_fields_are_not_accepted_as_metadata",
+        "short": "test_body_fields_are_not_accepted_as_metadata",
+        "outcome": "ok",
+        "line": 5326
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_exact_fingerprint_leak_detected_without_body_access",
+        "short": "test_exact_fingerprint_leak_detected_without_body_access",
+        "outcome": "ok",
+        "line": 5327
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_independent_metadata_components_can_remain_separated",
+        "short": "test_independent_metadata_components_can_remain_separated",
+        "outcome": "ok",
+        "line": 5328
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_missing_and_duplicate_membership_are_errors",
+        "short": "test_missing_and_duplicate_membership_are_errors",
+        "outcome": "ok",
+        "line": 5329
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_transitive_component_does_not_hide_cross_split_relation",
+        "short": "test_transitive_component_does_not_hide_cross_split_relation",
+        "outcome": "ok",
+        "line": 5330
+      },
+      {
+        "method": "test_p8_leakage_audit.FamilyBoundaryTests.test_translation_family_split_is_quarantined_even_with_distinct_hashes",
+        "short": "test_translation_family_split_is_quarantined_even_with_distinct_hashes",
+        "outcome": "ok",
+        "line": 5331
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_benchmark_include_is_flagged",
+        "short": "test_benchmark_include_is_flagged",
+        "outcome": "ok",
+        "line": 5332
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_dev_dependency_is_reported_outside_production_scope",
+        "short": "test_dev_dependency_is_reported_outside_production_scope",
+        "outcome": "ok",
+        "line": 5333
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_generic_source_is_not_marked_as_a_corpus_hit",
+        "short": "test_generic_source_is_not_marked_as_a_corpus_hit",
+        "outcome": "ok",
+        "line": 5334
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_gold_path_in_inline_test_is_preserved_for_review",
+        "short": "test_gold_path_in_inline_test_is_preserved_for_review",
+        "outcome": "ok",
+        "line": 5335
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_inherited_workspace_alias_is_resolved_before_checking",
+        "short": "test_inherited_workspace_alias_is_resolved_before_checking",
+        "outcome": "ok",
+        "line": 5336
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_literal_query_dictionary_injection_detected",
+        "short": "test_literal_query_dictionary_injection_detected",
+        "outcome": "ok",
+        "line": 5337
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_missing_workspace_alias_is_input_failure",
+        "short": "test_missing_workspace_alias_is_input_failure",
+        "outcome": "ok",
+        "line": 5338
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_platform_build_dependency_is_checked",
+        "short": "test_platform_build_dependency_is_checked",
+        "outcome": "ok",
+        "line": 5339
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_raw_and_escaped_literal_queries_detected",
+        "short": "test_raw_and_escaped_literal_queries_detected",
+        "outcome": "ok",
+        "line": 5340
+      },
+      {
+        "method": "test_p8_leakage_audit.ProductionBoundaryTests.test_renamed_eval_dependency_is_not_hidden_by_alias",
+        "short": "test_renamed_eval_dependency_is_not_hidden_by_alias",
+        "outcome": "ok",
+        "line": 5341
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_cpu_and_io_counter_gaps_remain_null",
+        "short": "test_cpu_and_io_counter_gaps_remain_null",
+        "outcome": "ok",
+        "line": 5342
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_full_raw_inventory_refuses_tampering_added_inputs_and_symlinks",
+        "short": "test_full_raw_inventory_refuses_tampering_added_inputs_and_symlinks",
+        "outcome": "ok",
+        "line": 5343
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_generation_and_missing_counter_cannot_become_a_cache_hit",
+        "short": "test_generation_and_missing_counter_cannot_become_a_cache_hit",
+        "outcome": "ok",
+        "line": 5344
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_only_direct_current_query_cache_deltas_classify",
+        "short": "test_only_direct_current_query_cache_deltas_classify",
+        "outcome": "ok",
+        "line": 5345
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_owned_uniform_fixture_is_immutable_and_no_cache_is_present",
+        "short": "test_owned_uniform_fixture_is_immutable_and_no_cache_is_present",
+        "outcome": "ok",
+        "line": 5346
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_physical_sqlite_bytes_do_not_double_count_logical_fts_pages",
+        "short": "test_physical_sqlite_bytes_do_not_double_count_logical_fts_pages",
+        "outcome": "ok",
+        "line": 5347
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_physical_storage_keeps_actual_wal_and_shm_sidecars",
+        "short": "test_physical_storage_keeps_actual_wal_and_shm_sidecars",
+        "outcome": "ok",
+        "line": 5348
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_release_and_resource_bounds_cannot_be_reduced_to_smoke",
+        "short": "test_release_and_resource_bounds_cannot_be_reduced_to_smoke",
+        "outcome": "ok",
+        "line": 5349
+      },
+      {
+        "method": "test_p8_lifecycle.LifecycleTests.test_replay_binary_must_match_actual_original_cargo_and_source_witness",
+        "short": "test_replay_binary_must_match_actual_original_cargo_and_source_witness",
+        "outcome": "ok",
+        "line": 5350
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_external_review_binds_pending_author_bytes_and_rejects_self_approval",
+        "short": "test_external_review_binds_pending_author_bytes_and_rejects_self_approval",
+        "outcome": "ok",
+        "line": 5351
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_failed_validator_is_retained_and_never_replaced_by_freeze",
+        "short": "test_failed_validator_is_retained_and_never_replaced_by_freeze",
+        "outcome": "ok",
+        "line": 5352
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_global_duplicate_ids_nondev_and_compat_gold_drift_are_rejected",
+        "short": "test_global_duplicate_ids_nondev_and_compat_gold_drift_are_rejected",
+        "outcome": "ok",
+        "line": 5353
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_relocation_preserves_locks_gold_pointer_and_original_manifest",
+        "short": "test_relocation_preserves_locks_gold_pointer_and_original_manifest",
+        "outcome": "ok",
+        "line": 5354
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_review_rejects_packet_drift_missing_ids_and_unaccepted_row",
+        "short": "test_review_rejects_packet_drift_missing_ids_and_unaccepted_row",
+        "outcome": "ok",
+        "line": 5355
+      },
+      {
+        "method": "test_p8_native_registry.RegistryAdmissionTests.test_same_length_source_tamper_and_parent_symlink_are_rejected",
+        "short": "test_same_length_source_tamper_and_parent_symlink_are_rejected",
+        "outcome": "ok",
+        "line": 5356
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_actual_version_pair_requires_distinct_revisions_and_older_real_schema",
+        "short": "test_actual_version_pair_requires_distinct_revisions_and_older_real_schema",
+        "outcome": "ok",
+        "line": 5357
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected",
+        "short": "test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected",
+        "outcome": "ok",
+        "line": 5358
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_authored_source_mutation_addition_and_deletion_are_visible",
+        "short": "test_authored_source_mutation_addition_and_deletion_are_visible",
+        "outcome": "ok",
+        "line": 5359
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_backup_closes_all_connections_on_success_and_failure",
+        "short": "test_backup_closes_all_connections_on_success_and_failure",
+        "outcome": "ok",
+        "line": 5360
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_bad_bundle_collector_preserves_refusal_and_input_bytes",
+        "short": "test_bad_bundle_collector_preserves_refusal_and_input_bytes",
+        "outcome": "ok",
+        "line": 5361
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_bundle_binary_mutation_and_unrequested_source_fail",
+        "short": "test_bundle_binary_mutation_and_unrequested_source_fail",
+        "outcome": "ok",
+        "line": 5362
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_collector_existing_directory_and_symlink_are_never_written",
+        "short": "test_collector_existing_directory_and_symlink_are_never_written",
+        "outcome": "ok",
+        "line": 5363
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_compiler_byte_replacement_is_rejected",
+        "short": "test_compiler_byte_replacement_is_rejected",
+        "outcome": "ok",
+        "line": 5364
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_default_and_semantic_are_separate_feature_cells",
+        "short": "test_default_and_semantic_are_separate_feature_cells",
+        "outcome": "ok",
+        "line": 5365
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_empty_collector_preserves_invalid_matrix_without_passing_cells",
+        "short": "test_empty_collector_preserves_invalid_matrix_without_passing_cells",
+        "outcome": "ok",
+        "line": 5366
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_existing_output_preserves_earlier_receipt",
+        "short": "test_existing_output_preserves_earlier_receipt",
+        "outcome": "ok",
+        "line": 5367
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_expired_backup_deadline_retains_failed_destination",
+        "short": "test_expired_backup_deadline_retains_failed_destination",
+        "outcome": "ok",
+        "line": 5368
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_external_target_artifact_is_rejected",
+        "short": "test_external_target_artifact_is_rejected",
+        "outcome": "ok",
+        "line": 5369
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_failed_build_preserves_nonzero_receipt_and_raw_stderr",
+        "short": "test_failed_build_preserves_nonzero_receipt_and_raw_stderr",
+        "outcome": "ok",
+        "line": 5370
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_feature_lie_is_rejected_even_after_log_digest_update",
+        "short": "test_feature_lie_is_rejected_even_after_log_digest_update",
+        "outcome": "ok",
+        "line": 5371
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_formal_observer_end_drift_cannot_leave_a_passed_receipt",
+        "short": "test_formal_observer_end_drift_cannot_leave_a_passed_receipt",
+        "outcome": "ok",
+        "line": 5372
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_formal_observer_keeps_historical_product_and_current_driver_separate",
+        "short": "test_formal_observer_keeps_historical_product_and_current_driver_separate",
+        "outcome": "ok",
+        "line": 5373
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_invalid_source_still_preserves_eight_unpassed_cells",
+        "short": "test_invalid_source_still_preserves_eight_unpassed_cells",
+        "outcome": "ok",
+        "line": 5374
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_inventory_does_not_build_an_available_toolchain",
+        "short": "test_inventory_does_not_build_an_available_toolchain",
+        "outcome": "ok",
+        "line": 5375
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_inventory_has_eight_not_run_cells_and_nonzero_exit",
+        "short": "test_inventory_has_eight_not_run_cells_and_nonzero_exit",
+        "outcome": "ok",
+        "line": 5376
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_linux_receipt_does_not_certify_macos",
+        "short": "test_linux_receipt_does_not_certify_macos",
+        "outcome": "ok",
+        "line": 5377
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_missing_stderr_digest_is_rejected",
+        "short": "test_missing_stderr_digest_is_rejected",
+        "outcome": "ok",
+        "line": 5378
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_missing_tracking_toolchain_never_invokes_rustup_which",
+        "short": "test_missing_tracking_toolchain_never_invokes_rustup_which",
+        "outcome": "ok",
+        "line": 5379
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_newer_compiler_does_not_certify_msrv",
+        "short": "test_newer_compiler_does_not_certify_msrv",
+        "outcome": "ok",
+        "line": 5380
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_observer_rejects_uncommitted_bytes_and_loaded_foreign_module",
+        "short": "test_observer_rejects_uncommitted_bytes_and_loaded_foreign_module",
+        "outcome": "ok",
+        "line": 5381
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_output_symlink_is_refused",
+        "short": "test_output_symlink_is_refused",
+        "outcome": "ok",
+        "line": 5382
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_profile_lie_is_rejected",
+        "short": "test_profile_lie_is_rejected",
+        "outcome": "ok",
+        "line": 5383
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_readonly_snapshot_closes_connection_on_success_and_failure",
+        "short": "test_readonly_snapshot_closes_connection_on_success_and_failure",
+        "outcome": "ok",
+        "line": 5384
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_rebuild_controls_reject_reuse_sentinel_loss_and_bad_integrity",
+        "short": "test_rebuild_controls_reject_reuse_sentinel_loss_and_bad_integrity",
+        "outcome": "ok",
+        "line": 5385
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_rollback_accepts_existing_receipt_without_relabelling_its_source",
+        "short": "test_rollback_accepts_existing_receipt_without_relabelling_its_source",
+        "outcome": "ok",
+        "line": 5386
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_rollback_rejects_unbound_source_or_manifest_traversal",
+        "short": "test_rollback_rejects_unbound_source_or_manifest_traversal",
+        "outcome": "ok",
+        "line": 5387
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_rollback_rejects_wrong_package_or_changed_binary",
+        "short": "test_rollback_rejects_wrong_package_or_changed_binary",
+        "outcome": "ok",
+        "line": 5388
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_selected_cell_requires_stdio_and_does_not_certify_other_seven",
+        "short": "test_selected_cell_requires_stdio_and_does_not_certify_other_seven",
+        "outcome": "ok",
+        "line": 5389
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_smoke_success_label_cannot_hide_missing_rpc_response",
+        "short": "test_smoke_success_label_cannot_hide_missing_rpc_response",
+        "outcome": "ok",
+        "line": 5390
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_source_commit_pin_is_enforced",
+        "short": "test_source_commit_pin_is_enforced",
+        "outcome": "ok",
+        "line": 5391
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_source_drift_is_detected_despite_assume_unchanged",
+        "short": "test_source_drift_is_detected_despite_assume_unchanged",
+        "outcome": "ok",
+        "line": 5392
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_sqlite_backup_includes_committed_wal_and_is_exclusive",
+        "short": "test_sqlite_backup_includes_committed_wal_and_is_exclusive",
+        "outcome": "ok",
+        "line": 5393
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_symlink_source_with_identical_bytes_is_rejected",
+        "short": "test_symlink_source_with_identical_bytes_is_rejected",
+        "outcome": "ok",
+        "line": 5394
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_unlocked_command_is_rejected",
+        "short": "test_unlocked_command_is_rejected",
+        "outcome": "ok",
+        "line": 5395
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_unreadable_toolchain_inventory_cannot_pass",
+        "short": "test_unreadable_toolchain_inventory_cannot_pass",
+        "outcome": "ok",
+        "line": 5396
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_untracked_and_ignored_build_inputs_are_rejected",
+        "short": "test_untracked_and_ignored_build_inputs_are_rejected",
+        "outcome": "ok",
+        "line": 5397
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_valid_cold_contract_replays",
+        "short": "test_valid_cold_contract_replays",
+        "outcome": "ok",
+        "line": 5398
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_version_pair_public_probe_rejects_echo_wrong_path_and_false_span",
+        "short": "test_version_pair_public_probe_rejects_echo_wrong_path_and_false_span",
+        "outcome": "ok",
+        "line": 5399
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths",
+        "short": "test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths",
+        "outcome": "ok",
+        "line": 5400
+      },
+      {
+        "method": "test_p8_platform.PlatformControls.test_warm_artifact_cannot_be_relabelled_cold",
+        "short": "test_warm_artifact_cannot_be_relabelled_cold",
+        "outcome": "ok",
+        "line": 5401
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentActiveObserverControls.test_clean_stdio_eof_still_passes_the_original_exit_contract",
+        "short": "test_clean_stdio_eof_still_passes_the_original_exit_contract",
+        "outcome": "ok",
+        "line": 5402
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentActiveObserverControls.test_duplicate_terminal_response_is_preserved_and_rejected",
+        "short": "test_duplicate_terminal_response_is_preserved_and_rejected",
+        "outcome": "ok",
+        "line": 5403
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentActiveObserverControls.test_legitimate_terminal_notification_is_preserved_and_accepted",
+        "short": "test_legitimate_terminal_notification_is_preserved_and_accepted",
+        "outcome": "ok",
+        "line": 5404
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentActiveObserverControls.test_normal_zero_exit_does_not_hide_a_malformed_stdout_tail",
+        "short": "test_normal_zero_exit_does_not_hide_a_malformed_stdout_tail",
+        "outcome": "ok",
+        "line": 5405
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentActiveObserverControls.test_shared_active_sqlite_probe_closes_on_success_and_error",
+        "short": "test_shared_active_sqlite_probe_closes_on_success_and_error",
+        "outcome": "ok",
+        "line": 5406
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_compiler_and_target_drift_is_rejected",
+        "short": "test_portable_resealed_compiler_and_target_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5407
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_foreign_cargo_origin_is_rejected",
+        "short": "test_portable_resealed_foreign_cargo_origin_is_rejected",
+        "outcome": "ok",
+        "line": 5408
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_missing_duplicate_or_inconsistent_verbose_is_rejected",
+        "short": "test_portable_resealed_missing_duplicate_or_inconsistent_verbose_is_rejected",
+        "outcome": "ok",
+        "line": 5409
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_missing_logs_and_config_drift_is_rejected",
+        "short": "test_portable_resealed_missing_logs_and_config_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5410
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_observer_identity_drift_is_rejected",
+        "short": "test_portable_resealed_observer_identity_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5411
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_test_artifact_is_rejected",
+        "short": "test_portable_resealed_test_artifact_is_rejected",
+        "outcome": "ok",
+        "line": 5412
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_resealed_verbose_release_and_host_drift_is_rejected",
+        "short": "test_portable_resealed_verbose_release_and_host_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5413
+      },
+      {
+        "method": "test_p8_platform_independent_review.IndependentPortableControls.test_portable_valid_cells_do_not_require_the_old_producer_vm",
+        "short": "test_portable_valid_cells_do_not_require_the_old_producer_vm",
+        "outcome": "ok",
+        "line": 5414
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_active_faults_refuse_a_different_binary_before_starting_any_fixture",
+        "short": "test_active_faults_refuse_a_different_binary_before_starting_any_fixture",
+        "outcome": "ok",
+        "line": 5415
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_async_operation_retains_actual_result_or_error",
+        "short": "test_async_operation_retains_actual_result_or_error",
+        "outcome": "ok",
+        "line": 5416
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_busy_retries_are_bounded_and_generic_errors_fail_immediately",
+        "short": "test_busy_retries_are_bounded_and_generic_errors_fail_immediately",
+        "outcome": "ok",
+        "line": 5417
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_cancelled_case_leaves_unstarted_scenarios_not_run",
+        "short": "test_cancelled_case_leaves_unstarted_scenarios_not_run",
+        "outcome": "ok",
+        "line": 5418
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_command_failure_retains_both_raw_logs_and_cannot_pass",
+        "short": "test_command_failure_retains_both_raw_logs_and_cannot_pass",
+        "outcome": "ok",
+        "line": 5419
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_command_timeout_is_a_failed_owned_process_receipt",
+        "short": "test_command_timeout_is_a_failed_owned_process_receipt",
+        "outcome": "ok",
+        "line": 5420
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_deleted_symbol_or_deleted_path_is_a_hard_failure",
+        "short": "test_deleted_symbol_or_deleted_path_is_a_hard_failure",
+        "outcome": "ok",
+        "line": 5421
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_echoed_query_is_not_a_successful_hit",
+        "short": "test_echoed_query_is_not_a_successful_hit",
+        "outcome": "ok",
+        "line": 5422
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_engineering_source_or_build_log_drift_is_rejected",
+        "short": "test_engineering_source_or_build_log_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5423
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_engineering_witness_cannot_claim_cold_or_invent_source_count",
+        "short": "test_engineering_witness_cannot_claim_cold_or_invent_source_count",
+        "outcome": "ok",
+        "line": 5424
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_engineering_witness_is_bound_but_cannot_pass_the_cold_receipt_path",
+        "short": "test_engineering_witness_is_bound_but_cannot_pass_the_cold_receipt_path",
+        "outcome": "ok",
+        "line": 5425
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_failed_case_is_preserved_and_cannot_make_green_rollup",
+        "short": "test_failed_case_is_preserved_and_cannot_make_green_rollup",
+        "outcome": "ok",
+        "line": 5426
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_false_source_path_or_span_cannot_prove_recovery",
+        "short": "test_false_source_path_or_span_cannot_prove_recovery",
+        "outcome": "ok",
+        "line": 5427
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_full_evidence_prunes_disposable_target_before_opening_files",
+        "short": "test_full_evidence_prunes_disposable_target_before_opening_files",
+        "outcome": "ok",
+        "line": 5428
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_missing_or_malformed_result_array_is_not_empty_success",
+        "short": "test_missing_or_malformed_result_array_is_not_empty_success",
+        "outcome": "ok",
+        "line": 5429
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_observed_kill_requires_terminal_failure_of_pending_request",
+        "short": "test_observed_kill_requires_terminal_failure_of_pending_request",
+        "outcome": "ok",
+        "line": 5430
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_only_explicit_busy_failures_are_retried",
+        "short": "test_only_explicit_busy_failures_are_retried",
+        "outcome": "ok",
+        "line": 5431
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_product_initialization_reuses_existing_protocol",
+        "short": "test_product_initialization_reuses_existing_protocol",
+        "outcome": "ok",
+        "line": 5432
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_public_symbol_is_proven_against_its_actual_source_span",
+        "short": "test_public_symbol_is_proven_against_its_actual_source_span",
+        "outcome": "ok",
+        "line": 5433
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_ready_receipt_requires_live_transport_and_honest_disabled_state",
+        "short": "test_ready_receipt_requires_live_transport_and_honest_disabled_state",
+        "outcome": "ok",
+        "line": 5434
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_request_observation_has_a_real_deadline",
+        "short": "test_request_observation_has_a_real_deadline",
+        "outcome": "ok",
+        "line": 5435
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_source_snapshot_never_opens_sqlite_cache_files",
+        "short": "test_source_snapshot_never_opens_sqlite_cache_files",
+        "outcome": "ok",
+        "line": 5436
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_stop_observation_uses_the_owned_child_wait_event",
+        "short": "test_stop_observation_uses_the_owned_child_wait_event",
+        "outcome": "ok",
+        "line": 5437
+      },
+      {
+        "method": "test_p8_recovery.RecoveryControls.test_symbol_name_cannot_hide_wrong_source_bytes",
+        "short": "test_symbol_name_cannot_hide_wrong_source_bytes",
+        "outcome": "ok",
+        "line": 5438
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_archive_existing_run_is_unchanged",
+        "short": "test_archive_existing_run_is_unchanged",
+        "outcome": "ok",
+        "line": 5439
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_archive_payload_missing_extra_and_checksum_tampering",
+        "short": "test_archive_payload_missing_extra_and_checksum_tampering",
+        "outcome": "ok",
+        "line": 5440
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_archive_roundtrip_and_offline_portability_with_external_checksum",
+        "short": "test_archive_roundtrip_and_offline_portability_with_external_checksum",
+        "outcome": "ok",
+        "line": 5441
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_candidate_snapshot_corruption_and_manifest_digest_are_detected",
+        "short": "test_candidate_snapshot_corruption_and_manifest_digest_are_detected",
+        "outcome": "ok",
+        "line": 5442
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_cli_success_invalid_and_failed_gate_exit_codes",
+        "short": "test_cli_success_invalid_and_failed_gate_exit_codes",
+        "outcome": "ok",
+        "line": 5443
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_corpus_added_deleted_and_symlink_files_are_rejected",
+        "short": "test_corpus_added_deleted_and_symlink_files_are_rejected",
+        "outcome": "ok",
+        "line": 5444
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_corpus_output_overlap_and_holdout_subtree_are_rejected",
+        "short": "test_corpus_output_overlap_and_holdout_subtree_are_rejected",
+        "outcome": "ok",
+        "line": 5445
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_directory_and_fifo_inputs_fail_without_blocking",
+        "short": "test_directory_and_fifo_inputs_fail_without_blocking",
+        "outcome": "ok",
+        "line": 5446
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_dirty_added_and_deleted_inputs_remain_explicit",
+        "short": "test_dirty_added_and_deleted_inputs_remain_explicit",
+        "outcome": "ok",
+        "line": 5447
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_environment_allowlist_omits_credentials_and_detects_drift",
+        "short": "test_environment_allowlist_omits_credentials_and_detects_drift",
+        "outcome": "ok",
+        "line": 5448
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_every_external_input_is_rechecked",
+        "short": "test_every_external_input_is_rechecked",
+        "outcome": "ok",
+        "line": 5449
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_evidence_drift_during_copy_retains_partial_and_prior_latest",
+        "short": "test_evidence_drift_during_copy_retains_partial_and_prior_latest",
+        "outcome": "ok",
+        "line": 5450
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_evidence_self_containment_symlinks_and_unsafe_names",
+        "short": "test_evidence_self_containment_symlinks_and_unsafe_names",
+        "outcome": "ok",
+        "line": 5451
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_executable_metadata_drift_is_rejected",
+        "short": "test_executable_metadata_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5452
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_existing_candidate_and_even_empty_output_are_never_overwritten",
+        "short": "test_existing_candidate_and_even_empty_output_are_never_overwritten",
+        "outcome": "ok",
+        "line": 5453
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_failure_and_native_success_archive_without_promoting_latest",
+        "short": "test_failure_and_native_success_archive_without_promoting_latest",
+        "outcome": "ok",
+        "line": 5454
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_fake_model_requires_full_identity",
+        "short": "test_fake_model_requires_full_identity",
+        "outcome": "ok",
+        "line": 5455
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_file_json_git_tree_and_total_budgets",
+        "short": "test_file_json_git_tree_and_total_budgets",
+        "outcome": "ok",
+        "line": 5456
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_freeze_binds_exact_bytes_and_declares_build_limit",
+        "short": "test_freeze_binds_exact_bytes_and_declares_build_limit",
+        "outcome": "ok",
+        "line": 5457
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_gate_binding_and_exit_mismatch_reject_before_archive",
+        "short": "test_gate_binding_and_exit_mismatch_reject_before_archive",
+        "outcome": "ok",
+        "line": 5458
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_head_change_with_same_source_bytes_is_drift",
+        "short": "test_head_change_with_same_source_bytes_is_drift",
+        "outcome": "ok",
+        "line": 5459
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_input_mutation_during_stream_is_detected",
+        "short": "test_input_mutation_during_stream_is_detected",
+        "outcome": "ok",
+        "line": 5460
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_invalid_corpus_and_duplicate_json_keys_fail_closed",
+        "short": "test_invalid_corpus_and_duplicate_json_keys_fail_closed",
+        "outcome": "ok",
+        "line": 5461
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_latest_symlink_or_unrelated_file_is_not_overwritten",
+        "short": "test_latest_symlink_or_unrelated_file_is_not_overwritten",
+        "outcome": "ok",
+        "line": 5462
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_live_model_and_credential_config_are_rejected",
+        "short": "test_live_model_and_credential_config_are_rejected",
+        "outcome": "ok",
+        "line": 5463
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_local_pass_requires_raw_metrics_and_report",
+        "short": "test_local_pass_requires_raw_metrics_and_report",
+        "outcome": "ok",
+        "line": 5464
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_metadata_only_candidate_is_explicit_and_cannot_promote_latest",
+        "short": "test_metadata_only_candidate_is_explicit_and_cannot_promote_latest",
+        "outcome": "ok",
+        "line": 5465
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_overlapping_scopes_and_output_source_are_rejected",
+        "short": "test_overlapping_scopes_and_output_source_are_rejected",
+        "outcome": "ok",
+        "line": 5466
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_partial_copy_remains_incomplete_and_retry_cannot_overwrite",
+        "short": "test_partial_copy_remains_incomplete_and_retry_cannot_overwrite",
+        "outcome": "ok",
+        "line": 5467
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_query_and_gold_body_drift_with_unchanged_metadata_is_rejected",
+        "short": "test_query_and_gold_body_drift_with_unchanged_metadata_is_rejected",
+        "outcome": "ok",
+        "line": 5468
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_rehashed_manifest_still_cannot_escape_snapshot_directory",
+        "short": "test_rehashed_manifest_still_cannot_escape_snapshot_directory",
+        "outcome": "ok",
+        "line": 5469
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_staged_change_without_worktree_change_is_drift",
+        "short": "test_staged_change_without_worktree_change_is_drift",
+        "outcome": "ok",
+        "line": 5470
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_submodule_index_is_rejected",
+        "short": "test_submodule_index_is_rejected",
+        "outcome": "ok",
+        "line": 5471
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_symlink_source_and_input_parent_are_rejected",
+        "short": "test_symlink_source_and_input_parent_are_rejected",
+        "outcome": "ok",
+        "line": 5472
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_tracked_content_drift_rejects_archive_without_latest",
+        "short": "test_tracked_content_drift_rejects_archive_without_latest",
+        "outcome": "ok",
+        "line": 5473
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_tracked_deletion_is_drift",
+        "short": "test_tracked_deletion_is_drift",
+        "outcome": "ok",
+        "line": 5474
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_unmerged_index_is_rejected",
+        "short": "test_unmerged_index_is_rejected",
+        "outcome": "ok",
+        "line": 5475
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_unsafe_scopes_and_holdout_paths_are_rejected_before_read",
+        "short": "test_unsafe_scopes_and_holdout_paths_are_rejected_before_read",
+        "outcome": "ok",
+        "line": 5476
+      },
+      {
+        "method": "test_p8_release_evidence.ReleaseEvidenceTests.test_untracked_and_ignored_additions_are_drift",
+        "short": "test_untracked_and_ignored_additions_are_drift",
+        "outcome": "ok",
+        "line": 5477
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_actual_record_fields_expose_stale_candidate_and_inputs",
+        "short": "test_actual_record_fields_expose_stale_candidate_and_inputs",
+        "outcome": "ok",
+        "line": 5478
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_counts_are_recomputed_and_repository_evidence_is_not_an_authority",
+        "short": "test_counts_are_recomputed_and_repository_evidence_is_not_an_authority",
+        "outcome": "ok",
+        "line": 5479
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_definition_snapshot_cannot_change_its_own_oracle",
+        "short": "test_definition_snapshot_cannot_change_its_own_oracle",
+        "outcome": "ok",
+        "line": 5480
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_duplicate_nonfinite_and_oversized_json_fail_closed",
+        "short": "test_duplicate_nonfinite_and_oversized_json_fail_closed",
+        "outcome": "ok",
+        "line": 5481
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_floating_pins_and_self_asserted_trust_switches_are_rejected",
+        "short": "test_floating_pins_and_self_asserted_trust_switches_are_rejected",
+        "outcome": "ok",
+        "line": 5482
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_git_reads_only_exact_bounded_regular_objects",
+        "short": "test_git_reads_only_exact_bounded_regular_objects",
+        "outcome": "ok",
+        "line": 5483
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_live_missing_and_optional_judge_p9_do_not_create_local_dependencies",
+        "short": "test_live_missing_and_optional_judge_p9_do_not_create_local_dependencies",
+        "outcome": "ok",
+        "line": 5484
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_missing_pointer_partial_scope_and_failure_are_retained",
+        "short": "test_missing_pointer_partial_scope_and_failure_are_retained",
+        "outcome": "ok",
+        "line": 5485
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_missing_records_block_both_profiles_even_when_all_tasks_claim_done",
+        "short": "test_missing_records_block_both_profiles_even_when_all_tasks_claim_done",
+        "outcome": "ok",
+        "line": 5486
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_only_selected_profiles_and_required_tasks_supply_declared_coverage",
+        "short": "test_only_selected_profiles_and_required_tasks_supply_declared_coverage",
+        "outcome": "ok",
+        "line": 5487
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_opaque_manifest_hash_is_not_compared_as_the_source_inventory_digest",
+        "short": "test_opaque_manifest_hash_is_not_compared_as_the_source_inventory_digest",
+        "outcome": "ok",
+        "line": 5488
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_original_local_and_semantic_dependency_scopes_are_separate",
+        "short": "test_original_local_and_semantic_dependency_scopes_are_separate",
+        "outcome": "ok",
+        "line": 5489
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_original_scope_acceptance_dependencies_and_conditions_cannot_be_rewritten",
+        "short": "test_original_scope_acceptance_dependencies_and_conditions_cannot_be_rewritten",
+        "outcome": "ok",
+        "line": 5490
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_paper_complete_and_done_claims_never_grant_release_authority",
+        "short": "test_paper_complete_and_done_claims_never_grant_release_authority",
+        "outcome": "ok",
+        "line": 5491
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_raw_record_digest_and_inventory_cannot_be_substituted",
+        "short": "test_raw_record_digest_and_inventory_cannot_be_substituted",
+        "outcome": "ok",
+        "line": 5492
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_real_cli_reads_fixed_git_state_and_keeps_profiles_nonzero",
+        "short": "test_real_cli_reads_fixed_git_state_and_keeps_profiles_nonzero",
+        "outcome": "ok",
+        "line": 5493
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_task_inventory_duplicates_missing_unknown_and_schema_are_rejected",
+        "short": "test_task_inventory_duplicates_missing_unknown_and_schema_are_rejected",
+        "outcome": "ok",
+        "line": 5494
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_unfinished_parent_gate_remains_visible_under_done_children",
+        "short": "test_unfinished_parent_gate_remains_visible_under_done_children",
+        "outcome": "ok",
+        "line": 5495
+      },
+      {
+        "method": "test_p8_release_review.ReleaseReviewTests.test_unknown_record_scope_task_coverage_pointer_and_duplicates_reject",
+        "short": "test_unknown_record_scope_task_coverage_pointer_and_duplicates_reject",
+        "outcome": "ok",
+        "line": 5496
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_invalid_pid_and_owner_are_rejected",
+        "short": "test_invalid_pid_and_owner_are_rejected",
+        "outcome": "ok",
+        "line": 5497
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_live_owned_child_is_attributed_or_explicitly_unavailable",
+        "short": "test_live_owned_child_is_attributed_or_explicitly_unavailable",
+        "outcome": "ok",
+        "line": 5498
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_missing_descendant_io_and_wrong_owner_never_lower_tree_total",
+        "short": "test_missing_descendant_io_and_wrong_owner_never_lower_tree_total",
+        "outcome": "ok",
+        "line": 5499
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_namespace_status_rejects_conflicting_identity",
+        "short": "test_namespace_status_rejects_conflicting_identity",
+        "outcome": "ok",
+        "line": 5500
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_real_owned_tree_fixture_and_reused_pid_are_not_confused",
+        "short": "test_real_owned_tree_fixture_and_reused_pid_are_not_confused",
+        "outcome": "ok",
+        "line": 5501
+      },
+      {
+        "method": "test_p8_resources.ResourcesTest.test_stat_parser_keeps_units_and_handles_comm_delimiters",
+        "short": "test_stat_parser_keeps_units_and_handles_comm_delimiters",
+        "outcome": "ok",
+        "line": 5502
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_caller_supplied_cleanup_paths_are_never_accepted",
+        "short": "test_caller_supplied_cleanup_paths_are_never_accepted",
+        "outcome": "ok",
+        "line": 5503
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_current_workspace_and_self_hosted_execution_cannot_invoke_a_command",
+        "short": "test_current_workspace_and_self_hosted_execution_cannot_invoke_a_command",
+        "outcome": "ok",
+        "line": 5504
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_fixed_privileged_argv_uses_same_privilege_group_supervision",
+        "short": "test_fixed_privileged_argv_uses_same_privilege_group_supervision",
+        "outcome": "ok",
+        "line": 5505
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_outer_timeout_is_explicitly_unsealed_and_keeps_actual_argv",
+        "short": "test_outer_timeout_is_explicitly_unsealed_and_keeps_actual_argv",
+        "outcome": "ok",
+        "line": 5506
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_real_unprivileged_failure_keeps_started_argv_and_terminal_receipt",
+        "short": "test_real_unprivileged_failure_keeps_started_argv_and_terminal_receipt",
+        "outcome": "ok",
+        "line": 5507
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_real_unprivileged_timeout_kills_parent_and_its_child_group",
+        "short": "test_real_unprivileged_timeout_kills_parent_and_its_child_group",
+        "outcome": "ok",
+        "line": 5508
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_registered_requirement_is_not_discounted_for_available_space",
+        "short": "test_registered_requirement_is_not_discounted_for_available_space",
+        "outcome": "ok",
+        "line": 5509
+      },
+      {
+        "method": "test_p8_runner_capacity.HostedCapacitySafetyTests.test_symlink_ancestor_and_protected_overlap_are_rejected",
+        "short": "test_symlink_ancestor_and_protected_overlap_are_rejected",
+        "outcome": "ok",
+        "line": 5510
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_clustered_rss_cannot_certify_an_hour",
+        "short": "test_clustered_rss_cannot_certify_an_hour",
+        "outcome": "ok",
+        "line": 5511
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_exact_public_hit_rejects_query_echo_and_wrong_path",
+        "short": "test_exact_public_hit_rejects_query_echo_and_wrong_path",
+        "outcome": "ok",
+        "line": 5512
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_existing_memory_threshold_is_preserved",
+        "short": "test_existing_memory_threshold_is_preserved",
+        "outcome": "ok",
+        "line": 5513
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_failed_outcomes_still_enter_latency_denominator",
+        "short": "test_failed_outcomes_still_enter_latency_denominator",
+        "outcome": "ok",
+        "line": 5514
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_mutations_use_real_git_and_do_not_grow_source",
+        "short": "test_mutations_use_real_git_and_do_not_grow_source",
+        "outcome": "ok",
+        "line": 5515
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_raw_is_exclusive_and_preserves_every_row",
+        "short": "test_raw_is_exclusive_and_preserves_every_row",
+        "outcome": "ok",
+        "line": 5516
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_unowned_git_mutation_is_refused",
+        "short": "test_unowned_git_mutation_is_refused",
+        "outcome": "ok",
+        "line": 5517
+      },
+      {
+        "method": "test_p8_runtime.RuntimeEvidenceTests.test_zero_or_missing_rss_cannot_pass",
+        "short": "test_zero_or_missing_rss_cannot_pass",
+        "outcome": "ok",
+        "line": 5518
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_equal_oracle_still_keeps_passing_statistics",
+        "short": "test_equal_oracle_still_keeps_passing_statistics",
+        "outcome": "ok",
+        "line": 5519
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_difference_keeps_statistics_and_failure_exit_one",
+        "short": "test_oracle_difference_keeps_statistics_and_failure_exit_one",
+        "outcome": "ok",
+        "line": 5520
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_infrastructure_failure_stays_exit_two",
+        "short": "test_oracle_infrastructure_failure_stays_exit_two",
+        "outcome": "ok",
+        "line": 5521
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows",
+        "short": "test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows",
+        "outcome": "ok",
+        "line": 5522
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_raw_budget_abort_drains_actual_worker_before_sealing",
+        "short": "test_raw_budget_abort_drains_actual_worker_before_sealing",
+        "outcome": "ok",
+        "line": 5523
+      },
+      {
+        "method": "test_p8_runtime.RuntimeFailureLifecycleTests.test_unconfirmed_worker_shutdown_cannot_create_a_seal",
+        "short": "test_unconfirmed_worker_shutdown_cannot_create_a_seal",
+        "outcome": "ok",
+        "line": 5524
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity",
+        "short": "test_cache_hit_cannot_hide_stale_source_or_wrong_entity",
+        "outcome": "ok",
+        "line": 5525
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_clustered_cache_receipts_cannot_certify_temporal_reuse",
+        "short": "test_clustered_cache_receipts_cannot_certify_temporal_reuse",
+        "outcome": "ok",
+        "line": 5526
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_cross_generation_or_server_cannot_be_cache_receipt",
+        "short": "test_cross_generation_or_server_cannot_be_cache_receipt",
+        "outcome": "ok",
+        "line": 5527
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_each_failed_request_prefix_keeps_actual_counts_no_invented_attempts",
+        "short": "test_each_failed_request_prefix_keeps_actual_counts_no_invented_attempts",
+        "outcome": "ok",
+        "line": 5528
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_missing_original_call_or_changed_request_is_rejected",
+        "short": "test_missing_original_call_or_changed_request_is_rejected",
+        "outcome": "ok",
+        "line": 5529
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_observed_wire_status_has_outer_and_nested_matching_freshness",
+        "short": "test_observed_wire_status_has_outer_and_nested_matching_freshness",
+        "outcome": "ok",
+        "line": 5530
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_real_generation_rule_includes_noop_hit_and_refill_then_hit",
+        "short": "test_real_generation_rule_includes_noop_hit_and_refill_then_hit",
+        "outcome": "ok",
+        "line": 5531
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_shared_pool_counters_must_progress_without_reset_or_rejection",
+        "short": "test_shared_pool_counters_must_progress_without_reset_or_rejection",
+        "outcome": "ok",
+        "line": 5532
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_spread_offers_with_clustered_actual_calls_do_not_cover_four_quarters",
+        "short": "test_spread_offers_with_clustered_actual_calls_do_not_cover_four_quarters",
+        "outcome": "ok",
+        "line": 5533
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_keeps_original_operation_N_and_explicit_rpc_totals_and_quarters",
+        "short": "test_summary_keeps_original_operation_N_and_explicit_rpc_totals_and_quarters",
+        "outcome": "ok",
+        "line": 5534
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_rejects_missing_raw_changed_receipt_or_preceding_mutation",
+        "short": "test_summary_rejects_missing_raw_changed_receipt_or_preceding_mutation",
+        "outcome": "ok",
+        "line": 5535
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_wrong_hit_after_invalidation_and_wrong_miss_same_generation_fail",
+        "short": "test_wrong_hit_after_invalidation_and_wrong_miss_same_generation_fail",
+        "outcome": "ok",
+        "line": 5536
+      },
+      {
+        "method": "test_p8_runtime_cache.SoakCacheProtocolTests.test_zero_ambiguous_reset_missing_and_boolean_counters_rejected",
+        "short": "test_zero_ambiguous_reset_missing_and_boolean_counters_rejected",
+        "outcome": "ok",
+        "line": 5537
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_every_decision_input_including_stderr_plan_rpc_and_sqlite_is_sealed",
+        "short": "test_every_decision_input_including_stderr_plan_rpc_and_sqlite_is_sealed",
+        "outcome": "ok",
+        "line": 5538
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_missing_extra_and_symlink_artifacts_are_rejected",
+        "short": "test_missing_extra_and_symlink_artifacts_are_rejected",
+        "outcome": "ok",
+        "line": 5539
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_complete_contract_checks_every_original_and_retained_artifact",
+        "short": "test_complete_contract_checks_every_original_and_retained_artifact",
+        "outcome": "ok",
+        "line": 5540
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_deleted_original_target_does_not_gain_cross_job_build_approval",
+        "short": "test_deleted_original_target_does_not_gain_cross_job_build_approval",
+        "outcome": "ok",
+        "line": 5541
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_different_compiler_or_rewritten_compiler_bytes_are_rejected",
+        "short": "test_different_compiler_or_rewritten_compiler_bytes_are_rejected",
+        "outcome": "ok",
+        "line": 5542
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_foreign_checkout_with_identical_suffix_is_rejected",
+        "short": "test_foreign_checkout_with_identical_suffix_is_rejected",
+        "outcome": "ok",
+        "line": 5543
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_loaded_foreign_module_cannot_borrow_a_committed_file_hash",
+        "short": "test_loaded_foreign_module_cannot_borrow_a_committed_file_hash",
+        "outcome": "ok",
+        "line": 5544
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_missing_or_outside_target_original_executable_is_rejected",
+        "short": "test_missing_or_outside_target_original_executable_is_rejected",
+        "outcome": "ok",
+        "line": 5545
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_original_log_mutation_is_detected_by_the_build_seal",
+        "short": "test_original_log_mutation_is_detected_by_the_build_seal",
+        "outcome": "ok",
+        "line": 5546
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_private_environment_rejects_existing_target_and_overrides_build_configuration",
+        "short": "test_private_environment_rejects_existing_target_and_overrides_build_configuration",
+        "outcome": "ok",
+        "line": 5547
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_replaced_binary_cannot_be_rebound_with_only_a_self_reported_hash",
+        "short": "test_replaced_binary_cannot_be_rebound_with_only_a_self_reported_hash",
+        "outcome": "ok",
+        "line": 5548
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_rewritten_command_or_missing_statistics_artifact_is_rejected",
+        "short": "test_rewritten_command_or_missing_statistics_artifact_is_rejected",
+        "outcome": "ok",
+        "line": 5549
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_second_check_rejects_original_executable_changed_after_admission",
+        "short": "test_second_check_rejects_original_executable_changed_after_admission",
+        "outcome": "ok",
+        "line": 5550
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_shared_target_or_fresh_workspace_artifact_cannot_pass",
+        "short": "test_shared_target_or_fresh_workspace_artifact_cannot_pass",
+        "outcome": "ok",
+        "line": 5551
+      },
+      {
+        "method": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_source_and_observer_changes_are_rejected_after_initial_verification",
+        "short": "test_source_and_observer_changes_are_rejected_after_initial_verification",
+        "outcome": "ok",
+        "line": 5552
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_seal_fingerprint_error_does_not_block_final_failure_report",
+        "short": "test_failed_seal_fingerprint_error_does_not_block_final_failure_report",
+        "outcome": "ok",
+        "line": 5553
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_stopped_observation_remains_exit_one_with_valid_failure_seal",
+        "short": "test_failed_stopped_observation_remains_exit_one_with_valid_failure_seal",
+        "outcome": "ok",
+        "line": 5554
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_inventory_enoent_before_seal_retains_final_failure_and_original_report",
+        "short": "test_inventory_enoent_before_seal_retains_final_failure_and_original_report",
+        "outcome": "ok",
+        "line": 5555
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_keyboard_interrupt_in_seal_or_verify_keeps_failed_report_after_workers_finish",
+        "short": "test_keyboard_interrupt_in_seal_or_verify_keeps_failed_report_after_workers_finish",
+        "outcome": "ok",
+        "line": 5556
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_lost_output_keeps_explicit_finalization_error",
+        "short": "test_lost_output_keeps_explicit_finalization_error",
+        "outcome": "ok",
+        "line": 5557
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_occupied_backup_is_not_overwritten_or_retried",
+        "short": "test_occupied_backup_is_not_overwritten_or_retried",
+        "outcome": "ok",
+        "line": 5558
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_successful_stopped_observation_keeps_original_valid_seal",
+        "short": "test_successful_stopped_observation_keeps_original_valid_seal",
+        "outcome": "ok",
+        "line": 5559
+      },
+      {
+        "method": "test_p8_runtime_finalization.FinalizationFailureControls.test_verify_inventory_mismatch_preserves_original_failed_seal_bytes",
+        "short": "test_verify_inventory_mismatch_preserves_original_failed_seal_bytes",
+        "outcome": "ok",
+        "line": 5560
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_capacity_raw_still_requires_original_fanout_pressure_and_exact_oracle_profile",
+        "short": "test_capacity_raw_still_requires_original_fanout_pressure_and_exact_oracle_profile",
+        "outcome": "ok",
+        "line": 5561
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_capacity_streaming_limits_cannot_silently_change",
+        "short": "test_capacity_streaming_limits_cannot_silently_change",
+        "outcome": "ok",
+        "line": 5562
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_heterogeneous_hosts_retain_every_sample_in_explicit_strata_without_pooling",
+        "short": "test_heterogeneous_hosts_retain_every_sample_in_explicit_strata_without_pooling",
+        "outcome": "ok",
+        "line": 5563
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_insufficient_disk_is_sealed_not_run_and_never_launches_native",
+        "short": "test_insufficient_disk_is_sealed_not_run_and_never_launches_native",
+        "outcome": "ok",
+        "line": 5564
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_new_capacity_is_explicit_and_retains_original_population_and_fanout",
+        "short": "test_new_capacity_is_explicit_and_retains_original_population_and_fanout",
+        "outcome": "ok",
+        "line": 5565
+      },
+      {
+        "method": "test_p8_scale_matrix.CapacityControls.test_new_profile_cannot_mix_sources_infer_hosts_or_be_selected_implicitly",
+        "short": "test_new_profile_cannot_mix_sources_infer_hosts_or_be_selected_implicitly",
+        "outcome": "ok",
+        "line": 5566
+      },
+      {
+        "method": "test_p8_scale_matrix.DriverIdentityControls.test_loaded_driver_and_helper_must_equal_their_committed_git_blobs",
+        "short": "test_loaded_driver_and_helper_must_equal_their_committed_git_blobs",
+        "outcome": "ok",
+        "line": 5567
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_all_five_scales_and_thirty_repetitions_are_required",
+        "short": "test_all_five_scales_and_thirty_repetitions_are_required",
+        "outcome": "ok",
+        "line": 5568
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_cargo_release_profile_and_semantic_feature_lies_are_rejected",
+        "short": "test_cargo_release_profile_and_semantic_feature_lies_are_rejected",
+        "outcome": "ok",
+        "line": 5569
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_duplicate_global_repetition_cannot_hide_a_missing_sample",
+        "short": "test_duplicate_global_repetition_cannot_hide_a_missing_sample",
+        "outcome": "ok",
+        "line": 5570
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_fanout_population_is_counted_once_not_per_scale",
+        "short": "test_fanout_population_is_counted_once_not_per_scale",
+        "outcome": "ok",
+        "line": 5571
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_missing_or_duplicated_shards_cannot_be_complete",
+        "short": "test_missing_or_duplicated_shards_cannot_be_complete",
+        "outcome": "ok",
+        "line": 5572
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_preserved_source_manifest_is_recomputed_not_only_compared_by_name",
+        "short": "test_preserved_source_manifest_is_recomputed_not_only_compared_by_name",
+        "outcome": "ok",
+        "line": 5573
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_registered_population_and_native_limits_are_not_weakened",
+        "short": "test_registered_population_and_native_limits_are_not_weakened",
+        "outcome": "ok",
+        "line": 5574
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_same_seed_input_drift_is_rejected",
+        "short": "test_same_seed_input_drift_is_rejected",
+        "outcome": "ok",
+        "line": 5575
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_source_binary_environment_and_profile_drift_are_rejected",
+        "short": "test_source_binary_environment_and_profile_drift_are_rejected",
+        "outcome": "ok",
+        "line": 5576
+      },
+      {
+        "method": "test_p8_scale_matrix.MatrixControls.test_unobserved_budget_overflow_cannot_be_inferred_from_requested_fanout",
+        "short": "test_unobserved_budget_overflow_cannot_be_inferred_from_requested_fanout",
+        "outcome": "ok",
+        "line": 5577
+      },
+      {
+        "method": "test_p8_scale_matrix.PortableBuildOriginControls.test_matching_suffix_cannot_hide_a_foreign_producer_checkout",
+        "short": "test_matching_suffix_cannot_hide_a_foreign_producer_checkout",
+        "outcome": "ok",
+        "line": 5578
+      },
+      {
+        "method": "test_p8_scale_matrix.PortableBuildOriginControls.test_original_command_target_and_cargo_executable_must_agree",
+        "short": "test_original_command_target_and_cargo_executable_must_agree",
+        "outcome": "ok",
+        "line": 5579
+      },
+      {
+        "method": "test_p8_scale_matrix.PortableBuildOriginControls.test_portable_archive_retains_copy_identity_after_the_producer_vm_is_gone",
+        "short": "test_portable_archive_retains_copy_identity_after_the_producer_vm_is_gone",
+        "outcome": "ok",
+        "line": 5580
+      },
+      {
+        "method": "test_p8_scale_matrix.PortableBuildOriginControls.test_resealed_copy_claims_cannot_replace_original_producer_bytes_or_path",
+        "short": "test_resealed_copy_claims_cannot_replace_original_producer_bytes_or_path",
+        "outcome": "ok",
+        "line": 5581
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_boolean_is_not_an_observed_zero_latency",
+        "short": "test_boolean_is_not_an_observed_zero_latency",
+        "outcome": "ok",
+        "line": 5582
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_complete_original_raw_population_replays",
+        "short": "test_complete_original_raw_population_replays",
+        "outcome": "ok",
+        "line": 5583
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_config_fact_cannot_pass_with_a_stale_target",
+        "short": "test_config_fact_cannot_pass_with_a_stale_target",
+        "outcome": "ok",
+        "line": 5584
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_config_mutation_and_independent_target_are_both_verified",
+        "short": "test_config_mutation_and_independent_target_are_both_verified",
+        "outcome": "ok",
+        "line": 5585
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_duplicate_and_missing_builds_are_rejected",
+        "short": "test_duplicate_and_missing_builds_are_rejected",
+        "outcome": "ok",
+        "line": 5586
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_exact_batch_cannot_be_shrunk",
+        "short": "test_exact_batch_cannot_be_shrunk",
+        "outcome": "ok",
+        "line": 5587
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_false_budget_claim_is_rejected",
+        "short": "test_false_budget_claim_is_rejected",
+        "outcome": "ok",
+        "line": 5588
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_fanout_full_facts_and_hand_assertions_are_replayed",
+        "short": "test_fanout_full_facts_and_hand_assertions_are_replayed",
+        "outcome": "ok",
+        "line": 5589
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_green_summary_cannot_replace_missing_canonical_table",
+        "short": "test_green_summary_cannot_replace_missing_canonical_table",
+        "outcome": "ok",
+        "line": 5590
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_incomplete_original_report_cannot_be_masked_by_passed_stage",
+        "short": "test_incomplete_original_report_cannot_be_masked_by_passed_stage",
+        "outcome": "ok",
+        "line": 5591
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_json_duplicate_keys_and_nonfinite_numbers_fail_closed",
+        "short": "test_json_duplicate_keys_and_nonfinite_numbers_fail_closed",
+        "outcome": "ok",
+        "line": 5592
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_missing_staging_and_unaccounted_stage_time_cannot_be_certified",
+        "short": "test_missing_staging_and_unaccounted_stage_time_cannot_be_certified",
+        "outcome": "ok",
+        "line": 5593
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_noop_must_retain_zero_actual_file_changes",
+        "short": "test_noop_must_retain_zero_actual_file_changes",
+        "outcome": "ok",
+        "line": 5594
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_partial_last_json_line_is_never_accepted",
+        "short": "test_partial_last_json_line_is_never_accepted",
+        "outcome": "ok",
+        "line": 5595
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_raw_budget_exhaustion_cannot_certify_a_prefix",
+        "short": "test_raw_budget_exhaustion_cannot_certify_a_prefix",
+        "outcome": "ok",
+        "line": 5596
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_separate_fanout_can_only_be_omitted_by_explicit_partial_plan",
+        "short": "test_separate_fanout_can_only_be_omitted_by_explicit_partial_plan",
+        "outcome": "ok",
+        "line": 5597
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_signed_zero_value_equality_does_not_require_same_digest",
+        "short": "test_signed_zero_value_equality_does_not_require_same_digest",
+        "outcome": "ok",
+        "line": 5598
+      },
+      {
+        "method": "test_p8_scale_matrix.RawControls.test_unknown_failure_event_is_rejected",
+        "short": "test_unknown_failure_event_is_rejected",
+        "outcome": "ok",
+        "line": 5599
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_approval_scope_window_and_caps_are_required",
+        "short": "test_approval_scope_window_and_caps_are_required",
+        "outcome": "ok",
+        "line": 5600
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_candidate_actual_bytes_are_rechecked",
+        "short": "test_candidate_actual_bytes_are_rechecked",
+        "outcome": "ok",
+        "line": 5601
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_clean_heldout_metadata_is_cross_checked",
+        "short": "test_clean_heldout_metadata_is_cross_checked",
+        "outcome": "ok",
+        "line": 5602
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_complete_pairs_unique_attempts_and_known_status_required",
+        "short": "test_complete_pairs_unique_attempts_and_known_status_required",
+        "outcome": "ok",
+        "line": 5603
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_complete_paper_metadata_passes_structure_but_cannot_certify",
+        "short": "test_complete_paper_metadata_passes_structure_but_cannot_certify",
+        "outcome": "ok",
+        "line": 5604
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_corpus_query_gold_source_and_case_bindings_cannot_drift",
+        "short": "test_corpus_query_gold_source_and_case_bindings_cannot_drift",
+        "outcome": "ok",
+        "line": 5605
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_cost_provenance_and_decimal_amounts_are_strict",
+        "short": "test_cost_provenance_and_decimal_amounts_are_strict",
+        "outcome": "ok",
+        "line": 5606
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_custody_inventory_duplicates_digests_and_minimums",
+        "short": "test_custody_inventory_duplicates_digests_and_minimums",
+        "outcome": "ok",
+        "line": 5607
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_duplicate_nonfinite_oversize_and_malformed_json_are_retained_as_invalid",
+        "short": "test_duplicate_nonfinite_oversize_and_malformed_json_are_retained_as_invalid",
+        "outcome": "ok",
+        "line": 5608
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_errors_remain_in_all_attempt_denominator_and_missing_timing_is_not_zero",
+        "short": "test_errors_remain_in_all_attempt_denominator_and_missing_timing_is_not_zero",
+        "outcome": "ok",
+        "line": 5609
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_estimated_unknown_and_missing_costs_do_not_become_reported",
+        "short": "test_estimated_unknown_and_missing_costs_do_not_become_reported",
+        "outcome": "ok",
+        "line": 5610
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_existing_output_is_never_overwritten",
+        "short": "test_existing_output_is_never_overwritten",
+        "outcome": "ok",
+        "line": 5611
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_fake_local_http_and_loopback_provider_origins_block",
+        "short": "test_fake_local_http_and_loopback_provider_origins_block",
+        "outcome": "ok",
+        "line": 5612
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_index_and_retry_costs_are_included_in_budget",
+        "short": "test_index_and_retry_costs_are_included_in_budget",
+        "outcome": "ok",
+        "line": 5613
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_lock_requires_exact_actual_hash_and_semantic_kind",
+        "short": "test_lock_requires_exact_actual_hash_and_semantic_kind",
+        "outcome": "ok",
+        "line": 5614
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_missing_drifted_symlink_and_traversal_inputs_fail_closed",
+        "short": "test_missing_drifted_symlink_and_traversal_inputs_fail_closed",
+        "outcome": "ok",
+        "line": 5615
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_missing_evidence_is_blocked_including_every_required_role",
+        "short": "test_missing_evidence_is_blocked_including_every_required_role",
+        "outcome": "ok",
+        "line": 5616
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_no_match_is_terminal_success_but_not_quality_gain",
+        "short": "test_no_match_is_terminal_success_but_not_quality_gain",
+        "outcome": "ok",
+        "line": 5617
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_old_local_candidate_cannot_be_promoted",
+        "short": "test_old_local_candidate_cannot_be_promoted",
+        "outcome": "ok",
+        "line": 5618
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_quality_is_recomputed_requires_pairs_and_never_authenticates_scorer",
+        "short": "test_quality_is_recomputed_requires_pairs_and_never_authenticates_scorer",
+        "outcome": "ok",
+        "line": 5619
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_real_cli_blocks_absent_evidence_without_modifying_local_profile",
+        "short": "test_real_cli_blocks_absent_evidence_without_modifying_local_profile",
+        "outcome": "ok",
+        "line": 5620
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_record_model_run_and_observed_revision_must_match",
+        "short": "test_record_model_run_and_observed_revision_must_match",
+        "outcome": "ok",
+        "line": 5621
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_request_inventory_duplicates_and_success_response_are_checked",
+        "short": "test_request_inventory_duplicates_and_success_response_are_checked",
+        "outcome": "ok",
+        "line": 5622
+      },
+      {
+        "method": "test_p8_semantic_certification.SemanticCertificationTests.test_self_asserted_trust_override_is_rejected",
+        "short": "test_self_asserted_trust_override_is_rejected",
+        "outcome": "ok",
+        "line": 5623
+      }
+    ]
+  },
+  "selected_v15": {
+    "value": {
+      "schema_version": 10,
+      "source_version": "p8-completion-source-20261009-v15",
+      "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+      "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "product_source": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+      "review_source": "366f0e435ee880f79904de979dc4b2b307e7a456",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1089,
+      "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+    },
+    "line": 5841
+  },
+  "historical_integrations": {
+    "value": {
+      "V19": "open",
+      "current_plan_check": "passed",
+      "current_task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "e3_imported_files": 58,
+      "e3_inputs": 708,
+      "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+      "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+      "evidence_content_acceptance": "not_granted_by_this_verifier",
+      "fault_runtime_tests": "not_run",
+      "full_P7": "open",
+      "legacy_files_unchanged": 9,
+      "packing_evidence_files": 246,
+      "packing_inputs": 731,
+      "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+      "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+      "quality_and_100k": "not_inherited",
+      "schema_version": 2,
+      "scope": "historical_integrity_and_current_task_definitions_only",
+      "state_changes_since_baseline": [
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-011"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-012"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-013"
+        },
+        {
+          "baseline": "in_progress",
+          "current": "done",
+          "task_id": "P7-014"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-015"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-016"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-017"
+        },
+        {
+          "baseline": "todo",
+          "current": "blocked",
+          "task_id": "P7-018"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-019"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P7-020"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P8-001"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P8-002"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P8-003"
+        },
+        {
+          "baseline": "todo",
+          "current": "done",
+          "task_id": "P8-004"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-005"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-006"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-007"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-008"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-009"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-010"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-011"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-012"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-013"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-014"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-015"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-016"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-017"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-018"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-019"
+        },
+        {
+          "baseline": "todo",
+          "current": "in_progress",
+          "task_id": "P8-020"
+        }
+      ],
+      "status": "passed",
+      "task_count": 192,
+      "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+      "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+      "verifier_version": "historical-integrations-v2"
+    },
+    "line": 5851
+  },
+  "build_and_regression": {
+    "stable": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "fmt": "success",
+    "clippy": "success",
+    "compile_every_default_target": "success",
+    "default_regression": "success within original authorized --exclude cc-semantic scope",
+    "eval_and_named_original_regressions": "All original job steps completed/success",
+    "rust_summary_executions": 418,
+    "all_reported_summaries_zero_failed": true,
+    "old_ignored_cases": "Existing ignored Rust cases remain present. This is not a claim that the full workspace suite ran with zero ignored cases.",
+    "snapshot_leaf_six_new_integration_names": [
+      "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+      "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes",
+      "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+      "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+      "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+      "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts"
+    ]
+  },
+  "security": {
+    "vulnerabilities_found": false,
+    "count": 0,
+    "audit_lockfile_dependencies": 338,
+    "source": "Actual cargo-audit JSON in job113649687571"
+  },
+  "scope": [
+    "This is actual original CI execution evidence at the PR merge identity, not a relabel of push engineering jobs.",
+    "Current source/validation v15 proof actually executed old v14 and historical v2; source integrity ran all181 methods together. No recovery split or omitted class is used here.",
+    "Source approval remains distinct from runtime, platform, lifecycle, recovery, release and formal150-shard study acceptance.",
+    "No local files, Cargo, product/native workload, test rerun, remote source/ref/PR mutations, cancellation, or sample replacement occurred.",
+    "Local exec-server hash process was unavailable; hashing was completed in pure functions memory, validated against standard SHA256 abc and independently precomputed manifest SHA before use.",
+    "No signed download URLs, authentication headers or tokens are included in published excerpts.",
+    "This report grants no TODO closure and no new performance or full-scale conclusion."
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

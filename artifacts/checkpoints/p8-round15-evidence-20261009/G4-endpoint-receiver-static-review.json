@@ -1,0 +1,355 @@
+{
+  "schema": "p8-G4-runtime-endpoint-receiver-independent-review-v1",
+  "reviewer": "/root/acceptance_audit",
+  "decision": "accepted_scoped_static_and_executed_synthetic_controls",
+  "blocking_findings": [],
+  "fixed_publication_plan": {
+    "git_blob": "fefe0c580d88abab360620b1effce431775543c5",
+    "schema": "p8-G4-runtime-endpoint-receiver-publication-plan-v1",
+    "status": "unreferenced_blobs_only_pending_non_author_review",
+    "proposed_control_parent": "29edc89440f2e49846b08bff4e437d53ed58a44b",
+    "proposed_control_branch": "task/p8-g4-runtime-reception-fix-20261009",
+    "measured_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "measured_run": 37854847820,
+    "previous_failed_receiver_run": 37877082223,
+    "original_three_receivers_unchanged": true,
+    "old_original_receiver_blobs": {
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/mixed/review_mixed.py": "26e980a181912e2d6b2d3fb9804363832b81bcdd",
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/inspect.py": "3b92fe10103e1d6f6078ce47e597f850ffcea682",
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/cache_wire.py": "3864055b82f8fe73f4fcfae94bda8f27bd21a86b"
+    },
+    "source_P_R_G_changed": false,
+    "product_workload_rerun": false,
+    "original_measurements_changed": false,
+    "files": [
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/controller.py",
+        "mode": "100644",
+        "blob": "594a5aef3cf529ab9de57c80ab2dc5681e6e3522",
+        "bytes": 20600,
+        "sha256": "cd0f307f90c2f035405e8fe5ddee8c8446aa0df9d37e40c3f7985d2e5fce377b"
+      },
+      {
+        "path": ".github/workflows/p8-G4-offline-runtime-reception.yml",
+        "mode": "100644",
+        "blob": "e705c3c590e051d4560bbdba603615e44dcf6a7a",
+        "bytes": 2313,
+        "sha256": "8731f5ecf3cfd74e0d8824c508182b761f2b0470c28de29d861d27a1a5cd3b51"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/registration.json",
+        "mode": "100644",
+        "blob": "5721e5348bbecebf8c21f90f564427ec588db4d6",
+        "bytes": 3274,
+        "sha256": "7d1b1980f10b3952f6b58e601af67a123bbb1c5aae3c53bbcd354a1789a0a203"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/README.md",
+        "mode": "100644",
+        "blob": "2782c53b8d7fba1ef7cb1d070eed53bd88757329",
+        "bytes": 6280,
+        "sha256": "2db37deefa147c1753f6e4326f48bce63174a75926dceb94c4abe02ccad1a7c1"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/derived/soak/cache_wire.py",
+        "mode": "100644",
+        "blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc",
+        "bytes": 9750,
+        "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/derived/soak/inspect.py",
+        "mode": "100644",
+        "blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c",
+        "bytes": 21317,
+        "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/test_endpoint_binding.py",
+        "mode": "100644",
+        "blob": "d7f242a7cdb38c35bf5841401344674b63fbc5db",
+        "bytes": 6364,
+        "sha256": "9923c8fd7c48b51178844da21a809bcf01fbfce199e44be8ef9d4c1a3ef9d90c"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-binding-author-review.json",
+        "mode": "100644",
+        "blob": "a689de0d101d620a41c84aa6911211a6077208da"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-binding.patch",
+        "mode": "100644",
+        "blob": "3b361533edd3fda2c2332717f9b3a8525bbc692e"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/failed-29ed-intake.json",
+        "mode": "100644",
+        "blob": "e1923b6c4c020e4ff4497ca017de94c411dadd50"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/failed-29ed-soak.stderr.log",
+        "mode": "100644",
+        "blob": "b12a729f7c2269945760c5f86a7b8fe61b60ffa8"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic-report.json",
+        "mode": "100644",
+        "blob": "b6fec76401b95a3c2ee59f47e9e2b4db172132fe"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic-mapping.json",
+        "mode": "100644",
+        "blob": "95d8e14c6473638d4c4063b31b52864eb85b274f"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic.py",
+        "mode": "100644",
+        "blob": "903dae2a78c24a4c12ff153b26a88efdf45dfe97"
+      }
+    ],
+    "scope": "One explicit endpoint binding derivative with all original 2x/4x read gates kept; original failed receiver retained. Only new independent offline replay after review."
+  },
+  "scope": {
+    "measured_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "measured_run": 37854847820,
+    "new_product_workload": false,
+    "cargo": false,
+    "original_statistics_executed_by_this_review": false,
+    "full_derivative_receiver_executed_by_this_review": false,
+    "local_files_written": false,
+    "unreferenced_blob_only": true,
+    "TODO_closed": 0,
+    "TODO_remaining": 29
+  },
+  "findings": [
+    "Original G4 emitter source was independently read: work executor and sampler drain before endpoint status/fresh-full setup; incremental public symbol search is emitted at line 716, full-control symbol search at 717, followed by the unique endpoint_public record at 720. Initial product setup has no extra search.",
+    "Both original complete transports are checked before endpoint partition: exact request/response/wire identities, raw stdout byte hashes, nonnegative RPC clocks, stdout EOF, exit 0 and original process closure remain mandatory.",
+    "The product transport must contain exactly 2*read_count + 1 searches; full-control exactly one. The last product search is not trusted merely for being last: exact original symbol parameters and entire tool value must match the unique raw endpoint_public.incremental value; full-control is bound similarly to endpoint_public.full.",
+    "Only that separately proved product endpoint ID is excluded from the work binder inputs. Original bind_compound_reads and every other original cache_wire function are unchanged, including exact 2*read_count search count, unique request/response/common-clock matching, and 4*read_count total read RPC count.",
+    "Original operation rows are selected directly from the same complete raw records before the helper call. Raw endpoint_public must be unique and occur after every operation record. Its request is additionally strictly after every bound read response and after the maximum original operation finished_ns mapped with the conservative upper common-origin bound. The full-control request is at or after the incremental response. No timestamp is invented for endpoint_public.",
+    "Original 3601 operation population, 2400 compound reads/9600 subrequests, all success/unique IDs, original summary/cache replay, real branch/catalog counts, native RSS/time coverage, no endpoint repair index count and original fifteen-table parity receipt remain unchanged.",
+    "Old inspect.py is recovered byte-for-byte by reversing only the explicit import and one transport block replacement. Existing PID association and initial-full plus 1201 incremental index assertions are retained after dual transport collection.",
+    "Controller adapt() validates all three archived original receiver hashes, selects only the two registered derived hashes, then applies reversible checkout-root mapping. Its other 18 function ASTs are unchanged, including metadata, capacity, full ZIP/seal checks, original statistics invocation, final inventories and token/log-output safety.",
+    "Workflow is exactly the previous reviewed workflow after reversing only its display name and standalone branch. First attempt-only admission, two immutable checkouts, original G4 source, no Cargo/product invocation, complete ZIP uploads with hidden files and the five exact raw-log exclusions remain.",
+    "Registration preserves every original field except schema version and two explicitly added derived_receivers/failed_receiver objects. All five original artifact IDs/bytes/digests, source, run, 512 MiB headroom and 4 GiB expansion ceiling remain exact.",
+    "Previous failed controller/run/archive, error and stderr are explicit retained inputs. This derivative neither modifies nor marks that run passed. Original three receiver bodies stay at their existing paths."
+  ],
+  "independent_execution": {
+    "status": "accepted_scoped_static_and_synthetic_controls",
+    "file_manifest": {
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/controller.py": {
+        "bytes": 20600,
+        "sha256": "cd0f307f90c2f035405e8fe5ddee8c8446aa0df9d37e40c3f7985d2e5fce377b",
+        "git_blob": "594a5aef3cf529ab9de57c80ab2dc5681e6e3522"
+      },
+      ".github/workflows/p8-G4-offline-runtime-reception.yml": {
+        "bytes": 2313,
+        "sha256": "8731f5ecf3cfd74e0d8824c508182b761f2b0470c28de29d861d27a1a5cd3b51",
+        "git_blob": "e705c3c590e051d4560bbdba603615e44dcf6a7a"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/registration.json": {
+        "bytes": 3274,
+        "sha256": "7d1b1980f10b3952f6b58e601af67a123bbb1c5aae3c53bbcd354a1789a0a203",
+        "git_blob": "5721e5348bbecebf8c21f90f564427ec588db4d6"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/README.md": {
+        "bytes": 6280,
+        "sha256": "2db37deefa147c1753f6e4326f48bce63174a75926dceb94c4abe02ccad1a7c1",
+        "git_blob": "2782c53b8d7fba1ef7cb1d070eed53bd88757329"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/derived/soak/cache_wire.py": {
+        "bytes": 9750,
+        "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+        "git_blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/derived/soak/inspect.py": {
+        "bytes": 21317,
+        "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+        "git_blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/test_endpoint_binding.py": {
+        "bytes": 6364,
+        "sha256": "9923c8fd7c48b51178844da21a809bcf01fbfce199e44be8ef9d4c1a3ef9d90c",
+        "git_blob": "d7f242a7cdb38c35bf5841401344674b63fbc5db"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-binding-author-review.json": {
+        "bytes": 4700,
+        "sha256": "399856805d1ee0de2fa8492a895ccad1881047435d05b7c4d823c12bec62e00d",
+        "git_blob": "a689de0d101d620a41c84aa6911211a6077208da"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-binding.patch": {
+        "bytes": 21827,
+        "sha256": "82732c62c41ff84f2b60bb3061560e1c2d754670be54ee2541f0335817b4db9b",
+        "git_blob": "3b361533edd3fda2c2332717f9b3a8525bbc692e"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/failed-29ed-intake.json": {
+        "bytes": 11752,
+        "sha256": "5f7f8d99cb514037b4f39939e0334df6220446e7a2bba04d2f2e0f148f4b4938",
+        "git_blob": "e1923b6c4c020e4ff4497ca017de94c411dadd50"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/failed-29ed-soak.stderr.log": {
+        "bytes": 3180,
+        "sha256": "7a28325514cef7a6440d110790125f90a2a7506d7ccaacc59a8d8c56e4a69283",
+        "git_blob": "b12a729f7c2269945760c5f86a7b8fe61b60ffa8"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic-report.json": {
+        "bytes": 4637,
+        "sha256": "2740b5d1d8198e056d780dbb2b2a07d57c6abe6bed57d7392cd41aab8f116a29",
+        "git_blob": "b6fec76401b95a3c2ee59f47e9e2b4db172132fe"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic-mapping.json": {
+        "bytes": 760054,
+        "sha256": "8740291c6cd847b9bb196176ab9829e652f039bcd3e2478914051e62023476d9",
+        "git_blob": "95d8e14c6473638d4c4063b31b52864eb85b274f"
+      },
+      "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/endpoint-diagnostic.py": {
+        "bytes": 6732,
+        "sha256": "7f9a900e171dd4a309a534e5df74b1a7f9a07d8a6fcea5548a3dbfcb6cea4130",
+        "git_blob": "903dae2a78c24a4c12ff153b26a88efdf45dfe97"
+      }
+    },
+    "fixed_author_controls_reexecuted": {
+      "status": "passed_scoped_18_controls",
+      "checks": [
+        "positive: all original four read RPCs and separate exact two endpoint RPCs bound",
+        "unexplained extra product search: exact workload searches and one explained endpoint search required",
+        "missing product endpoint: exact workload searches and one explained endpoint search required",
+        "wrong product endpoint arguments: incremental endpoint search arguments differ",
+        "wrong product endpoint full response: incremental endpoint full response differs",
+        "wrong full endpoint arguments: full-control endpoint search arguments differ",
+        "wrong full endpoint full response: full-control endpoint full response differs",
+        "missing full endpoint: one original full-control endpoint search required",
+        "extra full search: one original full-control endpoint search required",
+        "duplicate endpoint record: one original endpoint_public record required",
+        "endpoint record before final operation: endpoint_public must follow all original operation records",
+        "endpoint RPC overlaps bound reads: incremental endpoint search precedes original work completion",
+        "endpoint after reads but before last build: incremental endpoint search precedes original work completion",
+        "full endpoint precedes incremental response: full-control endpoint search precedes incremental endpoint response",
+        "original work search payload mismatch: original ordered search RPC payload/response differs",
+        "missing original status call retains four-RPC denominator: full four-RPC read denominator",
+        "all original cache_wire functions byte-prefix and AST unchanged, including 2x/4x gates",
+        "inspect inverse replacement exactly restores every original byte"
+      ],
+      "files": {
+        "wire": {
+          "bytes": 9750,
+          "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+          "git_blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc"
+        },
+        "inspect": {
+          "bytes": 21317,
+          "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+          "git_blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c"
+        }
+      },
+      "scope": "Synthetic pure-Python endpoint binding controls and inverse byte proof; no product/Cargo/statistics/receiver execution. Original failed receiver and all old originals retained.",
+      "author_control_failure_preserved": "First synthetic wrong-response test shared the same Python dict between wire and expected endpoint, so mutation changed both and was incorrectly accepted; fixed fixture isolation with deepcopy before this rerun. Production binder was not changed."
+    },
+    "independent_transport_controls": [
+      "complete synthetic transport exact roundtrip",
+      "missing EOF: owned transport stopped with exact complete responses",
+      "missing endpoint response: owned transport stopped with exact complete responses",
+      "duplicate endpoint request: duplicate transport ID",
+      "changed stdout wire SHA: raw stdout wire bytes"
+    ],
+    "controller_functions_unchanged_except_adapt": [
+      "check_originals",
+      "extract_verified",
+      "free",
+      "get_api",
+      "head",
+      "invoke",
+      "job_log_exclusions",
+      "location",
+      "main",
+      "original_name",
+      "paged",
+      "public_job_log_events",
+      "record_withheld_job_logs",
+      "require",
+      "run",
+      "safe_infos",
+      "sha",
+      "write"
+    ],
+    "workflow_exact_inverse": true,
+    "registration_original_fields_exact": true,
+    "no_local_files_written": true,
+    "product_or_statistics_executed": false,
+    "exact_adapt_controls": {
+      "checks": [
+        "exact adapt selected registered derived soak bodies and unchanged mixed, with reversible one-root substitutions",
+        "altered original cache body: original receiver body changed",
+        "altered derivative body: registered receiver derivative changed",
+        "altered derivative registration: registered receiver derivative changed"
+      ],
+      "mapping_receipt": {
+        "/virtual/output/receiver-mapping.json": {
+          "mixed/review_mixed.py": {
+            "original_sha256": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+            "derived_sha256": null,
+            "selected_receiver_sha256": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+            "mapped_sha256": "d60434a194103d082dac5c0dfef9f4593a256304aa145a2b4c9b9bd2a348e228",
+            "only_checkout_root_mapping_after_registered_derivation": true
+          },
+          "soak/inspect.py": {
+            "original_sha256": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
+            "derived_sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+            "selected_receiver_sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+            "mapped_sha256": "bb0aa7333b780b6c76c1a5511d402eaa05ae7f54a046a2929fa9c166eb5fa8b6",
+            "only_checkout_root_mapping_after_registered_derivation": true
+          },
+          "soak/cache_wire.py": {
+            "original_sha256": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
+            "derived_sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+            "selected_receiver_sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+            "mapped_sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+            "only_checkout_root_mapping_after_registered_derivation": false
+          }
+        }
+      },
+      "filesystem": "virtual in-memory path methods only; exact AST function executed, no writes/no receiver main"
+    }
+  },
+  "diagnostic_evidence": {
+    "status": "author_actual_raw_diagnostic_read_and_mapping_independently_cross_checked; not a replacement for future complete derivative replay",
+    "report_blob": "b6fec76401b95a3c2ee59f47e9e2b4db172132fe",
+    "mapping_blob": "95d8e14c6473638d4c4063b31b52864eb85b274f",
+    "raw_artifact_id": 11590202308,
+    "raw_zip_sha256": "46a72baaecbd0e5ea3197d05e639f618cd3a570b9cc65f46fa51a5f0a4916286",
+    "raw_operation_counts": {
+      "read": 2400,
+      "build": 1201
+    },
+    "product_work_searches": 4800,
+    "product_endpoint_id": 14400,
+    "full_endpoint_id": 4,
+    "independent_mapping_check": {
+      "entries": 9600,
+      "distinct_wire_ids": 9600,
+      "distinct_operations": 2400,
+      "role_counts": {
+        "symbol": 2400,
+        "hybrid": 2400,
+        "before_status": 2400,
+        "after_status": 2400
+      },
+      "endpoint_id14400_excluded": true
+    },
+    "old_failed_receiver": {
+      "run": 37877082223,
+      "artifact": 11593096106,
+      "status": "incomplete_not_certified",
+      "audit_blob": "e1923b6c4c020e4ff4497ca017de94c411dadd50",
+      "stderr_blob": "b12a729f7c2269945760c5f86a7b8fe61b60ffa8"
+    }
+  },
+  "limitations": [
+    "This is executable-offline-receiver admission, not successful execution of that receiver. New actual controller commit/tree/ref and its first-run complete evidence still require verification.",
+    "Only fixed pure-Python synthetic functions ran here. The fixed test body was loaded unchanged into memory with four source-read paths mapped to exact fetched bodies; exact adapt AST used virtual in-memory paths. No receiver main, product, Cargo, oracle or retained Rust statistics binary was run.",
+    "The actual original raw endpoint diagnostic was produced by scale_engineering and read independently here. This review did not redownload the 50 MB soak ZIP or pretend diagnostic success is complete receiver acceptance.",
+    "README's inherited static-preparation paragraph is read as the unexecuted new derivative/controller, while the later explicit endpoint section accurately records the prior original-raw diagnostic. No claim of new derivative actual replay is made.",
+    "Original Actions raw job logs remain excluded from public output because they may contain signed URLs. Complete replay still requires retrieving those original logs; typed public excerpts are explicitly insufficient.",
+    "Original G4 1087 product inputs/seven observers remain this scope; no relabeling to G2 or its 1089/nine population, and no TODO closure."
+  ]
+}

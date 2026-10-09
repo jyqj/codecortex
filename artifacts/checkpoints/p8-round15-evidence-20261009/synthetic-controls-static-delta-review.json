@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "status": "accepted_scoped_static_log_mirror_delta_for_first_synthetic_control_execution",
+  "reviewer": "acceptance_audit",
+  "prior_review": {
+    "blob": "fd1f78fb6837bceb9c7f491154e3439b8b893d4b",
+    "bytes": 12553,
+    "sha256": "2955f5a1c59ce4efc7b91db210c7893ade2bffb17f371e918f444c8cd46eb627"
+  },
+  "new_plan": {
+    "blob": "7132f095f4e18c1115a7a6f9ddc954dcd5a9ddbc",
+    "bytes": 6466,
+    "sha256": "fe6c3842226705021511b7d201b844967608fbd701a97fd14a0e8812b9a1f335"
+  },
+  "new_runner": {
+    "blob": "e21fae4b9a46a85619076a48a1b1cd80018282ea",
+    "bytes": 7983,
+    "sha256": "6146fef52ec37ebb1564d867cbeb198269917404f40a1fc39f1a998b42670bae"
+  },
+  "superseded_unpublished_candidate": {
+    "commit": "4a0031a3de5efd36fab5bfb54e4d92e8ea11ae85",
+    "tree": "26aa956fc90c9e383864b25c524f5c2684340dbc",
+    "parent": "9aacfbea2771209134b4f2dd8889cbb4e2a3d099",
+    "published_ref": false,
+    "prior_plan_blob": "4d8db2f46abd208161f131887a7ce2ef4315aa06",
+    "prior_runner_blob": "191debd3e8c980f208ed2e23198ebf80e48a85a5",
+    "change": "Only finally mirrors already preserved synthetic stdout/stderr with BEGIN/END boundaries; no test, source pin, report bytes, result predicate or real-artifact execution change."
+  },
+  "checks": {
+    "runner_inverse_removing_exact_insert_returns_entire_prior_body": true,
+    "plan_inverse_of_only_schema_runner_identity_and_historical_note_returns_prior": true,
+    "all_five_test_input_blobs_unchanged": true,
+    "all_33_expected_method_ids_unchanged": true,
+    "workflow_body_unchanged": true,
+    "all_original_result_predicates_and_exit_logic_unchanged": true,
+    "original_report_and_test_log_write_logic_unchanged": true
+  },
+  "exact_added_runner_text": "        # Only fixed synthetic fixtures run here; mirror their preserved files.\n        for name, stream in ((\"tests.stdout.log\", sys.stdout), (\"tests.stderr.log\", sys.stderr)):\n            path = out / name\n            body = path.read_text() if path.is_file() else \"<not created>\\n\"\n            stream.write(\"\\nBEGIN P8_SYNTHETIC \" + name + \"\\n\")\n            stream.write(body)\n            stream.write(\"\\nEND P8_SYNTHETIC \" + name + \"\\n\")\n            stream.flush()\n",
+  "decision_basis": [
+    "The added loop runs after the existing report write/print, after the context managers that close the original synthetic stdout/stderr files.",
+    "It reads only those two owned fixture log paths and writes their original contents between explicit BEGIN/END markers to their matching Actions streams. A missing file is explicitly marked not created.",
+    "No real URL or artifact download is supplied to this workflow; the URL token in mocked tests is a fixed synthetic fixture.",
+    "A failure while mirroring can make the CLI fail, but cannot turn any failed or incomplete synthetic test result into success. Original report and logs remain the authoritative retained evidence.",
+    "All prior static scope and limits from fd1f remain. This change does not execute tests and does not admit actual artifact reception."
+  ],
+  "remaining_required": [
+    "Independently bridge actual new commit/tree/sole-parent and its complete declared leaves before first publication.",
+    "Actually run all33 controls and retain exact outcomes and before/after fixed input identities; no dynamic pass exists yet.",
+    "Real package reception requires separate final receiver and capacity admission; original product measurements and failed histories remain unchanged."
+  ],
+  "local_write": false,
+  "python_or_Cargo_or_native_execution": false,
+  "remote_ref_write": false,
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

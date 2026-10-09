@@ -1,0 +1,169 @@
+{
+  "schema": "codecortex.p8.round41.pr_admission_review.v1",
+  "observed_at_utc": "2026-10-09T20:53:00Z",
+  "reviewer": "independent subagent /root/r41_pr_admission",
+  "repository": "jyqj/codecortex",
+  "scope": "Read-only fresh PR/CI admission review of post-Round-40 changes; no merge, close, ref, review-state, or workflow mutation by this reviewer.",
+  "main": {
+    "sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "task_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "ledger": {
+      "total": 192,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    }
+  },
+  "required_prs": {
+    "178": {
+      "state": "closed",
+      "merged": false,
+      "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "decision": "historical; no change"
+    },
+    "180": {
+      "state": "closed",
+      "merged": true,
+      "head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+      "decision": "historical; no change"
+    },
+    "181": {
+      "state": "closed",
+      "merged": true,
+      "head": "d7426175ae21a9619cbcb393e41ec535695972d1",
+      "decision": "historical; no change"
+    },
+    "184": {
+      "state": "closed",
+      "merged": false,
+      "head": "883230f2b44ebcf09495870db8c0e31d61270331",
+      "decision": "historical; no change"
+    },
+    "188": {
+      "state": "open",
+      "draft": true,
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "decision": "preserve owner Draft/HOLD; prior performance counterevidence unresolved"
+    },
+    "193": {
+      "state": "open",
+      "draft": true,
+      "head": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+      "workflow_summary": "6 successful workflows and CI failure; head unchanged",
+      "decision": "Draft/HOLD; warm-index CI failure plus inherited resource/protocol blockers"
+    },
+    "194": {
+      "state": "open",
+      "draft": true,
+      "head": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "wide_run": {
+        "id": 37982220020,
+        "profile": "scale_wide_dirty_v1",
+        "dirty_budget": 4096,
+        "jobs": {
+          "success": 4,
+          "in_progress": 2
+        },
+        "in_progress": [
+          "preflight (50000, 0)",
+          "preflight (100000, 0)"
+        ]
+      },
+      "decision": "Draft; independent study only; never pool with original dirty200 and zero original-TODO credit"
+    },
+    "195": {
+      "state": "open",
+      "draft": true,
+      "head": "34dc4e14dc96d077eae6173ab6885370323eff3f",
+      "mergeable": true,
+      "state_timeline": [
+        {
+          "observed_at_utc": "2026-10-09T20:49Z",
+          "draft": false,
+          "note": "external Ready transition despite existing HOLD review"
+        },
+        {
+          "observed_at_utc": "2026-10-09T20:50:34Z",
+          "draft": true,
+          "note": "Draft restored; no source/head change"
+        }
+      ],
+      "exact_head_jobs": {
+        "total": 26,
+        "success": 24,
+        "in_progress": 2,
+        "queued": 0,
+        "failure": 0,
+        "in_progress_names": [
+          "soak",
+          "mixed (4)"
+        ]
+      },
+      "oracle_source": {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "blob": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872"
+      },
+      "oracle_test": {
+        "path": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "blob": "82fb62875823c983da2f5e16ad45c08fc2de9161"
+      },
+      "blockers": [
+        "equal-input witness path still spools A, then skips side-B spool and sets bc=ac",
+        "no exact test where A fits scratch but old A+B two-spool behavior crosses SQLITE_FULL",
+        "equal_input_order_witness remains in public per-table JSON",
+        "source/binary-bound representative hit-rate, fallback, and end-to-end benefit are not established"
+      ],
+      "decision": "KEEP DRAFT / HOLD / DO NOT MERGE. Remaining CI success cannot discharge semantic or public-protocol blockers."
+    },
+    "196": {
+      "state": "open",
+      "draft": true,
+      "head": "065f5ab5da1bc5de74cbd3e4c360b51e09200687",
+      "base": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+      "changed_files": 13,
+      "exact_head_jobs": {
+        "total": 25,
+        "success": 14,
+        "in_progress": 3,
+        "queued": 8,
+        "failure": 0,
+        "in_progress_names": [
+          "soak",
+          "mixed (4)",
+          "cold linux / 1.95 / default"
+        ]
+      },
+      "scope": [
+        "installer ownership and uninstall preservation",
+        "first archive latest-pointer publication",
+        "sparse unchanged scan action representation"
+      ],
+      "overlap_with_195": [
+        "scripts/reviewed-source-registry-v15.json",
+        "scripts/verify_reviewed_source_v15.py"
+      ],
+      "decision": "Keep Draft pending exact-head CI and independent admission. If later combined with PR195, rebuild full P/R/G review and bindings for actual union tree; do not choose either branch's registry blindly."
+    }
+  },
+  "issue_158": {
+    "new_coordination": "External workspace registered PR196 and its non-overlap/product scope; P8-005 still gates original closure chain.",
+    "ownership": "Do not overlap the registered P8-018 Claude hooks work."
+  },
+  "original_todo_credit": {
+    "newly_completed_ids": [],
+    "newly_completed_count": 0,
+    "cumulative_after_baseline": 0,
+    "target": 10,
+    "remaining": 29
+  },
+  "prohibitions_observed": [
+    "no merge",
+    "no close",
+    "no ref update",
+    "no workflow dispatch/rerun/cancel",
+    "no task ledger mutation",
+    "no cross-source study pooling"
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": "codecortex.p8.round41.scale_acceptance_review.v1",
+  "observed_at_utc": "2026-10-09T20:50:53.428Z",
+  "repository": "jyqj/codecortex",
+  "main": {
+    "sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tree": "e039a817291934b15cc018fd74d2c83982bb7f37"
+  },
+  "decision": {
+    "closable_original_todo_ids": [],
+    "original_todos_closed_by_this_review": 0,
+    "p8_005": "not_acceptable",
+    "p8_006": "hard_dependency_p8_005_unsatisfied",
+    "downstream_priority_chain": "not_closable",
+    "reason": "The original dirty=200 run has only four completed preflight shards and its 100k preflight remains in progress; the remaining 145 measurement shards and aggregate have not materialized. The dirty=4096 study is a distinct population and is excluded from original acceptance."
+  },
+  "original_population": {
+    "identity": {
+      "run_id": 37962416564,
+      "head_sha": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "branch": "perf/p8-payload-cell-witness-bfcc-20261009",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "resume_limit": 1024,
+      "seed": 12648430,
+      "required_scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "required_repetitions_per_scale": 30,
+      "required_shards": 150,
+      "required_composite_observations": 1500,
+      "native_deadline_ms": 18000000,
+      "job_timeout_minutes": 350
+    },
+    "run_state": {
+      "status": "in_progress",
+      "conclusion": null,
+      "attempt": 1,
+      "started_at": "2026-10-09T16:54:05Z",
+      "api_updated_at": "2026-10-09T17:36:57Z"
+    },
+    "jobs": [
+      {
+        "id": 113928317071,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113930880423,
+        "name": "preflight (1000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113930880337,
+        "name": "preflight (5000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113930880449,
+        "name": "preflight (10000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113930880373,
+        "name": "preflight (50000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113930880282,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_step": 7
+      }
+    ],
+    "artifact_snapshot": [
+      {
+        "id": 11632527002,
+        "name": "p8-scale-build-37962416564",
+        "digest": "sha256:de07e97e358bf2ba24197276aba791fa94a78a9107df060fcdc7d3cce1ce0640"
+      },
+      {
+        "id": 11634192619,
+        "name": "p8-scale-shard-1000-0-37962416564",
+        "digest": "sha256:55f268870819dc27f379db0a4d88f76f717cecb8030632221ed51b2ce5ce7c82"
+      },
+      {
+        "id": 11633585491,
+        "name": "p8-scale-shard-5000-0-37962416564",
+        "digest": "sha256:eaee17d50faa5a147cf91df3d8227e7df36978e6eb7c5906e125203a267e6eeb"
+      },
+      {
+        "id": 11633529154,
+        "name": "p8-scale-shard-10000-0-37962416564",
+        "digest": "sha256:bc309da34cf22f93d47ae16af18695ac9969e27e02a3ebaad9ac3ce17a854961"
+      },
+      {
+        "id": 11637747431,
+        "name": "p8-scale-shard-50000-0-37962416564",
+        "digest": "sha256:550071fc0989c07d3759f92e9fb9a5f47e969768712a1c5d44f6db08433315f6"
+      }
+    ],
+    "accepted_scope": {
+      "completed_successful_preflight_shards": 4,
+      "required_shards": 150,
+      "prior_content_validated_composite_observations": 41,
+      "required_composite_observations": 1500,
+      "fresh_new_shards_this_review": 0,
+      "fresh_new_composite_observations_this_review": 0,
+      "explicitly_independently_unpacked_prior_round": {
+        "scale": 50000,
+        "repetition": 0,
+        "composite_observations": 9,
+        "table_comparisons_passed": 135,
+        "table_comparisons_total": 135
+      }
+    },
+    "missing_acceptance": [
+      "100k preflight terminal result and sealed shard artifact",
+      "145 later measurement shards",
+      "complete 150-shard and 1500-composite population",
+      "aggregate/source/fact validation over the complete population",
+      "strict paired causal performance acceptance",
+      "whole-tree memory peak acceptance"
+    ],
+    "mutation": {
+      "dispatch": false,
+      "retry": false,
+      "cancel": false,
+      "ref_update": false,
+      "task_update": false
+    }
+  },
+  "isolated_wide_population": {
+    "identity": {
+      "pr": 194,
+      "run_id": 37982220020,
+      "head_sha": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "branch": "eval/p8-wide-dirty-scale-bfcc-20261009",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096
+    },
+    "run_state": {
+      "status": "in_progress",
+      "conclusion": null,
+      "attempt": 1,
+      "started_at": "2026-10-09T19:43:59Z",
+      "api_updated_at": "2026-10-09T20:16:11Z"
+    },
+    "jobs": [
+      {
+        "id": 113995305857,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114000097027,
+        "name": "preflight (1000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114000097004,
+        "name": "preflight (5000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114000097037,
+        "name": "preflight (10000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114000097056,
+        "name": "preflight (50000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_step": 7
+      },
+      {
+        "id": 114000097090,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_step": 7
+      }
+    ],
+    "shard_artifacts": [
+      {
+        "id": 11641529442,
+        "name": "p8-scale-wide-dirty-shard-1000-0-37982220020",
+        "digest": "sha256:b0ac7b0d376c1e56b2a9db275f2e36576514f6117583f8a34567692b98824cfe"
+      },
+      {
+        "id": 11641529790,
+        "name": "p8-scale-wide-dirty-shard-5000-0-37982220020",
+        "digest": "sha256:c7cc565451ee476fefd81b19cbd3e41b6bbd7d334afd97df9ef1371662236686"
+      },
+      {
+        "id": 11643000618,
+        "name": "p8-scale-wide-dirty-shard-10000-0-37982220020",
+        "digest": "sha256:728fa3e56f798677f64cc8de43b7a1bde04ba17235051d35c90bab2e3b987207"
+      }
+    ],
+    "acceptance_boundary": {
+      "original_todo_credit": 0,
+      "may_pool_with_original_dirty200": false,
+      "may_relabel_as_original": false,
+      "rationale": "dirty budget 4096 and profile scale_wide_dirty_v1 define a different research population"
+    },
+    "mutation": {
+      "dispatch": false,
+      "retry": false,
+      "cancel": false,
+      "ref_update": false,
+      "task_update": false
+    }
+  },
+  "api_sources": [
+    "https://api.github.com/repos/jyqj/codecortex/commits/main",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37962416564",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37962416564/jobs",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37962416564/artifacts",
+    "https://api.github.com/repos/jyqj/codecortex/pulls/194",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37982220020",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37982220020/jobs",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37982220020/artifacts"
+  ]
+}

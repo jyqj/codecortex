@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "audit": "p8-round41-ledger-dependency-acceptance",
+  "observed_at_utc": "2026-10-09T20:51:40.323Z",
+  "repository": "jyqj/codecortex",
+  "authority": {
+    "main_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tasks_path": "docs/roadmap/code-index-v2/tasks.json",
+    "tasks_blob_sha": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "total": 192,
+    "status_counts": {
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1
+    },
+    "remaining": 29,
+    "unchanged_from_round40": true
+  },
+  "priority_chain": [
+    {
+      "id": "P8-005",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-004"
+      ],
+      "open_acceptance": [
+        "full_1k_5k_10k_50k_100k_scale_acceptance",
+        "strict_paired_causal_performance",
+        "whole_tree_memory_peak"
+      ]
+    },
+    {
+      "id": "P8-006",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "blocked_by": [
+        "P8-005"
+      ]
+    },
+    {
+      "id": "P8-007",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-006"
+      ],
+      "blocked_by": [
+        "P8-006"
+      ]
+    },
+    {
+      "id": "P8-008",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-007"
+      ],
+      "blocked_by": [
+        "P8-007"
+      ]
+    },
+    {
+      "id": "P8-009",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-008"
+      ],
+      "blocked_by": [
+        "P8-008"
+      ]
+    },
+    {
+      "id": "P8-010",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-009"
+      ],
+      "blocked_by": [
+        "P8-009"
+      ]
+    },
+    {
+      "id": "P8-011",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "blocked_by": [
+        "P8-007",
+        "P8-010"
+      ]
+    },
+    {
+      "id": "P8-012",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-011"
+      ],
+      "blocked_by": [
+        "P8-011"
+      ]
+    },
+    {
+      "id": "P8-013",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-012"
+      ],
+      "blocked_by": [
+        "P8-012"
+      ]
+    },
+    {
+      "id": "P8-016",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "blocked_by": [
+        "P8-012",
+        "P8-013"
+      ]
+    }
+  ],
+  "adjacent_chain": [
+    {
+      "id": "P8-017",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-016"
+      ],
+      "blocked_by": [
+        "P8-016"
+      ]
+    },
+    {
+      "id": "P8-018",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-017"
+      ],
+      "blocked_by": [
+        "P8-017"
+      ]
+    },
+    {
+      "id": "P8-019",
+      "status": "in_progress",
+      "hard_dependencies": [
+        "P8-018"
+      ],
+      "blocked_by": [
+        "P8-018"
+      ]
+    }
+  ],
+  "new_work_since_round40": {
+    "pr196": {
+      "url": "https://github.com/jyqj/codecortex/pull/196",
+      "state": "open",
+      "draft_observed_via_issue158_registration": true,
+      "created_at": "2026-10-09T20:14:57Z",
+      "updated_at": "2026-10-09T20:38:54Z",
+      "base_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+      "product_sha": "306c53bf600fcd0614bbb50d7409acfce69c3972",
+      "review_sha": "5f911c78af7d305476ad83286d602ee6c19b7aa5",
+      "head_sha": "065f5ab5da1bc5de74cbd3e4c360b51e09200687",
+      "compare": {
+        "ahead_by": 3,
+        "behind_by": 0,
+        "changed_files": 13
+      },
+      "scopes": [
+        "Claude Code exact hook ownership and neighboring-hook preservation",
+        "generic JSON uninstall validation and byte preservation",
+        "first archive latest-pointer create-if-absent race",
+        "sparse unchanged scan action representation"
+      ],
+      "task_file_blob_at_head": "959a25ba851ff88f286bab0fa14167878129b1dd",
+      "workflow_snapshot": {
+        "success": [
+          "P7 engineering regressions",
+          "P8 original failure gates",
+          "P8 lifecycle and resource observations"
+        ],
+        "in_progress": [
+          "P8 platform cold builds"
+        ],
+        "queued": [
+          "CI",
+          "P8 runtime observations",
+          "P7 closeout evidence"
+        ]
+      },
+      "acceptance_effect": {
+        "original_todo_completed": [],
+        "P8_018": "not eligible: P8-017 hard dependency is in_progress; compare contains no authoritative task-state or full documentation/facts closeout; installer work is scoped contribution only",
+        "P8_019": "not eligible: P8-018 hard dependency is in_progress; pointer-race repair does not establish complete recomputable report/archive acceptance"
+      }
+    },
+    "mutation_journal_search": {
+      "searched": [
+        "open/all PR text: MutationJournal",
+        "open/all PR text: watermark",
+        "open/all PR text: cursor fence observer",
+        "branch names: mutation",
+        "branch names: watermark",
+        "default-branch code: MutationJournal",
+        "default-branch code: watermark mutation cursor fence"
+      ],
+      "matching_new_prs": [],
+      "matching_new_branches": [],
+      "matching_main_code": [],
+      "conclusion": "No durable MutationJournal/watermark implementation was found. PR196's sparse action-map change explicitly preserves scanning, hashing, resolver, resource, and admission budgets; it is not a freshness certificate and does not close P8-005 or any downstream task."
+    },
+    "merged_changes_after_round40": [],
+    "main_unchanged": true
+  },
+  "acceptance_decision": {
+    "legal_done_transitions": [],
+    "newly_completed_original_todos": 0,
+    "cumulative_after_163_baseline": 0,
+    "target": 10,
+    "remaining_after_review": 29,
+    "tasks_or_plan_modified": false,
+    "rationale": "P8-005 retains three explicit open/unknown subgates, so the priority hard-dependency chain cannot advance. PR196 is unmerged scoped engineering and itself claims zero original-TODO completion; P8-018/019 additionally have unmet hard dependencies. No new merged product or ledger evidence satisfies a complete original acceptance."
+  }
+}

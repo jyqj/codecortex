@@ -1474,7 +1474,11 @@ mod tests {
                 (file, &uid),
             )
             .unwrap();
-            let calls = if stronger_z && file == "src/z.rs" { 2 } else { 1 };
+            let calls = if stronger_z && file == "src/z.rs" {
+                2
+            } else {
+                1
+            };
             for line in 1..=calls {
                 let edge = format!("{file}:{line}");
                 conn.execute(

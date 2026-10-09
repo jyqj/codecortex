@@ -203,11 +203,7 @@ fn rebuild_chunks_match_plain_compressed_source_and_short_sidecar() {
 
 #[test]
 fn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {
-    let (_, empty) = compare_prefix(
-        &unit(0),
-        None,
-        "DROP TABLE chunks_fts; DROP TABLE chunks;",
-    );
+    let (_, empty) = compare_prefix(&unit(0), None, "DROP TABLE chunks_fts; DROP TABLE chunks;");
     assert!(empty.is_ok());
 
     let (conn, missing) = compare_prefix(&unit(2), None, "DROP TABLE chunks_fts;");
@@ -216,7 +212,11 @@ fn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {
 
     let mut invalid = unit(2);
     invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));
-    invalid.outcome.chunks[0].source.as_mut().unwrap().slice_digest = "invalid".into();
+    invalid.outcome.chunks[0]
+        .source
+        .as_mut()
+        .unwrap()
+        .slice_digest = "invalid".into();
     let (conn, early) = compare_prefix(&invalid, None, "DROP TABLE chunks_fts;");
     assert!(early.unwrap_err().contains("invalid chunk source evidence"));
     assert!(rows(&conn, "chunks").is_empty());
@@ -323,7 +323,8 @@ fn retained_statement_resets_before_schema_changes_and_reprepares() {
     let old = Connection::open_in_memory().unwrap();
     let new = Connection::open_in_memory().unwrap();
     for conn in [&old, &new] {
-        conn.execute_batch("CREATE TABLE sample(a INTEGER)").unwrap();
+        conn.execute_batch("CREATE TABLE sample(a INTEGER)")
+            .unwrap();
     }
     let sql = "INSERT INTO sample(a) VALUES(?1)";
     let mut slot = None;

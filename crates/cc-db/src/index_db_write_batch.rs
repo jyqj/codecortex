@@ -956,7 +956,8 @@ impl IndexDb {
                 // payload pre-compressed during prepare (off the write lock);
                 // fall back to compressing here for callers without a side-car.
                 let fallback;
-                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
+                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx))
+                {
                     Some(precomputed) => precomputed.as_deref(),
                     None => {
                         fallback = compress_chunk_text(&c.text);

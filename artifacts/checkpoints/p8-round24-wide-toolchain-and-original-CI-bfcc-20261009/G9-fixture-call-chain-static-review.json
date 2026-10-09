@@ -1,0 +1,38 @@
+{
+  "observed_at_utc": "2026-10-09T19:01:46.810Z",
+  "source": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+  "test_gate": {
+    "path": "crates/cc-eval/src/lib.rs",
+    "line": 915,
+    "comparison": "warm_p95_us < 500_000",
+    "unchanged": true
+  },
+  "index_case": {
+    "path": "crates/cc-eval/corpus/index_build.toml",
+    "git_blob_sha": "3292c9b2ce0011197bf59f668709ecb54aebba87",
+    "tool": "index",
+    "params": {
+      "path": ".",
+      "full": true
+    }
+  },
+  "timing": {
+    "cold": "first actual MCP call on new session; session construction outside timer",
+    "warm": "same session: one discarded warmup and two measured actual MCP calls; best of two per case",
+    "grouping": "nearest-rank across cases for each tool",
+    "index_interpretation": "repeated full build, not a no-op or cached index response"
+  },
+  "workflow": {
+    "path": ".github/workflows/ci.yml",
+    "default_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+    "test_threads_override": false
+  },
+  "material_limits": [
+    "Raw failure is retained; static call graph does not identify a causal bottleneck.",
+    "No threshold, samples, tests, command, or scheduling changed.",
+    "No speculative performance repair or source retry was triggered."
+  ],
+  "execution": "read-only source review; no native command",
+  "TODO_completed": 0,
+  "TODO_remaining": 29
+}

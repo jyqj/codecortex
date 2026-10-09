@@ -1,0 +1,943 @@
+{
+  "schema_version": 1,
+  "scope": "round24 actual PW3/RW3 toolchain setup binding; source-only",
+  "task_ledger": {
+    "done": 163,
+    "remaining": 29,
+    "new": 0
+  },
+  "generation_status": {
+    "success": true,
+    "actual_integer_exit": null,
+    "subprocess": false,
+    "attempt": 1
+  },
+  "preparation_static_record": {
+    "v1_not_run": true,
+    "static_correction": "registry existing key is base_source, canonical key is base; corrected before first invocation; no product/validation mutation",
+    "v2": {
+      "bytes": 5097,
+      "sha256": "f5ef491513cf709a02fa43082a8c152c46e46c98c424111a0b44412e7a8a2ec7"
+    },
+    "tree": {
+      "bytes": 2495,
+      "sha256": "e4d52381bcf8e9631f6138e51b4fc2a773ad24b42abf18433b19d6e2b6219988"
+    },
+    "actual_R": null,
+    "actual_G": null
+  },
+  "original_failure_proof_git_blob": "0e058cf0241137f8a7b7a7d470d02c9d330f7a81",
+  "mechanical_code": {
+    "hash_helper": "\nfunction utf8(s) { const encoded=encodeURIComponent(s), out=[]; for(let i=0;i<encoded.length;i++){ if(encoded[i]===\"%\"){out.push(parseInt(encoded.slice(i+1,i+3),16));i+=2;}else out.push(encoded.charCodeAt(i)); }return out; }\nfunction padded(bytes) { const a=bytes.slice(), n=a.length; a.push(128); while(a.length%64!==56)a.push(0); const hi=Math.floor(n/0x20000000),lo=(n*8)>>>0; for(let i=3;i>=0;i--)a.push((hi>>>(8*i))&255);for(let i=3;i>=0;i--)a.push((lo>>>(8*i))&255);return a; }\nfunction hex(v){return (v>>>0).toString(16).padStart(8,\"0\");}\nfunction sha256Bytes(bytes) {\n const k=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\n const h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19], data=padded(bytes);\n const r=(x,n)=>(x>>>n)|(x<<(32-n));\n for(let off=0;off<data.length;off+=64){const w=[];for(let i=0;i<16;i++){let j=off+4*i;w[i]=((data[j]<<24)|(data[j+1]<<16)|(data[j+2]<<8)|data[j+3])>>>0;}\n for(let i=16;i<64;i++){const a=w[i-15],b=w[i-2];w[i]=((r(a,7)^r(a,18)^(a>>>3))+w[i-16]+(r(b,17)^r(b,19)^(b>>>10))+w[i-7])>>>0;}\n let [a,b,c,d,e,f,g,hh]=h;\n for(let i=0;i<64;i++){const t1=(hh+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+k[i]+w[i])>>>0;const t2=((r(a,2)^r(a,13)^r(a,22))+((a&b)^(a&c)^(b&c)))>>>0;hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}\n [a,b,c,d,e,f,g,hh].forEach((x,i)=>h[i]=(h[i]+x)>>>0);}\n return h.map(hex).join(\"\");\n}\nfunction sha1Bytes(bytes){const data=padded(bytes),h=[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],rot=(x,n)=>(x<<n)|(x>>>(32-n));for(let off=0;off<data.length;off+=64){const w=[];for(let i=0;i<16;i++){let j=off+4*i;w[i]=(data[j]<<24)|(data[j+1]<<16)|(data[j+2]<<8)|data[j+3];}for(let i=16;i<80;i++)w[i]=rot(w[i-3]^w[i-8]^w[i-14]^w[i-16],1);let[a,b,c,d,e]=h;for(let i=0;i<80;i++){let f,k;if(i<20){f=(b&c)|(~b&d);k=0x5a827999;}else if(i<40){f=b^c^d;k=0x6ed9eba1;}else if(i<60){f=(b&c)|(b&d)|(c&d);k=0x8f1bbcdc;}else{f=b^c^d;k=0xca62c1d6;}const t=(rot(a,5)+f+e+k+w[i])>>>0;e=d;d=c;c=rot(b,30);b=a;a=t;}[a,b,c,d,e].forEach((x,i)=>h[i]=(h[i]+x)>>>0);}return h.map(hex).join(\"\");}\nfunction sha256(s){return sha256Bytes(utf8(s));}\nfunction blob(s){const b=utf8(s);return sha1Bytes(utf8(\"blob \"+b.length+\"\\0\").concat(b));}\nfunction sorted(value){if(Array.isArray(value))return value.map(sorted);if(value&&typeof value===\"object\")return Object.fromEntries(Object.keys(value).sort().map(k=>[k,sorted(value[k])]));return value;}\nfunction pyJSON(value){return JSON.stringify(sorted(value),null,2).replace(/[\\u007f-\\uffff]/g,c=>\"\\\\u\"+c.charCodeAt(0).toString(16).padStart(4,\"0\"))+\"\\n\";}\nreturn {utf8,sha256,blob,pyJSON,sha1Bytes,sha256Bytes};\n",
+    "unexecuted_generator_draft": "function generateWideToolchainBinding(rawReview, p, r, seedRegistryRaw, seedGuardRaw, priorReviewRaw, h) {\n const must=(v,m)=>{if(!v)throw Error(m);},eq=(a,b)=>h.pyJSON(a)===h.pyJSON(b);\n const P=\"e1a34a5ddb5f20f13726cb79812892eb9f1ad737\",PT=\"f3fd233a7ccb2f0c5ea902b51e964e881a895c13\",G=\"a9448ecadd713b061823ecb96578791f800c0ae7\";\n const rp=\"artifacts/checkpoints/p8-wide-dirty-toolchain-admission-bfcc-20261009/independent-source-review.json\";\n const wp=\".github/workflows/p8-scale-wide-dirty.yml\";\n must(h.sha256(seedRegistryRaw)===\"ee11edd6b67d0f6a8cd894d2c2bea9f173c7b467364373dc0632177dd8ed0329\" && h.blob(seedRegistryRaw)===\"514194aac2c3356ab8c4969f3960e7042e02d7df\",\"actual GW2 seed registry differs\");\n must(h.sha256(seedGuardRaw)===\"dccd974bc6219b4c4bdfaf3d118a0f037eabc4b8c485af89fb0980233aced1f9\" && h.blob(seedGuardRaw)===\"d50bb213fcf677266fb1315d267da34e5a9a2e58\",\"actual GW2 seed guard differs\");\n must(h.sha256(priorReviewRaw)===\"76b299a810108190bce3d065a12dab4bd260166d8686960f358808501689c6ab\",\"prior actual RW2 differs\");\n must(p.sha===P&&p.tree.sha===PT&&eq(p.parents.map(x=>x.sha),[G]),\"actual PW3 identity differs\");\n must(/^[0-9a-f]{40}$/.test(r.sha)&&eq(r.parents.map(x=>x.sha),[P]),\"actual RW3 must be sole child of PW3\");\n const rev=JSON.parse(rawReview),prior=JSON.parse(priorReviewRaw),seed=JSON.parse(seedRegistryRaw);\n must(rev.source===P&&rev.source_tree===PT&&eq(rev.source_parents,[G])&&rev.review_path===rp,\"canonical identity differs\");\n must(rev.base===seed.base && rev.base===\"7354db236c9d9850a75f31672697ae9eab44565e\",\"BASE differs\");\n must(rev.scope===\"independently_reviewed_source_and_validation_inputs\"&&rev.verdict===\"accepted_scoped\"&&eq(rev.unresolved_blockers,[]),\"canonical not accepted scoped\");\n must(eq(rev.independent_reviewers,[\"/root/todo_audit\"]),\"not fixed independent reviewer\");\n must(Object.keys(rev.complete_inputs).length===1095&&Object.keys(rev.paths).length===75&&Object.keys(rev.validation_inputs).length===143,\"counts differ\");\n must(eq(rev.complete_inputs,seed.complete_inputs)&&eq(rev.paths,seed.delta),\"products or BASE delta changed\");\n const val={...seed.validation_inputs,[wp]:\"c1c74b338a0427492c38a81e196d9f15f267286ce4196540f9ceb3b13b58de71\"};\n must(eq(rev.validation_inputs,val),\"not sole workflow validation change\");\n const all={...rev.complete_inputs,...rev.validation_inputs},inventory=rev.actual_input_mode_blob_inventory;\n must(eq(Object.keys(inventory).sort(),Object.keys(all).sort()),\"inventory domain differs\");\n for(const [path,sha256] of Object.entries(all)){\n   const row=inventory[path],before=prior.actual_input_mode_blob_inventory[path];\n   must(row&&row.sha256===sha256&&row.type===\"blob\"&&[\"100644\",\"100755\"].includes(row.mode)&&/^[0-9a-f]{40}$/.test(row.sha),\"bad inventory row \"+path);\n   if(path===wp)must(row.mode===before.mode&&row.sha===\"cda7abb167262f78a4ba44ed7f50c7b51548514d\"&&row.size===9341,\"workflow mode/blob/size differs\");\n   else must(eq(row,before),\"unrelated inventory row differs \"+path);\n }\n const registry={...seed,product_source:P,review_source:r.sha,review_sha256:h.sha256(rawReview),validation_inputs:val};\n const changes=Object.keys(seed).filter(k=>!eq(seed[k],registry[k])).sort();\n must(eq(changes,[\"product_source\",\"review_sha256\",\"review_source\",\"validation_inputs\"]),\"registry actual diff not exact four fields\");\n const rawRegistry=h.pyJSON(registry),pins={PRODUCT:P,REVIEW:r.sha,REVIEW_PATH:rp,REGISTRY_SHA256:h.sha256(rawRegistry)};\n let guard=seedGuardRaw;\n for(const [n,v]of Object.entries(pins)){const re=new RegExp(\"^\"+n+' = \"[^\"]*\"$',\"gm\");must((guard.match(re)||[]).length===1,\"pin count differs \"+n);guard=guard.replace(re,n+\" = \"+JSON.stringify(v));}\n const normalize=x=>x.replace(/^(PRODUCT|REVIEW|REVIEW_PATH|REGISTRY_SHA256) = .*$/gm,\"$1 = <PIN>\");\n must(normalize(guard)===normalize(seedGuardRaw),\"original guard algorithm changed\");\n const a=seedGuardRaw.split(\"\\n\"),b=guard.split(\"\\n\");\n must(a.length===b.length&&eq(a.flatMap((l,i)=>l===b[i]?[]:[l.split(\" = \")[0]]).sort(),Object.keys(pins).sort()),\"not exactly four changed pins\");\n return {registry:rawRegistry,guard,receipt:{schema_version:1,implementation:\"pure V8 adaptation, no subprocess; original Python generator not run\",actual_G:null,seed_G:G,actual_P:P,actual_P_tree:PT,actual_P_parent:G,actual_R:r.sha,actual_R_tree:r.tree.sha,canonical_review_path:rp,canonical_bytes:h.utf8(rawReview).length,canonical_sha256:h.sha256(rawReview),canonical_git_blob:h.blob(rawReview),counts:{product:1095,delta:75,validation:143,mode_blob_inputs:1238},changed_product_paths:[],changed_validation_paths:[wp],changed_registry_fields:changes,changed_guard_pin_lines:Object.keys(pins).sort(),registry:{bytes:h.utf8(rawRegistry).length,sha256:h.sha256(rawRegistry),git_blob:h.blob(rawRegistry)},guard:{bytes:h.utf8(guard).length,sha256:h.sha256(guard),git_blob:h.blob(guard)},source_cli_Rust_formatter_measurement:\"not_run\",original_failure:{run:37974375238,job:113968799230,source:G,reason:\"missing cargo-fmt component\",exit_code:1},new_todo_credit:0,todo_remaining:29}};\n}\nreturn generateWideToolchainBinding;",
+    "executed_generator": "function generateWideToolchainBinding(rawReview, p, r, seedRegistryRaw, seedGuardRaw, priorReviewRaw, h) {\n const must=(v,m)=>{if(!v)throw Error(m);},eq=(a,b)=>h.pyJSON(a)===h.pyJSON(b);\n const P=\"e1a34a5ddb5f20f13726cb79812892eb9f1ad737\",PT=\"f3fd233a7ccb2f0c5ea902b51e964e881a895c13\",G=\"a9448ecadd713b061823ecb96578791f800c0ae7\";\n const rp=\"artifacts/checkpoints/p8-wide-dirty-toolchain-admission-bfcc-20261009/independent-source-review.json\";\n const wp=\".github/workflows/p8-scale-wide-dirty.yml\";\n must(h.sha256(seedRegistryRaw)===\"ee11edd6b67d0f6a8cd894d2c2bea9f173c7b467364373dc0632177dd8ed0329\" && h.blob(seedRegistryRaw)===\"514194aac2c3356ab8c4969f3960e7042e02d7df\",\"actual GW2 seed registry differs\");\n must(h.sha256(seedGuardRaw)===\"dccd974bc6219b4c4bdfaf3d118a0f037eabc4b8c485af89fb0980233aced1f9\" && h.blob(seedGuardRaw)===\"d50bb213fcf677266fb1315d267da34e5a9a2e58\",\"actual GW2 seed guard differs\");\n must(h.sha256(priorReviewRaw)===\"76b299a810108190bce3d065a12dab4bd260166d8686960f358808501689c6ab\",\"prior actual RW2 differs\");\n must(p.sha===P&&p.tree.sha===PT&&eq(p.parents.map(x=>x.sha),[G]),\"actual PW3 identity differs\");\n must(/^[0-9a-f]{40}$/.test(r.sha)&&eq(r.parents.map(x=>x.sha),[P]),\"actual RW3 must be sole child of PW3\");\n const rev=JSON.parse(rawReview),prior=JSON.parse(priorReviewRaw),seed=JSON.parse(seedRegistryRaw);\n must(rev.source===P&&rev.source_tree===PT&&eq(rev.source_parents,[G])&&rev.review_path===rp,\"canonical identity differs\");\n must(rev.base===seed.base_source && rev.base===\"7354db236c9d9850a75f31672697ae9eab44565e\",\"BASE differs\");\n must(rev.scope===\"independently_reviewed_source_and_validation_inputs\"&&rev.verdict===\"accepted_scoped\"&&eq(rev.unresolved_blockers,[]),\"canonical not accepted scoped\");\n must(eq(rev.independent_reviewers,[\"/root/todo_audit\"]),\"not fixed independent reviewer\");\n must(Object.keys(rev.complete_inputs).length===1095&&Object.keys(rev.paths).length===75&&Object.keys(rev.validation_inputs).length===143,\"counts differ\");\n must(eq(rev.complete_inputs,seed.complete_inputs)&&eq(rev.paths,seed.delta),\"products or BASE delta changed\");\n const val={...seed.validation_inputs,[wp]:\"c1c74b338a0427492c38a81e196d9f15f267286ce4196540f9ceb3b13b58de71\"};\n must(eq(rev.validation_inputs,val),\"not sole workflow validation change\");\n const all={...rev.complete_inputs,...rev.validation_inputs},inventory=rev.actual_input_mode_blob_inventory;\n must(eq(Object.keys(inventory).sort(),Object.keys(all).sort()),\"inventory domain differs\");\n for(const [path,sha256] of Object.entries(all)){\n   const row=inventory[path],before=prior.actual_input_mode_blob_inventory[path];\n   must(row&&row.sha256===sha256&&row.type===\"blob\"&&[\"100644\",\"100755\"].includes(row.mode)&&/^[0-9a-f]{40}$/.test(row.sha),\"bad inventory row \"+path);\n   if(path===wp)must(row.mode===before.mode&&row.sha===\"cda7abb167262f78a4ba44ed7f50c7b51548514d\"&&row.size===9341,\"workflow mode/blob/size differs\");\n   else must(eq(row,before),\"unrelated inventory row differs \"+path);\n }\n const registry={...seed,product_source:P,review_source:r.sha,review_sha256:h.sha256(rawReview),validation_inputs:val};\n const changes=Object.keys(seed).filter(k=>!eq(seed[k],registry[k])).sort();\n must(eq(changes,[\"product_source\",\"review_sha256\",\"review_source\",\"validation_inputs\"]),\"registry actual diff not exact four fields\");\n const rawRegistry=h.pyJSON(registry),pins={PRODUCT:P,REVIEW:r.sha,REVIEW_PATH:rp,REGISTRY_SHA256:h.sha256(rawRegistry)};\n let guard=seedGuardRaw;\n for(const [n,v]of Object.entries(pins)){const re=new RegExp(\"^\"+n+' = \"[^\"]*\"$',\"gm\");must((guard.match(re)||[]).length===1,\"pin count differs \"+n);guard=guard.replace(re,n+\" = \"+JSON.stringify(v));}\n const normalize=x=>x.replace(/^(PRODUCT|REVIEW|REVIEW_PATH|REGISTRY_SHA256) = .*$/gm,\"$1 = <PIN>\");\n must(normalize(guard)===normalize(seedGuardRaw),\"original guard algorithm changed\");\n const a=seedGuardRaw.split(\"\\n\"),b=guard.split(\"\\n\");\n must(a.length===b.length&&eq(a.flatMap((l,i)=>l===b[i]?[]:[l.split(\" = \")[0]]).sort(),Object.keys(pins).sort()),\"not exactly four changed pins\");\n return {registry:rawRegistry,guard,receipt:{schema_version:1,implementation:\"pure V8 adaptation, no subprocess; original Python generator not run\",actual_G:null,seed_G:G,actual_P:P,actual_P_tree:PT,actual_P_parent:G,actual_R:r.sha,actual_R_tree:r.tree.sha,canonical_review_path:rp,canonical_bytes:h.utf8(rawReview).length,canonical_sha256:h.sha256(rawReview),canonical_git_blob:h.blob(rawReview),counts:{product:1095,delta:75,validation:143,mode_blob_inputs:1238},changed_product_paths:[],changed_validation_paths:[wp],changed_registry_fields:changes,changed_guard_pin_lines:Object.keys(pins).sort(),registry:{bytes:h.utf8(rawRegistry).length,sha256:h.sha256(rawRegistry),git_blob:h.blob(rawRegistry)},guard:{bytes:h.utf8(guard).length,sha256:h.sha256(guard),git_blob:h.blob(guard)},source_cli_Rust_formatter_measurement:\"not_run\",original_failure:{run:37974375238,job:113968799230,source:G,reason:\"missing cargo-fmt component\",exit_code:1},new_todo_credit:0,todo_remaining:29}};\n}\nreturn generateWideToolchainBinding;",
+    "tree_preparer": "\nfunction prepareTwoLeafTree(reviewMetadata, rootTree, scriptsTree, outputs, h) {\n const must=(v,m)=>{if(!v)throw Error(m);};\n const oidBytes=hex=>{const out=[];must(/^[a-f0-9]{40}$/.test(hex),\"bad tree child OID\");for(let i=0;i<40;i+=2)out.push(parseInt(hex.slice(i,i+2),16));return out;};\n const treeOid=rows=>{\n   const cmp=(a,b)=>{const aa=h.utf8(a.path+(a.type===\"tree\"?\"/\":\"\")),bb=h.utf8(b.path+(b.type===\"tree\"?\"/\":\"\"));for(let i=0;i<Math.min(aa.length,bb.length);i++)if(aa[i]!==bb[i])return aa[i]-bb[i];return aa.length-bb.length;};\n   let bytes=[];\n   for(const row of [...rows].sort(cmp))bytes=bytes.concat(h.utf8((row.mode===\"040000\"?\"40000\":row.mode)+\" \"+row.path+\"\\0\"),oidBytes(row.sha));\n   return h.sha1Bytes(h.utf8(\"tree \"+bytes.length+\"\\0\").concat(bytes));\n };\n must(rootTree.truncated===false&&scriptsTree.truncated===false,\"truncated tree\");\n must(treeOid(rootTree.tree)===rootTree.sha&&rootTree.sha===reviewMetadata.tree.sha,\"actual R root identity differs\");\n must(treeOid(scriptsTree.tree)===scriptsTree.sha&&rootTree.tree.find(x=>x.path===\"scripts\").sha===scriptsTree.sha,\"actual R scripts identity differs\");\n const old=[\n [\"reviewed-source-registry-v15.json\",\"514194aac2c3356ab8c4969f3960e7042e02d7df\",outputs.registry,outputs.receipt.registry],\n [\"verify_reviewed_source_v15.py\",\"d50bb213fcf677266fb1315d267da34e5a9a2e58\",outputs.guard,outputs.receipt.guard]];\n const rows=scriptsTree.tree.map(x=>({...x})),files=[];\n for(const [name,before,content,meta]of old){\n   const row=rows.find(x=>x.path===name);must(row&&row.mode===\"100644\"&&row.type===\"blob\"&&row.sha===before,\"original seed no longer inherited\");\n   must(meta.git_blob===h.blob(content)&&meta.sha256===h.sha256(content)&&meta.bytes===h.utf8(content).length,\"output metadata differs\");\n   row.sha=meta.git_blob;row.size=meta.bytes;\n   files.push({path:\"scripts/\"+name,mode:\"100644\",type:\"blob\",sha:meta.git_blob,bytes:meta.bytes,sha256:meta.sha256,before_git_blob:before});\n }\n const newScripts=treeOid(rows),rrows=rootTree.tree.map(x=>({...x}));rrows.find(x=>x.path===\"scripts\").sha=newScripts;\n return {actual_G:null,actual_R:reviewMetadata.sha,actual_R_tree:reviewMetadata.tree.sha,expected_G_tree:treeOid(rrows),expected_scripts_tree:newScripts,expected_parent:reviewMetadata.sha,files,create_tree_request:{base_tree:reviewMetadata.tree.sha,tree:files.map(({path,mode,type,sha})=>({path,mode,type,sha}))},scope:\"Exact two-leaf object preparation; no commit/ref/source CLI\"};\n}\nreturn prepareTwoLeafTree;\n"
+  },
+  "actual_P": {
+    "sha": "e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+    "node_id": "C_kwDOSnV9YtoAKGUxYTM0YTVkZGI1ZjIwZjEzNzI2Y2I3OTgxMjg5MmViOWYxYWQ3Mzc",
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+    "html_url": "https://github.com/jyqj/codecortex/commit/e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+    "author": {
+      "name": "金亦求金",
+      "email": "jyj20040616@gmail.com",
+      "date": "2026-10-09T18:43:03Z"
+    },
+    "committer": {
+      "name": "金亦求金",
+      "email": "jyj20040616@gmail.com",
+      "date": "2026-10-09T18:43:03Z"
+    },
+    "tree": {
+      "sha": "f3fd233a7ccb2f0c5ea902b51e964e881a895c13",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f3fd233a7ccb2f0c5ea902b51e964e881a895c13"
+    },
+    "message": "ci: install rustfmt for the fixed wide dirty protocol toolchain\n\nThe first wide run stopped because Rust 1.95 was installed with the minimal profile and cargo-fmt was unavailable. Add the rustfmt component to the build job only. Preserve the exact toolchain, original format/test commands, separate targets, release producer, registered workload population and all measurement limits. Retain the original failed run and zero measurement count; no code formatting or native test pass is claimed.",
+    "parents": [
+      {
+        "sha": "a9448ecadd713b061823ecb96578791f800c0ae7",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/a9448ecadd713b061823ecb96578791f800c0ae7",
+        "html_url": "https://github.com/jyqj/codecortex/commit/a9448ecadd713b061823ecb96578791f800c0ae7"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "actual_R": {
+    "sha": "f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "node_id": "C_kwDOSnV9YtoAKGY5ZDA3YmVkN2FlMmU0ZGFmZmEyNjg5NDkyNmJmYTY2N2U2MjcwMjI",
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "html_url": "https://github.com/jyqj/codecortex/commit/f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "author": {
+      "name": "金亦求金",
+      "email": "jyj20040616@gmail.com",
+      "date": "2026-10-09T18:45:10Z"
+    },
+    "committer": {
+      "name": "金亦求金",
+      "email": "jyj20040616@gmail.com",
+      "date": "2026-10-09T18:45:10Z"
+    },
+    "tree": {
+      "sha": "9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/9a951071eb9aaf45a576b5c4fdb5e158f042b901"
+    },
+    "message": "docs: record independent wide toolchain admission review\n\nPreserve the original missing cargo-fmt failure and complete log. Review the sole build-toolchain component declaration against actual PW3: product1095 and BASEdelta75 unchanged, exactly one of143 validation inputs updated. New formatting, native tests and study remain not_run. Artifact-only; no task or source edits.",
+    "parents": [
+      {
+        "sha": "e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+        "html_url": "https://github.com/jyqj/codecortex/commit/e1a34a5ddb5f20f13726cb79812892eb9f1ad737"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "actual_R_root": {
+    "sha": "9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+    "tree": [
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "976caa10942bd7a8c30ae55ecb3f44444e425d39",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/976caa10942bd7a8c30ae55ecb3f44444e425d39"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+        "size": 636,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+        "size": 3565,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+      },
+      {
+        "path": "Cargo.lock",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+        "size": 82701,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+      },
+      {
+        "path": "Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "size": 1594,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      {
+        "path": "DESIGN.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+        "size": 4283,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+        "size": 7961,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5fcd4b058de3b9f13dfb9567526112fd3c4692c4",
+        "size": 7665,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5fcd4b058de3b9f13dfb9567526112fd3c4692c4"
+      },
+      {
+        "path": "artifacts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "79004533908f08f9fae4d1fd253b46a079d9c144",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/79004533908f08f9fae4d1fd253b46a079d9c144"
+      },
+      {
+        "path": "crates",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2b77f1e57d2ed8bf2bb2f3f7dfab702ea69ae0e7",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2b77f1e57d2ed8bf2bb2f3f7dfab702ea69ae0e7"
+      },
+      {
+        "path": "docs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "69f6dd64e7a84eb3fada690dc136df3049e58c6a",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/69f6dd64e7a84eb3fada690dc136df3049e58c6a"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d860a7d0d4aa5be1d3cd14734b35be967918fd67",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/d860a7d0d4aa5be1d3cd14734b35be967918fd67"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+      }
+    ],
+    "truncated": false
+  },
+  "actual_R_scripts": {
+    "sha": "d860a7d0d4aa5be1d3cd14734b35be967918fd67",
+    "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/d860a7d0d4aa5be1d3cd14734b35be967918fd67",
+    "tree": [
+      {
+        "path": "check_module_architecture.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6d966e40292cf98ebf57adc57382261d023566ce",
+        "size": 3213,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/6d966e40292cf98ebf57adc57382261d023566ce"
+      },
+      {
+        "path": "check_source_architecture.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d2da01f3c6fa8af8252933bb03a8bbc5ccecd2a2",
+        "size": 9561,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/d2da01f3c6fa8af8252933bb03a8bbc5ccecd2a2"
+      },
+      {
+        "path": "code_index_plan.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "378ff47434a67a78dd1194b1fdf15dffda3fbfc3",
+        "size": 11526,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/378ff47434a67a78dd1194b1fdf15dffda3fbfc3"
+      },
+      {
+        "path": "current-source-registry-v1.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "502d851292c0bfe626e71ea20b0e6857087b5f15",
+        "size": 1804,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/502d851292c0bfe626e71ea20b0e6857087b5f15"
+      },
+      {
+        "path": "current-source-registry-v2.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "30722b570e855b4b740f78e6a70523a13dafd004",
+        "size": 105484,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/30722b570e855b4b740f78e6a70523a13dafd004"
+      },
+      {
+        "path": "current-source-registry-v3.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7797c8e5e11fce04b3f1fdd3d16e9f1a5140968b",
+        "size": 126550,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/7797c8e5e11fce04b3f1fdd3d16e9f1a5140968b"
+      },
+      {
+        "path": "index_fix_upgrade_validation.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9abdc6a2c7aca4d0e79127b7ef41978dc3c8bbb5",
+        "size": 6907,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/9abdc6a2c7aca4d0e79127b7ef41978dc3c8bbb5"
+      },
+      {
+        "path": "lock_benchmark_inputs.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fa6c679c6ff28f279fdc3caf5bbb594e94a41672",
+        "size": 14025,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/fa6c679c6ff28f279fdc3caf5bbb594e94a41672"
+      },
+      {
+        "path": "module_oracles.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0c25621610ad55d5b5e34029f086c7bb9d93e515",
+        "size": 5874,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c25621610ad55d5b5e34029f086c7bb9d93e515"
+      },
+      {
+        "path": "p0-validation.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4ff4bbe9685c44c4a0a17ae6fe6d68ee59a3c9a6",
+        "size": 4174,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4ff4bbe9685c44c4a0a17ae6fe6d68ee59a3c9a6"
+      },
+      {
+        "path": "p0_historical_corpus.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4f6a2aa347ff3b56f816a634fe30677fba091ffc",
+        "size": 5434,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4f6a2aa347ff3b56f816a634fe30677fba091ffc"
+      },
+      {
+        "path": "p7_build_identity.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "size": 5940,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4f2213705984effd6aa3cdb75a99cbb03a08c39e"
+      },
+      {
+        "path": "p7_fault_lifecycle_stdio.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e38684a7bfe52a4d1c5650956098ed30bbd0fcfe",
+        "size": 29161,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e38684a7bfe52a4d1c5650956098ed30bbd0fcfe"
+      },
+      {
+        "path": "p7_gate_report.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "17b39405cbbe9e61637239ce1190deff49906ca7",
+        "size": 15508,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/17b39405cbbe9e61637239ce1190deff49906ca7"
+      },
+      {
+        "path": "p7_mechanism_build.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a91c2f0fdc48a7bf248b556891e83964d472dae0",
+        "size": 12407,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/a91c2f0fdc48a7bf248b556891e83964d472dae0"
+      },
+      {
+        "path": "p7_offline_network.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9f095d9939231d65778d3b5f53494da7eed4bdc7",
+        "size": 13159,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/9f095d9939231d65778d3b5f53494da7eed4bdc7"
+      },
+      {
+        "path": "p7_offline_trace.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "50810a2affbeddce341ff03999a8c545c71665a4",
+        "size": 29081,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/50810a2affbeddce341ff03999a8c545c71665a4"
+      },
+      {
+        "path": "p7_release_hotspot_diagnosis.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c45cd8cbb89d8494bd0f5c62ddf6de09b8afd8d",
+        "size": 19685,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/8c45cd8cbb89d8494bd0f5c62ddf6de09b8afd8d"
+      },
+      {
+        "path": "p7_release_resource_preparation.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73fd58a4cb1f20d5297ebe533b3c88196870bd75",
+        "size": 19397,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/73fd58a4cb1f20d5297ebe533b3c88196870bd75"
+      },
+      {
+        "path": "p7_resource_preparation.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2b09129c4df6f1c0ae18b2995ab149487cd66c13",
+        "size": 18788,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b09129c4df6f1c0ae18b2995ab149487cd66c13"
+      },
+      {
+        "path": "p7_stdio_build_receipt.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e",
+        "size": 9147,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e"
+      },
+      {
+        "path": "p8_backfill.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+        "size": 8799,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/380b775c0de6141ed8b4f63d2fb4a223bba54221"
+      },
+      {
+        "path": "p8_candidate_execution.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5fdabc7960669f71cc70e71e6963ee8944fe6a6d",
+        "size": 23811,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5fdabc7960669f71cc70e71e6963ee8944fe6a6d"
+      },
+      {
+        "path": "p8_cold_build.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+        "size": 52649,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/ed454b6d29e727c87b0b26e4a975a840d0dec310"
+      },
+      {
+        "path": "p8_compat.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b5926ff3cb185e95e97e6a46e4520f47ac5771af",
+        "size": 27848,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/b5926ff3cb185e95e97e6a46e4520f47ac5771af"
+      },
+      {
+        "path": "p8_corpus_audit.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "84caa7f735d8057352096760476de7af49e92500",
+        "size": 21424,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/84caa7f735d8057352096760476de7af49e92500"
+      },
+      {
+        "path": "p8_external_candidate.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4cc5a6db01230d31ade303a51ffb5071cb4e052b",
+        "size": 11720,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4cc5a6db01230d31ade303a51ffb5071cb4e052b"
+      },
+      {
+        "path": "p8_facts.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "34e3d8eb350f4b482ee240db8902ced996774d6b",
+        "size": 10911,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/34e3d8eb350f4b482ee240db8902ced996774d6b"
+      },
+      {
+        "path": "p8_gate_controls.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+        "size": 4238,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b"
+      },
+      {
+        "path": "p8_judge_evidence.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9aa1edb76b0237730a284510957bec9502e5d0e9",
+        "size": 20155,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/9aa1edb76b0237730a284510957bec9502e5d0e9"
+      },
+      {
+        "path": "p8_leakage_audit.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "539c4d5b960bea6b96cd831e09ce1bc4f94ace45",
+        "size": 11464,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/539c4d5b960bea6b96cd831e09ce1bc4f94ace45"
+      },
+      {
+        "path": "p8_lifecycle.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4d413c2b23930f2856139a4bfef0f9c114254df3",
+        "size": 38417,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4d413c2b23930f2856139a4bfef0f9c114254df3"
+      },
+      {
+        "path": "p8_native_registry.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "39a8c35497383888e8f78f4f4a135d7c9ccdde0f",
+        "size": 25391,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/39a8c35497383888e8f78f4f4a135d7c9ccdde0f"
+      },
+      {
+        "path": "p8_recovery.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aae54fe62ba3aa81cea84daa3a9307240e4700b3",
+        "size": 58272,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/aae54fe62ba3aa81cea84daa3a9307240e4700b3"
+      },
+      {
+        "path": "p8_release_evidence.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "90ab28ac05bc177626f7dc652eb1dadda1a1b0c9",
+        "size": 30556,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/90ab28ac05bc177626f7dc652eb1dadda1a1b0c9"
+      },
+      {
+        "path": "p8_release_review.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "30b2611b04dfed78c45feb9c3e99c74cf03b563f",
+        "size": 15811,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/30b2611b04dfed78c45feb9c3e99c74cf03b563f"
+      },
+      {
+        "path": "p8_resources.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4ed93b4b1c73002fe592da63ad7d7481a563cad4",
+        "size": 15915,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4ed93b4b1c73002fe592da63ad7d7481a563cad4"
+      },
+      {
+        "path": "p8_rollback.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+        "size": 38818,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/61ff1d61c0fc9f14b92daf522faa0d9d5e04be56"
+      },
+      {
+        "path": "p8_runner_capacity.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+        "size": 11164,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/16d150d837e98c900b49de2059aa4ca74fe2f02f"
+      },
+      {
+        "path": "p8_runtime.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d8b24c6c1d21d6c80118b4f9ca49f17ff809a401",
+        "size": 61672,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/d8b24c6c1d21d6c80118b4f9ca49f17ff809a401"
+      },
+      {
+        "path": "p8_runtime_build.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "394d63e0ee9c74dfbdcebf70cbc7290b2695a596",
+        "size": 19175,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/394d63e0ee9c74dfbdcebf70cbc7290b2695a596"
+      },
+      {
+        "path": "p8_runtime_lock_observation.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2b1e901cf462bb36c34daf1f34bbd7ca7c0cbf36",
+        "size": 9494,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b1e901cf462bb36c34daf1f34bbd7ca7c0cbf36"
+      },
+      {
+        "path": "p8_scale_matrix.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "011da8340dc4989c81976ba66e163638b4e7aa07",
+        "size": 65788,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/011da8340dc4989c81976ba66e163638b4e7aa07"
+      },
+      {
+        "path": "p8_semantic_certification.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "af5ee0278e8851998745ae22c6d9ae6486f2c926",
+        "size": 19283,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/af5ee0278e8851998745ae22c6d9ae6486f2c926"
+      },
+      {
+        "path": "resource_harness",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2ba1ca5015f42c85eea64da5e456085abca20372",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2ba1ca5015f42c85eea64da5e456085abca20372"
+      },
+      {
+        "path": "review",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "45912c503c2f37e9b343798c8a044c36c4c32faf",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/45912c503c2f37e9b343798c8a044c36c4c32faf"
+      },
+      {
+        "path": "reviewed-source-joint22-v10.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7078c59380d4261dbbced7d1300e626b806c567",
+        "size": 106159,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/f7078c59380d4261dbbced7d1300e626b806c567"
+      },
+      {
+        "path": "reviewed-source-p7-v9.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9237fa0debd0d78393e543b149cc3b5b8dd6630f",
+        "size": 101720,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/9237fa0debd0d78393e543b149cc3b5b8dd6630f"
+      },
+      {
+        "path": "reviewed-source-registry-v10.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "70552738b166d0f19d712c9c8c9c29eafdec97c2",
+        "size": 98974,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/70552738b166d0f19d712c9c8c9c29eafdec97c2"
+      },
+      {
+        "path": "reviewed-source-registry-v11.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "75be974e574b82619daca15346063179a30f6c8e",
+        "size": 95961,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/75be974e574b82619daca15346063179a30f6c8e"
+      },
+      {
+        "path": "reviewed-source-registry-v12.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9ea49904b03a02a0665548ea565568476a223bea",
+        "size": 97108,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/9ea49904b03a02a0665548ea565568476a223bea"
+      },
+      {
+        "path": "reviewed-source-registry-v13.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7232b52ccbe8b056a8a75569ad9d5dd16fe8243b",
+        "size": 115731,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/7232b52ccbe8b056a8a75569ad9d5dd16fe8243b"
+      },
+      {
+        "path": "reviewed-source-registry-v14.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+        "size": 225259,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/361e7d75c99cc70cd09f818093fdfce9efbfaf27"
+      },
+      {
+        "path": "reviewed-source-registry-v15.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "514194aac2c3356ab8c4969f3960e7042e02d7df",
+        "size": 180295,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/514194aac2c3356ab8c4969f3960e7042e02d7df"
+      },
+      {
+        "path": "reviewed-source-registry.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e242fcce78208397ba84350e90be6d399df501a4",
+        "size": 101550,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e242fcce78208397ba84350e90be6d399df501a4"
+      },
+      {
+        "path": "source_snapshots",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3a9c91d7ab4652fa318b371147931860a337b967",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/3a9c91d7ab4652fa318b371147931860a337b967"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fc533ba45fddd44e154123ecdd7199a37ad7d7db",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/fc533ba45fddd44e154123ecdd7199a37ad7d7db"
+      },
+      {
+        "path": "update-doc-baselines.sh",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+        "size": 3571,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e33fa140e9a6e5461f77cb66e633ec4ba38d2700"
+      },
+      {
+        "path": "v14_historical_context.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48296d55b90f56e8ee97c52dab0430087487f462",
+        "size": 8532,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/48296d55b90f56e8ee97c52dab0430087487f462"
+      },
+      {
+        "path": "v15_historical_context.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7e68c27ce4d728a2e637e34fe863f74c25d485d",
+        "size": 8682,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/f7e68c27ce4d728a2e637e34fe863f74c25d485d"
+      },
+      {
+        "path": "verify_current_source.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a7dd50b9df277b821def1399ca491e6f54225165",
+        "size": 9941,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/a7dd50b9df277b821def1399ca491e6f54225165"
+      },
+      {
+        "path": "verify_current_source_v2.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6392e3d1b006e91a52e674b82ac2970bbe4e2393",
+        "size": 6503,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/6392e3d1b006e91a52e674b82ac2970bbe4e2393"
+      },
+      {
+        "path": "verify_current_source_v3.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b3f4ed0f4c4957a2dc23fd9a7a27958441c11904",
+        "size": 4694,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/b3f4ed0f4c4957a2dc23fd9a7a27958441c11904"
+      },
+      {
+        "path": "verify_fixed_e3_integration.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "739afdf6f799502a5ecee07c4f4c51a338c54e41",
+        "size": 3275,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/739afdf6f799502a5ecee07c4f4c51a338c54e41"
+      },
+      {
+        "path": "verify_historical_integrations_v2.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "24b068c0e17ac3b49f98e8fb57843d3286ce264a",
+        "size": 16896,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/24b068c0e17ac3b49f98e8fb57843d3286ce264a"
+      },
+      {
+        "path": "verify_packing_integration.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "187e77b2e3a188c750b5314a6b9e51d77f3e03f3",
+        "size": 4140,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/187e77b2e3a188c750b5314a6b9e51d77f3e03f3"
+      },
+      {
+        "path": "verify_reviewed_source.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "34c758fa2b2b99e760fc9dd447a6943f6bb574d3",
+        "size": 11818,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/34c758fa2b2b99e760fc9dd447a6943f6bb574d3"
+      },
+      {
+        "path": "verify_reviewed_source_joint22_v10.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "86b51f1a95b025e7c8731dff1a39156a0ff65e98",
+        "size": 15049,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/86b51f1a95b025e7c8731dff1a39156a0ff65e98"
+      },
+      {
+        "path": "verify_reviewed_source_p7_v9.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "07a2412f8317bed94ccb7b791bd5aa8d321b5825",
+        "size": 11771,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/07a2412f8317bed94ccb7b791bd5aa8d321b5825"
+      },
+      {
+        "path": "verify_reviewed_source_v10.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "21b21f8140b46ec971308f1177eb13e15a7b05b5",
+        "size": 8386,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/21b21f8140b46ec971308f1177eb13e15a7b05b5"
+      },
+      {
+        "path": "verify_reviewed_source_v11.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "004a88e4010997bf30e6b1ef21bdb7d29618c86d",
+        "size": 5833,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/004a88e4010997bf30e6b1ef21bdb7d29618c86d"
+      },
+      {
+        "path": "verify_reviewed_source_v12.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "95298cbf8f845ee60b95902873c12b7fd881e339",
+        "size": 9763,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/95298cbf8f845ee60b95902873c12b7fd881e339"
+      },
+      {
+        "path": "verify_reviewed_source_v13.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dfb93669c6c8b4044d8dc6ea5c6b36ad306be800",
+        "size": 9542,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/dfb93669c6c8b4044d8dc6ea5c6b36ad306be800"
+      },
+      {
+        "path": "verify_reviewed_source_v14.py",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "5e5ef518787ec7445731eec75eface5e70cc834a",
+        "size": 10839,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5e5ef518787ec7445731eec75eface5e70cc834a"
+      },
+      {
+        "path": "verify_reviewed_source_v15.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d50bb213fcf677266fb1315d267da34e5a9a2e58",
+        "size": 11098,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/d50bb213fcf677266fb1315d267da34e5a9a2e58"
+      }
+    ],
+    "truncated": false
+  },
+  "generation_receipt": {
+    "schema_version": 1,
+    "implementation": "pure V8 adaptation, no subprocess; original Python generator not run",
+    "actual_G": null,
+    "seed_G": "a9448ecadd713b061823ecb96578791f800c0ae7",
+    "actual_P": "e1a34a5ddb5f20f13726cb79812892eb9f1ad737",
+    "actual_P_tree": "f3fd233a7ccb2f0c5ea902b51e964e881a895c13",
+    "actual_P_parent": "a9448ecadd713b061823ecb96578791f800c0ae7",
+    "actual_R": "f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "actual_R_tree": "9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+    "canonical_review_path": "artifacts/checkpoints/p8-wide-dirty-toolchain-admission-bfcc-20261009/independent-source-review.json",
+    "canonical_bytes": 535211,
+    "canonical_sha256": "293f637457dddd8ec76f176206543a1712b01c2a11327e257ae27076d14df834",
+    "canonical_git_blob": "57d8838789ee99a660a97194bab610770fdf74e5",
+    "counts": {
+      "product": 1095,
+      "delta": 75,
+      "validation": 143,
+      "mode_blob_inputs": 1238
+    },
+    "changed_product_paths": [],
+    "changed_validation_paths": [
+      ".github/workflows/p8-scale-wide-dirty.yml"
+    ],
+    "changed_registry_fields": [
+      "product_source",
+      "review_sha256",
+      "review_source",
+      "validation_inputs"
+    ],
+    "changed_guard_pin_lines": [
+      "PRODUCT",
+      "REGISTRY_SHA256",
+      "REVIEW",
+      "REVIEW_PATH"
+    ],
+    "registry": {
+      "bytes": 180295,
+      "sha256": "ddfe0fb4652d4b072f650a0c9c1fef73c15ed0c40f4939f4733cce46e96e8464",
+      "git_blob": "c1c2a9cfcd35694539ffe86228022463e5f04810"
+    },
+    "guard": {
+      "bytes": 11101,
+      "sha256": "6cbd3452c349cdf44655c92171e24d6187f80ce5320a41ff01a922cc94a2f4fe",
+      "git_blob": "e963e42f093f4957138180c2909d5f700e55ac25"
+    },
+    "source_cli_Rust_formatter_measurement": "not_run",
+    "original_failure": {
+      "run": 37974375238,
+      "job": 113968799230,
+      "source": "a9448ecadd713b061823ecb96578791f800c0ae7",
+      "reason": "missing cargo-fmt component",
+      "exit_code": 1
+    },
+    "new_todo_credit": 0,
+    "todo_remaining": 29
+  },
+  "tree_proposal": {
+    "actual_G": null,
+    "actual_R": "f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "actual_R_tree": "9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+    "expected_G_tree": "b680954f88027b1b749aa3f265a5d70c66ffc708",
+    "expected_scripts_tree": "7a8f89c7d87bfbc4213c646325a41a9c3bd2d083",
+    "expected_parent": "f9d07bed7ae2e4daffa26894926bfa667e627022",
+    "files": [
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c1c2a9cfcd35694539ffe86228022463e5f04810",
+        "bytes": 180295,
+        "sha256": "ddfe0fb4652d4b072f650a0c9c1fef73c15ed0c40f4939f4733cce46e96e8464",
+        "before_git_blob": "514194aac2c3356ab8c4969f3960e7042e02d7df"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e963e42f093f4957138180c2909d5f700e55ac25",
+        "bytes": 11101,
+        "sha256": "6cbd3452c349cdf44655c92171e24d6187f80ce5320a41ff01a922cc94a2f4fe",
+        "before_git_blob": "d50bb213fcf677266fb1315d267da34e5a9a2e58"
+      }
+    ],
+    "create_tree_request": {
+      "base_tree": "9a951071eb9aaf45a576b5c4fdb5e158f042b901",
+      "tree": [
+        {
+          "path": "scripts/reviewed-source-registry-v15.json",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c1c2a9cfcd35694539ffe86228022463e5f04810"
+        },
+        {
+          "path": "scripts/verify_reviewed_source_v15.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e963e42f093f4957138180c2909d5f700e55ac25"
+        }
+      ]
+    },
+    "scope": "Exact two-leaf object preparation; no commit/ref/source CLI"
+  },
+  "created_registry_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "sha": "c1c2a9cfcd35694539ffe86228022463e5f04810"
+    },
+    "isError": false
+  },
+  "created_guard_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "sha": "e963e42f093f4957138180c2909d5f700e55ac25"
+    },
+    "isError": false
+  },
+  "actual_G": null,
+  "execution_boundary": "V8 mechanical transformation only; original Python generator and source CLI/Rust/fmt/workload not run; no ref/PR/label mutation"
+}

@@ -1,0 +1,50 @@
+{
+  "TODO_remaining": 29,
+  "base_source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+  "changed_paths": {
+    "scripts/p8_runtime.py": {
+      "bytes": 54182,
+      "git_blob": "0b8587c755698af9fe87987298a6578764e87c25",
+      "sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
+    },
+    "scripts/tests/test_p8_runtime_finalization.py": {
+      "bytes": 11792,
+      "git_blob": "96b24425e75677708029a382f67e012810eed01a",
+      "sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+    }
+  },
+  "local_validation": "AST parse and exact source/helper delta only; no Python controls executed, no Cargo or product workload.",
+  "native_inputs": "1087 Cargo/crates bytes unchanged; runtime validation input changed plus one new test input, prospective validation137 to138 if adopted with original aux workflow retained.",
+  "new_TODO_done": 0,
+  "new_test_names": [
+    "test_inventory_enoent_before_seal_retains_final_failure_and_original_report",
+    "test_verify_inventory_mismatch_preserves_original_failed_seal_bytes",
+    "test_failed_seal_fingerprint_error_does_not_block_final_failure_report",
+    "test_successful_stopped_observation_keeps_original_valid_seal",
+    "test_failed_stopped_observation_remains_exit_one_with_valid_failure_seal",
+    "test_lost_output_keeps_explicit_finalization_error",
+    "test_occupied_backup_is_not_overwritten_or_retried",
+    "test_keyboard_interrupt_in_seal_or_verify_keeps_failed_report_after_workers_finish"
+  ],
+  "observed_utc": "2026-10-09T00:56:08.246838+00:00",
+  "old_runtime_reconstructs_exactly_after_reversing_only_helper_import_and_final_call": true,
+  "old_tests_modified": false,
+  "planned_validation": [
+    "python3 -m unittest discover -s scripts/tests -p test_p8_runtime*.py -v",
+    "Run same new8 controls against original8e in a separate explicitly negative fixture, retaining actual failures; no success claim before execution."
+  ],
+  "previous_draft": "draft-v1/ retains original seven-control draft and hashes.",
+  "scope_limits": [
+    "No guarantee of writable failure metadata after SIGKILL or the initial report write failing.",
+    "Actual CLI exit code and original seal verification remain mandatory; a report alone never certifies the run.",
+    "Seven original adapted cases exercise the existing real-thread/run protocol fixture. The unchanged main exception-to-exit2 mapping is statically reviewed, not an actual CLI invocation.",
+    "Eighth control has actual worker Futures observed done with each exception retrieved, then KeyboardInterrupt injected in finalization main thread at seal and verify separately. Existing worker cleanup completes before an old-driver propagated interrupt is converted into an assertion failure.",
+    "No 1k/10k/100k or fullN30 results, no source admission, no TODO closure."
+  ],
+  "status": "draft_pending_independent_review_and_actual_controls",
+  "test_adaptation": "Keeps exact existing G4/8e RuntimeFailureLifecycleTests.control fixture via delegation, injects real file disappearance/new post-seal file, preserves existing 60 operation denominator and original raw/statistics/parity bytes. Lost-output and occupied-backup cases assert actual run exception; unchanged main maps that to exit2. No peer helper or source-level admission is represented as actual native evidence.",
+  "updated_utc": "2026-10-09T00:59:52.388288+00:00",
+  "upstream_helper_body_exact": true,
+  "upstream_minimal_fix_commit": "b6513a991630c1d1a4e6b51e262c8c5556631987",
+  "upstream_runtime_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8"
+}

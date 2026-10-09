@@ -1,0 +1,548 @@
+{
+  "baseline_source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+  "branch": "task/p8-runtime-finalization-controls-20261009",
+  "expected_explicit_subtests": 24,
+  "expected_failures": 0,
+  "expected_methods": 47,
+  "expected_skipped": 0,
+  "expected_unexpected_successes": 0,
+  "fixed_observer_files": [
+    {
+      "bytes": 54182,
+      "git_blob": "0b8587c755698af9fe87987298a6578764e87c25",
+      "mode": "100644",
+      "path": "scripts/p8_runtime.py",
+      "sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
+    },
+    {
+      "bytes": 15242,
+      "git_blob": "cba1839bd4c48479521083bea1b416bd1a505ffa",
+      "mode": "100644",
+      "path": "scripts/p8_runtime_build.py",
+      "sha256": "30efddaeef181bca0714cc798125d18687eeda6289a9a07e89efb95b69476a79"
+    },
+    {
+      "bytes": 5940,
+      "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "mode": "100644",
+      "path": "scripts/p7_build_identity.py",
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    {
+      "bytes": 51726,
+      "git_blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+      "mode": "100644",
+      "path": "scripts/p8_cold_build.py",
+      "sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974"
+    },
+    {
+      "bytes": 38551,
+      "git_blob": "c561d61443467c2737babf498e213f13ed094e93",
+      "mode": "100644",
+      "path": "scripts/p8_rollback.py",
+      "sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734"
+    },
+    {
+      "bytes": 74,
+      "git_blob": "2371ef6525a9815cf327d95d7f8aca1455257e8d",
+      "mode": "100644",
+      "path": "scripts/resource_harness/__init__.py",
+      "sha256": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36"
+    },
+    {
+      "bytes": 11117,
+      "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+      "mode": "100644",
+      "path": "scripts/resource_harness/runtime.py",
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+    }
+  ],
+  "limitations": [
+    "Declared subTest callbacks are separate observations within their parent method, not extra test methods.",
+    "Loops/assertions without self.subTest remain part of the unchanged parent method.",
+    "This manifest records no executed test or product result."
+  ],
+  "modules": [
+    {
+      "expected_count": 14,
+      "expected_methods": [
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_clustered_rss_cannot_certify_an_hour",
+          "line": 26,
+          "source_sha256": "5df6d3a46821c4affe466107b97778cb1232c9783f77662af34c7383c2e75242"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_exact_public_hit_rejects_query_echo_and_wrong_path",
+          "line": 18,
+          "source_sha256": "82cd7c94e7943ecb0f3dfd00d5b17d64c61b20e32eca327eb97975a8708ebb44"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_existing_memory_threshold_is_preserved",
+          "line": 41,
+          "source_sha256": "2d170f3896b8584f3a9af1fb80d17d0dc30ab200253befd129e1edc2d448a80d"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_failed_outcomes_still_enter_latency_denominator",
+          "line": 50,
+          "source_sha256": "7e2edb553dcf5ce18af71873cc4d71c8acadde8e6fda5eb8b334a846b2b29a5c"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_mutations_use_real_git_and_do_not_grow_source",
+          "line": 58,
+          "source_sha256": "b56863b013cb28440a9bb3c10481d2251b797e1ce093301923ad9ae60629623a"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_raw_is_exclusive_and_preserves_every_row",
+          "line": 79,
+          "source_sha256": "368d7ede9fa6cc469e366f99cc6adb9258d07996d70ba28431b50b5784764555"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_unowned_git_mutation_is_refused",
+          "line": 74,
+          "source_sha256": "e350ae32ccda7764abf0f973526af607a5a7fe9c7493d9b3e96f90344b886743"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeEvidenceTests.test_zero_or_missing_rss_cannot_pass",
+          "line": 35,
+          "source_sha256": "bde1baad0c166255ac440276bdb3200dee775c8c86895740adcf9cf1d5da09ec"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_equal_oracle_still_keeps_passing_statistics",
+          "line": 231,
+          "source_sha256": "574571d8b090683a33ee4a071f7e9e6ad0b0cb88d18c760bca7f663fe75863f0"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_difference_keeps_statistics_and_failure_exit_one",
+          "line": 221,
+          "source_sha256": "b684249af73f970b122cb8021f360dede04dde8f4b1ad97a218109a2fb44716a"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_infrastructure_failure_stays_exit_two",
+          "line": 238,
+          "source_sha256": "da06c38b346ccb6749daf02964e059429960f7ec43b2e433aed20fab238bfdd5"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows",
+          "line": 252,
+          "source_sha256": "5e88a87f895e4952d7e879928428bb0166e7b0eff212dd6a603fc2951b5d416c"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_raw_budget_abort_drains_actual_worker_before_sealing",
+          "line": 244,
+          "source_sha256": "d88bf522a809bd01978f406f74aabb19ab1908c124ac54df548b6cdf4f5d0aae"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime.RuntimeFailureLifecycleTests.test_unconfirmed_worker_shutdown_cannot_create_a_seal",
+          "line": 263,
+          "source_sha256": "6707ea188d372a1b79f8f7bb8a4b2840b75b8b4911b750f15529609581427734"
+        }
+      ],
+      "module": "test_p8_runtime",
+      "source": {
+        "bytes": 14568,
+        "git_blob": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba",
+        "mode": "100644",
+        "path": "scripts/tests/test_p8_runtime.py",
+        "sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0"
+      }
+    },
+    {
+      "expected_count": 12,
+      "expected_methods": [
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_every_decision_input_including_stderr_plan_rpc_and_sqlite_is_sealed",
+          "line": 201,
+          "source_sha256": "d105321b111cb0e536f696df7a451c8935223e7cdba66f50f31190f94aec1032"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_missing_extra_and_symlink_artifacts_are_rejected",
+          "line": 227,
+          "source_sha256": "a2fa2e8509ce3ef47359e5cf5596e7eb198228053e4133afeba6f5627913168f"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_complete_contract_checks_every_original_and_retained_artifact",
+          "line": 106,
+          "source_sha256": "b2acda23e476d635747b05127a168c80b6dee4ffb609455e7c320ca9d82f7eba"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_deleted_original_target_does_not_gain_cross_job_build_approval",
+          "line": 154,
+          "source_sha256": "981fa6ac7cbe7656d68d9a0fefc665d243a12e7483d1b7d6a9f7b15e460739f5"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_foreign_checkout_with_identical_suffix_is_rejected",
+          "line": 111,
+          "source_sha256": "44377ddbc04a7f2efa7ba2cf150896807b931bdfd61cd29e5d0c6b34a7bf5c2f"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_loaded_foreign_module_cannot_borrow_a_committed_file_hash",
+          "line": 186,
+          "source_sha256": "f3a25f3cd4ccbcc70542632700b698bb9fb44f532cd4ea270aee2b45f4f6ff16"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_missing_or_outside_target_original_executable_is_rejected",
+          "line": 122,
+          "source_sha256": "99bc610b2698237c1ae1f4beb0d9911942bf3bad35496e002eebeefb98c784b5"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_original_log_mutation_is_detected_by_the_build_seal",
+          "line": 193,
+          "source_sha256": "1b16e26672be93abe755393de2c8fba27c1e074ffb1d7057647d1eb010385568"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_replaced_binary_cannot_be_rebound_with_only_a_self_reported_hash",
+          "line": 136,
+          "source_sha256": "22dfbfcfb18cd830c564b9eca384b95f64dd530ce54c9d7917112aa07badbede"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_rewritten_command_or_missing_statistics_artifact_is_rejected",
+          "line": 174,
+          "source_sha256": "83d5c93859b02369f6f0ae0da2f3727c5b79603446ff5b1c8157942f7ae8aa56"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_second_check_rejects_original_executable_changed_after_admission",
+          "line": 147,
+          "source_sha256": "c3a43ac9bcea095010cf572e06cab26c2df1fa6778e19c7f7f9f8e302d8c6030"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_source_and_observer_changes_are_rejected_after_initial_verification",
+          "line": 162,
+          "source_sha256": "5836bd45f458be2f9a7306cd8266d3739a1f50063bfebeb6db05cd99569d3372"
+        }
+      ],
+      "module": "test_p8_runtime_evidence",
+      "source": {
+        "bytes": 12695,
+        "git_blob": "fc9593f9c2fb3c9dabd2d5fe7d3e97556a8e53b5",
+        "mode": "100644",
+        "path": "scripts/tests/test_p8_runtime_evidence.py",
+        "sha256": "8983e7f682926ca612a932229c1a31e756864e0d84a1951c3ffd805804baa8bb"
+      }
+    },
+    {
+      "expected_count": 13,
+      "expected_methods": [
+        {
+          "expected_subtests": [
+            {
+              "bad": {
+                "first_line": 170,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 170,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 171,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 172,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 173,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 174,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 175,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            },
+            {
+              "bad": {
+                "first_line": 176,
+                "kind": "callable",
+                "module": "test_p8_runtime_cache",
+                "qualname": "SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity.<locals>.<lambda>"
+              }
+            }
+          ],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity",
+          "line": 169,
+          "source_sha256": "b899836f8fd6a1f0e109500afdd8b8dac5f05d326742c7891dac945f7a4749cc",
+          "subtest_source_expressions": [
+            "lambda h:h.update(file_path=\"wrong.py\")",
+            "lambda h:h.update(symbol_name=\"query echo\")",
+            "lambda h:h.update(text=f\"def {runtime.QUERY}():\\n    return 6\")",
+            "lambda h:h.update(start_line=2)",
+            "lambda h:h[\"metadata\"][\"source_freshness\"].update(status=\"stale\")",
+            "lambda h:h[\"metadata\"][\"source_freshness\"].update(disk_checked=False)",
+            "lambda h:h[\"metadata\"][\"source_evidence\"][\"span\"].update(start=1)",
+            "lambda h:h[\"metadata\"][\"source_evidence\"][\"source\"].update(byte_len=1)"
+          ]
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_clustered_cache_receipts_cannot_certify_temporal_reuse",
+          "line": 269,
+          "source_sha256": "0137383c1c400ef3f3305074c41b468976e1457e2b2771390cd2b08dcab3a99f"
+        },
+        {
+          "expected_subtests": [
+            {
+              "key": "pid"
+            },
+            {
+              "key": "epoch"
+            },
+            {
+              "key": "incarnation"
+            },
+            {
+              "key": "incomplete"
+            }
+          ],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_cross_generation_or_server_cannot_be_cache_receipt",
+          "line": 147,
+          "source_sha256": "f4c0e91ca12dab36f8e7142db2c531df800233341b1e2271352c3a086543c0e7"
+        },
+        {
+          "expected_subtests": [
+            {
+              "role": "before_status"
+            },
+            {
+              "role": "symbol"
+            },
+            {
+              "role": "hybrid"
+            },
+            {
+              "role": "after_status"
+            }
+          ],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_each_failed_request_prefix_keeps_actual_counts_no_invented_attempts",
+          "line": 209,
+          "source_sha256": "0bdc3af2e02683a129985c16f7718a532c85971d59f5812fc5e7e9a5d6393789"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_missing_original_call_or_changed_request_is_rejected",
+          "line": 187,
+          "source_sha256": "039156eec120e3db52fef5e71cd3d5f83f760795941fa1770af5e961fc1276b6"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_observed_wire_status_has_outer_and_nested_matching_freshness",
+          "line": 108,
+          "source_sha256": "3405fba635baf8953c0675bcc040664481d222afe1e7031ecf9b4c5233d8d70f"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_real_generation_rule_includes_noop_hit_and_refill_then_hit",
+          "line": 121,
+          "source_sha256": "8f50921f0fecf4f17bda181e4dbdaf3af36f432302ce1945ed5e69804d97bff9"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_shared_pool_counters_must_progress_without_reset_or_rejection",
+          "line": 199,
+          "source_sha256": "b91c31e2d97afc4829d6be1c448b5ac47b8cb11853f8bab7e70e2837bdca97b0"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_spread_offers_with_clustered_actual_calls_do_not_cover_four_quarters",
+          "line": 275,
+          "source_sha256": "d6e026967a476a24f7094ce9a1f5937e2b0daf74a69d6689bd1a2ca28b59aeec"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_keeps_original_operation_N_and_explicit_rpc_totals_and_quarters",
+          "line": 243,
+          "source_sha256": "7f8a423306c2817bd347ec5808fe2f5a19cd682840c7a28edd62948c4bf1f028"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_rejects_missing_raw_changed_receipt_or_preceding_mutation",
+          "line": 257,
+          "source_sha256": "689e187c7193eb0bdb9cdf337c44b6fc2127f1bd03d263945cb83e9d6ff5496a"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_wrong_hit_after_invalidation_and_wrong_miss_same_generation_fail",
+          "line": 160,
+          "source_sha256": "782002c81cc5346c2fce4954b2825d8ca4c9dca9c17b496e73c5ada827fd7485"
+        },
+        {
+          "expected_subtests": [
+            {
+              "changes": {
+                "graph_hits": 0,
+                "graph_misses": 0
+              }
+            },
+            {
+              "changes": {
+                "graph_hits": 1,
+                "graph_misses": 1
+              }
+            },
+            {
+              "changes": {
+                "graph_hits": 2,
+                "graph_misses": 0
+              }
+            },
+            {
+              "changes": {
+                "graph_hits": true
+              }
+            },
+            {
+              "changes": {
+                "graph_hits": -1
+              }
+            },
+            {
+              "changes": {
+                "graph_hits": 1,
+                "result_misses": 1
+              }
+            }
+          ],
+          "id": "test_p8_runtime_cache.SoakCacheProtocolTests.test_zero_ambiguous_reset_missing_and_boolean_counters_rejected",
+          "line": 135,
+          "source_sha256": "508eb4ac494e8013a6074288a67012553d65a90307f455a92218de448fb0b791"
+        }
+      ],
+      "module": "test_p8_runtime_cache",
+      "source": {
+        "bytes": 20087,
+        "git_blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf",
+        "mode": "100644",
+        "path": "scripts/tests/test_p8_runtime_cache.py",
+        "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
+      }
+    },
+    {
+      "expected_count": 8,
+      "expected_methods": [
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_seal_fingerprint_error_does_not_block_final_failure_report",
+          "line": 147,
+          "source_sha256": "c8a378b685fdfddf8b03ca41ab681dacfd0340d7cb4b85b002dac80c3ceeaeb6"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_stopped_observation_remains_exit_one_with_valid_failure_seal",
+          "line": 164,
+          "source_sha256": "fb2e4fd4e18973a2a1abb8cc941cfcc9286c72cc5c83444ccb8fdbeae2fea873"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_inventory_enoent_before_seal_retains_final_failure_and_original_report",
+          "line": 134,
+          "source_sha256": "18e5649a8ffd6f7366d0287c558329282400edd1ec4a2a8638d389e3b9d2a618"
+        },
+        {
+          "expected_subtests": [
+            {
+              "fault": "seal_interrupt"
+            },
+            {
+              "fault": "verify_interrupt"
+            }
+          ],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_keyboard_interrupt_in_seal_or_verify_keeps_failed_report_after_workers_finish",
+          "line": 190,
+          "source_sha256": "8b1db1eeb72703f770dc57cfe13e3148e3b4d8b5d329c1338f483bc17f2b9137"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_lost_output_keeps_explicit_finalization_error",
+          "line": 175,
+          "source_sha256": "7a6cf2d5f4dbc08cbf251e9bf484e6970d9e8ce426b0909eec63217142f677cf"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_occupied_backup_is_not_overwritten_or_retried",
+          "line": 182,
+          "source_sha256": "140541227832500babf2579455502421825f1df0ce04b51289d0544700685e98"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_successful_stopped_observation_keeps_original_valid_seal",
+          "line": 154,
+          "source_sha256": "1e7c106d271f66e19032377603ffafc432bbd6689aa2188427f4ba9c2f4a73a2"
+        },
+        {
+          "expected_subtests": [],
+          "id": "test_p8_runtime_finalization.FinalizationFailureControls.test_verify_inventory_mismatch_preserves_original_failed_seal_bytes",
+          "line": 140,
+          "source_sha256": "f8096b3dd69ad74e33d01040d67a07e8a2b6240d70399b04ec626e3442874066"
+        }
+      ],
+      "module": "test_p8_runtime_finalization",
+      "source": {
+        "bytes": 11792,
+        "git_blob": "96b24425e75677708029a382f67e012810eed01a",
+        "mode": "100644",
+        "path": "scripts/tests/test_p8_runtime_finalization.py",
+        "sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+      }
+    }
+  ],
+  "schema": "p8-runtime-finalization-python-static-population-v1",
+  "source_input_count": 1087,
+  "source_manifest_sha256": "7a561d39191708023052b22ef5d626bf26ecf4ca6042eb39dc2f50a82ceb34bf",
+  "status": "static_expectation_not_execution"
+}

@@ -21,7 +21,7 @@ import sys
 import threading
 import time
 
-from p8_cold_build import digest, new_directory, write_json
+from p8_cold_build import digest, json_bytes, new_directory, write_json
 from p8_rollback import Product, require
 from p8_runtime_build import OBSERVER_FILES, artifact_inventory, seal_output, verify_output, verify_receipt
 
@@ -815,11 +815,62 @@ def run(args):
         report["artifact_seal"] = "seal.json" if writers_stopped else None
         if writers_stopped: report["artifact_seal_status"] = "sealed"
         report["elapsed_ns"] = elapsed()
-        write_json(out / "report.json", report)
-        if writers_stopped:
-            seal_output(out)
-            verify_output(out)
+        finalize_artifacts(out, report, writers_stopped)
     return report
+
+
+def finalize_artifacts(output, report, writers_stopped):
+    """Keep a failed sealing attempt distinct from its pre-seal observation."""
+    report_path = output / "report.json"
+    before = json_bytes(report)
+    report_path.write_bytes(before)
+    if not writers_stopped:
+        return
+    phase = "seal_output"
+    try:
+        seal_output(output)
+        phase = "verify_output"
+        verify_output(output)
+    except (Exception, KeyboardInterrupt) as error:
+        failure = f"{type(error).__name__}: {error}"
+        report.update(status="failed", exit_code=2, artifact_seal=None,
+                      artifact_seal_status="unsealed_finalization_error",
+                      finalization_error=dict(phase=phase, error=failure))
+        if isinstance(error, KeyboardInterrupt):
+            report["interrupted"] = True
+        try:
+            # One exclusive copy, never a retry series. Preserve the exact bytes
+            # submitted to the failed seal before replacing the final report.
+            original = output / "report-before-seal-failure.json"
+            with original.open("xb") as stream:
+                stream.write(before)
+            report["pre_seal_report"] = dict(path=original.name, bytes=len(before),
+                                             sha256=hashlib.sha256(before).hexdigest())
+            failed_seal = output / "seal.json"
+            try:
+                if failed_seal.exists():
+                    # Leave an already-written (possibly partial) seal untouched.
+                    # It describes the failed attempt, never the final archive.
+                    report["failed_artifact_seal"] = dict(path=failed_seal.name,
+                        bytes=failed_seal.stat().st_size, sha256=digest(failed_seal),
+                        scope="original failed sealing attempt; not a validated archive")
+            except (Exception, KeyboardInterrupt) as metadata_error:
+                # Fingerprinting an unstable/unreadable failed seal is optional
+                # diagnostics. It must not prevent a writable final failed report.
+                report["failed_artifact_seal"] = dict(path=failed_seal.name,
+                    metadata_status="unavailable",
+                    error=f"{type(metadata_error).__name__}: {metadata_error}",
+                    scope="failed sealing attempt; original path left untouched")
+                if isinstance(metadata_error, KeyboardInterrupt):
+                    report["interrupted"] = True
+            write_json(report_path, report)
+        except (Exception, KeyboardInterrupt) as retention_error:
+            # A read-only/lost output or occupied backup must not destroy the
+            # old report or trigger unbounded backups. main retains CLI exit 2.
+            raise RuntimeError(
+                f"artifact finalization failed ({phase}: {failure}); "
+                "final status failed/unsealed; could not preserve/update failure metadata: "
+                f"{type(retention_error).__name__}: {retention_error}") from error
 
 
 def main():

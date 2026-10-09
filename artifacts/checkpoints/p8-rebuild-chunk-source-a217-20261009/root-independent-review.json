@@ -1,0 +1,62 @@
+{
+  "actual_review": [
+    "Read complete two-path diff, six normal control bodies, ignored cost probe and preserved rusqlite cache implementation.",
+    "Recomputed both candidate source sizes and SHA256; matched the frozen v1 manifest.",
+    "Checked exact old entry-point flags in independent Gfff source and the original immediate/deferred FTS boundary."
+  ],
+  "created_utc": "2026-10-09T16:17:59.868450+00:00",
+  "executions": {
+    "cost_probe": "not_run",
+    "rust_compile": "not_run",
+    "rust_controls": "not_run",
+    "rustfmt": "not_run"
+  },
+  "files": [
+    {
+      "bytes": 61668,
+      "change": "modified",
+      "git_blob": "969909fbd79dc11bb33596bff3a8b3dca185b6c9",
+      "mode": "100644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/index_db_write_batch.rs",
+      "repository_path": "crates/cc-db/src/index_db_write_batch.rs",
+      "sha256": "1f7a9a8d1326fbcf3cf9beb909284ea95aee6c17605c26ef1752a9e8a8cd0a4b"
+    },
+    {
+      "bytes": 18855,
+      "change": "added",
+      "git_blob": "1b88f597192fda6a10e206b657352b5cf3badfaa",
+      "mode": "100644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "repository_path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "sha256": "836eded6f99d7e6dbe97f32ada0a7bd57ca99acc3674ba9f8c3a592f6c32aa53"
+    }
+  ],
+  "findings": [
+    "Only rebuild_dependency_batches=true selects the new helper; ordinary/public original loop remains in false branch.",
+    "Each fixed base INSERT is prepared lazily after source_json and compression selection. FTS is prepared only after the base row and last_insert_rowid. SQL, parameters and error mapping retain their original order.",
+    "Each execute result is mapped before unconditional clear_bindings, matching the old cached handle drop behavior without adding a reset. Two handles end at the file helper and retain no previous chunk parameters.",
+    "The cost baseline retains exact original prepare_cached/execute/drop per row. Four input classes and20 alternating rounds compare complete typed base/FTS rows; in-memory mechanism times exclude begin/readback/rollback.",
+    "Statement-cache recency may differ as intended. Neither independent review nor static cache-call reduction establishes a full-staging or scale speedup."
+  ],
+  "independent_peer": {
+    "path": "chunk-v1-independent-review-scale-closeout.json",
+    "sha256": "a9f4818a05e41cfaf3e6a59a811516a85b1259177b436da9fd520571f4cfc71f"
+  },
+  "original_studies_changed": false,
+  "refs_changed": false,
+  "resolved_review_question": {
+    "actual_test_failure": false,
+    "initial_question": "Whether the complete-database control omitted a required deferred files_fts flush.",
+    "resolution": "Withdrawn after reading exact entry points. insert_snapshot_file_data_for_rebuild uses false,true,true and mirrors immediately. The adjacent insert_snapshot_file_data_deferred_fts uses true,true,true. Current test calls the former; an added flush would duplicate its mirror.",
+    "source_changed_for_this_question": false
+  },
+  "reviewer": "root",
+  "schema": "root-chunk-statement-source-review-v1",
+  "source_manifest_sha256": "007bdd4de9af1f39245788d4cc4b498e064796fea8597df2fe36a0b8c25a5c47",
+  "task_counts": {
+    "done": 163,
+    "newly_completed": 0,
+    "remaining": 29
+  },
+  "verdict": "accepted_scoped_static"
+}

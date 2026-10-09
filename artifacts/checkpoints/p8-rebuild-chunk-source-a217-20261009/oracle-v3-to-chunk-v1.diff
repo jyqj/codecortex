@@ -1,0 +1,153 @@
+--- oracle-v3/.github/workflows/p8-oracle-serialization-cost.yml
++++ chunk-v1/.github/workflows/p8-rebuild-chunk-cost.yml
+@@ -1,4 +1,4 @@
+-name: P8 oracle serialization cost observation
++name: P8 rebuild chunk statement cost observation
+ 
+ on:
+   workflow_dispatch:
+@@ -20,11 +20,11 @@
+   CARGO_ENCODED_RUSTFLAGS: ''
+   PYTHONDONTWRITEBYTECODE: '1'
+   P8_COST_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+-  P8_COST_TEST: benchmark::oracle::projection_tests::borrowed_serialization_release_cost_probe
++  P8_COST_TEST: index_db_write_batch::rebuild_chunk_statement_tests::rebuild_chunk_statements_release_cost_probe
+ 
+ jobs:
+   observe:
+-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-cost-run'
++    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-rebuild-chunk-cost-run'
+     runs-on: ubuntu-24.04
+     timeout-minutes: 90
+     steps:
+@@ -37,9 +37,9 @@
+             !/artifacts/
+       - name: Prepare original output directory
+         run: |
+-          mkdir "$RUNNER_TEMP/p8-oracle-cost"
+-          printf 'P8_COST_OUTPUT=%s/p8-oracle-cost\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+-          printf 'CARGO_TARGET_DIR=%s/p8-oracle-cost-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
++          mkdir "$RUNNER_TEMP/p8-rebuild-chunk-cost"
++          printf 'P8_COST_OUTPUT=%s/p8-rebuild-chunk-cost\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
++          printf 'CARGO_TARGET_DIR=%s/p8-rebuild-chunk-cost-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+       - uses: dtolnay/rust-toolchain@1.95.0
+       - name: Bind actual source, compiler and probe command
+         run: |
+@@ -60,7 +60,7 @@
+           source = source_snapshot(root)
+           assert source['source_commit'] == os.environ['P8_COST_EXPECTED_HEAD']
+           observers = {}
+-          for path in ('scripts/p7_build_identity.py', '.github/workflows/p8-oracle-serialization-cost.yml'):
++          for path in ('scripts/p7_build_identity.py', '.github/workflows/p8-rebuild-chunk-cost.yml'):
+               original = subprocess.check_output(['git', 'show', 'HEAD:' + path], cwd=root)
+               live = (root / path).read_bytes()
+               assert live == original, path
+@@ -72,9 +72,9 @@
+               value = subprocess.check_output(command, stderr=subprocess.STDOUT)
+               (out / (name + '-before.txt')).write_bytes(value)
+               compiler[name] = hashlib.sha256(value).hexdigest()
+-          argv = ['cargo', 'test', '--release', '--locked', '--message-format=json', '-p', 'cc-eval', '--lib',
++          argv = ['cargo', 'test', '--release', '--locked', '--message-format=json', '-p', 'cc-db', '--lib',
+                   os.environ['P8_COST_TEST'], '--', '--exact', '--ignored', '--nocapture', '--test-threads=1']
+-          receipt = {'schema': 'p8-oracle-serialization-cost-observation-v1',
++          receipt = {'schema': 'p8-rebuild-chunk-cost-observation-v1',
+                      'created_utc': datetime.now(timezone.utc).isoformat(),
+                      'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                      'expected_source': os.environ['P8_COST_EXPECTED_HEAD'],
+@@ -84,7 +84,7 @@
+                      'environment': {key: os.environ.get(key) for key in
+                          ('CARGO_INCREMENTAL', 'CARGO_BUILD_JOBS', 'CARGO_TARGET_DIR', 'RUSTFLAGS',
+                           'CARGO_ENCODED_RUSTFLAGS', 'RUSTUP_TOOLCHAIN', 'TMPDIR', 'TMP', 'TEMP')},
+-                     'scope': 'Finite release serialization cost observation; not a scale sample or TODO acceptance gate.'}
++                     'scope': 'Finite release chunk-loop cost observation; not a scale sample or TODO acceptance gate.'}
+           (out / 'identity-before.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+           PY
+       - name: Observe the original finite ignored probe and retain both streams
+@@ -114,7 +114,7 @@
+           finally:
+               receipt = {'started_utc': started, 'finished_utc': datetime.now(timezone.utc).isoformat(),
+                          'wall_ns': time.monotonic_ns() - begin, 'exit_code': code, 'launch_error': error,
+-                         'argv': identity['argv'], 'scope': 'Includes compilation; per-round serialization times are in the original probe stdout.'}
++                         'argv': identity['argv'], 'scope': 'Includes compilation; per-round chunk-loop times are in the original probe stdout.'}
+               (out / 'execution.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+               for name, stream in [('probe.stdout', sys.stdout.buffer), ('probe.stderr', sys.stderr.buffer)]:
+                   path = out / name
+@@ -153,39 +153,44 @@
+                       continue
+                   if not isinstance(value, dict):
+                       continue
+-                  if value.get('schema') == 'p8-oracle-serialization-cost-v1':
++                  if value.get('schema') == 'p8-rebuild-chunk-statements-cost-v1':
+                       assert not line[start + end:].strip(), 'trailing probe output'
+                       records.append(value)
+                   elif start == 0:
+                       if value.get('reason') == 'build-finished':
+                           finishes.append(value)
+                       if (value.get('reason') == 'compiler-artifact'
+-                              and value.get('target', {}).get('name') == 'cc_eval'
++                              and value.get('target', {}).get('name') == 'cc_db'
+                               and value.get('target', {}).get('kind') == ['lib']
+                               and value.get('profile', {}).get('test') is True
+                               and value.get('executable')):
+                           binaries.append(value)
+               expected = {(case, round_) for case in
+-                  ('multiple_text', 'short_fields', 'blob', 'empty_text', 'null') for round_ in range(20)}
++                  ('single_plain', 'short_plain_6', 'mixed_32', 'compressed_64') for round_ in range(20)}
++              counts = {'single_plain': 1, 'short_plain_6': 6, 'mixed_32': 32, 'compressed_64': 64}
+               slots = []
+               for value in records:
+-                  assert type(value.get('round')) is int and type(value.get('rows')) is int
+-                  assert value['rows'] == 256
++                  assert type(value.get('round')) is int and type(value.get('chunks')) is int
++                  assert value.get('case') in counts and value['chunks'] == counts[value['case']]
++                  for key in ('original_base_rows', 'original_fts_rows', 'retained_base_rows', 'retained_fts_rows'):
++                      assert type(value.get(key)) is int and value[key] == value['chunks']
++                  assert value.get('performance_threshold') is None and 'performance_threshold' in value
++                  assert value.get('timed_scope') == 'chunk-loop including compression selection and both inserts; excludes begin/readback/rollback'
+                   slots.append((value['case'], value['round']))
+-                  assert value['first'] == ('original' if value['round'] % 2 == 0 else 'borrowed')
++                  assert value['first'] == ('original' if value['round'] % 2 == 0 else 'retained')
+                   assert all(isinstance(value.get(key), str) and re.fullmatch(r'[0-9]+', value[key])
+-                             for key in ('original_ns', 'borrowed_ns'))
+-                  assert re.fullmatch(r'[0-9a-f]{64}', value['original_digest'])
+-                  assert value['original_digest'] == value['borrowed_digest']
+-              assert len(slots) == 100 and len(set(slots)) == 100 and set(slots) == expected
++                             for key in ('original_ns', 'retained_ns'))
++                  assert re.fullmatch(r'[0-9a-f]{64}', value['original_typed_rows_debug_blake3'])
++                  assert value['original_typed_rows_debug_blake3'] == value['retained_typed_rows_debug_blake3']
++              assert len(slots) == 80 and len(set(slots)) == 80 and set(slots) == expected
+               assert re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;', raw)
+               assert finishes == [{'reason': 'build-finished', 'success': True}]
+               assert len(binaries) == 1
+               binary = binaries[0]
+-              assert binary['package_id'].rpartition('#')[0].endswith('/cc-eval')
+-              assert Path(binary['manifest_path']).resolve() == root / 'crates/cc-eval/Cargo.toml'
+-              assert Path(binary['target']['src_path']).resolve() == root / 'crates/cc-eval/src/lib.rs'
+-              assert binary['features'] == ['default'] and binary['fresh'] is False
++              assert binary['package_id'].rpartition('#')[0].endswith('/cc-db')
++              assert Path(binary['manifest_path']).resolve() == root / 'crates/cc-db/Cargo.toml'
++              assert Path(binary['target']['src_path']).resolve() == root / 'crates/cc-db/src/lib.rs'
++              assert binary['features'] == [] and binary['fresh'] is False
+               assert binary['profile']['opt_level'] == '3' and binary['profile']['debug_assertions'] is False
+               executable = Path(binary['executable']).resolve(strict=True)
+               assert executable.is_file() and executable.is_relative_to(target.resolve())
+@@ -193,8 +198,8 @@
+               with executable.open('rb') as source:
+                   for block in iter(lambda: source.read(1024 * 1024), b''):
+                       digest.update(block)
+-              return {'schema': 'p8-oracle-serialization-cost-observation-v1', 'status': 'observed',
+-                      'records': records, 'record_count': 100, 'compiler_artifact': binary,
++              return {'schema': 'p8-rebuild-chunk-cost-observation-v1', 'status': 'observed',
++                      'records': records, 'record_count': 80, 'compiler_artifact': binary,
+                       'test_executable_sha256': digest.hexdigest(), 'test_executable_bytes': executable.stat().st_size,
+                       'scope': 'Finite local mechanism cost only; no timing threshold or scale/TODO acceptance.'}
+ 
+@@ -237,6 +242,6 @@
+         if: always()
+         uses: actions/upload-artifact@v4
+         with:
+-          name: p8-oracle-serialization-cost-${{ github.run_id }}-${{ github.run_attempt }}
+-          path: ${{ runner.temp }}/p8-oracle-cost
++          name: p8-rebuild-chunk-cost-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/p8-rebuild-chunk-cost
+           if-no-files-found: error

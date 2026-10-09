@@ -1,0 +1,80 @@
+{
+  "schema": "p8-rebuild-chunk-cost-workflow-candidate-v1",
+  "workflow": {
+    "repository_path": ".github/workflows/p8-rebuild-chunk-cost.yml",
+    "mode": "100644",
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/.github/workflows/p8-rebuild-chunk-cost.yml",
+    "bytes": 13896,
+    "sha256": "995b457058924d8d9eecc3ff7c2d270ffd57e3cb380ad81c2829807579670cca",
+    "git_blob_sha1": "3020568b63cdccb6d065ccc1105d4710c2bb0114"
+  },
+  "adapted_from": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-cost-workflow-candidate/.github/workflows/p8-oracle-serialization-cost.yml",
+    "bytes": 13226,
+    "sha256": "7ca90faa64663e5b2e99c6045d1e97e646c7e88b1bea2775cd4c732cbfd76273",
+    "git_blob_sha1": "8783b06e765ce32386def8f567393fdb82a4dc10"
+  },
+  "diff": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/oracle-v3-to-chunk-v1.diff",
+    "bytes": 10639,
+    "sha256": "e83320b5b21b9c345948e08f3534e254a5718ee00582360362b503890809aab5",
+    "git_blob_sha1": "d62ae5c698881a4f860728fe1be9933440ce5a14"
+  },
+  "controls": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/workflow-v1-static-and-output-controls.json",
+    "bytes": 4088,
+    "sha256": "8f9898401807cafd5f0da3bf6545aea83ce9b6224f9dfc5a7964c740c85b16ab",
+    "git_blob_sha1": "641d76c762a29b76f9a3a5dddef0e29f28ce8f44"
+  },
+  "control_script": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/check_workflow_v1.py",
+    "bytes": 6666,
+    "sha256": "7aac3017d8f43d66e3333aa46ca07414e01565a23093d3bb2fcb6cb72942424c",
+    "git_blob_sha1": "bc5e178ca65eac93f3ff7cc77e204969309c8615"
+  },
+  "stdout": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/controls-v1.stdout",
+    "bytes": 4088,
+    "sha256": "8f9898401807cafd5f0da3bf6545aea83ce9b6224f9dfc5a7964c740c85b16ab",
+    "git_blob_sha1": "641d76c762a29b76f9a3a5dddef0e29f28ce8f44"
+  },
+  "stderr": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-cost-workflow-candidate/controls-v1.stderr",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+  },
+  "exit_code": 0,
+  "control_count": 22,
+  "positive_controls": 2,
+  "negative_controls": 20,
+  "expected_native_records": 80,
+  "cases": {
+    "single_plain": 1,
+    "short_plain_6": 6,
+    "mixed_32": 32,
+    "compressed_64": 64
+  },
+  "native_test": "index_db_write_batch::rebuild_chunk_statement_tests::rebuild_chunk_statements_release_cost_probe",
+  "package": "cc-db",
+  "target": "cc_db",
+  "features": [],
+  "scope": "Finite mechanism cost only, no performance threshold/TODO acceptance or native study credit",
+  "changes": [
+    "distinct workflow/label/artifact/schema namespace",
+    "actual cc-db lib/test producer and features=[] as current Cargo.toml has no default feature",
+    "80 unique slots=4cases x20, exact chunks and all four base/FTS row counts",
+    "original_ns/retained_ns nonnegative decimal strings and matching typed-row Debug BLAKE3 digests",
+    "actual1passed/0failed/0ignored, no empty ignored-filter success",
+    "original full source/compiler/argv/streams/exits/before-after/hash and always-upload retained"
+  ],
+  "execution": {
+    "Rust": "not_run",
+    "Actions": "not_run",
+    "native": "not_run",
+    "study": "not_run"
+  },
+  "task_statuses_changed": false,
+  "remaining": 29,
+  "refs_or_labels_changed": false
+}

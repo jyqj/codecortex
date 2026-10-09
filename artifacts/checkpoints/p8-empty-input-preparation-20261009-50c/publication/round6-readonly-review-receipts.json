@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/scale_audit",
+  "scope": "Read-only analysis of original Git objects/logs and saved official API states; no product, build, workload or source-verifier execution.",
+  "prepared_at_utc": "2026-10-09T09:06:59.639Z",
+  "commands": [
+    {
+      "argv": [
+        "python",
+        "/workspace/scratch/50c364fd60b1/validation/round6-g275-ci-recheck.py",
+        "--repo",
+        "/workspace/scratch/50c364fd60b1/codecortex",
+        "--api-inputs",
+        "/workspace/scratch/50c364fd60b1/validation/round6-g275-ci-api-inputs.json",
+        "--output",
+        "/workspace/scratch/50c364fd60b1/validation/round6-g275-ci-recheck.json"
+      ],
+      "exit_code": 0,
+      "output_sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b",
+      "outcome": "Original log counts, checkout, three successful CI jobs, complete non-artifact roots, all1228 registered product/validation paths and original v15 proof reconciled."
+    },
+    {
+      "argv": [
+        "python",
+        "/workspace/scratch/50c364fd60b1/validation/round6-g275-source-artifact-bridge.py",
+        "--repo",
+        "/workspace/scratch/50c364fd60b1/codecortex",
+        "--output",
+        "/workspace/scratch/50c364fd60b1/validation/round6-g275-source-artifact-bridge.json"
+      ],
+      "exit_code": 0,
+      "output_sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794",
+      "outcome": "All187 consumed artifact paths and236 protected paths equal; all20853 pre-existing artifacts equal;443 added paths lie outside current guard consumption."
+    }
+  ],
+  "status_snapshot_validation": {
+    "exit_code": 0,
+    "output_path": "round6-status-review.json",
+    "sha256": "0d8abb185226d94b906b71b90547320c9f2e2f2b2c62e92b8d75925edd61e527",
+    "checks": [
+      "JSON parse",
+      "exact main ledger original Git bytes and counts",
+      "all8 referenced local evidence SHA256 and size checks",
+      "complete recorded study job pagination",
+      "null independent shard/sample acceptance",
+      "GitHub-only source URLs and no signed download/auth data"
+    ]
+  },
+  "peer_source_consumption_review": {
+    "reviewer": "/root/pr_audit",
+    "status": "confirmed_specific_gap_resolved",
+    "statement": "The complete protected/approval path comparison and proof that additional artifacts are outside the unchanged guard's enumeration support explicit source-domain equivalence. Retain actual d53 proof identity; do not rerun or borrow conclusions for other heads."
+  },
+  "todo_accounting": {
+    "newly_closed": 0,
+    "remaining": 29
+  }
+}

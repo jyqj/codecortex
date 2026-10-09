@@ -1,0 +1,576 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09T09:11:47.967190+00:00",
+  "status": "accepted_original_G181_CI_scope_with_local_failure_preserved",
+  "repository": "jyqj/codecortex",
+  "pr": 181,
+  "run": {
+    "id": 37903250638,
+    "run_attempt": 1,
+    "event": "pull_request",
+    "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "head_branch": "task/p8-empty-input-preparation-50c-20261009",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-09T08:09:38Z",
+    "updated_at": "2026-10-09T08:57:35Z",
+    "run_started_at": "2026-10-09T08:09:38Z",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903250638"
+  },
+  "actual_execution_checkout": {
+    "sha": "0805905f48b963b60864f40e74fef6aed7c4f934",
+    "tree": "87e746f47d4ea8c1a6b06cb29e180fc7bbd78137",
+    "log_line": 175,
+    "parents": [
+      "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    ]
+  },
+  "source_input_bridge": {
+    "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "head_tree": "87e746f47d4ea8c1a6b06cb29e180fc7bbd78137",
+    "checkout_tree": "87e746f47d4ea8c1a6b06cb29e180fc7bbd78137",
+    "complete_root_tree_identical": true,
+    "includes_all_artifact_files_and_source_guard_consumers": true,
+    "whole_tree_path_count": 23441,
+    "artifact_path_count": 21786,
+    "domains": {
+      "complete_inputs": {
+        "count": 1091,
+        "path_mode_type_blob_manifest_sha256": "8f657075a5aad7a6074f92c663e670428cfcbe065cc1549069c2091142f20a9e",
+        "checkout_and_G_equal": true,
+        "equality_basis": "The complete root Git tree object is identical; this includes all artifact evidence and every current guard/registry file.",
+        "all_P2_to_G_path_mode_type_blob_equal": true
+      },
+      "validation_inputs": {
+        "count": 139,
+        "path_mode_type_blob_manifest_sha256": "df04ca0dd517e53a9fb8bf66c6105f4673d75a6b7c0df310dadebcb723ee5ac7",
+        "checkout_and_G_equal": true,
+        "equality_basis": "The complete root Git tree object is identical; this includes all artifact evidence and every current guard/registry file."
+      }
+    },
+    "registry": {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "git_blob": "1e172375eb30c0522966b26487fa511766ff74a4",
+      "sha256": "74770e34c941684d7c8e87f0bb929730cff05f39c50349acac96cd8955bbaf00"
+    },
+    "current_guard": {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "git_blob": "6737336795d77ce8fdb3d1dad8265ee1989049b5",
+      "sha256": "e93d2ceb67b05d5cc64b8b6d48fd8133a10ef3f91279f53357a9a1479dffa20a"
+    },
+    "fixed_review": {
+      "source": "98fe910f22eb92f8d9f9c8a8043492ba45dc997c",
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/independent-source-review.json",
+      "git_blob": "d1937d79ce10f58634156fb491b8ab96b1458892",
+      "sha256": "0c05f39dbea84e5d2158c5bc3c6962bd0b01bbb728d211232ab6415a9641d630",
+      "same_blob_in_G": true
+    },
+    "basis": "Official Git commit objects for both immutable identities reference the same complete tree; the locally held G tree matches that official tree. All declared P2 product paths were also compared by mode/type/blob. No historical G275 conclusion is reused."
+  },
+  "original_check_log": {
+    "path": "validation/g181-ci-review/original-check.log",
+    "bytes": 1066114,
+    "sha256": "1ae3d8991dc6839be84460e0f324c08069050bacf6cff09ebfc5d5dacf3102eb",
+    "lines": 9603,
+    "encoding": "UTF-8, original leading BOM and trailing newline preserved",
+    "retrieval": "GitHub plugin fetch_workflow_job_logs returned the complete decoded log; no truncation or curl fallback was needed.",
+    "official_api_url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113730503903/logs",
+    "official_job_url": "https://github.com/jyqj/codecortex/actions/runs/37903250638/job/113730503903",
+    "line_number_basis": "One-based physical lines in this saved decoded original; timestamps and ANSI escapes were removed only in memory for parsing."
+  },
+  "original_check": {
+    "job_id": 113730503903,
+    "started_at": "2026-10-09T08:34:34Z",
+    "completed_at": "2026-10-09T08:57:34Z",
+    "environment": {
+      "os": "Ubuntu 24.04.5 LTS",
+      "runner_image": "ubuntu-24.04 20261004.327.1",
+      "rustc": "1.99.0 (b940084d7 2026-09-28)",
+      "host": "x86_64-unknown-linux-gnu",
+      "RUSTFLAGS": "-D warnings",
+      "CARGO_INCREMENTAL": "0",
+      "evidence_lines": [
+        12,
+        13,
+        17,
+        18,
+        377,
+        379,
+        381,
+        383
+      ]
+    },
+    "format": {
+      "command": "cargo fmt --all -- --check",
+      "github_step": {
+        "name": "Format check",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-09T08:35:43Z",
+        "completed_at": "2026-10-09T08:35:46Z"
+      },
+      "log_lines": [
+        452,
+        461
+      ]
+    },
+    "clippy": {
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "github_step": {
+        "name": "Clippy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-09T08:35:46Z",
+        "completed_at": "2026-10-09T08:36:08Z"
+      },
+      "log_lines": [
+        462,
+        481
+      ],
+      "finished_line": 481,
+      "locked_or_offline_flags": false
+    },
+    "compile_all_targets": {
+      "command": "cargo test --workspace --all-targets --locked --no-run",
+      "github_step": {
+        "name": "Compile every default test target",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-10-09T08:36:08Z",
+        "completed_at": "2026-10-09T08:39:04Z"
+      },
+      "log_lines": [
+        482,
+        711
+      ],
+      "scope": "Compilation does not count as test execution."
+    },
+    "authorized_default_regression": {
+      "github_step": {
+        "name": "Default regression within authorized scope",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-09T08:39:04Z",
+        "completed_at": "2026-10-09T08:42:09Z"
+      },
+      "log_lines": [
+        712,
+        5208
+      ],
+      "commands": [
+        "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "cargo test -p cc-semantic --lib --locked",
+        "cargo test -p cc-semantic --locked --test artifact_cache --test attempt_lease_contract --test bounded_parallel --test manifest_exact_integration --test p7_cache_allocation_independent_review --test publish_cas --test query_cache --test queue_worker --test retry_worker_layering --test semantic_degrade --test space_switch"
+      ],
+      "executed_rust_summary_totals": {
+        "summary_count": 201,
+        "passed": 2728,
+        "failed": 0,
+        "ignored": 69,
+        "measured": 0,
+        "filtered_out": 0
+      },
+      "scope": "Original workflow deliberately runs normal-path semantic targets. It does not execute every cc-semantic process-fault, GC/WAL or semantic_runtime recoverable-retry target in the default step; it is not the same argv as the earlier local unfiltered workspace command."
+    },
+    "whole_check_rust": {
+      "summary_count": 419,
+      "passed": 3291,
+      "failed": 0,
+      "ignored": 132,
+      "measured": 0,
+      "filtered_out": 1944,
+      "population": "Test executions summed across 419 original command summaries, not distinct test IDs; ignored/filtered executions stay separate."
+    },
+    "whole_check_python": {
+      "suites": [
+        {
+          "summary_line": 5277,
+          "count": 46,
+          "seconds": 2.665,
+          "terminal": "OK",
+          "first_method_line": 5229,
+          "last_method_line": 5274,
+          "visible_method_lines": 46,
+          "unique_full_ids": 46,
+          "granularity": "verbose method lines plus terminal summary",
+          "suite": "tests/resource_harness"
+        },
+        {
+          "summary_line": 5692,
+          "count": 409,
+          "seconds": 36.63,
+          "terminal": "OK",
+          "first_method_line": 5281,
+          "last_method_line": 5689,
+          "visible_method_lines": 409,
+          "unique_full_ids": 409,
+          "granularity": "verbose method lines plus terminal summary",
+          "suite": "scripts/tests/test_p8_*"
+        },
+        {
+          "summary_line": 5904,
+          "count": 181,
+          "seconds": 407.872,
+          "terminal": "OK",
+          "first_method_line": 5713,
+          "last_method_line": 5901,
+          "visible_method_lines": 181,
+          "unique_full_ids": 181,
+          "granularity": "verbose method lines plus terminal summary",
+          "suite": "tests/source_integrity"
+        },
+        {
+          "summary_line": 8997,
+          "count": 9,
+          "seconds": 0.871,
+          "terminal": "OK",
+          "first_method_line": null,
+          "last_method_line": null,
+          "visible_method_lines": 0,
+          "unique_full_ids": 0,
+          "granularity": "original nonverbose terminal summary only",
+          "suite": "source_architecture"
+        },
+        {
+          "summary_line": 9526,
+          "count": 14,
+          "seconds": 0.814,
+          "terminal": "OK",
+          "first_method_line": 9509,
+          "last_method_line": 9523,
+          "visible_method_lines": 14,
+          "unique_full_ids": 14,
+          "granularity": "verbose method lines plus terminal summary",
+          "suite": "tests/historical_corpus"
+        }
+      ],
+      "reported_test_executions": 659,
+      "visible_method_executions": 650,
+      "visible_unique_full_ids": 650,
+      "visible_methods_non_ok": 0,
+      "nonverbose_summary_only_tests": 9
+    },
+    "native_source_integrity": {
+      "summary_line": 5904,
+      "count": 181,
+      "seconds": 407.872,
+      "terminal": "OK",
+      "first_method_line": 5713,
+      "last_method_line": 5901,
+      "visible_method_lines": 181,
+      "unique_full_ids": 181,
+      "granularity": "verbose method lines plus terminal summary",
+      "suite": "tests/source_integrity"
+    },
+    "v15_original_proof": {
+      "line": 5907,
+      "value": {
+        "schema_version": 10,
+        "source_version": "p8-completion-source-20261009-v15",
+        "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+        "review_source": "98fe910f22eb92f8d9f9c8a8043492ba45dc997c",
+        "scope": "independently_reviewed_source_and_validation_inputs",
+        "runtime_and_quality_claims": "require_separate_execution_evidence",
+        "status": "passed",
+        "complete_inputs": 1091,
+        "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+      }
+    },
+    "sampler": {
+      "test_id": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+      "executions": [
+        {
+          "line": 1220,
+          "result": "ok",
+          "command_scope": "default authorized workspace",
+          "enclosing_suite": {
+            "line": 1237,
+            "status": "ok",
+            "passed": 60,
+            "failed": 0,
+            "ignored": 5,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        },
+        {
+          "line": 7202,
+          "result": "ok",
+          "command_scope": "cc-eval eval-http",
+          "enclosing_suite": {
+            "line": 7231,
+            "status": "ok",
+            "passed": 60,
+            "failed": 0,
+            "ignored": 5,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        }
+      ],
+      "source_path": "crates/cc-eval/src/benchmark/sampler.rs",
+      "source_bytes": {
+        "bd4693351149a443bd0054a37508c53f74ed7b52": {
+          "git_blob": "3808397a29522a30846087999340ffeba51d911c",
+          "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+        },
+        "b4fef72211e5967f4fba729d25d0ca2958094fd5": {
+          "git_blob": "3808397a29522a30846087999340ffeba51d911c",
+          "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+        },
+        "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529": {
+          "git_blob": "3808397a29522a30846087999340ffeba51d911c",
+          "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+        }
+      },
+      "interpretation": "The unchanged test executed successfully twice on this GitHub runner. This is positive original evidence for these executions, not a fix or a waiver of the local failures."
+    },
+    "step_exit_interpretation": "GitHub API reports success for every original step and raw bash -e command execution continues to later steps; explicit numeric per-command OS return receipts are not present in the decoded log. Native unittest and v15 have their own visible successful terminal results."
+  },
+  "local_failure_parallel_record": {
+    "receipt": {
+      "path": "validation/final-product-checks-corrected/receipt.json",
+      "bytes": 300323,
+      "sha256": "74ec6fecd6fc070e36e27e47c9b15d8be14c3b34cf761fd8b0683e0899d81977"
+    },
+    "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "complete_inputs": 1091,
+    "product_paths_equal_G": true,
+    "command": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 101,
+    "log": {
+      "path": "validation/final-product-checks-corrected/workspace-tests.log",
+      "bytes": 40896,
+      "sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+    },
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "completed_at_utc": "2026-10-09T08:02:52.600412+00:00",
+    "failing_test": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+    "failure_line": 661,
+    "reason_line": 662,
+    "reason": "live child snapshot unavailable",
+    "failing_suite_summary": {
+      "line": 669,
+      "passed": 59,
+      "failed": 1,
+      "ignored": 5,
+      "filtered_out": 0
+    },
+    "targeted_followup_log": {
+      "path": "validation/sampler-targeted-diagnostic.log",
+      "bytes": 1022,
+      "sha256": "b683185a1ad44e98d219c1b03d649bead6ddf4f3d39d0ba68094a1ff5742102c"
+    },
+    "targeted_followup_result": "0 passed / 1 failed / 64 filtered out; same live child snapshot unavailable assertion",
+    "adjudication": "Original local workspace exit101 and targeted failure remain failures. GitHub success is recorded alongside them with differing Rust toolchain, runner environment, build profile and command scope. Source equality alone does not establish the cause or exempt the failure."
+  },
+  "other_CI_jobs": [
+    {
+      "id": 113730504105,
+      "name": "msrv",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T08:42:19Z",
+          "completed_at": "2026-10-09T08:42:21Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T08:42:21Z",
+          "completed_at": "2026-10-09T08:42:53Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T08:42:53Z",
+          "completed_at": "2026-10-09T08:43:01Z"
+        },
+        {
+          "name": "Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T08:43:01Z",
+          "completed_at": "2026-10-09T08:43:10Z"
+        },
+        {
+          "name": "MSRV check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T08:43:10Z",
+          "completed_at": "2026-10-09T08:43:32Z"
+        },
+        {
+          "name": "MSRV optional benchmark HTTP feature",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T08:43:32Z",
+          "completed_at": "2026-10-09T08:43:46Z"
+        },
+        {
+          "name": "Post Run Swatinem/rust-cache@v2",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-09T08:43:46Z",
+          "completed_at": "2026-10-09T08:43:46Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T08:43:46Z",
+          "completed_at": "2026-10-09T08:43:46Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T08:43:46Z",
+          "completed_at": "2026-10-09T08:43:46Z"
+        }
+      ],
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903250638/job/113730504105",
+      "evidence_scope": "Official job and step metadata only; their full raw logs were not independently reviewed in this bounded check-log audit."
+    },
+    {
+      "id": 113730504160,
+      "name": "security",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T08:43:49Z",
+          "completed_at": "2026-10-09T08:43:50Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T08:43:50Z",
+          "completed_at": "2026-10-09T08:44:17Z"
+        },
+        {
+          "name": "Run rustsec/audit-check@v2.0.0",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T08:44:17Z",
+          "completed_at": "2026-10-09T08:46:28Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T08:46:28Z",
+          "completed_at": "2026-10-09T08:46:28Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-09T08:46:28Z",
+          "completed_at": "2026-10-09T08:46:28Z"
+        }
+      ],
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903250638/job/113730504160",
+      "evidence_scope": "Official job and step metadata only; their full raw logs were not independently reviewed in this bounded check-log audit."
+    }
+  ],
+  "workflow": {
+    "path": ".github/workflows/ci.yml",
+    "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+    "url": "https://github.com/jyqj/codecortex/blob/50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529/.github/workflows/ci.yml"
+  },
+  "official_api_inputs": [
+    {
+      "file": "api-run.json",
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37903250638",
+      "path": "validation/g181-ci-review/api-run.json",
+      "bytes": 12163,
+      "sha256": "e6321c58b5445b1abd02e0a6081a04fc112209f47062104ee01cf4d0bea9d394"
+    },
+    {
+      "file": "api-jobs.json",
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37903250638/attempts/1/jobs",
+      "query_parameters": {
+        "per_page": 100
+      },
+      "path": "validation/g181-ci-review/api-jobs.json",
+      "bytes": 11265,
+      "sha256": "5b404d1d0b1a2aa0537311849ca2ee71bee538c16ec0fb779867ec96baa99396"
+    },
+    {
+      "file": "api-head_commit.json",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "path": "validation/g181-ci-review/api-head_commit.json",
+      "bytes": 1341,
+      "sha256": "b316f050bceb69ddf7a16c91b636d7f113be00146b78a793ec7f2575c70069a9"
+    },
+    {
+      "file": "api-checkout_commit.json",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/0805905f48b963b60864f40e74fef6aed7c4f934",
+      "path": "validation/g181-ci-review/api-checkout_commit.json",
+      "bytes": 2595,
+      "sha256": "87c279f84cc5a777104f58e93bc3f527e1bd56b1f0194b81d7750a76b8bbc023"
+    }
+  ],
+  "reviewer_parser_attempts": {
+    "initial": {
+      "path": "validation/g181-ci-review/reviewer-parser-attempt01.json",
+      "bytes": 1066,
+      "sha256": "a31b05f26db6f8cffa7297e5641dbec6f183565da096a3479c647cfad79db481"
+    },
+    "correction": "Only the new read-only reviewer parser changed to preserve the original nonverbose nine-test source_architecture summary granularity. The original 14 historical_corpus tests are verbose and included in the 650 individually observed methods. No product, original guard or original evidence changed and no test was executed."
+  },
+  "limits": [
+    "Read-only saved-log and immutable-source analysis; no workflow dispatch, product execution, test rerun, branch change or worktree mutation.",
+    "Actual execution remains checkout0805905f. Complete tree equality provides source-domain attribution to G50d9, without renaming the execution or certifying later A content.",
+    "A green CI supplies no new scale, latency, provider, runtime/quality or release acceptance by itself.",
+    "No G275 runtime, platform, lifecycle, scale or source-proof evidence is borrowed for this result.",
+    "Lifecycle37903250681 and other workflow states were outside this task's original-check-log content review.",
+    "Original ignored cases and deliberate execution exclusions were retained, not counted as passed."
+  ],
+  "todo_accounting": {
+    "closed_by_this_review": 0,
+    "done": 163,
+    "total": 192,
+    "remaining": 29
+  }
+}

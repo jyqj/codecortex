@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "review_kind": "independent_read_only_review_of_original_G3_v15_CLI_execution_evidence",
+  "reviewed_at_utc": "2026-10-09T10:13:25.172676+00:00",
+  "reviewer": "/root/todo_audit",
+  "result": "passed_for_original_G3_v15_CLI_evidence_consistency_only",
+  "review_method": {
+    "inputs": [
+      {
+        "role": "receipt",
+        "path": "/workspace/scratch/50c364fd60b1/validation/main-f7-integration/G3-v15-cli/receipt.json",
+        "bytes": 1678,
+        "sha256": "3fd4051c35a56875d3caad4136451d38b0bd915543bfd382a40be718f4877b3b"
+      },
+      {
+        "role": "log",
+        "path": "/workspace/scratch/50c364fd60b1/validation/main-f7-integration/G3-v15-cli/v15-cli.log",
+        "bytes": 572,
+        "sha256": "d49ba935481c7b3e756da63e1b8ae247036aebcb147ff34043449cca662f9d62"
+      },
+      {
+        "role": "runner",
+        "path": "/workspace/scratch/50c364fd60b1/validation/main-f7-integration/run_G3_v15_cli.py",
+        "bytes": 2965,
+        "sha256": "4ad270611eed4a9bdfb7f97e4cdac8346b7b08a39dfdeca04b5c6756b83c005c"
+      }
+    ],
+    "receipt_and_log_parser": "strict duplicate-key rejecting JSON; complete original bytes read",
+    "runner_review": "entire original Python script read and statically inspected; AST checked command construction, literal source bindings, single subprocess.run and its cwd/output/timeout/environment parameters",
+    "executed_during_review": "Only local Python file reads, SHA-256, JSON/AST parsing and writing this scratch review; original runner and project commands were not executed",
+    "repository_mutated": false,
+    "git_fetch_performed": false,
+    "project_commands_reexecuted": []
+  },
+  "actual_execution": {
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "scripts/verify_reviewed_source_v15.py",
+      "--source-version",
+      "p8-completion-source-20261009-v15"
+    ],
+    "cwd": "/workspace/scratch/50c364fd60b1/codecortex",
+    "source": "97497ba782cb21e20ea06d3e9dd6c085f7f64bdc",
+    "product_source": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+    "review_source": "299d2eaca3bb525f309929b74342a65a7cdae9c0",
+    "timeout_seconds": 3600,
+    "started_at_utc": "2026-10-09T10:04:40.141268+00:00",
+    "completed_at_utc": "2026-10-09T10:07:35.459003+00:00",
+    "elapsed_seconds": 175.31743127400114,
+    "elapsed_seconds_rounded_3dp": 175.317,
+    "wall_timestamp_delta_seconds": 175.317735,
+    "status": "completed",
+    "exit_code": 0,
+    "timeout_reported": false,
+    "producer_passed": true
+  },
+  "source_identity": {
+    "recorded_before": {
+      "head": "97497ba782cb21e20ea06d3e9dd6c085f7f64bdc",
+      "registry_sha256": "38c9c21f95741c21910feeb0f7555587d355bf24f856a0c2169de255c4b095c1",
+      "tracked_changes_from_G3": [],
+      "tree": "4da9fac39bb471197bc80c5a2c177e2df67ff9e0",
+      "verifier_sha256": "8ca2d48e37092ca66953ea2cdb6ba9e57855344c07f7c5ab29f243da6ebeb297"
+    },
+    "recorded_after": {
+      "head": "97497ba782cb21e20ea06d3e9dd6c085f7f64bdc",
+      "registry_sha256": "38c9c21f95741c21910feeb0f7555587d355bf24f856a0c2169de255c4b095c1",
+      "tracked_changes_from_G3": [],
+      "tree": "4da9fac39bb471197bc80c5a2c177e2df67ff9e0",
+      "verifier_sha256": "8ca2d48e37092ca66953ea2cdb6ba9e57855344c07f7c5ab29f243da6ebeb297"
+    },
+    "all_recorded_identity_fields_equal": true,
+    "tracked_changes_from_G3_empty_before_and_after": true,
+    "original_runner_before_gate": "assert before['head'] == G and before['tracked_changes_from_G3'] == []",
+    "original_runner_after_gate": "receipt['source_unchanged'] = before == receipt['source_after']; passed requires exit_code == 0 and source_unchanged",
+    "scope_note": "These are the original before/after source observations independently checked for equality, not a new Git/working-tree observation. The runner records commit/tree, tracked diff, registry and verifier hashes; this review does not add a fresh full-input-manifest or untracked-file scan."
+  },
+  "log": {
+    "path": "/workspace/scratch/50c364fd60b1/validation/main-f7-integration/G3-v15-cli/v15-cli.log",
+    "bytes": 572,
+    "sha256": "d49ba935481c7b3e756da63e1b8ae247036aebcb147ff34043449cca662f9d62",
+    "receipt_digest_matches_actual_bytes": true,
+    "complete_output_line_count": 1,
+    "parsed_original_output": {
+      "schema_version": 10,
+      "source_version": "p8-completion-source-20261009-v15",
+      "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+      "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "product_source": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+      "review_source": "299d2eaca3bb525f309929b74342a65a7cdae9c0",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1091,
+      "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+    }
+  },
+  "runner_semantics": {
+    "python_executable": "Runner uses sys.executable; the concrete absolute executable is preserved in the original receipt argv.",
+    "project_validation_invocations": 1,
+    "project_validation_command_unchanged_from_runner_construction": true,
+    "bounded_subprocess_run": "Original command is passed without a shell, with timeout=3600, cwd=root, stderr merged into the exclusively created binary log and PYTHONDONTWRITEBYTECODE=1.",
+    "source_observations": "source() reads git rev-parse HEAD/tree, git diff --name-only G3 -- and the two binding files before and after the CLI.",
+    "success_recording": "The first receipt is status running. On normal return the actual subprocess returncode and status completed are stored; TimeoutExpired instead records exit_code null/status timeout. Final passed requires the observed return code zero and identical before/after source records, then the runner exits accordingly.",
+    "elapsed_recording": "Elapsed duration is measured with time.monotonic() around the subprocess/log block; UTC timestamps independently differ by 175.317735 seconds, consistent with the measured 175.31743127400114 seconds.",
+    "log_digest_recording": "SHA-256 is computed from the complete final log bytes after the subprocess block. The independent digest matches exactly.",
+    "fresh_output_creation": "Original runner requires a new output directory with exist_ok=False and creates the log with xb; no append/relabel behavior appears in the runner."
+  },
+  "independent_checks": {
+    "receipt_has_no_duplicate_JSON_keys": true,
+    "log_has_no_duplicate_JSON_keys": true,
+    "receipt_argv_matches_original_runner_template": true,
+    "source_and_product_review_bindings_match_runner_literals": true,
+    "original_timeout_is_3600_seconds": true,
+    "completed_exit_zero_and_not_timeout": true,
+    "elapsed_rounds_to_175_317_seconds": true,
+    "source_before_after_identical": true,
+    "original_log_bytes_match_receipt_SHA256": true,
+    "original_log_reports_passed_for_expected_source_version": true,
+    "original_log_product_review_sources_match_receipt": true,
+    "original_log_complete_inputs_is_1091": true,
+    "runtime_quality_separate_evidence_boundary_retained": true
+  },
+  "scope": {
+    "accepted": "One original v15 CLI run on exact G3, including the linked previous proof reported by that CLI, with source-and-validation-input scope as printed in the original log.",
+    "current_native_181_suite": "not run or certified by this receipt or this review; earlier native evidence retains its own original source identity",
+    "P3_engineering": "not part of this CLI receipt or review; P3 selected engineering commands retain their separate receipts and independent review",
+    "P3_unfiltered_workspace_tests": "not run or certified by this CLI; no full-workspace-green claim",
+    "original_P2_workspace_exit_101": "unchanged; this review does not alter or supersede that recorded outcome",
+    "benchmark_scale_runtime_quality_platform_provider_release": "not certified; original CLI output explicitly requires separate runtime and quality execution evidence",
+    "TODO_completion": "no task status or acceptance changed; existing 29 remaining and 0 newly closed are retained, not recounted from tasks by this three-input review"
+  },
+  "findings": [],
+  "conclusion": "The three original files consistently support G3 97497ba782cb21e20ea06d3e9dd6c085f7f64bdc running the original v15 CLI with its original source-version argument and 3600-second bound, completing with exit 0 in 175.317 seconds, unchanged recorded source identity, and a matching SHA-256 for the one-line passed output. No broader execution or TODO-completion claim follows."
+}

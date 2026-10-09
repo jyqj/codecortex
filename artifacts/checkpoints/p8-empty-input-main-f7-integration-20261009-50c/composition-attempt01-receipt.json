@@ -1,0 +1,8 @@
+{
+  "scope": "unpublished composition reader, not a product or repository gate",
+  "failure": "After successful git restore --worktree, the first reader compared tracked-only git diff output with all 34 paths. The 25 newly added main artifacts are untracked until the alternate index adds them, so the reader assertion failed.",
+  "tracked_modifications": 9,
+  "new_main_artifacts": 25,
+  "correction": "Require tracked modifications plus exactly the named untracked main additions to match the full 34-path set, then verify every source blob and complete tree.",
+  "first_tree_or_branch_publication_performed": false
+}

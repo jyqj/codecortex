@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "round": 37,
+  "observed_at_utc": "2026-10-09T17:27:23.405Z",
+  "authoritative_main": {
+    "sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed_original_todos": [],
+    "cumulative_since_163": 0,
+    "target": 10
+  },
+  "pr180": {
+    "state": "closed",
+    "merged": true,
+    "head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "merge_commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "same_tree": true,
+    "exact_head_checks": {
+      "total": 26,
+      "success": 26
+    },
+    "merge_time_boundary": "25/26 success at merge; soak finished success later at 17:10:10Z",
+    "ready_pid_fix_in_main": true,
+    "main_push_ci": {
+      "observed_at": "2026-10-09T17:27:23.405Z",
+      "runs": [
+        {
+          "id": 37961034772,
+          "name": "P7 engineering regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "push",
+          "updated_at": "2026-10-09T16:54:47Z"
+        },
+        {
+          "id": 37961034687,
+          "name": "P8 lifecycle and resource observations",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "push",
+          "updated_at": "2026-10-09T16:56:20Z"
+        },
+        {
+          "id": 37961034716,
+          "name": "P8 platform cold builds",
+          "status": "queued",
+          "conclusion": null,
+          "event": "push",
+          "updated_at": "2026-10-09T16:42:23Z"
+        },
+        {
+          "id": 37961034737,
+          "name": "P7 closeout evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "push",
+          "updated_at": "2026-10-09T17:08:30Z"
+        },
+        {
+          "id": 37961034691,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "event": "push",
+          "updated_at": "2026-10-09T17:19:45Z"
+        }
+      ],
+      "jobs_count": 18,
+      "job_counts": {
+        "success": 13,
+        "in_progress": 3,
+        "queued": 2
+      },
+      "pending": [
+        {
+          "run_id": 37961034716,
+          "name": "cold macos / stable / semantic",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "run_id": 37961034716,
+          "name": "cold linux / stable / semantic",
+          "status": "queued",
+          "conclusion": null
+        },
+        {
+          "run_id": 37961034716,
+          "name": "cold linux / stable / default",
+          "status": "queued",
+          "conclusion": null
+        },
+        {
+          "run_id": 37961034716,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "run_id": 37961034691,
+          "name": "check",
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ]
+    }
+  },
+  "pr188": {
+    "state": "open",
+    "draft": false,
+    "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "checks": {
+      "total": 26,
+      "success": 26
+    },
+    "decision": "keep_open_hold_do_not_merge",
+    "reason": [
+      "old integration base cannot be transplanted whole",
+      "dense result/VM evidence does not establish elapsed speedup",
+      "paired mechanism evidence shows wall regressions: dense 1.468x, sparse 93.55x, multi-batch 11.19x",
+      "not causally sufficient for G3 deadline failure"
+    ],
+    "narrow_apply_note": "two product files remain byte-applicable to current main only through a fresh current-main P/R/G, but current evidence rejects admission"
+  },
+  "g3_root_cause": {
+    "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "run": 37910924354,
+    "raw_events": 2018,
+    "worker_deadline_s": 18000,
+    "driver_wall_s": 18022.655,
+    "builds": {
+      "count": 1002,
+      "incremental": 994,
+      "full": 8,
+      "wall_s": 10856.106503,
+      "share_of_worker_deadline_pct": 60.3117
+    },
+    "completed_parity": {
+      "count": 6,
+      "wall_s": 6197.576624,
+      "share_of_worker_deadline_pct": 34.431
+    },
+    "first_build_start_s": 10.29606,
+    "last_build_end_s": 17065.613262,
+    "remaining_budget_after_last_build_s": 934.386738,
+    "remaining_budget_interpretation": "derived upper-bound/strong inference interval while batch_10 parity was unfinished; not a directly recorded parity timer",
+    "unstarted": [
+      "batch_100",
+      "batch_1000"
+    ],
+    "direct_domains": [
+      "repeated full 15-table exact parity",
+      "B=200 closure with 991 unscoped incremental scans across body/api/config",
+      "eight full-control builds including full snapshot staging"
+    ],
+    "pr188_scope": "credible scoped SQL-work hypothesis only; does not change resume count, unscoped scan, commit, full-control or parity"
+  },
+  "decisions": {
+    "task_state_changed": false,
+    "task_file_written": false,
+    "scale_rerun": false,
+    "workflow_rerun": false,
+    "workflow_cancel": false,
+    "new_scale_study": false,
+    "pr180_action": "accepted already-merged state and verified exact identity/CI",
+    "pr188_action": "kept open, withheld merge"
+  }
+}

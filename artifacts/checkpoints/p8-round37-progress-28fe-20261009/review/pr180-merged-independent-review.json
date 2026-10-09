@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "review_id": "p8-round37-pr180-merge-incremental-review",
+  "observed_at_utc": "2026-10-09T17:27:06.045Z",
+  "reviewer": "/root/r33_pr_management",
+  "repository": "jyqj/codecortex",
+  "method": {
+    "sources": [
+      "GitHub REST pull request metadata",
+      "GitHub Git commit/tree/ref objects",
+      "GitHub compare metadata",
+      "GitHub check runs and workflow job logs",
+      "GitHub contents API blobs"
+    ],
+    "scope": "Incremental review of PR #180 changes and merge state after the prior frozen review.",
+    "native_execution": false,
+    "ref_mutation": false,
+    "pull_request_mutation": false,
+    "workflow_mutation": false
+  },
+  "pr180": {
+    "url": "https://github.com/jyqj/codecortex/pull/180",
+    "state": "closed",
+    "merged": true,
+    "merged_at_utc": "2026-10-09T16:42:18Z",
+    "merged_by": "jyqj",
+    "base_sha": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+    "head_sha": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "head_tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "test_merge_sha": "4406b85f2abed05bc375aa38f3a90cf691380860",
+    "test_merge_tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "merge_commit_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "merge_commit_tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "merge_commit_parents": [
+      "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+      "88d5f547bb0fae273f4270742503fd1fd5e70bc2"
+    ],
+    "merge_commit_verified_signature": true,
+    "head_to_merge_compare": {
+      "commits_ahead": 1,
+      "file_differences": 0,
+      "same_tree": true
+    },
+    "api_change_summary": {
+      "commits": 70,
+      "changed_files": 365,
+      "additions": 346623,
+      "deletions": 120,
+      "file_categories": {
+        "artifacts": 327,
+        "crates": 30,
+        "scripts": 6,
+        "workflows": 1,
+        "docs": 1
+      }
+    }
+  },
+  "exact_head_ci": {
+    "head_sha": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "workflow_runs": 7,
+    "check_runs_current_total": 26,
+    "check_runs_current_counts": {
+      "success": 26
+    },
+    "all_currently_terminal": true,
+    "all_currently_successful": true,
+    "chronology": {
+      "at_merge_time_utc": "2026-10-09T16:42:18Z",
+      "at_merge_state": {
+        "successful_checks": 25,
+        "total_checks": 26,
+        "outstanding_check": "soak",
+        "outstanding_status": "in_progress"
+      },
+      "last_check": {
+        "name": "soak",
+        "check_run_id": 113902806894,
+        "started_at_utc": "2026-10-09T16:04:17Z",
+        "completed_at_utc": "2026-10-09T17:10:10Z",
+        "conclusion": "success"
+      },
+      "current_state": {
+        "successful_checks": 26,
+        "total_checks": 26,
+        "non_success_checks": []
+      },
+      "boundary": "It is false that all checks were terminal at merge time; it is true that the exact head now has 26/26 terminal successes."
+    },
+    "checkout_identity": {
+      "main_check_job_id": 113902806069,
+      "main_check_actual_checkout": "4406b85f2abed05bc375aa38f3a90cf691380860",
+      "main_check_checkout_tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+      "direct_closeout_job_id": 113902806369,
+      "direct_closeout_checkout": "88d5f547bb0fae273f4270742503fd1fd5e70bc2"
+    }
+  },
+  "ready_pid_fix": {
+    "product_commit": "5534ebf38cc31efec1590d132ca57c30e2f77f1b",
+    "review_commit": "22975e49107b3832f438f85b17275110fc0afa02",
+    "guard_head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "path": "crates/cc-semantic/tests/p7_crash_preparation.rs",
+    "before_blob": "6493cbe6c291bc4622cf93cdb566f68e6e215155",
+    "fixed_blob": "97ce7a96471cabc0943a1f5ecf9d2a62bde40d12",
+    "fixed_blob_at_product": true,
+    "fixed_blob_at_exact_head": true,
+    "fixed_blob_at_current_main": true,
+    "product_delta": {
+      "changed_files": 1,
+      "additions": 5,
+      "deletions": 4
+    },
+    "behavior": [
+      "write the PID durably to same-directory ready.<pid>.tmp",
+      "rename the complete staging file to ready",
+      "retain the parent read, 15-second deadline, PID equality, SIGKILL and recovery assertions"
+    ],
+    "exact_head_execution": {
+      "workflow": "P7 closeout evidence",
+      "job_id": 113902806369,
+      "test": "isolated_sigkill_reopen_replay_preparation",
+      "result": "ok",
+      "summary": "1 passed; 0 failed; 1 intentionally ignored child entry"
+    },
+    "scope_boundary": "Fixture-only readiness publication repair; not a production runtime change and not an original TODO closure by itself."
+  },
+  "current_main": {
+    "ref_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "expected_merge_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "ref_matches_merge": true,
+    "tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "tree_matches_exact_head": true,
+    "push_ci": {
+      "check_runs_total": 18,
+      "check_run_counts": {
+        "in_progress": 3,
+        "queued": 2,
+        "success": 13
+      },
+      "terminal": false,
+      "non_success": [
+        {
+          "name": "check",
+          "check_run_id": 113923615818,
+          "status": "in_progress",
+          "conclusion": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37961034691/job/113923615818"
+        },
+        {
+          "name": "cold linux / 1.95 / semantic",
+          "check_run_id": 113923615808,
+          "status": "in_progress",
+          "conclusion": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37961034716/job/113923615808"
+        },
+        {
+          "name": "cold linux / stable / default",
+          "check_run_id": 113923615747,
+          "status": "queued",
+          "conclusion": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37961034716/job/113923615747"
+        },
+        {
+          "name": "cold linux / stable / semantic",
+          "check_run_id": 113923615721,
+          "status": "queued",
+          "conclusion": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37961034716/job/113923615721"
+        },
+        {
+          "name": "cold macos / stable / semantic",
+          "check_run_id": 113923615557,
+          "status": "in_progress",
+          "conclusion": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37961034716/job/113923615557"
+        }
+      ]
+    }
+  },
+  "assessment": {
+    "confirmed": [
+      "PR #180 is merged.",
+      "Current main is the recorded merge commit.",
+      "Exact head, PR test-merge, and final main merge have the identical Git tree.",
+      "The ready PID atomic publication fix is present in current main.",
+      "The exact head now has 26/26 successful checks."
+    ],
+    "risks": [
+      "The merge occurred before the final soak check was terminal, although that exact-head check subsequently succeeded.",
+      "Current main push CI is still incomplete at this snapshot.",
+      "Merged implementation and ordinary CI do not convert incomplete scale or DB acquisition acceptance evidence into original TODO completion."
+    ],
+    "decision": [
+      "No code fix is currently justified because no current exact-head or main push check has failed.",
+      "Wait for the already-running main push CI to reach terminal state.",
+      "Do not dispatch, rerun, or create another validation set unless a concrete current-main failure appears.",
+      "If current-main CI fails, investigate event, branch, or environment differences first because the tested and merged trees are identical."
+    ]
+  },
+  "todo_accounting": {
+    "newly_completed_original_todos": 0,
+    "original_done": 163,
+    "original_remaining": 29
+  }
+}

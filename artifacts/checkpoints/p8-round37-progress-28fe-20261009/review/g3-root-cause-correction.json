@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "correction_type": "append_only_erratum",
+  "review": "p8-round37-g3-100k-deadline-root-cause-read-only",
+  "superseded_blob": "3c1362dd6fdbc980d60b6d4ff9bf8e67c30e407f",
+  "observed_at_utc": "2026-10-09T17:26:45.598Z",
+  "source_identity": {
+    "frozen_source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "archive_sha256": "7470aa3a5d6ede0ea0a83045af26191c611bc19d091d4e7822e567069a0a0946",
+    "raw_jsonl_sha256": "f523933e515b3f2d01a92bf9778b4b30ad97b5eee19275d3f82ab18706f5b947"
+  },
+  "corrections": [
+    {
+      "field": "originals.raw_jsonl.rows",
+      "incorrect": 2024,
+      "corrected": 2018,
+      "verification": {
+        "method": "jq -s length and independent event grouping over the fixed native/raw.jsonl",
+        "events": {
+          "build_started": 1002,
+          "build_finished": 1002,
+          "run_started": 1,
+          "input": 1,
+          "cold_parity": 1,
+          "mutation": 6,
+          "stage_finished": 5
+        },
+        "arithmetic": "1002 + 1002 + 1 + 1 + 1 + 6 + 5 = 2018"
+      }
+    },
+    {
+      "field": "direct_timeline.remaining_worker_budget_after_last_build_end_us_at_most",
+      "value": 934386738,
+      "seconds": 934.386738,
+      "classification": "derived upper bound / strong inference interval, not a directly recorded timing field",
+      "derivation": "18,000,000,000 us registered worker deadline - 17,065,613,262 us last completed build end",
+      "cautions": [
+        "The raw file records the last completed build end but has no completed batch_10 parity event or parity_wall_us for that unfinished call.",
+        "The supervisor report wall_ms includes cleanup and parent/child lifetime boundaries, so it must not be used to relabel this derived interval as a direct parity measurement.",
+        "The defensible direct statement is that batch_10 parity started after the last full control and did not emit completion before the deadline; its exact elapsed time is not present."
+      ]
+    }
+  ],
+  "retained_findings": [
+    "The last completed build was scale-100000/repetition-0/batch_10/full_control at raw end_us 17065613262.",
+    "The fixed worker deadline was 18000000 ms.",
+    "batch_10 stage_finished is absent, and batch_100/batch_1000 were not started.",
+    "Completed build wall, completed parity wall, build counts, stage counts, PR188 scope assessment, candidate root causes and original TODO non-completion conclusions remain unchanged."
+  ],
+  "acceptance": {
+    "original_todo_completion": false,
+    "P8_005": "not complete",
+    "P8_006": "not complete"
+  }
+}

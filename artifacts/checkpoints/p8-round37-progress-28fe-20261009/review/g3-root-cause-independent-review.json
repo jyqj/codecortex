@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "review": "p8-round37-g3-100k-deadline-root-cause-read-only",
+  "observed_at_utc": "2026-10-09T17:25:57.382Z",
+  "scope": {
+    "repository": "jyqj/codecortex",
+    "frozen_source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "current_main": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "pr188_head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "constraints": [
+      "read-only",
+      "no native execution",
+      "no workflow dispatch",
+      "no retry",
+      "no cancellation",
+      "no budget/protocol change",
+      "no new study"
+    ]
+  },
+  "originals": {
+    "g3_failure_zip": {
+      "path": "g3-100k-failure.zip",
+      "bytes": 5287177,
+      "sha256": "7470aa3a5d6ede0ea0a83045af26191c611bc19d091d4e7822e567069a0a0946"
+    },
+    "g3_matrix_zip": {
+      "path": "g3-matrix.zip",
+      "bytes": 258,
+      "sha256": "cb0d43a48f20e8629723a501b5764706288b594edf6bcd58cbce03bf99ac90f5"
+    },
+    "raw_jsonl": {
+      "bytes": 20826459,
+      "sha256": "f523933e515b3f2d01a92bf9778b4b30ad97b5eee19275d3f82ab18706f5b947",
+      "events": {
+        "run_started": 1,
+        "input": 1,
+        "build_started": 1002,
+        "build_finished": 1002,
+        "mutation": 6,
+        "cold_parity": 1,
+        "stage_finished": 5
+      }
+    },
+    "report": {
+      "status": "deadline_exceeded",
+      "exit_code": 3,
+      "deadline_ms": 18000000,
+      "wall_ms": 18022655,
+      "worker_exit_code": null,
+      "stderr_complete": false,
+      "worker_binary_unchanged": true
+    },
+    "resource_exclusions": {
+      "disk_preflight_passed": true,
+      "disk_after_passed": true,
+      "worker_stderr_bytes": 0,
+      "supervisor_stderr_bytes": 0,
+      "note": "No ENOSPC/OOM/panic evidence; deadline is the recorded terminal cause."
+    }
+  },
+  "source_identity": {
+    "exact_byte_equal": [
+      "scripts/p8_scale_matrix.py at frozen G3 and current main",
+      "crates/cc-eval/src/benchmark/p8_scale.rs at frozen G3, current main and PR188 head"
+    ],
+    "current_main_resolution_dependency_store_equals_g3": true,
+    "pr188_changes_driver_or_oracle": false,
+    "evidence_files": [
+      "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "scripts/p8_scale_matrix.py",
+      "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "crates/cc-index/src/indexer.rs",
+      "crates/cc-index/src/build_plan.rs",
+      "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "crates/cc-db/src/resolution_dependency_store.rs"
+    ]
+  },
+  "direct_timeline": {
+    "worker_deadline_us": 18000000000,
+    "first_build_start_us": 10296060,
+    "last_finished_build_end_us": 17065613262,
+    "completed_build_wall_us": 10856106503,
+    "completed_incremental_build_wall_us": 6263102578,
+    "completed_full_build_wall_us": 4593003925,
+    "completed_parity_wall_us": 6197576624,
+    "unaccounted_before_last_build_end_us": 1634075,
+    "remaining_worker_budget_after_last_build_end_us_at_most": 934386738,
+    "last_finished_build": "scale-100000/repetition-0/batch_10/full_control",
+    "terminal_location": "batch_10 exact parity after the full control; no stage_finished event",
+    "later_work_not_started": [
+      "batch_100 incremental/full/parity",
+      "batch_1000 incremental/full/parity"
+    ],
+    "deadline_share_percent": {
+      "completed_incremental_builds": 34.795,
+      "completed_full_builds": 25.517,
+      "completed_parity": 34.431,
+      "maximum_unfinished_batch10_parity_interval": 5.191,
+      "prebuild_generation_and_unattributed_before_last_build": 0.066
+    },
+    "interpretation": "The wall is almost completely explained by recorded build calls plus exact parity. There is no large unidentified harness interval before the last completed full build."
+  },
+  "driver_structure": {
+    "stages_in_order": [
+      "no_op",
+      "body",
+      "api",
+      "config",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000"
+    ],
+    "code": [
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "lines": "700-929",
+        "function": "scale_sample"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "lines": "800-807",
+        "fact": "constructs eight ordered stages"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "lines": "880-895",
+        "fact": "runs one incremental build then resumes until complete, up to max_resume_builds"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "lines": "897-904",
+        "fact": "runs a fresh full control and then exact parity after every stage"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "lines": "581-603",
+        "function": "parity"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "lines": "311-390",
+        "function": "compare_with_validated_limits"
+      }
+    ],
+    "observed_builds": {
+      "total": 1002,
+      "incremental": 994,
+      "full": 8,
+      "incremental_by_stage": {
+        "no_op": 1,
+        "body": 490,
+        "api": 171,
+        "config": 330,
+        "batch_1": 1,
+        "batch_10": 1
+      },
+      "full_by_stage": {
+        "cold_incremental": 1,
+        "cold_full_control": 1,
+        "no_op": 1,
+        "body": 1,
+        "api": 1,
+        "config": 1,
+        "batch_1": 1,
+        "batch_10": 1
+      }
+    },
+    "why_994": "The 200-file dirty budget admits only one closure prefix per build. body promoted 97,999 dependents in 490 calls, api 34,025 in 171, and config 65,998 in 330; together those three stages account for 991 of 994 incremental calls.",
+    "why_8_full": "Two cold full-mode builds plus one full_control after each of the six stages reached through batch_10. The protocol would require two additional full controls for batch_100 and batch_1000."
+  },
+  "root_causes": [
+    {
+      "rank": 1,
+      "confidence": "direct",
+      "name": "Repeated exact 15-table parity is the dominant non-build cost",
+      "evidence": {
+        "completed_calls": 6,
+        "completed_wall_us": 6197576624,
+        "batch10_parity_additional_runtime": "started but had no completion event before deadline",
+        "one_comparison": {
+          "tables": 15,
+          "rows_each_side": 6653993,
+          "canonical_bytes_both_sides": 10302684584,
+          "scratch_peak_bytes": 5984387072
+        },
+        "implementation": "streaming.rs 325-378 deletes scratch rows per table, spools both DB sides, orders both streams, value-compares every row, and hashes every row"
+      },
+      "complexity": "For every cold/stage checkpoint, work is proportional to all canonical rows/bytes on both 100k indexes plus SQLite ordering. The driver repeats this after each full control.",
+      "material_fix_points": [
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs::compare_with_validated_limits",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs::spool"
+      ],
+      "boundary": "Any optimization must preserve all 15 tables, duplicate-preserving serialized order, Value equality before hashing, per-side digests, difference counts/examples and the existing resource limits. Skipping checkpoints or weakening the oracle would change the protocol and is not an acceptable repair."
+    },
+    {
+      "rank": 2,
+      "confidence": "direct",
+      "name": "Bounded dirty closure causes 991 repeated unscoped 100k builds",
+      "evidence": {
+        "affected_calls": 991,
+        "affected_wall_us": 6233682004,
+        "files_scanned": 99100000,
+        "selected_dependents": 198022,
+        "timing_us": {
+          "prepare": 3141296987,
+          "commit_write": 2793566605,
+          "total": 6202304316
+        },
+        "phase_ms": {
+          "resolve": 2087773,
+          "scan_diff": 677881,
+          "write": 1185683
+        },
+        "raw_fact": "Every body/api/config resume reports files_scanned=100000 even when files_parsed is 1/1/0."
+      },
+      "complexity": "With corpus N, dirty closure D and budget B=200, the driver performs K≈ceil(D/B) full index-tool calls. Because build_index_report(false) supplies no changed_paths, each call uses the unscoped scan path, yielding O(K*N) file visits in addition to reconciliation and commit work.",
+      "call_path": [
+        "p8_scale.rs::scale_sample lines 880-895",
+        "cc-eval/src/runner.rs::CodeIndexBackend::build_index_report",
+        "cc-server/src/handlers/core.rs::build_index_scoped with scope=None",
+        "cc-index/src/indexer.rs::phase_scan_and_diff lines 457-529 (scan_with_manifest)"
+      ],
+      "material_fix_points": [
+        "A correctness-preserving resume-aware scoped path that does not re-walk 100k files when the persisted frontier is the only pending work",
+        "Reduce repeated commit-side frontier/output work without changing the 200-file admission semantics or freshness/error boundaries"
+      ],
+      "boundary": "Blindly changing the benchmark to pass changed_paths, increasing dirty_budget, or collapsing resumes changes the registered protocol. A product-level optimization must preserve ordinary index-tool discovery of unannounced filesystem changes."
+    },
+    {
+      "rank": 3,
+      "confidence": "direct",
+      "name": "Eight repeated full controls spend most of their time staging full snapshots",
+      "evidence": {
+        "calls": 8,
+        "full_wall_us": 4593003925,
+        "prepare_us": 4256587932,
+        "full_staging_us_nested": 3547386081,
+        "commit_write_us": 188299946
+      },
+      "complexity": "The driver performs an independent full rebuild after cold and after each completed stage. build_plan.rs lines 319-337 routes each full build through write_full_snapshot_build_staging over the 100k resolved units.",
+      "material_fix_points": [
+        "crates/cc-index/src/build_plan.rs::prepare full-mode branch",
+        "crates/cc-index/src/indexer_phases/snapshot.rs::write_full_snapshot_build_staging"
+      ],
+      "boundary": "The full controls are required independent oracles; removing or reusing an earlier full database would invalidate the stage-specific comparison."
+    }
+  ],
+  "pr188_assessment": {
+    "verdict": "credible scoped SQL-work reduction candidate, not established as the dominant deadline cause",
+    "changed_function": "crates/cc-db/src/resolution_dependency_store.rs::resolution_dependents_with_work",
+    "old_g3_path": {
+      "lines": "126-171",
+      "behavior": "probe_cap = cap + excluded.len(); SQL applies LIMIT before exclusion; Rust filters completed paths afterward"
+    },
+    "pr188_path": {
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "lines": "132-190",
+      "behavior": "serializes the exact completed set as JSON and applies NOT IN(json_each(...)) before a fixed cap+1 LIMIT"
+    },
+    "directly_related_evidence": {
+      "merged_dependency_sql_counters_for_body_api_config": {
+        "rows": 130570693,
+        "vm_steps": 6209004986,
+        "statements": 430770
+      },
+      "caveat": "DirtyPlanExplanation merges resolution_dependents_with_work and unchanged surface_dependents_bounded work, so these totals cannot all be assigned to PR188.",
+      "dense_prefix_mechanism": "As completed grows, the old returned-row bound can grow approximately quadratically across resumes; PR188 removes that specific completed-prefix return amplification."
+    },
+    "evidence_against_dominance": [
+      "PR188 does not alter p8_scale.rs, the 994-call loop, full controls, scanner, commit path or parity oracle.",
+      "It should not materially reduce the 490/171/330 resume counts because the old probe_cap already compensated for completed paths and selected roughly 200 new dependents per call.",
+      "First-to-last quartile SQL work grows sharply while prepare wall grows modestly: body rows 48.7k→288.1k and VM 3.53m→13.30m while prepare 2.98s→3.36s; api rows 4.5k→30.3k while prepare 2.97s→3.03s; config rows 32.3k→226.2k while prepare 3.28s→3.35s.",
+      "The independent PR188 review records a scattered-exclusion SQLite counterexample with VM callbacks increasing 22.57%; there is no universal speedup.",
+      "PR188 CI proves correctness/source controls, but emitted no numerical Rust VM or 100k wall measurements."
+    ],
+    "maximum_attribution_boundary": "Even the entire affected prepare_us total (3,141.3s) is only an upper bound containing scan, parsing, resolution and snapshot work; it is not a measured PR188 saving. No share of that time can presently be assigned causally to PR188.",
+    "conclusion": "PR188 may materially reduce dense completed-prefix query work and could help, but the original G3 archive does not support claiming it is the main cause or that it alone would complete within five hours."
+  },
+  "narrow_next_validation": [
+    {
+      "priority": 1,
+      "proposal": "Add diagnostic-only per-call elapsed counters around resolution_dependents_with_work and surface_dependents_bounded, preserving existing SqlWork. Exercise the existing dense and scattered fixtures at several completed-prefix sizes.",
+      "purpose": "Separate PR188's exact query from merged dependency_sql and measure whether counter reductions translate into wall time.",
+      "acceptance_credit": false
+    },
+    {
+      "priority": 2,
+      "proposal": "Use one bounded, non-acceptance same-fixture comparison of G3/base vs PR188 for a representative resumed build state, preserving B=200 and exact exclusion/event sets; record query-specific elapsed, rows, VM steps, selected count and output identity.",
+      "purpose": "Test PR188 causality without launching another N30/150-shard study or pooling samples.",
+      "acceptance_credit": false,
+      "prerequisite": "A reproducible DB/frontier fixture is needed; the archived failure ZIP does not contain its live SQLite databases."
+    },
+    {
+      "priority": 3,
+      "proposal": "Instrument parity by table with spool-A, spool-B, ordered-read/value-compare and bytes/rows timings on an existing bounded fixture.",
+      "purpose": "Target the proven largest non-build domain while preserving the exact oracle contract.",
+      "acceptance_credit": false
+    },
+    {
+      "priority": 4,
+      "proposal": "Prototype a product-level resume-aware scoped scan behind existing safety fallbacks; validate it against unannounced edits, dot-path/config/infra fallbacks, persisted-frontier resumes and exact full parity before any scale claim.",
+      "purpose": "Attack O(K*N) repeated walks without changing dirty_budget or the registered driver stages.",
+      "acceptance_credit": false
+    }
+  ],
+  "evidence_gaps": [
+    "No query-specific elapsed timing exists in G3 raw; only merged SqlWork and enclosing prepare_us are available.",
+    "The failure artifact excludes the live incremental/full SQLite databases, so exact post-hoc SQL replay is impossible.",
+    "No 100k execution exists for PR188 head.",
+    "No accepted source-specific evidence proves any proposed repair completes the remaining batch_10 parity plus batch_100 and batch_1000 stages inside five hours."
+  ],
+  "final_decision": {
+    "original_todo_completion": false,
+    "P8_005": "not complete",
+    "P8_006": "not complete",
+    "reason": "The fixed G3 rep0 100k shard is a preserved deadline failure. Root-cause diagnostics and PR188 CI do not replace the required complete N30/150-shard study."
+  }
+}

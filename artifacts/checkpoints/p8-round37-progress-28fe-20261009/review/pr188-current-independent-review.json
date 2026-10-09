@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "review": "round37-pr188-current-head-strict-review",
+  "repository": "jyqj/codecortex",
+  "observed_through": "2026-10-09T16:23:55Z",
+  "refs": {
+    "main": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "main_tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "pr180_merged_head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "pr188_base": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+    "pr188_head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "pr188_tree": "26baafefb05e113d9f4bab63716d8e72128208cf",
+    "product": "1930b8e37e24031c3779553e3fc5b95e8e946d50",
+    "review": "b4ad0852fb0f164f89ba194409e2a78578f5413f"
+  },
+  "pr_state": {
+    "state": "open",
+    "draft": false,
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "important_scope": "clean is relative to task/p8-final-main-integration-bfcc-20261009, not current main"
+  },
+  "current_main_applicability": {
+    "base_is_ancestor_of_main": true,
+    "main_changes_since_base": 49,
+    "exact_product_base_blobs_unchanged": {
+      "crates/cc-db/src/resolution_dependency_store.rs": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "crates/cc-db/tests/p2b_resolution_store.rs": "f009b732320705dbb221aa22a4f32d1aa9e2cfea"
+    },
+    "benchmark_doc_already_equal": {
+      "blob": "cb85c58cdac336950612498c4ed638c99d7f689e",
+      "result": "PR188 and current main have identical docs/BENCHMARK.md"
+    },
+    "conclusion": "the two product-file patch is bytewise cleanly applicable to current main, but the PR branch as a whole and its old bindings/CI must not be merged or transferred; a new current-main P/R/G and current-source checks would be required"
+  },
+  "source_review": {
+    "production_file": "crates/cc-db/src/resolution_dependency_store.rs",
+    "production_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f",
+    "test_file": "crates/cc-db/tests/p2b_resolution_store.rs",
+    "test_blob": "9c2aa567b007cb7c3a97adce2bb7184c0662a18f",
+    "behavior": [
+      "empty exclusion preserves old SQL and batch width",
+      "nonempty exclusion serializes a deduplicated BTreeSet to one JSON string and applies NOT IN json_each before ORDER BY/LIMIT",
+      "197-key batches keep total SQL parameters at 200",
+      "global sorted distinct cap+1 witness remains in the outer BTreeSet"
+    ],
+    "semantic_verdict": "accepted for scoped output semantics and bounded parameter behavior",
+    "performance_verdict": "not accepted as an unconditional optimization"
+  },
+  "ci": {
+    "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "total": 26,
+    "success": 26,
+    "failure": 0,
+    "pending": 0,
+    "last_completed": {
+      "name": "soak",
+      "job": 113877119911,
+      "completed_at": "2026-10-09T16:23:55Z"
+    },
+    "check_job": {
+      "job": 113877118380,
+      "actual_checkout": "b7fd33b957c112666ebd3dd3c909b0e6ac035039",
+      "checkout_parents": [
+        "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "cc177ddc9e6b8180b8d847539787672e7b689a1a"
+      ],
+      "note": "test-merge tree equals G4 tree; it is not a literal G4 checkout",
+      "db_resolution_tests": "9 passed, 0 failed, 0 ignored",
+      "v15": {
+        "status": "passed",
+        "product_inputs": 1095,
+        "validation_inputs": 142,
+        "product": "1930b8e37e24031c3779553e3fc5b95e8e946d50",
+        "review": "b4ad0852fb0f164f89ba194409e2a78578f5413f"
+      }
+    }
+  },
+  "evidence_matrix": {
+    "exact_G4_Rust": {
+      "dense": {
+        "fixture": "600 rows, 580 completed-prefix exclusions, cap 10",
+        "output_parity": true,
+        "old_rows": 590,
+        "candidate_rows": 10,
+        "vm": "candidate asserted lower than old",
+        "paired_wall": false,
+        "numerical_vm_in_success_log": false
+      },
+      "scattered_and_multi_batch": {
+        "fixture": "220 primary files plus special paths; 410 NameBucket keys plus MissingPath key; empty/scattered/all exclusions; limits 0/1/3/200/usize::MAX; multiple 197-key batches",
+        "output_parity": true,
+        "cost_claim": "none; only empty-exclusion statements/rows/vm equality is asserted"
+      }
+    },
+    "exact_strategy_prior_python_vm_negative": {
+      "fixture": "SQLite 3.53.1; 5000 files/10000 dependencies; 2500 scattered exclusions; two keys",
+      "old_vm_callbacks": 132988,
+      "candidate_vm_callbacks": 163001,
+      "increase_percent": 22.57,
+      "output_parity": true,
+      "wall": false,
+      "Rust": false
+    },
+    "M7_finite_paired_cost": {
+      "exact_G4_binary": false,
+      "relation": "same unconditional JSON-membership mechanism; M7 resolution SQL adds explicit NULL/BINARY preservation and is not byte-identical G4",
+      "environment": "Python 3.12.14 / SQLite 3.53.1 / in-memory / 20 alternating observations; wall is execute+fetch; excludes JSON serialization and Rust allocation; VM callbacks measured separately",
+      "cases": [
+        {
+          "name": "dense_prefix",
+          "excluded": 580,
+          "json_bytes": 9281,
+          "keys": 1,
+          "statements": 1,
+          "old_query_ns": 183026.5,
+          "candidate_query_ns": 268655,
+          "wall_ratio": 1.4678475521304293,
+          "old_vm": 11838,
+          "candidate_vm": 11404,
+          "vm_ratio": 0.9633384017570535,
+          "old_rows": 590,
+          "candidate_rows": 10
+        },
+        {
+          "name": "sparse_two_keys",
+          "excluded": 10000,
+          "json_bytes": 200001,
+          "keys": 2,
+          "statements": 1,
+          "old_query_ns": 24744,
+          "candidate_query_ns": 2314720,
+          "wall_ratio": 93.54671839637892,
+          "old_vm": 107,
+          "candidate_vm": 50146,
+          "vm_ratio": 468.6542056074766,
+          "old_rows": 2,
+          "candidate_rows": 2
+        },
+        {
+          "name": "sparse_400_keys_three_batches",
+          "excluded": 10000,
+          "json_bytes": 200001,
+          "keys": 400,
+          "statements": 3,
+          "old_query_ns": 769662,
+          "candidate_query_ns": 8609770.5,
+          "wall_ratio": 11.186430537040934,
+          "old_vm": 14507,
+          "candidate_vm": 161487,
+          "vm_ratio": 11.131660577652168,
+          "old_rows": 400,
+          "candidate_rows": 6
+        },
+        {
+          "name": "surface_outside_PR188",
+          "excluded": 10000,
+          "json_bytes": 200001,
+          "keys": 400,
+          "statements": 9,
+          "old_query_ns": 1668753.5,
+          "candidate_query_ns": 21210213.5,
+          "wall_ratio": 12.710213641499479,
+          "old_vm": 42703,
+          "candidate_vm": 483637,
+          "vm_ratio": 11.325597733180338,
+          "old_rows": 1200,
+          "candidate_rows": 18
+        }
+      ],
+      "interpretation": "new paired wall/JSON/SQLite evidence exists, but no exact current-G4 Rust paired wall exists; the available paired evidence is adverse even in the dense case"
+    }
+  },
+  "causality": {
+    "G3_100k_failure_repaired": false,
+    "reasons": [
+      "G3 failure did not attribute its five-hour deadline to this reverse-query path or to high exclusion density",
+      "PR188 has no 100k release/N30/150-shard/1500-sample evidence",
+      "current exact-G4 CI does not emit paired wall or numerical VM values",
+      "finite cost evidence shows material sparse and multi-batch regressions and a dense wall regression"
+    ]
+  },
+  "management_decision": {
+    "action": "keep_open_hold_do_not_merge",
+    "do_not_close_reason": "the two product-file change is unique, output-correct and bytewise applicable to current main, so it remains useful as a redesign/evidence branch",
+    "do_not_merge_reasons": [
+      "PR targets an old integration branch rather than main",
+      "old bindings and CI cannot be transferred to the post-PR180 main composition",
+      "the performance title/intent lacks exact-current-source paired wall support and has concrete adverse counterevidence"
+    ],
+    "next_acceptance": [
+      "revise the strategy to avoid rebuilding the JSON membership structure for sparse or repeated batches, or narrow activation with a justified workload-derived rule",
+      "on a new current-main product, record paired dense/sparse/multi-batch wall, rows, VM and JSON serialization/allocation cost",
+      "then create an independent current-main R/G and run its actual CI"
+    ]
+  },
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed": [],
+    "cumulative_since_163_baseline": 0
+  }
+}

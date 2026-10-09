@@ -1,0 +1,27 @@
+{
+  "source": "official G3 100k failure artifact 11626430756",
+  "raw_sha256": "f523933e515b3f2d01a92bf9778b4b30ad97b5eee19275d3f82ab18706f5b947",
+  "raw_events": 2018,
+  "event_counts": {
+    "build_started": 1002,
+    "build_finished": 1002,
+    "run_started": 1,
+    "input": 1,
+    "cold_parity": 1,
+    "mutation": 6,
+    "stage_finished": 5
+  },
+  "worker_deadline_us": 18000000000,
+  "first_build_start_us": 10296060,
+  "last_build_end_us": 17065613262,
+  "sum_build_us": 10856106503,
+  "completed_parity_us": 6197576624,
+  "derived_post_last_to_deadline_us": 934386738,
+  "caution": "derived interval is not a directly recorded parity_wall_us field; the direct fact is that batch_10 full_control completed, batch_10 stage_finished is absent, and later stages are absent",
+  "percentages_of_worker_deadline": {
+    "build": 60.3117028,
+    "completed_parity": 34.4309812,
+    "post_last_interval_upper_bound": 5.1910374
+  },
+  "root_interpretation": "95%+ of the worker budget is accounted by completed build/parity plus the final unfinished interval. This replaces the prior broad 'unknown non-build' bucket but does not by itself authorize changing the fixed protocol."
+}

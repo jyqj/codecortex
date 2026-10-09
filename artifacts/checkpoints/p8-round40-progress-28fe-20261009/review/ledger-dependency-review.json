@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "review": "p8-round40-ledger-dependency-independent-review",
+  "generated_at": "2026-10-09T20:18:00Z",
+  "repository": "jyqj/codecortex",
+  "authority": {
+    "main_sha": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tasks_path": "docs/roadmap/code-index-v2/tasks.json",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "counts": {
+      "total": 192,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    }
+  },
+  "original_todo_decision": {
+    "newly_closeable_ids": [],
+    "cumulative_newly_completed_from_163_baseline": 0,
+    "priority_chain": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "reason": "P8-005 remains in_progress with full_1k_5k_10k_50k_100k_scale_acceptance=open, strict_paired_causal_performance=not_established, whole_tree_memory_peak=unknown. Every later priority task has an unresolved hard-dependency path from P8-005."
+  },
+  "fresh_scale_state": {
+    "run_id": 37962416564,
+    "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "completed_successful_preflights": [
+      1000,
+      5000,
+      10000,
+      50000
+    ],
+    "preflight_100000": "in_progress",
+    "independently_accepted_shards": 4,
+    "accepted_composite_samples": 41,
+    "required_shards": 150,
+    "required_composite_samples": 1500,
+    "aggregate_acceptance": false,
+    "conclusion": "The newly received 50k artifact is material partial evidence only. It does not satisfy P8-005."
+  },
+  "new_pr_evidence": {
+    "pr195": {
+      "state": "open",
+      "draft": true,
+      "head": "34dc4e14dc96d077eae6173ab6885370323eff3f",
+      "scope": "Integrates cold and independent wide-dirty study protocols and startup fixes.",
+      "acceptance_boundary": "Its own body preserves 4/150 shards and 41/1500 samples for original G8 and explicitly marks zero original TODOs completed. Exact-head native/whole CI remained open at review time."
+    },
+    "pr194": {
+      "state": "open",
+      "draft": true,
+      "head": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "capacity_profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "boundary": "Separate population; cannot repair, replace, pool with, or satisfy the original fixed dirty-200 population."
+    }
+  },
+  "mutation_journal_review": {
+    "reliable_product_implementation_found": false,
+    "searched_terms": [
+      "MutationJournal",
+      "watermark",
+      "scope-less",
+      "scan_with_manifest",
+      "observation token",
+      "mutation cursor",
+      "rescan_needed"
+    ],
+    "main_behavior": "scope-less builds still use the shared full-tree walk; watcher state remains changed/removed plus rescan_needed, without a persistent mutation cursor or proven delivery fence.",
+    "pr195_relevant_diffs": [
+      "freshness payload prepared once before publication",
+      "project input acknowledgement serializes borrowed immutable inputs",
+      "cold-only and wide-dirty benchmark registration"
+    ],
+    "missing_contract": [
+      "persistent observer cursor/fence",
+      "project+DB-incarnation+index-epoch+config identity binding",
+      "build lease covering observation and publication",
+      "acknowledgement only after successful stage-3 publication",
+      "overflow/restart/unknown-event fallback to full walk"
+    ],
+    "decision": "No safe scope-less scan skipping implementation is available; do not infer filesystem stability from an empty watcher queue."
+  },
+  "mutation": false,
+  "plan_write_executed": false
+}

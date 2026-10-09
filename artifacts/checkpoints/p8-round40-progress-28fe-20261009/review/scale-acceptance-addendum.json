@@ -1,0 +1,70 @@
+{
+  "schema": "codecortex-p8-scale-acceptance-review-addendum-v1",
+  "round": 40,
+  "observed_utc": "2026-10-09T20:17:00Z",
+  "predecessor_blob": "5ca9c1f042c2fc99c2d58b7cfbd4225b1b1ebbe2",
+  "original_g8_200": {
+    "run_id": 37962416564,
+    "source_sha": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "unchanged_from_predecessor": true,
+    "build": "success",
+    "completed_preflights": [
+      1000,
+      5000,
+      10000,
+      50000
+    ],
+    "running_preflight": {
+      "scale": 100000,
+      "step": "Execute all phases for this registered single-repetition capacity slice"
+    },
+    "shard_100000_artifact_present": false,
+    "post_preflight_145_jobs_present": false,
+    "complete_aggregate_present": false
+  },
+  "independent_wide_dirty_4096": {
+    "run_id": 37982220020,
+    "source_sha": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+    "completed_preflights": [
+      1000,
+      5000,
+      10000
+    ],
+    "running_preflights": [
+      {
+        "scale": 50000,
+        "step": "Execute all phases for this registered single-repetition capacity slice"
+      },
+      {
+        "scale": 100000,
+        "step": "Run dtolnay/rust-toolchain@stable"
+      }
+    ],
+    "artifact_count": 9,
+    "newest_artifacts": [
+      {
+        "id": 11643000618,
+        "name": "p8-scale-wide-dirty-shard-10000-0-37982220020",
+        "digest": "sha256:728fa3e56f798677f64cc8de43b7a1bde04ba17235051d35c90bab2e3b987207"
+      },
+      {
+        "id": 11642816219,
+        "name": "p8-scale-wide-dirty-capacity-100000-0-37982220020",
+        "digest": "sha256:8f277c7e38b8f3ab44061ed0f312a643e540699d6ee6c78aa32cb76603eb4e81"
+      }
+    ],
+    "isolation": "Dirty budget 4096 and distinct profile/source/run; never pool with or substitute for original G8/200 and no original TODO credit."
+  },
+  "acceptance_decision_unchanged": {
+    "P8-005": "not closable",
+    "P8-006": "not closable"
+  },
+  "actions_not_taken": [
+    "dispatch",
+    "retry",
+    "cancel",
+    "ref update",
+    "task ledger mutation",
+    "cross-profile pooling"
+  ]
+}

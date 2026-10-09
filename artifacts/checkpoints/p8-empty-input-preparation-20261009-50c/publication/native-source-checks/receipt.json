@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "product_source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+  "started_at_utc": "2026-10-09T08:33:42.741670+00:00",
+  "scope": "Original unchanged native source-integrity suite and v15 entry, per-command 3600s execution bound; a timeout is not a pass.",
+  "commands": [
+    {
+      "name": "native-suite",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/source_integrity",
+        "-v"
+      ],
+      "started_at_utc": "2026-10-09T08:33:42.744589+00:00",
+      "finished_at_utc": "2026-10-09T08:55:37.685394+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 1314.9409579429994,
+      "log": "native-suite.log",
+      "log_sha256": "1f1213dcf359c12fe295b4bfcea0e3c974fe43c6d49e7395478895544d445430",
+      "head_after": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "name": "v15-cli",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "started_at_utc": "2026-10-09T08:55:37.698619+00:00",
+      "finished_at_utc": "2026-10-09T08:59:10.220607+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 212.5220312140009,
+      "log": "v15-cli.log",
+      "log_sha256": "3b5efb3db6a1cf7c66a52a8aabadb207a48f2117e295deeebede0b023306397f",
+      "head_after": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    }
+  ],
+  "prior_failed_receipt_sha256": "f03c60bd283831c13d7344a18e46588dc00c0a1d87261cf14803038f5d02da3a",
+  "repair_verification_sha256": "1684909993af78605e0526563f195d6bc989ba5a67e2d81dc5f9fc386a88771c",
+  "retry_reason": "Two exact historical CI blobs missing in partial clone were explicitly fetched outside guards; original catalogue/protected-byte checks now pass. No source, guard, test entry or bound changed.",
+  "all_passed": true,
+  "status": "completed",
+  "completed_at_utc": "2026-10-09T08:59:10.223888+00:00",
+  "head_after": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+}

@@ -90,11 +90,37 @@ pub(crate) fn compute_interface_dispatch_synthesis(
         return Ok(delta);
     }
 
-    // 3a. Load all symbols to build:
-    //     - uid → (container, kind, name)
-    //     - a set of interface/trait UIDs
+    // 3a. Keep the original call → symbols → implements read/decoding order.
+    // A missing prerequisite avoids lookup-map construction, not validation
+    // of rows the old path read. In particular, an empty implements table
+    // must not hide a malformed call or symbol row.
     let symbol_rows = db.symbol_graph_reads().symbol_dispatch_rows()?;
 
+    // Persisted symbol_uid is UNIQUE. Identify interfaces directly from the
+    // decoded rows before building maps for every symbol (and cloning every
+    // non-method's name/UID). Empty UIDs were skipped by those maps too.
+    let interface_uids: HashSet<String> = symbol_rows
+        .iter()
+        .filter(|row| {
+            !row.symbol_uid.is_empty() && matches!(row.kind.as_str(), "interface" | "trait")
+        })
+        .map(|row| row.symbol_uid.clone())
+        .collect();
+    if interface_uids.is_empty() {
+        return Ok(delta);
+    }
+
+    // 3b. Implements remains unread when there are no calls/interfaces, as
+    // before. Prior deltas overlay CALL edges only; no earlier pass produces
+    // implements relations (see PassContext's semantic-overlay contract).
+    let implements_rows = db
+        .edge_reads()
+        .semantic_uid_pairs_by_relation("implements")?;
+    if implements_rows.is_empty() {
+        return Ok(delta);
+    }
+
+    // 3c. Both prerequisites exist; build the original lookup maps.
     // Map: symbol_uid → (container_uid_or_name, kind, name)
     // The `container` column stores the container name (not UID), so we need an
     // extra step to resolve container name → container UID.
@@ -118,22 +144,6 @@ pub(crate) fn compute_interface_dispatch_synthesis(
         uid_to_info.insert(row.symbol_uid, (row.container, row.kind, row.name));
     }
 
-    // 3b. Identify interface/trait UIDs.
-    let interface_uids: HashSet<String> = uid_to_info
-        .iter()
-        .filter(|(_, (_, kind, _))| kind == "interface" || kind == "trait")
-        .map(|(uid, _)| uid.clone())
-        .collect();
-
-    if interface_uids.is_empty() {
-        return Ok(delta);
-    }
-
-    // 3c. Load implements edges: source = implementor, target = interface.
-    let implements_rows = db
-        .edge_reads()
-        .semantic_uid_pairs_by_relation("implements")?;
-
     // Map: interface_uid → [implementor_uid, ...]
     let mut interface_to_implementors: HashMap<String, Vec<String>> = HashMap::new();
     for (impl_uid, iface_uid) in implements_rows {
@@ -141,10 +151,6 @@ pub(crate) fn compute_interface_dispatch_synthesis(
             .entry(iface_uid)
             .or_default()
             .push(impl_uid);
-    }
-
-    if interface_to_implementors.is_empty() {
-        return Ok(delta);
     }
 
     // 3d. Build (container_name, method_name) → [method_uid, ...] for implementor method lookup.
@@ -277,3 +283,7 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     delta.insert_call_edges = synthetic_edges;
     Ok(delta)
 }
+
+#[cfg(test)]
+#[path = "interface_dispatch_tests.rs"]
+mod tests;

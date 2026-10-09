@@ -1,0 +1,425 @@
+{
+  "schema": "runtime-attribution-reconciliation-v1",
+  "reviewer": "/root/scale_audit",
+  "reviewed_at_utc": "2026-10-09T10:21:08.442Z",
+  "verdict": "prior_unqualified_statement_is_overbroad; correct_interpretation_and_observation_labels; no_new_task_acceptance",
+  "requested_statement": "原规范还要求完整后端queue/service、DB lock wait、worker contention归因，现有数据不提供",
+  "scope": "Bounded read-only review of original §9/C15/C16 wording, the exact prior A reports, exact 06964 reconciliation/binding records, and already retained G275 evidence. No rerun, fetch, repository mutation, new study, ZIP download or C8 numerical-raw acceptance.",
+  "conclusion_zh": "这句话应收窄。原§9确实要求queue/service/end-to-end、DB lock wait与worker contention观测，不能删去这些主题；但把它解释成必须实现完整后端逐请求、全锁点纯等待及worker逐轮归因，超出了现有原文。现有数据并非没有DB/worker观测：G275自己的已独核fresh-release backfill和C8自己的固定release记录都包含有边界的DB获取探针及实际quiet/held worker对照。未测得的ExecutionPool内部queue/service等细分仍应明确保留为测量限制；仅凭§9不能把补齐整套跨crate埋点或重复一小时诊断列为额外硬门。",
+  "original_requirement": {
+    "benchmark_path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+    "benchmark_section": 9,
+    "benchmark_relevant_lines": [
+      173,
+      175,
+      177
+    ],
+    "benchmark_git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+    "benchmark_sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+    "required_subjects": [
+      "C=1/4/8/16 mixed read/build; declare the actual measurement boundary.",
+      "Queue, service and end-to-end elapsed, throughput, error and timeout; retain offered load and queueing rather than hide failures/tails.",
+      "DB lock wait and worker contention observations.",
+      "Original release-profile, sampling/population and resource-owner rules remain applicable to the claims made."
+    ],
+    "not_specified_by_the_reviewed_words": [
+      "Server-internal per-RPC ExecutionPool queue and service timestamps as the only admissible measurement boundary.",
+      "A mandatory request-context architecture, unique IDs in every old operation row, or worker round IDs.",
+      "An independent pure-wait distribution for every lock, connection pool, writer mutex and provider admission point.",
+      "A new multi-crate telemetry implementation as the sole way to cover the observation subjects.",
+      "A separate repeated one-hour soak for every concurrency-attribution diagnostic."
+    ],
+    "contracts": {
+      "C15": "Lines 120–122 require stage/work/cache/FTS/SQL/candidate/budget/vector statistics and benchmark raw/resource collection. They do not specify complete per-request lock/worker time telemetry.",
+      "C16": "Lines 124–126 retain actual target-source evidence, full wiring, positive/negative and old regressions, performance/quality comparison, docs and recovery/rollback. This interpretation does not waive that completion definition."
+    },
+    "interpretation_limit": "The absence of a prescribed internal implementation is not permission to report missing data as zero or to omit DB/worker subjects. Available observations must be mapped at their real boundaries; stronger backend-performance claims require measurements that actually support them."
+  },
+  "claim_assessment": [
+    {
+      "claim": "原规范要求完整后端queue/service归因",
+      "assessment": "overbroad_as_a_mandatory_architecture_or_fine_grained_gate",
+      "reason": "The original text names queue/service/end-to-end but does not specify server-internal execution boundaries or require complete attribution at every backend stage. The existing client dispatch/admission/call-to-terminal families are real observable timings with explicit transport/preparation/validation inclusion.",
+      "keep": "ExecutionPool internal queue/service timestamps are genuinely absent in the reviewed source. Client timings cannot be renamed pure backend timings."
+    },
+    {
+      "claim": "现有数据不提供DB lock/worker contention观测",
+      "assessment": "false_if_unqualified; valid_only_for_the_missing_fine_grained_internal_decomposition",
+      "reason": "Both G275's own independently reviewed release backfill and the exact C8 release-binding records provide DB acquisition/availability probes and actual quiet/held worker comparisons. The old G275 raw-review already retained these facts.",
+      "keep": "These probes do not separate every lock's pure waiting time; actual held-provider comparisons do not give successful provider-admission wait or worker-round service distributions."
+    },
+    {
+      "claim": "单连接checkout或BEGIN IMMEDIATE/ROLLBACK耗时就是纯锁等待",
+      "assessment": "unsupported",
+      "reason": "The source times read_conn(), SELECT separately, and an independent BEGIN IMMEDIATE;ROLLBACK. Acquisition elapsed contains implementation overhead; writer elapsed contains SQL/rollback work. The writer connection setup occurs before that timer. busy_timeout_ms=100 is configuration, not an observed wait, and the three probes are not a per-MCP wait distribution."
+    },
+    {
+      "claim": "P8-007/010必须先新增多crate埋点才能闭环",
+      "assessment": "not_established_as_an_original_hard_gate_by_the_reviewed_clauses",
+      "reason": "The prior source audit's proposed implementation is a plausible design for a stronger full internal-attribution claim. Its inference from missing fine-grained data to an unavoidable intrinsic failure of the original tasks is too strong without a more specific original registered requirement.",
+      "keep": "Any future implementation and its evidence still require exact-source review. Existing raw cannot retrospectively acquire those missing timestamps."
+    },
+    {
+      "claim": "需要为这些诊断额外重复原一小时soak",
+      "assessment": "not_required_by_the_reviewed_original_words",
+      "reason": "P8-010's original one-hour workload, boundedness, mutations and endpoint reconciliation remain required. The reviewed words do not require every supplemental contention diagnostic to repeat for an hour.",
+      "fairness_to_old_reports": "The old downstream report already says not to rerun an unchanged hour expecting new backend timings. No finding is made that it explicitly imposed a duplicate-hour gate; this is a clarification for future PR wording."
+    },
+    {
+      "claim": "原十项可以因为本次解释纠正而标done",
+      "assessment": "false",
+      "reason": "This is a bounded interpretation correction. Full original scale/statistics/profile/regression and dependency conditions remain source-bound and unresolved tasks stay open."
+    }
+  ],
+  "G275_existing_evidence": {
+    "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "raw_review_status": "passed",
+    "artifact": {
+      "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run_id": 37890757030,
+      "run_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030",
+      "job_id": 113690916323,
+      "job_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916323",
+      "artifact_id": 11597519732,
+      "artifact_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/artifacts/11597519732",
+      "bytes": 7831523,
+      "sha256": "2c16ee9e6e3ca7bb28844473b478b5bbe1b1f2596805713696f40cee854b7359",
+      "original_api_digest_matches": true,
+      "final_zip_unchanged": true
+    },
+    "binary": {
+      "bytes": 24078264,
+      "fresh": false,
+      "original_cargo_path": "/home/runner/work/_temp/p8-backfill-target/release/deps/p7_worker_contention-9bf79018feee1c60",
+      "original_cargo_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": true
+      },
+      "sha256": "7601bc8860f2c4cbc4631e35ed0a5b788ba2f5d6dbe745e7d959733ea5ca0015"
+    },
+    "seeds": [
+      {
+        "seed": 7,
+        "summary": {
+          "path": "validation/g275-runtime-acceptance-review/backfill/extracted/raw/seed-7/summary.json",
+          "bytes": 13185,
+          "sha256": "aef38339e7b52218734771270689910d8c4a313688e94b886f7187bfcea7c9d0"
+        },
+        "probes": {
+          "single_read_pool_checkout_us": 2,
+          "read_statement_us": 9,
+          "writer_acquire_and_rollback_us": 23,
+          "writer_busy_timeout_ms": 100,
+          "generation_unchanged": true
+        },
+        "held_provider_active": 4,
+        "held_provider_waiting": 4,
+        "held_claimed": 4,
+        "held_pending": 20,
+        "requests": 256
+      },
+      {
+        "seed": 19,
+        "summary": {
+          "path": "validation/g275-runtime-acceptance-review/backfill/extracted/raw/seed-19/summary.json",
+          "bytes": 13209,
+          "sha256": "e9905f9dbbe99b42c49e2f2777b576658267c1d122b7cf31cb4de26ac093b8ad"
+        },
+        "probes": {
+          "single_read_pool_checkout_us": 3,
+          "read_statement_us": 10,
+          "writer_acquire_and_rollback_us": 23,
+          "writer_busy_timeout_ms": 100,
+          "generation_unchanged": true
+        },
+        "held_provider_active": 4,
+        "held_provider_waiting": 4,
+        "held_claimed": 4,
+        "held_pending": 20,
+        "requests": 256
+      },
+      {
+        "seed": 43,
+        "summary": {
+          "path": "validation/g275-runtime-acceptance-review/backfill/extracted/raw/seed-43/summary.json",
+          "bytes": 13212,
+          "sha256": "c8e81e757f4725f132ca85757b4de3215b4ec0cfb8060c009f88b1765ce48ca7"
+        },
+        "probes": {
+          "single_read_pool_checkout_us": 3,
+          "read_statement_us": 11,
+          "writer_acquire_and_rollback_us": 27,
+          "writer_busy_timeout_ms": 100,
+          "generation_unchanged": true
+        },
+        "held_provider_active": 4,
+        "held_provider_waiting": 4,
+        "held_claimed": 4,
+        "held_pending": 20,
+        "requests": 256
+      }
+    ],
+    "total_requests": 768,
+    "all_original_summary_sha256_rechecked": true,
+    "no_rerun": true,
+    "population": "3 seeds [7,19,43] × quiet/held × configured C1/4/8/16 × 32 = 768 requests; 256 per seed"
+  },
+  "G275_effect": {
+    "no_C8_measurement_transferred": true,
+    "empirical_conclusions_unchanged": [
+      "G275 raw samples, source/build identities, original check results and independent scoped raw acceptance remain unchanged.",
+      "No G275 internal ExecutionPool queue/service, pure per-lock wait or per-round worker timings have appeared.",
+      "The separate in-process synthetic-provider control remains distinct from the stdio mixed workload and from live-provider quality/cost."
+    ],
+    "interpretation_corrected": [
+      "G275 must not be described as having no DB acquisition or worker-contention evidence: its own original release run and three raw summaries already contain that evidence.",
+      "The old downstream report's characterization of missing complete internal attribution as an established intrinsic §9 hard failure should be narrowed to an unmeasured finer-grained scope and an evidence-to-original-clause mapping question.",
+      "The source-location design remains a proposal for deeper diagnostics, not a proven mandatory minimum for the original P8-007/P8-010 tasks."
+    ],
+    "minimal_remaining_measurement_unknown": "The smallest definite unresolved timing statement is that ExecutionPool internal queue/service is not exposed. Pure per-lock wait and worker-admission/round distributions are also unmeasured at that stronger granularity; they must not be synthesized from client or probe times.",
+    "hard_gate_inference": "It is not justified to call even that internal ExecutionPool decomposition an independently established mandatory new gate solely from §9's layer-unspecified wording.",
+    "task_state_effect": "No task closure. Preserve the original scale/statistical/dependency gates and exact-source regression/acceptance requirements; this task did not refresh their live state."
+  },
+  "C8_existing_evidence": {
+    "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "original_release_run": 37901930897,
+    "original_release_run_url": "https://github.com/jyqj/codecortex/actions/runs/37901930897",
+    "original_release_job": 113726258977,
+    "original_release_job_url": "https://github.com/jyqj/codecortex/actions/runs/37901930897/job/113726258977",
+    "identity": {
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run": 37901930897,
+      "job": 113726258977,
+      "name": "fake_backfill",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T08:28:41Z",
+      "completed_at": "2026-10-09T08:37:30Z",
+      "job_bound_by": "actual full run jobs collection"
+    },
+    "artifact": {
+      "id": 11604162920,
+      "name": "p8-backfill-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "bytes": 7836131,
+      "sha256": "ff504bc5016ad7997db58f3e76d8eb32a30d23e2e5732009a107ada6e724d9d5",
+      "created_at": "2026-10-09T08:37:27Z",
+      "expired": false,
+      "official_API_and_original_uploader_match": true
+    },
+    "executable_sha256": "7c909ba2d4b07bc866873f4ba70474179d75cc53bcfc7a378bd5bcdf06c05b41",
+    "original_log_sha256": "9b5af1cd295731c97716369c14ddbac8f8f8e558af7a0428e1ee1a4bf0d68f4b",
+    "driver": {
+      "path": "scripts/p8_backfill.py",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+      "build_command": "cargo test --release --locked --offline -p cc-eval --no-default-features --features semantic --test p7_worker_contention --no-run --message-format=json-render-diagnostics --target-dir <private target>",
+      "release_validation": "artifact() lines20-39 requires one compiler-artifact, targetkind[test], features[semantic], profile.test=true,opt_level3,debug_assertions=false,fresh=false; exact source path and executable within the private target; successful build-finished event.",
+      "identity_conservation": "execute checks original source/observer/compiler before and after build and native execution. Copied executable SHA must match original Cargo executable before and after. This is actual unchanged driver's admission logic consumed by the original passing CLI, not a new validation run.",
+      "native_command": "<copied executable> --exact real_slow_backfill_preserves_local_progress_and_records_every_request --nocapture",
+      "native_output_check": "Actual driver requires return0 and original stdout '1 passed; 0 failed; 0 ignored'; exact raw seed dirs19,43,7 must be present before passed_observation.",
+      "original_output": "CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR=<output>/raw, independent native timeout300s",
+      "retention": "Original receipt inventory, seal_output and verify_output occur in finally. The existing verify command returned sealed_raw_verified with32files."
+    },
+    "actual_same_source_measurement": {
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "bytes": 23104,
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+      "population": "3seeds x quiet/held x C1/4/8/16 x32 =768 fixed local request observations",
+      "expected_raw_members": "raw/seed-{7,19,43}/{protocol,quiet-requests,held-before,held-requests,summary}.json",
+      "DB_fields": "summary.db_availability.single_read_pool_checkout_us, read_statement_us, writer_acquire_and_rollback_us, writer_busy_timeout_ms100, generation_before/generation_after equality",
+      "worker_fields": "Every quiet/held row's caller_schedule_us/capture_admission_us/retrieval_us/offered_to_api_return_us; before/final queue totals,pending,claimed,attempt_count,published,uncovered; actual provider entered,active,waiting,maximum_active,held_inputs,fake_completed_calls.",
+      "correct_semantic_label": "The DB probe times actual pool acquisition and real BEGIN IMMEDIATE;ROLLBACK while worker provider calls are held. It includes checkout/statement/rollback overhead, not pure per-request lock waiting. Worker contention compares actual quiet/held populations and preserves original workload boundaries.",
+      "limits": "Synthetic provider vectors, no quality/live-provider claim; no server-internal queue/service decomposition. Exact source summary retains full_p7_015_complete=false and no invented performance delta SLA."
+    },
+    "evidence_level": {
+      "read_in_this_reconciliation": "The two fixed 06964 reports, the exact issue comment, and six actual shared immutable source blobs were read. The original C8 execution log and archive were not newly downloaded or numerically replayed.",
+      "fixed_review_reports_independently_read": "Full original official log, actual fixed source bodies, official artifact collection identity, actual full run jobs collection.",
+      "fixed_review_reports_not_read": "This review did not download/open the original ZIP or independently parse its numerical summary/request JSON. No exact probe duration or per-member hash verification is claimed.",
+      "can_support_now": "A specifically identified existing fresh-release execution of the actual worker/DB observation source, separate from the debug closeout. The broad claim that C8 has no such existing evidence is untenable.",
+      "cannot_support_now": "No independently reread C8 numeric probe durations, per-member raw hash acceptance, full §9/full task completion, stable tails, pure backend timing, or transfer to G275/P3/G3 is newly certified."
+    },
+    "boundary": "C8 numbers and passes stay on c8be5afa. G275 numbers above come only from G275's own already accepted raw, not from matching source snippets."
+  },
+  "narrowly_verified_common_source_inputs": [
+    {
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "bytes": 23104,
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/tests/p7_worker_contention.rs",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/crates/cc-eval/tests/p7_worker_contention.rs"
+    },
+    {
+      "path": "crates/cc-search/src/execution.rs",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "11356cd1179c96fa839864d1caa60ef3ecbd3502",
+      "bytes": 14311,
+      "sha256": "8c1f42b3aeccfd174631b57fe5e0e4aca3546c6d954ecce6324e55dd6536fa4b",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-search/src/execution.rs",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/crates/cc-search/src/execution.rs"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    {
+      "path": "scripts/p8_backfill.py",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_backfill.py",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/scripts/p8_backfill.py"
+    },
+    {
+      "path": "scripts/resource_harness/runtime.py",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+      "bytes": 11117,
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5",
+      "G275_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/resource_harness/runtime.py",
+      "C8_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/scripts/resource_harness/runtime.py"
+    }
+  ],
+  "common_source_limit": "Only these six mode/type/blob inputs were compared; this is not a complete relevant-source equivalence proof and does not transfer measurements between G275 and C8.",
+  "smallest_useful_next_action": [
+    "Correct the unqualified current PR statement and append this interpretation record while preserving both earlier reports.",
+    "Map the chosen source's already retained client timing, DB acquisition probes and quiet/held observations to each original §9 subject, with exact boundary/profile/population labels.",
+    "Keep ExecutionPool internal timings and pure-wait decomposition explicitly unmeasured; do not use subtraction, zero filling or stronger labels.",
+    "If a stronger original registered gate is claimed, identify its exact clause before making new product diagnostics a prerequisite. The present §9/C15/C16 text does not establish that architectural requirement.",
+    "Continue existing original scale/statistics/source-regression/dependency work. No new native run, source edit, repeated hour or duplicate 768-request workload is justified merely to reread these existing observations.",
+    "Read C8's existing raw summaries through the normal artifact mechanism only if numeric tabulation or a separate requested raw acceptance needs them; this interpretation does not invent a new archive-replay completion gate."
+  ],
+  "recommended_PR_text_zh": "原§9的queue/service/end-to-end及DB/worker竞争观测，按各自同源原件和实际测量边界逐项映射。G275已核到客户端分段时序、同源release backfill的DB获取探针及实际quiet/held worker对照；C8也有其独立的同源release记录，两者分别引用。ExecutionPool内部queue/service及纯锁等待分解尚未测得，现有client或acquire/SQL/rollback耗时不重标为后端纯时延。原文未把完整跨crate逐请求埋点或重复一小时诊断规定为硬门；本次仅修正此前过宽的归因范围表述，完整任务仍须满足原规模、统计、旧回归与依赖验收。",
+  "recommended_short_text_zh": "G275/C8各有其同源客户端、DB获取探针与quiet/held worker观测；ExecutionPool内部queue/service等更细分解仍未测得。§9不足以据此新增完整后端埋点或重复hour硬门，现按原条款与真实字段边界映射，原完整验收及依赖保持不变。",
+  "prior_record_preservation": {
+    "old_downstream": {
+      "path": "validation/downstream-acceptance-gap-review.json",
+      "bytes": 37046,
+      "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982"
+    },
+    "old_source_location": {
+      "path": "validation/p8-runtime-attribution-source-audit/source-location-review.json",
+      "bytes": 23799,
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5"
+    },
+    "original_A_publication_commit": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "publication_downstream_path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+    "publication_source_location_path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-location-review.json",
+    "original_bodies_unchanged": true,
+    "correction_scope": "Append-only explanation correction. Original raw, archived reviewers, source identities, thresholds, passes/failures, source guards and task states are preserved."
+  },
+  "provenance": {
+    "issue_comment": {
+      "id": 6078648925,
+      "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6078648925",
+      "created_at": "2026-10-09T09:58:24Z",
+      "updated_at": "2026-10-09T09:58:24Z"
+    },
+    "fixed_evidence_commit": "06964cdc931c3614e0487b69d195051155e9961a",
+    "remote_inputs": {
+      "comment": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/issues/comments/6078648925",
+        "retrieved_at": "2026-10-09T10:15:55.741Z",
+        "bytes": 6161,
+        "sha256": "cdf8faf00853804394a72adad9edc563f73b7cc0c04901b0b12537afed21c821"
+      },
+      "scope": {
+        "url": "https://github.com/jyqj/codecortex/blob/06964cdc931c3614e0487b69d195051155e9961a/artifacts/checkpoints/p8-round27-progress-28fe-20261009/acceptance/original-attribution-scope-reconciliation.json",
+        "retrieved_at": "2026-10-09T10:15:55.623Z",
+        "bytes": 17045,
+        "sha256": "a82816ee91d527a7369480e9b30ca3029b75f8b72d3a339c13c72b2c53648204"
+      },
+      "c8_binding": {
+        "url": "https://github.com/jyqj/codecortex/blob/06964cdc931c3614e0487b69d195051155e9961a/artifacts/checkpoints/p8-round27-progress-28fe-20261009/acceptance/C8-release-contention-binding-review.json",
+        "retrieved_at": "2026-10-09T10:15:55.797Z",
+        "bytes": 7292,
+        "sha256": "6391dc4ba4d82abc0ba72966b5bf4aa92b3752f7f37b0db8bce6ff4a704bcd16"
+      }
+    },
+    "local_inputs": {
+      "old_downstream": {
+        "path": "validation/downstream-acceptance-gap-review.json",
+        "bytes": 37046,
+        "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982"
+      },
+      "old_source_location": {
+        "path": "validation/p8-runtime-attribution-source-audit/source-location-review.json",
+        "bytes": 23799,
+        "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5"
+      },
+      "G275_raw_review": {
+        "path": "validation/g275-runtime-acceptance-review/publication/raw-review.json",
+        "bytes": 69648,
+        "sha256": "54bea82f81e7fefd353bacecc748b4f3ab646a151946af9fe225df48fa10c7dd"
+      },
+      "G275_source_manifest": {
+        "path": "validation/g275-runtime-acceptance-review/publication/source-manifest.json",
+        "bytes": 14409,
+        "sha256": "3918022cdaba14a132c394a7ae77e251fa61f011e978c8b76b0b9ee8399a60e8"
+      },
+      "G275_artifact_manifest": {
+        "path": "validation/g275-runtime-acceptance-review/publication/artifact-manifest.json",
+        "bytes": 9208,
+        "sha256": "bfb2f131f5c3cbcc1ddce701c993ba058409e12d032dd1aa6e06c7deea3440ae"
+      },
+      "local_benchmark": {
+        "path": "validation/p8-runtime-attribution-source-audit/main/docs/roadmap/code-index-v2/09-BENCHMARK.md",
+        "bytes": 20488,
+        "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+      },
+      "local_contracts": {
+        "path": "validation/p8-runtime-attribution-source-audit/main/docs/roadmap/code-index-v2/02-CONTRACTS.md",
+        "bytes": 14819,
+        "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+      }
+    }
+  },
+  "executed_actions": {
+    "original_source_files_read_and_Git_blob_hashes_recomputed": 6,
+    "retained_G275_summary_files_read_and_sha256_rechecked": 3,
+    "fetched_fixed_text_resources": 3,
+    "git_environment": {
+      "GIT_NO_LAZY_FETCH": "1",
+      "GIT_OPTIONAL_LOCKS": "0"
+    },
+    "git_fetch": false,
+    "product_or_project_execution": false,
+    "ZIP_download_or_new_numeric_C8_replay": false,
+    "repository_or_refs_or_workflows_or_remote_contents_modified": false,
+    "preexisting_reports_overwritten": false
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_todos_closed": 0,
+    "state_changed": false
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "status": "reviewer_parser_failed_before_report",
+  "command": [
+    "python3",
+    "-B",
+    "validation/g181-ci-review/review_original_ci.py"
+  ],
+  "exit_code": 1,
+  "script_sha256": "3c2cef6f43eb14a6f301a830dd698a19b863d51415015ba7f49c138f166a8cd3",
+  "assertion": "len(active_methods) == int(m[1]) and lines[i + 2] == OK",
+  "diagnosis": "The original source_architecture and historical_corpus unittest invocations are nonverbose. Their original 9 and 14 test summaries have no individual method lines. Parser must retain summary-only granularity rather than claim method-level evidence.",
+  "original_CI_or_product_rerun": false,
+  "original_evidence_modified": false,
+  "correction_after_reading_original_context": "Only source_architecture (9 tests, log8995-8999) is nonverbose. historical_corpus has14 individual method lines and terminalOK atlog9526-9528. The first failure happened at the9-test summary; its initial diagnostic overgeneralized the later14-test suite. Final report counts650 observed unique method IDs plus9 summary-only executions."
+}

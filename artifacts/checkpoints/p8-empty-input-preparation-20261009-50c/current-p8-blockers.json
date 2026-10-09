@@ -1,0 +1,3381 @@
+{
+  "schema": "p8-read-only-blocker-audit-v1",
+  "observed_window_utc": {
+    "started": "2026-10-09 07:52:19 UTC",
+    "ended": "2026-10-09 07:58:53 UTC"
+  },
+  "repository": "jyqj/codecortex",
+  "scope": {
+    "mode": "read-only status and original-acceptance audit",
+    "remote_actions_performed": [
+      "GitHub plugin GET metadata/files",
+      "GitHub plugin fetch one 187460-character failure job log"
+    ],
+    "remote_mutations_performed": [],
+    "formal_workloads_started": 0,
+    "artifact_archives_downloaded": 0,
+    "limitations": [
+      "Successful workflow/job metadata is not an independent raw artifact replay.",
+      "Large lifecycle/runtime/recovery/platform artifacts were not downloaded.",
+      "Live check-runs annotations endpoint was rejected by the GitHub plugin; pinned archived original API annotation with its original retrieval receipt was read instead.",
+      "This snapshot is time-sensitive; queued/running jobs and the newly updated PR can change."
+    ],
+    "lossy_projection_note": "Unrelated repository/user objects, completed setup steps and older issue comment bodies are omitted. Retained values are copied without status normalization; projection rules and raw source URLs are explicit."
+  },
+  "accounting": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "target_original_task_count": 10,
+    "new_original_tasks_closed": 0
+  },
+  "summary": {
+    "current_g275_study_verdict": "in_progress_and_still_potentially_completable; not failed and not accepted",
+    "current_g275_known_failed_jobs": 0,
+    "current_g275_successful_measurement_jobs": 3,
+    "current_g275_measurement_artifacts_present": 3,
+    "current_g275_expected_measurement_shards": 150,
+    "current_g275_shards_without_uploaded_artifact_now": 147,
+    "current_g275_unavailable_breakdown": {
+      "running_rep0": 2,
+      "measure_shards_not_yet_created": 145
+    },
+    "current_g275_independently_accepted_sample_count": null,
+    "expected_complete_sample_count": 1500,
+    "no_terminal_missing_classification_for_pending_shards": true,
+    "main_original_task_blocker": "P8-005/006 full fixed-source matrix and independent acceptance are incomplete; the remaining eight targets retain their open hard-dependency chain.",
+    "important_new_change": "During this audit PR178 advanced from old G9f to the atomic ready fixture Gc8. New Gc8 has seven queued workflows and no scale workflow in the exact-head run API as of the final observation.",
+    "old_a23_study_verdict": "completed failure; cannot complete the old registered study by replacing failed rep0 or importing other-source shards",
+    "source_separation": "G275 current scale and same-source non-scale outputs; old G9f failure/results; new Gc8 future results; new PR180 Gee outputs; old a23 failed study all retain distinct source/build/primary identities."
+  },
+  "ledger": {
+    "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "task_count": 192,
+    "status_counts": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+    "target_tasks": [
+      {
+        "id": "P8-005",
+        "title": "完整规模1k到100k",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-004"
+        ],
+        "steps": [
+          "固定seed与release构建测1k/5k/10k/50k/100k",
+          "同时报chunk/edge/vector"
+        ],
+        "acceptance": [
+          "不存在只报文件数或把不同工作量直接算倍数",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": {
+          "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+          "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+          "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+          "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+          "strict_paired_causal_performance": "not_established",
+          "whole_tree_memory_peak": "unknown"
+        },
+        "open_hard_dependencies": [],
+        "existing_g275_evidence": "build and rep0 jobs for 1000/5000/10000 are success; their three shard artifact entries exist. 50000/100000 rep0 are still running. No aggregate exists.",
+        "missing_acceptance": "Complete fixed-source five-scale N30 / 150-shard / 1500-sample original matrix and independent raw/counts/workload review; do not infer accepted sample count from artifact names.",
+        "same_source_runs": [
+          37896198208
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-006",
+        "title": "增量规模与fanout曲线",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "steps": [
+          "测no-op/body/API/config/batch和超预算闭包",
+          "输出各phase计数"
+        ],
+        "acceptance": [
+          "时间可归因且闭包完成后full parity，未完成有显式status",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V07",
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-005"
+        ],
+        "existing_g275_evidence": "The same scale workflow runs all nine main phases and the 1k fanout population; only three rep0 jobs have completed.",
+        "missing_acceptance": "All registered mutation and fanout repetitions, complete closure, full fifteen-table parity and attributable phase timing, plus P8-005 acceptance.",
+        "same_source_runs": [
+          37896198208
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-007",
+        "title": "多并发与混合负载",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-006"
+        ],
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V11",
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-006"
+        ],
+        "existing_g275_evidence": "All C1/C4/C8/C16 mixed jobs and fake_backfill are API success; all six runtime artifacts, including soak, exist.",
+        "missing_acceptance": "Independent fixed-source raw review of actual offered/queued/completed/timeout/tail/backfill observations remains outside this metadata audit; hard dependency P8-006 remains open.",
+        "same_source_runs": [
+          37890757030
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-008",
+        "title": "冷建/重开/热查分层",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-007"
+        ],
+        "steps": [
+          "分离OS cache、process cold、result-cache hit与uncached warm",
+          "采全部样本"
+        ],
+        "acceptance": [
+          "无best-of，sample N/分布/CI齐全",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-007"
+        ],
+        "existing_g275_evidence": "Lifecycle job is API success; 49,286,914-byte lifecycle artifact exists. Pinned workflow requests 30 cold and 400 each query stratum.",
+        "missing_acceptance": "Independent original raw/control/statistical acceptance of the same-source lifecycle observations and P8-007. Existing artifact was not downloaded/replayed here; it is not claimed missing.",
+        "same_source_runs": [
+          37890757049
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-009",
+        "title": "内存/磁盘/费用总账",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-008"
+        ],
+        "steps": [
+          "分别client/server/process-tree和artifact/FTS大小",
+          "成本reported/estimated分栏"
+        ],
+        "acceptance": [
+          "单位和归属正确，不把unavailable填0或把runner当server",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-008"
+        ],
+        "existing_g275_evidence": "The same lifecycle job/artifact records resource and storage/cost observations by the existing protocol.",
+        "missing_acceptance": "Independent same-source accounting review of runner/server/tree roles, storage/FTS inclusion, null/unavailable values and reported/estimated costs; P8-008 remains open. No new live-provider gate is imposed.",
+        "same_source_runs": [
+          37890757049
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-010",
+        "title": "长时soak与连续修改",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-009"
+        ],
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-009"
+        ],
+        "existing_g275_evidence": "G275 soak job 113690916234 is API success (05:53:48–06:59:20 UTC); its 51,068,934-byte artifact exists.",
+        "missing_acceptance": "Independent review of original one-hour edits/branch switches/catalog changes, resource/queue bounds and final full parity, plus P8-009. Job elapsed time alone does not prove every soak assertion.",
+        "same_source_runs": [
+          37890757030
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-011",
+        "title": "端到端故障与恢复认证",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-007",
+          "P8-010"
+        ],
+        "existing_g275_evidence": "G275 actual recovery and rollback matrix job 113690916709 is API success; its 121,513,685-byte original artifact exists. G275 P7 closeout also success.",
+        "missing_acceptance": "Independent original fault/recovery/raw/readiness/deletion/billing-impact review and P8-007/P8-010. G9f's separate real closeout failure cannot be erased by G275 success or treated as G275 failure.",
+        "same_source_runs": [
+          37890757129,
+          37890756962
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-012",
+        "title": "MSRV与平台冷构建矩阵",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-011"
+        ],
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-011"
+        ],
+        "existing_g275_evidence": "All eight G275 cold platform cells plus all-eight collector job 113695426558 are API success; complete receipt artifact and eight cell/raw archives exist.",
+        "missing_acceptance": "Independent original same-source cold receipt/toolchain/binary/stdio/collector review and P8-011. Do not describe these existing executions as not_run, or transfer them to new Gc8.",
+        "same_source_runs": [
+          37890757129
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-013",
+        "title": "指标/门槛与失败退出最终认证",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-012"
+        ],
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-012"
+        ],
+        "existing_g275_evidence": "G275 gate_controls job 113690916001 is API success and gate artifact exists.",
+        "missing_acceptance": "Independent original intentional quality/performance/lock failure, nonzero exit, inconclusive and immutable-raw review, plus P8-012.",
+        "same_source_runs": [
+          37890756917
+        ],
+        "eligible_for_done_now": false
+      },
+      {
+        "id": "P8-016",
+        "title": "数据库/配置/包回滚演练",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ],
+        "conditional_dependencies": [],
+        "acceptance_subgates": null,
+        "open_hard_dependencies": [
+          "P8-012",
+          "P8-013"
+        ],
+        "existing_g275_evidence": "G275 recovery/rollback job succeeded; pinned protocol includes actual historical schema24 source 277f2490fad3fa30f2812b5547bad033867c9ea5 versus current schema25 source.",
+        "missing_acceptance": "Independent original rollback/cache-format/package-disable/source/backup preservation evidence review and P8-012/P8-013. The registered historical source pair is intentional compatibility evidence, not permission to splice unrelated candidate studies.",
+        "same_source_runs": [
+          37890757129
+        ],
+        "eligible_for_done_now": false
+      }
+    ],
+    "external_dependencies": [
+      {
+        "id": "P7-020",
+        "title": "P7语义闭环与发布范围验收",
+        "status": "done",
+        "depends_on": [
+          "P7-001",
+          "P7-002",
+          "P7-003",
+          "P7-004",
+          "P7-005",
+          "P7-006",
+          "P7-007",
+          "P7-008",
+          "P7-009",
+          "P7-010",
+          "P7-011",
+          "P7-012",
+          "P7-013",
+          "P7-014",
+          "P7-015",
+          "P7-016",
+          "P7-017",
+          "P7-019"
+        ],
+        "conditional_dependencies": [
+          {
+            "task": "P7-018",
+            "when": "live semantic-effect certification; not required for engineering/fake profile"
+          }
+        ],
+        "acceptance": [
+          "无live证据不声称已证明真实语义收益，本地发布不被模型密钥强绑",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ]
+      },
+      {
+        "id": "P8-001",
+        "title": "锁定release候选与证据输入",
+        "status": "done",
+        "depends_on": [
+          "P7-020"
+        ],
+        "conditional_dependencies": [],
+        "acceptance": [
+          "每份报告精确回到同一候选，后续改动使对应证据失效",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ]
+      },
+      {
+        "id": "P8-004",
+        "title": "封存holdout与反过拟合检查",
+        "status": "done",
+        "depends_on": [
+          "P8-003"
+        ],
+        "conditional_dependencies": [],
+        "acceptance": [
+          "translation/paraphrase不泄漏，回归后不直接改标签保分",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ]
+      }
+    ],
+    "protocol_files": [
+      {
+        "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+        "bytes": 26078,
+        "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/P8-LIFECYCLE.md",
+        "bytes": 9130,
+        "sha256": "853e8c89378c89c41b9c6af8fadecf8f9854e2c262dec0ce9b75057590e44d60"
+      },
+      {
+        "path": "docs/P8_PLATFORM_RECOVERY.md",
+        "bytes": 8899,
+        "sha256": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360"
+      },
+      {
+        "path": ".github/workflows/p8-scale.yml",
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+      },
+      {
+        "path": ".github/workflows/p8-runtime.yml",
+        "bytes": 5782,
+        "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f"
+      },
+      {
+        "path": ".github/workflows/p8-lifecycle.yml",
+        "bytes": 5387,
+        "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec"
+      },
+      {
+        "path": ".github/workflows/p8-platform.yml",
+        "bytes": 6812,
+        "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4"
+      }
+    ]
+  },
+  "current_scale_study": {
+    "run_api_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208",
+    "run": {
+      "id": 37896198208,
+      "name": "P8 complete scale measurements",
+      "head_branch": "task/p8-surface-window-controls-20261009",
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "path": ".github/workflows/p8-scale.yml",
+      "event": "pull_request",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_number": 8,
+      "run_attempt": 1,
+      "created_at": "2026-10-09T06:56:25Z",
+      "updated_at": "2026-10-09T07:17:50Z",
+      "run_started_at": "2026-10-09T06:56:25Z",
+      "check_suite_id": 102675104161,
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208",
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/jobs",
+      "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/artifacts"
+    },
+    "head_commit": {
+      "id": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "tree_id": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+      "message": "chore(source): bind the reviewed surface-window candidate\n\nInstall only the exact product, independent review and registry pins. Keep verifier logic, original CI, six frozen v14 files and task definitions unchanged. The first actual controls and CI still have to execute on this fixed head.",
+      "timestamp": "2026-10-09T05:45:33Z"
+    },
+    "jobs_page": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 6,
+      "returned_count": 6,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113707984715,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T06:56:26Z",
+          "started_at": "2026-10-09T06:59:44Z",
+          "completed_at": "2026-10-09T07:04:32Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113707984715",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113707984715",
+          "steps": [],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113710393561,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "preflight (10000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T07:04:33Z",
+          "started_at": "2026-10-09T07:08:32Z",
+          "completed_at": "2026-10-09T07:16:56Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393561",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113710393561",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T07:16:53Z",
+              "completed_at": "2026-10-09T07:16:54Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113710393563,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "preflight (50000, 0)",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-09T07:04:33Z",
+          "started_at": "2026-10-09T07:12:08Z",
+          "completed_at": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393563",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113710393563",
+          "steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "number": 7,
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T07:12:25Z",
+              "completed_at": null
+            },
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "number": 16,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113710393583,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "preflight (5000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T07:04:33Z",
+          "started_at": "2026-10-09T07:06:38Z",
+          "completed_at": "2026-10-09T07:10:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393583",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113710393583",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T07:10:28Z",
+              "completed_at": "2026-10-09T07:10:29Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113710393630,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "preflight (1000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T07:04:33Z",
+          "started_at": "2026-10-09T07:14:22Z",
+          "completed_at": "2026-10-09T07:15:26Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393630",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113710393630",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T07:15:22Z",
+              "completed_at": "2026-10-09T07:15:24Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113710393672,
+          "run_id": 37896198208,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "preflight (100000, 0)",
+          "status": "in_progress",
+          "conclusion": null,
+          "created_at": "2026-10-09T07:04:33Z",
+          "started_at": "2026-10-09T07:17:49Z",
+          "completed_at": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393672",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113710393672",
+          "steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "number": 7,
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T07:18:06Z",
+              "completed_at": null
+            },
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "number": 16,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        }
+      ]
+    },
+    "artifacts_page": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/artifacts?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 9,
+      "returned_count": 9,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11601336788,
+          "name": "p8-scale-shard-10000-0-37896198208",
+          "size_in_bytes": 853841,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601336788",
+          "expired": false,
+          "created_at": "2026-10-09T07:16:54Z",
+          "updated_at": "2026-10-09T07:16:54Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:33944d8b9c895b62064ce89dc5d99a476b78cbcc97c2f9a57ccf190571e20374",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11601142045,
+          "name": "p8-scale-shard-1000-0-37896198208",
+          "size_in_bytes": 952777,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601142045",
+          "expired": false,
+          "created_at": "2026-10-09T07:15:24Z",
+          "updated_at": "2026-10-09T07:15:24Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:242eb240b06cccb6ffc6aa210a44a0985f969308661e7ad92b8451735c445171",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11601130609,
+          "name": "p8-scale-capacity-5000-0-37896198208",
+          "size_in_bytes": 786,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601130609",
+          "expired": false,
+          "created_at": "2026-10-09T07:06:55Z",
+          "updated_at": "2026-10-09T07:06:55Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:568d505fe7da83f8df0679a2932405dbc5c042fe89d45fdd67066210097f45cf",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11601087740,
+          "name": "p8-scale-capacity-100000-0-37896198208",
+          "size_in_bytes": 786,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601087740",
+          "expired": false,
+          "created_at": "2026-10-09T07:18:05Z",
+          "updated_at": "2026-10-09T07:18:05Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:7b830f3444bfa18a386775813730d9f8945f85a76ba30fae92eca8c448270311",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11600946382,
+          "name": "p8-scale-shard-5000-0-37896198208",
+          "size_in_bytes": 583828,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600946382",
+          "expired": false,
+          "created_at": "2026-10-09T07:10:29Z",
+          "updated_at": "2026-10-09T07:10:29Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:7d994e6d922d477ee07c5bb7ea478f180d927b7c108a965bff675be54a52cbb2",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11600574581,
+          "name": "p8-scale-capacity-50000-0-37896198208",
+          "size_in_bytes": 785,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600574581",
+          "expired": false,
+          "created_at": "2026-10-09T07:12:25Z",
+          "updated_at": "2026-10-09T07:12:25Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:abb0eebb51584c58f9ce243a229498acb7e5e4b51f554bb763b6e602e7f9ce24",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11600444517,
+          "name": "p8-scale-capacity-10000-0-37896198208",
+          "size_in_bytes": 785,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600444517",
+          "expired": false,
+          "created_at": "2026-10-09T07:08:48Z",
+          "updated_at": "2026-10-09T07:08:48Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:4fd49d2682ec5279689c4dd47bdf353881e407b869b92d9978b6f5b9504ea66e",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11600309282,
+          "name": "p8-scale-build-37896198208",
+          "size_in_bytes": 9218801,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600309282",
+          "expired": false,
+          "created_at": "2026-10-09T07:04:31Z",
+          "updated_at": "2026-10-09T07:04:31Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:9c13733e1bdb207301920f3dddb0bde4dcab278b31e4cdfd0dc8bc1f3c75ab67",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11600229155,
+          "name": "p8-scale-capacity-1000-0-37896198208",
+          "size_in_bytes": 783,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600229155",
+          "expired": false,
+          "created_at": "2026-10-09T07:14:41Z",
+          "updated_at": "2026-10-09T07:14:41Z",
+          "expires_at": "2027-01-07T06:56:25Z",
+          "digest": "sha256:65c283361ecf9f6b1af395cd2fb51c2c14e8f5d74a2bd94110056ba314e623be",
+          "workflow_run": {
+            "id": 37896198208,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        }
+      ]
+    },
+    "registered_plan": {
+      "source_workflow_url": "https://raw.githubusercontent.com/jyqj/codecortex/275e8799d4947d297329073eaa3ca675d3fd0777/.github/workflows/p8-scale.yml",
+      "scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "repetitions": 30,
+      "shards_per_scale": 30,
+      "main_phases": 9,
+      "fanout_values": [
+        1,
+        4,
+        16,
+        64,
+        128
+      ],
+      "fanout_population": "only 1000-scale shards, five fanout workloads each N30",
+      "expected_shards": 150,
+      "expected_samples": 1500,
+      "preflight_shards": 5,
+      "remaining_measure_shards": 145,
+      "native_deadline_ms": 18000000,
+      "workflow_job_timeout_minutes": 350,
+      "max_output_bytes": 536870912,
+      "measure_max_parallel": 10,
+      "preflight_failure_behavior": "measure not started; aggregate still requires all150 and fails incomplete coverage; rep0 remains original population"
+    },
+    "interpretation": "All six API jobs were retrieved on one per_page=100 page (total_count6). Three shard uploads are evidence availability only. Two running rep0 cells can still succeed; no terminal failure or mathematical impossibility is established. No accepted-sample count is derived from metadata."
+  },
+  "same_g275_existing_non_scale_evidence": {
+    "runs": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=275e8799d4947d297329073eaa3ca675d3fd0777&per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 9,
+      "returned_count": 9,
+      "complete": true,
+      "workflow_runs": [
+        {
+          "id": 37896198208,
+          "name": "P8 complete scale measurements",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-scale.yml",
+          "event": "pull_request",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 8,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:25Z",
+          "updated_at": "2026-10-09T07:17:50Z",
+          "run_started_at": "2026-10-09T06:56:25Z",
+          "check_suite_id": 102675104161,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/artifacts"
+        },
+        {
+          "id": 37890757202,
+          "name": "P7 engineering regressions",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p7-engineering.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 65,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:45Z",
+          "updated_at": "2026-10-09T05:58:29Z",
+          "run_started_at": "2026-10-09T05:53:45Z",
+          "check_suite_id": 102660496838,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757202",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757202/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757202/artifacts"
+        },
+        {
+          "id": 37890757129,
+          "name": "P8 platform cold builds",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-platform.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 25,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:45Z",
+          "updated_at": "2026-10-09T06:16:25Z",
+          "run_started_at": "2026-10-09T05:53:45Z",
+          "check_suite_id": 102660496751,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757129/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757129/artifacts"
+        },
+        {
+          "id": 37890757049,
+          "name": "P8 lifecycle and resource observations",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-lifecycle.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 25,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:44Z",
+          "updated_at": "2026-10-09T06:03:30Z",
+          "run_started_at": "2026-10-09T05:53:44Z",
+          "check_suite_id": 102660496569,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757049",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757049/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757049/artifacts"
+        },
+        {
+          "id": 37890756962,
+          "name": "P7 closeout evidence",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p7-closeout.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 52,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:44Z",
+          "updated_at": "2026-10-09T06:04:12Z",
+          "run_started_at": "2026-10-09T05:53:44Z",
+          "check_suite_id": 102660496424,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756962",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756962/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756962/artifacts"
+        },
+        {
+          "id": 37890756917,
+          "name": "P8 original failure gates",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-gates.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 18,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:44Z",
+          "updated_at": "2026-10-09T05:59:25Z",
+          "run_started_at": "2026-10-09T05:53:44Z",
+          "check_suite_id": 102660496319,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756917",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756917/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756917/artifacts"
+        },
+        {
+          "id": 37890756949,
+          "name": "CI",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/ci.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 357,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:44Z",
+          "updated_at": "2026-10-09T06:18:12Z",
+          "run_started_at": "2026-10-09T05:53:44Z",
+          "check_suite_id": 102660496390,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756949",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756949/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756949/artifacts"
+        },
+        {
+          "id": 37890757030,
+          "name": "P8 runtime observations",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-runtime.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 18,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:44Z",
+          "updated_at": "2026-10-09T06:59:21Z",
+          "run_started_at": "2026-10-09T05:53:44Z",
+          "check_suite_id": 102660496528,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757030/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757030/artifacts"
+        },
+        {
+          "id": 37890734575,
+          "name": "P8 same-prepare surface window controls only",
+          "head_branch": "task/p8-surface-window-controls-20261009",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "path": ".github/workflows/p8-surface-window-controls.yml",
+          "event": "push",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 1,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T05:53:28Z",
+          "updated_at": "2026-10-09T05:57:13Z",
+          "run_started_at": "2026-10-09T05:53:28Z",
+          "check_suite_id": 102660438048,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890734575",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890734575/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890734575/artifacts"
+        }
+      ]
+    },
+    "runtime_jobs": {
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757030/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 6,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113690916234,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "soak",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:48Z",
+          "completed_at": "2026-10-09T06:59:20Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916234",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916234"
+        },
+        {
+          "id": 113690916323,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "fake_backfill",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:47Z",
+          "completed_at": "2026-10-09T06:02:44Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916323",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916323"
+        },
+        {
+          "id": 113690916342,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "mixed (16)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:47Z",
+          "completed_at": "2026-10-09T06:06:44Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916342",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916342"
+        },
+        {
+          "id": 113690916359,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "mixed (4)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:48Z",
+          "completed_at": "2026-10-09T06:05:32Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916359",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916359"
+        },
+        {
+          "id": 113690916435,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "mixed (8)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:48Z",
+          "completed_at": "2026-10-09T06:06:48Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916435",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916435"
+        },
+        {
+          "id": 113690916496,
+          "run_id": 37890757030,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "mixed (1)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:48Z",
+          "completed_at": "2026-10-09T06:05:18Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030/job/113690916496",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916496"
+        }
+      ]
+    },
+    "platform_jobs": {
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757129/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 10,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113690916487,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold macos / 1.95 / semantic",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:56:19Z",
+          "completed_at": "2026-10-09T06:05:03Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916487",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916487"
+        },
+        {
+          "id": 113690916665,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold macos / stable / semantic",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:57:25Z",
+          "completed_at": "2026-10-09T06:03:58Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916665",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916665"
+        },
+        {
+          "id": 113690916672,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold macos / stable / default",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:57:20Z",
+          "completed_at": "2026-10-09T06:03:33Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916672",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916672"
+        },
+        {
+          "id": 113690916691,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold linux / stable / default",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T06:03:40Z",
+          "completed_at": "2026-10-09T06:07:46Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916691",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916691"
+        },
+        {
+          "id": 113690916708,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold linux / 1.95 / semantic",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T06:02:11Z",
+          "completed_at": "2026-10-09T06:06:44Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916708",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916708"
+        },
+        {
+          "id": 113690916709,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "actual recovery and rollback matrix",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:58:31Z",
+          "completed_at": "2026-10-09T06:03:40Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916709",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916709"
+        },
+        {
+          "id": 113690916716,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold linux / stable / semantic",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:58:34Z",
+          "completed_at": "2026-10-09T06:03:37Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916716",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916716"
+        },
+        {
+          "id": 113690916720,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold linux / 1.95 / default",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T06:02:46Z",
+          "completed_at": "2026-10-09T06:07:33Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916720",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916720"
+        },
+        {
+          "id": 113690916767,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "cold macos / 1.95 / default",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T06:03:24Z",
+          "completed_at": "2026-10-09T06:10:59Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113690916767",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916767"
+        },
+        {
+          "id": 113695426558,
+          "run_id": 37890757129,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "all eight platform cells",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T06:10:59Z",
+          "started_at": "2026-10-09T06:15:54Z",
+          "completed_at": "2026-10-09T06:16:25Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129/job/113695426558",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113695426558"
+        }
+      ]
+    },
+    "lifecycle_jobs": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757049/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 1,
+      "returned_count": 1,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113690916508,
+          "run_id": 37890757049,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "lifecycle",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:53:50Z",
+          "completed_at": "2026-10-09T06:03:29Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757049/job/113690916508",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916508"
+        }
+      ]
+    },
+    "gate_jobs": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756917/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 1,
+      "returned_count": 1,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113690916001,
+          "run_id": 37890756917,
+          "run_attempt": 1,
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "name": "gate_controls",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T05:53:45Z",
+          "started_at": "2026-10-09T05:57:24Z",
+          "completed_at": "2026-10-09T05:59:25Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756917/job/113690916001",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113690916001"
+        }
+      ]
+    },
+    "lifecycle_artifacts": {
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757049/artifacts?per_page=100&page=1",
+      "total_count": 1,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11597589468,
+          "name": "p8-lifecycle-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 49286914,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597589468",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:25Z",
+          "updated_at": "2026-10-09T06:03:25Z",
+          "expires_at": "2026-10-30T06:03:17Z",
+          "digest": "sha256:e0315c535a51ed7629308463296e6714c63e14731e14d7019be9b266524c7fd1",
+          "workflow_run": {
+            "id": 37890757049,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        }
+      ]
+    },
+    "runtime_artifacts": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757030/artifacts?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 6,
+      "returned_count": 6,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11600492680,
+          "name": "p8-soak-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 51068934,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600492680",
+          "expired": false,
+          "created_at": "2026-10-09T06:59:19Z",
+          "updated_at": "2026-10-09T06:59:19Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:d99ee2d1e69e0b6787c42a95d9e0277f0adcf0a72add01a7d2b995a427d2f8e7",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598875346,
+          "name": "p8-mixed-c1-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 16605523,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598875346",
+          "expired": false,
+          "created_at": "2026-10-09T06:05:16Z",
+          "updated_at": "2026-10-09T06:05:16Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:702548d29259a1cefbb444704ea0770df6d6489b4b15323d63633fb4b54904ef",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598815621,
+          "name": "p8-mixed-c8-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 16649026,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598815621",
+          "expired": false,
+          "created_at": "2026-10-09T06:06:46Z",
+          "updated_at": "2026-10-09T06:06:46Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:f6673ea6d3cba6047d8db028fcad8ef7724927f09425d35bbda5bfc0464f3cdb",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598690899,
+          "name": "p8-mixed-c4-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 16979017,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598690899",
+          "expired": false,
+          "created_at": "2026-10-09T06:05:30Z",
+          "updated_at": "2026-10-09T06:05:30Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:91266b26a0ca44d88c86947028c5c288b2afb024f2eec0e5c471f199e6545a7c",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598543621,
+          "name": "p8-mixed-c16-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 16412841,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598543621",
+          "expired": false,
+          "created_at": "2026-10-09T06:06:42Z",
+          "updated_at": "2026-10-09T06:06:42Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:dd27a0afbdc5382c616c56bc42fc78ebd085b15454bcd7f12bcfdebdcb320ec3",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597519732,
+          "name": "p8-backfill-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 7831523,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597519732",
+          "expired": false,
+          "created_at": "2026-10-09T06:02:43Z",
+          "updated_at": "2026-10-09T06:02:43Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:2c16ee9e6e3ca7bb28844473b478b5bbe1b1f2596805713696f40cee854b7359",
+          "workflow_run": {
+            "id": 37890757030,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        }
+      ]
+    },
+    "platform_artifacts": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890757129/artifacts?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 18,
+      "returned_count": 18,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11599155159,
+          "name": "p8-platform-cell-macos-1.95-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8035282,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11599155159",
+          "expired": false,
+          "created_at": "2026-10-09T06:10:50Z",
+          "updated_at": "2026-10-09T06:10:50Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:71dc48fde84bcfa80c2609729344f9aedcddf9292e6c7f49ba69acf4d1bd4c5d",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598940356,
+          "name": "p8-platform-cell-linux-1.95-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 9027187,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598940356",
+          "expired": false,
+          "created_at": "2026-10-09T06:06:40Z",
+          "updated_at": "2026-10-09T06:06:40Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:b7ad0a789de917167343830f8401aac4a8a5b74af94ebabaabd2cf622e326182",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598915453,
+          "name": "p8-platform-raw-linux-1.95-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 9114947,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598915453",
+          "expired": false,
+          "created_at": "2026-10-09T06:06:42Z",
+          "updated_at": "2026-10-09T06:06:42Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:99e5a4b0c454cadc39875f5b2951e0bde4db58bed41b356cbae8100bd35a1b18",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598870680,
+          "name": "p8-platform-cell-linux-1.95-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8774388,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598870680",
+          "expired": false,
+          "created_at": "2026-10-09T06:07:29Z",
+          "updated_at": "2026-10-09T06:07:29Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:397a57a76361af6af7fdc94230beb4e6056078ab946d0c0ba0b20015771bc8c7",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598805887,
+          "name": "p8-platform-raw-linux-1.95-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8862134,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598805887",
+          "expired": false,
+          "created_at": "2026-10-09T06:07:31Z",
+          "updated_at": "2026-10-09T06:07:31Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:1ca34e3c079b66bcacfa9e3e66c709457a54db47b68ead4d5c35fb6a869b2f5f",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598700481,
+          "name": "p8-platform-raw-linux-stable-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8812274,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598700481",
+          "expired": false,
+          "created_at": "2026-10-09T06:07:44Z",
+          "updated_at": "2026-10-09T06:07:44Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:02c1729790e368e904bd3eb41edfbbb30541c364d78946f50aba73ebabd21808",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598629392,
+          "name": "p8-platform-complete-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 1491,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598629392",
+          "expired": false,
+          "created_at": "2026-10-09T06:16:23Z",
+          "updated_at": "2026-10-09T06:16:23Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:5f23906d47ca07aad2a3dc104e9e5cb078bd6bcee097025e4cff04759f1c4578",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598373908,
+          "name": "p8-platform-cell-linux-stable-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8974075,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598373908",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:33Z",
+          "updated_at": "2026-10-09T06:03:33Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:ec74eb9506abbde25aa1ea9d063e9b42ce0d602cd009152219955f8a18c54d84",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598269577,
+          "name": "p8-platform-raw-macos-1.95-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8362982,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598269577",
+          "expired": false,
+          "created_at": "2026-10-09T06:04:58Z",
+          "updated_at": "2026-10-09T06:04:58Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:0165ba230d7e02a28ea99fb6a4ee7cdf9d0c07babed586ce23018fdf8cc615ec",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598214657,
+          "name": "p8-platform-cell-macos-1.95-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8274920,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598214657",
+          "expired": false,
+          "created_at": "2026-10-09T06:04:55Z",
+          "updated_at": "2026-10-09T06:04:55Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:bc27ae48279eded709d43b0faa1623825b8f99c63cc844eabccd902c27615dfe",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11598039708,
+          "name": "p8-platform-raw-linux-stable-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 9061334,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598039708",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:35Z",
+          "updated_at": "2026-10-09T06:03:35Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:234586793e90c25270a92e06b096a5738afe5b35b7ec99cb8fcfaa1e458ea88f",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597964841,
+          "name": "p8-platform-cell-macos-stable-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8355790,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597964841",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:26Z",
+          "updated_at": "2026-10-09T06:03:26Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:97616d74c5370910d2f5e46dc686f6b3fdd722efe16fb05b77fad06f832e805f",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597934954,
+          "name": "p8-platform-raw-macos-stable-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8443276,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597934954",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:29Z",
+          "updated_at": "2026-10-09T06:03:29Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:d77ed6103ecae110fe16b91f98af0275d20e9a582b4b0fefc4071ed5895a5902",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597869257,
+          "name": "p8-platform-raw-macos-1.95-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8123382,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597869257",
+          "expired": false,
+          "created_at": "2026-10-09T06:10:53Z",
+          "updated_at": "2026-10-09T06:10:53Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:d4be08f7fdeb2dcc40df127433bdd45ee934f6f6ee1f7a4cc6704fa75eb5f47e",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597669171,
+          "name": "p8-platform-raw-macos-stable-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8697415,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597669171",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:56Z",
+          "updated_at": "2026-10-09T06:03:56Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:a459eba2e3bdaf49e0c365d9387c8880d1f9219a3c3f21f04ee917cf0e4ab5e4",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597639035,
+          "name": "p8-full-recovery-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 121513685,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597639035",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:36Z",
+          "updated_at": "2026-10-09T06:03:36Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:4c3035f0458e7c91088f9881ea9e5b3072b83dad9ae27a75939cc2afefbcd854",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597624857,
+          "name": "p8-platform-cell-linux-stable-default-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8725035,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597624857",
+          "expired": false,
+          "created_at": "2026-10-09T06:07:41Z",
+          "updated_at": "2026-10-09T06:07:41Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:fc56c13948cf21e2511eb84acd49c5dbbb2298566c7149a926659c0e3764ce89",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        },
+        {
+          "id": 11597524760,
+          "name": "p8-platform-cell-macos-stable-semantic-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 8609883,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597524760",
+          "expired": false,
+          "created_at": "2026-10-09T06:03:54Z",
+          "updated_at": "2026-10-09T06:03:54Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:b99017bc5ac64516196bd48d975eef94e5a249da2d08f532e3e5d54a50065e68",
+          "workflow_run": {
+            "id": 37890757129,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        }
+      ]
+    },
+    "gate_artifacts": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37890756917/artifacts?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 1,
+      "returned_count": 1,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11598517678,
+          "name": "p8-gates-275e8799d4947d297329073eaa3ca675d3fd0777",
+          "size_in_bytes": 33005224,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598517678",
+          "expired": false,
+          "created_at": "2026-10-09T05:59:23Z",
+          "updated_at": "2026-10-09T05:59:23Z",
+          "expires_at": "2027-01-07T05:53:45Z",
+          "digest": "sha256:f2fddad2d95b53731862b87a80fbeb6dacca5da46ceb3e00f0ecebe04d1d173b",
+          "workflow_run": {
+            "id": 37890756917,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-surface-window-controls-20261009",
+            "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+          }
+        }
+      ]
+    },
+    "acceptance_limit": "These are existing same-source review opportunities. This audit verifies their API terminal states and artifact availability, not the complete independent content acceptance."
+  },
+  "pr178": {
+    "api_url": "https://api.github.com/repos/jyqj/codecortex/pulls/178",
+    "observed_before": {
+      "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+      "updated_at": "2026-10-09T07:26:54Z",
+      "draft": true
+    },
+    "observed_latest": {
+      "number": 178,
+      "title": "perf(index): integrate bounded FTS rebuilds with reviewed macOS fixes",
+      "url": "https://github.com/jyqj/codecortex/pull/178",
+      "state": "open",
+      "draft": true,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "head_ref": "task/p8-combined-engineering-bfcc-20261009",
+      "base_sha": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "updated_at": "2026-10-09T07:58:04Z",
+      "commits": 9,
+      "changed_files": 225,
+      "body": "## 目的与结果\n\n这份 PR 将 #173 的 surface-window 优化、macOS 测试辅助修复、分窗口 FTS 重建路径以及原 CI 暴露的 ready 文件发布竞态整合为一份固定候选源码。当前 head 已普通快进到 `c8be5afaac568ffd40ef86d3795423c3b73c9f39`，后续完整验收绑定这一版本。\n\n## 当前固定源码\n\n| 对象 | 提交 |\n| --- | --- |\n| 产品 P | `35a7b3412e5fdee9e8ff88951735c06b0e371465` |\n| 独立审查及原件 R | `a9706a90a72226cb59c3bfd374ef9c1e3d66cbcb` |\n| 仅更新原 v15 引用与 registry 的 G | `c8be5afaac568ffd40ef86d3795423c3b73c9f39` |\n\nG 的 tree 为 `9b031be22a430e51e153cce6e80770ed885818e3`。R 是 P 的直接后继，G 是 R 的直接后继。完整清单包含 1,090 个产品输入、139 个验证输入，以及相对固定历史 BASE 的 47 项源码差异。原协议、预算、CI、v14 校验逻辑和 TODO 账本保持原字节；独立薄审也核对了实际 G 对象。\n\n审查及本轮原始工程执行入口：\n[`artifacts/checkpoints/p8-ready-signal-bfcc-20261009/`](https://github.com/jyqj/codecortex/tree/c8be5afaac568ffd40ef86d3795423c3b73c9f39/artifacts/checkpoints/p8-ready-signal-bfcc-20261009/)\n\n## 行为变化与边界\n\n- 保留 #173 的 `reconcile.rs` 原字节，整合已分别审查的 macOS 修复与 FTS 实现/控制。\n- 重建路径以至多 256 个文件为窗口延迟写入 FTS 镜像，使用实际存活 rowid 范围，保留冲突幸存者、schema/overflow 回退及错误传播。原公开 `write_file_data` 接口保持原行为；新 opt-in 入口要求调用者传播错误、放弃 staging 并禁止发布失败结果。这里不声称 `journal_mode=OFF` 提供物理回滚，也不把旧原型计时作为本版本的提速证据。\n- 本轮只进一步修改 `crates/cc-semantic/tests/crash_independent_review.rs` 的 ready 发布顺序：先在同目录完整写入、sync、close 临时 PID 文件，再 rename 为 ready。保留原 15 秒上限、10ms 轮询、PID 等值、3 seeds × 5 boundaries、SIGKILL、恢复、负例及 OwnedChild 清理。\n\n## 本轮实际工程验证\n\n以下命令在 macOS 26.6.2 arm64、Rust 1.95.0、SDK 15.4 上全部真实退出 0：\n\n| 原命令 | 实际结果 |\n| --- | --- |\n| `cargo +1.95.0 test -p cc-semantic --locked --all-targets -- --nocapture` | 355 passed / 0 failed / 6 原有 ignored |\n| `cargo +1.95.0 fmt --all -- --check` | 通过 |\n| `cargo +1.95.0 clippy --workspace --all-targets -- -D warnings` | 通过 |\n| `cargo +1.95.0 test --workspace` | 2,727 passed / 0 failed / 73 原有 ignored |\n| `cargo +1.95.0 test -p cc-eval -- integration_fixtures_and_corpus` | 1 passed，属于 workspace 的重复确认 |\n\n实际执行发生在旧 G9f 加 1 个冻结未提交 fixture 修改的工作树，随后与产品 P 做了完整字节、Git blob 和 mode 桥接；不能重标为直接 checkout P/G 的运行。每条命令前后 1,235 个输入不变。15 个原故障边界均实际观察到 SIGKILL 9 和恢复 integrity ok。复用的 APFS clone 依赖缓存属于普通工程验证，不是冷构建证明。\n\n## 已保留的旧版本结果\n\n旧 G `9f7b16f0758eb79f306cf44605b84550f02de441` 的 [P7 closeout run 37896539239](https://github.com/jyqj/codecortex/actions/runs/37896539239) 真实失败：原 semantic 命令返回 101，`independently_observed_sigkill_boundaries` 读取 ready 时出现 `ParseIntError { kind: Empty }`。日志没有保留实际 seed/PID/系统调用交错，因此不虚构更细的运行现场。[原始日志和 ZIP 保持完整](https://github.com/jyqj/codecortex/tree/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes)。\n\n旧 G9f 的既有 Linux v15 CLI 已于 07:36:21 UTC 真实退出 0，期间全部原输入保持不变。该结果只属于旧 G9f，不作为当前 Gc8 的 source admission；旧 G9f 的 runtime/platform 等产物同样单独保存。\n\n## 当前验收与后续\n\n当前 Gc8 的原 CI 和四类 P8 非规模工作流按正常 PR 事件执行。原 CI 已包含 source-integrity suite 与 selected v15 步骤，最终接受时仍核对其实际 checkout 与当前产品、验证和 binding 字节。原规模协议允许这些检查与完整研究并行，不新增本地重复运行或串行等待条件。\n\nRoot 正在公开当前 Gc8 的原协议 150 分片 / 1,500 样本预登记，随后只发送一次 workflow_dispatch。5 个原 rep0 全部通过后才执行余下 145 分片，保留原预算、全量 parity 和 strict aggregate；不替换失败主样本。外部 #173 run 37896198208、原 a23 失败研究与 G2 diagnostic 均保留各自身份。\n\n原 TODO 账本仍为 **163 done / 29 remaining，本次新增原任务完成 0**。P8-005–P8-013、P8-016 仅在本版本自身的原执行、独立验收及硬依赖满足后更新。#174/#176 暂保留，待组合版本对应检查通过后按实际继承范围收尾。#175/#179 的新增独立范围保持在其原 PR 中。\n\n关联：#158、#173、#174、#176。"
+    },
+    "actual_fast_forward_compare": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/compare/9f7b16f0758eb79f306cf44605b84550f02de441...c8be5afaac568ffd40ef86d3795423c3b73c9f39?per_page=100&page=1",
+      "status": "ahead",
+      "ahead_by": 3,
+      "behind_by": 0,
+      "total_commits": 3,
+      "commits": [
+        {
+          "sha": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+          "message": "fix(semantic): publish complete crash-test ready signals atomically"
+        },
+        {
+          "sha": "a9706a90a72226cb59c3bfd374ef9c1e3d66cbcb",
+          "message": "docs(p8): bind independent review of atomic ready-signal fixture"
+        },
+        {
+          "sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "message": "chore(p8): bind independently reviewed atomic ready-signal source"
+        }
+      ],
+      "returned_files": 117,
+      "non_archive_files": [
+        {
+          "filename": "crates/cc-semantic/tests/crash_independent_review.rs",
+          "status": "modified",
+          "sha": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -96,10 +96,10 @@ fn durable(path: &Path, bytes: &[u8]) {\n     f.sync_all().unwrap();\n }\n fn signal_and_wait(root: &Path) -> ! {\n-    durable(\n-        &root.join(\"ready\"),\n-        std::process::id().to_string().as_bytes(),\n-    );\n+    // Publish the complete PID only after writing and syncing in this fresh directory.\n+    let pending = root.join(\"ready.pending\");\n+    durable(&pending, std::process::id().to_string().as_bytes());\n+    std::fs::rename(pending, root.join(\"ready\")).unwrap();\n     loop {\n         std::thread::park_timeout(Duration::from_secs(1));\n     }"
+        },
+        {
+          "filename": "scripts/reviewed-source-registry-v15.json",
+          "status": "modified",
+          "sha": "fe0af18b176c53b1fd7f0cd0114971c034db89de",
+          "additions": 8,
+          "deletions": 4
+        },
+        {
+          "filename": "scripts/verify_reviewed_source_v15.py",
+          "status": "modified",
+          "sha": "61b944e23bad920287f59406bdb0ae8637d14aad",
+          "additions": 4,
+          "deletions": 4
+        }
+      ]
+    },
+    "new_head_runs": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=c8be5afaac568ffd40ef86d3795423c3b73c9f39&per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 7,
+      "returned_count": 7,
+      "complete": true,
+      "workflow_runs": [
+        {
+          "id": 37901930820,
+          "name": "CI",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/ci.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 371,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626244,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930820",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930820/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930820/artifacts"
+        },
+        {
+          "id": 37901930843,
+          "name": "P8 original failure gates",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p8-gates.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 27,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626310,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930843",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930843/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930843/artifacts"
+        },
+        {
+          "id": 37901931021,
+          "name": "P8 platform cold builds",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p8-platform.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 39,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626718,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901931021",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901931021/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901931021/artifacts"
+        },
+        {
+          "id": 37901930897,
+          "name": "P8 runtime observations",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p8-runtime.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 27,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626445,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930897",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930897/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930897/artifacts"
+        },
+        {
+          "id": 37901930990,
+          "name": "P7 engineering regressions",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p7-engineering.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 79,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626660,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930990",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930990/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930990/artifacts"
+        },
+        {
+          "id": 37901931093,
+          "name": "P7 closeout evidence",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p7-closeout.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 66,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626889,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901931093",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901931093/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901931093/artifacts"
+        },
+        {
+          "id": 37901930818,
+          "name": "P8 lifecycle and resource observations",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "path": ".github/workflows/p8-lifecycle.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 39,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:56:33Z",
+          "updated_at": "2026-10-09T07:56:33Z",
+          "run_started_at": "2026-10-09T07:56:33Z",
+          "check_suite_id": 102690626251,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930818",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930818/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37901930818/artifacts"
+        }
+      ]
+    },
+    "new_head_scale_dispatched_in_observed_api": false,
+    "new_head_dispatch_coordination": "Latest PR body says bfcc/root is preregistering Gc8's own study and intends one workflow_dispatch. This audit did not dispatch. No such Gc8 scale run appeared among all seven exact-head API runs at observation.",
+    "old_g9f_runs": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=9f7b16f0758eb79f306cf44605b84550f02de441&per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 7,
+      "returned_count": 7,
+      "complete": true,
+      "workflow_runs": [
+        {
+          "id": 37896539291,
+          "name": "P8 runtime observations",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p8-runtime.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 23,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:00:10Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012076,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539291",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539291/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539291/artifacts"
+        },
+        {
+          "id": 37896539353,
+          "name": "P8 original failure gates",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p8-gates.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 23,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:18:51Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012385,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539353",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539353/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539353/artifacts"
+        },
+        {
+          "id": 37896539337,
+          "name": "P8 lifecycle and resource observations",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p8-lifecycle.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 33,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:21:14Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012378,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539337",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539337/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539337/artifacts"
+        },
+        {
+          "id": 37896539277,
+          "name": "P7 engineering regressions",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p7-engineering.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 73,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:35:08Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012213,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539277",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539277/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539277/artifacts"
+        },
+        {
+          "id": 37896539239,
+          "name": "P7 closeout evidence",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p7-closeout.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_number": 60,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:42:32Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012064,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539239/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539239/artifacts"
+        },
+        {
+          "id": 37896539450,
+          "name": "P8 platform cold builds",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/p8-platform.yml",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "run_number": 33,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:55:45Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676012717,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539450",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539450/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539450/artifacts"
+        },
+        {
+          "id": 37896539769,
+          "name": "CI",
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+          "path": ".github/workflows/ci.yml",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 365,
+          "run_attempt": 1,
+          "created_at": "2026-10-09T07:00:10Z",
+          "updated_at": "2026-10-09T07:57:01Z",
+          "run_started_at": "2026-10-09T07:00:10Z",
+          "check_suite_id": 102676013510,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539769",
+          "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539769/jobs",
+          "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539769/artifacts"
+        }
+      ]
+    },
+    "old_g9f_failure": {
+      "run": {
+        "id": 37896539239,
+        "name": "P7 closeout evidence",
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+        "path": ".github/workflows/p7-closeout.yml",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_number": 60,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:00:10Z",
+        "updated_at": "2026-10-09T07:42:32Z",
+        "run_started_at": "2026-10-09T07:00:10Z",
+        "check_suite_id": 102676012064,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539239/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539239/artifacts"
+      },
+      "jobs_page": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896539239/jobs?per_page=100&page=1",
+        "page": 1,
+        "per_page": 100,
+        "total_count": 4,
+        "returned_count": 4,
+        "complete": true,
+        "jobs": [
+          {
+            "id": 113709066322,
+            "run_id": 37896539239,
+            "run_attempt": 1,
+            "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+            "name": "closeout",
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-09T07:00:10Z",
+            "started_at": "2026-10-09T07:01:52Z",
+            "completed_at": "2026-10-09T07:08:55Z",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239/job/113709066322",
+            "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113709066322",
+            "steps": [
+              {
+                "name": "Actual cache races, process faults and WAL recovery",
+                "number": 5,
+                "status": "completed",
+                "conclusion": "failure",
+                "started_at": "2026-10-09T07:02:26Z",
+                "completed_at": "2026-10-09T07:04:13Z"
+              }
+            ],
+            "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+          },
+          {
+            "id": 113709066517,
+            "run_id": 37896539239,
+            "run_attempt": 1,
+            "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+            "name": "offline (default)",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-09T07:00:10Z",
+            "started_at": "2026-10-09T07:26:10Z",
+            "completed_at": "2026-10-09T07:29:24Z",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239/job/113709066517",
+            "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113709066517",
+            "steps": [],
+            "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+          },
+          {
+            "id": 113709066622,
+            "run_id": 37896539239,
+            "run_attempt": 1,
+            "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-09T07:00:10Z",
+            "started_at": "2026-10-09T07:30:14Z",
+            "completed_at": "2026-10-09T07:38:12Z",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239/job/113709066622",
+            "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113709066622",
+            "steps": [],
+            "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+          },
+          {
+            "id": 113709066665,
+            "run_id": 37896539239,
+            "run_attempt": 1,
+            "head_sha": "9f7b16f0758eb79f306cf44605b84550f02de441",
+            "name": "offline (semantic)",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-09T07:00:10Z",
+            "started_at": "2026-10-09T07:39:47Z",
+            "completed_at": "2026-10-09T07:42:31Z",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896539239/job/113709066665",
+            "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113709066665",
+            "steps": [],
+            "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+          }
+        ]
+      },
+      "failed_job": 113709066322,
+      "failed_step": 5,
+      "failed_step_name": "Actual cache races, process faults and WAL recovery",
+      "actual_command": "cargo test -p cc-semantic --locked --all-targets -- --nocapture",
+      "actual_exit_code": 101,
+      "actual_checkout": "9f7b16f0758eb79f306cf44605b84550f02de441",
+      "actual_error": "ParseIntError { kind: Empty }",
+      "actual_test": "independently_observed_sigkill_boundaries",
+      "panic_location": "crates/cc-semantic/tests/crash_independent_review.rs:229:18",
+      "original_job_log_url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113709066322/logs",
+      "log_excerpt": {
+        "log_character_count": 187460,
+        "line_count": 1563,
+        "excerpts": [
+          {
+            "line": 185,
+            "text": "2026-10-09T07:02:17.0561648Z HEAD is now at 9f7b16f chore(p8): bind independently reviewed combined engineering source"
+          },
+          {
+            "line": 186,
+            "text": "2026-10-09T07:02:17.0700121Z ##[endgroup]"
+          },
+          {
+            "line": 187,
+            "text": "2026-10-09T07:02:17.0744636Z [command]/usr/bin/git log -1 --format=%H"
+          },
+          {
+            "line": 188,
+            "text": "2026-10-09T07:02:17.0766771Z 9f7b16f0758eb79f306cf44605b84550f02de441"
+          },
+          {
+            "line": 189,
+            "text": "2026-10-09T07:02:17.1106954Z ##[group]Run dtolnay/rust-toolchain@1.95.0"
+          },
+          {
+            "line": 190,
+            "text": "2026-10-09T07:02:17.1107269Z with:"
+          },
+          {
+            "line": 477,
+            "text": "2026-10-09T07:02:26.7794839Z \u001b[36;1m  --test semantic_publish --test semantic_lease --test semantic_queue -- --nocapture \\\u001b[0m"
+          },
+          {
+            "line": 478,
+            "text": "2026-10-09T07:02:26.7795357Z \u001b[36;1m  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/db-lifecycle.log\"\u001b[0m"
+          },
+          {
+            "line": 479,
+            "text": "2026-10-09T07:02:26.7795799Z \u001b[36;1mcargo test -p cc-semantic --locked --all-targets -- --nocapture \\\u001b[0m"
+          },
+          {
+            "line": 480,
+            "text": "2026-10-09T07:02:26.7796268Z \u001b[36;1m  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/semantic-fault-matrix.log\"\u001b[0m"
+          },
+          {
+            "line": 481,
+            "text": "2026-10-09T07:02:26.7856913Z shell: /usr/bin/bash -e {0}"
+          },
+          {
+            "line": 482,
+            "text": "2026-10-09T07:02:26.7857182Z env:"
+          },
+          {
+            "line": 1249,
+            "text": "2026-10-09T07:03:57.9401139Z test independent_child ... ignored, child entry; invoked only by the owning parent with an isolated directory"
+          },
+          {
+            "line": 1250,
+            "text": "2026-10-09T07:04:13.2987147Z "
+          },
+          {
+            "line": 1251,
+            "text": "2026-10-09T07:04:13.2988257Z thread 'independently_observed_sigkill_boundaries' (5841) panicked at crates/cc-semantic/tests/crash_independent_review.rs:229:18:"
+          },
+          {
+            "line": 1252,
+            "text": "2026-10-09T07:04:13.2989450Z called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }"
+          },
+          {
+            "line": 1253,
+            "text": "2026-10-09T07:04:13.2990189Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+          },
+          {
+            "line": 1254,
+            "text": "2026-10-09T07:04:13.2996739Z test independently_observed_sigkill_boundaries ... FAILED"
+          },
+          {
+            "line": 1255,
+            "text": "2026-10-09T07:04:13.2997469Z "
+          },
+          {
+            "line": 1256,
+            "text": "2026-10-09T07:04:13.2998193Z failures:"
+          },
+          {
+            "line": 1257,
+            "text": "2026-10-09T07:04:13.2998399Z "
+          },
+          {
+            "line": 1258,
+            "text": "2026-10-09T07:04:13.2998562Z failures:"
+          },
+          {
+            "line": 1259,
+            "text": "2026-10-09T07:04:13.2998974Z     independently_observed_sigkill_boundaries"
+          },
+          {
+            "line": 1260,
+            "text": "2026-10-09T07:04:13.2999323Z "
+          },
+          {
+            "line": 1261,
+            "text": "2026-10-09T07:04:13.2999828Z test result: FAILED. 0 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 15.36s"
+          },
+          {
+            "line": 1262,
+            "text": "2026-10-09T07:04:13.3000633Z "
+          },
+          {
+            "line": 1263,
+            "text": "2026-10-09T07:04:13.3013427Z error: test failed, to rerun pass `-p cc-semantic --test crash_independent_review`"
+          },
+          {
+            "line": 1264,
+            "text": "2026-10-09T07:04:13.3059538Z ##[error]Process completed with exit code 101."
+          },
+          {
+            "line": 1265,
+            "text": "2026-10-09T07:04:13.3114756Z ##[group]Run set -o pipefail"
+          },
+          {
+            "line": 1266,
+            "text": "2026-10-09T07:04:13.3115136Z \u001b[36;1mset -o pipefail\u001b[0m"
+          },
+          {
+            "line": 1267,
+            "text": "2026-10-09T07:04:13.3115532Z \u001b[36;1mcargo build -p cc-server --bin codecortex --features semantic-http --locked \\\u001b[0m"
+          }
+        ]
+      },
+      "annotation_endpoint_result": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113709066322/annotations?per_page=100&page=1",
+        "data": {
+          "content": [
+            {
+              "type": "text",
+              "text": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)"
+            }
+          ],
+          "structuredContent": {
+            "error": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)",
+            "error_code": "INVALID_ARGUMENT"
+          },
+          "isError": true
+        }
+      },
+      "not_established": [
+        "actual failing seed",
+        "actual child PID",
+        "complete syscall interleaving"
+      ]
+    },
+    "scope_limit": "New ready product/engineering evidence is described in PR178 and compare confirms the four-line fixture change. This audit has not independently accepted all 1090 product and139 validation inputs or the new original CI results. Old G9f CLI success and other jobs do not count as new Gc8 admission."
+  },
+  "related_pr180": {
+    "url": "https://github.com/jyqj/codecortex/pull/180",
+    "head": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "state": "open",
+    "draft": true,
+    "updated_at": "2026-10-09T07:44:51Z",
+    "scope_from_body": "snapshot dependency batch / oracle projection reuse / PR175 / prior Mac integration; own CI and complete scale pending",
+    "not_claimed_as_ready_fts_successor": true,
+    "runs": [
+      {
+        "id": 37900795127,
+        "name": "P8 platform cold builds",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p8-platform.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 38,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549580,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900795127",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795127/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795127/artifacts"
+      },
+      {
+        "id": 37900795091,
+        "name": "P8 lifecycle and resource observations",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p8-lifecycle.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 38,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549494,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900795091",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795091/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795091/artifacts"
+      },
+      {
+        "id": 37900795081,
+        "name": "P8 original failure gates",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p8-gates.yml",
+        "event": "pull_request",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 26,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:53:03Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549456,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900795081",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795081/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795081/artifacts"
+      },
+      {
+        "id": 37900795064,
+        "name": "CI",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/ci.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 370,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549394,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900795064",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795064/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795064/artifacts"
+      },
+      {
+        "id": 37900795003,
+        "name": "P7 closeout evidence",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p7-closeout.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 65,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549245,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900795003",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795003/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795003/artifacts"
+      },
+      {
+        "id": 37900794935,
+        "name": "P8 runtime observations",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p8-runtime.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 26,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687549091,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900794935",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794935/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794935/artifacts"
+      },
+      {
+        "id": 37900794895,
+        "name": "P7 engineering regressions",
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "path": ".github/workflows/p7-engineering.yml",
+        "event": "pull_request",
+        "status": "queued",
+        "conclusion": null,
+        "run_number": 78,
+        "run_attempt": 1,
+        "created_at": "2026-10-09T07:44:54Z",
+        "updated_at": "2026-10-09T07:44:54Z",
+        "run_started_at": "2026-10-09T07:44:54Z",
+        "check_suite_id": 102687548978,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900794895",
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794895/jobs",
+        "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794895/artifacts"
+      }
+    ]
+  },
+  "old_a23_failure": {
+    "run": {
+      "id": 37872522779,
+      "name": "P8 complete scale measurements",
+      "head_branch": "task/p8-scale-cache-a217-20261009",
+      "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "path": ".github/workflows/p8-scale.yml",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "failure",
+      "run_number": 5,
+      "run_attempt": 1,
+      "created_at": "2026-10-09T02:00:50Z",
+      "updated_at": "2026-10-09T06:14:25Z",
+      "run_started_at": "2026-10-09T02:00:50Z",
+      "check_suite_id": 102612046684,
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779",
+      "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779/jobs",
+      "artifacts_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779/artifacts"
+    },
+    "jobs_page": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779/jobs?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 8,
+      "returned_count": 8,
+      "complete": true,
+      "jobs": [
+        {
+          "id": 113633588386,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T02:00:51Z",
+          "started_at": "2026-10-09T02:13:50Z",
+          "completed_at": "2026-10-09T02:18:37Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113633588386",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113633588386",
+          "steps": [],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113638100758,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "preflight (50000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T02:18:37Z",
+          "started_at": "2026-10-09T02:18:48Z",
+          "completed_at": "2026-10-09T03:29:21Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100758",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100758",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T03:29:18Z",
+              "completed_at": "2026-10-09T03:29:20Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113638100759,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "preflight (10000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T02:18:37Z",
+          "started_at": "2026-10-09T02:19:12Z",
+          "completed_at": "2026-10-09T02:27:59Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100759",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100759",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T02:27:56Z",
+              "completed_at": "2026-10-09T02:27:57Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113638100768,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "preflight (1000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T02:18:37Z",
+          "started_at": "2026-10-09T02:22:39Z",
+          "completed_at": "2026-10-09T02:23:42Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100768",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100768",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T02:23:38Z",
+              "completed_at": "2026-10-09T02:23:40Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113638100858,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "preflight (5000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-09T02:18:37Z",
+          "started_at": "2026-10-09T02:30:07Z",
+          "completed_at": "2026-10-09T02:33:44Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100858",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100858",
+          "steps": [
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-09T02:33:40Z",
+              "completed_at": "2026-10-09T02:33:42Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113638100879,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "preflight (100000, 0)",
+          "status": "completed",
+          "conclusion": "failure",
+          "created_at": "2026-10-09T02:18:37Z",
+          "started_at": "2026-10-09T02:23:45Z",
+          "completed_at": "2026-10-09T06:12:02Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100879",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100879",
+          "steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "number": 7,
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T02:24:01Z",
+              "completed_at": null
+            },
+            {
+              "name": "Preserve original shard including unsuccessful measurements",
+              "number": 8,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "number": 16,
+              "status": "pending",
+              "conclusion": null,
+              "started_at": null,
+              "completed_at": null
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113695707497,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "aggregate",
+          "status": "completed",
+          "conclusion": "failure",
+          "created_at": "2026-10-09T06:12:02Z",
+          "started_at": "2026-10-09T06:14:15Z",
+          "completed_at": "2026-10-09T06:14:24Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113695707497",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113695707497",
+          "steps": [
+            {
+              "name": "Replay every raw record and reject missing or incompatible cells",
+              "number": 5,
+              "status": "completed",
+              "conclusion": "failure",
+              "started_at": "2026-10-09T06:14:22Z",
+              "completed_at": "2026-10-09T06:14:22Z"
+            }
+          ],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        },
+        {
+          "id": 113695708822,
+          "run_id": 37872522779,
+          "run_attempt": 1,
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "name": "measure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "created_at": "2026-10-09T06:12:03Z",
+          "started_at": "2026-10-09T06:12:03Z",
+          "completed_at": "2026-10-09T06:12:02Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113695708822",
+          "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113695708822",
+          "steps": [],
+          "steps_projection": "Only failing/in_progress/pending and shard-preservation/aggregate-validation steps; all job statuses retained unchanged."
+        }
+      ]
+    },
+    "artifacts_page": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779/artifacts?per_page=100&page=1",
+      "page": 1,
+      "per_page": 100,
+      "total_count": 11,
+      "returned_count": 11,
+      "complete": true,
+      "artifacts": [
+        {
+          "id": 11599136237,
+          "name": "p8-scale-matrix-37872522779",
+          "size_in_bytes": 580,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11599136237",
+          "expired": false,
+          "created_at": "2026-10-09T06:14:23Z",
+          "updated_at": "2026-10-09T06:14:23Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11593548201,
+          "name": "p8-scale-shard-50000-0-37872522779",
+          "size_in_bytes": 2964759,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11593548201",
+          "expired": false,
+          "created_at": "2026-10-09T03:29:20Z",
+          "updated_at": "2026-10-09T03:29:20Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:d0163f3421ea9abf3d544edad56a9386aec2db55fef0aa11155e30e10a27b06d",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11592230167,
+          "name": "p8-scale-capacity-100000-0-37872522779",
+          "size_in_bytes": 786,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592230167",
+          "expired": false,
+          "created_at": "2026-10-09T02:24:01Z",
+          "updated_at": "2026-10-09T02:24:01Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:91e99d0cc13917232dc9c722ee6f1828919da414ea6d7e5d39f0f610440c7266",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591807078,
+          "name": "p8-scale-capacity-1000-0-37872522779",
+          "size_in_bytes": 783,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591807078",
+          "expired": false,
+          "created_at": "2026-10-09T02:22:56Z",
+          "updated_at": "2026-10-09T02:22:56Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:7fff46b5a357b34a81e9d386f1453a1343101eff0055f67457aa2664b273877b",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591693031,
+          "name": "p8-scale-shard-10000-0-37872522779",
+          "size_in_bytes": 853798,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591693031",
+          "expired": false,
+          "created_at": "2026-10-09T02:27:57Z",
+          "updated_at": "2026-10-09T02:27:57Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:d5a73580784d5bb247adf0d0e6d189f45215600df62bc94e4ca88bdf0ab6a444",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591482043,
+          "name": "p8-scale-build-37872522779",
+          "size_in_bytes": 9214568,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591482043",
+          "expired": false,
+          "created_at": "2026-10-09T02:18:34Z",
+          "updated_at": "2026-10-09T02:18:34Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:d84d66e9048aa2849d037af9df06fcc34423ca7a4e7937f3e79e4d77b441afed",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591464502,
+          "name": "p8-scale-shard-5000-0-37872522779",
+          "size_in_bytes": 583603,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591464502",
+          "expired": false,
+          "created_at": "2026-10-09T02:33:42Z",
+          "updated_at": "2026-10-09T02:33:42Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:cfc34907c79a13ceede8ad7a892af2d0861ddd2b978ba36105ad26fba2da010f",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591367982,
+          "name": "p8-scale-shard-1000-0-37872522779",
+          "size_in_bytes": 952631,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591367982",
+          "expired": false,
+          "created_at": "2026-10-09T02:23:40Z",
+          "updated_at": "2026-10-09T02:23:40Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:a5eeda7a03131fd0d5cebfd26bbcdfb0ff07db32f303593219665f0aa7d2b5b6",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591237661,
+          "name": "p8-scale-capacity-10000-0-37872522779",
+          "size_in_bytes": 783,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591237661",
+          "expired": false,
+          "created_at": "2026-10-09T02:19:29Z",
+          "updated_at": "2026-10-09T02:19:29Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:86dcdfb7624c6da5a35609600b2653d71d1a51f9cb0c1596e0ab27c05aa60f2b",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591232618,
+          "name": "p8-scale-capacity-50000-0-37872522779",
+          "size_in_bytes": 784,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591232618",
+          "expired": false,
+          "created_at": "2026-10-09T02:19:02Z",
+          "updated_at": "2026-10-09T02:19:02Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:58c71192c4fa0ae398f2b9cad462865da64f83ab435a67934c4a6bd33fb83a63",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        },
+        {
+          "id": 11591128037,
+          "name": "p8-scale-capacity-5000-0-37872522779",
+          "size_in_bytes": 785,
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591128037",
+          "expired": false,
+          "created_at": "2026-10-09T02:30:23Z",
+          "updated_at": "2026-10-09T02:30:23Z",
+          "expires_at": "2027-01-07T02:00:50Z",
+          "digest": "sha256:04ffc744eb89e5ef14740947e1e6618e95b29909832677298eb1cf1eb444b392",
+          "workflow_run": {
+            "id": 37872522779,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          }
+        }
+      ]
+    },
+    "archived_original_annotation": {
+      "url": "https://raw.githubusercontent.com/jyqj/codecortex/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-scale-failure-and-engineering/review-next-candidate/a23-scale-terminal/annotations.raw",
+      "data": [
+        {
+          "path": ".github",
+          "blob_href": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/.github",
+          "start_line": 1,
+          "start_column": null,
+          "end_line": 1,
+          "end_column": null,
+          "annotation_level": "failure",
+          "title": "",
+          "message": "The hosted runner lost communication with the server. Anything in your workflow that terminates the runner process, starves it for CPU/Memory, or blocks its network access can cause this error.",
+          "raw_details": ""
+        }
+      ]
+    },
+    "archived_annotation_retrieval_receipt": {
+      "url": "https://raw.githubusercontent.com/jyqj/codecortex/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-scale-failure-and-engineering/review-next-candidate/a23-scale-terminal/annotations.receipt.json",
+      "data": {
+        "argv": [
+          "/opt/homebrew/bin/gh",
+          "api",
+          "repos/jyqj/codecortex/check-runs/113638100879/annotations"
+        ],
+        "started_at": "2026-10-09T06:14:11.953738+00:00",
+        "exit_code": 0,
+        "finished_at": "2026-10-09T06:14:12.783267+00:00",
+        "stdout": {
+          "bytes": 452,
+          "sha256": "bc1ad4395886b208c0d13e493a95e17c657285fdf659c4f8c26021e1add629bc"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    "archived_check": {
+      "url": "https://raw.githubusercontent.com/jyqj/codecortex/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-scale-failure-and-engineering/review-next-candidate/a23-scale-terminal/check.raw",
+      "data": {
+        "id": 113638100879,
+        "name": "preflight (100000, 0)",
+        "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100879",
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37872522779/job/113638100879",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-09T02:23:45Z",
+        "completed_at": "2026-10-09T06:12:02Z",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1,
+          "annotations_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100879/annotations"
+        }
+      }
+    },
+    "archived_aggregate": {
+      "url": "https://raw.githubusercontent.com/jyqj/codecortex/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-scale-failure-and-engineering/review-next-candidate/a23-scale-terminal/matrix-extracted-matrix.json",
+      "data": {
+        "error": "missing matrix shards: [(1000, 1), (1000, 2), (1000, 3), (1000, 4), (1000, 5), (1000, 6), (1000, 7), (1000, 8), (1000, 9), (1000, 10), (1000, 11), (1000, 12), (1000, 13), (1000, 14), (1000, 15), (1000, 16), (1000, 17), (1000, 18), (1000, 19), (1000, 20), (1000, 21), (1000, 22), (1000, 23), (1000, 24), (1000, 25), (1000, 26), (1000, 27), (1000, 28), (1000, 29), (5000, 1), (5000, 2), (5000, 3), (5000, 4), (5000, 5), (5000, 6), (5000, 7), (5000, 8), (5000, 9), (5000, 10), (5000, 11), (5000, 12), (5000, 13), (5000, 14), (5000, 15), (5000, 16), (5000, 17), (5000, 18), (5000, 19), (5000, 20), (5000, 21), (5000, 22), (5000, 23), (5000, 24), (5000, 25), (5000, 26), (5000, 27), (5000, 28), (5000, 29), (10000, 1), (10000, 2), (10000, 3), (10000, 4), (10000, 5), (10000, 6), (10000, 7), (10000, 8), (10000, 9), (10000, 10), (10000, 11), (10000, 12), (10000, 13), (10000, 14), (10000, 15), (10000, 16), (10000, 17), (10000, 18), (10000, 19), (10000, 20), (10000, 21), (10000, 22), (10000, 23), (10000, 24), (10000, 25), (10000, 26), (10000, 27), (10000, 28), (10000, 29), (50000, 1), (50000, 2), (50000, 3), (50000, 4), (50000, 5), (50000, 6), (50000, 7), (50000, 8), (50000, 9), (50000, 10), (50000, 11), (50000, 12), (50000, 13), (50000, 14), (50000, 15), (50000, 16), (50000, 17), (50000, 18), (50000, 19), (50000, 20), (50000, 21), (50000, 22), (50000, 23), (50000, 24), (50000, 25), (50000, 26), (50000, 27), (50000, 28), (50000, 29), (100000, 0), (100000, 1), (100000, 2), (100000, 3), (100000, 4), (100000, 5), (100000, 6), (100000, 7), (100000, 8), (100000, 9), (100000, 10), (100000, 11), (100000, 12), (100000, 13), (100000, 14), (100000, 15), (100000, 16), (100000, 17), (100000, 18), (100000, 19), (100000, 20), (100000, 21), (100000, 22), (100000, 23), (100000, 24), (100000, 25), (100000, 26), (100000, 27), (100000, 28), (100000, 29)]",
+        "passed": false,
+        "release_certification": "not_run",
+        "schema": "p8-scale-matrix-v1",
+        "status": "failed"
+      }
+    },
+    "archived_terminal_review": {
+      "url": "https://raw.githubusercontent.com/jyqj/codecortex/6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-scale-failure-and-engineering/review-next-candidate/a23-scale-terminal/terminal-review.json",
+      "data": {
+        "schema": "a23-scale-original-terminal-evidence-review-v1",
+        "created_at": "2026-10-09T06:20:25.596705+00:00",
+        "identity": {
+          "run_id": 37872522779,
+          "attempt": 1,
+          "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "workflow": ".github/workflows/p8-scale.yml",
+          "run_status": "completed",
+          "run_conclusion": "failure",
+          "failed_primary_job": 113638100879,
+          "sample_coordinate": "scale-100000 / repetition-0 / shard-index-0"
+        },
+        "observed_failure": {
+          "official_annotation": "The hosted runner lost communication with the server. Anything in your workflow that terminates the runner process, starves it for CPU/Memory, or blocks its network access can cause this error.",
+          "only_established_diagnostic": "GitHub reports hosted runner communication loss. Underlying process, kernel, memory, disk and network cause is not established.",
+          "job_started_at": "2026-10-09T02:23:45Z",
+          "job_completed_at": "2026-10-09T06:12:02Z",
+          "job_conclusion": "failure",
+          "worker_exit_code": "unavailable",
+          "worker_stage_after_last_step_start": "unavailable",
+          "native_guard_terminal_receipt": "unavailable"
+        },
+        "raw_inconsistencies_preserved": [
+          "Failed job is completed while its native step remains in_progress with no end timestamp; later upload/post steps remain pending. These raw fields do not establish the child process state.",
+          "Skipped measure job API completed_at is one second earlier than started_at. Original JSON retained without normalization."
+        ],
+        "matrix_result": {
+          "status": "failed",
+          "passed": false,
+          "release_certification": "not_run",
+          "missing_shards": 146,
+          "missing_primary_100k_rep0": true,
+          "measure_job": "skipped; remaining145 never executed",
+          "accepted_existing_scope": "Only previously independently accepted 4/150 shards and41/1500 phase samples. Full study failed/incomplete; no original TODO completion."
+        },
+        "deadline_observation": {
+          "native_step_start": "2026-10-09T02:24:01Z",
+          "job_end": "2026-10-09T06:12:02Z",
+          "wall_seconds": 13681,
+          "registered_native_deadline_seconds": 18000,
+          "python_outer_timeout_seconds": 18120,
+          "workflow_job_timeout_minutes": 350,
+          "conclusion": "Observed wall interval is below all those configured upper bounds. This is not evidence that a registered timeout fired; actual worker monotonic/exit data are missing."
+        },
+        "recovery_decision_boundary": [
+          "No automatic infrastructure exemption or permission to replace failed registered repetition0 was found. Infrastructure classification in 09-BENCHMARK distinguishes invalid measurements; it does not authorize discarding/replacing an original primary.",
+          "Do not use rerun-failed-jobs as completion of this old study. Protocol says first slices are original rep0, cannot be removed as smoke or resampled; all150 raw shards remain required.",
+          "Workflow artifact names contain run_id but not run_attempt; source records/aggregate do not independently enforce workflow-attempt identity. Mechanical acceptance of a substituted slot would not be protocol permission.",
+          "Existing capacity/build/matrix artifact names also create an unresolved rerun name-conflict risk under upload-artifact default immutable semantics. Do not set overwrite or delete original evidence to make a retry fit.",
+          "Any root-authorized re-execution used to diagnose runtime loss must use separate diagnostic identity/output, preserve attempt1 failure, retain original workload and budgets, and receive no original study credit.",
+          "After a genuinely new reviewed/fixed candidate has its own P/R/G and required engineering checks, root may authorize a separate preregistered full150 study on its exact immutable head/build. It must retain this failed study and cannot import old primary samples as new-source evidence. Same-source fresh investigation is not automatically a replacement certification.",
+          "No rerun/cancel/dispatch, budget expansion, source modification or remote mutation was performed during this investigation."
+        ],
+        "underlying_root_cause": "unknown; not labelled OOM, disk exhaustion, process-group kill or platform-wide outage without native/host evidence",
+        "remaining_original_todos": 29
+      }
+    },
+    "reviewed_result": "Original failure, four accepted shards /41 phase samples of150/1500 as recorded by the pinned independent terminal review;146 missing shards. Only runner communication loss is established, with native child exit unavailable; not labelled OOM/network cause/infrastructure exemption."
+  },
+  "coordination": {
+    "issue": {
+      "number": 158,
+      "title": "P8 多轮收口认领：规模、负载、恢复与平台验收（原始任务，不新增计数）",
+      "state": "open",
+      "comments": 11,
+      "created_at": "2026-10-08T16:27:09Z",
+      "updated_at": "2026-10-09T07:41:10Z",
+      "html_url": "https://github.com/jyqj/codecortex/issues/158"
+    },
+    "comments_url": "https://api.github.com/repos/jyqj/codecortex/issues/158/comments?per_page=100&page=1",
+    "pagination": {
+      "page": 1,
+      "per_page": 100,
+      "returned_count": 11,
+      "expected_from_issue": 11,
+      "complete": true
+    },
+    "comments": [
+      {
+        "id": 6075639116,
+        "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6075639116",
+        "created_at": "2026-10-09T06:27:55Z",
+        "updated_at": "2026-10-09T06:27:55Z",
+        "body": "原 a23 正式规模研究已出现终态，需要更新先前“进行中”记录：\n\n- run `37872522779` attempt 1 于 06:14:25 UTC 结束为 **failure**；100k 首片 job `113638100879` 于 06:12:02 失败。官方唯一 annotation 是 hosted runner lost communication，不能据此判定 OOM、网络故障、程序退出码或基础设施豁免。该 job 的阶段7仍显示 in_progress，后续上传未发生；原生 worker 的终态未知。\n- 原 job 日志下载返回 BlobNotFound；保留该失败响应。run 级原 ZIP 里也没有100k日志。原 aggregate artifact `11599136237`（580 B，SHA-256 `6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3`）实际报告 failed / passed=false / release_not_run，缺146片；现有接受仍4/150、41/1500。measure被跳过，aggregate实际exit1。\n- 独立核对 P8-SCALE 原规则后，未找到失联豁免或替换首片 primary 的许可；首片本来就是 repetition0。不能用 rerun-failed-jobs、同名 artifact overwrite、不同build样本或改名来补成旧研究成功。\n\n后续执行安排：第9轮 FTS+Mac 候选原四条工程命令均真实exit0，2,721 passed/0failed/73 existing ignored，已固定仅产品P `e963d5b424217f507e980fa66b987109d5d89e1d`。#173 的源码、原CI及fixedcontrols也已独审，原1089输入的固定lane保留其自身范围。\n\n第10轮将从 #173 G `275e8799…` 新建隔离组合，精确合入 Mac4文件和 FTS5文件，保留139验证输入；将重新实际执行原四条命令并固定新P/R/G。下一项**完整新150研究**由我在这份实际组合通过审查和校验后统一发起，沿用原N30、规模和预算，使用独立精确G/build收据。当前尚未dispatch；请避免同时为173、174或中间P重复开启完整规模任务。原a23失败与原G2仍各保留其独立来源和结果。\n\n原TODO仍 **163 done / 29 remaining**；上述工程成功、PR管理和失败归档均未冒充十项任务完全关闭。"
+      },
+      {
+        "id": 6076108749,
+        "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6076108749",
+        "created_at": "2026-10-09T07:01:38Z",
+        "updated_at": "2026-10-09T07:01:38Z",
+        "body": "第10轮实际组合已完成原四条工程命令、独立P/R/G审查并提交 **#178**：\n\n- 固定 G `9f7b16f0758eb79f306cf44605b84550f02de441`（P `9d13cb30…` → R `6f11ae69…`），1,090 product / 139 validation / 46 BASE delta；HEAD已push并官方核对。原工程测试 2,727 passed / 0 failed / 73 existing ignored；实际执行源 G173+9 冻结未提交路径与 P 的完整字节/mode/blob相等。\n- R仅增加原件归档；G仅4pins和对应registry。原v15 Linux CLI已授权按已独审只读/禁网模板执行一次，尚待真实终态。#178自己的四套既有P8非scale流程由PR自动运行，不重复dispatch；分支保持固定以免中途取消其生命周期样本。\n- 注意刚发现的**外部新运行**：#173于06:56:25Z触发 run `37896198208`，event=pull_request、head `275e8799…`、工作流P8 complete scale measurements，当前最后观察queued。它与 #178 的源码、build和primary人口必须分别记录；此前06:27协调已说明下一次组合完整study由我统一发起。请停止再为中间head添加scale标签/重复启动。已发生的外部运行暂保留，我未取消或把它的样本转给组合版本。\n- #178对应的完整150研究仍尚未dispatch；将先完成此G的原始源码校验，并以实际协调/现有运行状态决定唯一后续启动。a23原失败永远保留，不能用任何一份新研究修补成旧研究成功。\n\n原TODO账本仍 **163 done / 29 remaining**。第10轮无原任务关闭；后续十项严格按各自原验收及硬依赖更新。"
+      },
+      {
+        "id": 6076466429,
+        "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6076466429",
+        "created_at": "2026-10-09T07:27:41Z",
+        "updated_at": "2026-10-09T07:27:41Z",
+        "body": "第11轮协调更新（2026-10-09 07:27 UTC）：\n\n- #178 固定 G9f (`9f7b16f0758eb79f306cf44605b84550f02de441`) 的原 closeout run 37896539239 / job 113709066322 真实失败：原 semantic all-targets 命令 exit101，ready PID parse得到 Empty。源中存在先创建最终ready再写PID、parent仅等待exists的发布竞争；没有保留实际seed/PID/完整系统调用交错，不细化虚构原因。\n- 新隔离 candidate-ready-signal 仅改该fixture：同目录临时文件完整write/sync/close后原子rename。非作者独审accepted；原15s、PID、3×5边界、SIGKILL/恢复/负例不变。新源码原semantic命令、fmt和严格workspaceClippy已经实际0，原workspace仍执行。尚未新P/R/G，尚未由root dispatch任何新150分片study。G9f的同一个Linux原v15CLI仍运行，旧本地head/index/source不动。\n- #174 额外原181-method native入口在实际runner3600s上限超时：139个ok、无suite终态、原child exit未知；其后v15未执行。精确旧孤儿组已清理、原件保留，PR正文已纠正pending旧描述。\n- 原日志/ZIP/源绑定/超时原件已推送commit `6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7`；见 artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes。\n- #177仅2文档+26行经过原件独立复核后正常合并为 `ee9a8e90237773502210f66bc284a1787d1ff203`。待运行的非必需workload checks没有被声称为通过。\n- 外部#173 run37896198208继续独立保留，不是root发起，也不能给新fixture/FTS源转移样本。请继续避免再发起重叠study。\n\n原192项账本仍163 done /29 remaining；本轮尚无新原TODO完成。"
+      },
+      {
+        "id": 6076595085,
+        "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6076595085",
+        "created_at": "2026-10-09T07:37:09Z",
+        "updated_at": "2026-10-09T07:37:09Z",
+        "body": "并行协作登记（ChatGPT 工作区 50c364fd60b1，2026-10-09）：已读取 main `bd4693351149a443bd0054a37508c53f74ed7b52`、原始账本 192 / 163 done / 29 remaining，以及 07:27 UTC 的协调更新。当前仅使用自身本地克隆和多轮 subagent。\n\n本会话先做：开放 PR 的精确头与采用关系审查；#175/#179 独立小包的当前语义/验证检查；P8-005 中尚未认领路径的性能瓶颈源审查。发现可落地的修补后再在此列出具体文件所有权。\n\n保留 bfcc 的 Mac / FTS / ready-signal 修补所有权；不修改其工作树或分支，不添加 p8-scale-run 标签、不发起、取消、重跑或改写任何现有完整 scale / soak 研究。#173 的现有运行继续保留独立来源。测试和审查数量不计作原 TODO 完成，任务定义、硬依赖、付费 provider 条件和原失败均保持。"
+      },
+      {
+        "id": 6076658191,
+        "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6076658191",
+        "created_at": "2026-10-09T07:41:10Z",
+        "updated_at": "2026-10-09T07:41:10Z",
+        "body": "本会话第 2 轮具体文件认领（50c364fd60b1）：已独立确认当前 scale 合成配置在 typed tsconfig 排除后无 config raw token，却仍复制全库 symbol targets/paths 并建立配置查找表；另 interface dispatch 在无 implements 的生成图上先装载全 call/symbol 图。\n\n仅在自身隔离分支实现/审查：`crates/cc-index/src/indexer_phases/snapshot.rs` 的空配置快路径及对应独立回归；`crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs` 的无 implements 路径及必要回归。范围属于原 P8-005 工程修补，不能等同正式100k或十项验收。\n\n当前主线 1.95.0 本地 cc-index lib 基线真实通过：423 passed / 0 failed / 1 original ignored。#99 的完整19文件归档经两次独立核对后已关闭，其源分支/历史保留。#179原CI在格式检查处失败，尚不合并，不改动其正在运行的固定head。没有新完整规模/soak运行。原任务仍 163 done / 29 remaining。"
+      }
+    ],
+    "latest_prs": [
+      {
+        "number": 178,
+        "title": "perf(index): integrate bounded FTS rebuilds with reviewed macOS fixes",
+        "state": "open",
+        "draft": true,
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "updated_at": "2026-10-09T07:58:04Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/178"
+      },
+      {
+        "number": 179,
+        "title": "perf(index): remove repeated resolver allocations",
+        "state": "open",
+        "draft": false,
+        "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+        "updated_at": "2026-10-09T07:44:52Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/179"
+      },
+      {
+        "number": 180,
+        "title": "perf(p8): batch snapshot dependencies and reuse oracle projections",
+        "state": "open",
+        "draft": true,
+        "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "updated_at": "2026-10-09T07:44:51Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/180"
+      },
+      {
+        "number": 99,
+        "title": "Diagnose Requests and Gin index producer failures with minimal fixtures",
+        "state": "closed",
+        "draft": true,
+        "head_sha": "b25723458a77edd2207ed1a52dceb0ea1009cb93",
+        "updated_at": "2026-10-09T07:39:58Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/99"
+      },
+      {
+        "number": 175,
+        "title": "fix: use Rust for legacy runtime latency quantiles",
+        "state": "open",
+        "draft": false,
+        "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+        "updated_at": "2026-10-09T07:32:18Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/175"
+      },
+      {
+        "number": 173,
+        "title": "perf(index): reuse the bounded surface window within prepare",
+        "state": "closed",
+        "draft": false,
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "updated_at": "2026-10-09T07:28:44Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/173"
+      },
+      {
+        "number": 174,
+        "title": "fix: stabilize macOS engineering checks and bind reviewed source",
+        "state": "open",
+        "draft": true,
+        "head_sha": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+        "updated_at": "2026-10-09T07:26:53Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/174"
+      },
+      {
+        "number": 177,
+        "title": "docs: clarify platform evidence and regression scope",
+        "state": "closed",
+        "draft": false,
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "updated_at": "2026-10-09T07:26:15Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/177"
+      },
+      {
+        "number": 176,
+        "title": "Integrate reviewed surface-window and macOS engineering fixes",
+        "state": "open",
+        "draft": true,
+        "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+        "updated_at": "2026-10-09T06:51:28Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/176"
+      },
+      {
+        "number": 172,
+        "title": "docs(p8): archive fixed E native evidence and close superseded PR handoff",
+        "state": "closed",
+        "draft": false,
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "updated_at": "2026-10-09T06:18:13Z",
+        "html_url": "https://github.com/jyqj/codecortex/pull/172"
+      }
+    ],
+    "comment_projection": "All11 comments were retrieved in one page and counted; bodies retained from06:27:55 onward, including the latest failure, source/study ownership, and this session scope."
+  },
+  "work_that_can_be_picked_up_without_new_study": [
+    "Monitor existing G275 scale run's original five rep0 jobs and automatically scheduled remaining145/aggregate. Preserve exact-head raw evidence; do not replace a failed primary.",
+    "Independently review the already uploaded G275 lifecycle/runtime/platform/recovery/failure-gates originals on their own exact source. They are available review work, not missing executions; this metadata-only audit did not download them.",
+    "Review the new PR178 Gc8 exact ready fixture/source binding and its own queued original CI/P8 outcomes; coordinate with its owner's announced single-dispatch plan before any overlapping execution.",
+    "After one candidate's own full150 matrix and original related gates actually pass, perform original per-task acceptance in hard-dependency order; keep historical failure and scope-specific null/not_run values."
+  ],
+  "not_authorized_or_not_performed": [
+    "No cancel/rerun/dispatch/comment/PR mutation",
+    "No new budget or task definition",
+    "No cross-source study splicing",
+    "No original task marked done",
+    "No new TODO created or counted"
+  ]
+}

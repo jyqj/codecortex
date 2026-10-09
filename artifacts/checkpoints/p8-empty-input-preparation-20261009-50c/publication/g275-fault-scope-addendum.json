@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "created_utc": "2026-10-09T08:48:40.677923+00:00",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "status": "scope_clarification_existing_publication_unchanged",
+  "existing_publication_manifest_sha256": "12979b75b7faf48e5f12384a826f7dbd6e7fd282be1406248202498b80eb2ad4",
+  "existing_raw_review_sha256": "8f7d89a40ce00ed0656bc1030036fcb22706bdd525a3e9aa1175e72016c649fb",
+  "production_crash_original_artifact_scope": [
+    {
+      "artifact_relative_directory": "fault-test-00",
+      "test_name": "isolated_sigkill_reopen_replay_preparation",
+      "original_receipt_sha256": "8337481f132b6d8fef821c71a54b0b6b689e3488f9aa127241772629d6988130",
+      "files": [
+        "build/command.json",
+        "build/stderr.log",
+        "build/stdout.log",
+        "execution/command.json",
+        "execution/stderr.log",
+        "execution/stdout.log",
+        "fault-test",
+        "test-receipt.json"
+      ],
+      "original_result": "one exact nonignored production-linked test passed; retained binary and original build/execution logs verified",
+      "per_seed_inner_database_or_results_json_present": false
+    },
+    {
+      "artifact_relative_directory": "fault-test-01",
+      "test_name": "independently_observed_sigkill_boundaries",
+      "original_receipt_sha256": "7b480258e30b3dd790bb61727176254364b0f434482dc7594acc77832e2f122f",
+      "files": [
+        "build/command.json",
+        "build/stderr.log",
+        "build/stdout.log",
+        "execution/command.json",
+        "execution/stderr.log",
+        "execution/stdout.log",
+        "fault-test",
+        "test-receipt.json"
+      ],
+      "original_result": "one exact nonignored production-linked test passed; retained binary and original build/execution logs verified",
+      "per_seed_inner_database_or_results_json_present": false
+    }
+  ],
+  "production_crash_semantic_scope": "Original source-bound exact tests enumerate owned-child crash boundaries, production lease/cache/publication/recovery APIs and natural lease expiry. Their passing test records support that production-regression scope; this independent review did not replay or inspect absent per-seed inner SQLite/results.json.",
+  "end_to_end_fault_scope": "The five P8-011 steps (process kill, network disconnect, cache corruption, database busy and database replacement) have separately retained original local/active RPC, process and database evidence, which was independently checked. The local submatrix original four not_run entries remain unchanged, with production/active complements listed separately.",
+  "source_documents": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "path": "docs/P8_PLATFORM_RECOVERY.md",
+      "sha256": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360"
+    }
+  ],
+  "validation_catalogue_scope": {
+    "V17": "Crash/restart/lease, staging replacement, corrupt/deleted cache, GC/publication race and bounded charging. This package is not a claim to independently replay every historical V17 raw fixture.",
+    "V18": "MCP/configuration compatibility, including the existing fourteen-tool surface and disabled default usability; not the identifier for internal crash coverage.",
+    "G8": "The original phase gate also calls for release-profile coverage. Full phase/release acceptance remains separate from the accepted named task subcontrols."
+  },
+  "profiles": {
+    "eight_cold_platform_cells": "release",
+    "current_full_recovery_products": "dev engineering builds: default, semantic, semantic-http",
+    "actual_historical_schema_pair": "dev engineering builds: default current G275/schema25 and default previous277f/schema24",
+    "cross_profile_certification": false
+  },
+  "released_pair_requirement": "The original P8-016 step says old binary opening a newer schema and actual recovery steps; it does not explicitly require a previously published release tag. No extra tag requirement is introduced. The actual source pair is not labeled a released-package certification.",
+  "task_closure_requirements_not_decided_by_this_addendum": [
+    "original dependency chain closure",
+    "same-G275 related old-function regression evidence and required Vxx coverage",
+    "proper placement of full release-profile/final-phase requirements under original P8-018/G8 definitions"
+  ],
+  "task_status_changes": false,
+  "TODO_remaining": 29
+}

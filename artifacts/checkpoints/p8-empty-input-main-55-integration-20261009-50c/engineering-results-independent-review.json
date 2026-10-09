@@ -1,0 +1,447 @@
+{
+  "acceptance_boundaries": {
+    "accepted": "Only the actual fixed-P4 selected composition regressions represented by these nine commands.",
+    "clippy": "Original exit 0 for workspace/all-targets clippy with warnings denied. This does not mean all workspace tests ran.",
+    "corpus": "The existing named corpus test is in the cc-eval lib target; this run explicitly selects --lib and does not claim the old broader Cargo invocation.",
+    "format": "Success is the original subprocess exit 0; the empty format log alone is not treated as proof.",
+    "historical_execution_identity": "The retained P2 full-workspace exit 101 remains a P2 result. Earlier native/CLI controls and original GitHub CI retain their own source identities and are not P4 successful executions.",
+    "index": "All targets of cc-index were selected: 23 target summaries, 594 passed, zero failed, three ignored.",
+    "installer": "The original installer:: unit filter and the installer_cli integration target were retained, both single-threaded.",
+    "not_certified": [
+      "full-workspace test suite",
+      "P4 native/platform/provider/release certification",
+      "P4 CI or source-admission guard execution",
+      "formal scale study or TODO acceptance closure"
+    ],
+    "task_ledger_unchanged": {
+      "newly_closed": 0,
+      "remaining": 29
+    },
+    "workspace_full_suite": "not_run_on_P4; retained P2 exit 101 and original G CI retain their own identities"
+  },
+  "commands": [
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "elapsed_seconds": 3.8904338469983486,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "format.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_sha256_verified": true,
+      "name": "format",
+      "original_summary_lines": [],
+      "rust_results": null
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "elapsed_seconds": 25.790592978999484,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "clippy.log",
+      "log_bytes": 481,
+      "log_sha256": "022fcc0e15a8e12a3609c8aa51d78197e5d332d8c1f0b2a143b7d882d9531351",
+      "log_sha256_verified": true,
+      "name": "clippy",
+      "original_summary_lines": [],
+      "rust_results": null
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-index",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "elapsed_seconds": 18.392177890000312,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [
+        "test resolver::catalog::catalog_build_bench::bench_catalog_build_scaling ... ignored, catalog build/lookup micro-benchmark; run with --release --nocapture",
+        "test special_config_child ... ignored, child-process harness exercised by the bounded FIFO parent tests",
+        "test bench_type_catalog_build_from_symbols ... ignored, benchmark only: cargo test -p cc-index --release --test type_catalog_bench -- --ignored --nocapture"
+      ],
+      "log": "index-all-targets.log",
+      "log_bytes": 55303,
+      "log_sha256": "0b06d59d4c0ad7025b9a47a50720397ffd5deb65d69735094c2a2476f155566d",
+      "log_sha256_verified": true,
+      "name": "index-all-targets",
+      "original_summary_lines": [
+        "test result: ok. 435 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 12.64s",
+        "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+        "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.27s",
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s",
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s",
+        "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s",
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s",
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.54s",
+        "test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 3,
+        "measured": 0,
+        "passed": 594,
+        "target_summaries": 23
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "--locked",
+        "--offline"
+      ],
+      "elapsed_seconds": 23.350614547998703,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "search-lib.log",
+      "log_bytes": 21847,
+      "log_sha256": "7e432634844e92ed96e8c166b56eb896fa777aa138ff7956e43196afb973c0fc",
+      "log_sha256_verified": true,
+      "name": "search-lib",
+      "original_summary_lines": [
+        "test result: ok. 301 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.92s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 301,
+        "target_summaries": 1
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--bin",
+        "codecortex",
+        "--locked",
+        "--offline",
+        "installer::",
+        "--",
+        "--test-threads=1"
+      ],
+      "elapsed_seconds": 17.22133151900198,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "installer-unit.log",
+      "log_bytes": 4823,
+      "log_sha256": "c906384c1e407ad645f8590837980cc7b4e156d5ad57fed36ab48a7acb30d163",
+      "log_sha256_verified": true,
+      "name": "installer-unit",
+      "original_summary_lines": [
+        "test result: ok. 49 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 49,
+        "target_summaries": 1
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--test",
+        "installer_cli",
+        "--locked",
+        "--offline",
+        "--",
+        "--test-threads=1"
+      ],
+      "elapsed_seconds": 1.5402487890023622,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "installer-cli.log",
+      "log_bytes": 545,
+      "log_sha256": "2e286ef0cda6ff6241076b9fb299bde5518163d4bf01dc1af905b99fc87d4268",
+      "log_sha256_verified": true,
+      "name": "installer-cli",
+      "original_summary_lines": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 2,
+        "target_summaries": 1
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "legacy_latency_ns_tests"
+      ],
+      "elapsed_seconds": 10.989003647999198,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "statistics-lib-controls.log",
+      "log_bytes": 622,
+      "log_sha256": "b00045d6fbd80d9e5c5ce0b24d2d83753dc2b31246091b43a3e04959689b75e9",
+      "log_sha256_verified": true,
+      "name": "statistics-lib-controls",
+      "original_summary_lines": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.00s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 65,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 2,
+        "target_summaries": 1
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--bin",
+        "p8-runtime-statistics",
+        "--locked",
+        "--offline"
+      ],
+      "elapsed_seconds": 16.93403828800001,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "runtime-statistics-bin.log",
+      "log_bytes": 834,
+      "log_sha256": "4c24ef2a19b7be6ee92644d4dcf2fe9847e4c144e05f577f44af2484ac4c5550",
+      "log_sha256_verified": true,
+      "name": "runtime-statistics-bin",
+      "original_summary_lines": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 0,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 5,
+        "target_summaries": 1
+      }
+    },
+    {
+      "argv_matches_original_runner_ast": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "integration_fixtures_and_corpus"
+      ],
+      "elapsed_seconds": 4.36828853300176,
+      "exit_code": 0,
+      "head_after": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "head_before": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+      "ignored_original_lines": [],
+      "log": "eval-corpus-lib.log",
+      "log_bytes": 342,
+      "log_sha256": "d0513f31d41e7ff67881d59a18b9d3c538957428ad0bd89a58f3324514571ab1",
+      "log_sha256_verified": true,
+      "name": "eval-corpus-lib",
+      "original_summary_lines": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 66 filtered out; finished in 4.11s"
+      ],
+      "rust_results": {
+        "failed": 0,
+        "filtered_out": 66,
+        "ignored": 0,
+        "measured": 0,
+        "passed": 1,
+        "target_summaries": 1
+      }
+    }
+  ],
+  "environment": {
+    "PATH_prefix_verified": "/workspace/scratch/50c364fd60b1/cargo/bin:",
+    "boundary": "These are the original recorded overrides and compiler identity. The inherited environment is not claimed to be fully hermetic. Debug/unoptimized checks reused target-final; this is not a cold or release performance result.",
+    "original_overrides": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_HOME": "/workspace/scratch/50c364fd60b1/cargo",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_TARGET_DIR": "/workspace/scratch/50c364fd60b1/target-final",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RUSTUP_HOME": "/workspace/scratch/50c364fd60b1/rustup"
+    },
+    "original_rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+  },
+  "ignored_scope": {
+    "interpretation": "Two opt-in microbenchmark entries and the special_config_child process-harness entry. The child entry is exercised through bounded FIFO parent tests; it is not itself counted as a direct passing test. These three ignored entries remain ignored, not newly passed.",
+    "original_lines": [
+      "test resolver::catalog::catalog_build_bench::bench_catalog_build_scaling ... ignored, catalog build/lookup micro-benchmark; run with --release --nocapture",
+      "test special_config_child ... ignored, child-process harness exercised by the bounded FIFO parent tests",
+      "test bench_type_catalog_build_from_symbols ... ignored, benchmark only: cargo test -p cc-index --release --test type_catalog_bench -- --ignored --nocapture"
+    ]
+  },
+  "independence": {
+    "canonical_usage": "The complete 1092 path-to-SHA256 map was compared to the independent canonical; this audit does not relabel the peer's 1253-blob independent source review as a fresh full semantic review by this reviewer.",
+    "engineering_evidence_review": "Independent from the root execution of these nine commands.",
+    "product_semantic_approval": "Not supplied by this report. This reviewer authored an earlier interface-path change; the independent P4 semantic and complete source review belongs to /root/pr_audit."
+  },
+  "issues_found": [],
+  "original_evidence": {
+    "all_nine_log_bytes_rehashed": true,
+    "execution_completed_at_utc": "2026-10-09T10:42:43.621730+00:00",
+    "execution_started_at_utc": "2026-10-09T10:40:40.616719+00:00",
+    "receipt": {
+      "bytes": 304755,
+      "path": "engineering-checks/receipt.json",
+      "sha256": "e251b34d9ef8d5aea9b0a8fc1fa4e3849ecd0ebf9ad25c9020d44a64efec2a27"
+    },
+    "receipt_unchanged_after_review": true,
+    "runner": {
+      "bytes": 4567,
+      "path": "run-P4-engineering.py",
+      "sha256": "d21e6e6d1c06aa2b9f83f69c3e82785abf41434798342023cbcddb61c395e691"
+    }
+  },
+  "review_execution": {
+    "method": "Python standard-library byte hashing, JSON equality, AST literal parsing and original log-summary analysis; original runner and source-snapshot helper read as text. No project commands were executed.",
+    "result": "All bounded integrity and scope checks in this report passed."
+  },
+  "reviewed_at_utc": "2026-10-09T10:53:28.179166+00:00",
+  "reviewer": "/root/scale_audit",
+  "runner_review": {
+    "all_nine_original_argv_ast_match_receipt": true,
+    "all_selected_gate_requires_nine_zero_exits_fixed_source_and_equal_inputs": true,
+    "exclusive_new_log_creation": true,
+    "failure_or_head_change_stops_remaining_commands": true,
+    "original_subprocess_return_codes_preserved": true,
+    "per_command_fixed_head_checks": true,
+    "pre_run_source_commit_and_clean_tracked_diff_assertions": true,
+    "source_snapshot_before_and_after": true,
+    "source_snapshot_mechanism_review": "The existing p7_build_identity helper was read as source, not imported or executed. Its complete crates/Cargo input manifest checks the tracked/disk input set and source bytes; the original completed run records both full snapshots."
+  },
+  "schema_version": 1,
+  "scope": "Independent read-only integrity and scope audit of the completed P4 receipt, all nine original logs and the original runner. No project command, Cargo invocation, native test, guard, workload, fetch or workflow action was performed by this reviewer.",
+  "source_identity": {
+    "all_nine_head_before_after_equal_P4": true,
+    "canonical_manifest_encoding": "UTF-8 JSON; ensure_ascii=False, sort_keys=True, separators=(comma,colon); no trailing LF.",
+    "canonical_manifest_sha256": "94f5d721b99827e7d604f72116fb0c31130ca856090253f7a823dbdd06ead03e",
+    "complete_product_input_count": 1092,
+    "complete_product_input_map_equals_independent_canonical": true,
+    "digest_interpretation": "The different manifest digests result from the two original serializations. The complete parsed maps match exactly; neither digest was substituted for the other.",
+    "independent_canonical": {
+      "bytes": 833579,
+      "changed_source_input_count": 53,
+      "complete_input_count": 1092,
+      "path": "source-review/independent-source-review.json",
+      "reviewer": "/root/pr_audit",
+      "sha256": "79b3830e7ddb7a23074a25ef9e6c267621d0314bb12632c9dc5c2bcff050e11e",
+      "validation_input_count": 139,
+      "verdict": "accepted_scoped"
+    },
+    "receipt_manifest_encoding": "UTF-8 JSON; ensure_ascii=False, sort_keys=True, indent=2; trailing LF.",
+    "receipt_manifest_sha256": "1cfc369367535db99b390e602214300fb73be03c257666166cdb9d11ccef6d7a",
+    "source": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+    "source_before_after_full_snapshot_equal": true,
+    "source_url": "https://github.com/jyqj/codecortex/commit/31a42daeb12da6936695abb08eb3912d4f3c6064",
+    "tree": "286cca0c09c796227dfadc030af298b4f1c4e575"
+  },
+  "totals": {
+    "commands": 9,
+    "count_interpretation": "954 is the sum of actual passed results in the selected invocations. Filtered-out entries, ignored entries, and formatter/linter invocations are not passed tests. This is not a deduplicated whole-workspace test inventory.",
+    "failed": 0,
+    "filtered_out_entries": 131,
+    "ignored": 3,
+    "measured": 0,
+    "passed": 954,
+    "rust_target_summaries": 29,
+    "rust_test_invocations": 7,
+    "statistics_controls": {
+      "combined_eval_selected_tests": 8,
+      "legacy_latency_ns_tests": 2,
+      "runtime_statistics_binary": 5,
+      "separate_corpus_lib_test": 1,
+      "statistics_subtotal": 7
+    },
+    "zero_exit_commands": 9
+  },
+  "verdict": "accepted_actual_selected_regressions"
+}

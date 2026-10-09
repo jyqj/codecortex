@@ -9,10 +9,9 @@ pub struct Distribution {
     pub tail_claim: &'static str,
 }
 
-/// Canonical nearest-rank estimate for an already sorted sample, in its input unit.
-/// Distribution, interval, benchmark and evaluation reports share this owner.
-/// Empty samples stay absent here; legacy wire adapters retain their own zero defaults.
-pub(crate) fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
+/// Canonical nearest-rank estimate for an already sorted nonempty sample.
+/// Distribution summaries and quantile intervals must use the same convention.
+fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
     if sorted.is_empty() {
         return None;
     }

@@ -1,0 +1,23 @@
+--- PR108/run.py
++++ baseline/run.py
+@@ -3,8 +3,8 @@
+ import sqlite3,concurrent.futures,gzip,hashlib,importlib.util,json,os,pathlib,shutil,subprocess,sys,threading,time,traceback
+ sys.dont_write_bytecode=True
+ OUT=pathlib.Path(__file__).resolve().parent
+-ROOT=OUT.parents[2]
+-SHA="29b03a0fec6bfde92aac9c41dce996ebb2d08cc7"
++ROOT=OUT.parent/"runtime/baseline/source"
++SHA="5ffbadcf48e26523b2eb46beda0d187a2e2e29cd"
+ SEED=0
+ COUNT=100000
+ spec=importlib.util.spec_from_file_location("preparation",ROOT/"scripts/p7_release_resource_preparation.py")
+@@ -12,7 +12,8 @@
+ write=driver.write
+ build=json.loads((OUT/"build-receipt.json").read_text())
+ assert build["source_sha"]==SHA and build["build_exit_code"]==0 and build["guard_stop"] is None
+-assert subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip()==SHA
++assert subprocess.check_output(["git","--git-dir",str(OUT.parents[3]/".git"),"rev-parse",SHA],cwd=ROOT,text=True).strip()==SHA
++assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest()==h for p,h in json.loads((OUT/"source-files.json").read_text()).items())
+ assert sorted(build["compiler_artifact"]["features"])==["semantic","semantic-http"]
+ binary=pathlib.Path(build["compiler_artifact"]["executable"])
+ assert driver.digest(binary)==build["binary_sha256"]

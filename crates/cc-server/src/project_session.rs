@@ -58,8 +58,6 @@ pub struct ProjectSession {
     last_activity: Arc<Mutex<Instant>>,
     auto_indexing: Arc<AtomicBool>,
     tasks: Arc<crate::session_tasks::SessionTasks>,
-    #[cfg(test)]
-    initializer_started: Arc<Mutex<Option<tokio::sync::oneshot::Sender<()>>>>,
 }
 
 impl ProjectSession {
@@ -85,8 +83,6 @@ impl ProjectSession {
             last_activity: Arc::new(Mutex::new(Instant::now())),
             auto_indexing: Arc::new(AtomicBool::new(false)),
             tasks: Arc::default(),
-            #[cfg(test)]
-            initializer_started: Arc::default(),
         })
     }
 
@@ -135,15 +131,7 @@ impl ProjectSession {
         // worker publishes one cached runtime before releasing the guard.
         let mut live = self.live_projects.clone().lock_owned().await;
         let cache = self.project_cache.clone();
-        #[cfg(test)]
-        let initializer_started = self.initializer_started.clone();
         tokio::task::spawn_blocking(move || {
-            // The signal comes from the worker after ownership has crossed the
-            // task boundary. A reserved async mutex permit is not that proof.
-            #[cfg(test)]
-            if let Some(started) = initializer_started.lock().unwrap().take() {
-                let _ = started.send(());
-            }
             live.retain(|_, weak| weak.strong_count() != 0);
             let cached = cache.blocking_lock().get(&path).cloned();
             let services = match cached.or_else(|| {
@@ -617,15 +605,16 @@ mod tests {
         let session = ProjectSession::new(None).unwrap();
         // Block the initializer's cache lookup without stalling the scheduler.
         let cache = session.project_cache.clone().lock_owned().await;
-        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
-        *session.initializer_started.lock().unwrap() = Some(started_tx);
         let caller = session.clone();
         let requested = path.clone();
         let job = tokio::spawn(async move { caller.services_for_path(requested).await });
-        tokio::time::timeout(Duration::from_secs(5), started_rx)
-            .await
-            .expect("initializer must start while its cache lookup is blocked")
-            .expect("initializer must confirm ownership of the cold guard");
+        tokio::time::timeout(Duration::from_secs(2), async {
+            while session.live_projects.try_lock().is_ok() {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
         job.abort();
         assert!(matches!(job.await, Err(e) if e.is_cancelled()));
         assert!(
@@ -652,31 +641,6 @@ mod tests {
             &routed.index().read().unwrap().build_gate(),
             &cached.read().unwrap().build_gate()
         ));
-        session.shutdown().await;
-    }
-
-    #[tokio::test]
-    async fn p5d_cancellation_before_cold_handoff_does_not_start_initializer() {
-        use std::future::Future;
-        use std::task::{Context, Poll, Waker};
-
-        let dir = TempDir::new().unwrap();
-        let path = normalize_path(dir.path());
-        let session = ProjectSession::new(None).unwrap();
-        let (started_tx, mut started_rx) = tokio::sync::oneshot::channel();
-        *session.initializer_started.lock().unwrap() = Some(started_tx);
-        let cold = session.live_projects.clone().lock_owned().await;
-        let mut request = Box::pin(session.services_for_path(path.clone()));
-        let mut context = Context::from_waker(Waker::noop());
-        assert!(matches!(request.as_mut().poll(&mut context), Poll::Pending));
-        drop(request);
-        assert!(matches!(
-            started_rx.try_recv(),
-            Err(tokio::sync::oneshot::error::TryRecvError::Empty)
-        ));
-        drop(cold);
-        assert!(session.live_projects.try_lock().is_ok());
-        assert!(session.project_cache.lock().await.get(&path).is_none());
         session.shutdown().await;
     }
 

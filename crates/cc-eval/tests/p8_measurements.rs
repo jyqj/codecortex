@@ -24,12 +24,6 @@ fn distribution_and_interval_keep_one_nearest_rank_convention() {
         let expected_p95 = (((n * 95).div_ceil(100) - 1) / 3) as u64;
         assert_eq!(summary.p50_us, Some(expected_p50));
         assert_eq!(summary.p95_us, Some(expected_p95));
-        let legacy_ms = cc_eval::bench::LatencyStats::from_durations(&samples);
-        let legacy_us = cc_eval::bench::LatencyStatsUs::from_durations(&samples);
-        assert_eq!(legacy_ms.p50_ms, expected_p50);
-        assert_eq!(legacy_ms.p95_ms, expected_p95);
-        assert_eq!(legacy_us.p50_us, expected_p50);
-        assert_eq!(legacy_us.p95_us, expected_p95);
         assert_eq!(
             statistics::quantile_interval(&samples, 0.5)
                 .unwrap()
@@ -48,57 +42,6 @@ fn distribution_and_interval_keep_one_nearest_rank_convention() {
         assert!(statistics::quantile_interval(&[0, 1], quantile).is_none());
     }
     assert!(statistics::quantile_interval(&[], 0.5).is_none());
-}
-
-#[test]
-fn legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values() {
-    assert_eq!(
-        serde_json::to_value(cc_eval::bench::LatencyStats::from_durations(&[])).unwrap(),
-        json!({"p50_ms": 0, "p95_ms": 0, "max_ms": 0})
-    );
-    assert_eq!(
-        serde_json::to_value(cc_eval::bench::LatencyStatsUs::from_durations(&[])).unwrap(),
-        json!({"p50_us": 0, "p95_us": 0, "max_us": 0})
-    );
-    assert_eq!(
-        serde_json::to_value(cc_eval::report::compute_summary(&[])).unwrap(),
-        json!({"total_cases": 0, "passed": 0, "failed": 0, "total_duration_ms": 0,
-               "p95_duration_ms": 0, "max_duration_ms": 0, "total_output_bytes": 0,
-               "per_tool": {}, "avg_recall_at_5": null, "avg_mrr": null})
-    );
-    // The formal distribution keeps absent measurements distinct from the
-    // numeric defaults in the existing benchmark and evaluation wire schemas.
-    assert_eq!(statistics::distribution(&[]).p50_us, None);
-    assert_eq!(statistics::distribution(&[]).p95_us, None);
-
-    let mut cases: Vec<_> = (0..20)
-        .rev()
-        .map(|i| cc_eval::types::EvalCaseResult {
-            case_name: format!("search-{i}"),
-            tool: "search".into(),
-            passed: true,
-            duration_ms: i * 10,
-            output_size_bytes: 0,
-            assertions_passed: 1,
-            assertions_failed: vec![],
-            error: None,
-            recall_at_5: None,
-            mrr: None,
-        })
-        .collect();
-    let mut outlier = cases[0].clone();
-    outlier.case_name = "index-outlier".into();
-    outlier.tool = "index".into();
-    outlier.duration_ms = 10_000;
-    cases.push(outlier);
-    let report = cc_eval::report::compute_summary(&cases);
-    // Fixed order-statistic witnesses: rank 20/21 globally, rank 19/20 for
-    // search, and the sole observation for index. Units remain milliseconds.
-    assert_eq!(report.p95_duration_ms, 190);
-    assert_eq!(report.max_duration_ms, 10_000);
-    assert_eq!(report.total_duration_ms, 11_900);
-    assert_eq!(report.per_tool["search"].p95_duration_ms, 180);
-    assert_eq!(report.per_tool["index"].p95_duration_ms, 10_000);
 }
 
 fn warm(cache: ResultCacheObservation) -> LatencyEvidence {

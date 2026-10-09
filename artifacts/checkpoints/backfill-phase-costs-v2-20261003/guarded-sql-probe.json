@@ -1,0 +1,175 @@
+{
+  "note": "One-statement CASE EXISTS short circuit plus candidate index, same FIFO result and CAS; only independent synthetic DBs, no production schema change.",
+  "results": [
+    {
+      "n": 1000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "all_pending",
+      "selected": 1,
+      "sort_count": 0,
+      "vm_steps": 194
+    },
+    {
+      "n": 1000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "mixed",
+      "selected": 7,
+      "sort_count": 0,
+      "vm_steps": 204
+    },
+    {
+      "n": 1000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "future_prefix",
+      "selected": 501,
+      "sort_count": 0,
+      "vm_steps": 2694
+    },
+    {
+      "n": 1000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "no_ready",
+      "selected": null,
+      "sort_count": 0,
+      "vm_steps": 37
+    },
+    {
+      "n": 5000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "all_pending",
+      "selected": 1,
+      "sort_count": 0,
+      "vm_steps": 194
+    },
+    {
+      "n": 5000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "mixed",
+      "selected": 7,
+      "sort_count": 0,
+      "vm_steps": 204
+    },
+    {
+      "n": 5000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "future_prefix",
+      "selected": 2501,
+      "sort_count": 0,
+      "vm_steps": 12694
+    },
+    {
+      "n": 5000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "no_ready",
+      "selected": null,
+      "sort_count": 0,
+      "vm_steps": 37
+    },
+    {
+      "n": 10000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "all_pending",
+      "selected": 1,
+      "sort_count": 0,
+      "vm_steps": 194
+    },
+    {
+      "n": 10000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "mixed",
+      "selected": 7,
+      "sort_count": 0,
+      "vm_steps": 204
+    },
+    {
+      "n": 10000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "future_prefix",
+      "selected": 5001,
+      "sort_count": 0,
+      "vm_steps": 25194
+    },
+    {
+      "n": 10000,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX diagnostic_fifo_pending (space_id=?)"
+      ],
+      "scenario": "no_ready",
+      "selected": null,
+      "sort_count": 0,
+      "vm_steps": 37
+    }
+  ],
+  "sql": "UPDATE semantic_outbox SET state='claimed',lease_token=lower(hex(randomblob(16))),lease_expires_at=?1+?2,claim_owner=?3,attempt_count=attempt_count+1,updated_at=?4 WHERE task_id=CASE WHEN EXISTS(SELECT 1 FROM semantic_outbox INDEXED BY semantic_outbox_ready WHERE state='pending' AND available_at<=?1 AND space_id=?5) THEN (SELECT task_id FROM semantic_outbox WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id LIMIT 1) ELSE NULL END RETURNING task_id,lease_token,doc_key,doc_version,input_digest,op,lease_expires_at",
+  "sqlite_version": "3.53.2"
+}

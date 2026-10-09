@@ -14,7 +14,6 @@
 //! Corpus-case results are aggregated per-tool; named scale scenarios keep
 //! full p50/p95/max for both columns.
 
-use crate::benchmark::statistics::nearest_rank;
 use crate::runner::CodeIndexBackend;
 use crate::types::EvalCase;
 use serde::Serialize;
@@ -109,6 +108,17 @@ fn measure_case(
     }
 }
 
+// ── Percentile helper ──────────────────────────────────────────────
+
+fn percentile(sorted: &[u64], pct: f64) -> u64 {
+    if sorted.is_empty() {
+        return 0;
+    }
+    let idx = ((sorted.len() as f64) * pct).ceil() as usize;
+    let idx = idx.min(sorted.len()).saturating_sub(1);
+    sorted[idx]
+}
+
 // ── Run benchmark ──────────────────────────────────────────────────
 
 /// Run benchmarks for all cases and aggregate results per tool.
@@ -162,10 +172,10 @@ pub fn run_benchmark_named(
             ToolBenchmark {
                 tool,
                 cases: cases_count,
-                cold_p50_us: nearest_rank(&cold, 0.50).unwrap_or(0),
+                cold_p50_us: percentile(&cold, 0.50),
                 cold_max_us: cold.last().copied().unwrap_or(0),
-                warm_p50_us: nearest_rank(&warm, 0.50).unwrap_or(0),
-                warm_p95_us: nearest_rank(&warm, 0.95).unwrap_or(0),
+                warm_p50_us: percentile(&warm, 0.50),
+                warm_p95_us: percentile(&warm, 0.95),
                 warm_max_us: warm.last().copied().unwrap_or(0),
                 avg_output_bytes: avg_output,
             }
@@ -198,8 +208,8 @@ impl LatencyStats {
         let mut sorted = durations.to_vec();
         sorted.sort_unstable();
         Self {
-            p50_ms: nearest_rank(&sorted, 0.50).unwrap_or(0),
-            p95_ms: nearest_rank(&sorted, 0.95).unwrap_or(0),
+            p50_ms: percentile(&sorted, 0.50),
+            p95_ms: percentile(&sorted, 0.95),
             max_ms: sorted.last().copied().unwrap_or(0),
         }
     }
@@ -327,8 +337,8 @@ impl LatencyStatsUs {
         let mut sorted = durations.to_vec();
         sorted.sort_unstable();
         Self {
-            p50_us: nearest_rank(&sorted, 0.50).unwrap_or(0),
-            p95_us: nearest_rank(&sorted, 0.95).unwrap_or(0),
+            p50_us: percentile(&sorted, 0.50),
+            p95_us: percentile(&sorted, 0.95),
             max_us: sorted.last().copied().unwrap_or(0),
         }
     }

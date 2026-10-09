@@ -1,0 +1,152 @@
+{
+  "rpc_timings": {
+    "initialize": {
+      "count": 1,
+      "min_ms": 60.871315,
+      "p50_ms": 60.871315,
+      "p95_ms": 60.871315,
+      "max_ms": 60.871315
+    },
+    "tools/list": {
+      "count": 1,
+      "min_ms": 1.106468,
+      "p50_ms": 1.106468,
+      "p95_ms": 1.106468,
+      "max_ms": 1.106468
+    },
+    "index": {
+      "count": 1,
+      "min_ms": 30161.42643,
+      "p50_ms": 30161.42643,
+      "p95_ms": 30161.42643,
+      "max_ms": 30161.42643
+    },
+    "status": {
+      "count": 1321,
+      "min_ms": 8.98082,
+      "p50_ms": 24.52158,
+      "p95_ms": 39.480076,
+      "max_ms": 185.15895
+    }
+  },
+  "rpc_errors": [],
+  "status_observations": 1321,
+  "status_state_counts": {
+    "backfilling": 1321
+  },
+  "status_error_count": 0,
+  "status_errors": [],
+  "http_counts": {
+    "within300s": {
+      "entered": {
+        "requests": 66868,
+        "inputs": 66868
+      },
+      "returned": {
+        "requests": 66868,
+        "inputs": 66868
+      }
+    },
+    "cleanup_tail": {
+      "entered": {
+        "requests": 716,
+        "inputs": 716
+      },
+      "returned": {
+        "requests": 716,
+        "inputs": 716
+      }
+    }
+  },
+  "http_note": "returned HTTP inputs are not committed semantic manifests; deadline DB snapshot actual time is independently recorded",
+  "last_status": {
+    "time_ns": 1460996670381,
+    "retrieval": {
+      "consistency": "point_in_time",
+      "default_effective_strategy": "local",
+      "default_query_state": "available_with_per_query_checks",
+      "default_strategy": "local",
+      "dense_desired": 100000,
+      "dense_published": 66848,
+      "dense_reason": "semantic_coverage_uncovered",
+      "dense_state": "partial",
+      "diagnostic_sources": {
+        "build": "BuildExplain on index response",
+        "graph": "GraphExplain on query response",
+        "lanes": "evidence_summary.retrieval.lanes or lane_receipts",
+        "packing": "evidence_summary.packing",
+        "selection": "evidence_summary.selection",
+        "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)",
+        "source": "evidence_summary.source_freshness"
+      },
+      "execution": {
+        "async_admitted": 0,
+        "async_in_flight": 0,
+        "async_limit": 8,
+        "completed": 0,
+        "cpu_admitted": 0,
+        "cpu_in_flight": 0,
+        "cpu_limit": 4,
+        "queue_limit": 32,
+        "rejected": 0
+      },
+      "execution_scope": "process_shared_not_project_local",
+      "generation": {
+        "evidence_epoch": 0,
+        "incarnation": [
+          166,
+          45,
+          199,
+          220,
+          169,
+          227,
+          147,
+          58,
+          115,
+          19,
+          108,
+          32,
+          55,
+          87,
+          120,
+          235
+        ],
+        "index_epoch": 6,
+        "semantic_epoch": 68411
+      },
+      "generation_scope": "observed_database_snapshot",
+      "identity_validation": "checked_at_observation_boundary",
+      "index_state": "available",
+      "local_state": "available",
+      "pin_scope": "owned_query_views_including_inflight_clones_not_request_count",
+      "query_coverage": {
+        "scope": "per_query_not_global",
+        "state": "not_measured"
+      },
+      "query_encoding": {
+        "configured_opt_in": false,
+        "network_authorized": false,
+        "reason": "query_network_opt_in_required",
+        "request_scope": "nonlocal_nonempty_only"
+      },
+      "query_pins": 1,
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 6,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "semantic_active_space": "646411e32a99679c16f5def340c056f93e614ca9e09767471f1b92df71eefdf2",
+      "semantic_failed": 0,
+      "semantic_pending": 33152,
+      "semantic_state": "backfilling",
+      "service_state_scope": "process_observed_separately",
+      "spec": "retrieval-capabilities-v2"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+--- PR116/build.py
++++ candidate/build.py
+@@ -1,16 +1,16 @@
+ #!/usr/bin/env python3
+ import hashlib,json,os,pathlib,subprocess,time,signal,shutil
+-ROOT=pathlib.Path(__file__).resolve().parent.parent/"runtime/candidate/source"
++ROOT=pathlib.Path('/workspace/parallel-startup-candidate')
+ OUT=pathlib.Path(__file__).resolve().parent
+-SHA="807f4710495a38bc6631549da2ab9623c83684b8"
+-assert subprocess.check_output(["git","--git-dir",str(OUT.parents[3]/".git"),"rev-parse",SHA],cwd=ROOT,text=True).strip()==SHA
++SHA="ee8c5786803355aa04f0dcd0e0e0fffc865d79fc"
++assert subprocess.check_output(["git","--git-dir",str(pathlib.Path("/workspace/codecortex/.git")),"rev-parse",SHA],cwd=ROOT,text=True).strip()==SHA
+ assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest()==h for p,h in json.loads((OUT/"source-files.json").read_text()).items())
+ runtime=OUT.parent/"runtime/candidate/build"
+ (runtime/"tmp").mkdir(parents=True,exist_ok=True)
+-env=dict(os.environ,CARGO_HOME=str(runtime/"cargo"),RUSTUP_HOME="/workspace/.rustup",RUSTC="/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",TMPDIR=str(runtime/"tmp"),CARGO_TARGET_DIR=str(runtime/"target"),CARGO_BUILD_JOBS="4")
++env=dict(os.environ,CARGO_HOME=str(runtime/"cargo"),RUSTC="/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",TMPDIR=str(runtime/"tmp"),CARGO_TARGET_DIR=str(runtime/"target"),CARGO_BUILD_JOBS="4")
+ env["PATH"]="/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin"+":"+env["PATH"]
+-command=["cargo","build","--release","-p","cc-server","--bin","codecortex","--no-default-features","--features","semantic-http","--locked","--message-format=json-render-diagnostics"]
+-receipt={"production_sha":"c73128b500c2a19daa8a293caa52afb711b03516","source_sha":SHA,"source_tree":subprocess.check_output(["git","--git-dir",str(OUT.parents[3]/".git"),"rev-parse",SHA+"^{tree}"],cwd=ROOT,text=True).strip(),"command":command,"profile":"release","target_dir":str(runtime/"target"),"environment":{k:env[k] for k in ["CARGO_HOME","RUSTUP_HOME","TMPDIR","CARGO_TARGET_DIR","CARGO_BUILD_JOBS"]},"timeout_seconds":900,"guard_memory_bytes":12*1024**3,"guard_disk_reserve_bytes":4*1024**3,"sample_interval_seconds":0.5,"guard_stop":None}
++command=["/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo","build","--release","-p","cc-server","--bin","codecortex","--no-default-features","--features","semantic-http","--locked","--message-format=json-render-diagnostics"]
++receipt={"production_sha":"11f5b76273a16b520e6b6e01ad32a0a6743173fb","source_sha":SHA,"source_tree":subprocess.check_output(["git","--git-dir",str(pathlib.Path("/workspace/codecortex/.git")),"rev-parse",SHA+"^{tree}"],cwd=ROOT,text=True).strip(),"command":command,"profile":"release","target_dir":str(runtime/"target"),"environment":{k:env[k] for k in ["CARGO_HOME","TMPDIR","CARGO_TARGET_DIR","CARGO_BUILD_JOBS"]},"timeout_seconds":900,"guard_memory_bytes":12*1024**3,"guard_disk_reserve_bytes":4*1024**3,"sample_interval_seconds":0.5,"guard_stop":None}
+ for tool in ["rustc","cargo"]:receipt[tool]=subprocess.check_output([tool,"-Vv"],cwd=ROOT,env=env,text=True)
+ start=time.monotonic()
+ with (OUT/"cargo-build.jsonl").open("w") as stdout,(OUT/"build-stderr.log").open("w") as stderr,(OUT/"build-resources.jsonl").open("w") as samples:

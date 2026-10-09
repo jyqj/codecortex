@@ -1,0 +1,69 @@
+{
+  "attempt_01": {
+    "success": false,
+    "output": {
+      "exit_code": 1,
+      "language": "python",
+      "stdout_tail": "{\"status\": \"independent_audit_failed\", \"error_type\": \"AssertionError\", \"error\": \"one-hour resource coverage and original gap\", \"check_categories\": 69}\n",
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<temporary-script>\", line 7, in <module>\n    runpy.run_path(str(p/'audit.py'),run_name='__main__')\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 268, in run_path\n    return _run_module_code(code, init_globals, run_name,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 97, in _run_module_code\n    _run_code(code, mod_globals, init_globals,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 87, in _run_code\n    exec(code, run_globals)\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 203, in <module>\n    review=main()\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 163, in main\n    ck(rc[\"passed\"] and rc[\"allowed_maximum_gap_ns\"]==5*10**9 and rc[\"maximum_gap_ns\"]<=rc[\"allowed_maximum_gap_ns\"] and rc[\"observed_samples\"]==3594 and rc[\"work_end_ns\"]-rc[\"work_start_ns\"]==soak[\"observed_work_ns\"],\"one-hour resource coverage and original gap\")\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 20, in ck\n    if not ok: raise AssertionError(label)\nAssertionError: one-hour resource coverage and original gap\n",
+      "stdout_lines": 1,
+      "stderr_lines": 16,
+      "stdout_truncated": false,
+      "stderr_truncated": false,
+      "command_started": true,
+      "command_completed": true,
+      "command_ok": false,
+      "execution_state": "completed",
+      "failure_kind": "command_exit_nonzero",
+      "tool_failure": false,
+      "promoted_to_job": false,
+      "terminal": true,
+      "job_id": null,
+      "job_status": null,
+      "effective_timeout_secs": 60,
+      "sync_wait_secs": 10,
+      "async_handoff_available": true
+    },
+    "error": "Command exited with status 1.\nNo files were modified by WebCodex itself; command side effects, if any, are from the invoked command.\nstdout_tail:\n{\"status\": \"independent_audit_failed\", \"error_type\": \"AssertionError\", \"error\": \"one-hour resource coverage and original gap\", \"check_categories\": 69}\n\nstderr_tail:\nTraceback (most recent call last):\n  File \"<temporary-script>\", line 7, in <module>\n    runpy.run_path(str(p/'audit.py'),run_name='__main__')\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 268, in run_path\n    return _run_module_code(code, init_globals, run_name,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 97, in _run_module_code\n    _run_code(code, mod_globals, init_globals,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py\", line 87, in _run_code\n    exec(code, run_globals)\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 203, in <module>\n    review=main()\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 163, in main\n    ck(rc[\"passed\"] and rc[\"allowed_maximum_gap_ns\"]==5*10**9 and rc[\"maximum_gap_ns\"]<=rc[\"allowed_maximum_gap_ns\"] and rc[\"observed_samples\"]==3594 and rc[\"work_end_ns\"]-rc[\"work_start_ns\"]==soak[\"observed_work_ns\"],\"one-hour resource coverage and original gap\")\n  File \"artifacts/checkpoints/p8-round17-evidence-intake-20261009/root-safe-g4/independent-review/audit.py\", line 20, in ck\n    if not ok: raise AssertionError(label)\nAssertionError: one-hour resource coverage and original gap\n\nRetry guidance: inspect stderr/stdout above, then fix the reported issue or use a narrower tool.",
+    "error_code": "INVALID_ARGUMENT"
+  },
+  "attempt_02": {
+    "success": true,
+    "output": {
+      "language": "python",
+      "stdout_tail": "{\"TODO_closed\": 0, \"TODO_remaining\": 29, \"checks\": 90, \"mapping_entries\": 9600, \"member_records\": 21368, \"review_bytes\": 11257, \"review_git_blob\": \"442d4563623014ed179451074a4e2df9c84e1fef\", \"review_sha256\": \"15af7f6b218088f6a9eb88380b7b70986b74c011b4e4bf46750d7d859ee0afff\", \"status\": \"accepted_scoped_original_G4_safe_delivery\"}\n",
+      "stdout_lines": 1
+    },
+    "error": null
+  },
+  "resource_span_contract": {
+    "success": true,
+    "output": {
+      "language": "python",
+      "stdout_tail": "{\"coverage_span_ns\": 3600056929541, \"observed_work_ns\": 3600056928599, \"source_lines\": [[129, \"        cov=report['resource_time_coverage'];require(ns['sample_coverage'](samples,cov['work_start_ns'],cov['work_end_ns'])==cov and cov['passed'],'temporal resource coverage')\"], [132, \"        raw_work_span=max(r['finished_ns'] for r in rows)-min(r['offered_ns'] for r in rows)\"], [133, \"        require(cov['work_end_ns']-cov['work_start_ns']>=report['observed_work_ns']>=raw_work_span>=3600*10**9,'whole hour work and ordered terminal/drain observations')\"], [150, \"        cache=ns['soak_cache_summary'](rows,3601,cov['work_start_ns'],cov['work_end_ns'],project)\"], [188, \"        result={'decision':'accepted_scoped_original_G4_soak_observation','source_commit':G4,'run_id':RUN,'job_id':JOB,'artifact_id':expected['artifact_id'],'artifact_sha256':ZIP_SHA,'artifact_bytes':expected['bytes'],'all_member_count':len(inventory),'all_member_bytes':sum(x['bytes'] for x in inventory.values()),'all_member_CRC_SHA_verified':True,'run_seal_files':2108,'build_seal_files':15,'source_inputs_exact_Git':1087,'observer_files_exact_Git':7,'operations':dict(operations),'outcomes':{'success':3601},'observed_work_ns':report['observed_work_ns'],'rss':report['rss'],'resource_coverage':cov,'branch_switches':switches,'catalog_compactions':compactions,'configured_C':4,'observed_workload_peak':report['actual_concurrency']['maximum'],'parity_tables':15,'original_parity_exit_code':0,'statistics_replay':statistics_replay,'cache_reuse':cache,'bound_cache_RPCs':cache_wire['bound_RPCs'],'endpoint_search_cache':endpoint['search_cache'],'transport':transports,'limitations':['Offline receipt/raw replay only; no product/Cargo/new performance measurement. Original full parity evidence retained without rerunning product or oracle.','Compound read is one offered sample containing two status, symbol and local hybrid calls. All 9600 subrequests stay within 2400 read samples.','Same native server and bounded shared query-pool counters are observed; no individual OS-thread, semantic-worker, provider or actual C4-peak claim.','Per-RPC timeout sum is180 seconds excluding admission wait; no new performance SLA. Uniform soak timings are not directly comparable to previous symbol-only reads.','Original IID intervals retain serial-correlation limitations; original Rust statistics replay is byte-identical without creating a new estimator.'],'TODO_closed':0,'TODO_remaining':29}\"]]}\n",
+      "stdout_lines": 1,
+      "job_attention": {
+        "changed": true,
+        "items": [
+          {
+            "job_id": "wc_job_0Zxd6efbiVHTyjcf",
+            "kind": "run_script",
+            "status": "completed",
+            "created_at": 1791524241,
+            "started_at": 1791524241,
+            "ended_at": 1791524255,
+            "exit_code": 0,
+            "reconciled_at": null
+          }
+        ]
+      }
+    },
+    "error": null
+  },
+  "export_failure": {
+    "operation": "resources/read",
+    "error": "Unknown resource; subsequent one-shot fenced inspect of the 11,257-byte review succeeded without truncation",
+    "resource_uri_withheld": true
+  },
+  "scope": "These are actual tool receipts; no product/statistics/Cargo execution."
+}

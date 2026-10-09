@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "status": "fixed_unreferenced_draft_pending_non_author_review_and_actual_rust_validation",
+  "repository": "jyqj/codecortex",
+  "author": "/root/acceptance_audit",
+  "scope": "Same-prepare positive-binding window only; one existing Rust source path including appended tests",
+  "base": {
+    "measured_g2_commit": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "unreferenced_p3_commit": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+    "shared_product_crates_tree": "c3ff36be7754af663fc575b71c283b9113e1607d",
+    "source_mode": "100644",
+    "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+    "bytes": 15578,
+    "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
+    "candidate_is_not_a_commit": true
+  },
+  "candidate": {
+    "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "mode": "100644",
+    "blob": "787b57a8e2042b9641af45c85632507b87e5a934",
+    "bytes": 33417,
+    "sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c",
+    "full_git_blob_readback_equal": true
+  },
+  "artifacts": {
+    "patch": {
+      "blob": "ffac294ddfdf802064f3299ae0a6f40b80ea9e90",
+      "bytes": 20801,
+      "sha256": "2c3a43999a050216ec569ed5057a4eeb14d5dc93d1a1e85f8e2db1fb998d7aa5"
+    },
+    "design": {
+      "blob": "78bdd0c14b673e7806d0454b8550b57db500896c",
+      "bytes": 9714,
+      "sha256": "6abb7d1fe7064221ad5ad07340a2534652a66e56111ddd3a7833f7d160cf4bcc"
+    },
+    "earlier_partial_static_proof": {
+      "blob": "1fdff09b4af218156e40995382623f7b60552078",
+      "bytes": 1723,
+      "sha256": "4e01185d5dff19597501217f44fcfed7d16f8162e6abfd029e63fa365b73c1b5"
+    }
+  },
+  "eligibility": {
+    "actual_first_matching_callback": "paths == initial_seeds.as_slice()",
+    "capture_before_separate_candidates": true,
+    "final_seed_condition": "exact ordered list equality with the actual queried initial list; no guessed subset coverage",
+    "completed_delta": "state.completed extends only closure.promoted after initial excluded is formed",
+    "admission_bound": "closure.promoted.len() <= unchanged closure budget",
+    "original_window_limit": "budget.saturating_mul(2), retaining the original extra witness",
+    "fallback": [
+      "no matching actual window",
+      "changed seed list including propagated facade",
+      "list subset/reordering/duplicate mismatch",
+      "admitted exceeds original budget"
+    ],
+    "fallback_sql_unchanged": "surface_dependents_bounded(&seeds, 0, &excluded)",
+    "original_root_pending_predicate_unchanged": true
+  },
+  "code_preservation": {
+    "whole_file_inverse_equal": true,
+    "production_replacement_count": 5,
+    "original_test_module_byte_identical": true,
+    "old": {
+      "bytes": 15578,
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    "candidate": {
+      "bytes": 33417,
+      "sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c"
+    }
+  },
+  "original_tests": {
+    "module": "indexer_phases::reconcile::dependency_window_tests",
+    "count": 3,
+    "complete_module_body_hash": {
+      "bytes": 6674,
+      "sha256": "4ace94d1ef54f2b219e45720d95b3e0504bd36b6a6a1d376e18a21bec5918d36"
+    },
+    "byte_identical": true,
+    "methods": [
+      "materialized_dependency_window_matches_original_pending_sql",
+      "dependency_window_reloads_after_replacement_removal_and_reopen",
+      "consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ]
+  },
+  "new_tests": {
+    "module": "indexer_phases::reconcile::surface_window_tests",
+    "count": 6,
+    "methods": [
+      "materialized_surface_window_matches_original_pending_sql",
+      "surface_window_requires_exact_queried_basis_and_bounded_admission",
+      "surface_window_reloads_after_replacement_removal_and_reopen",
+      "prepare_reuses_surface_window_without_changing_promotions",
+      "prepare_requeries_surface_when_propagation_adds_a_seed",
+      "reused_surface_window_keeps_external_write_epoch_fence"
+    ],
+    "actual_rust_runs": 0,
+    "compiled": false,
+    "formatted_by_rustfmt": false
+  },
+  "original_contract_sources": {
+    "crates/cc-index/src/indexer_phases/reconcile.rs": {
+      "blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "bytes": 15578,
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    "crates/cc-db/src/resolution_dependency_store.rs": {
+      "blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "bytes": 10207,
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    "crates/cc-db/src/public_surface_store.rs": {
+      "blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "bytes": 8537,
+      "sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650"
+    },
+    "crates/cc-index/src/dirty_closure.rs": {
+      "blob": "8165b5f60c881b23365d1d6421deed032a8e653a",
+      "bytes": 23086,
+      "sha256": "d26072bd26bb5baa2db25500508b66e79730f3afba796036a5253301210048f2"
+    },
+    "crates/cc-index/src/build_plan.rs": {
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "bytes": 76225,
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    "crates/cc-db/src/index_db.rs": {
+      "blob": "58c30296ae0e635fe3ab0f383558c692f507e63b",
+      "bytes": 49499,
+      "sha256": "6202a556d78731b88757a08cdbc77f83112db17e3000fe2eaef9572a65915d4e"
+    },
+    "crates/cc-db/src/index_db_write_batch.rs": {
+      "blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "bytes": 56106,
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+    }
+  },
+  "source_fence_proof": {
+    "file": "crates/cc-index/src/build_plan.rs",
+    "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+    "epoch_capture_lines": [
+      224,
+      228
+    ],
+    "epoch_to_reconciliation_lines": [
+      260,
+      265
+    ],
+    "unconditional_commit_check_lines": [
+      451,
+      457
+    ],
+    "optional_update_passed_only_later_lines": [
+      470,
+      480
+    ],
+    "covers_previous_none_pending_false_reconcile_none": true,
+    "original_stale_control": "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+    "transactional_some_update_writer": "IndexDb::write_incremental_batch checks expected_index_epoch after beginning an immediate transaction and before any mutation; Some reconcile prevents no-op early return",
+    "boundary": "Inherited caller write-lock and epoch contracts only, no new whole-prepare read transaction or cross-process atomic check-and-write claim"
+  },
+  "author_executed_static_checks": {
+    "inverse_five_replacements_and_remove_appended_module_exact_original": true,
+    "unified_patch_text_replayed_to_candidate_exact": true,
+    "source_full_blob_roundtrip": true,
+    "finite_set_model": {
+      "scope": "Pure JavaScript enumeration of the stated finite-set theorem; not Rust, SQLite, planner, Cargo, or product execution.",
+      "universe_size": 6,
+      "dependency_masks": 64,
+      "initial_completed_masks": 64,
+      "promotion_masks": 64,
+      "budgets": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "eligible_cases": 1048576,
+      "failed_cases": 0,
+      "includes_promotions_outside_surface_set": true,
+      "source_queries_or_measurements_executed": 0
+    },
+    "interface_checks": [
+      "IndexingConfig and Indexer::new signature",
+      "PublicSurface::new creates valid KnownEmpty fixtures",
+      "ReadOps::surface_dependents_bounded cap/IN batching/exclusion ordering",
+      "write_reconciled_batch exact signature and typed transaction stale check",
+      "empty dependency events issue no statements",
+      "dirty closure global budget and facade propagation"
+    ],
+    "not_rust_typechecking": true
+  },
+  "author_tool_failures_preserved": [
+    {
+      "status": "failed_before_execution",
+      "kind": "JavaScript SyntaxError",
+      "message": "Missing initializer in destructuring declaration",
+      "cause": "missing whitespace around `of ranges` in author-only diff generator",
+      "candidate_mutated": false,
+      "rust_executed": false
+    },
+    {
+      "status": "failed_closed",
+      "kind": "author diff-generator verification",
+      "message": "patch replay mismatch",
+      "cause": "LCS equal-line branch did not advance target cursor",
+      "candidate_mutated": false,
+      "rust_executed": false
+    }
+  ],
+  "outstanding": [
+    "independent semantic review",
+    "actual Rust formatting/typechecking/Clippy",
+    "six new and three original Rust controls plus unchanged epoch/cost controls",
+    "new source-specific ordinary gates and workload/parity if adopted"
+  ],
+  "memory_and_performance": {
+    "retained_rows_bound": "one clone of actual bounded positive window, at most saturating 2*budget+1 paths",
+    "retained_across_prepare": false,
+    "persisted_frontier_schema_changes": false,
+    "read_lease_retained": false,
+    "net_speedup": "unmeasured",
+    "row_vm_reduction": "only eligible omitted final SQL, never fabricated counters",
+    "global_prefix_problem": "initial and later prepares still execute original SQL; not solved wholesale"
+  },
+  "unchanged": [
+    "all existing SQL implementations",
+    "budgets/round caps",
+    "promotion ordering",
+    "frontier/error/status contracts except omitted redundant read cannot fail itself",
+    "epoch/write fences",
+    "source guards/workflows/tasks",
+    "all current refs and prior raw measurements"
+  ],
+  "mutations_performed": [
+    "created only unreferenced Git blobs"
+  ],
+  "prohibited_actions_not_performed": [
+    "local file write",
+    "Cargo/rustfmt/native execution",
+    "product workload",
+    "ref/tree/commit creation",
+    "task status change",
+    "prior receipt relabeling"
+  ],
+  "todo": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

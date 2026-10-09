@@ -1,0 +1,331 @@
+{
+  "schema": "codecortex.pr169.successor_original_ci_review.v1",
+  "reviewer": "root-28fe, independent of PR170 source authors",
+  "repository": "jyqj/codecortex",
+  "scope": "Source CI and superseded PR queue disposition only",
+  "verdict": "PR170 original source CI qualifies; PR169 may close as superseded with original head and runs retained",
+  "original_pr": {
+    "number": 169,
+    "head": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "tree": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+    "preserved_branch": "task/p8-snapshot-leaf-engineering-fix-20261009",
+    "branch_readback_exact": true,
+    "engineering_run": 37877604259,
+    "engineering_100k_job": 113654983347,
+    "engineering_100k_status": "in_progress",
+    "engineering_source_replaced": false
+  },
+  "successor_pr": {
+    "number": 170,
+    "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+    "tree": "41138a7ac367aa6ca13cf516a811c46ab812de98",
+    "base": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "draft": true,
+    "complete_PR_file_count": 13,
+    "file_partition": {
+      "crates": 7,
+      "registry": 1,
+      "v15_four_constants_only": 1,
+      "added_artifacts": 4
+    },
+    "old_observer_regressions_present": false,
+    "original_workflow_changed": false,
+    "ordinary_main_validation_scope_retained": 138
+  },
+  "complete_native_adoption": {
+    "crates_tree": "c3ff36be7754af663fc575b71c283b9113e1607d",
+    "Cargo_toml": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+    "Cargo_lock": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+    "old_and_successor_path_mode_type_object_equal": true
+  },
+  "actual_ci": {
+    "run": 37886395820,
+    "attempt": 1,
+    "check_job": 113677253767,
+    "actual_checkout": "5aacfec719a369d86688987ce8eea96116edeb33",
+    "checkout_log_lines": [
+      "2026-10-09T04:59:24.2153091Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-09T04:59:24.2176914Z 5aacfec719a369d86688987ce8eea96116edeb33"
+    ],
+    "actual_checkout_tree": "41138a7ac367aa6ca13cf516a811c46ab812de98",
+    "complete_checkout_tree_equals_successor": true,
+    "actual_parents": [
+      "b21cce4c8661589267ad5719f850accbec088d2f",
+      "26768b5e38ed1784bf77a8c4fe57baf01a19c626"
+    ],
+    "job_results": [
+      {
+        "id": 113677253767,
+        "name": "check",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T04:58:57Z",
+        "completed_at": "2026-10-09T05:22:23Z"
+      },
+      {
+        "id": 113677253969,
+        "name": "security",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T04:58:58Z",
+        "completed_at": "2026-10-09T05:01:51Z"
+      },
+      {
+        "id": 113677254062,
+        "name": "msrv",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T04:58:58Z",
+        "completed_at": "2026-10-09T05:00:00Z"
+      }
+    ],
+    "raw_check_log": {
+      "path": "pr170-original-ci-check.log",
+      "bytes": 1064089,
+      "sha256": "a7ec31c417cb2099cea629fb18f7459af392e19f3f234f873da5d52d68b9394e",
+      "git_blob": "e5a3ae94bb27f08694c077004a6bec31e0dac31f",
+      "bom": true
+    },
+    "original_control_summaries": [
+      {
+        "raw_line": "2026-10-09T05:06:38.2462921Z Ran 46 tests in 3.076s",
+        "next_lines": [
+          "2026-10-09T05:06:38.2463044Z ",
+          "2026-10-09T05:06:38.2463117Z OK"
+        ]
+      },
+      {
+        "raw_line": "2026-10-09T05:07:21.5945886Z Ran 409 tests in 43.033s",
+        "next_lines": [
+          "2026-10-09T05:07:21.5945975Z ",
+          "2026-10-09T05:07:21.5946029Z OK"
+        ]
+      },
+      {
+        "raw_line": "2026-10-09T05:14:43.6007409Z Ran 181 tests in 432.427s",
+        "next_lines": [
+          "2026-10-09T05:14:43.6007506Z ",
+          "2026-10-09T05:14:43.6007561Z OK"
+        ]
+      }
+    ],
+    "source_and_history_results": [
+      {
+        "schema_version": 10,
+        "source_version": "p8-completion-source-20261009-v15",
+        "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+        "review_source": "b0f0c0d00e38508e7e43b0e87d1215d7f6413969",
+        "scope": "independently_reviewed_source_and_validation_inputs",
+        "runtime_and_quality_claims": "require_separate_execution_evidence",
+        "status": "passed",
+        "complete_inputs": 1089,
+        "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+      },
+      {
+        "V19": "open",
+        "current_plan_check": "passed",
+        "current_task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "e3_imported_files": 58,
+        "e3_inputs": 708,
+        "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+        "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+        "evidence_content_acceptance": "not_granted_by_this_verifier",
+        "fault_runtime_tests": "not_run",
+        "full_P7": "open",
+        "legacy_files_unchanged": 9,
+        "packing_evidence_files": 246,
+        "packing_inputs": 731,
+        "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+        "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+        "quality_and_100k": "not_inherited",
+        "schema_version": 2,
+        "scope": "historical_integrity_and_current_task_definitions_only",
+        "state_changes_since_baseline": [
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-013"
+          },
+          {
+            "baseline": "in_progress",
+            "current": "done",
+            "task_id": "P7-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "blocked",
+            "task_id": "P7-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-020"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-001"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-002"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-003"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-004"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-005"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-006"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-007"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-008"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-009"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-010"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-013"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-020"
+          }
+        ],
+        "status": "passed",
+        "task_count": 192,
+        "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+        "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+        "verifier_version": "historical-integrations-v2"
+      }
+    ],
+    "checked_source_step": {
+      "name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-09T05:06:33Z",
+      "completed_at": "2026-10-09T05:15:52Z"
+    },
+    "all_other_original_check_steps_api_success": true,
+    "security_and_msrv_scope": "official original job/step results; their full raw logs were not independently replayed"
+  },
+  "limits": {
+    "does_not_grant_full_scale_acceptance": true,
+    "does_not_grant_Mac_workspace_pass": true,
+    "known_A23_Mac_failure_review": "62d2d1960ab0f15432ba869225951988a80ed843",
+    "original_A23_study": 37872522779,
+    "original_A23_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "no_cross_source_sample_transfer": true,
+    "original_TODO_closed": 0,
+    "remaining_original_TODO": 29
+  },
+  "management_action": {
+    "recommended": "close PR169 as superseded; keep PR170 draft and every original head/branch/run/failed record",
+    "not_a_merge_of_PR169": true,
+    "no_branch_or_tag_deletion": true,
+    "no_run_cancellation_or_retry": true
+  }
+}

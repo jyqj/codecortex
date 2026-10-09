@@ -1,0 +1,1508 @@
+{
+  "schema_version": 1,
+  "kind": "original_task_protocol_and_dependency_map",
+  "status": "prepared_for_independent_new_source_acceptance_only",
+  "candidate": {
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "product": "305bf145e2474000d7c7d806507117d65a4863ad",
+    "review": "252e28744aa55a4b14414787f74e00783f87712f",
+    "guard": null,
+    "product_tree": "173eb784171c64505e7a4cc989679e87e327bdee",
+    "product_input_count": 1089,
+    "product_input_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+    "validation_input_count": 138,
+    "retained_validation_manifest_sha256": "bde91e8f95342d12887a6b2bac8c1fa4a66b37cd870841175f0adea37ac0ee89",
+    "new_source_execution_credit_from_this_map": false
+  },
+  "authority_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed_by_this_review": 0
+  },
+  "scope_boundaries": [
+    "Read-only mapping of the unchanged original task definitions and existing protocols. This file is not an accepted task review and changes no status or acceptance condition.",
+    "R is accepted only for the reviewed product source and retained validation-input scope. Its existence, the source guard, an engineering PR merge, and workflow green labels each remain distinct from original task closure.",
+    "New candidate measurements require their own immutable source/build/observer/binary/raw/exit identities. Original a23, G1, P2 or G2 samples remain attributed to their actual sources; product-byte equality alone does not move execution credit.",
+    "P7-020/P8-001/P8-004 have already completed, explicitly bounded historical task records. This mapping preserves those states and limitations. It neither claims new G live semantic or heldout quality nor reuses an already exposed holdout as a new blind test.",
+    "Unknown/unavailable observations remain explicit. Original performance comparison conditions, confidence intervals, original failure results and incomplete states are not weakened.",
+    "Do not rerun a successful expensive component solely to satisfy a source guard or to produce a new report label. Consume original raw through the already registered validators once the exact source and full integrity linkage is established; a product source change requires genuinely new source-specific execution for affected measurements.",
+    "An acceptance reviewer must make a task-specific decision using original clauses, actual execution evidence, upstream hard dependencies and the final integration gates; this preparation does not preapprove blockers=[] or done."
+  ],
+  "common_receipt_requirements": [
+    "Full exact source commit and complete Cargo/crate input inventory; before/after source bytes; actual selected release Cargo artifact, profile/features, toolchain and binary hash; complete observers at the same immutable source.",
+    "Preserve actual checkout identity. A merge commit or precommit R-plus-two-files worktree can only be connected to a final commit by explicit byte/tree equivalence; do not relabel the recorded checkout.",
+    "Original commands, integer exit codes, stdout/stderr, original plan/raw/partial reports and all unsuccessful results retained; absence of a result is not passed.",
+    "Original final complete inventory/seal and all referenced raw members verified, including added/deleted/changed/symlinked member rejection where the original validator requires it.",
+    "Do not replace complete row equality with hash-only or sampled comparisons, drop repeated rows, change canonical projections, repair the incremental endpoint before comparison, or change closure/incomplete semantics.",
+    "Keep local/default, semantic with controlled fake or loopback provider, and any actual live provider scopes separate; no new paid provider or release certification is implied."
+  ],
+  "protocols": {
+    "scale": {
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ],
+      "workflow": ".github/workflows/p8-scale.yml",
+      "owner": "scripts/p8_scale_matrix.py",
+      "invocation": "Original workflow at one fixed new G; build once, preflight repetition 0 for each size, then the remaining 145 original shards, followed by original aggregate.",
+      "workload": {
+        "capacity_profile": "scale_capacity_v1",
+        "sizes": [
+          1000,
+          5000,
+          10000,
+          50000,
+          100000
+        ],
+        "seed": 12648430,
+        "repetitions_per_size": 30,
+        "shard_count_per_size": 30,
+        "preflight_shards": 5,
+        "remaining_shards": 145,
+        "total_shards": 150,
+        "main_phases": [
+          "cold",
+          "no_op",
+          "body",
+          "api",
+          "config",
+          "batch_1",
+          "batch_10",
+          "batch_100",
+          "batch_1000"
+        ],
+        "main_samples": 1350,
+        "fanouts": [
+          1,
+          4,
+          16,
+          64,
+          128
+        ],
+        "fanout_repetitions": 30,
+        "fanout_owner_size": 1000,
+        "fanout_samples": 150,
+        "total_samples": 1500,
+        "main_dirty_budget": 200,
+        "main_max_resume_builds": 1024,
+        "fanout_dirty_budget": 8,
+        "fanout_max_resume_builds": 128
+      },
+      "criteria": [
+        "All 150 distinct original shard identities, complete global repetition coverage and all 1500 original samples; a successful subset or the preflight alone is insufficient.",
+        "Every checkpoint has actual A incremental/cold plus independent fresh B full control, complete closure, original 15-table exact parity, SQLite integrity/FK, actual per-table counts, and original config/call-edge handwritten witnesses.",
+        "Fixed seed, release profile/features, identical input/configuration and original capacity contract. Each original artifact retains actual environment/toolchain; capacity mode permits documented strata instead of falsely pooling unmatched hardware.",
+        "Report files/symbols/chunks and separate edge tables; semantic is disabled and vector count is null rather than claimed semantic work.",
+        "Actual batch sizes and mutation bytes, zero-change no-op, every fanout resume including explicit incomplete status; no shortcut from equal rows before closure.",
+        "Retain every timing and denominator, original phase conservation and containment; engine/MCP/full-control/oracle/evidence wall scopes stay separate.",
+        "Original aggregate replay must reject missing, duplicate, invalid, drifted or failed shards. N=30 does not claim stable p99, causal speedup or release certification."
+      ],
+      "expected_outputs": [
+        "build receipt and original release executable",
+        "all capacity observations including failed preparation",
+        "150 original shard archives with plan/native raw/worker/report and final receipt",
+        "original aggregate and environment-stratified measurements"
+      ]
+    },
+    "mixed": {
+      "tasks": [
+        "P8-007",
+        "P8-009"
+      ],
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "owner": "scripts/p8_runtime.py",
+      "workload": {
+        "concurrency": [
+          1,
+          4,
+          8,
+          16
+        ],
+        "operations_per_cell": 900,
+        "files": 1000,
+        "interval_ms": 500,
+        "total_offered_operations": 3600
+      },
+      "criteria": [
+        "All fixed offered request IDs and terminal outcomes for each C; offered, queue, service and end-to-end times and all timeouts/errors retained.",
+        "Actual read/build overlap and original deadlock/starvation/queue/deadline assertions; no closed-loop throughput used to hide scheduling delays.",
+        "Original endpoint fresh-full 15-table parity with no repair of the incremental side, successful original statistical replay and byte-identical repeated replay.",
+        "Original source/build proof, complete retained stdio/raw, native server/runner resource attribution and end-of-work writer cleanup/seal controls."
+      ],
+      "expected_outputs": [
+        "one original artifact per C",
+        "original runtime plan/raw/statistics/statistics-replay/report/seal",
+        "complete endpoint parity and both bound build receipts"
+      ]
+    },
+    "backfill": {
+      "tasks": [
+        "P8-007",
+        "P8-009"
+      ],
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "owner": "scripts/p8_backfill.py",
+      "workload": {
+        "seeds": [
+          7,
+          19,
+          43
+        ],
+        "concurrency": [
+          1,
+          4,
+          8,
+          16
+        ],
+        "provider": "owned in-process fake provider",
+        "original_test": "real_slow_backfill_preserves_local_progress_and_records_every_request"
+      },
+      "criteria": [
+        "Build and execute the exact original nonignored release semantic test with original three seeds and all original requests/phases; stdout confirms 1 passed, 0 failed, 0 ignored.",
+        "Quiet versus held actual worker requests, local progress, DB/worker contention, unchanged held attempts/publications, later recovery, deletion/model-version fences are checked by the original test and original raw review.",
+        "Actual Cargo/source/observer/toolchain/binary before-after linkage, all raw seed directories and final artifact seal verified.",
+        "Fake-provider observations do not establish real-provider cost or semantic quality; reported/estimated/unavailable remain separate."
+      ],
+      "expected_outputs": [
+        "original p7_worker_contention executable and exact Cargo JSON",
+        "seed-7/seed-19/seed-43 complete raw",
+        "receipt, stdout/stderr and final seal"
+      ]
+    },
+    "lifecycle": {
+      "tasks": [
+        "P8-008",
+        "P8-009"
+      ],
+      "workflow": ".github/workflows/p8-lifecycle.yml",
+      "owner": "scripts/p8_lifecycle.py",
+      "workload": {
+        "profile": "release",
+        "files": 32,
+        "cold_build_samples": 30,
+        "reopen_samples": 400,
+        "warm_uncached_samples": 400,
+        "cache_hit_samples": 400,
+        "total_samples": 1230
+      },
+      "criteria": [
+        "Cold has new project/cache/process and zero files before full index; reopen uses new process with a preexisting DB and no index RPC; uncached/cache-hit strata have exact observed cache-counter changes and same generation.",
+        "Original raw responses normalize and source-verify expected declaration/spans; statuses cannot override missing raw or cache-control failures.",
+        "All attempts and missing/error/timeout denominators, N/distributions/p95/p99 CI retained; no best-of or unmeasured cold OS cache claim.",
+        "Separate native PID-bound server SELF, runner SELF and bounded process-tree observations; current RSS and lifetime high-water distinct; unavailable stays null.",
+        "After all product sessions close, fresh inode-aware disk inventory including any WAL/SHM; FTS logical pages are not double-counted; each fixture and artifact scope reported.",
+        "Original Rust evaluator/build witness, two byte-identical replays and final full member seal verified."
+      ],
+      "expected_outputs": [
+        "actual release product and p8-measurements build receipts",
+        "1230 original attempts and per-process stdio",
+        "latency/resource/storage/cost reports, replay inputs and final inventory"
+      ]
+    },
+    "soak": {
+      "tasks": [
+        "P8-010",
+        "P8-009",
+        "P8-011"
+      ],
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "owner": "scripts/p8_runtime.py",
+      "workload": {
+        "profile": "soak",
+        "concurrency": 4,
+        "operations": 3601,
+        "files": 1000,
+        "interval_ms": 1000,
+        "minimum_offered_work_ms": 3600000,
+        "cache_read_protocol": "symbol_plus_local_hybrid_cache_v1"
+      },
+      "criteria": [
+        "At least one actual hour of offered work, not compile/queue/wait time; all 3601 planned terminal operations and original compound-read request roles retained.",
+        "Original edit/delete/Git-branch/catalog compaction/cache/worker reuse operations and direct reuse/generation/queue observations remain required.",
+        "Native positive server RSS samples and original bounded-growth/trend and complete-interval sampling coverage; resource gaps cannot become zero.",
+        "No unfinished owned writers/sampler/transport at sealing, original raw replay and all final inventories checked.",
+        "Stop writes then compare actual long-lived incremental DB with separate fresh full control across all 15 original tables without repairing the incremental endpoint."
+      ],
+      "expected_outputs": [
+        "full original one-hour raw and per-process stdio",
+        "complete sample interval/cache/catalog/worker evidence",
+        "full no-repair endpoint parity and original statistics/seal"
+      ]
+    },
+    "recovery": {
+      "tasks": [
+        "P8-011",
+        "P8-016"
+      ],
+      "workflow": ".github/workflows/p8-platform.yml",
+      "owner": "scripts/p8_recovery.py",
+      "invocation": "python3 scripts/p8_recovery.py --full-matrix --expected-commit $NEW_G --previous-source-root $EXACT_PREVIOUS_SOURCE --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --output-dir $NEW_OUTPUT",
+      "workload": {
+        "current_packages": [
+          "default",
+          "semantic",
+          "semantic-HTTP"
+        ],
+        "active_fault_seeds": 3,
+        "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+        "previous_schema": 24,
+        "current_schema": 25
+      },
+      "criteria": [
+        "Original kill/restart, real SQLite busy-window and persisted deletion scenarios, plus all original active loopback-provider network-disconnect/payload-corruption/unsupported-format/old-incarnation-replacement cases.",
+        "Pending/partial versus ready observed, fallback does not silently call provider, recovery after real new source, corrupt query artifact coverage separately from durable manifest readiness.",
+        "Original exact nonignored persistence SIGKILL/sidecar/rename/reopen/writer serialization and cache-format/vector-space/namespace isolation tests; preserved executable hashes and exact one-test results; no skipped/empty selectors.",
+        "Historical schema24 binary and current schema25 built from separate complete source manifests. Four actual stdio version-pair processes verify real diagnostic/rebuild/reopen/backup restoration, full source/config integrity and unchanged original backup.",
+        "Schema bytes hashed and parsed from the same observed bytes; no future-version injection substituted for actual version pair, no source revisions relabeled as releases.",
+        "Actual source/package/raw/failure/exit identity retained throughout. Controlled provider scope does not imply paid/live-provider approval."
+      ]
+    },
+    "platform": {
+      "tasks": [
+        "P8-012"
+      ],
+      "workflow": ".github/workflows/p8-platform.yml",
+      "owner": "scripts/p8_cold_build.py",
+      "workload": {
+        "platforms": [
+          "linux",
+          "macos"
+        ],
+        "toolchains": [
+          "1.95",
+          "stable"
+        ],
+        "packages": [
+          "default",
+          "semantic"
+        ],
+        "cells": 8,
+        "profile": "release",
+        "target_initially_absent": true
+      },
+      "criteria": [
+        "Eight distinct cells of one exact new source; installed stable version and MSRV bytes/toolchain recorded, explicit features and target triple.",
+        "New independent target for each cell; prefetch separate from offline locked compilation, fresh=false unique compiler artifact, real product hash.",
+        "Each actual product executes complete 14-tool/initialize/full-index/capabilities/source-valid-symbol/normal-EOF stdio smoke.",
+        "Single-cell matrix exit2 with seven not_run cells is not standalone success: original strict --export-selected rechecks all selection/nonselection states, live source/compiler/binary, and every required RPC before export.",
+        "Original --collect-cells rechecks selected export inventory and all original Cargo/stdin/stdout evidence, exact eight distinct source-bound cells, no altered/extra/deleted/symlinked members.",
+        "Recovery hard dependency and independent task acceptance remain required; cached workspace CI is not a substitute for cold cells."
+      ]
+    },
+    "gates": {
+      "tasks": [
+        "P8-013"
+      ],
+      "workflow": ".github/workflows/p8-gates.yml",
+      "owner": "scripts/p8_gate_controls.py",
+      "criteria": [
+        "Original scorer/schema/lock/transport regressions plus actual retained CLI fault scenarios for quality, performance and input-lock failures.",
+        "Actual integer exits and original failure JSON/raw preserved. Valid passed=0; valid failed=1; inconclusive=1; invalid measurement/lock or policy error=2; original cancellation/termination semantics preserved.",
+        "Insufficient samples, absent/zero latency denominator, missing hardware and uncertain quality boundaries do not become passed.",
+        "Original output reuse/symlink/raw drift protections, original input bytes and original retained executable identity verified.",
+        "Synthetic gate-control numbers are fault fixtures, not product performance samples. P8-012 and original V03/V04/V20 dependencies remain."
+      ]
+    }
+  },
+  "task_protocol_map": {
+    "P8-005": [
+      "scale"
+    ],
+    "P8-006": [
+      "scale"
+    ],
+    "P8-007": [
+      "mixed",
+      "backfill"
+    ],
+    "P8-008": [
+      "lifecycle"
+    ],
+    "P8-009": [
+      "lifecycle",
+      "mixed",
+      "backfill",
+      "soak"
+    ],
+    "P8-010": [
+      "soak"
+    ],
+    "P8-011": [
+      "recovery",
+      "mixed",
+      "soak"
+    ],
+    "P8-012": [
+      "platform"
+    ],
+    "P8-013": [
+      "gates"
+    ],
+    "P8-016": [
+      "recovery",
+      "platform",
+      "gates"
+    ]
+  },
+  "closure_order": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "source_guard_observation": {
+    "guard_commit": null,
+    "current_worktree_head": "252e28744aa55a4b14414787f74e00783f87712f",
+    "installed_files": 2,
+    "actual_cli_status": "pending_after_first_outer_wrapper_timeout_without_integer_cli_exit",
+    "first_attempt_receipt": "review-next-candidate/original-v15-cli/outer-timeout-record.json",
+    "first_attempt_receipt_sha256": "f7966e16efcb6ba454c38f6867620836271beab4a44d292c0609f3eceedd42c6",
+    "first_attempt_scope": "Parent reports actual wrapper timeout, CLI result unknown/not_passed, no surviving child. No execution success inferred.",
+    "second_attempt": "Parent-owned identical original CLI with direct raw stdio capture in original-v15-cli-attempt02; no polling or execution by this review."
+  },
+  "created_at": "2026-10-09T04:21:42.565240+00:00",
+  "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+  "ledger_authority": {
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "mode": "100644",
+    "bytes": 802282,
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+  },
+  "task_records": {
+    "P8-005": {
+      "id": "P8-005",
+      "phase": "P8",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-eval/tests/index_v2_scale.rs"
+      ],
+      "depends_on": [
+        "P8-004"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "deliverables": [
+        "完整规模1k到100k的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "acceptance_subgates": {
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      },
+      "original_record_sha256": "b33acb319b98b4c48043b4c9503f78c516abf85105bfe9d02dee71054bbc29b6",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-006": {
+      "id": "P8-006",
+      "phase": "P8",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/mutations.rs",
+        "crates/cc-index/"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "deliverables": [
+        "增量规模与fanout曲线的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "09c1df15ade0bf62557ac415e12bef6a54cfeef56e94cfebe435d001a9d39721",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-007": {
+      "id": "P8-007",
+      "phase": "P8",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-server/"
+      ],
+      "depends_on": [
+        "P8-006"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "deliverables": [
+        "多并发与混合负载的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "7b68c900a967e82caf9cf1423794504e3c533cbe69308f55322b3b4834944f68",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-008": {
+      "id": "P8-008",
+      "phase": "P8",
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-eval/src/benchmark/statistics.rs"
+      ],
+      "depends_on": [
+        "P8-007"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "deliverables": [
+        "冷建/重开/热查分层的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "02532a9beecaf1302f02132727045a0b58e9aafaceb4b442a59e2af2f69cdca4",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-009": {
+      "id": "P8-009",
+      "phase": "P8",
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-semantic/"
+      ],
+      "depends_on": [
+        "P8-008"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "deliverables": [
+        "内存/磁盘/费用总账的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "29b2e917f69db61fc1d32979a42bdd02e47b1f81eb6a2e2f7c07bf5244d45ada",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-010": {
+      "id": "P8-010",
+      "phase": "P8",
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/tests/soak.rs",
+        "crates/cc-eval/src/benchmark/mutations.rs"
+      ],
+      "depends_on": [
+        "P8-009"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "deliverables": [
+        "长时soak与连续修改的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "36e94e534d99a07b0622cefb0b6eb52b3a6a859497aa6cf0c9d30fe28fe66732",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-011": {
+      "id": "P8-011",
+      "phase": "P8",
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/tests/semantic_lifecycle.rs",
+        "crates/cc-server/tests/mcp_stdio.rs"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "deliverables": [
+        "端到端故障与恢复认证的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "9dde61a1d7205755eb68bd46e23843ec1171cf7e891dc48d305bb4b9ae505263",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-012": {
+      "id": "P8-012",
+      "phase": "P8",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "scope": [
+        ".github/workflows/ci.yml",
+        "CONTRIBUTING.md"
+      ],
+      "depends_on": [
+        "P8-011"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "deliverables": [
+        "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "2ad72adcd7a3ab6309002d5470bcd6a9a093dcad6a941142aa26367bbd9c99de",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-013": {
+      "id": "P8-013",
+      "phase": "P8",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/gate.rs",
+        "crates/cc-eval/tests/benchmark_cli.rs"
+      ],
+      "depends_on": [
+        "P8-012"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "deliverables": [
+        "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "a5270c0317c5700cec1c7aa9395d61a7310338f48a96ddd09bffce48118a9e5b",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    },
+    "P8-016": {
+      "id": "P8-016",
+      "phase": "P8",
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-db/src/index_migrate.rs",
+        "crates/cc-semantic/src/cache.rs",
+        "docs/TROUBLESHOOTING.md"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "deliverables": [
+        "数据库/配置/包回滚演练的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "original_record_sha256": "a753463ed7d627704a75e4219dff52708ddec75f1faf7b8b9fce1e27cb9149be",
+      "current_candidate_decision": "pending_actual_execution_independent_acceptance_and_original_dependencies",
+      "proposed_done_state": false
+    }
+  },
+  "already_completed_prerequisites": {
+    "P7-020": {
+      "id": "P7-020",
+      "phase": "P7",
+      "title": "P7语义闭环与发布范围验收",
+      "status": "done",
+      "scope": [
+        "docs/roadmap/code-index-v2/",
+        "artifacts/benchmarks/"
+      ],
+      "depends_on": [
+        "P7-001",
+        "P7-002",
+        "P7-003",
+        "P7-004",
+        "P7-005",
+        "P7-006",
+        "P7-007",
+        "P7-008",
+        "P7-009",
+        "P7-010",
+        "P7-011",
+        "P7-012",
+        "P7-013",
+        "P7-014",
+        "P7-015",
+        "P7-016",
+        "P7-017",
+        "P7-019"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P7-018",
+          "when": "live semantic-effect certification; not required for engineering/fake profile"
+        }
+      ],
+      "steps": [
+        "G7分别出工程/fake与live效果结论",
+        "列出认证不足"
+      ],
+      "deliverables": [
+        "P7语义闭环与发布范围验收的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V15, V16, V17, V18, V19, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "无live证据不声称已证明真实语义收益，本地发布不被模型密钥强绑",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V15",
+        "V16",
+        "V17",
+        "V18",
+        "V19",
+        "V20"
+      ],
+      "required_for": [
+        "M3-engineering",
+        "M4-semantic"
+      ],
+      "rollback": "关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。",
+      "evidence_scope_notes": [
+        {
+          "scope": "37 authority rows; V05 combined raw/hydrate gap declared L2 closed; independently verified specific status race closed; full gates/task remain open"
+        },
+        {
+          "status": "candidate_limited_combination_verified_final_acceptance_blocked",
+          "scope": "PR117+121 canonical baseline; production-only three-way FIFO+parallel+retry; finite loopback actual doc/query gate+queue/runtime width0/2, 4/2 caps, shared batch16, ordinary retry/backoff, close/cancel/join; exact original regressions",
+          "limitations": "仅候选限定集成；父最终验收未完成。PR120对旧5cce6eb的REJECT保留。父转达独立gate review完整验收REJECT：P1 ProjectSession::new吞gate Config后回退空index并缓存到被拒项目路径，后续指定路径仍Ok；本轮不扩改session/core startup，由父另立修复。另一独立复审仍待父收敛；CI/draft GitHub API权限阻塞保留，性能/100k not_run。"
+        },
+        {
+          "status": "accepted_fixed_e3_declared_local_100k_subgate_only",
+          "limitations": "2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。"
+        },
+        {
+          "status": "prepared_explicit_g7_review_dossier_generator",
+          "scope": "Eight synthetic controls pass for pinned task/evidence identity, original acceptance and hard dependencies, 13 wiring rows, mixed sources and blocked live disposition. Reporter never grants engineering/live/release approval; real dossier generation and unfinished hard dependencies are separate."
+        },
+        {
+          "status": "20261007_final_round2_implementation_receipt",
+          "scope": "实现并实际生成 G7 证据总账：固定原条件、任务/证据哈希、13 项原接线责任、混合来源和分开的工程/live 结论；9 个最终合成控制通过。",
+          "limitations": [
+            "总账生成成功不等于 G7 工程验收；原硬依赖继续约束任务。",
+            "历史已验收任务没有本轮条目也不会重开；证据字节校验不认证执行语义。",
+            "实际最终 CI、工程发布和 live 效果没有由此命令批准。"
+          ]
+        },
+        {
+          "status": "current_g7_dossier_after_verified_P7_013_acceptance",
+          "scope": "按原192任务和13项接线责任生成最终v3总账，40到39只来自P7-013验收；G7工程仍not_accepted，live仍blocked。旧v1/v2固定记录保留。"
+        },
+        {
+          "status": "accepted_20261008_original_task_scope",
+          "scope": "依赖014→015→016→017→019及先前001–013完成后，按原G7分别验收当前工程/fake并记录live blocked；13条原接线逐条对账，7/13显式条件处置。原dossier工具保持not_accepted，由单独非作者人工复核承载G7结论。完整V19/G8和live效果不认证。",
+          "limitations": [
+            "P7-018遵循原D1+D2 blocked；没有授权/真实provider/付费/源码外发",
+            "完整V19语料/独立custody/质量统计及G8/G9未认证；历史已接受最小门保持原范围"
+          ]
+        }
+      ],
+      "not_a_new_completion": true
+    },
+    "P8-001": {
+      "id": "P8-001",
+      "phase": "P8",
+      "title": "锁定release候选与证据输入",
+      "status": "done",
+      "scope": [
+        "crates/cc-eval/src/benchmark/manifest.rs",
+        "artifacts/benchmarks/"
+      ],
+      "depends_on": [
+        "P7-020"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "冻结binary/config/corpus/scoring/model/环境",
+        "停止覆盖被测源码"
+      ],
+      "deliverables": [
+        "锁定release候选与证据输入的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V01, V02 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "每份报告精确回到同一候选，后续改动使对应证据失效",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V02"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "evidence_scope_notes": [
+        {
+          "status": "bounded_groundwork_only_not_release_candidate",
+          "limitations": "all-target lint FAIL; parentquality/P7/V19 OPEN; no new formal eval/100k"
+        },
+        {
+          "status": "authorized_test_only_lint_fix_not_release_candidate",
+          "limitations": "parentquality/P7/V19 OPEN; no new formal eval/100k"
+        },
+        {
+          "status": "20261007_input_lock_preparation",
+          "scope": "输入锁准备工具及具体 019 输入锁已实现：最终 15 控制通过，26 输入/116 关系校验通过，895 文件副本新增报告的漂移控制从 0 到 2。",
+          "limitations": [
+            "preparation_only；P7-020 硬依赖未完成，P8-001 保持 todo。",
+            "未产生新的 Rust/产品/benchmark 执行，硬件和真实成本未知；没有 release candidate 或 execution attestation。",
+            "重新校验具体锁需要保留的原 binary/source/raw bundle；仅新 Git clone 不包含可执行文件字节。"
+          ]
+        },
+        {
+          "status": "local_engineering_advanced_not_full_acceptance",
+          "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"
+        },
+        {
+          "status": "accepted_20261008_original_task_scope",
+          "scope": "固定当前795源输入的default DEV候选，冻结binary/config/corpus/scorer/model/环境并实际执行原单题基线及原scorer重放；7类真实输入漂移均被拒绝，原gate为baseline_recorded_not_quality_certified。完成输入冻结机制及具体候选验收，未作G8 release/heldout/规模质量认证。",
+          "limitations": [
+            "原1题×1repeat DEV基线，非发布质量分数；release_certified=false/latest_updated=false",
+            "具体archive有GitHub保留期，归档bytes/hashes与选定raw永久保留；未来源码、输入变化须重冻结对应候选"
+          ]
+        }
+      ],
+      "not_a_new_completion": true
+    },
+    "P8-004": {
+      "id": "P8-004",
+      "phase": "P8",
+      "title": "封存holdout与反过拟合检查",
+      "status": "done",
+      "scope": [
+        "crates/cc-eval/benchmarks/manifests/",
+        "crates/cc-search/"
+      ],
+      "depends_on": [
+        "P8-003"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "审查生产无gold路径/题词典",
+        "一次冻结配置运行heldout"
+      ],
+      "deliverables": [
+        "封存holdout与反过拟合检查的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "translation/paraphrase不泄漏，回归后不直接改标签保分",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V19"
+      ],
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "evidence_scope_notes": [
+        {
+          "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance"
+        },
+        {
+          "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open"
+        },
+        {
+          "status": "original_task_execution_scope_complete_subject_to_final_PR_merge_gate",
+          "scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+          "limitations": [
+            "Original P615 Rust failures and PR #153 initial CI failure remain preserved.",
+            "The new combined P has no new retrieval-quality or holdout run.",
+            "Historical F/D diagnostic exit 2 and F holdout exit 1 remain failures; full V19/G8 and release are not certified."
+          ],
+          "main_accounting": "PR #153 has already merged P8-002/003 at a1158866 (162 done /30 remaining). Only P8-004 is a new done state in PR #156; final 163/29 is conditional on exact-head CI, independent acceptance and merge.",
+          "final_merge_gate": "This task-state proposal becomes merged completion only with successful terminal CI, P7 engineering and P7 closeout workflows at the exact final PR #156 head, independent original-task acceptance and a verified merge. See the permanent PR review."
+        },
+        {
+          "scope": "Additional prospective temporal-v2 evidence for the same original P8-004, already done by PR #156. Preserve all 192 original definitions and all task statuses; no new TODO or done count. Candidate 2cd04485 formal gate_failed/exit1 stays failed; no G8 or quality certification for this candidate or later main product 1ed3c7df."
+        }
+      ],
+      "not_a_new_completion": true
+    }
+  },
+  "conditional_future_count_if_original_task_is_independently_accepted": [
+    {
+      "after_task": "P8-005",
+      "done": 164,
+      "remaining": 28,
+      "current": false
+    },
+    {
+      "after_task": "P8-006",
+      "done": 165,
+      "remaining": 27,
+      "current": false
+    },
+    {
+      "after_task": "P8-007",
+      "done": 166,
+      "remaining": 26,
+      "current": false
+    },
+    {
+      "after_task": "P8-008",
+      "done": 167,
+      "remaining": 25,
+      "current": false
+    },
+    {
+      "after_task": "P8-009",
+      "done": 168,
+      "remaining": 24,
+      "current": false
+    },
+    {
+      "after_task": "P8-010",
+      "done": 169,
+      "remaining": 23,
+      "current": false
+    },
+    {
+      "after_task": "P8-011",
+      "done": 170,
+      "remaining": 22,
+      "current": false
+    },
+    {
+      "after_task": "P8-012",
+      "done": 171,
+      "remaining": 21,
+      "current": false
+    },
+    {
+      "after_task": "P8-013",
+      "done": 172,
+      "remaining": 20,
+      "current": false
+    },
+    {
+      "after_task": "P8-016",
+      "done": 173,
+      "remaining": 19,
+      "current": false
+    }
+  ],
+  "immutable_original_protocol_inputs": {
+    ".github/workflows/ci.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "mode": "100644",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914"
+    },
+    ".github/workflows/p8-gates.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+      "mode": "100644",
+      "bytes": 1255,
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca"
+    },
+    ".github/workflows/p8-lifecycle.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "577ba891ec1eb56da364087c1ad180045185f61c",
+      "mode": "100644",
+      "bytes": 5387,
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec"
+    },
+    ".github/workflows/p8-platform.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+      "mode": "100644",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4"
+    },
+    ".github/workflows/p8-runtime.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "mode": "100644",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f"
+    },
+    ".github/workflows/p8-scale.yml": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "mode": "100644",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "mode": "100644",
+      "bytes": 23104,
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
+    },
+    "docs/P8_PLATFORM_RECOVERY.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "7ee02f3786c3d8ac00afba32857ccb68d8e2a601",
+      "mode": "100644",
+      "bytes": 8899,
+      "sha256": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360"
+    },
+    "docs/roadmap/code-index-v2/02-CONTRACTS.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "mode": "100644",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    "docs/roadmap/code-index-v2/06-VALIDATION.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "mode": "100644",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "mode": "100644",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    "docs/roadmap/code-index-v2/P8-CANDIDATE-EXECUTION.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "781fef1c87eff4ce3a2d624320d04f427fce8680",
+      "mode": "100644",
+      "bytes": 5622,
+      "sha256": "226af4535de57c784f957175c9aa2a59a52cf3df0bd3659eb3805856f5ff7e33"
+    },
+    "docs/roadmap/code-index-v2/P8-GATES.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "fb41c7a0e9e71b9d48b882321545692f973b3aea",
+      "mode": "100644",
+      "bytes": 3630,
+      "sha256": "cde9696570d694facc9e02d451146107adea24bcac5dd00d96537868d7604d91"
+    },
+    "docs/roadmap/code-index-v2/P8-LIFECYCLE.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "5faeb21394c033458234c52113ede643ebaf7537",
+      "mode": "100644",
+      "bytes": 9130,
+      "sha256": "853e8c89378c89c41b9c6af8fadecf8f9854e2c262dec0ce9b75057590e44d60"
+    },
+    "docs/roadmap/code-index-v2/P8-SCALE.md": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "mode": "100644",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    },
+    "docs/roadmap/code-index-v2/tasks.json": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "mode": "100644",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "scripts/p8_backfill.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "mode": "100644",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd"
+    },
+    "scripts/p8_cold_build.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "mode": "100644",
+      "bytes": 52649,
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa"
+    },
+    "scripts/p8_gate_controls.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+      "mode": "100644",
+      "bytes": 4238,
+      "sha256": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7"
+    },
+    "scripts/p8_lifecycle.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "4d413c2b23930f2856139a4bfef0f9c114254df3",
+      "mode": "100644",
+      "bytes": 38417,
+      "sha256": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d"
+    },
+    "scripts/p8_recovery.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "aae54fe62ba3aa81cea84daa3a9307240e4700b3",
+      "mode": "100644",
+      "bytes": 58272,
+      "sha256": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42"
+    },
+    "scripts/p8_rollback.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+      "mode": "100644",
+      "bytes": 38818,
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+    },
+    "scripts/p8_runner_capacity.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "mode": "100644",
+      "bytes": 11164,
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    "scripts/p8_runtime.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "mode": "100644",
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+    },
+    "scripts/p8_runtime_build.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+      "mode": "100644",
+      "bytes": 18068,
+      "sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db"
+    },
+    "scripts/p8_scale_matrix.py": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "mode": "100644",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    }
+  },
+  "exact_source_excerpts": {
+    "docs/roadmap/code-index-v2/06-VALIDATION.md:21-43": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line_start": 21,
+      "line_end": 43,
+      "lines": [
+        "| ID | 验证包 | 最低场景/断言 | 层级 |",
+        "|---|---|---|---|",
+        "| V01 | 可复现构建/旧测试 | SHA、dirty/binary digest、toolchain/SDK，现有测试/stdio、ignored 明列、全新 target 冷构建 | L1–L3 |",
+        "| V02 | benchmark schema/lock | 重复 ID、BOM、坏 JSON、空 gold、路径穿越、dirty、submodule、输入 hash、single/suite 均拒漂移 | L1/L3 |",
+        "| V03 | scorer goldens | primary/supporting、linear nDCG、重复、glob、空结果、must_contain 注记、native 范围/组/chain | L1 |",
+        "| V04 | 传输与报告 | MCP 握手/错误/取消、HTTP 失败、readiness、timeout、退出码、raw→metrics/report 可重算 | L2/L3 |",
+        "| V05 | 排序与范围 | BM25 单调、soft 预选外命中、Some(empty)、语言/path 交集、DSL、所有 lane 与最终 hydrate 不越界 | L1–L3 |",
+        "| V06 | 公共表面 | JS/TS/Rust/Python/Go API/body/visibility 变更、unknown≠empty、Canonical hash | L1/L2 |",
+        "| V07 | dirty oracle | 增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity | L2/L3 |",
+        "| V08 | 项目模块规则 | TS config/extends/exports、Rust crate/module、Python src/relative、Go module/work、配置-only失效 | L1–L4 |",
+        "| V09 | parser/chunk/source | 一次 AST、长函数/类/gap/超长行、UTF-8/CRLF、span union、实际 bytes 和预算 | L1/L2 |",
+        "| V10 | 文档身份与投影 | 顶部插入/rename/重复函数、source vs embed text、模板变化、旧 chunk wire id 兼容 | L1/L2 |",
+        "| V11 | 查询执行/缓存 | deadline/取消、有界线程、1连接读池、锁外网络、混代读拒绝/有限重试、缓存 key 完整 | L2/L3 |",
+        "| V12 | 选择与预算 | 首块超大、metadata 膨胀、重叠、单文件 locate/多文件 facets、完整 JSON、source freshness | L1–L3 |",
+        "| V13 | schema/epoch | typed write effects、一次 commit 推进、aux不刷内容、rollback、换库 incarnation | L2 |",
+        "| V14 | outbox/publish | claim CAS、过期 lease、删除竞争、两进程、模型切换、artifact-before-manifest、重复 ack | L2 |",
+        "| V15 | provider 验证 | 数量/index/维度/NaN/Inf/zero、429/5xx/auth、timeout、并发/批次/费用上限、fake/live 区分 | L1–L3 |",
+        "| V16 | exact vector/filter | 手算 cosine/top-k、tie、scope 先过滤、删除不返回、bounded memory、不同空间拒混 | L1/L2 |",
+        "| V17 | 恢复与 GC | 每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费 | L2/L3 |",
+        "| V18 | MCP/配置兼容 | 14工具不丢失，旧 mode不变，新参数贯穿schema/sanitize/dispatch/status，默认无网络无key可用 | L1–L3 |",
+        "| V19 | 检索质量/消融 | compat/native分报，真实公开 corpus，hard negatives、holdout、facet/span、macro/micro/CI | L3/L4 |",
+        "| V20 | 性能/资源/成本 | 1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用 | L3/L5 |",
+        "| V21 | 回滚/发行/文档 | 新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测 | L2/L3/L5 |"
+      ]
+    },
+    "docs/roadmap/code-index-v2/P8-SCALE.md:209-276": {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "line_start": 209,
+      "line_end": 276,
+      "lines": [
+        "闭包。取消这些依赖而不证明完整读取依赖会漏掉过时目标。本协议显式登记更大的每次",
+        "工作预算，继续处理完整闭包；原深度/文件/转发边硬预算与 incomplete 语义保持。",
+        "",
+        "| 参数 | 新协议固定值与范围 |",
+        "|---|---|",
+        "| 主规模 dirty work budget | 200，与当前产品默认值一致 |",
+        "| 主规模最大 resume | 1024，在既有 CLI 合法范围内 |",
+        "| 独立 fanout dirty/resume | 8/128，保留原专门超预算压力 |",
+        "| 主规模/阶段/重复 | 原五规模与全部九主阶段，N=30；每规模 30 片，每片恰好 1 rep |",
+        "| fanout population | 只由 1k 的 30 片执行，五个 fanout 各 N=30 |",
+        "| canonical 累计容量 | 显式专用入口 16 GiB，仍累计两侧全部十五表；通用默认 4 GiB 与通用 validator 上界 8 GiB 不变 |",
+        "| 同时占用 scratch | 8 GiB，保留原 max_page_count、2 MiB cache 和每表复用 |",
+        "| 每侧每表/每行保护 | 500 万行/1 MiB，保持原值 |",
+        "| native deadline/证据 | 18,000,000ms/512 MiB，每片独立，耗尽仍失败 |",
+        "| 可用磁盘预检 | `256 KiB × files + 4 GiB`；100k 约需 28.4 GiB；这是登记估计，不是峰值或足够空间的证明 |",
+        "",
+        "`ScalePlan.capacity_profile` 必须明确为 `scale_capacity_v1`，同时指定 release、单一规范规模、",
+        "每片一个全局 repetition 与固定 200/1024。仅输入这个名字不会悄悄覆盖原 CLI 默认值。",
+        "旧 smoke/release 计划、默认 4 GiB oracle、通用非法预算拒绝和默认严格同环境重放继续可用。",
+        "新入口与旧入口复用同一投影、只读事务、integrity/FK 检查、全部重复行和逐行 Value 比较；",
+        "容量变化不改变输入、实际批次数量、全表事实、独立配置见证或原性能阈值。",
+        "",
+        "矩阵记录完整固定 `capacity_contract`，大表的每份原 parity 必须报告精确匹配的容量、",
+        "scratch、cache 与布局。每片启动前记录实际 statvfs；其 `TMPDIR`/`TMP`/`TEMP` 显式绑定",
+        "同一受检临时根，native 父进程在其中管理全部 fixture 与 oracle。空间不足封存为",
+        "`not_run` 并返回非零，不启动测量、不自动改预算或清理宿主内容；结束再记录空间观察。",
+        "持续峰值仍需独立资源证据，前后 statvfs 不能冒充峰值。",
+        "",
+        "```sh",
+        "python3 scripts/p8_scale_matrix.py run \\",
+        "  --root \"$PWD\" --build /tmp/p8-scale-fixed-build-new \\",
+        "  --scale 1000 --shard-index 0 --shard-count 30 --repetitions 30 \\",
+        "  --capacity-profile scale_capacity_v1 --output /tmp/p8-capacity-1000-0-new",
+        "",
+        "# 收齐全部 5×30 片及原五个 fanout 的每组 30 次后，才可能覆盖完成。",
+        "python3 scripts/p8_scale_matrix.py aggregate \\",
+        "  --build /tmp/p8-scale-fixed-build-new --inputs /tmp/p8-capacity-*-new \\",
+        "  --shard-count 30 --repetitions 30 --capacity-profile scale_capacity_v1 \\",
+        "  --output /tmp/p8-capacity-matrix-review-new",
+        "```",
+        "",
+        "新工作流明确选择该容量协议。它采用 `heterogeneous_stratified_coverage_v1`：每个样本",
+        "绑定实际 host、CPU 型号/数量、kernel 与 native CPU 并发观察；每组列出所有样本到",
+        "environment ID 的映射，并只在各环境层内计算分布。不同 host 不拼成同环境样本，",
+        "完整组的 N=30 仅表示全局覆盖；各层可能只有 N=1，层数与样本数全部保留。不输出",
+        "跨环境混合均值、因果提速或稳定尾部分位数，也不挑最快 host。源码、实际二进制、",
+        "工具链/构建 profile、features、seed、输入和真实运行配置仍须一致；原缺片、重复、",
+        "失败、未闭合、逐阶段 full parity 和 fanout 手写真值检查没有减少。",
+        "",
+        "",
+        "### 完整矩阵的首片执行门",
+        "",
+        "工作流先构建并封存一次 release 可执行文件，再对五个规范规模各执行",
+        "`shard-index=0`。这些是原注册总体中真实的 `repetition=0`：每片仍执行全部九个",
+        "主阶段、每个检查点的真实 full control 与完整十五表 parity；1k 片还执行原五个",
+        "fanout。它们保留原来的 `p8-scale-shard-<scale>-0-<run-id>` artifact 名称，",
+        "不会作为额外 smoke 被剔除，也不会在后续重复采集。",
+        "",
+        "五个首片全部成功后，`measure` 才执行同一固定源码与二进制的 shard 1–29。",
+        "两段分别包含 5 片与 145 片，交集为空；合计仍为五规模各 30 个全局重复，",
+        "全部 150 片、1500 个样本。原 seed、200/1024 主闭包预算、8/128 fanout 预算、",
+        "18,000,000ms deadline、512 MiB 证据上限与容量协议均不改变。",
+        "",
+        "首片任一失败时，剩余 145 片不启动；失败片的原始记录照常上传。",
+        "`aggregate` 在构建成功后仍执行，并消费相同 artifact 命名下的原始记录；",
+        "它继续要求所有 150 片和每组 30 个重复，失败或缺片不会获得通过。该门只改变",
+        "执行次序，避免已知容量或 correctness 失败继续占用整批 runner，不构成性能门",
+        "降低、挑选较快样本或自动重跑失败样本。"
+      ]
+    },
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md:169-189": {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line_start": 169,
+      "line_end": 189,
+      "lines": [
+        "## 9. 性能采样与资源",
+        "",
+        "分离：cold build（空 index/空 parse cache）、reopen query（新进程，OS page cache 未清）、warm uncached query（不同 query 防 result-cache）、warm cache-hit query、no-op update、single body update、public API fanout、config-only update、batch 1/10/100/1000 文件、watcher backlog、semantic backfill/partial query/model switch。",
+        "",
+        "冷 OS cache 仅在明确且可复现的受控 runner 上测；没有清理就不要标 cold disk。常规 profile 不用 sudo 清缓存。release build 测性能，debug/test build 的结果单独标签。每种 query profile 预热后采集全部样本，禁止 best-of；起始建议每层至少 30 个重复，正式尾延迟 profile 至少 200 个同类样本并报告 N/CI，不能因样本小仍声称稳定 p99。各数值是设计下限，可在 P0 资源评估后锁定。",
+        "",
+        "并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。",
+        "",
+        "资源分 client runner、CodeCortex 子进程树、LSP/模型服务、OCE 外部容器。缺权限时 reported unavailable，不填 0。macOS RSS 单位与 Linux 不同；ru_maxrss 是高水位，不是瞬时 RSS，采样函数必须有平台测试。记录 peak sampling interval、index/FTS/cache/向量占用、读写字节、model requests/tokens/cache hits/重复费用不确定次数。",
+        "",
+        "## 10. 消融与统计",
+        "",
+        "固定同 corpus、输入、预算和 seed，配对比较：现状→BM25 修复→软范围修复→模块/增量修复→新 chunker→coverage selector→dense→rerank。每个实验仅改变一组解释得清的因素；chunker 与 embedding 必须先单独 baseline，再合并。保留 lexical-only、graph-off、dense-only、local+dense、selector-off 和 rg baseline。",
+        "",
+        "按 repository/query-family 分层 bootstrap 置信区间，报告 paired per-query delta、macro per repo/category、micro mean、失败样本。不能把同题 100 次重复当 100 个独立检索问题。latency 用独立时间分布，quality 的 stochastic rerank 重复与 query sampling 分开。",
+        "",
+        "门槛在 P0 基线冻结后预注册。建议起始 guardrails：关键确定性正确性 100%；scope/source/版本泄漏 0；goldens scorer 完全一致；质量类平均退化预算 0.01（绝对 nDCG）与 PrimaryTop1 1 个百分点作为评审触发值，而非任意容忍错误；性能退化超过 10% 进入解释/审批，超过 20% 阻断目标 profile，需满足采样/同环境条件。语义能力要求 held-out 语义类收益 CI 下界>0 且 exact 类无实质退化；不预承诺具体加速倍数/分数。小样本 CI 不确定时结论 inconclusive，而非强行 pass。",
+        "",
+        "## 11. CI 档位与输出",
+        "",
+        "PR fast：schema/scorer/locks、关键契约、固定小 mutation、真实 stdio smoke，不联网模型。Nightly：公开真实仓库、10k/50k、随机 mutation seeds、并发、fake 故障与恢复。Release：100k、cold build/MSRV/macOS/Linux、长时 soak、完整 holdout、显式批准的真实 provider 对照。付费/私有源数据 profile 始终人工启用，不因普通 PR 自动发送代码。"
+      ]
+    },
+    "scripts/p8_runtime.py:386-413": {
+      "path": "scripts/p8_runtime.py",
+      "line_start": 386,
+      "line_end": 413,
+      "lines": [
+        "def rss_trend(samples):",
+        "    values = [s.get(\"server\", {}).get(\"resident_bytes\") for s in samples]",
+        "    valid = [v for v in values if isinstance(v, int) and not isinstance(v, bool) and v > 0]",
+        "    if len(valid) != len(values) or len(valid) < 8:",
+        "        return dict(status=\"unavailable\", observed=len(values), valid=len(valid),",
+        "                    passed=False, reason=\"positive native server RSS required for every sample\")",
+        "    quarter = len(valid) // 4",
+        "    warmed, tail = median(valid[quarter:2 * quarter]), median(valid[3 * quarter:])",
+        "    allowed = warmed + warmed // 4 + 32 * 1024 * 1024",
+        "    return dict(status=\"observed\", observed=len(values), warmed_median_bytes=warmed,",
+        "                tail_median_bytes=tail, allowed_bytes=allowed, sampled_peak_bytes=max(valid),",
+        "                passed=tail <= allowed, rule=\"existing_soak_warmed_plus_25_percent_plus_32MiB\")",
+        "",
+        "",
+        "def sample_coverage(samples, start_ns, end_ns, maximum_gap_ns=5_000_000_000):",
+        "    \"\"\"Require native observations throughout the measured work, including edges.\"\"\"",
+        "    times = [row.get(\"at_ns\") for row in samples]",
+        "    if not times or any(not isinstance(t, int) or isinstance(t, bool) for t in times):",
+        "        return dict(passed=False, reason=\"missing sample timestamps\")",
+        "    if times != sorted(set(times)) or start_ns >= end_ns:",
+        "        return dict(passed=False, reason=\"invalid observation time order\")",
+        "    gaps = [max(0, times[0] - start_ns), max(0, end_ns - times[-1])]",
+        "    gaps.extend(b - a for a, b in zip(times, times[1:]))",
+        "    return dict(passed=max(gaps) <= maximum_gap_ns,",
+        "                observed_samples=len(times), first_ns=times[0], last_ns=times[-1],",
+        "                work_start_ns=start_ns, work_end_ns=end_ns,",
+        "                maximum_gap_ns=max(gaps), allowed_maximum_gap_ns=maximum_gap_ns,",
+        "                method=\"monotonic sample starts including work start and end gaps\")"
+      ]
+    },
+    "scripts/p8_runtime.py:800-834": {
+      "path": "scripts/p8_runtime.py",
+      "line_start": 800,
+      "line_end": 834,
+      "lines": [
+        "        statuses = {name: sum(r[\"status\"] == name for r in rows) for name in sorted({r[\"status\"] for r in rows})}",
+        "        ids = [r[\"id\"] for r in rows]",
+        "        require(sorted(ids) == list(range(args.operations)), \"offered/terminal denominator differs\")",
+        "        compactions = (out / \"product/product-stderr.log\").read_text().count(COMPACTION_EVENT)",
+        "        switches = sum(r.get(\"mutation\", {}).get(\"action\") == \"real_git_branch_switch\" for r in rows)",
+        "        trend = rss_trend(resource_rows)",
+        "        coverage = sample_coverage(resource_rows, offer_start - begun, observed_end)",
+        "        if statuses != {\"success\": args.operations}: failures.append(\"non-success offered outcomes\")",
+        "        require((statistics_result[\"exit_code\"] == 0) == (statuses == {\"success\": args.operations}),",
+        "                \"raw statistics and original terminal outcome gate disagree\")",
+        "        if args.profile == \"mixed\" and args.concurrency > 1 and not active[\"read_build_overlap\"]:",
+        "            failures.append(\"configured concurrency did not exercise read/build overlap\")",
+        "        if args.profile == \"soak\":",
+        "            if observed_span < 3_600_000_000_000: failures.append(\"less than one hour of actual offered workload\")",
+        "            if not trend[\"passed\"]: failures.append(\"RSS trend unavailable or failed\")",
+        "            if not coverage[\"passed\"]: failures.append(\"RSS samples do not cover the complete work interval\")",
+        "            if compactions == 0: failures.append(\"no actual catalog compaction\")",
+        "            if switches < 2: failures.append(\"branch switches not exercised\")",
+        "            cache_reuse = soak_cache_summary(rows, args.operations, offer_start - begun, observed_end, project)",
+        "            if not cache_reuse[\"passed\"]: failures.append(\"complete soak cache invalidation/refill/hit evidence failed\")",
+        "        report = dict(schema_version=1, status=\"passed_observation\" if not failures else \"failed\",",
+        "                      exit_code=0 if not failures else 1, task_complete=False,",
+        "                      profile=args.profile, offered=args.operations, outcomes=statuses,",
+        "                      execution_environment=plan[\"execution_environment\"],",
+        "                      observed_work_ns=observed_span, actual_concurrency=active,",
+        "                      real_branch_switches=switches, observed_catalog_compactions=compactions,",
+        "                      rss=trend, resource_time_coverage=coverage,",
+        "                      observer_concurrency_scope=plan[\"observer_concurrency_scope\"],",
+        "                      latency=latency_summary(rows),",
+        "                      latency_by_operation={kind: latency_summary([r for r in rows if r[\"operation\"] == kind])",
+        "                                            for kind in (\"read\", \"build\")}, failures=failures,",
+        "                      statistics=statistics_result,",
+        "                      parity_exit_code=result.returncode,",
+        "                      parity_sha256=digest(out / \"parity.json\"), product_sha256=digest(binary),",
+        "                      oracle_sha256=digest(oracle), semantic_backfill=\"not_run_in_default_product_profile\","
+      ]
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs:29-35": {
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "line_start": 29,
+      "line_end": 35,
+      "lines": [
+        "};",
+        "",
+        "const SEEDS: [u64; 3] = [7, 19, 43];",
+        "const SAMPLES_PER_CELL: usize = 32;",
+        "const CONCURRENCIES: [usize; 4] = [1, 4, 8, 16];",
+        "const LOCAL_QUERY_BOUND: Duration = Duration::from_secs(2);",
+        "const PROGRESS_BOUND: Duration = Duration::from_secs(5);"
+      ]
+    }
+  },
+  "protocol_candidate_source_retention": {
+    "docs/roadmap/code-index-v2/tasks.json": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/02-CONTRACTS.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/06-VALIDATION.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/P8-SCALE.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/P8-LIFECYCLE.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/P8-GATES.md": "exact_same_bytes_at_P",
+    "docs/P8_PLATFORM_RECOVERY.md": "exact_same_bytes_at_P",
+    "docs/roadmap/code-index-v2/P8-CANDIDATE-EXECUTION.md": "exact_same_bytes_at_P",
+    "crates/cc-eval/tests/p7_worker_contention.rs": "exact_same_bytes_at_P",
+    ".github/workflows/p8-gates.yml": "exact_same_bytes_at_P",
+    ".github/workflows/p8-lifecycle.yml": "exact_same_bytes_at_P",
+    ".github/workflows/p8-platform.yml": "exact_same_bytes_at_P",
+    ".github/workflows/p8-runtime.yml": "exact_same_bytes_at_P",
+    ".github/workflows/p8-scale.yml": "exact_same_bytes_at_P",
+    "scripts/p8_backfill.py": "exact_same_bytes_at_P",
+    "scripts/p8_cold_build.py": "exact_same_bytes_at_P",
+    "scripts/p8_gate_controls.py": "exact_same_bytes_at_P",
+    "scripts/p8_lifecycle.py": "exact_same_bytes_at_P",
+    "scripts/p8_recovery.py": "exact_same_bytes_at_P",
+    "scripts/p8_runtime.py": "exact_same_bytes_at_P",
+    "scripts/p8_scale_matrix.py": "exact_same_bytes_at_P",
+    ".github/workflows/ci.yml": "exact_same_bytes_at_P",
+    "scripts/p8_runtime_build.py": "exact_same_bytes_at_P",
+    "scripts/p8_rollback.py": "exact_same_bytes_at_P",
+    "scripts/p8_runner_capacity.py": "exact_same_bytes_at_P"
+  }
+}

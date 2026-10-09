@@ -1,0 +1,2461 @@
+{
+  "schema": "p8-round20-four-original-task-ready-to-close-ledger-v1",
+  "prepared_at_utc": "2026-10-09 05:19:34 UTC",
+  "prepared_by": "/root/recovery_audit; mapping author; actual A2 reception independently reviewed by /root/acceptance_review",
+  "repository": "jyqj/codecortex",
+  "verdict": "Four original task scopes mapped to ready evidence; canonical hard dependencies and known A23 Mac regression applicability remain pending.",
+  "closure_ready": false,
+  "authority": {
+    "commit": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "tree": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 802282,
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "task_lines": {
+      "P8-011": 12084,
+      "P8-012": 12140,
+      "P8-013": 12204,
+      "P8-016": 12364
+    },
+    "task_count": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "depends_on_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。"
+  },
+  "effects": {
+    "tasks_changed": 0,
+    "new_original_TODO_completed": 0,
+    "task_definitions_or_thresholds_changed": false,
+    "new_task_nodes_created": false,
+    "refs_or_commits_changed": false,
+    "native_or_fault_tests_run": false,
+    "new_build_or_provider_calls": false,
+    "database_or_ZIP_replay_repeated": false,
+    "only_authorized_evidence_JSON_blob_prepared": true
+  },
+  "source_applicability": {
+    "main": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "a23": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "main_tree": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+    "a23_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "root_entry_count": 13,
+    "unchanged_count": 12,
+    "diff": [
+      {
+        "path": "artifacts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2b41cb5a6fc09724ee0ae281b767a36f375c4f1f",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2b41cb5a6fc09724ee0ae281b767a36f375c4f1f"
+      }
+    ],
+    "direct_source_paths": [
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "51facfc382452eab53969020f8ca0beaadb65114",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/51facfc382452eab53969020f8ca0beaadb65114"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+        "size": 636,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+        "size": 3062,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/3fa01470513c15935a32488ca83bbddcc48f32d3"
+      },
+      {
+        "path": "Cargo.lock",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+        "size": 82687,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c83b9a3dae16231117e3c3c12dc56479988e1b24"
+      },
+      {
+        "path": "Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "size": 1594,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      {
+        "path": "DESIGN.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+        "size": 4283,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+        "size": 7961,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+        "size": 7151,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/779cd73fc7086faea661b8b588ca2b66c6453a6c"
+      },
+      {
+        "path": "crates",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "233c93b5f6cdb2c928f17c93cd41b4d0b6676094",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/233c93b5f6cdb2c928f17c93cd41b4d0b6676094"
+      },
+      {
+        "path": "docs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e4232e5b46891e4293aa548d380a7755edcdfccd",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/e4232e5b46891e4293aa548d380a7755edcdfccd"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+      }
+    ],
+    "original_execution_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "original_native_inputs": 1087,
+    "original_native_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+    "actual_CI_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+    "actual_CI_checkout_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "whole_CI_tree_equals_A23": true,
+    "original_scope_files": {
+      "crates/cc-eval/tests/semantic_lifecycle.rs": {
+        "path": "cc-eval/tests/semantic_lifecycle.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cfe8fdec0241e257752344cb69fa45a5500433a8",
+        "size": 13558,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/cfe8fdec0241e257752344cb69fa45a5500433a8"
+      },
+      "crates/cc-server/tests/mcp_stdio.rs": {
+        "path": "cc-server/tests/mcp_stdio.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b9621c739b8fcc6b0875cdbfb7582be75f1457bc",
+        "size": 43012,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/b9621c739b8fcc6b0875cdbfb7582be75f1457bc"
+      },
+      "crates/cc-eval/src/benchmark/gate.rs": {
+        "path": "cc-eval/src/benchmark/gate.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ecd0c8e5e229221b63ae719e244feb5eaa6b64ce",
+        "size": 2216,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/ecd0c8e5e229221b63ae719e244feb5eaa6b64ce"
+      },
+      "crates/cc-eval/tests/benchmark_cli.rs": {
+        "path": "cc-eval/tests/benchmark_cli.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0809edbe125ee70c82d108b4537ca39f90b4a227",
+        "size": 9821,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0809edbe125ee70c82d108b4537ca39f90b4a227"
+      },
+      "crates/cc-db/src/index_migrate.rs": {
+        "path": "cc-db/src/index_migrate.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0de28f327cc989fafc112d6415491026de167bd1",
+        "size": 7941,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0de28f327cc989fafc112d6415491026de167bd1"
+      },
+      "crates/cc-semantic/src/cache.rs": {
+        "path": "cc-semantic/src/cache.rs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7cf8e5bf288353d18e1b0dbe95b9599457be2c6",
+        "size": 41167,
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/f7cf8e5bf288353d18e1b0dbe95b9599457be2c6"
+      }
+    },
+    "implementation_helpers": [
+      {
+        "path": "scripts/p7_build_identity.py",
+        "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "bytes": 5940,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p7_fault_lifecycle_stdio.py",
+        "git_blob": "e38684a7bfe52a4d1c5650956098ed30bbd0fcfe",
+        "bytes": 29161,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_cold_build.py",
+        "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+        "bytes": 52649,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_gate_controls.py",
+        "git_blob": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+        "bytes": 4238,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_recovery.py",
+        "git_blob": "aae54fe62ba3aa81cea84daa3a9307240e4700b3",
+        "bytes": 58272,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/p8_rollback.py",
+        "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+        "bytes": 38818,
+        "mode": "100644"
+      }
+    ],
+    "implementation_workflows": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+        "bytes": 11046,
+        "mode": "100644"
+      },
+      {
+        "path": ".github/workflows/p8-gates.yml",
+        "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+        "bytes": 1255,
+        "mode": "100644"
+      },
+      {
+        "path": ".github/workflows/p8-platform.yml",
+        "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+        "bytes": 6812,
+        "mode": "100644"
+      }
+    ],
+    "evidence_labels_not_rewritten": true,
+    "rule": "A23 evidence applies to fixed main b21c because all non-artifact root objects are identical. No automatic transfer to a later changed native/observer source."
+  },
+  "original_definitions": {
+    "validation": {
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+    },
+    "contracts": {
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+    },
+    "benchmark": {
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+    },
+    "interpretation": [
+      {
+        "document": "06-VALIDATION.md",
+        "line": 3,
+        "text": "Vxx 为验证包，不代表所有未来场景已认证。"
+      },
+      {
+        "document": "06-VALIDATION.md",
+        "lines": [
+          23,
+          25,
+          26,
+          35,
+          36,
+          39,
+          40,
+          42,
+          43
+        ],
+        "scope": "Original V01/V03/V04/V13/V14/V17/V18/V20/V21 definitions are retained in each task's validation mapping."
+      },
+      {
+        "document": "06-VALIDATION.md",
+        "lines": [
+          61,
+          79
+        ],
+        "scope": "Live certification remains authorized/separate; new-target cold builds use isolated target, not deletion of existing targets or global SDK mutation."
+      },
+      {
+        "document": "09-BENCHMARK.md",
+        "lines": [
+          136,
+          173,
+          177,
+          185,
+          189,
+          191
+        ],
+        "scope": "Nonzero/inconclusive/cancellation and raw retention; original source/profile/statistical/cost boundaries; no invented cold-OS or paid profile."
+      }
+    ],
+    "current_documentation": [
+      {
+        "bytes": 8899,
+        "sha256": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360",
+        "git_blob": "7ee02f3786c3d8ac00afba32857ccb68d8e2a601",
+        "path": "docs/P8_PLATFORM_RECOVERY.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      },
+      {
+        "bytes": 9659,
+        "sha256": "6baaa02357983d2963556b37e611012208942e0b8c69a9c2d1f4395a941efe6e",
+        "git_blob": "7277c6421281eda9b3c6ca5bdd1711160416fc26",
+        "path": "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      },
+      {
+        "bytes": 8540,
+        "sha256": "5556ffa62317e1e27b5b0735a3d359c8709f0abd096082756d98e36eca0c27ba",
+        "git_blob": "f97ea51266254a0cf278093ffc0ecade51570e99",
+        "path": "docs/roadmap/code-index-v2/P8-RECOVERY.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      },
+      {
+        "bytes": 3630,
+        "sha256": "cde9696570d694facc9e02d451146107adea24bcac5dd00d96537868d7604d91",
+        "git_blob": "fb41c7a0e9e71b9d48b882321545692f973b3aea",
+        "path": "docs/roadmap/code-index-v2/P8-GATES.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      },
+      {
+        "bytes": 3062,
+        "sha256": "00117f468fc463787e21ac2f413da760fa32eb0b1e382d7bdcf486e8d4c496f4",
+        "git_blob": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+        "path": "CONTRIBUTING.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      },
+      {
+        "bytes": 9749,
+        "sha256": "1d2af3250c5c27328f8e7c1335a884c8769231954820e37aa6a4889e76a36c0e",
+        "git_blob": "bd342f00ac5906b223077cbd97c4057992328d1f",
+        "path": "docs/TROUBLESHOOTING.md",
+        "commit": "b21cce4c8661589267ad5719f850accbec088d2f"
+      }
+    ],
+    "historical_text_rule": "Historical not_run/failed paragraphs remain historical; current execution entrance in P8-PLATFORM-ROLLBACK lines3–20 explicitly distinguishes them. This ledger appends present evidence, not a rewrite of old receipts."
+  },
+  "evidence": {
+    "A2": {
+      "review": {
+        "bytes": 55381,
+        "sha256": "1f928b2886dc916ec9cdcdced4f9482e99727b35e8a3a2c3dc86afac3752e60e",
+        "git_blob": "784238713bb0fb24c778017925ebd22ffe6fec10",
+        "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/784238713bb0fb24c778017925ebd22ffe6fec10"
+      },
+      "official_log": {
+        "bytes": 76453,
+        "sha256": "d9c46b5625a36fd3080bd3826e7b92d949422db5b51e858bf67787d2bef0427c",
+        "git_blob": "37ca19ba347a5cdd16bf72e391ee05be35547154",
+        "official_job_url": "https://github.com/jyqj/codecortex/actions/runs/37885688054/job/113675067448",
+        "published_blob": "37ca19ba347a5cdd16bf72e391ee05be35547154"
+      },
+      "exact_execution_receipt": {
+        "bytes": 38906,
+        "sha256": "022cb104704794a7e1dfc86284068abadfe0b8e0271138efe5d45e71e519b186",
+        "line": 376,
+        "format": "Exact one-line execution JSON from official job log; no timestamp/LF; not disk pretty JSON hash",
+        "independently_extracted_and_hash_equal": true
+      },
+      "actual_run": {
+        "id": 37885688054,
+        "attempt": 1,
+        "job_id": 113675067448,
+        "head": "5019b3d68043bb3c5a714222caab5fe6b24c11b8",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "passed_groups": {
+        "failure_gates": "passed_readback",
+        "originals_after": "passed_readback",
+        "platform": "passed_readback",
+        "recovery_databases": "passed_readback",
+        "recovery_identity": "passed_readback",
+        "recovery_raw_events": "passed_readback",
+        "source": "passed_readback",
+        "source_after": "passed_readback"
+      },
+      "no_new_execution": {
+        "new_native_measurements": 0,
+        "new_product_or_fault_executions": 0,
+        "new_retained_cli_executions": 0,
+        "runtime_group_rerun": false,
+        "actual_paid_cost": null,
+        "source_revision_pair_not_released_package_pair": true,
+        "no_power_loss_physical_device_or_paid_provider_certification": true,
+        "legacy_mac_scope_describes_prior_author_not_current_Linux_run": true,
+        "no_full_scale_or_task_acceptance_inference": true,
+        "original_task_completion": false
+      },
+      "output_artifact": {
+        "id": 11596472312,
+        "node_id": "MDg6QXJ0aWZhY3QxMTU5NjQ3MjMxMg==",
+        "name": "p8-a23-original-readback-platform-37885688054-attempt1",
+        "size_in_bytes": 513397192,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11596472312",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11596472312/zip",
+        "expired": false,
+        "digest": "sha256:f935590d0862d8f33f30dbdf5f319a851aacfc9fde012777af3d8eb467f89745",
+        "created_at": "2026-10-09T04:51:15Z",
+        "updated_at": "2026-10-09T04:51:15Z",
+        "expires_at": "2027-01-07T04:49:43Z",
+        "workflow_run": {
+          "id": 37885688054,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "audit/p8-a23-original-readback-28fe-a2-20261009",
+          "head_sha": "5019b3d68043bb3c5a714222caab5fe6b24c11b8"
+        }
+      },
+      "preservation": {
+        "schema": "a23-readback-upload-custody-v1",
+        "passed": true,
+        "regular_file_count": 1289,
+        "excluded_symlink_views": [
+          "audit/source",
+          "audit/derived/platform-readback/raw",
+          "audit/derived/platform-readback/source"
+        ],
+        "missing_roots": [],
+        "manifest_sha256": "9d86219a12459d4b74b9e4664a685ec95a7cfc04b6228ac6b9e60893304c8888"
+      },
+      "symbolic_ref_to_review_JSON_pointer": {
+        "A2": "/",
+        "A2.platform": "/platform",
+        "A2.platform.cells": "/platform/cells",
+        "A2.platform.original_portable_collector": "/platform/executed_original_portable_collector",
+        "A2.recovery_identity": "/recovery_identity",
+        "A2.recovery_identity.original_production_tests": "/recovery_identity/original_production_tests",
+        "A2.recovery_raw": "/recovery_raw",
+        "A2.recovery_raw.sessions": "/recovery_raw/sessions",
+        "A2.recovery_database": "/recovery_database",
+        "A2.failure_gates": "/failure_gates",
+        "A2.failure_gates.original_rust_controls": "/failure_gates/original_rust_controls",
+        "A2.failure_gates.original_cli_replays": "/failure_gates/original_cli_replays",
+        "A2.failure_gates.posterior_checks_actually_reached": "/failure_gates/posterior_checks_actually_reached",
+        "A2.preservation": "/preservation",
+        "A2.output_zip": "/preservation/official_output_artifact",
+        "A2.first_failure_retained": "/first_failure_retained"
+      },
+      "active_case_alias": {
+        "name": "A2.active.concurrent_database_replacement",
+        "review_pointer": "/recovery_raw/active_seeds",
+        "fixed_reader_blob": "8da31c955be61dec5919f3ee4fa26ed11f1fe6d5",
+        "reader_lines": [
+          109,
+          115,
+          150,
+          162
+        ],
+        "meaning": "All3 seeds contain the four fixed active cases; exact fields are rechecked by this original reader, not exposed as a separate A2 top-level active key."
+      }
+    },
+    "ORIGINAL": {
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "artifacts": {
+        "11591733636": {
+          "run_id": 37871838952,
+          "artifact_id": 11591733636,
+          "zip_bytes": 8768177,
+          "zip_sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b",
+          "members": 19,
+          "expanded_bytes": 28450518,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591733636"
+        },
+        "11592442010": {
+          "run_id": 37871838952,
+          "artifact_id": 11592442010,
+          "zip_bytes": 9022522,
+          "zip_sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd",
+          "members": 19,
+          "expanded_bytes": 29022229,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592442010"
+        },
+        "11592750594": {
+          "run_id": 37871838952,
+          "artifact_id": 11592750594,
+          "zip_bytes": 8719713,
+          "zip_sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73",
+          "members": 19,
+          "expanded_bytes": 28336781,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592750594"
+        },
+        "11592990763": {
+          "run_id": 37871838952,
+          "artifact_id": 11592990763,
+          "zip_bytes": 8968832,
+          "zip_sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214",
+          "members": 19,
+          "expanded_bytes": 28900887,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592990763"
+        },
+        "11591229630": {
+          "run_id": 37871838952,
+          "artifact_id": 11591229630,
+          "zip_bytes": 8031708,
+          "zip_sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e",
+          "members": 19,
+          "expanded_bytes": 25255328,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591229630"
+        },
+        "11591108235": {
+          "run_id": 37871838952,
+          "artifact_id": 11591108235,
+          "zip_bytes": 8270537,
+          "zip_sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9",
+          "members": 19,
+          "expanded_bytes": 25745309,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591108235"
+        },
+        "11591159319": {
+          "run_id": 37871838952,
+          "artifact_id": 11591159319,
+          "zip_bytes": 8351887,
+          "zip_sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44",
+          "members": 19,
+          "expanded_bytes": 27942869,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591159319"
+        },
+        "11592465349": {
+          "run_id": 37871838952,
+          "artifact_id": 11592465349,
+          "zip_bytes": 8605542,
+          "zip_sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174",
+          "members": 19,
+          "expanded_bytes": 28544016,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592465349"
+        },
+        "11592498371": {
+          "run_id": 37871838952,
+          "artifact_id": 11592498371,
+          "zip_bytes": 1504,
+          "zip_sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700",
+          "members": 1,
+          "expanded_bytes": 4124,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592498371"
+        },
+        "11592146562": {
+          "run_id": 37871838952,
+          "artifact_id": 11592146562,
+          "zip_bytes": 121408707,
+          "zip_sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e",
+          "members": 499,
+          "expanded_bytes": 524691396,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592146562"
+        },
+        "11592180029": {
+          "run_id": 37871838927,
+          "artifact_id": 11592180029,
+          "zip_bytes": 32985345,
+          "zip_sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25",
+          "members": 337,
+          "expanded_bytes": 132194579,
+          "input_unchanged": true,
+          "official_artifact_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592180029"
+        }
+      },
+      "recovery_zip": 11592146562,
+      "gates_zip": 11592180029,
+      "collector_zip": 11592498371,
+      "platform_zip_ids": [
+        11591733636,
+        11592442010,
+        11592750594,
+        11592990763,
+        11591229630,
+        11591108235,
+        11591159319,
+        11592465349
+      ],
+      "readback_scope": "All11 original ZIP sizes/SHA/CRC/path/member bytes were checked by the actual A2 transport and validators; originals unchanged. This ledger does not download or replay them again."
+    },
+    "CI": {
+      "run_id": 37871838887,
+      "attempt": 1,
+      "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "jobs": [
+        {
+          "id": 113631480552,
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 113631480693,
+          "name": "msrv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 113631480871,
+          "name": "check",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "check_job": 113631480871,
+      "log": {
+        "bytes": 1063079,
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f",
+        "git_blob": "e77d20161c8dbe2d6ce2ecd1ccfbab0790e2a6b7"
+      },
+      "actual_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "actual_checkout_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "source_gates": {
+        "step_number": 9,
+        "step_name": "Fixed resource driver harmless fixtures and TODO consistency",
+        "step_conclusion": "success",
+        "shell": "/usr/bin/bash -e",
+        "command_lines": [
+          5184,
+          5185,
+          5186,
+          5187,
+          5188,
+          5189,
+          5190
+        ],
+        "p8_tests": {
+          "passed": 409,
+          "seconds": 47.217,
+          "summary_line": 5664,
+          "ok_line": 5666
+        },
+        "source_integrity": {
+          "passed": 181,
+          "seconds": 534.494,
+          "summary_line": 5876,
+          "ok_line": 5878
+        },
+        "facts": {
+          "status": "passed",
+          "errors": [],
+          "line": 5669,
+          "runtime_certified": false
+        },
+        "v15": {
+          "status": "passed",
+          "line": 5879,
+          "product_source": "254009277688d64677361a0ca33e5dea73f295ef",
+          "review_source": "3a11f30f9f00a89fe3cd481b3b7609066728baad",
+          "complete_inputs": 1087
+        },
+        "historical": {
+          "status": "passed",
+          "task_count": 192,
+          "current_task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+          "evidence_content_acceptance": "not_granted_by_this_verifier"
+        }
+      },
+      "actual_test_anchors": {
+        "V03": [
+          {
+            "test": "compatibility_glob_can_match_nested_path",
+            "line": 1388,
+            "original_line": "2026-10-09T02:33:23.9537821Z test compatibility_glob_can_match_nested_path ... ok"
+          },
+          {
+            "test": "compatibility_is_linear_gain",
+            "line": 1389,
+            "original_line": "2026-10-09T02:33:23.9538629Z test compatibility_is_linear_gain ... ok"
+          },
+          {
+            "test": "compatibility_repeated_path_does_not_spend_rank",
+            "line": 1390,
+            "original_line": "2026-10-09T02:33:23.9539511Z test compatibility_repeated_path_does_not_spend_rank ... ok"
+          },
+          {
+            "test": "compatibility_supporting_is_top1_but_not_primary_grade",
+            "line": 1391,
+            "original_line": "2026-10-09T02:33:23.9548692Z test compatibility_supporting_is_top1_but_not_primary_grade ... ok"
+          },
+          {
+            "test": "empty_expected_is_invalid",
+            "line": 1393,
+            "original_line": "2026-10-09T02:33:23.9550622Z test empty_expected_is_invalid ... ok"
+          },
+          {
+            "test": "independent_python_fnmatch_goldens",
+            "line": 1396,
+            "original_line": "2026-10-09T02:33:23.9558775Z test independent_python_fnmatch_goldens ... ok"
+          },
+          {
+            "test": "native_duplicate_chunks_do_not_inflate_groups",
+            "line": 1399,
+            "original_line": "2026-10-09T02:33:23.9561325Z test native_duplicate_chunks_do_not_inflate_groups ... ok"
+          },
+          {
+            "test": "native_supporting_top1_does_not_answer_primary",
+            "line": 1400,
+            "original_line": "2026-10-09T02:33:23.9562749Z test native_supporting_top1_does_not_answer_primary ... ok"
+          },
+          {
+            "test": "partial_empty_is_not_a_correct_no_answer",
+            "line": 1401,
+            "original_line": "2026-10-09T02:33:23.9563408Z test partial_empty_is_not_a_correct_no_answer ... ok"
+          },
+          {
+            "test": "native_wrong_file_same_name_gets_no_credit",
+            "line": 1407,
+            "original_line": "2026-10-09T02:33:23.9575124Z test native_wrong_file_same_name_gets_no_credit ... ok"
+          }
+        ],
+        "V13": [
+          {
+            "test": "auxiliary_commit_advances_no_clock",
+            "line": 754,
+            "original_line": "2026-10-09T02:32:03.6479589Z test epoch_rules::tests::auxiliary_commit_advances_no_clock ... ok"
+          },
+          {
+            "test": "combined_index_and_semantic_commit_bumps_each_exactly_once",
+            "line": 757,
+            "original_line": "2026-10-09T02:32:03.6551183Z test epoch_rules::tests::combined_index_and_semantic_commit_bumps_each_exactly_once ... ok"
+          },
+          {
+            "test": "unit_of_work_commit_bumps_index_exactly_once",
+            "line": 764,
+            "original_line": "2026-10-09T02:32:03.7880528Z test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok"
+          },
+          {
+            "test": "drop_without_commit_rolls_back_and_leaves_epoch_untouched",
+            "line": 926,
+            "original_line": "2026-10-09T02:32:10.2111272Z test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok"
+          },
+          {
+            "test": "persisted_identity_survives_reopen_and_differs_at_equal_epochs",
+            "line": 887,
+            "original_line": "2026-10-09T02:32:09.4698166Z test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok"
+          },
+          {
+            "test": "stale_incarnation_is_fenced_out",
+            "line": 1100,
+            "original_line": "2026-10-09T02:33:00.5615510Z test stale_incarnation_is_fenced_out ... ok"
+          }
+        ],
+        "V14": [
+          {
+            "test": "concurrent_claim_exactly_one_winner",
+            "line": 1057,
+            "original_line": "2026-10-09T02:32:59.9127252Z test concurrent_claim_exactly_one_winner ... ok"
+          },
+          {
+            "test": "expired_lease_reclaimed_then_old_owner_fenced_out",
+            "line": 1051,
+            "original_line": "2026-10-09T02:32:59.7943420Z test expired_lease_reclaimed_then_old_owner_fenced_out ... ok"
+          },
+          {
+            "test": "retry_exhaustion_dead_letters_to_failed",
+            "line": 1053,
+            "original_line": "2026-10-09T02:32:59.8275024Z test retry_exhaustion_dead_letters_to_failed ... ok"
+          },
+          {
+            "test": "file_removal_revokes_manifest_and_supersedes_without_embed",
+            "line": 1066,
+            "original_line": "2026-10-09T02:33:00.0153894Z test file_removal_revokes_manifest_and_supersedes_without_embed ... ok"
+          },
+          {
+            "test": "duplicate_ack_of_identical_content_acks_without_bumping",
+            "line": 1093,
+            "original_line": "2026-10-09T02:33:00.4834878Z test duplicate_ack_of_identical_content_acks_without_bumping ... ok"
+          },
+          {
+            "test": "non_active_space_is_fenced_out",
+            "line": 1095,
+            "original_line": "2026-10-09T02:33:00.5213508Z test non_active_space_is_fenced_out ... ok"
+          },
+          {
+            "test": "publish_cas_happy_path_bumps_semantic_exactly_once",
+            "line": 1098,
+            "original_line": "2026-10-09T02:33:00.5527939Z test publish_cas_happy_path_bumps_semantic_exactly_once ... ok"
+          },
+          {
+            "test": "publisher_keeps_namespace_lease_between_verified_bytes_and_manifest_cas",
+            "line": 4871,
+            "original_line": "2026-10-09T02:36:27.0953081Z test gc::concurrency_tests::publisher_keeps_namespace_lease_between_verified_bytes_and_manifest_cas ... ok"
+          }
+        ],
+        "V17": [
+          {
+            "test": "namespace_lock_spans_mark_and_unlink_before_concurrent_publish",
+            "line": 5018,
+            "original_line": "2026-10-09T02:36:27.1998879Z test gc::concurrency_tests::namespace_lock_spans_mark_and_unlink_before_concurrent_publish ... ok"
+          },
+          {
+            "test": "killed_mutation_owner_releases_cross_process_lock",
+            "line": 4870,
+            "original_line": "2026-10-09T02:36:27.0479953Z test gc::concurrency_tests::killed_mutation_owner_releases_cross_process_lock ... ok"
+          },
+          {
+            "test": "corrupt_payload_is_detected_and_discard_degrades_to_miss",
+            "line": 5035,
+            "original_line": "2026-10-09T02:36:31.0377063Z test corrupt_payload_is_detected_and_discard_degrades_to_miss ... ok"
+          },
+          {
+            "test": "meta_tampering_is_detected_as_corrupt",
+            "line": 5043,
+            "original_line": "2026-10-09T02:36:31.0450848Z test meta_tampering_is_detected_as_corrupt ... ok"
+          },
+          {
+            "test": "different_spaces_never_cross_hit",
+            "line": 5034,
+            "original_line": "2026-10-09T02:36:31.0375979Z test different_spaces_never_cross_hit ... ok"
+          },
+          {
+            "test": "namespaces_are_isolated",
+            "line": 5040,
+            "original_line": "2026-10-09T02:36:31.0429746Z test namespaces_are_isolated ... ok"
+          },
+          {
+            "test": "expiry_reclaim_and_replacement_token_publication_contract",
+            "line": 5056,
+            "original_line": "2026-10-09T02:36:31.6535615Z test expiry_reclaim_and_replacement_token_publication_contract ... ok"
+          }
+        ],
+        "V18": [
+          {
+            "test": "stdio_mcp_lists_tools_and_calls_core_tools",
+            "line": 4387,
+            "original_line": "2026-10-09T02:36:06.0928102Z test stdio_mcp_lists_tools_and_calls_core_tools ... ok"
+          },
+          {
+            "test": "real_mcp_preserves_tool_schema_and_exposes_offline_query_policy",
+            "line": 9299,
+            "original_line": "2026-10-09T02:54:10.1398687Z test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ok"
+          },
+          {
+            "test": "config_bool_is_default_false_and_rejects_non_boolean_values",
+            "line": 4546,
+            "original_line": "2026-10-09T02:36:09.1581751Z test query_network_contract::config_bool_is_default_false_and_rejects_non_boolean_values ... ok"
+          },
+          {
+            "test": "denied_authority_local_and_empty_scope_make_no_query_calls",
+            "line": 4619,
+            "original_line": "2026-10-09T02:36:09.5049763Z test query_network_contract::denied_authority_local_and_empty_scope_make_no_query_calls ... ok"
+          },
+          {
+            "test": "mcp_input_cannot_enable_or_bypass_configuration_authority",
+            "line": 4672,
+            "original_line": "2026-10-09T02:36:09.7936395Z test query_network_contract::mcp_input_cannot_enable_or_bypass_configuration_authority ... ok"
+          },
+          {
+            "test": "each_missing_gate_keeps_cold_requests_off_the_network",
+            "line": 4731,
+            "original_line": "2026-10-09T02:36:10.4989259Z test query_network_contract::each_missing_gate_keeps_cold_requests_off_the_network ... ok"
+          }
+        ],
+        "COST": [
+          {
+            "test": "cost_budget_refuses_at_the_cap_before_any_call",
+            "line": 4797,
+            "original_line": "2026-10-09T02:36:26.6304367Z test admission::tests::cost_budget_refuses_at_the_cap_before_any_call ... ok"
+          },
+          {
+            "test": "missing_usage_is_unknown_and_never_zero_filled",
+            "line": 4818,
+            "original_line": "2026-10-09T02:36:26.8925273Z test admission::tests::missing_usage_is_unknown_and_never_zero_filled ... ok"
+          },
+          {
+            "test": "budgeted_provider_gates_reembeds_and_never_calls_through_when_exhausted",
+            "line": 4864,
+            "original_line": "2026-10-09T02:36:27.0047755Z test degrade::tests::budgeted_provider_gates_reembeds_and_never_calls_through_when_exhausted ... ok"
+          },
+          {
+            "test": "cost_cap_ends_the_sequence",
+            "line": 4925,
+            "original_line": "2026-10-09T02:36:27.1079387Z test providers::openai_compatible::tests::cost_cap_ends_the_sequence ... ok"
+          },
+          {
+            "test": "costs_reject_conflicts_and_preserve_missing_overflow_and_duplicate_charge_uncertainty",
+            "line": 2095,
+            "original_line": "2026-10-09T02:34:58.8384825Z test costs_reject_conflicts_and_preserve_missing_overflow_and_duplicate_charge_uncertainty ... ok"
+          }
+        ]
+      },
+      "scorer_suite": {
+        "target": "crates/cc-eval/tests/benchmark_scoring.rs",
+        "actual_summary_line": 1410,
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0
+      },
+      "ignored_policy": "Ignored/zero-test targets are not counted as executed. Original disabled-stdio case is ignored in general discovery and separately actually ok at8207 and9554; both old ignored and later explicit execution remain in the log.",
+      "platform_scope": "These are the fixed original Linux CI observations. They are not proof that the later Mac workspace regression passed."
+    },
+    "READERS": {
+      "raw_events": {
+        "bytes": 13332,
+        "sha256": "8287c2df1c2dbc790abfe88706d36976ad7c7d8d20f723d2c86e901fe681db57",
+        "git_blob": "8da31c955be61dec5919f3ee4fa26ed11f1fe6d5",
+        "original_result_sha256": "45e5ef47e598ef26b943b9540cafde0190e520bd3c7e3df2389b74287c980521",
+        "case_names": [
+          "active_provider_network_disconnect",
+          "active_semantic_cache_corruption",
+          "active_cache_reader_rejects_unknown_format",
+          "concurrent_database_replacement"
+        ],
+        "reader_checks": {
+          "four_cases_each_seed_lines": [
+            108,
+            115
+          ],
+          "raw_complete_RPC_and_lane_lines": [
+            116,
+            149
+          ],
+          "replacement_and_deleted_source_lines": [
+            150,
+            162
+          ],
+          "all_six_HTTP_and_no_extra_cache_requests_lines": [
+            163,
+            174
+          ],
+          "tool_count_14_line": 29
+        }
+      },
+      "database": {
+        "bytes": 9841,
+        "sha256": "c8c05abcaca40c8f4858bf60c081dc0612801e841013518d27b35ee2649628d8",
+        "git_blob": "05e789dbe8d31d204d8a5b15cef3f8c447008168",
+        "original_result_sha256": "193d6124e28f19d1b5ffc3a504ea0e589a72d72c3834a1deba6275a88634fb26",
+        "operation": "Actual A2 reads14 owned copies SELECT/PRAGMA ro&immutable after absent/emptyWAL; no new backup/GC/fault/native action.",
+        "inactive_reader_not_run_preserved": true
+      }
+    },
+    "DOC": {
+      "source": "fixed main b21c; same docs tree as A23",
+      "references": "original_definitions.current_documentation"
+    },
+    "SOURCE": {
+      "same_github_tree": "51facfc382452eab53969020f8ca0beaadb65114",
+      "exact_source_bridge": "source_applicability"
+    },
+    "UPSTREAM": {
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ],
+      "remaining": "Original full-scale/update acceptance is not granted here. The existing A23 registration's150 cells/1500 sample identities and original terminal/source/parity/budget criteria remain pending their owner's acceptance; these are not new universal project thresholds."
+    },
+    "KNOWN": {
+      "PR171": {
+        "id": "PR171_A23_Mac_workspace_regression",
+        "state": "independently_confirmed_actual_regression_applicability_and_root_cause_pending",
+        "reference": {
+          "pr": 171,
+          "url": "https://github.com/jyqj/codecortex/pull/171",
+          "head": "255e3b27b8fa1d82d5ebfb95b946cec8ee97528f",
+          "branch": "task/p8-a23-closeout-bfcc-20261009",
+          "reported_thread": "https://github.com/jyqj/codecortex/pull/167#issuecomment-6074384941",
+          "archive_prefix": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc",
+          "original_failure_assessment": {
+            "commit": "255e3b27b8fa1d82d5ebfb95b946cec8ee97528f",
+            "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/failure-assessment.json",
+            "git_blob": "345eb55b3dc503c901b963ea5f37ce93a244dea5",
+            "bytes": 9792,
+            "sha256": "c85e9fd8ead80d0fea4446f1955806e93e7aed710d79fccf8d95e011167b7bf0"
+          },
+          "independent_review": {
+            "git_blob": "62d2d1960ab0f15432ba869225951988a80ed843",
+            "bytes": 27973,
+            "sha256": "558383ab41aedec7cdbe91b19f1a4bec0efe72bc4f5b8391ec1a8d4efd419af0"
+          }
+        },
+        "facts_reported_by_parent_and_runtime_review": {
+          "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "platform": "aarch64 macOS",
+          "rust": "1.95",
+          "sdk": "15.4",
+          "command": "cargo test --workspace",
+          "exit_code": 101,
+          "target": "crates/cc-eval/tests/p8_scale.rs: original negative-control definition starts near480; actual archived failure_at502",
+          "tests": {
+            "passed": 11,
+            "failed": 1
+          },
+          "original_time_limits": "250ms/2s",
+          "isolated_observation": "deadline_exceeded at wall261–272ms; worker_exit/summary null; stderr empty",
+          "SDK27_linker_failure": "separate prior failure retained"
+        },
+        "independently_read_here": "Actual PR171 metadata/body, immutable failure-assessment JSON and runtime_review's non-author source/history/raw-evidence audit; all fetched text Git/SHA256 identities verified. No native command, DB query or ZIP replay was repeated here.",
+        "implication": "Original eight fresh-target build/smoke cells remain accepted in their scope; this new actual workspace regression must be adjudicated under relevant original old-regression acceptance. Do not infer all Mac workspace regressions passed, do not declare only005/006 remain, do not invent a new permanent all-platform test gate or change timing thresholds.",
+        "blocks_unconditional_close_ready": true,
+        "history_reported_by_runtime_review": "The same negative-control function and supervisor execution logic already existed byte-identically in BASE7354; A23 supervisor adds two report fields only. This does not prove an A23-introduced bug and does not prove any earlier Mac pass."
+      }
+    },
+    "peer_007_to_010_ledger": {
+      "git_blob": "28abb7b03ce79f750f4e04261b7ac7ff4b2b3f75",
+      "bytes": 34219,
+      "sha256": "a499cc7e9ba81f2376703e90c70dfc38ba908d95ae12641a5a3d803903cc5149",
+      "scope": "Own-scope ready evidence for earlier dependencies; not an assertion that canonical dependencies are already done."
+    }
+  },
+  "observed_domain_facts": {
+    "recovery": {
+      "sealed_original_files": 495,
+      "original_zip_members": 499,
+      "source_and_config_preserved": true,
+      "original_production_tests": [
+        {
+          "package": "cc-semantic",
+          "target": "p7_crash_preparation",
+          "test_name": "isolated_sigkill_reopen_replay_preparation",
+          "exit_code": 0,
+          "binary_sha256": "4ba366d57bad9cc21a0e28b937a3b560f3dbbbf331321762bed16003ebf18a39",
+          "stdout_sha256": "9dc57394eed2792edb137977dfe333c08529a6d4fcda9c7e7c3030f765e1ec03"
+        },
+        {
+          "package": "cc-semantic",
+          "target": "crash_independent_review",
+          "test_name": "independently_observed_sigkill_boundaries",
+          "exit_code": 0,
+          "binary_sha256": "68eabebbb35cfa5f8fddb80d92021d06a7b2d09965c1dd226863770e9898286a",
+          "stdout_sha256": "7336e84533b802296ff207ed7ff5381fcb321bb71d77df12b3539b69bd3b7d9f"
+        },
+        {
+          "package": "cc-db",
+          "target": null,
+          "test_name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+          "exit_code": 0,
+          "binary_sha256": "d998ac3120159cd05f158a121bc5a305a5ab4c80df2149a679d48b7fcd3190f3",
+          "stdout_sha256": "cdd893aedc554a52f3b811da4505cf8cfd35f2d6aa4551c45f574435efd471fb"
+        },
+        {
+          "package": "cc-db",
+          "target": null,
+          "test_name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+          "exit_code": 0,
+          "binary_sha256": "d998ac3120159cd05f158a121bc5a305a5ab4c80df2149a679d48b7fcd3190f3",
+          "stdout_sha256": "515e70d7d833122474c3176d60b2b2e1c20ffda4937028fda0d6c15a44b0bfcb"
+        },
+        {
+          "package": "cc-semantic",
+          "target": "artifact_cache",
+          "test_name": "meta_tampering_is_detected_as_corrupt",
+          "exit_code": 0,
+          "binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55",
+          "stdout_sha256": "20627d1e1d7ecbd143c7e0f7875928c0701103c7ac275fc4b180a4e9f2856747"
+        },
+        {
+          "package": "cc-semantic",
+          "target": "artifact_cache",
+          "test_name": "different_spaces_never_cross_hit",
+          "exit_code": 0,
+          "binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55",
+          "stdout_sha256": "bcc3530a79091d235c702027307b05da1f6851062d123c88255b8a9fe1fc4f41"
+        },
+        {
+          "package": "cc-semantic",
+          "target": "artifact_cache",
+          "test_name": "namespaces_are_isolated",
+          "exit_code": 0,
+          "binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55",
+          "stdout_sha256": "38cc2880797f7d021e03dc277c5922f0f4041f8eb443ed2936c155eafa775305"
+        }
+      ],
+      "active_seeds": [
+        {
+          "disconnects": 1,
+          "event_sha256": "31fb5e7ced530ba2382c58bbcdd5414608e525fcd521f932c6be4fb59068e689",
+          "mcp_requests": 42,
+          "mcp_responses": 42,
+          "native_clean_exits": 2,
+          "provider_requests": 6,
+          "seed": 223,
+          "semantic_lane_sequence": [
+            "complete",
+            "partial",
+            "complete",
+            "partial",
+            "complete"
+          ],
+          "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"
+        },
+        {
+          "disconnects": 1,
+          "event_sha256": "d36e7c8acb9eeeefe166186a24283731218fe68c8ece64f3e6cf21df1470b9a4",
+          "mcp_requests": 42,
+          "mcp_responses": 42,
+          "native_clean_exits": 2,
+          "provider_requests": 6,
+          "seed": 227,
+          "semantic_lane_sequence": [
+            "complete",
+            "partial",
+            "complete",
+            "partial",
+            "complete"
+          ],
+          "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"
+        },
+        {
+          "disconnects": 1,
+          "event_sha256": "a576da0a77a97e9023d38b3e9e55367e18b26084550e0f57b031d9c3da29ea59",
+          "mcp_requests": 42,
+          "mcp_responses": 42,
+          "native_clean_exits": 2,
+          "provider_requests": 6,
+          "seed": 229,
+          "semantic_lane_sequence": [
+            "complete",
+            "partial",
+            "complete",
+            "partial",
+            "complete"
+          ],
+          "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"
+        }
+      ],
+      "local_cases": [
+        {
+          "case": "kill_restart",
+          "status": "accepted_raw_RPC_and_source"
+        },
+        {
+          "case": "database_busy",
+          "status": "accepted_raw_RPC_and_source"
+        },
+        {
+          "case": "deleted_source",
+          "status": "accepted_raw_RPC_and_source"
+        }
+      ],
+      "native_session_count": 13,
+      "current_and_historical_products": {
+        "default": {
+          "actual_profile": "dev",
+          "binary_sha256": "685b592eacb7fc92e91f80644f6e9a9d14f2cd72924d49cdca362277a6e80b79",
+          "cold_build_claim": false,
+          "features": [],
+          "input_count": 1087,
+          "release_certified": false,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        },
+        "previous-default": {
+          "actual_profile": "dev",
+          "binary_sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6",
+          "cold_build_claim": false,
+          "features": [],
+          "input_count": 704,
+          "release_certified": false,
+          "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5"
+        },
+        "semantic": {
+          "actual_profile": "dev",
+          "binary_sha256": "bd45afaf4fb4720f74c31fe326fbe245507aa73977fc4cac0c0d9f9e7278f265",
+          "cold_build_claim": false,
+          "features": [
+            "semantic"
+          ],
+          "input_count": 1087,
+          "release_certified": false,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        },
+        "semantic-http": {
+          "actual_profile": "dev",
+          "binary_sha256": "2a2c49b8e3c67331daa19dbe27cea266b1012b7c1038b4760098a729511cbc27",
+          "cold_build_claim": false,
+          "features": [
+            "semantic",
+            "semantic-http"
+          ],
+          "input_count": 1087,
+          "release_certified": false,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      "actual_paid_cost": null
+    },
+    "platform": {
+      "cells": [
+        {
+          "binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a",
+          "bundle_sha256": "bb19c93b31ec354c22325d6ac526d019c55f891d4e9175675b202059808b5ae4",
+          "cell": {
+            "package": "default",
+            "platform": "linux",
+            "toolchain": "1.95"
+          },
+          "rustc_release": "1.95.0",
+          "status": "passed",
+          "wall_seconds": 181.76679331900002
+        },
+        {
+          "binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c",
+          "bundle_sha256": "3f885378f4a3b7bbe10e212d05fc2e83d3c3e6dc5e0692305192bf7a513880da",
+          "cell": {
+            "package": "semantic",
+            "platform": "linux",
+            "toolchain": "1.95"
+          },
+          "rustc_release": "1.95.0",
+          "status": "passed",
+          "wall_seconds": 237.44014904699998
+        },
+        {
+          "binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404",
+          "bundle_sha256": "55119f1838b28e2997029aed215e7b404d19e8afa7aa072eb34cbf95eb3510ab",
+          "cell": {
+            "package": "default",
+            "platform": "linux",
+            "toolchain": "stable"
+          },
+          "rustc_release": "1.99.0",
+          "status": "passed",
+          "wall_seconds": 224.653002578
+        },
+        {
+          "binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66",
+          "bundle_sha256": "1dba3314ded854913dec5c09719e2b545d84f15c30ce85a09b70d68ad6c4ab24",
+          "cell": {
+            "package": "semantic",
+            "platform": "linux",
+            "toolchain": "stable"
+          },
+          "rustc_release": "1.99.0",
+          "status": "passed",
+          "wall_seconds": 161.096919436
+        },
+        {
+          "binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f",
+          "bundle_sha256": "1e6ef1ede5e1755b973f6078f477fc3aeea76cf76d35ec7816975d0bf4544a82",
+          "cell": {
+            "package": "default",
+            "platform": "macos",
+            "toolchain": "1.95"
+          },
+          "rustc_release": "1.95.0",
+          "status": "passed",
+          "wall_seconds": 305.727865542
+        },
+        {
+          "binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68",
+          "bundle_sha256": "59a2a9698d718f670b4e7a9efb81c7cefb14dd3a1c45c1fd2b338780eef6cf59",
+          "cell": {
+            "package": "semantic",
+            "platform": "macos",
+            "toolchain": "1.95"
+          },
+          "rustc_release": "1.95.0",
+          "status": "passed",
+          "wall_seconds": 207.90119804199992
+        },
+        {
+          "binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150",
+          "bundle_sha256": "63292f4a865b6384553dfd471cc02525f1da6aa590d8e3ee21f51efea492c7f6",
+          "cell": {
+            "package": "default",
+            "platform": "macos",
+            "toolchain": "stable"
+          },
+          "rustc_release": "1.99.0",
+          "status": "passed",
+          "wall_seconds": 307.48002308400004
+        },
+        {
+          "binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f",
+          "bundle_sha256": "f6bc36deb8878236766ddfdd73509a37bdd83214d715150488ab34c70cc4b84f",
+          "cell": {
+            "package": "semantic",
+            "platform": "macos",
+            "toolchain": "stable"
+          },
+          "rustc_release": "1.99.0",
+          "status": "passed",
+          "wall_seconds": 262.38607125000004
+        }
+      ],
+      "counts": {
+        "failed": 0,
+        "not_run": 0,
+        "passed": 8
+      },
+      "declared_MSRV": "1.95",
+      "actual_MSRV": "1.95.0",
+      "actual_stable": "1.99.0",
+      "profile": "original8 fresh-target release builds; recovery binaries are separately dev-labelled",
+      "original_collector_artifact": 11592498371,
+      "original_matrix_sha256": "d37eb7bef5005a686ca549d3e2dd4f2c033260f9cba212eaff738e85dab68941",
+      "replayed_matrix_sha256": "fda69b393d4d213333a1247e5701e219af3de5d67559dcad3f9136572c6fa7cb"
+    },
+    "gates": {
+      "original_rust_controls": [
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5879,
+          "original_stdout_sha256": "3268e68d41a11590415e4dfe89c9b906b61aa211d3273eafdc098e97a81e976b",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "unmeasurable_latency_cannot_pass_comparison"
+        },
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5897,
+          "original_stdout_sha256": "9744b51fb5ce56be8115c8444162d3c8f7df7a8bad374b6ca2acebc2b0f17fdf",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "zero_measurement_gate_is_invalid"
+        },
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5915,
+          "original_stdout_sha256": "a8505936e590f887168e9572e48b08b189c2cfee242312fe494718fa9e2158a6",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "cli_quality_and_latency_failures_are_nonzero_and_keep_raw"
+        },
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5939,
+          "original_stdout_sha256": "3b531516190eaece55de4b7e89a9441cb8b308d02f762cb87abbfd2ed22300e1",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "cli_inconclusive_is_nonzero"
+        },
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5960,
+          "original_stdout_sha256": "a4c59f82aa92f3f4907f68d3139b7a1c94ae1b82ebd10d052956a1b52c8c1376",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "cli_lock_failure_preserves_machine_readable_failure_and_raw"
+        },
+        {
+          "binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f",
+          "new_execution": false,
+          "original_exit_code": 0,
+          "original_pid": 5981,
+          "original_stdout_sha256": "c77caa8afef2e5e888f413d3e149df33a4973b398cefc2e67af90129b48ebbb4",
+          "package": "cc-eval",
+          "target": "benchmark_cli",
+          "test_name": "cli_bad_policy_is_recorded_without_overwriting_existing_report"
+        }
+      ],
+      "original_cli_replays": [
+        {
+          "case": "quality_failed",
+          "new_execution": false,
+          "original_exit_code": 1,
+          "original_status": "failed"
+        },
+        {
+          "case": "latency_failed",
+          "new_execution": false,
+          "original_exit_code": 1,
+          "original_status": "failed"
+        },
+        {
+          "case": "insufficient_samples",
+          "new_execution": false,
+          "original_exit_code": 1,
+          "original_status": "inconclusive"
+        },
+        {
+          "case": "zero_latency_denominator",
+          "new_execution": false,
+          "original_exit_code": 1,
+          "original_status": "inconclusive"
+        },
+        {
+          "case": "raw_lock_drift",
+          "new_execution": false,
+          "original_exit_code": 2,
+          "original_status": "invalid_measurement"
+        },
+        {
+          "case": "bad_policy",
+          "new_execution": false,
+          "original_exit_code": 2,
+          "original_status": "invalid_measurement"
+        },
+        {
+          "case": "output_overwrite_refusal",
+          "new_execution": false,
+          "original_exit_code": 2,
+          "original_status": null
+        }
+      ],
+      "retained_cli_sha256": "daac7973861d3f7a6a419dfa34a2563af5796a227b016903a5b91c30a793f80a",
+      "zero_plan_scope": "separately accepted original nonignored zero_measurement_gate_is_invalid Rust test; not relabeled as a CLI process",
+      "original_CLI_execution_context": "Docker Desktop on macOS arm64, linux/amd64 compatibility execution; deterministic fixture comparison only, not native platform/performance measurement",
+      "performance_claim": false
+    },
+    "rollback": {
+      "owned_readonly_database_copies": 14,
+      "actual_historical_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "actual_historical_schemas": [
+        25,
+        24,
+        25,
+        25
+      ],
+      "injected_future_schema_sequence": [
+        25,
+        1025,
+        25,
+        25
+      ],
+      "source_and_config_unchanged": true,
+      "inactive_cache_reader_not_run_preserved": true,
+      "released_package_pair_claim": false,
+      "limitation": [
+        "public source revisions and controlled schema injection are not a released-package pair",
+        "no power-loss, physical-device failure or real paid provider claim",
+        "global manifest readiness and per-query artifact coverage are verified separately"
+      ]
+    }
+  },
+  "tasks": [
+    {
+      "task": "P8-011",
+      "original": {
+        "id": "P8-011",
+        "phase": "P8",
+        "batch": "P8-C",
+        "title": "端到端故障与恢复认证",
+        "status": "in_progress",
+        "scope": [
+          "crates/cc-eval/tests/semantic_lifecycle.rs",
+          "crates/cc-server/tests/mcp_stdio.rs"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "deliverables": [
+          "端到端故障与恢复认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ]
+      },
+      "canonical_status": "in_progress",
+      "own_registered_evidence": "ready_for_declared_task_behavior_scope",
+      "related_regressions": "fixed-source Linux CI passed; newly reported exact-source Mac workspace regression has pending applicability",
+      "closure_ready": false,
+      "new_scope_signal": "PR171_A23_Mac_workspace_regression",
+      "dependencies": {
+        "direct": [
+          {
+            "id": "P7-020",
+            "status": "done"
+          },
+          {
+            "id": "P8-007",
+            "status": "in_progress"
+          },
+          {
+            "id": "P8-010",
+            "status": "in_progress"
+          }
+        ],
+        "transitive_unfinished": [
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010"
+        ]
+      },
+      "scope_mapping": [
+        {
+          "original_path": "crates/cc-eval/tests/semantic_lifecycle.rs",
+          "source_blob": "cfe8fdec0241e257752344cb69fa45a5500433a8",
+          "evidence": [
+            "A2.recovery_identity",
+            "A2.recovery_raw",
+            "CI.V14",
+            "CI.V17"
+          ],
+          "interpretation": "同一 A23 生命周期源码；原 full-recovery 的实际产品测试和活跃 HTTP/RPC 原件覆盖任务行为，不以观察器夹具测试代替产品执行。"
+        },
+        {
+          "original_path": "crates/cc-server/tests/mcp_stdio.rs",
+          "source_blob": "b9621c739b8fcc6b0875cdbfb7582be75f1457bc",
+          "evidence": [
+            "A2.recovery_raw.sessions",
+            "CI.V18"
+          ],
+          "interpretation": "实际 stdio 握手、14 工具、查询/状态与进程终态；原请求和响应逐条对应，保留失败的 pending RPC。"
+        }
+      ],
+      "steps_mapping": [
+        {
+          "original": "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "status": "evidence_ready",
+          "covers": [
+            {
+              "case": "kill进程",
+              "evidence": "A2.recovery_raw local kill_restart plus7 original recovery tests",
+              "facts": "原 pending RPC 后 SIGKILL 的 exit -9 保留；真实重启后检查源码和查询。事务内部边界由另外的原生产故障测试覆盖，不能把外部 kill 冒称内部故障点。"
+            },
+            {
+              "case": "网络断开",
+              "evidence": "A2.active seeds223/227/229 case active_provider_network_disconnect",
+              "facts": "每个 seed 均在收到真实 loopback HTTP 请求后、响应字节发出前断开；pending/partial 与后续恢复状态有原事件对应。"
+            },
+            {
+              "case": "缓存损坏",
+              "evidence": "A2.active cache-corruption and unknown-format cases; original cache tests",
+              "facts": "实际 lane 顺序 complete/partial/complete/partial/complete；损坏 payload 和 format 999 均拒绝，恢复精确原件后可用；缓存查询重放新增 provider 请求数为 0。"
+            },
+            {
+              "case": "数据库忙",
+              "evidence": "A2.local_recovery.database_busy",
+              "facts": "真实 SQLite 锁和 busy 错误；持锁上限 6 秒，锁内没有新符号行，释放后有限重试恢复。"
+            },
+            {
+              "case": "换库",
+              "evidence": "A2.active concurrent_database_replacement; CI stale-incarnation/publish fences",
+              "facts": "挂起旧 incarnation 请求后修改源码、删除文件并重建；旧代不能发布，最终 manifest 对应当前源码，已删除文件不复活。"
+            }
+          ]
+        },
+        {
+          "original": "保持raw故障工件",
+          "status": "evidence_ready",
+          "evidence": [
+            "ORIGINAL.recovery_zip",
+            "A2.output_zip",
+            "A2.preservation"
+          ],
+          "facts": "原 full-recovery ZIP 共 499 成员、495 封存证据文件；所有原 SHA 与目录保持不变，保存 RPC、HTTP、源码、数据库、命令、二进制和进程回执。"
+        }
+      ],
+      "acceptance_mapping": [
+        {
+          "original": "没有假ready或删除复活，恢复与费用影响清楚",
+          "status": "evidence_ready_in_declared_owned_loopback_scope",
+          "evidence": [
+            "A2.recovery_raw",
+            "A2.recovery_database",
+            "CI.COST"
+          ],
+          "facts": [
+            "全局 durable readiness 与实际 query artifact coverage 分开验证。",
+            "3 个活跃 seed 各有 42 请求/42 响应与 6 次 HTTP 请求，其中 1 次断开；共 18 次是受控 loopback 观测，不是计费量。",
+            "缓存损坏/恢复查询没有额外 provider 请求；原 CI 的预算、fence、有限重试与缺失费用保留测试通过。",
+            "actual_paid_cost 仍为 null；fake/loopback 结果不宣称 live 模型或真实付费成本。"
+          ]
+        },
+        {
+          "original": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "status": "Linux_regressions_passed_new_Mac_regression_scope_pending",
+          "evidence": [
+            "CI",
+            "KNOWN.PR171"
+          ],
+          "facts": "旧 ignored/not_run 不改写。Linux 原相关回归已通过；新发现的同源 Mac workspace 失败仍待适用性审查，硬依赖未满足时不改任务状态。"
+        }
+      ],
+      "validations_mapping": [
+        {
+          "id": "V14",
+          "status": "declared_scope_evidence_ready",
+          "evidence": [
+            "CI.V14",
+            "A2.active.concurrent_database_replacement"
+          ],
+          "covers": "原 CI 覆盖 claim CAS、lease 过期、删除竞争、旧 owner fence、space/model 区分、artifact-before-manifest 与重复 ack；实际换库故障覆盖公开产品行为。"
+        },
+        {
+          "id": "V17",
+          "status": "declared_scope_evidence_ready_new_regression_review_pending",
+          "evidence": [
+            "A2.recovery_identity.original_production_tests",
+            "A2.recovery_raw",
+            "A2.recovery_database",
+            "CI.V17",
+            "CI.COST"
+          ],
+          "covers": "原内部 crash 测试、真实重启/busy/换库、启用 reader 的 cache corruption/未知格式、GC/publish 竞争和有限预算恢复；不扩大成所有未来 crash 或物理设备故障认证。"
+        },
+        {
+          "id": "V18",
+          "status": "declared_scope_evidence_ready",
+          "evidence": [
+            "CI.V18",
+            "A2.recovery_raw.sessions",
+            "A2.platform.cells"
+          ],
+          "covers": "14 工具、MCP/config/schema 与默认 disabled 行为；活跃 HTTP 明确为自有 loopback provider，既有 tools/源码不变。"
+        }
+      ],
+      "deliverables_mapping": {
+        "implementation": [
+          "scripts/p8_recovery.py",
+          "scripts/p7_fault_lifecycle_stdio.py",
+          "docs/P8_PLATFORM_RECOVERY.md",
+          "docs/roadmap/code-index-v2/P8-RECOVERY.md"
+        ],
+        "evidence": [
+          "A2",
+          "ORIGINAL.recovery_zip",
+          "CI"
+        ],
+        "location_note": "Exact original Actions/artifact and immutable checkpoint locators are used; no fabricated artifacts/benchmarks directory or copied test count is treated as a TODO."
+      }
+    },
+    {
+      "task": "P8-012",
+      "original": {
+        "id": "P8-012",
+        "phase": "P8",
+        "batch": "P8-C",
+        "title": "MSRV与平台冷构建矩阵",
+        "status": "in_progress",
+        "scope": [
+          ".github/workflows/ci.yml",
+          "CONTRIBUTING.md"
+        ],
+        "depends_on": [
+          "P8-011"
+        ],
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "deliverables": [
+          "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ]
+      },
+      "canonical_status": "in_progress",
+      "own_registered_evidence": "ready_for_declared_task_behavior_scope",
+      "related_regressions": "fixed-source Linux CI passed; newly reported exact-source Mac workspace regression has pending applicability",
+      "closure_ready": false,
+      "new_scope_signal": "PR171_A23_Mac_workspace_regression",
+      "dependencies": {
+        "direct": [
+          {
+            "id": "P8-011",
+            "status": "in_progress"
+          }
+        ],
+        "transitive_unfinished": [
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010",
+          "P8-011"
+        ]
+      },
+      "scope_mapping": [
+        {
+          "original_path": ".github/workflows/ci.yml",
+          "evidence": [
+            "SOURCE.same_github_tree",
+            "CI",
+            "A2.platform"
+          ],
+          "interpretation": "主 CI 提供声明的 MSRV 与旧回归；p8-platform workflow 提供 8 格独立 fresh-target release 构建和实际 stdio smoke。"
+        },
+        {
+          "original_path": "CONTRIBUTING.md",
+          "source_blob": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+          "evidence": [
+            "DOC.contributing",
+            "DOC.platform"
+          ],
+          "interpretation": "声明的 MSRV 1.95 和仅对子进程设置兼容 SDK 的规则保持；工具链缺失仍不得称成功。"
+        }
+      ],
+      "steps_mapping": [
+        {
+          "original": "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "status": "evidence_ready",
+          "evidence": [
+            "A2.platform.cells",
+            "ORIGINAL.platform_zip_ids"
+          ],
+          "facts": "恰好 8 格 Linux/macOS × MSRV 1.95.0/stable 1.99.0 × default/semantic；每格原构建与实际 stdio smoke 通过，分别绑定 binary 和 bundle SHA。"
+        },
+        {
+          "original": "全新target",
+          "status": "evidence_ready",
+          "evidence": [
+            "A2.platform.original_portable_collector",
+            "DOC.platform-execution"
+          ],
+          "facts": "实际调用原 portable collector，核新建独占 target、non-fresh Cargo artifact、源码/工具链/feature/target/binary 身份。依赖下载不称目标编译缓存，也不声称 cold OS disk。"
+        }
+      ],
+      "acceptance_mapping": [
+        {
+          "original": "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "status": "registered_cold_build_scope_evidence_ready",
+          "evidence": [
+            "A2.platform",
+            "DOC.contributing"
+          ],
+          "facts": "全部 8 个声明范围的原 cold-build/smoke 格已通过并读回；不宣称所有 Mac workspace 回归或发布验收。PR171 的 SDK27 linker 失败与 SDK15.4 workspace 失败分别保留。"
+        },
+        {
+          "original": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "status": "Linux_regressions_passed_new_Mac_regression_scope_pending",
+          "evidence": [
+            "CI",
+            "KNOWN.PR171"
+          ],
+          "facts": "Linux 原 CI 的 3 个 job 均通过，包括 MSRV。后到的 A23 Mac workspace 失败不被 8 格构建成功掩盖，适用性仍待独立判断。"
+        }
+      ],
+      "validations_mapping": [
+        {
+          "id": "V01",
+          "status": "fresh_build_evidence_ready_related_regression_scope_pending",
+          "evidence": [
+            "A2.platform.cells",
+            "CI",
+            "SOURCE"
+          ],
+          "covers": "源码/二进制/工具链、dirty、原旧测试/stdio 和 ignored 明列；8 格全新 target。后到 Mac 回归没有被记为通过。"
+        },
+        {
+          "id": "V21",
+          "status": "task_platform_scope_evidence_ready_dependencies_pending",
+          "evidence": [
+            "A2.platform",
+            "A2.recovery_database",
+            "DOC.platform",
+            "DOC.contributing",
+            "CI.source_gates"
+          ],
+          "covers": "本项 SDK/MSRV、default/semantic 平台包与文档事实；回滚另有原件。不新增 paid、OS cache flush 或全部已发布包要求。"
+        }
+      ],
+      "deliverables_mapping": {
+        "implementation": [
+          ".github/workflows/p8-platform.yml",
+          "scripts/p8_cold_build.py",
+          "scripts/p7_build_identity.py",
+          "CONTRIBUTING.md",
+          "docs/P8_PLATFORM_RECOVERY.md"
+        ],
+        "evidence": [
+          "A2.platform",
+          "ORIGINAL.platform_zip_ids",
+          "ORIGINAL.collector_zip",
+          "CI"
+        ],
+        "cold_scope": "原 fresh-target release 编译与原 native stdio smoke；A2 只是数据读回，不是另跑 8 次构建。"
+      }
+    },
+    {
+      "task": "P8-013",
+      "original": {
+        "id": "P8-013",
+        "phase": "P8",
+        "batch": "P8-C",
+        "title": "指标/门槛与失败退出最终认证",
+        "status": "in_progress",
+        "scope": [
+          "crates/cc-eval/src/benchmark/gate.rs",
+          "crates/cc-eval/tests/benchmark_cli.rs"
+        ],
+        "depends_on": [
+          "P8-012"
+        ],
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "deliverables": [
+          "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ]
+      },
+      "canonical_status": "in_progress",
+      "own_registered_evidence": "ready_for_declared_task_behavior_scope",
+      "related_regressions": "fixed-source Linux CI passed; newly reported exact-source Mac workspace regression has pending applicability",
+      "closure_ready": false,
+      "new_scope_signal": "PR171_A23_Mac_workspace_regression",
+      "dependencies": {
+        "direct": [
+          {
+            "id": "P8-012",
+            "status": "in_progress"
+          }
+        ],
+        "transitive_unfinished": [
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010",
+          "P8-011",
+          "P8-012"
+        ]
+      },
+      "scope_mapping": [
+        {
+          "original_path": "crates/cc-eval/src/benchmark/gate.rs",
+          "source_blob": "ecd0c8e5e229221b63ae719e244feb5eaa6b64ce",
+          "evidence": [
+            "A2.failure_gates",
+            "CI.V03"
+          ],
+          "interpretation": "精确 A23 gate/CLI 源码与原 6 次 Rust 合同、保留的 CLI 由源码/二进制/Cargo 回执绑定。"
+        },
+        {
+          "original_path": "crates/cc-eval/tests/benchmark_cli.rs",
+          "source_blob": "0809edbe125ee70c82d108b4537ca39f90b4a227",
+          "evidence": [
+            "A2.failure_gates",
+            "CI.V03"
+          ],
+          "interpretation": "精确 A23 gate/CLI 源码与原 6 次 Rust 合同、保留的 CLI 由源码/二进制/Cargo 回执绑定。"
+        }
+      ],
+      "steps_mapping": [
+        {
+          "original": "故意注入quality/perf/lock失败",
+          "status": "evidence_ready",
+          "evidence": [
+            "A2.failure_gates.original_rust_controls",
+            "A2.failure_gates.original_cli_replays"
+          ],
+          "facts": "原 6 个非 ignored Rust 合同和 7 次已有 CLI 进程覆盖质量失败、时延失败、样本不足、零时延分母、raw lock 漂移、坏策略与拒绝覆盖。"
+        },
+        {
+          "original": "验证退出和raw报告仍保留",
+          "status": "evidence_ready",
+          "evidence": [
+            "ORIGINAL.gates_zip",
+            "A2.failure_gates.posterior_checks_actually_reached"
+          ],
+          "facts": "337 原成员/336 封存文件、CLI SHA 与首个 Cargo artifact 对应、287 fixture 文件/209265 字节、完整 stdout/stderr 和 6 个 JSON 输出实际核对；raw 不改写，拒绝覆盖时旧报告保留。"
+        }
+      ],
+      "acceptance_mapping": [
+        {
+          "original": "红线失败必非零，inconclusive不被自动passed",
+          "status": "evidence_ready",
+          "evidence": [
+            "A2.failure_gates.original_cli_replays",
+            "CI.V03"
+          ],
+          "facts": "quality/perf 是 exit 1 failed；样本不足/零分母是 exit 1 inconclusive；lock/policy 是 exit 2 invalid_measurement；覆盖拒绝 exit 2。零计划另由原 Rust 测试验证，不虚构第 8 次 CLI 执行。"
+        },
+        {
+          "original": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "status": "Linux_regressions_passed_new_Mac_regression_scope_pending",
+          "evidence": [
+            "CI",
+            "KNOWN.PR171",
+            "A2.first_failure_retained"
+          ],
+          "facts": "A1 仍失败。A2 仅纠正 CLI 入口源码路径，并真实通过其余原 Cargo/binary/raw 强校验；后到的同源 Mac 回归仍待适用性判断。"
+        }
+      ],
+      "validations_mapping": [
+        {
+          "id": "V03",
+          "status": "task_scorer_and_gate_scope_evidence_ready",
+          "evidence": [
+            "CI.V03",
+            "A2.failure_gates"
+          ],
+          "covers": "原 benchmark_scoring 实际 21 项通过：compat/native、primary/supporting、linear gain、重复、glob、空值与源码正确性；失败对照保留原评分策略。"
+        },
+        {
+          "id": "V04",
+          "status": "declared_scope_evidence_ready",
+          "evidence": [
+            "A2.failure_gates",
+            "A2.recovery_raw",
+            "CI.V18"
+          ],
+          "covers": "实际 exit/status/raw→report、source/lock 失败和覆盖拒绝；MCP/HTTP 错误与 readiness 由独立原件对应。"
+        },
+        {
+          "id": "V20",
+          "status": "failure_gate_semantics_ready_full_scale_dependency_pending",
+          "evidence": [
+            "A2.failure_gates",
+            "UPSTREAM.P8-005",
+            "UPSTREAM.P8-006"
+          ],
+          "covers": "用明确标识的确定性 fixture 验证失败门语义。完整规模/N/parity/resource 仍由 P8-005/006 硬依赖验收；fixture 数字不充当产品性能、质量收益或全规模证据。"
+        }
+      ],
+      "deliverables_mapping": {
+        "implementation": [
+          "crates/cc-eval/src/benchmark/gate.rs",
+          "crates/cc-eval/tests/benchmark_cli.rs",
+          "scripts/p8_gate_controls.py",
+          ".github/workflows/p8-gates.yml",
+          "docs/roadmap/code-index-v2/P8-GATES.md"
+        ],
+        "evidence": [
+          "A2.failure_gates",
+          "ORIGINAL.gates_zip",
+          "CI.V03"
+        ]
+      }
+    },
+    {
+      "task": "P8-016",
+      "original": {
+        "id": "P8-016",
+        "phase": "P8",
+        "batch": "P8-D",
+        "title": "数据库/配置/包回滚演练",
+        "status": "in_progress",
+        "scope": [
+          "crates/cc-db/src/index_migrate.rs",
+          "crates/cc-semantic/src/cache.rs",
+          "docs/TROUBLESHOOTING.md"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "deliverables": [
+          "数据库/配置/包回滚演练的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md",
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+        "conditional": null,
+        "conditional_dependencies": [],
+        "required_for": [
+          "M4-local",
+          "M4-semantic"
+        ]
+      },
+      "canonical_status": "in_progress",
+      "own_registered_evidence": "ready_for_declared_task_behavior_scope",
+      "related_regressions": "fixed-source Linux CI passed; newly reported exact-source Mac workspace regression has pending applicability",
+      "closure_ready": false,
+      "new_scope_signal": "PR171_A23_Mac_workspace_regression",
+      "dependencies": {
+        "direct": [
+          {
+            "id": "P7-020",
+            "status": "done"
+          },
+          {
+            "id": "P8-012",
+            "status": "in_progress"
+          },
+          {
+            "id": "P8-013",
+            "status": "in_progress"
+          }
+        ],
+        "transitive_unfinished": [
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010",
+          "P8-011",
+          "P8-012",
+          "P8-013"
+        ]
+      },
+      "scope_mapping": [
+        {
+          "original_path": "crates/cc-db/src/index_migrate.rs",
+          "source_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.recovery_identity",
+            "CI.V13",
+            "CI.V17",
+            "DOC.troubleshooting"
+          ],
+          "interpretation": "当前 migration/cache/docs 均在精确源码树中；历史源码与当前源码分开绑定，未把历史二进制改称当前。"
+        },
+        {
+          "original_path": "crates/cc-semantic/src/cache.rs",
+          "source_blob": "f7cf8e5bf288353d18e1b0dbe95b9599457be2c6",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.recovery_identity",
+            "CI.V13",
+            "CI.V17",
+            "DOC.troubleshooting"
+          ],
+          "interpretation": "当前 migration/cache/docs 均在精确源码树中；历史源码与当前源码分开绑定，未把历史二进制改称当前。"
+        },
+        {
+          "original_path": "docs/TROUBLESHOOTING.md",
+          "source_blob": "bd342f00ac5906b223077cbd97c4057992328d1f",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.recovery_identity",
+            "CI.V13",
+            "CI.V17",
+            "DOC.troubleshooting"
+          ],
+          "interpretation": "当前 migration/cache/docs 均在精确源码树中；历史源码与当前源码分开绑定，未把历史二进制改称当前。"
+        }
+      ],
+      "steps_mapping": [
+        {
+          "original": "旧binary开新schema的受控重建、cache版本隔离、disable语义回退",
+          "status": "evidence_ready_in_registered_source_revision_pair_scope",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.recovery_raw",
+            "A2.recovery_identity",
+            "CI.V17"
+          ],
+          "covers": [
+            {
+              "case": "旧binary开新schema受控重建",
+              "facts": "实际当前 A23 schema 25、未改历史 277f schema 24、当前重建/备份恢复：25→24→25→25。另有未来 schema 注入 25→1025→25→25，仍标明是注入。"
+            },
+            {
+              "case": "cache版本隔离",
+              "facts": "future-format-999/rollback-format-1 物理根与原 bytes 保留；启用 HTTP reader 的 format 999/payload 损坏实际被拒；different_spaces/namespaces/meta_tampering 原测试通过。"
+            },
+            {
+              "case": "disable语义回退",
+              "facts": "源码绑定的 semantic/default 二进制在真实 stdio 回滚中保持 14 工具和本地查询；not_configured/disabled 不冒称 ready。旧 disabled reader 的 not_run 原样保留，由另外启用 reader 的实际场景补充证据。"
+            }
+          ]
+        }
+      ],
+      "acceptance_mapping": [
+        {
+          "original": "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "status": "evidence_ready",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.recovery_raw",
+            "CI.V13",
+            "CI.V17"
+          ],
+          "facts": "14 份自有数据库副本仅在没有非空 WAL 后以 ro immutable 查询；核完整性/FK/schema/当前索引/源码/配置/备份/namespace。实际产品曾打开重建或恢复的库；源码/配置完整，未知或损坏向量不会被误读。"
+        },
+        {
+          "original": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+          "status": "Linux_regressions_passed_new_Mac_regression_scope_pending",
+          "evidence": [
+            "CI",
+            "KNOWN.PR171"
+          ],
+          "facts": "同源 Linux 的 epoch/schema/incarnation/cache/publish 旧回归通过。历史 not_run、未发行包配对、物理设备故障等边界保持，后到 Mac workspace 失败仍待判断。"
+        }
+      ],
+      "validations_mapping": [
+        {
+          "id": "V13",
+          "status": "declared_scope_evidence_ready",
+          "evidence": [
+            "CI.V13",
+            "A2.recovery_database"
+          ],
+          "covers": "typed write effects、一次 commit 推进、aux 不改内容时钟、rollback 与 incarnation；实际新旧 schema 配对与 staging 恢复有原件。"
+        },
+        {
+          "id": "V17",
+          "status": "declared_scope_evidence_ready_new_regression_review_pending",
+          "evidence": [
+            "A2.recovery_identity.original_production_tests",
+            "A2.recovery_raw",
+            "CI.V17",
+            "CI.COST"
+          ],
+          "covers": "原 crash/recovery/cache/GC-publish/lease 场景；预算约束的 reembedding 与未知费用字段保持。"
+        },
+        {
+          "id": "V21",
+          "status": "rollback_and_package_scope_evidence_ready_dependencies_pending",
+          "evidence": [
+            "A2.recovery_database",
+            "A2.platform",
+            "DOC.platform",
+            "DOC.troubleshooting",
+            "CI.source_gates"
+          ],
+          "covers": "真实新旧源码二进制 schema 降级重建、namespace 安全、default/semantic 回退、MSRV/platform/docs。原任务未要求两个正式发行包，故不添加该永久门。"
+        }
+      ],
+      "deliverables_mapping": {
+        "implementation": [
+          "scripts/p8_rollback.py",
+          "scripts/p8_recovery.py",
+          "crates/cc-db/src/index_migrate.rs",
+          "crates/cc-semantic/src/cache.rs",
+          "docs/TROUBLESHOOTING.md",
+          "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md"
+        ],
+        "evidence": [
+          "A2.recovery_database",
+          "A2.recovery_raw",
+          "ORIGINAL.recovery_zip",
+          "CI"
+        ]
+      }
+    }
+  ],
+  "failure_and_unknown_preservation": {
+    "A1": {
+      "run_id": 37883820893,
+      "attempt": 1,
+      "job_id": 113669245095,
+      "head": "7494b6e439b11a60d0277c24d2b3fdd9d985e3d4",
+      "status": "failure",
+      "failed_group": "failure_gates",
+      "error": "retained CLI Cargo provenance differs",
+      "original_job_log_blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+      "extracted_receipt_plus_lf_blob": "5b60d4963795f7842a815dde67cfb1009c4b2637",
+      "artifact_id": 11595850188,
+      "artifact_bytes": 513394037,
+      "artifact_sha256": "a629b9043439150047e8bb994c05664d79a77c2e2a251d9548804ad4c1731bfc",
+      "not_reclassified_as_success": true
+    },
+    "A2_fix": {
+      "module_blob": "8172dfcd77d994cbd33889670d4185ca08c93943",
+      "only_semantic_change": "Expected original CLI source path src/main.rs → src/bin/cc-eval.rs; every Cargo manifest/name/kind/executable/first-log membership, binary and raw evidence guard retained.",
+      "A1_reclassified": false,
+      "A2_remaining_guards_actually_passed": true
+    },
+    "old_recovery_and_platform_not_run": "Remain in canonical historical evidence and original nested reports. New enabled-reader and actual historical-source-pair evidence is separately bound.",
+    "new_mac_regression": "Known actual failure, not ignored or converted to a platform-build failure. Root cause and original-acceptance applicability remain under review.",
+    "paid_or_missing_usage": "null/unknown is not rewritten as zero",
+    "full_output_zip_claim": "Output A2ZIP is referenced by official digest; neither this ledger nor the cited independent reviewer claims to embed/re-download it."
+  },
+  "closure_rule": {
+    "now": "All four canonical task statuses stay in_progress; closure_ready is false.",
+    "own_scope_result": "Original registered behaviors have implementation and actual evidence as mapped. This does not waive relevant related regressions or their original hard dependencies.",
+    "unresolved": [
+      {
+        "kind": "hard_dependencies",
+        "tasks": [
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010"
+        ],
+        "action": "Independently accept original registered complete scale/update evidence and close earlier nodes in unchanged hard-dependency order."
+      },
+      {
+        "kind": "known_regression_scope",
+        "reference": "KNOWN.PR171",
+        "action": "Complete the fixed A23 Mac failure root-cause/impact review and record treatment under the original related-regression rule; it cannot be silently omitted or presumed passed."
+      }
+    ],
+    "future_order": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "close_only_after": "Verify all declared direct dependencies are actually accepted; reconcile relevant known regression under original rules; confirm this exact source/observer applicability; attach immutable original evidence and keep prior failures/unknown/not_run. The ledger itself changes no task.",
+    "not_added_as_new_gates": [
+      "No mandatory live/paid provider run",
+      "No cold OS-cache purge",
+      "No mandatory pair of formally published release packages",
+      "No unspecified all-future Vxx scenario requirement",
+      "No universal infrastructure-zero-failure or new per-platform whole-workspace gate"
+    ],
+    "no_automatic_replay_requirement": "Finishing upstream scale or adding artifact-only ancestry does not itself require rerunning these same fixed original observations. A real source/observer change or applicable unresolved failure needs its own review.",
+    "counts_after_this_record": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_closed": 0
+    }
+  },
+  "input_byte_proofs": [
+    {
+      "key": "a2-review",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/784238713bb0fb24c778017925ebd22ffe6fec10",
+      "bytes": 55381,
+      "sha256": "1f928b2886dc916ec9cdcdced4f9482e99727b35e8a3a2c3dc86afac3752e60e"
+    },
+    {
+      "key": "peer-mapping",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/28abb7b03ce79f750f4e04261b7ac7ff4b2b3f75",
+      "bytes": 34219,
+      "sha256": "a499cc7e9ba81f2376703e90c70dfc38ba908d95ae12641a5a3d803903cc5149"
+    },
+    {
+      "key": "validation",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/docs/roadmap/code-index-v2/06-VALIDATION.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "key": "benchmark",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/docs/roadmap/code-index-v2/09-BENCHMARK.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "key": "contracts",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/docs/roadmap/code-index-v2/02-CONTRACTS.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    {
+      "key": "main-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/54b3227bb9f0b36b38083edee3c76817561bb44c",
+      "bytes": 2921,
+      "sha256": "765f41a131226abc3697bf3e1a75e6781445e9b6fe8fee49b771bd13576b10ab"
+    },
+    {
+      "key": "a23-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/58147c952505c44da1f41eb4b9c31643f2303b96",
+      "bytes": 2921,
+      "sha256": "0373c483796d5bdf8724b7576c351a4eb01678574568939e53d637f256a09fba"
+    },
+    {
+      "key": "recovery-doc",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/f97ea51266254a0cf278093ffc0ecade51570e99",
+      "bytes": 8540,
+      "sha256": "5556ffa62317e1e27b5b0735a3d359c8709f0abd096082756d98e36eca0c27ba"
+    },
+    {
+      "key": "platform-rollback-doc",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/7277c6421281eda9b3c6ca5bdd1711160416fc26",
+      "bytes": 9659,
+      "sha256": "6baaa02357983d2963556b37e611012208942e0b8c69a9c2d1f4395a941efe6e"
+    },
+    {
+      "key": "gates-doc",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/fb41c7a0e9e71b9d48b882321545692f973b3aea",
+      "bytes": 3630,
+      "sha256": "cde9696570d694facc9e02d451146107adea24bcac5dd00d96537868d7604d91"
+    },
+    {
+      "key": "cargo-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/Cargo.toml?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 1594,
+      "sha256": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa"
+    },
+    {
+      "key": "main-commit",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 2678,
+      "sha256": "db7a97c0e8e3ec6607acaf1590288c213701538a1ccd8fd3c82ac130b36ca8c6"
+    },
+    {
+      "key": "ci-merge",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "bytes": 2594,
+      "sha256": "e340c895feedbe8e585c9c066c6252b88e0656fdaadb638e48f7398dd9292251"
+    },
+    {
+      "key": "platform-execution-doc",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/docs/P8_PLATFORM_RECOVERY.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 8899,
+      "sha256": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360"
+    },
+    {
+      "key": "recovery-code",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/scripts/p8_recovery.py?ref=a23bb72d3c954f385b99fe81ce9189885c208557",
+      "bytes": 58272,
+      "sha256": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42"
+    },
+    {
+      "key": "raw-reader",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/8da31c955be61dec5919f3ee4fa26ed11f1fe6d5",
+      "bytes": 13332,
+      "sha256": "8287c2df1c2dbc790abfe88706d36976ad7c7d8d20f723d2c86e901fe681db57"
+    },
+    {
+      "key": "db-reader",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/05e789dbe8d31d204d8a5b15cef3f8c447008168",
+      "bytes": 9841,
+      "sha256": "c8c05abcaca40c8f4858bf60c081dc0612801e841013518d27b35ee2649628d8"
+    },
+    {
+      "key": "contributing",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/CONTRIBUTING.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 3062,
+      "sha256": "00117f468fc463787e21ac2f413da760fa32eb0b1e382d7bdcf486e8d4c496f4"
+    },
+    {
+      "key": "troubleshooting",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/docs/TROUBLESHOOTING.md?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "bytes": 9749,
+      "sha256": "1d2af3250c5c27328f8e7c1335a884c8769231954820e37aa6a4889e76a36c0e"
+    },
+    {
+      "key": "ci-jobs",
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37871838887/attempts/1/jobs?per_page=100&page=1",
+      "bytes": 11231,
+      "sha256": "92058b72c7823a848204f5610bda9368d20877d8316bfee3a5cb9d9b212b20cd"
+    },
+    {
+      "key": "pr171",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/171",
+      "bytes": 18199,
+      "sha256": "f48624be4dd0e2cd3a66b237ab35493e8bb8b4f65d058d05254662198058eb25"
+    },
+    {
+      "key": "mac-failure-assessment",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/345eb55b3dc503c901b963ea5f37ce93a244dea5",
+      "bytes": 9792,
+      "sha256": "c85e9fd8ead80d0fea4446f1955806e93e7aed710d79fccf8d95e011167b7bf0"
+    },
+    {
+      "key": "mac-independent-review",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/62d2d1960ab0f15432ba869225951988a80ed843",
+      "bytes": 27973,
+      "sha256": "558383ab41aedec7cdbe91b19f1a4bec0efe72bc4f5b8391ec1a8d4efd419af0"
+    }
+  ],
+  "review_limits": [
+    "No native/workspace/build/fault/provider/DB/ZIP execution was repeated for this mapping.",
+    "A2 actual-run outcome is supported by full fixed official log, its exact JSON receipt and separate non-author review; prior raw validators are not replaced by report summaries.",
+    "Source/CI/macOS domain limits are stated separately. This record does not grant global release or full G8 acceptance."
+  ],
+  "subsequent_main_observation": {
+    "reported_by": "/root",
+    "commit": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+    "event": "PR171 normally merged after this fixed-authority mapping was prepared",
+    "scope": "Parent reports only443 new artifact paths; authority and source applicability in this ledger stay explicitly pinned to requested b21/A23. No new main-source equivalence assertion is made from this message alone.",
+    "task_counts_reported": {
+      "done": 163,
+      "remaining": 29
+    }
+  }
+}

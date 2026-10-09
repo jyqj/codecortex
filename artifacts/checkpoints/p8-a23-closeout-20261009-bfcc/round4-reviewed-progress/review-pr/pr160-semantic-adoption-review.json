@@ -1,0 +1,855 @@
+{
+  "annotations": [
+    {
+      "candidate_git": {
+        "blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_strengthened",
+      "direct_diff": {
+        "diff_bytes": 1490,
+        "diff_path": "review-pr/pr160-semantic-diffs/.github__workflows__p8-runtime.yml.diff",
+        "new_bytes": 5782,
+        "new_sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+        "old_bytes": 5343,
+        "old_sha256": "3e1e9579bd2fa38985e451adecd390c13cafd54ad32e109d1228fad87b9dde4f",
+        "path": ".github/workflows/p8-runtime.yml"
+      },
+      "finding": "The original mixed/soak/backfill workloads remain. Backfill adds its fixed-build controls, always-run retained-artifact verification and include-hidden-files upload. No original runtime C levels, seeds, operation counts or deadlines are removed.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "323e8e5df6ae98ba7e4f0a09665e981f093348bc",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": ".github/workflows/p8-runtime.yml",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_population_with_reordered_dispatch",
+      "direct_diff": {
+        "diff_bytes": 5042,
+        "diff_path": "review-pr/pr160-semantic-diffs/.github__workflows__p8-scale.yml.diff",
+        "new_bytes": 8621,
+        "new_sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+        "old_bytes": 5501,
+        "old_sha256": "cb489c2f8f72f1d77f53295514f47943414fab8b9843d399df512afc6ec3af08",
+        "path": ".github/workflows/p8-scale.yml"
+      },
+      "finding": "The old 150-cell matrix is split into the original five index0 cells and 145 cells at indices1..29; all use the same build/plan/artifact names. Aggregate still runs after a successful build and rejects any missing/failed population. Sparse checkout omits archives only. This changes scheduling, not the registered samples or acceptance.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "cf8dd204ef4fecc426dec9b68839a46e43b93f77",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": ".github/workflows/p8-scale.yml",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_logically_equivalent",
+      "direct_diff": {
+        "diff_bytes": 606,
+        "diff_path": "review-pr/pr160-semantic-diffs/crates__cc-eval__src__benchmark__p8_scale.rs.diff",
+        "new_bytes": 46139,
+        "new_sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+        "old_bytes": 46137,
+        "old_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs"
+      },
+      "finding": "The sole product diff replaces shard.is_none_or(count != repetitions) with !shard.is_some_and(count == repetitions). Both are true for None and for Some with a mismatching count. No accepted plan, workload, budget or oracle semantics changes.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "1281d5340096699663308c92ce27978ae96ac84e",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_updated_documentation",
+      "direct_diff": {
+        "diff_bytes": 4238,
+        "diff_path": "review-pr/pr160-semantic-diffs/docs__P8_RUNTIME_EVIDENCE.md.diff",
+        "new_bytes": 8616,
+        "new_sha256": "48189f265e42a34dc0768c8861105a8080fe64fbe7282e5d3d3d8805e71833ad",
+        "old_bytes": 7403,
+        "old_sha256": "f67bafb4d31d533362249799220f8e4642d6d8b18802f3565cc5d62c22ffe798",
+        "path": "docs/P8_RUNTIME_EVIDENCE.md"
+      },
+      "finding": "All old protocol descriptions remain; the observer set expands from7 to9, private target/toolchain/fresh-artifact binding and sealed backfill verification are documented. Historical results are not reassigned.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "88477fc615e2c4e5e54490062d8c6051980f230f",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "docs/P8_RUNTIME_EVIDENCE.md",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "7277c6421281eda9b3c6ca5bdd1711160416fc26",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_with_current_entry_routing",
+      "direct_diff": {
+        "diff_bytes": 4334,
+        "diff_path": "review-pr/pr160-semantic-diffs/docs__roadmap__code-index-v2__P8-PLATFORM-ROLLBACK.md.diff",
+        "new_bytes": 9659,
+        "new_sha256": "6baaa02357983d2963556b37e611012208942e0b8c69a9c2d1f4395a941efe6e",
+        "old_bytes": 10228,
+        "old_sha256": "1225db80a0fc64a928145d332c822a04374f32b8e25b30d662c9d28be61e18a3",
+        "path": "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md"
+      },
+      "finding": "Historical2026-10-08 records remain. A new current-entry section points to P8_PLATFORM_RECOVERY.md and the unchanged platform/recovery implementations. The previous trailing current-entry narrative is replaced, not a removal of its producer/portable-bundle/EOF/schema checks. Preserve the old narrative through the G4 permalink.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "4e90884b9c852621c27f999e3b972992a976c076",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_with_current_dispatch_documentation",
+      "direct_diff": {
+        "diff_bytes": 3176,
+        "diff_path": "review-pr/pr160-semantic-diffs/docs__roadmap__code-index-v2__P8-SCALE.md.diff",
+        "new_bytes": 26078,
+        "new_sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+        "old_bytes": 24928,
+        "old_sha256": "17d26d45cf402ed712e42589bcb8cb60ea7cfae8530ee7d1eb43973f9f51ca3e",
+        "path": "docs/roadmap/code-index-v2/P8-SCALE.md"
+      },
+      "finding": "A producer-origin explanatory paragraph is absent, but its actual matrix validator is byte-identical in the46-path inventory and still enforces original checkout/target/Cargo/copy provenance. The new original-index0 execution gate and fixed-full-SHA rules are added. Preserve G4 documentation as historical context; no source feature backport identified.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "75c0d419af5ce194e1d464182dc302349f657665",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_strengthened",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:14",
+          "If:16",
+          "ImportFrom:10",
+          "ImportFrom:11",
+          "ImportFrom:12",
+          "ImportFrom:13",
+          "artifact",
+          "execute"
+        ],
+        "diff_bytes": 8891,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__p8_backfill.py.diff",
+        "new_bytes": 8799,
+        "new_sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+        "old_bytes": 5820,
+        "old_sha256": "fc9b17ce5ae1cbbcf7ffccba90d668e9f42fc4008fff15e9970b23cb030435b8",
+        "path": "scripts/p8_backfill.py"
+      },
+      "finding": "Keeps the original contention test, three seeds, concurrency population and execution timeout. Adds a fresh private target, exact compiler/observer binding, fresh=false and target-owned Cargo artifact checks, pre/post original-and-copy identity, observer originals, complete seal and read-only verify command. Failed test results remain failures.",
+      "function_relation": {
+        "added": [],
+        "changed": [
+          "artifact",
+          "execute"
+        ],
+        "path": "scripts/p8_backfill.py",
+        "removed": [],
+        "unchanged_functions": 0
+      },
+      "old_git": {
+        "blob": "3b9b2fdadd37b8e8de1dca0c8a7678ec5cf37976",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/p8_backfill.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_strengthened",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:51",
+          "If:52",
+          "collect_cells",
+          "main",
+          "selected_cell",
+          "selected_inventory"
+        ],
+        "diff_bytes": 5813,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__p8_cold_build.py.diff",
+        "new_bytes": 52649,
+        "new_sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+        "old_bytes": 51726,
+        "old_sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974",
+        "path": "scripts/p8_cold_build.py"
+      },
+      "finding": "All27 unchanged functions preserve cold-build/stdio/export contracts. selected_inventory factors the old exact-eight-cell selection checks; collector additionally rechecks exported selection/source/receipt ownership and the live strict-replay flag. Failed/cancelled collection is retained as a machine-readable nonzero report. new_directory stays before the collection try and remains unchanged.",
+      "function_relation": {
+        "added": [
+          "selected_inventory"
+        ],
+        "changed": [
+          "selected_cell",
+          "collect_cells",
+          "main"
+        ],
+        "path": "scripts/p8_cold_build.py",
+        "removed": [],
+        "unchanged_functions": 27
+      },
+      "old_git": {
+        "blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/p8_cold_build.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_strengthened",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:32",
+          "If:33",
+          "Import:10",
+          "Import:11",
+          "Import:12",
+          "Import:3",
+          "Import:4",
+          "Import:5",
+          "Import:6",
+          "Import:7",
+          "Import:8",
+          "Import:9",
+          "ImportFrom:12",
+          "ImportFrom:13",
+          "ImportFrom:14",
+          "ImportFrom:5",
+          "ImportFrom:6",
+          "binary_identity",
+          "manifest_hashes",
+          "product_manifest_hashes",
+          "product_schema_version"
+        ],
+        "diff_bytes": 5303,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__p8_rollback.py.diff",
+        "new_bytes": 38818,
+        "new_sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
+        "old_bytes": 38551,
+        "old_sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
+        "path": "scripts/p8_rollback.py"
+      },
+      "finding": "Retains both original manifest shapes, duplicate-path/key rejection and historical/current schema pairing. Replaces manifest_hashes with product_manifest_hashes to bind raw digest and exact integer count in one read, reject NUL paths, and hash/parse schema from the same bytes. The18 other functions remain AST-identical.",
+      "function_relation": {
+        "added": [
+          "product_manifest_hashes"
+        ],
+        "changed": [
+          "binary_identity",
+          "product_schema_version"
+        ],
+        "path": "scripts/p8_rollback.py",
+        "removed": [
+          "manifest_hashes"
+        ],
+        "unchanged_functions": 18
+      },
+      "old_git": {
+        "blob": "c561d61443467c2737babf498e213f13ed094e93",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/p8_rollback.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_with_corrected_failure_and_seal_ownership",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:49",
+          "If:51",
+          "ImportFrom:16",
+          "finalize_artifacts",
+          "run",
+          "terminal_operation_metadata"
+        ],
+        "diff_bytes": 24352,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__p8_runtime.py.diff",
+        "new_bytes": 58896,
+        "new_sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+        "old_bytes": 51214,
+        "old_sha256": "63ad7e850d5cfeca9830db747fe8137c9200bc0f5d4d446ab678ec96f040617e",
+        "path": "scripts/p8_runtime.py"
+      },
+      "finding": "All24 unchanged functions retain cache summary, workload/gate/statistics logic. run keeps the original offered schedule, limits and no-repair parity, while fixing submit-after-enqueue accounting, bounded exceptional drain, constructor ownership and stopping readers/watchers before replay/seal. Failed raw terminal metadata is explicitly non-replayable; finalization retains the original failed seal/pre-seal report and nonzero outcome. No old cache-observation capability was dropped.",
+      "function_relation": {
+        "added": [
+          "terminal_operation_metadata",
+          "finalize_artifacts"
+        ],
+        "changed": [
+          "run"
+        ],
+        "path": "scripts/p8_runtime.py",
+        "removed": [],
+        "unchanged_functions": 24
+      },
+      "old_git": {
+        "blob": "146f2a91799d3e50d069a5f00a694592ea343138",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/p8_runtime.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_strengthened",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:24",
+          "If:27",
+          "ImportFrom:11",
+          "ImportFrom:12",
+          "assign:OBSERVER_FILES",
+          "build",
+          "checked_artifact",
+          "observer_snapshot",
+          "private_build_environment",
+          "verify_receipt",
+          "verify_toolchain"
+        ],
+        "diff_bytes": 8655,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__p8_runtime_build.py.diff",
+        "new_bytes": 18068,
+        "new_sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
+        "old_bytes": 15242,
+        "old_sha256": "30efddaeef181bca0714cc798125d18687eeda6289a9a07e89efb95b69476a79",
+        "path": "scripts/p8_runtime_build.py"
+      },
+      "finding": "Keeps exact original runtime binaries/build command/release/default/source/copy checks; adds atomic new private target/build-dir, explicit observed compiler/wrapper choice, compiler byte identity, fresh=false and two more observer sources. It does not turn historical G4 receipts into new a23 receipts.",
+      "function_relation": {
+        "added": [
+          "private_build_environment",
+          "verify_toolchain"
+        ],
+        "changed": [
+          "observer_snapshot",
+          "checked_artifact",
+          "verify_receipt",
+          "build"
+        ],
+        "path": "scripts/p8_runtime_build.py",
+        "removed": [],
+        "unchanged_functions": 6
+      },
+      "old_git": {
+        "blob": "cba1839bd4c48479521083bea1b416bd1a505ffa",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/p8_runtime_build.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "83b78abdac53b449564e3c4a78f9f9cb78f5c4fd",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "replaced_with_exact_candidate_identity",
+      "direct_diff": {
+        "diff_bytes": 22217,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__reviewed-source-registry-v15.json.diff",
+        "new_bytes": 169979,
+        "new_sha256": "030e795021ddb4897cc05c061aa608b7e3d34be2c3410787468b6d0a68568ed9",
+        "old_bytes": 167674,
+        "old_sha256": "6438c1792eb4b654bf4dfe58948132e13a406d811275fea7f5e1b68070cebf05",
+        "path": "scripts/reviewed-source-registry-v15.json"
+      },
+      "finding": "Same schema10/base/source-version/scope/separate-execution boundary; all1087 input paths remain, no validation input is removed, and two validation files are added. All26 G4 deltas remain represented:25 unchanged and the one equivalent p8_scale condition;9 additional deltas form35. Registry points to the distinct254/3a review chain and matches its complete input inventories and review SHA.",
+      "function_relation": null,
+      "old_git": {
+        "blob": "b43d79d938f509d5bbb920e8d9d85b5a4fbe4c12",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "aa8066379b4acf2c2581c85199e4d29fc1d1cb53",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_coverage_reorganized_and_extended",
+      "direct_diff": {
+        "changed_ast_units": [
+          "Expr:13",
+          "Expr:14",
+          "If:18",
+          "If:19",
+          "Import:10",
+          "Import:11",
+          "Import:12",
+          "Import:14",
+          "Import:15",
+          "Import:16",
+          "Import:2",
+          "Import:3",
+          "Import:4",
+          "Import:5",
+          "Import:6",
+          "Import:7",
+          "Import:8",
+          "Import:9",
+          "ImportFrom:12",
+          "ImportFrom:13",
+          "ImportFrom:5",
+          "ImportFrom:6",
+          "PlatformControls"
+        ],
+        "diff_bytes": 14615,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__tests__test_p8_platform.py.diff",
+        "new_bytes": 42727,
+        "new_sha256": "16ecf02fd3cddb2449623ac11e599ed60f3664ce1cfcd30156b85c581769b2f3",
+        "old_bytes": 37704,
+        "old_sha256": "543f604cb9cbcfe1600aa1a5711f27d3eb2ee3e64126d9c95c1ad5612418aae8",
+        "path": "scripts/tests/test_p8_platform.py"
+      },
+      "finding": "49 functions are AST-identical. Three old collector test names are replaced by a consolidated empty/malformed-input failure-and-preservation test plus consistent-reseal/portable-source-selection controls. Existing-output preservation is checked in the new CLI test; the original primitive-level output-symlink refusal and existing-output tests remain AST-identical. Manifest fixtures now carry input_count and call the stricter renamed helper. Do not claim removed test names ran on a23.",
+      "function_relation": {
+        "added": [
+          "PlatformControls.seal_bundle_inventory",
+          "PlatformControls.reseal_exported_receipt",
+          "PlatformControls.test_collector_replays_same_build_contract_after_consistent_resealing",
+          "PlatformControls.test_collector_does_not_require_original_target_or_compiler_paths",
+          "PlatformControls.test_collector_requires_original_selected_cell_and_source",
+          "PlatformControls.test_failed_collection_retains_machine_readable_failure_and_input_bytes"
+        ],
+        "changed": [
+          "PlatformControls.test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected",
+          "PlatformControls.schema_identity",
+          "PlatformControls.test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths"
+        ],
+        "path": "scripts/tests/test_p8_platform.py",
+        "removed": [
+          "PlatformControls.test_empty_collector_preserves_invalid_matrix_without_passing_cells",
+          "PlatformControls.test_bad_bundle_collector_preserves_refusal_and_input_bytes",
+          "PlatformControls.test_collector_existing_directory_and_symlink_are_never_written"
+        ],
+        "unchanged_functions": 49
+      },
+      "old_git": {
+        "blob": "7c1c638bd5964b035c9a738df53522c649896b86",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/tests/test_p8_platform.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "2df6ce3f08fc65780c47ab23a58ad62c43821eb8",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_extended",
+      "direct_diff": {
+        "changed_ast_units": [
+          "If:16",
+          "If:18",
+          "Import:14",
+          "ImportFrom:14",
+          "ImportFrom:15",
+          "RollbackManifestControls"
+        ],
+        "diff_bytes": 5896,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__tests__test_p8_recovery.py.diff",
+        "new_bytes": 23133,
+        "new_sha256": "2e4afa2f4b16352388856ab812e9796c523a9a20ec5765ed793cf4efd9827a11",
+        "old_bytes": 17686,
+        "old_sha256": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
+        "path": "scripts/tests/test_p8_recovery.py"
+      },
+      "finding": "All30 old functions remain AST-identical. Adds original map/list manifest, duplicate path/key/count, post-identity drift and same-bytes schema parsing negative controls.",
+      "function_relation": {
+        "added": [
+          "RollbackManifestControls.product",
+          "RollbackManifestControls.rewrite_manifest",
+          "RollbackManifestControls.test_both_original_manifest_formats_expose_the_bound_schema",
+          "RollbackManifestControls.test_duplicate_paths_or_invalid_manifest_shapes_are_rejected",
+          "RollbackManifestControls.test_schema_read_rechecks_manifest_and_source_after_identity",
+          "RollbackManifestControls.test_schema_version_is_parsed_from_the_same_bytes_as_its_digest",
+          "RollbackManifestControls.test_duplicate_map_keys_and_wrong_counts_are_rejected"
+        ],
+        "changed": [],
+        "path": "scripts/tests/test_p8_recovery.py",
+        "removed": [],
+        "unchanged_functions": 30
+      },
+      "old_git": {
+        "blob": "f7a45890870323518de919f8ddedf8eda4816a58",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/tests/test_p8_recovery.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_extended",
+      "direct_diff": {
+        "changed_ast_units": [
+          "Expr:10",
+          "Expr:16",
+          "If:15",
+          "If:26",
+          "Import:0",
+          "Import:10",
+          "Import:11",
+          "Import:12",
+          "Import:14",
+          "Import:17",
+          "Import:2",
+          "Import:3",
+          "Import:4",
+          "Import:5",
+          "Import:6",
+          "Import:8",
+          "Import:9",
+          "ImportFrom:1",
+          "ImportFrom:12",
+          "ImportFrom:13",
+          "ImportFrom:15",
+          "ImportFrom:18",
+          "ImportFrom:2",
+          "ImportFrom:3",
+          "ImportFrom:7",
+          "ImportFrom:9",
+          "OwnedWriterSealControls",
+          "RuntimeDriverControls",
+          "_owned_digest",
+          "_owned_write",
+          "_owned_writer_control"
+        ],
+        "diff_bytes": 37789,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__tests__test_p8_runtime.py.diff",
+        "new_bytes": 50900,
+        "new_sha256": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
+        "old_bytes": 14568,
+        "old_sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0",
+        "path": "scripts/tests/test_p8_runtime.py"
+      },
+      "finding": "All15 old functions remain AST-identical. Adds explicitly synthetic driver/stdio/seal controls for unequal completed oracle versus execution error, successful observation, raw-budget cleanup, drain deadline, failed submission, interruption, and owned writer/constructor/worker termination. Existing module import remains p8_runtime; added controls are not product measurements.",
+      "function_relation": {
+        "added": [
+          "RuntimeDriverControls.prepare_control",
+          "RuntimeDriverControls.run_control",
+          "RuntimeDriverControls.interrupted_control",
+          "RuntimeDriverControls.test_completed_unequal_oracle_preserves_gate_failure_and_all_statistics",
+          "RuntimeDriverControls.test_oracle_execution_error_remains_driver_failure",
+          "RuntimeDriverControls.test_equal_oracle_retains_successful_observation",
+          "RuntimeDriverControls.test_raw_budget_failure_cancels_and_joins_before_sealing",
+          "RuntimeDriverControls.test_existing_drain_deadline_preserves_canceled_outcomes_and_bounds",
+          "RuntimeDriverControls.test_submit_failure_retains_offered_attempt_and_releases_slot",
+          "RuntimeDriverControls.test_keyboard_interrupt_records_failure_before_and_after_drain",
+          "_owned_digest",
+          "_owned_write",
+          "_owned_writer_control",
+          "OwnedWriterSealControls.check_owned_writer_case",
+          "OwnedWriterSealControls.test_all_stopped_seal_contract",
+          "OwnedWriterSealControls.test_sampler_alive_seal_contract",
+          "OwnedWriterSealControls.test_main_reader_alive_seal_contract",
+          "OwnedWriterSealControls.test_comparison_reader_alive_seal_contract",
+          "OwnedWriterSealControls.test_main_watcher_alive_seal_contract",
+          "OwnedWriterSealControls.test_comparison_watcher_alive_seal_contract",
+          "OwnedWriterSealControls.test_stopped_close_error_seal_contract",
+          "OwnedWriterSealControls.test_main_construction_failure_seal_contract",
+          "OwnedWriterSealControls.test_comparison_construction_failure_seal_contract",
+          "OwnedWriterSealControls.test_worker_unfinished_seal_contract"
+        ],
+        "changed": [],
+        "path": "scripts/tests/test_p8_runtime.py",
+        "removed": [],
+        "unchanged_functions": 15
+      },
+      "old_git": {
+        "blob": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/tests/test_p8_runtime.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "f4286b62d81f27ca0e54942d0d7a07d2dbbb1b5f",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_extended",
+      "direct_diff": {
+        "changed_ast_units": [
+          "CacheTerminalRetentionTests",
+          "If:16",
+          "If:17"
+        ],
+        "diff_bytes": 3496,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__tests__test_p8_runtime_cache.py.diff",
+        "new_bytes": 23273,
+        "new_sha256": "c4ec698532f033f6364441cad4f6f41a19b3b020ffd0845b4d0e3eebb8c281d2",
+        "old_bytes": 20087,
+        "old_sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
+        "path": "scripts/tests/test_p8_runtime_cache.py"
+      },
+      "finding": "All21 old functions remain AST-identical. Adds two controls showing exhausted-raw terminal sidecars retain identity/error metadata without copying nested response bodies or claiming replayable cache evidence; existing real-cache observation contracts are retained.",
+      "function_relation": {
+        "added": [
+          "CacheTerminalRetentionTests.test_exhausted_raw_sidecar_keeps_metadata_without_nested_response_bodies",
+          "CacheTerminalRetentionTests.test_failed_request_prefix_and_non_cache_terminal_metadata_are_preserved"
+        ],
+        "changed": [],
+        "path": "scripts/tests/test_p8_runtime_cache.py",
+        "removed": [],
+        "unchanged_functions": 21
+      },
+      "old_git": {
+        "blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/tests/test_p8_runtime_cache.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "0db559c8e6f84fe4c76abacffbff65b66066bd40",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "retained_and_extended",
+      "direct_diff": {
+        "changed_ast_units": [
+          "ReceiptFixture",
+          "RuntimeBuildBindingTests"
+        ],
+        "diff_bytes": 5023,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__tests__test_p8_runtime_evidence.py.diff",
+        "new_bytes": 15897,
+        "new_sha256": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
+        "old_bytes": 12695,
+        "old_sha256": "8983e7f682926ca612a932229c1a31e756864e0d84a1951c3ffd805804baa8bb",
+        "path": "scripts/tests/test_p8_runtime_evidence.py"
+      },
+      "finding": "All16 old test/helper functions other than the fixture initializer remain AST-identical. The synthetic receipt gains private target/fresh/toolchain fields and three negative controls for shared/reused targets, changed compiler bytes/selection and existing-target/config overrides.",
+      "function_relation": {
+        "added": [
+          "RuntimeBuildBindingTests.test_shared_target_or_fresh_workspace_artifact_cannot_pass",
+          "RuntimeBuildBindingTests.test_different_compiler_or_rewritten_compiler_bytes_are_rejected",
+          "RuntimeBuildBindingTests.test_private_environment_rejects_existing_target_and_overrides_build_configuration"
+        ],
+        "changed": [
+          "ReceiptFixture.__init__"
+        ],
+        "path": "scripts/tests/test_p8_runtime_evidence.py",
+        "removed": [],
+        "unchanged_functions": 16
+      },
+      "old_git": {
+        "blob": "fc9593f9c2fb3c9dabd2d5fe7d3e97556a8e53b5",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/tests/test_p8_runtime_evidence.py",
+      "unadopted_engineering_scope": []
+    },
+    {
+      "candidate_git": {
+        "blob": "c8b96fed01151dfdb0e7cf63a34c6e6a7eb708a1",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "classification": "replaced_identity_pins_only",
+      "direct_diff": {
+        "changed_ast_units": [
+          "assign:PRODUCT",
+          "assign:REGISTRY_SHA256",
+          "assign:REVIEW",
+          "assign:REVIEW_PATH"
+        ],
+        "diff_bytes": 997,
+        "diff_path": "review-pr/pr160-semantic-diffs/scripts__verify_reviewed_source_v15.py.diff",
+        "new_bytes": 11077,
+        "new_sha256": "9076ef4ae7d117d4868725fb7ff5dabf56bd850e5df8d0b049d2bbe0b72da6d6",
+        "old_bytes": 11076,
+        "old_sha256": "8b658bc21d4597b67085f31f61be63cedd3a99eacfdfac61a856b74a4916a63d",
+        "path": "scripts/verify_reviewed_source_v15.py"
+      },
+      "finding": "All15 functions are AST-identical; the complete file differs only in PRODUCT, REVIEW, REVIEW_PATH and REGISTRY_SHA256 assignment lines. BASE, VERSION, frozen files and validation logic remain unchanged. Old and new source-review identities must remain separate.",
+      "function_relation": {
+        "added": [],
+        "changed": [],
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "removed": [],
+        "unchanged_functions": 15
+      },
+      "old_git": {
+        "blob": "64d928e7f17b64c47c3810b9188a6b9059330155",
+        "kind": "blob",
+        "mode": "100644"
+      },
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "unadopted_engineering_scope": []
+    }
+  ],
+  "bibliography": [
+    "https://github.com/jyqj/codecortex/pull/160",
+    "https://github.com/jyqj/codecortex/pull/167",
+    "https://github.com/jyqj/codecortex/tree/260f596582f2d82b8d7c707b61a6b8b6a43b069f/artifacts/checkpoints/p8-completion-20261009",
+    "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/artifacts/checkpoints/p8-scale-cache-20261009/independent-source-review.json"
+  ],
+  "closure_recommendation": {
+    "can_close_now": false,
+    "conditional_decision": "PR160 can be closed as superseded for its fixed G4 scope after PR167 is fully accepted and merged, provided all preservation and identity conditions below are verified.",
+    "required_conditions": [
+      "PR160 head remains260f596582f2d82b8d7c707b61a6b8b6a43b069f; re-review any head drift before closure.",
+      "PR167's actual required original CI and affected full execution protocols succeed and original evidence is independently accepted for its exact frozen candidate; then verify the intended merge. This review does not substitute for150 scale shards, runtime, lifecycle, platform/recovery or original failure gates.",
+      "The merged product/validation scope must equal the reviewed a23 or have an explicit reviewed bridge; do not reuse a23 execution after a source change without the original identity/invalidation rules.",
+      "Preserve the existing remote branch task/p8-completion-20261009 at G4 and its Git history. Closing the draft is not permission to delete or rewrite that branch.",
+      "Retain permanent G4 links to the69 original archive paths and their blob inventory, including62 paths not present by blob in main/a23; do not call all69 adopted by main. Original failed/cancelled G/D0, G4 and D0 engineering records keep their original source/status.",
+      "The closing explanation links PR167, the18-path adoption review, original G4 head/archives and any continuing separate work. It does not mark original TODOs done or old measurements passed merely because the PR closes."
+    ],
+    "separate_continuation": {
+      "observed_in_pr160_body": true,
+      "pr": 168,
+      "scope": "The current PR160 body points to independent G1/P2 work in PR168. That later branch scope is outside this fixed G4 review; closing160 must not imply adopting or cancelling168, its new source changes or its evidence."
+    }
+  },
+  "inputs": [
+    {
+      "path": "review-pr/pr160-scope-adoption-inventory.json",
+      "sha256": "cb6e03a95dd29deb93682ae6084a6afa4e2a030f898699cd709701b84440e417"
+    },
+    {
+      "path": "review-pr/pr160-archive-preservation-by-blob.json",
+      "sha256": "b0e56af667676aaa83c78fb94542e616aa62d4795599dcb980f0a5e078019c25"
+    },
+    {
+      "path": "review-pr/pr160-semantic-diffs/inventory.json",
+      "sha256": "c22694ca8b9f66a5df1e3c3a2a87ac313d9890d0598872ae168cef1b77b7591f"
+    },
+    {
+      "path": "review-pr/pr160-semantic-diffs/function-adoption.json",
+      "sha256": "fd9ef2592b069b8b013f0256cb6d8ba36cff47896b2ca247505b92f9c384b3a9"
+    }
+  ],
+  "inventory": {
+    "archive_paths": 69,
+    "archive_status": "Uncopied archives remain at the unchanged G4 branch; no archive imported or deleted by this review",
+    "archives_preserved_in_candidate_by_blob": 7,
+    "archives_preserved_in_main_by_blob": 7,
+    "changed_pr_paths": 133,
+    "exact_candidate_non_archive_paths": 46,
+    "non_archive_paths": 64,
+    "reviewed_semantic_differences": 18
+  },
+  "observed_utc": "2026-10-09T03:13:50.779577+00:00",
+  "observer": "/root/execution_recon",
+  "old_product_delta_relation": {
+    "additional_candidate_delta_count": 9,
+    "complete_input_paths_removed": [],
+    "equivalent_changed_delta": [
+      "crates/cc-eval/src/benchmark/p8_scale.rs"
+    ],
+    "old_delta_count": 26,
+    "retained_same_delta": 25,
+    "validation_input_paths_removed": [],
+    "validation_paths_added": [
+      "scripts/tests/test_p8_backfill.py",
+      "scripts/tests/test_p8_runtime_finalization.py"
+    ]
+  },
+  "original_measurements_credited_to_a23_from_g4": 0,
+  "original_todos_closed": 0,
+  "overall_finding": "No unadopted engineering scope was identified among these18 paths. This does not accept a23 execution or archive preservation by main.",
+  "prior_review_reused": {
+    "complete_inputs": 1087,
+    "method": "Current G4/a23 blobs and actual18 diffs checked independently; prior source-admission review supplies the already-reviewed added controls and35-delta source scope, not execution credit.",
+    "path": "artifacts/checkpoints/p8-scale-cache-20261009/independent-source-review.json",
+    "product_deltas": 35,
+    "review": "3a11f30f9f00a89fe3cd481b3b7609066728baad",
+    "source": "254009277688d64677361a0ca33e5dea73f295ef",
+    "validation_inputs": 138,
+    "verdict": "accepted_scoped"
+  },
+  "refs": {
+    "candidate": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "main": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+    "pr160": "260f596582f2d82b8d7c707b61a6b8b6a43b069f"
+  },
+  "schema_version": 1,
+  "scope": "Read-only semantic adoption of the18 non-archive G4 PR160 paths that differ from fixed a23. No source, branch, PR or workflow mutation and no new product execution.",
+  "status": "accepted_scoped_semantic_adoption"
+}

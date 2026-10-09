@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "scope": "static_byte_and_manifest_verification_no_tests",
+  "g1": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "p2": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+  "g2": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+  "product_inputs": 1089,
+  "g1_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+  "p2_and_g2_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+  "product_delta_count": 1,
+  "product_delta": [
+    {
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "old": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
+      "new": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
+    }
+  ],
+  "validation_delta": [
+    {
+      "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+      "old": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991",
+      "new": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94"
+    },
+    {
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "old": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
+      "new": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079"
+    }
+  ],
+  "single_test_line_change": {
+    "line": 149,
+    "before": "collect::<rusqlite::Result<_>>()",
+    "after": "collect::<rusqlite::Result<Vec<String>>>()",
+    "bytes": 13586,
+    "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+    "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+    "exact_one_line_substitution": true
+  },
+  "guard": {
+    "only_PRODUCT_REVIEW_REGISTRY_SHA256_pins_changed": true,
+    "g1_git_blob": "3ea80c8605a32d8689f12c3ee11be6ac3acf4b01",
+    "g2_git_blob": "8899dedc2e1f7440ceb330a1a0cc6d3aa6cbc111"
+  },
+  "no_cargo_or_tests_run": true
+}

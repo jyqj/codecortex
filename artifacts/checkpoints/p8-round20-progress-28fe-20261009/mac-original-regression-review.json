@@ -1,0 +1,580 @@
+{
+  "schema": "codecortex-pr171-mac-supervisor-regression-independent-review-v1",
+  "observed_at": "2026-10-09 05:15:55 UTC",
+  "verdict": "confirmed_original_a23_Mac_regression_failure_root_cause_not_yet_separated",
+  "scope": "Read-only official Git records, complete443 PR path inventory and original archived text. No new native execution, reproduction, compile, test, source edit, protocol change, ref or comment.",
+  "identities": {
+    "archive_pr": 171,
+    "archive_head": "255e3b27b8fa1d82d5ebfb95b946cec8ee97528f",
+    "main_at_review": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "baseline": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "pr_scope": {
+      "api_pages": [
+        100,
+        100,
+        100,
+        100,
+        43
+      ],
+      "total": 443,
+      "all_added_in_single_archive_namespace": true,
+      "product_or_validation_changes": false
+    }
+  },
+  "actual_failure": {
+    "command": {
+      "allowed_scope": "Read-only fixed a23 source; writes limited to isolated target, Cargo dependency cache needed for this build, system temporary test directories, and this evidence directory.",
+      "argv": [
+        "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--workspace"
+      ],
+      "cargo_build_jobs": 4,
+      "cargo_target_dir": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/premerge-workspace-a23-rust195-sdk154-round5",
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/source",
+      "documented_command": "cargo test --workspace",
+      "ignored_tests_explicitly_enabled": false,
+      "original_ignored_benchmark_write_flags_removed": [
+        "CODECORTEX_WRITE_REAL_BENCHMARK",
+        "CODECORTEX_WRITE_BENCHMARK"
+      ],
+      "purpose": "Fill the documented original engineering workspace test command and doctest evidence gap. No scale/soak/TODO/release credit.",
+      "schema_version": 1,
+      "source_before_file": "source-before.json",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "stderr_file": "stderr.log",
+      "stdout_file": "stdout.log",
+      "toolchain_file": "toolchain.json"
+    },
+    "execution": {
+      "actual_argv": [
+        "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--workspace"
+      ],
+      "actual_cargo_exit_code": 101,
+      "complete_stderr": {
+        "bytes": 30625,
+        "path": "stderr.log",
+        "sha256": "bf490234cb5a6e8c9fa3cabb34203960421510302e8760f9d2e60886131e5f78"
+      },
+      "complete_stdout": {
+        "bytes": 73576,
+        "path": "stdout.log",
+        "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8"
+      },
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/source",
+      "does_not_certify_original_scale_or_todos": true,
+      "elapsed_ns": 330669868917,
+      "finished_at": "2026-10-09T04:21:41.418963+00:00",
+      "native_ignored_benchmarks_not_enabled": true,
+      "schema_version": 1,
+      "source_after": {
+        "bytes": 167151,
+        "path": "source-after.json",
+        "sha256": "88adb95cf28f28e39bb91bc8e17a55a9191202813a358770fd28b447a90eac98"
+      },
+      "source_after_clean": true,
+      "source_before": {
+        "bytes": 167151,
+        "path": "source-before.json",
+        "sha256": "63317208d562a04713daeb55611a00d3381963096d4981a98d91f45a23d968db"
+      },
+      "source_before_after_identical": true,
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "started_at": "2026-10-09T04:16:10.731471+00:00",
+      "status": "native_command_failure_or_source_identity_issue",
+      "target_dir": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/premerge-workspace-a23-rust195-sdk154-round5",
+      "task_ledger_changes": 0,
+      "toolchain_receipt": {
+        "path": "toolchain.json",
+        "sha256": "dbf96d009bf7e3763c6dfb4b7072a381e142ed1a2db55adbbe51344f1877dfbe"
+      }
+    },
+    "machine": "aarch64-apple-darwin, observed macOS26.6.2",
+    "rustc": "1.95.0 (59807616e2026-04-14)",
+    "sdk": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "native_test_binary": {
+      "bytes": 48774744,
+      "sha256": "d6cc286b3d031bd796b41a29c82669b51fa0011e1ce8f4d9fe86943859196ad7",
+      "original_output": "11 passed;1 failed;0 ignored",
+      "isolated_output": "0 passed;1 failed;11 filtered",
+      "isolated_exit": 101
+    },
+    "original_reports": [
+      {
+        "line": 1289,
+        "log": {
+          "bytes": 73576,
+          "path": "review-ci/premerge-workspace/attempt02-sdk154/stdout.log",
+          "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8"
+        },
+        "name": "full_workspace",
+        "native_test_exit_code": 101,
+        "report": {
+          "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+          "executed_repetition_range": {
+            "end": 1,
+            "start": 0
+          },
+          "exit_code": 3,
+          "fixture_cleanup": {
+            "elapsed_ms": 12,
+            "error": null
+          },
+          "full_100k_certification": "not_run",
+          "max_output_bytes": 16777216,
+          "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+          "profile": "smoke",
+          "raw_digest": null,
+          "registered_repetitions": 1,
+          "release_certification": "not_run",
+          "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+          "schema_version": 1,
+          "shard_only": false,
+          "status": "deadline_exceeded",
+          "stderr_complete": true,
+          "summary": null,
+          "wall_ms": 272,
+          "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_unchanged": true,
+          "worker_exit_code": null,
+          "worker_pid": 26131
+        }
+      },
+      {
+        "line": 3,
+        "log": {
+          "bytes": 1253,
+          "path": "review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+          "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b"
+        },
+        "name": "exact_isolated",
+        "native_test_exit_code": 101,
+        "report": {
+          "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+          "executed_repetition_range": {
+            "end": 1,
+            "start": 0
+          },
+          "exit_code": 3,
+          "fixture_cleanup": {
+            "elapsed_ms": 0,
+            "error": null
+          },
+          "full_100k_certification": "not_run",
+          "max_output_bytes": 16777216,
+          "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+          "profile": "smoke",
+          "raw_digest": null,
+          "registered_repetitions": 1,
+          "release_certification": "not_run",
+          "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+          "schema_version": 1,
+          "shard_only": false,
+          "status": "deadline_exceeded",
+          "stderr_complete": true,
+          "summary": null,
+          "wall_ms": 261,
+          "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_unchanged": true,
+          "worker_exit_code": null,
+          "worker_pid": 51832
+        }
+      }
+    ],
+    "persistent_original_supervisor_report": {
+      "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+      "executed_repetition_range": {
+        "end": 1,
+        "start": 0
+      },
+      "exit_code": 3,
+      "fixture_cleanup": {
+        "elapsed_ms": 0,
+        "error": null
+      },
+      "full_100k_certification": "not_run",
+      "max_output_bytes": 16777216,
+      "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+      "profile": "smoke",
+      "raw_digest": null,
+      "registered_repetitions": 1,
+      "release_certification": "not_run",
+      "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+      "schema_version": 1,
+      "shard_only": false,
+      "status": "deadline_exceeded",
+      "stderr_complete": true,
+      "summary": null,
+      "wall_ms": 263,
+      "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_unchanged": true,
+      "worker_exit_code": null,
+      "worker_pid": 83129
+    },
+    "identity": {
+      "source_before_after_inner_identity_exact": true,
+      "git_status_clean": true,
+      "product_inputs": 1087,
+      "product_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+      "validation_inputs": 138,
+      "validation_manifest_matched": true,
+      "note": "source-before/source-after original JSON hashes differ only because captured_at differs; compare inner identity, retain both original JSON bytes."
+    },
+    "initial_sdk27": "Separate link-before-tests exit101. Process-local SDK15.4 is supported by CONTRIBUTING59-69 and did not remove this later real test failure.",
+    "doctests": "not_reached"
+  },
+  "source_findings": {
+    "failing_test": {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "lines": [
+        478,
+        505
+      ],
+      "cfg": "unix, so bothmacOS andLinux compile the same original test",
+      "name": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+      "purpose": "worker exits0 after writing passed summary; descendant still holds stderr; original supervisor must terminate ownedgroup/drain without20s join",
+      "helper_bytes": 159,
+      "helper_sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae",
+      "assertions": {
+        "deadline_ms": 250,
+        "total_elapsed_seconds_lt": 2,
+        "exit_code": 0,
+        "stderr_complete": true,
+        "release_certification": "not_run"
+      }
+    },
+    "worker_dispatch": {
+      "supervisor": "crates/cc-eval/src/benchmark/p8_scale.rs:229",
+      "shell_literal": "crates/cc-eval/tests/p8_scale.rs:488",
+      "argv": [
+        "<exact stderr-holder.sh>",
+        "--worker-plan",
+        "<run/plan.json>",
+        "--output",
+        "<run>"
+      ],
+      "test_worker": "Direct executable shell script; this test does not dispatch through p8-scale CLI/run_worker or execute indexing/oracle.",
+      "normal_cli": "crates/cc-eval/src/bin/p8-scale.rs:93-98 recognizes --worker-plan and callsrun_worker;130 callsrun_supervised. That normal worker dispatch is bypassed by this test's explicit helper.",
+      "process_group": "unix CommandExt::process_group(0) at265-269;ChildGuard kills only fresh -workerpid group, kills/waits own child"
+    },
+    "clock_scope": {
+      "start_line": 270,
+      "spawn_line": 271,
+      "drain_thread_start_line": 289,
+      "deadline_check_lines": [
+        319,
+        323
+      ],
+      "try_wait_lines": [
+        324,
+        326
+      ],
+      "poll_ms": 10,
+      "summary_read_lines": [
+        358,
+        369
+      ],
+      "inference": "The250ms includes Command.spawn, interpreter/child startup and drain setup before the firstwait poll. No handshake establishes thehelper reached its functional scenario before timing it."
+    },
+    "history": [
+      {
+        "name": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "base": {
+          "line": 169,
+          "end_line": 194,
+          "sha256": "6f09a42d57f28d786e9937fe7f3e766c7d3a3c32e7068d126e7b4bb54f9033d0",
+          "bytes": 1246
+        },
+        "a23": {
+          "line": 480,
+          "end_line": 505,
+          "sha256": "6f09a42d57f28d786e9937fe7f3e766c7d3a3c32e7068d126e7b4bb54f9033d0",
+          "bytes": 1246
+        },
+        "identical": true
+      },
+      {
+        "name": "run_supervised",
+        "base": {
+          "line": 170,
+          "end_line": 342,
+          "sha256": "84ea9edbad20d94095771349b10875be14385fea819b984a432d06d9fedfcd8e",
+          "bytes": 7277
+        },
+        "a23": {
+          "line": 229,
+          "end_line": 403,
+          "sha256": "03a6f464e30725561d67f0f37bbdc447519ceae36cfdfb1b00fd3163f78f9271",
+          "bytes": 7424
+        },
+        "identical": false
+      }
+    ],
+    "supervisor_diff_from_baseline": [
+      {
+        "add": "        \"shard_only\":plan.shard.is_some(),",
+        "a23_function_line": 169
+      },
+      {
+        "add": "        \"registered_repetitions\":plan.repetitions,\"executed_repetition_range\":plan.repetition_range()?,",
+        "a23_function_line": 170
+      }
+    ],
+    "history_conclusion": "Exact failing1246-byte test function already exists atBASE169-194; A23480-505 is identical. Fullsupervisor differs only by2 report fields for shard/repetitions. Spawn/deadline/wait/groupkill/drain code is inherited. This proves source preexistence, not that aBASE Mac execution previously failed or passed.",
+    "known_platform_results": {
+      "actual_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "actual_ci_run_id": 37871838887,
+      "common_full_git_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "job_id": 113631480871,
+      "job_locator": "https://github.com/jyqj/codecortex/actions/runs/37871838887/job/113631480871",
+      "log": {
+        "bytes": 1063079,
+        "path": "review-ci/github-job-113631480871.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "original_native_test_results": [
+        {
+          "line": 2127,
+          "text": "2026-10-09T02:35:03.7157264Z test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+        },
+        {
+          "line": 8096,
+          "text": "2026-10-09T02:51:53.0922268Z test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+        }
+      ],
+      "schema_version": 1,
+      "scope": "Two original Linux CI passes remain passes. Their actual checkout is retained; shared full tree binds the tracked source to a23. Neither pass erases later Mac failures, and no Linux or Mac execution result is relabeled as the other platform.",
+      "toolchain_matching_log_lines": [
+        {
+          "line": 280,
+          "text": "2026-10-09T02:28:58.8242963Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)"
+        },
+        {
+          "line": 296,
+          "text": "2026-10-09T02:28:58.8654732Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)"
+        },
+        {
+          "line": 384,
+          "text": "2026-10-09T02:28:59.0565021Z rustc 1.99.0 (b940084d7 2026-09-28)"
+        }
+      ],
+      "tree_equivalence_receipt": {
+        "bytes": 4440,
+        "path": "review-ci/actual-ci-p7-checkout-tree-equivalence.json",
+        "sha256": "94ce1fac11d524417f0aec709f0182cae23a837d4246ef45464c67217e05c3e2"
+      }
+    },
+    "platform_limit": "OriginalLinux two passes useRust1.99.0; observedMac failure usesRust1.95.0. Platform/compiler effects are confounded. No evidence in these retained records proves a pastMac pass; do not claim there never was one."
+  },
+  "causal_bounds": {
+    "proven": [
+      "Original test function fails against fixedA23 twice, including isolated sameMachO; cannot explain solely by full-suiteparallelism.",
+      "Thirdpersistent observer links retainedA23rlib and keeps exacthelper,250ms,2s assertions; missing summary and emptystderr survive.",
+      "Failure is deadline_exceeded, not stderr_drain_deadline_exceeded; parent bounded return and process-groupcleanup succeeded.",
+      "The script writes summary only after argument parsing and starting a backgroundsleep. No summary means that write was not completed/preserved before termination; it does not identify how far earlier steps progressed."
+    ],
+    "not_proven": [
+      "Duration spent insideCommand.spawn versus child/interpreter launch.",
+      "Whether helper reached shell entry, backgroundlaunch orprintf; selectedenvironment does not capture every possible interpreter input.",
+      "Productsupervisorlogic defect versus a test fixture'sunproven sub250ms startup assumption on thishost.",
+      "SDK15.4/rootmemory/load are causes; recordedresource observations are not causal attribution.",
+      "Increasingdeadline, movingtry_wait first or resettingclock afterready repairs the original observedcase."
+    ],
+    "minimal_next_diagnostic": "Use the already declared separate directCommand observer on the originalMac, retaining exacthelper/argv/env/processgroup/stdio and original250ms cutoff. Record parent before/afterspawn, firstpoll, whether originalsummary exists and childexit timing. If additional helper markers are needed, their changedbytes must be a separately labeled diagnostic and cannot replace the3 originalfailures. This agent has not run or dispatched it."
+  },
+  "repair_recommendation": {
+    "current": "No unconditional productionpatch is justified yet. Preserve currentA23study source/budget and all originalfailures.",
+    "if_spawn_or_interpreter_startup_eats_budget": "Prefer a testfixture correction that removes avoidable shell/interpreter launch dependence while preserving the sameowned child/descendant/processgroup/heldstderr scenario and original250ms/2s/exit0/stderrcomplete assertions. A nativehelper may be a candidate only after actual sameplatform evidence, not a guaranteedrepair.",
+    "if_ready_handshake_is_considered": "Do not move run_supervised's productionclock pastready: it would waive startup from the original child-lifetimebudget. Aready handshake may support a separate internal already-started-child/drain test, with an explicitly bounded preparationphase, but cannot silently turn the failing publicrun_supervised test into a pass. Retain the original public whole-lifetime timeout test and itsraw/report/nonzero semantics; require independent review of any testreplacement.",
+    "required_retained_negative_coverage": [
+      "owned normal-exitworker plusdescendant holdsstderr for20s;under2sreturn;worker0 andcompleteEOF onlyafteractualownedgroupcleanup",
+      "genuinely blocked/slowworker exceeds fixeddeadline -> exit3,deadline_exceeded,partialraw/report retained",
+      "originaloutput reuse refused withoutoverwriting priorreport",
+      "stderr overflow/drain deadline remain non-success and sealedstderr cannotkeepmutating",
+      "bothLinux and affectedMac actualfixture/supervisorregressions;newresults separatefromoriginalfailures"
+    ],
+    "prohibited_shortcuts": [
+      "larger250ms deadline or2sassertion",
+      "unconditionalretry/bestof",
+      "Mac-specificignore/allowfail",
+      "acceptingdeadline_exceeded asnormalhelper success",
+      "using8freshbuild passes to erase runtime testfailure",
+      "newperformance orTODO gate invented from this diagnosis"
+    ]
+  },
+  "acceptance_impact": {
+    "original_tasks": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "rule": "Original tasks already require relevant old regressions; record thisknownfailure and resolve itsactualscope before claiming allrelatedregressions passed. Do not add a new blanketMac full-workspace releasegate beyond original policy.",
+    "existing_evidence_preserved": [
+      "Linuxsame-test passes",
+      "all8freshplatformbuilds",
+      "A23measuredmixed/lifecycle/soak/parity outcomes",
+      "A23originalscale study andeachshardidentity"
+    ],
+    "full_workspace_pass": false,
+    "original_todos_closed": 0,
+    "remaining": 29
+  },
+  "original_raw_locations": [
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json",
+      "git_blob": "0a98ec07b281e336bdd01457e661fe16a118b806",
+      "bytes": 1715,
+      "sha256": "572dc73ddb6c6a9e878190f958d7d222e0c77786c895dd5b84c3e1c9b658a3fc",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/command.json",
+      "git_blob": "da53138a0b2d1c15b4ddf14b273a6e592b4df562",
+      "bytes": 1243,
+      "sha256": "d1453b31e083dcb8787a366e72ea0aaaa2fe6eff9705d476735254b03baf3488",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/toolchain.json",
+      "git_blob": "af5b2daf7e5e5b2b2e16b56d6f85a51fada354d3",
+      "bytes": 3916,
+      "sha256": "dbf96d009bf7e3763c6dfb4b7072a381e142ed1a2db55adbbe51344f1877dfbe",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/environment-adjustment.json",
+      "git_blob": "22468ef9552da89416b7d19dba297454acd174cd",
+      "bytes": 2849,
+      "sha256": "0c1adcdd7fe9a1a32c42613ab87790ab0e92b43605691f5f68bcf66eca3bb64d",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/source-before.json",
+      "git_blob": "b9b561951c82b1e3054b87acd137163580e0bf32",
+      "bytes": 167151,
+      "sha256": "63317208d562a04713daeb55611a00d3381963096d4981a98d91f45a23d968db",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/source-after.json",
+      "git_blob": "bff405d75a7e9911b10a446e18cf3ce2680fa220",
+      "bytes": 167151,
+      "sha256": "88adb95cf28f28e39bb91bc8e17a55a9191202813a358770fd28b447a90eac98",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/stdout.log",
+      "git_blob": "65033012d53ae454f4975319ee7477b7ec22f15c",
+      "bytes": 73576,
+      "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/stderr.log",
+      "git_blob": "e694648d2be7c0f2cd597438dd02efda73c5dd16",
+      "bytes": 30625,
+      "sha256": "bf490234cb5a6e8c9fa3cabb34203960421510302e8760f9d2e60886131e5f78",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/command.json",
+      "git_blob": "0f1e1bc3f98822da43434b1ecb4d685a86168d72",
+      "bytes": 2652,
+      "sha256": "f562f38da661a7bff7e8c6cc6b2b89e9eb5a7783b3dc973d8ac9bd82e57a15d5",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/execution-receipt.json",
+      "git_blob": "de67c26083a4d86c26268f2257538a31b0db8f61",
+      "bytes": 1273,
+      "sha256": "86aea9a64753f4f179800a8f09d0ae0a4dac68dc7395d7041449b51c214f4d16",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/stdout.log",
+      "git_blob": "7867fc3890c971784dc3642a9a5f40f273d549fc",
+      "bytes": 283,
+      "sha256": "57ef4cdb5cd08a05ff985def9038f97ef0607e3dc4e657a555361f2a23b5a675",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+      "git_blob": "2acbce4b608e251192bbc24bebf8f79ee82917ee",
+      "bytes": 1253,
+      "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/binding.json",
+      "git_blob": "fd1dcc25c881bc3cf5d49190f207212f6afb74ed",
+      "bytes": 2829,
+      "sha256": "d4049264159b8a4e3280b6e31bf9870a3347f64d5c70abd2c1c57222780bfd11",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/execution-receipt.json",
+      "git_blob": "c20f049184b7101c28e4737856190e459465b105",
+      "bytes": 6000,
+      "sha256": "8fc2c130e9f121839c7d090492b47bb39c7cbc393629ecfe8336ecf52bed75cf",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/observer.rs",
+      "git_blob": "eb9d0b339e54122b8f092f8d56d763265612ffd6",
+      "bytes": 897,
+      "sha256": "534e995fde992824ceacab3a250e99080d2a0c70659ad1ef6370ed374121a9b8",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/stderr-holder.sh",
+      "git_blob": "52fef9e31920263bbfb40fd6de58ccc76d3caad0",
+      "bytes": 159,
+      "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/toolchain.json",
+      "git_blob": "1a9ef2672347a8371b1ec7c2b4326140a0bfbc82",
+      "bytes": 2166,
+      "sha256": "365c56bce3ffce97d41d8371da35bf46370471c2badbc75103633292df56ebfd",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/failure-assessment.json",
+      "git_blob": "345eb55b3dc503c901b963ea5f37ce93a244dea5",
+      "bytes": 9792,
+      "sha256": "c85e9fd8ead80d0fea4446f1955806e93e7aed710d79fccf8d95e011167b7bf0",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/linux-negative-test-comparison.json",
+      "git_blob": "8f3628cb069d5c46029a7b968b0b6e806ad295e5",
+      "bytes": 1768,
+      "sha256": "4b3317f52386244c154905758ac2e082d0695f42f79b83def12c6cc2a2390b28",
+      "bytes_read": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/preflight.json",
+      "git_blob": "84912a3c9effd41dcf41b8943666fc7f7c27a157",
+      "bytes": 9899,
+      "sha256": "eee995b35b35eef402529fd38eae2b0c815532837f19f4f498641a03e1eb8c09",
+      "bytes_read": true
+    }
+  ]
+}

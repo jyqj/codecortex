@@ -1,0 +1,91 @@
+--- G4/scripts/p8_cold_build.py
++++ a23/scripts/p8_cold_build.py
+@@ -590,10 +590,8 @@
+     return smoke
+ 
+ 
+-def selected_cell(matrix_path, cell):
+-    """Verify one CI selection without calling the other seven cells passed."""
+-    matrix_path = Path(matrix_path).resolve(strict=True)
+-    matrix = json.loads(matrix_path.read_text())
++def selected_inventory(matrix, cell):
++    """Check the complete original selection before following its receipt."""
+     expected = {(os_name, tc, pkg) for os_name in PLATFORMS for tc in TOOLCHAINS for pkg in PACKAGES}
+     rows = matrix.get("cells", [])
+     keys = [(r["cell"]["platform"], r["cell"]["toolchain"], r["cell"]["package"]) for r in rows]
+@@ -605,8 +603,16 @@
+     if any(row.get("status") != "not_run" or row.get("reason") not in {"platform_unavailable", "cell_not_selected"}
+            for row in rows if row["cell"] != cell):
+         raise ValueError("unselected matrix cells must remain explicitly not_run")
+-    receipt = Path(selected[0]["receipt"]).resolve(strict=True)
+-    if not receipt.is_relative_to(matrix_path.parent) or digest(receipt) != selected[0]["receipt_sha256"]:
++    return selected[0]
++
++
++def selected_cell(matrix_path, cell):
++    """Verify one CI selection without calling the other seven cells passed."""
++    matrix_path = Path(matrix_path).resolve(strict=True)
++    matrix = json.loads(matrix_path.read_text())
++    selected = selected_inventory(matrix, cell)
++    receipt = Path(selected["receipt"]).resolve(strict=True)
++    if not receipt.is_relative_to(matrix_path.parent) or digest(receipt) != selected["receipt_sha256"]:
+         raise ValueError("selected receipt is outside its matrix or has changed")
+     record = validate_cell(receipt)
+     if record["cell"] != cell or matrix["source"] != record["source_before"]:
+@@ -669,6 +675,17 @@
+                 or record.get("stop_reason") is not None or record.get("target_initially_absent") is not True
+                 or record.get("source_before") != record.get("source_after")):
+             raise ValueError("platform bundle contains an unpassed or warm cell")
++        if bundle.get("live_strict_receipt_and_stdio_replay") is not True:
++            raise ValueError("platform bundle is not an exported, verified cell")
++        matrix = json.loads((home / "matrix.json").read_text())
++        selected = selected_inventory(matrix, cell)
++        original_receipt = absolute_recorded_path(selected["receipt"], "original cell receipt")
++        if (original_receipt.name != "receipt.json"
++                or str(original_receipt.parent / "target") != record.get("target_directory")):
++            raise ValueError("command target directory differs from receipt ownership")
++        if (digest(home / "receipt.json") != selected["receipt_sha256"]
++                or matrix["source"] != record["source_before"]):
++            raise ValueError("exported selection/source does not match its receipt")
+         identity = dict(record["source_before"])
+         identity["source_root"] = source["source_root"]
+         if identity != source or json.loads((home / "source-inputs.json").read_text()) != manifest:
+@@ -813,23 +830,22 @@
+             if not args.expected_commit or not args.output_dir:
+                 parser.error("collect requires --expected-commit and --output-dir")
+             output = new_directory(args.output_dir)
++            record = dict(schema_version=2, task="P8-012", status="invalid", exit_code=2,
++                          expected_commit=args.expected_commit,
++                          input_directory=str(args.collect_cells.absolute()),
++                          runner_sha256=digest(__file__),
++                          scope="platform evidence replay; failed or incomplete collection cannot certify any matrix")
+             try:
+-                record = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
+-            except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+-                # Only this invocation's newly created directory is writable.
+-                # Incomplete validation says nothing about whether individual
+-                # producer cells ran; do not invent per-cell result counts.
+-                write_json(output / "matrix.json", dict(
+-                    schema_version=1, task="P8-012", status="invalid",
+-                    scope="failed collection only; no platform or release certification",
+-                    requested_commit=args.expected_commit, requested_source_root=str(args.source_root),
+-                    artifact_directory=str(args.collect_cells), runner_sha256=digest(__file__),
+-                    expected_cell_count=8, counts=None,
+-                    error=f"{type(error).__name__}: {error}"))
+-                raise
+-            write_json(output / "matrix.json", record)
+-            print(json.dumps(dict(status=record["status"], counts=record["counts"])))
+-            return 0
++                collected = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
++                record.update(collected, exit_code=0)
++            except BaseException as error:
++                if isinstance(error, (KeyboardInterrupt, SystemExit)):
++                    record.update(status="cancelled", exit_code=3)
++                record["error"] = f"{type(error).__name__}: {error}"
++            finally:
++                write_json(output / "matrix.json", record)
++            print(json.dumps({key: record[key] for key in ("status", "exit_code", "counts", "error") if key in record}))
++            return record["exit_code"]
+         if args.verify:
+             record = validate_cell(args.verify)
+             print(json.dumps(dict(status="verified", cell=record["cell"])))

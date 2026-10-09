@@ -1,0 +1,1052 @@
+{
+  "schema_version": 1,
+  "status": "accepted_delegated_platform_recovery_rollback_failure_gate_scopes",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T03:12:07.148525+00:00",
+  "executed_source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "executed_source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+  "complete_product_inputs": 1087,
+  "product_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+  "source_is_read_only_and_unchanged": true,
+  "source_admission_plan": {
+    "path": "source/artifacts/checkpoints/p8-scale-cache-20261009/source-admission/combined-original-protocol-acceptance-plan.json",
+    "bytes": 23309,
+    "sha256": "888ffcba8d282d03eb39dec37bad9939c915eee7af51781bc647ebba955b35ca"
+  },
+  "original_acceptance_groups": [
+    {
+      "acceptance": [
+        "Original local kill/restart,SQLitebusy,deleted-source cases against bound actual product.",
+        "Three active loopback HTTP seeds cover disconnect/recover,semantic-cache corruption,rejected unknown cache format and concurrent database replacement, with original source/native receipts and every raw response.",
+        "Seven original nonignored production-linked persistence/cache isolation/crash and writer-lock tests retain exact built executables/argv/Cargo origins and actual results.",
+        "Default/semantic bounded database+config+package rollback and actual fixed historical version pair current->old schema24->current->original backup; original source/config hashes unchanged.",
+        "Disable semantic then local search available; do not claim live-provider failover, actual paidcost=0, released-package rollback or arbitrary device powerloss.",
+        "Old local unknown-format not_run remains literal history; closure comes from actual active cases and original artifact_cache tests, not relabeling it."
+      ],
+      "commands": [
+        "python3 -m unittest discover -s scripts/tests -p test_p8_recovery.py -v",
+        "python3 scripts/p8_recovery.py --full-matrix --expected-commit \"$EXACT_SOURCE\" --previous-source-root \"$GITHUB_WORKSPACE/p8-previous-source\" --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --jobs 2 --output-dir \"$RUNNER_TEMP/p8-full-recovery\""
+      ],
+      "fixed_dimensions": {
+        "active_seeds": [
+          223,
+          227,
+          229
+        ],
+        "job_timeout_minutes": 45,
+        "jobs": 2,
+        "original_production_fault_tests": 7,
+        "packages": [
+          "default",
+          "semantic",
+          "semantic-http"
+        ],
+        "previous_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5"
+      },
+      "id": "recovery_rollback",
+      "job": "recovery",
+      "status": "not_run_for_combined_source",
+      "tasks": [
+        "P8-011",
+        "P8-016"
+      ],
+      "workflow": "p8-platform.yml"
+    },
+    {
+      "acceptance": [
+        "All8 distinct actual host/toolchain/package release cold builds and native stdio; fresh owned target means compiler artifact cold, not OS cache cold.",
+        "Single-cell original CLI exit2 due other7 not_run is accepted only with strict successful source/compiler/binary/rawRPC/EOF selection+export; never treat one host as whole matrix.",
+        "Strict portable v2 including live receipt replay flag, original full matrix selected inventory/receipt SHA/owned target/new collector contract; raw export original bytes and both16 artifacts retained.",
+        "Final actual exact-source collector8 passed/0failed/0not_run; original collector log/receipt separately accepted.",
+        "Stable toolchain actual observed version retained, not silently assumed; two package release configuration builds are not publication certification."
+      ],
+      "commands": [
+        "python3 -m unittest discover -s scripts/tests -p test_p8_platform*.py -v",
+        "python3 scripts/p8_cold_build.py --execute --stdio-smoke --only-toolchain TOOLCHAIN --only-package PACKAGE --profile release --jobs 2 --timeout-seconds 1800 --output-dir \"$RUNNER_TEMP/p8-platform/cold\"",
+        "python3 scripts/p8_cold_build.py --export-selected \"$RUNNER_TEMP/p8-platform/cold/matrix.json\" --only-platform PLATFORM --only-toolchain TOOLCHAIN --only-package PACKAGE --output-dir \"$RUNNER_TEMP/p8-platform/bundle\"",
+        "python3 scripts/p8_cold_build.py --collect-cells \"$RUNNER_TEMP/p8-platform-cells\" --expected-commit \"$EXACT_SOURCE\" --output-dir \"$RUNNER_TEMP/p8-platform-complete\""
+      ],
+      "fixed_dimensions": {
+        "build_timeout_seconds": 1800,
+        "cell_job_timeout_minutes": 45,
+        "cells": 8,
+        "collector_job_timeout_minutes": 10,
+        "jobs": 2,
+        "package": [
+          "default",
+          "semantic"
+        ],
+        "platform": [
+          "linux",
+          "macos"
+        ],
+        "profile": "release",
+        "toolchain": [
+          "1.95",
+          "stable"
+        ]
+      },
+      "id": "platform",
+      "job": "cold-build plus complete-matrix",
+      "status": "not_run_for_combined_source",
+      "tasks": [
+        "P8-012",
+        "P8-016"
+      ],
+      "workflow": "p8-platform.yml"
+    },
+    {
+      "acceptance": [
+        "All6 original production-linked benchmark_cli tests and retained built CLI/original fixtures; distinguish library assertions from actual CLI processes.",
+        "Independent actual retained CLI replays: quality/latency failed exit1; insufficient or zero latency denominator inconclusive exit1; raw-lock drift/badpolicy invalid_measurement exit2.",
+        "Zero plan invalid and output overwrite refusal preserve original raw bytes; no reports silently replaced.",
+        "Deterministic control success does not establish measured quality, benchmark performance or release approval."
+      ],
+      "commands": [
+        "python3 scripts/p8_gate_controls.py --output \"$RUNNER_TEMP/p8-gates\" --target \"$RUNNER_TEMP/p8-gates-target\""
+      ],
+      "fixed_dimensions": {
+        "job_timeout_minutes": 40,
+        "original_nonignored_tests": 6
+      },
+      "id": "failure_gates",
+      "job": "gate_controls",
+      "status": "not_run_for_combined_source",
+      "tasks": [
+        "P8-013"
+      ],
+      "workflow": "p8-gates.yml"
+    }
+  ],
+  "group_status_note": "The verbatim original prospective groups above retain historical not_run_for_combined_source. Accepted actual results are in this report and its bound original evidence; historical files are not rewritten.",
+  "task_definition_source": {
+    "path": "source/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 802282,
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+  },
+  "task_mapping": [
+    {
+      "original_task": {
+        "id": "P8-011",
+        "title": "端到端故障与恢复认证",
+        "status": "in_progress",
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ]
+      },
+      "original_acceptance_groups": [
+        "recovery_rollback"
+      ],
+      "delegated_scope_status": "accepted",
+      "findings": [
+        "Three original local cases cover owned process kill/restart, actual SQLite busy failure then successful recovery, and deleted-source non-resurrection.",
+        "Three active native loopback HTTP seeds 223/227/229 each cover disconnect/recover, corrupted semantic cache, active unknown-format rejection, and concurrent database replacement with raw lane/freshness/incarnation witnesses.",
+        "Seven original production-linked fault/cache isolation tests actually passed; all 495 sealed evidence files and before/after exact source/observer identities accepted."
+      ],
+      "remaining_formal_gates_and_scope_limits": [
+        "P7-020, P8-007 and P8-010 dependencies require parent final adjudication.",
+        "Loopback fake provider billing/token fields stay null; no paid-provider or arbitrary power-loss claim."
+      ],
+      "status_action": "no_change"
+    },
+    {
+      "original_task": {
+        "id": "P8-012",
+        "title": "MSRV与平台冷构建矩阵",
+        "status": "in_progress",
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "depends_on": [
+          "P8-011"
+        ]
+      },
+      "original_acceptance_groups": [
+        "platform"
+      ],
+      "delegated_scope_status": "accepted",
+      "findings": [
+        "Eight distinct native Linux x86_64 / macOS arm64, 1.95 / stable, default / semantic release builds used fresh owned targets; rustc stable actually 1.99.0 and MSRV 1.95.0.",
+        "Each original job passed 59 Python controls and actual native stdio smoke; single-cell exit 2 remains incomplete history followed by exact strict selection/export.",
+        "Original collector job completed success and an independent run of the unchanged original collector returned actual exit 0, 8 passed / 0 failed / 0 not_run; only transport directory fields differ from original CI receipt."
+      ],
+      "remaining_formal_gates_and_scope_limits": [
+        "P8-011 dependency requires parent final adjudication.",
+        "Fresh target proves compiler artifact cold, not OS-cache cold; these two release configurations are not release publication certification."
+      ],
+      "status_action": "no_change"
+    },
+    {
+      "original_task": {
+        "id": "P8-013",
+        "title": "指标/门槛与失败退出最终认证",
+        "status": "in_progress",
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ],
+        "depends_on": [
+          "P8-012"
+        ]
+      },
+      "original_acceptance_groups": [
+        "failure_gates"
+      ],
+      "delegated_scope_status": "accepted",
+      "findings": [
+        "All six original benchmark_cli tests actually executed, preserving library-only zero-plan assertion identity.",
+        "Exact original retained ELF on compatible pinned Linux amd64 image actually replayed seven CLI scenarios: quality/latency failure and insufficient/zero-latency inconclusive all exit 1; raw-lock drift, bad policy and output overwrite refusal all exit 2.",
+        "All 337 original artifact files and all 287 copied fixture files remain byte-identical, with each stdout/stderr/output retained."
+      ],
+      "remaining_formal_gates_and_scope_limits": [
+        "P8-012 dependency and full benchmark/quality acceptance remain parent-owned.",
+        "Deterministic fixture controls prove failure behavior, not measured performance/quality success; Docker compatibility replay is not a native platform or benchmark run."
+      ],
+      "status_action": "no_change"
+    },
+    {
+      "original_task": {
+        "id": "P8-016",
+        "title": "数据库/配置/包回滚演练",
+        "status": "in_progress",
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ]
+      },
+      "original_acceptance_groups": [
+        "recovery_rollback",
+        "platform"
+      ],
+      "delegated_scope_status": "accepted",
+      "findings": [
+        "Original controlled schema 25 -> 1025 -> 25 -> 25 rollback and actual unmodified historical current -> old schema 24 -> current -> original backup were source-bound and replayed.",
+        "All 14 byte-copied database snapshots passed original-equivalent read-only SQL checks with integrity ok and no foreign-key errors; immutable reads were permitted only after proving no nonempty WAL.",
+        "Actual semantic-disable/default-package local search, active unknown-format cache rejection, backup restoration, and unchanged original user-source/config/DB bytes were independently verified."
+      ],
+      "remaining_formal_gates_and_scope_limits": [
+        "P7-020, P8-012 and P8-013 dependencies require parent final adjudication.",
+        "Historical source pair a23 / 277f249 is explicit; no released-package rollback claim; old inactive cache-reader not_run remains preserved."
+      ],
+      "status_action": "no_change"
+    }
+  ],
+  "formal_task_completion": false,
+  "todo_status_change": false,
+  "ledger_observed_at_executed_source": {
+    "total": 192,
+    "status_counts": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "done": 163,
+    "remaining": 29
+  },
+  "core_evidence": [
+    {
+      "path": "review-platform/platform-eight-cell-collector-audit.json",
+      "bytes": 27135,
+      "sha256": "4aa43978287f8eefb1a9aafa276f432cce01c402d9266a89abeecfa174da725f"
+    },
+    {
+      "path": "review-platform/gates-original-case-audit.json",
+      "bytes": 7515,
+      "sha256": "70d30efa218bab09ab4cd35ca535a5ed6283070c40ccd7f7d95a42219b8242b0"
+    },
+    {
+      "path": "review-platform/gates-retained-cli/replay-report-v2.json",
+      "bytes": 75719,
+      "sha256": "a8a8e4775981e2c188841abb236ca5dd3fd0e2ae371531f0ee0a80c7315d3841"
+    },
+    {
+      "path": "review-platform/recovery-provenance-audit.json",
+      "bytes": 5861,
+      "sha256": "a6b101cc17c75882df54e190dac1dbec8352be3aa62572fb904dd0fccbd8591c"
+    },
+    {
+      "path": "review-platform/recovery-raw-event-audit.json",
+      "bytes": 6317,
+      "sha256": "45e5ef47e598ef26b943b9540cafde0190e520bd3c7e3df2389b74287c980521"
+    },
+    {
+      "path": "review-platform/recovery-database-rollback-audit.json",
+      "bytes": 15267,
+      "sha256": "193d6124e28f19d1b5ffc3a504ea0e589a72d72c3834a1deba6275a88634fb26"
+    },
+    {
+      "path": "review-platform/github-terminal-snapshots.json",
+      "bytes": 65680,
+      "sha256": "736823b97fc803d425d0ed6adaebf36e36f83431eee213529dca32cb98475c22"
+    }
+  ],
+  "original_artifact_references": [
+    {
+      "artifact_id": 11591108235,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-macos-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591108235/original.zip",
+      "zip_bytes": 8270537,
+      "zip_sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591108235",
+      "materialization_records": [
+        "raw/11591108235/github-metadata.json",
+        "raw/11591108235/transport-receipt.json",
+        "raw/11591108235/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591134950,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-macos-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591134950/original.zip",
+      "zip_bytes": 8119563,
+      "zip_sha256": "4efe84c6c696fb5062f087ffdd11e74909d2e184f4693b8fa8b71c3dbabefc26",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591134950",
+      "materialization_records": [
+        "raw/11591134950/github-metadata.json",
+        "raw/11591134950/transport-receipt.json",
+        "raw/11591134950/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591159319,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-macos-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591159319/original.zip",
+      "zip_bytes": 8351887,
+      "zip_sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591159319",
+      "materialization_records": [
+        "raw/11591159319/github-metadata.json",
+        "raw/11591159319/transport-receipt.json",
+        "raw/11591159319/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591229630,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-macos-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591229630/original.zip",
+      "zip_bytes": 8031708,
+      "zip_sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591229630",
+      "materialization_records": [
+        "raw/11591229630/github-metadata.json",
+        "raw/11591229630/transport-receipt.json",
+        "raw/11591229630/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591239060,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-macos-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591239060/original.zip",
+      "zip_bytes": 8439233,
+      "zip_sha256": "978b8a942e755de19940ca4261bd9890d801df97859c7b87b4afccc6c93c9590",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591239060",
+      "materialization_records": [
+        "raw/11591239060/github-metadata.json",
+        "raw/11591239060/transport-receipt.json",
+        "raw/11591239060/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591593757,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-linux-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591593757/original.zip",
+      "zip_bytes": 8855746,
+      "zip_sha256": "bf38be0350645ec03998d3ec06601c4cd654fcbd40b46b6cbf724b5977d7cb6c",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591593757",
+      "materialization_records": [
+        "raw/11591593757/github-metadata.json",
+        "raw/11591593757/transport-receipt.json",
+        "raw/11591593757/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591671795,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-macos-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591671795/original.zip",
+      "zip_bytes": 8358424,
+      "zip_sha256": "4d35f9831c003f47d0341efeb17a0c56d58b7423df1fecf54d6a76d9a4d23347",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591671795",
+      "materialization_records": [
+        "raw/11591671795/github-metadata.json",
+        "raw/11591671795/transport-receipt.json",
+        "raw/11591671795/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591733636,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-linux-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591733636/original.zip",
+      "zip_bytes": 8768177,
+      "zip_sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591733636",
+      "materialization_records": [
+        "raw/11591733636/github-metadata.json",
+        "raw/11591733636/transport-receipt.json",
+        "raw/11591733636/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11591809454,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-macos-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11591809454/original.zip",
+      "zip_bytes": 8692936,
+      "zip_sha256": "e622e79505c4dcd4eece153daa01ca1e884a1e3570b29d32958ff2a24d6b91c1",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11591809454",
+      "materialization_records": [
+        "raw/11591809454/github-metadata.json",
+        "raw/11591809454/transport-receipt.json",
+        "raw/11591809454/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592146562,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-full-recovery-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592146562/original.zip",
+      "zip_bytes": 121408707,
+      "zip_sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592146562",
+      "materialization_records": [
+        "raw/11592146562/github-metadata.json",
+        "raw/11592146562/transport-receipt.json",
+        "raw/11592146562/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592169160,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-linux-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592169160/original.zip",
+      "zip_bytes": 8806783,
+      "zip_sha256": "fdbf8742878eadf3d998fc61c697d496dab9e6d063f436e6fc2d9e649efc0d24",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592169160",
+      "materialization_records": [
+        "raw/11592169160/github-metadata.json",
+        "raw/11592169160/transport-receipt.json",
+        "raw/11592169160/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592180029,
+      "run_id": 37871838927,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-gates-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592180029/original.zip",
+      "zip_bytes": 32985345,
+      "zip_sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838927/artifacts/11592180029",
+      "materialization_records": [
+        "raw/11592180029/github-metadata.json",
+        "raw/11592180029/transport-receipt.json",
+        "raw/11592180029/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592403011,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-linux-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592403011/original.zip",
+      "zip_bytes": 9055930,
+      "zip_sha256": "7467a0702d78744c7a47226a6c955bbbff7ad1405a34935b7dc6c909df05157f",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592403011",
+      "materialization_records": [
+        "raw/11592403011/github-metadata.json",
+        "raw/11592403011/transport-receipt.json",
+        "raw/11592403011/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592442010,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-linux-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592442010/original.zip",
+      "zip_bytes": 9022522,
+      "zip_sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592442010",
+      "materialization_records": [
+        "raw/11592442010/github-metadata.json",
+        "raw/11592442010/transport-receipt.json",
+        "raw/11592442010/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592465349,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-macos-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592465349/original.zip",
+      "zip_bytes": 8605542,
+      "zip_sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592465349",
+      "materialization_records": [
+        "raw/11592465349/github-metadata.json",
+        "raw/11592465349/transport-receipt.json",
+        "raw/11592465349/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592498371,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-complete-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592498371/original.zip",
+      "zip_bytes": 1504,
+      "zip_sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592498371",
+      "materialization_records": [
+        "raw/11592498371/github-metadata.json",
+        "raw/11592498371/transport-receipt.json",
+        "raw/11592498371/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592596644,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-raw-linux-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592596644/original.zip",
+      "zip_bytes": 9110120,
+      "zip_sha256": "e2a666084a6b558d14a6fbabd98c5b7bf9820eafa22f37b6ebc8d704a7299d47",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592596644",
+      "materialization_records": [
+        "raw/11592596644/github-metadata.json",
+        "raw/11592596644/transport-receipt.json",
+        "raw/11592596644/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592750594,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-linux-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592750594/original.zip",
+      "zip_bytes": 8719713,
+      "zip_sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592750594",
+      "materialization_records": [
+        "raw/11592750594/github-metadata.json",
+        "raw/11592750594/transport-receipt.json",
+        "raw/11592750594/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    },
+    {
+      "artifact_id": 11592990763,
+      "run_id": 37871838952,
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "name": "p8-platform-cell-linux-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_zip_path": "raw/11592990763/original.zip",
+      "zip_bytes": 8968832,
+      "zip_sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214",
+      "github_url": "https://github.com/jyqj/codecortex/actions/runs/37871838952/artifacts/11592990763",
+      "materialization_records": [
+        "raw/11592990763/github-metadata.json",
+        "raw/11592990763/transport-receipt.json",
+        "raw/11592990763/zip-members.json"
+      ],
+      "archive_action": "reference existing preserved original ZIP; do not duplicate"
+    }
+  ],
+  "platform": {
+    "native_cells": 8,
+    "collector_counts": {
+      "failed": 0,
+      "not_run": 0,
+      "passed": 8
+    },
+    "collector_original_job_id": 113646688067,
+    "collector_replay_exit_code": 0,
+    "cells": [
+      {
+        "cell": {
+          "package": "default",
+          "platform": "linux",
+          "toolchain": "1.95"
+        },
+        "job_id": 113631480900,
+        "cell_artifact_id": 11591733636,
+        "raw_artifact_id": 11591593757,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "x86_64-unknown-linux-gnu",
+        "rustc_release": "1.95.0",
+        "binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a",
+        "binary_bytes": 27061208,
+        "wall_seconds": 181.76679331900002,
+        "bundle_sha256": "bb19c93b31ec354c22325d6ac526d019c55f891d4e9175675b202059808b5ae4",
+        "receipt_sha256": "3e983c02e19b708d0b8c8b9713d5e0a3e154fca7a03b684674d3c4a32a43905f",
+        "job_log_sha256": "bde6a4b284fd1de6d51107546d6b42a80fe289c6d38fa07ecc3905c894c03f0b"
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "linux",
+          "toolchain": "1.95"
+        },
+        "job_id": 113631480999,
+        "cell_artifact_id": 11592442010,
+        "raw_artifact_id": 11592596644,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "x86_64-unknown-linux-gnu",
+        "rustc_release": "1.95.0",
+        "binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c",
+        "binary_bytes": 27631480,
+        "wall_seconds": 237.44014904699998,
+        "bundle_sha256": "3f885378f4a3b7bbe10e212d05fc2e83d3c3e6dc5e0692305192bf7a513880da",
+        "receipt_sha256": "fbe1adeaf18c926eabe54e2d56b9d73dd948e4f5a9ef7377054f0539d68eb77d",
+        "job_log_sha256": "cabeb0df90a25c2752cfa0cb1fddc6bf880a430cf5d34e2ce043595c727c1939"
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "linux",
+          "toolchain": "stable"
+        },
+        "job_id": 113631481002,
+        "cell_artifact_id": 11592750594,
+        "raw_artifact_id": 11592169160,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "x86_64-unknown-linux-gnu",
+        "rustc_release": "1.99.0",
+        "binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404",
+        "binary_bytes": 26946648,
+        "wall_seconds": 224.653002578,
+        "bundle_sha256": "55119f1838b28e2997029aed215e7b404d19e8afa7aa072eb34cbf95eb3510ab",
+        "receipt_sha256": "1036a44ba264327924608e8b9448720a7233994849a87b845f148fb4ba9bc4d4",
+        "job_log_sha256": "3bd726b9df7dcd32a0a8033f61b411f81a7f3afb7143a1211f08223bef1495a3"
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "linux",
+          "toolchain": "stable"
+        },
+        "job_id": 113631481011,
+        "cell_artifact_id": 11592990763,
+        "raw_artifact_id": 11592403011,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "x86_64-unknown-linux-gnu",
+        "rustc_release": "1.99.0",
+        "binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66",
+        "binary_bytes": 27509272,
+        "wall_seconds": 161.096919436,
+        "bundle_sha256": "1dba3314ded854913dec5c09719e2b545d84f15c30ce85a09b70d68ad6c4ab24",
+        "receipt_sha256": "ced16f9e902ac69c478c8853b765b1aca68ac7ec267b592079be7a78df8a0245",
+        "job_log_sha256": "02b79147dfbfb97abcd105ff3d3da65864c1357b1182bd3a7fc15dab8c49ae59"
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "macos",
+          "toolchain": "1.95"
+        },
+        "job_id": 113631481350,
+        "cell_artifact_id": 11591229630,
+        "raw_artifact_id": 11591134950,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "aarch64-apple-darwin",
+        "rustc_release": "1.95.0",
+        "binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f",
+        "binary_bytes": 23867360,
+        "wall_seconds": 305.727865542,
+        "bundle_sha256": "1e6ef1ede5e1755b973f6078f477fc3aeea76cf76d35ec7816975d0bf4544a82",
+        "receipt_sha256": "802d124a21ce135a1b545f04654d82c2cfa5dc2b2469d258e4d10315de994704",
+        "job_log_sha256": "a53cbc765508ce3a9aad6d743a2dc905132642e1c2566dcd7b8becb17d1ad467"
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "macos",
+          "toolchain": "1.95"
+        },
+        "job_id": 113631481010,
+        "cell_artifact_id": 11591108235,
+        "raw_artifact_id": 11591671795,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "aarch64-apple-darwin",
+        "rustc_release": "1.95.0",
+        "binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68",
+        "binary_bytes": 24355872,
+        "wall_seconds": 207.90119804199992,
+        "bundle_sha256": "59a2a9698d718f670b4e7a9efb81c7cefb14dd3a1c45c1fd2b338780eef6cf59",
+        "receipt_sha256": "41de4702aa623a6639abe12971aa9e516802910203b2de24c4347c60a6cae2fd",
+        "job_log_sha256": "c148c6cb5b901b3bde451f986bfaed549c051b5aef131d9bff6a8b7f0854d43d"
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "macos",
+          "toolchain": "stable"
+        },
+        "job_id": 113631480988,
+        "cell_artifact_id": 11591159319,
+        "raw_artifact_id": 11591239060,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "aarch64-apple-darwin",
+        "rustc_release": "1.99.0",
+        "binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150",
+        "binary_bytes": 26553064,
+        "wall_seconds": 307.48002308400004,
+        "bundle_sha256": "63292f4a865b6384553dfd471cc02525f1da6aa590d8e3ee21f51efea492c7f6",
+        "receipt_sha256": "36656bf1ac70fa86620140ea28d27d478bcf519c66cbbad361bccbc892a82345",
+        "job_log_sha256": "63cf95ad11a92a689bf37eeca80f8bf532ddb371cc0e96cec30c90d9605ff111"
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "macos",
+          "toolchain": "stable"
+        },
+        "job_id": 113631481070,
+        "cell_artifact_id": 11592465349,
+        "raw_artifact_id": 11591809454,
+        "original_control_count": 59,
+        "original_controls_status": "OK",
+        "cell_cli_exit_code": 2,
+        "selected_export_exit_code": 0,
+        "profile": "release",
+        "host": "aarch64-apple-darwin",
+        "rustc_release": "1.99.0",
+        "binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f",
+        "binary_bytes": 27152760,
+        "wall_seconds": 262.38607125000004,
+        "bundle_sha256": "f6bc36deb8878236766ddfdd73509a37bdd83214d715150488ab34c70cc4b84f",
+        "receipt_sha256": "5bda5a038a92330d6e3671ec4c8d2ccb5e178d084d6b2a3a470e10379cd38138",
+        "job_log_sha256": "4c0c5a69256c50a1a02b179162e448f0955886ae70a5421d09d0ad5e96204263"
+      }
+    ]
+  },
+  "failure_gates": {
+    "actual_original_test_count": 6,
+    "actual_independent_cli_replays": 7,
+    "cases": [
+      {
+        "case": "quality_failed",
+        "expected_exit_code": 1,
+        "actual_exit_code": 1,
+        "expected_status": "failed",
+        "actual_status": "failed",
+        "output_sha256": "3eb616998568a4b54efe4d6d6cbf401c60b4ed02d19780a1bd0d1f99e586d6a2"
+      },
+      {
+        "case": "latency_failed",
+        "expected_exit_code": 1,
+        "actual_exit_code": 1,
+        "expected_status": "failed",
+        "actual_status": "failed",
+        "output_sha256": "e4e06446ee049ad6f32da94ef4cec7a9caa20389a6e33c51acd3ee88f6e8b1ec"
+      },
+      {
+        "case": "insufficient_samples",
+        "expected_exit_code": 1,
+        "actual_exit_code": 1,
+        "expected_status": "inconclusive",
+        "actual_status": "inconclusive",
+        "output_sha256": "a0bba99b39f560b5f12385f8a6566cbadf0d88ade2e717c0cf0e160781eba549"
+      },
+      {
+        "case": "zero_latency_denominator",
+        "expected_exit_code": 1,
+        "actual_exit_code": 1,
+        "expected_status": "inconclusive",
+        "actual_status": "inconclusive",
+        "output_sha256": "e4b10415f9b0b53ba465fb6da6f6a3aa7319dbaf5ebb109fc13b42ce65115f1a"
+      },
+      {
+        "case": "raw_lock_drift",
+        "expected_exit_code": 2,
+        "actual_exit_code": 2,
+        "expected_status": "invalid_measurement",
+        "actual_status": "invalid_measurement",
+        "output_sha256": "d8cfe3faef88fc15143b56497b13c64db746b5e4e863ac4ae0ccae245d5c69e6"
+      },
+      {
+        "case": "bad_policy",
+        "expected_exit_code": 2,
+        "actual_exit_code": 2,
+        "expected_status": "invalid_measurement",
+        "actual_status": "invalid_measurement",
+        "output_sha256": "951b5b7744e162c61437ab82819993c43c3e7b32cf2b09cae5b2920a2db41248"
+      },
+      {
+        "case": "output_overwrite_refusal",
+        "expected_exit_code": 2,
+        "actual_exit_code": 2,
+        "output_before_sha256": "951b5b7744e162c61437ab82819993c43c3e7b32cf2b09cae5b2920a2db41248",
+        "output_after_sha256": "951b5b7744e162c61437ab82819993c43c3e7b32cf2b09cae5b2920a2db41248",
+        "existing_report_unchanged": true
+      }
+    ],
+    "retained_cli_member": "cc-eval",
+    "retained_cli_bytes": 77717680,
+    "retained_cli_sha256": "daac7973861d3f7a6a419dfa34a2563af5796a227b016903a5b91c30a793f80a",
+    "fixture_member_prefixes": [
+      "case-00/retained-fixtures/unmeasurable_latency_cannot_pass_comparison-hYS1Y6",
+      "case-02/retained-fixtures/cli_quality_and_latency_failures_are_nonzero_and_keep_raw-NSec9k",
+      "case-03/retained-fixtures/cli_inconclusive_is_nonzero-jO5TSY",
+      "case-04/retained-fixtures/cli_lock_failure_preserves_machine_readable_failure_and_raw-r6ovAa",
+      "case-05/retained-fixtures/cli_bad_policy_is_recorded_without_overwriting_existing_report-Z0YrxX"
+    ],
+    "fixture_files": 287,
+    "fixture_bytes": 209265,
+    "fixture_manifest": "review-platform/gates-retained-cli/replay-report-v2.json#/working_fixture_manifest",
+    "image_reference": "ubuntu@sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b",
+    "image_manifest_digest": "sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b",
+    "original_image_tag_unchanged": true,
+    "execution_context": "Docker Desktop on macOS arm64, linux/amd64 compatibility execution; deterministic fixture comparison only, not native platform/performance measurement",
+    "network": "none",
+    "original_artifact_mount": "read-only"
+  },
+  "recovery_rollback": {
+    "original_fault_tests": 7,
+    "original_local_cases": 3,
+    "local_and_rollback_native_sessions": 13,
+    "local_and_rollback_requests": 79,
+    "local_and_rollback_responses": 78,
+    "only_missing_response": "owned SIGKILL process pending request 7; actual exit -9",
+    "active_seeds": [
+      {
+        "seed": 223,
+        "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+        "mcp_requests": 42,
+        "mcp_responses": 42,
+        "provider_requests": 6,
+        "disconnects": 1,
+        "native_clean_exits": 2,
+        "semantic_lane_sequence": [
+          "complete",
+          "partial",
+          "complete",
+          "partial",
+          "complete"
+        ],
+        "event_sha256": "31fb5e7ced530ba2382c58bbcdd5414608e525fcd521f932c6be4fb59068e689"
+      },
+      {
+        "seed": 227,
+        "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+        "mcp_requests": 42,
+        "mcp_responses": 42,
+        "provider_requests": 6,
+        "disconnects": 1,
+        "native_clean_exits": 2,
+        "semantic_lane_sequence": [
+          "complete",
+          "partial",
+          "complete",
+          "partial",
+          "complete"
+        ],
+        "event_sha256": "d36e7c8acb9eeeefe166186a24283731218fe68c8ece64f3e6cf21df1470b9a4"
+      },
+      {
+        "seed": 229,
+        "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+        "mcp_requests": 42,
+        "mcp_responses": 42,
+        "provider_requests": 6,
+        "disconnects": 1,
+        "native_clean_exits": 2,
+        "semantic_lane_sequence": [
+          "complete",
+          "partial",
+          "complete",
+          "partial",
+          "complete"
+        ],
+        "event_sha256": "a576da0a77a97e9023d38b3e9e55367e18b26084550e0f57b031d9c3da29ea59"
+      }
+    ],
+    "active_MCP_total": 126,
+    "active_HTTP_total": 18,
+    "original_full_seal_evidence_files": 495,
+    "original_archive_members": 499,
+    "source_observer_count": 7,
+    "database_snapshots_verified": 14,
+    "controlled_schema_sequence": [
+      25,
+      1025,
+      25,
+      25
+    ],
+    "actual_historical_schema_sequence": [
+      25,
+      24,
+      25,
+      25
+    ],
+    "actual_historical_source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5"
+  },
+  "related_original_ci": {
+    "review_owner": "/root",
+    "run_id": 37871838887,
+    "job_id": 113631480871,
+    "job_conclusion": "success",
+    "actual_checkout_sha": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+    "pull_request_head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "common_full_git_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "identity_rule": "Keep observed GitHub merge checkout identity; official entire tree equality makes source bytes applicable without relabeling the CI checkout.",
+    "review_files": [
+      {
+        "path": "review-ci/ci-original-check-audit-v2.json",
+        "bytes": 65906,
+        "sha256": "f381f24f08e5e316b32ff87341365e5c006747a5ab4e35f221231292296baf01"
+      },
+      {
+        "path": "review-ci/actual-ci-p7-checkout-tree-equivalence.json",
+        "bytes": 4440,
+        "sha256": "94ce1fac11d524417f0aec709f0182cae23a837d4246ef45464c67217e05c3e2"
+      }
+    ]
+  },
+  "historical_partial_review_resolution": [
+    {
+      "retained_file": "recovery-provenance-audit.json",
+      "pending_fields_at_that_time": "local raw / active HTTP / rollback / historical pair",
+      "completed_by": [
+        "recovery-raw-event-audit.json",
+        "recovery-database-rollback-audit.json"
+      ]
+    },
+    {
+      "retained_file": "recovery-raw-event-audit.json",
+      "pending_fields_at_that_time": "database/backups",
+      "completed_by": [
+        "recovery-database-rollback-audit.json"
+      ]
+    },
+    {
+      "retained_file": "gates-original-case-audit.json",
+      "pending_fields_at_that_time": "independent retained CLI replays",
+      "completed_by": [
+        "gates-retained-cli/replay-report-v2.json"
+      ]
+    },
+    {
+      "retained_file": "initial-artifact-audit.json",
+      "pending_fields_at_that_time": "other 7 platform cells",
+      "completed_by": [
+        "platform-eight-cell-collector-audit.json"
+      ]
+    }
+  ],
+  "validation_environment_history": [
+    "Initial retained ELF probe on older existing Debian GLIBC 2.36 was incompatible; official Ubuntu amd64 exact digest with GLIBC 2.39 then executed unchanged ELF.",
+    "Initial read-only fixture mount prevented the original normalizer from rewriting derived metrics; corrected replay used byte-identical owned fixture copies and retained originals read-only. All copied files remained byte-identical after success.",
+    "First mode=ro database copy replay could not open WAL-format main files without WAL sidecars; final immutable=1 read used identical SQL only after proving every original WAL absent or zero. No original database repair/write."
+  ],
+  "source_and_review_mutations": "Only independent review output and owned derived copies; no product/script/TODO change, rerun, cancellation, workflow dispatch or GitHub write."
+}

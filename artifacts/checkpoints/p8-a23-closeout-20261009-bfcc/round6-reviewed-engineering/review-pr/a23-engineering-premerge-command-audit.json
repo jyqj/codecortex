@@ -1,0 +1,4026 @@
+{
+  "all_four_documented_commands_observed_success": false,
+  "check_assessments": [
+    {
+      "actual_command": "cargo fmt --all -- --check",
+      "check": "format",
+      "documented_command": "cargo fmt --all -- --check",
+      "exit_evidence": "GitHub original step conclusion success; no synthetic printed exit code was added.",
+      "github_step": {
+        "completed_at": "2026-10-09T02:29:17Z",
+        "conclusion": "success",
+        "name": "Format check",
+        "number": 5,
+        "started_at": "2026-10-09T02:29:11Z",
+        "status": "completed"
+      },
+      "inferred_numeric_exit_code": null,
+      "literal_command_observed": true,
+      "log_excerpt": {
+        "end_line": 468,
+        "file": {
+          "bytes": 1063079,
+          "path": "review-ci/github-job-113631480871.log",
+          "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+        },
+        "lines": [
+          {
+            "line": 459,
+            "text": "##[group]Run cargo fmt --all -- --check"
+          },
+          {
+            "line": 460,
+            "text": "cargo fmt --all -- --check"
+          },
+          {
+            "line": 461,
+            "text": "shell: /usr/bin/bash -e {0}"
+          },
+          {
+            "line": 462,
+            "text": "env:"
+          },
+          {
+            "line": 463,
+            "text": "  CARGO_TERM_COLOR: always"
+          },
+          {
+            "line": 464,
+            "text": "  RUSTFLAGS: -D warnings"
+          },
+          {
+            "line": 465,
+            "text": "  CARGO_HOME: /home/runner/.cargo"
+          },
+          {
+            "line": 466,
+            "text": "  CARGO_INCREMENTAL: 0"
+          },
+          {
+            "line": 467,
+            "text": "  CACHE_ON_FAILURE: false"
+          },
+          {
+            "line": 468,
+            "text": "##[endgroup]"
+          }
+        ],
+        "start_line": 459
+      },
+      "status": "actual_exact_command_success"
+    },
+    {
+      "actual_command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "check": "clippy",
+      "documented_command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "exit_evidence": "GitHub original step conclusion success; no synthetic printed exit code was added.",
+      "github_step": {
+        "completed_at": "2026-10-09T02:29:46Z",
+        "conclusion": "success",
+        "name": "Clippy",
+        "number": 6,
+        "started_at": "2026-10-09T02:29:17Z",
+        "status": "completed"
+      },
+      "inferred_numeric_exit_code": null,
+      "literal_command_observed": true,
+      "log_excerpt": {
+        "end_line": 488,
+        "file": {
+          "bytes": 1063079,
+          "path": "review-ci/github-job-113631480871.log",
+          "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+        },
+        "lines": [
+          {
+            "line": 469,
+            "text": "##[group]Run cargo clippy --workspace --all-targets -- -D warnings"
+          },
+          {
+            "line": 470,
+            "text": "cargo clippy --workspace --all-targets -- -D warnings"
+          },
+          {
+            "line": 471,
+            "text": "shell: /usr/bin/bash -e {0}"
+          },
+          {
+            "line": 472,
+            "text": "env:"
+          },
+          {
+            "line": 473,
+            "text": "  CARGO_TERM_COLOR: always"
+          },
+          {
+            "line": 474,
+            "text": "  RUSTFLAGS: -D warnings"
+          },
+          {
+            "line": 475,
+            "text": "  CARGO_HOME: /home/runner/.cargo"
+          },
+          {
+            "line": 476,
+            "text": "  CARGO_INCREMENTAL: 0"
+          },
+          {
+            "line": 477,
+            "text": "  CACHE_ON_FAILURE: false"
+          },
+          {
+            "line": 478,
+            "text": "##[endgroup]"
+          },
+          {
+            "line": 479,
+            "text": "    Updating crates.io index"
+          },
+          {
+            "line": 480,
+            "text": "    Checking cc-model v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-model)"
+          },
+          {
+            "line": 481,
+            "text": "    Checking cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)"
+          },
+          {
+            "line": 482,
+            "text": "    Checking cc-parsers v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-parsers)"
+          },
+          {
+            "line": 483,
+            "text": "    Checking cc-index v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-index)"
+          },
+          {
+            "line": 484,
+            "text": "    Checking cc-search v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-search)"
+          },
+          {
+            "line": 485,
+            "text": "    Checking cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)"
+          },
+          {
+            "line": 486,
+            "text": "    Checking cc-server v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-server)"
+          },
+          {
+            "line": 487,
+            "text": "    Checking cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-eval)"
+          },
+          {
+            "line": 488,
+            "text": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.88s"
+          }
+        ],
+        "start_line": 469
+      },
+      "status": "actual_exact_command_success"
+    },
+    {
+      "actual_default_split": {
+        "actual_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "additional_commands": [
+          "cargo test -p cc-semantic --lib --locked",
+          "cargo test -p cc-semantic --locked --test artifact_cache --test attempt_lease_contract --test bounded_parallel --test manifest_exact_integration --test p7_cache_allocation_independent_review --test publish_cas --test query_cache --test queue_worker --test retry_worker_layering --test semantic_degrade --test space_switch"
+        ],
+        "command_lines": {
+          "end_line": 725,
+          "file": {
+            "bytes": 1063079,
+            "path": "review-ci/github-job-113631480871.log",
+            "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+          },
+          "lines": [
+            {
+              "line": 718,
+              "text": "cargo test --workspace --all-targets --exclude cc-semantic --locked"
+            },
+            {
+              "line": 719,
+              "text": "cargo test -p cc-semantic --lib --locked"
+            },
+            {
+              "line": 720,
+              "text": "cargo test -p cc-semantic --locked \\"
+            },
+            {
+              "line": 721,
+              "text": "  --test artifact_cache --test attempt_lease_contract \\"
+            },
+            {
+              "line": 722,
+              "text": "  --test bounded_parallel --test manifest_exact_integration \\"
+            },
+            {
+              "line": 723,
+              "text": "  --test p7_cache_allocation_independent_review --test publish_cas \\"
+            },
+            {
+              "line": 724,
+              "text": "  --test query_cache --test queue_worker --test retry_worker_layering \\"
+            },
+            {
+              "line": 725,
+              "text": "  --test semantic_degrade --test space_switch"
+            }
+          ],
+          "start_line": 718
+        },
+        "github_step": {
+          "completed_at": "2026-10-09T02:36:34Z",
+          "conclusion": "success",
+          "name": "Default regression within authorized scope",
+          "number": 8,
+          "started_at": "2026-10-09T02:32:02Z",
+          "status": "completed"
+        },
+        "log": {
+          "bytes": 1063079,
+          "path": "review-ci/github-job-113631480871.log",
+          "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+        },
+        "result_summary": {
+          "population_note": "Do not sum overlapping CI/P7 phases as distinct tests; ignored and filtered-out are not passed.",
+          "results": [
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 932,
+              "measured": 0,
+              "passed": 191,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 943,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 962,
+              "measured": 0,
+              "passed": 13,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 970,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 980,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 990,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 997,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1006,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1018,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1028,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1035,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1044,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1059,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1085,
+              "measured": 0,
+              "passed": 20,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1102,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1111,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1120,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1130,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1142,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1158,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1168,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 5,
+              "line": 1239,
+              "measured": 0,
+              "passed": 60,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1245,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1251,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1257,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1263,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1272,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1278,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 1296,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1307,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1322,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1332,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1348,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1362,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1383,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1410,
+              "measured": 0,
+              "passed": 21,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1418,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1427,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1435,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1443,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1450,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1460,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 1479,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 1498,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1505,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1514,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1525,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1536,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1548,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1555,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1563,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1580,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1600,
+              "measured": 0,
+              "passed": 13,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1618,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1626,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1640,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 1648,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1665,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 1674,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1687,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1694,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1705,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1712,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1720,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1728,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1738,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1751,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1758,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1765,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1784,
+              "measured": 0,
+              "passed": 12,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1791,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1798,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1820,
+              "measured": 0,
+              "passed": 16,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1827,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1835,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1842,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1859,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1875,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1882,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1899,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1913,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1921,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1928,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1944,
+              "measured": 0,
+              "passed": 10,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1954,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1962,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1976,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1984,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1996,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2004,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2010,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2020,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 2034,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2040,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2051,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2057,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2065,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2080,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 2,
+              "line": 2089,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2107,
+              "measured": 0,
+              "passed": 13,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2114,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2132,
+              "measured": 0,
+              "passed": 12,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2141,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2150,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 4,
+              "line": 2160,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2166,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 2173,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2179,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2185,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 2609,
+              "measured": 0,
+              "passed": 417,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2624,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2635,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2643,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2665,
+              "measured": 0,
+              "passed": 16,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2690,
+              "measured": 0,
+              "passed": 19,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2710,
+              "measured": 0,
+              "passed": 14,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 2728,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2736,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2744,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2753,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2765,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2782,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2791,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2808,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2818,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2831,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2841,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2849,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2858,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 2883,
+              "measured": 0,
+              "passed": 17,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2981,
+              "measured": 0,
+              "passed": 92,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 2997,
+              "measured": 0,
+              "passed": 11,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3012,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3033,
+              "measured": 0,
+              "passed": 15,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3046,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3057,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3066,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3073,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3080,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3270,
+              "measured": 0,
+              "passed": 184,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3280,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3288,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3297,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3307,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3318,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3338,
+              "measured": 0,
+              "passed": 14,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3350,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3375,
+              "measured": 0,
+              "passed": 19,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3390,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3401,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3413,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3425,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3435,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3446,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 3771,
+              "measured": 0,
+              "passed": 319,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4036,
+              "measured": 0,
+              "passed": 259,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4083,
+              "measured": 0,
+              "passed": 41,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4089,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 4096,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4103,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4110,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4126,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4393,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4401,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4407,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4413,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4419,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4425,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4431,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4437,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4443,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4449,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4455,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4499,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4505,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4511,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4517,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4523,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4529,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4535,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4541,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4733,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4741,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4753,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4766,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4773,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 4779,
+              "measured": 0,
+              "passed": 0,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 5026,
+              "measured": 0,
+              "passed": 236,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5051,
+              "measured": 0,
+              "passed": 17,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5058,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 5077,
+              "measured": 0,
+              "passed": 12,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5087,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5100,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5110,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5133,
+              "measured": 0,
+              "passed": 17,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5148,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5159,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5171,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 5179,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            }
+          ],
+          "test_binary_result_count": 199,
+          "totals_within_this_exact_original_log_range": {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 69,
+            "measured": 0,
+            "passed": 2703
+          }
+        }
+      },
+      "actual_documented_command_success": null,
+      "additional_execution_performed": false,
+      "additional_original_p7_all_target_coverage": {
+        "actual_checkout": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "actual_command": "cargo test -p cc-semantic --locked --all-targets -- --nocapture",
+        "command_line": 478,
+        "github_step": {
+          "conclusion": "success",
+          "name": "Actual cache races, process faults and WAL recovery",
+          "number": 5,
+          "status": "completed"
+        },
+        "job_id": 113631481147,
+        "log": {
+          "bytes": 1909525,
+          "path": "review-ci/github-job-113631481147.log",
+          "sha256": "527e3c81c7a1e8f7abd7f2dd4f6491d47937a6eb58811746c1d4518506df3510"
+        },
+        "native_semantic_output_end_line": 1489,
+        "native_semantic_output_start_line": 907,
+        "result_summary": {
+          "population_note": "Do not sum overlapping CI/P7 phases as distinct tests; ignored and filtered-out are not passed.",
+          "results": [
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1164,
+              "measured": 0,
+              "passed": 236,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1187,
+              "measured": 0,
+              "passed": 17,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1197,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1227,
+              "measured": 0,
+              "passed": 12,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1235,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1244,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1255,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1265,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1292,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1347,
+              "measured": 0,
+              "passed": 7,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1355,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1363,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1373,
+              "measured": 0,
+              "passed": 4,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1396,
+              "measured": 0,
+              "passed": 17,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1411,
+              "measured": 0,
+              "passed": 9,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1420,
+              "measured": 0,
+              "passed": 3,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1431,
+              "measured": 0,
+              "passed": 5,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1446,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1460,
+              "measured": 0,
+              "passed": 8,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1472,
+              "measured": 0,
+              "passed": 6,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 0,
+              "line": 1480,
+              "measured": 0,
+              "passed": 2,
+              "status": "ok"
+            },
+            {
+              "failed": 0,
+              "filtered_out": 0,
+              "ignored": 1,
+              "line": 1488,
+              "measured": 0,
+              "passed": 1,
+              "status": "ok"
+            }
+          ],
+          "test_binary_result_count": 22,
+          "totals_within_this_exact_original_log_range": {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 6,
+            "measured": 0,
+            "passed": 358
+          }
+        },
+        "run_id": 37871838966,
+        "shell_scope": "Original set -o pipefail and tee; no continue-on-error declared in the relevant workflow"
+      },
+      "assessment": "The original successful CI/P7 split supplies broad default unit/integration/all-target execution evidence, including the semantic crate excluded from the CI workspace command. This is not a receipt for the literal CONTRIBUTING cargo test --workspace invocation. Do not promote compilation-only or ignored outcomes to execution success.",
+      "check": "workspace_tests",
+      "documented_command": "cargo test --workspace",
+      "literal_command_observed": false,
+      "not_a_native_product_failure": true,
+      "original_default_compile": {
+        "actual_command": "cargo test --workspace --all-targets --locked --no-run",
+        "command_log_line": 490,
+        "github_step": {
+          "completed_at": "2026-10-09T02:32:02Z",
+          "conclusion": "success",
+          "name": "Compile every default test target",
+          "number": 7,
+          "started_at": "2026-10-09T02:29:46Z",
+          "status": "completed"
+        },
+        "scope": "Compilation only (--no-run); never recorded as tests executed."
+      },
+      "status": "literal_command_not_observed_split_success_evidence_retained",
+      "unresolved_scope": [
+        "Only cc_eval Doc-tests headings were observed in all eight retained logs. No unfiltered all-workspace doctest command or other workspace crate Doc-tests execution was observed.",
+        "CONTRIBUTING uses cargo test --workspace, whereas docs/TEST_PLAN.md uses cargo test --workspace --all-targets; the documents do not spell out substitution of the observed split for either literal command."
+      ]
+    },
+    {
+      "actual_command": "cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture",
+      "check": "fixture_and_corpus",
+      "command_line": 6063,
+      "documented_command": "cargo test -p cc-eval -- integration_fixtures_and_corpus",
+      "github_step": {
+        "completed_at": "2026-10-09T02:48:42Z",
+        "conclusion": "success",
+        "name": "Eval suite",
+        "number": 11,
+        "started_at": "2026-10-09T02:48:38Z",
+        "status": "completed"
+      },
+      "literal_documented_argv_observed": false,
+      "log": {
+        "bytes": 1063079,
+        "path": "review-ci/github-job-113631480871.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "only_argv_addition": "--nocapture (test output capture control)",
+      "result_summary": {
+        "population_note": "Do not sum overlapping CI/P7 phases as distinct tests; ignored and filtered-out are not passed.",
+        "results": [
+          {
+            "failed": 0,
+            "filtered_out": 64,
+            "ignored": 0,
+            "line": 6592,
+            "measured": 0,
+            "passed": 1,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 6597,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 6603,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 6609,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 6615,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 3,
+            "ignored": 0,
+            "line": 6621,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 6627,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6633,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 6,
+            "ignored": 0,
+            "line": 6639,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 9,
+            "ignored": 0,
+            "line": 6645,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 4,
+            "ignored": 0,
+            "line": 6651,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 10,
+            "ignored": 0,
+            "line": 6657,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 8,
+            "ignored": 0,
+            "line": 6663,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6669,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 21,
+            "ignored": 0,
+            "line": 6675,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6681,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 3,
+            "ignored": 0,
+            "line": 6687,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6693,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6699,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6705,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 4,
+            "ignored": 0,
+            "line": 6711,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 13,
+            "ignored": 0,
+            "line": 6717,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 13,
+            "ignored": 0,
+            "line": 6723,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6729,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 3,
+            "ignored": 0,
+            "line": 6735,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 5,
+            "ignored": 0,
+            "line": 6741,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 5,
+            "ignored": 0,
+            "line": 6747,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 6,
+            "ignored": 0,
+            "line": 6753,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6759,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6765,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6771,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 14,
+            "ignored": 0,
+            "line": 6777,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 12,
+            "ignored": 0,
+            "line": 6783,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6789,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 9,
+            "ignored": 0,
+            "line": 6795,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6801,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6807,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6813,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 8,
+            "ignored": 0,
+            "line": 6819,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6825,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 5,
+            "ignored": 0,
+            "line": 6831,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6837,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6843,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6849,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 5,
+            "ignored": 0,
+            "line": 6855,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 7,
+            "ignored": 0,
+            "line": 6861,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6867,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6873,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 13,
+            "ignored": 0,
+            "line": 6879,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6885,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6891,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 16,
+            "ignored": 0,
+            "line": 6897,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6903,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6909,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6915,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6921,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 10,
+            "ignored": 0,
+            "line": 6927,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6933,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 11,
+            "ignored": 0,
+            "line": 6939,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 8,
+            "ignored": 0,
+            "line": 6945,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6951,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 6957,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 10,
+            "ignored": 0,
+            "line": 6963,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 4,
+            "ignored": 0,
+            "line": 6969,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6975,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 8,
+            "ignored": 0,
+            "line": 6981,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6987,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 6,
+            "ignored": 0,
+            "line": 6993,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 6999,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7005,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 4,
+            "ignored": 0,
+            "line": 7011,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 8,
+            "ignored": 0,
+            "line": 7017,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7023,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 5,
+            "ignored": 0,
+            "line": 7029,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7035,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 7041,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 9,
+            "ignored": 0,
+            "line": 7047,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 2,
+            "ignored": 0,
+            "line": 7053,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 13,
+            "ignored": 0,
+            "line": 7059,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 7065,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 12,
+            "ignored": 0,
+            "line": 7071,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 3,
+            "ignored": 0,
+            "line": 7077,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 3,
+            "ignored": 0,
+            "line": 7083,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 4,
+            "ignored": 0,
+            "line": 7089,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7095,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 1,
+            "ignored": 0,
+            "line": 7101,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7107,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7113,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          },
+          {
+            "failed": 0,
+            "filtered_out": 0,
+            "ignored": 0,
+            "line": 7119,
+            "measured": 0,
+            "passed": 0,
+            "status": "ok"
+          }
+        ],
+        "test_binary_result_count": 89,
+        "totals_within_this_exact_original_log_range": {
+          "failed": 0,
+          "filtered_out": 484,
+          "ignored": 0,
+          "measured": 0,
+          "passed": 1
+        }
+      },
+      "selected_test_results": [
+        {
+          "line": 6590,
+          "text": "test tests::integration_fixtures_and_corpus ... ok"
+        }
+      ],
+      "selection_unchanged": true,
+      "status": "actual_same_test_selection_success_with_nocapture"
+    }
+  ],
+  "document_kind": "read_only_a23_engineering_premerge_command_audit",
+  "documentation_and_original_workflow_evidence": [
+    {
+      "bytes": 3062,
+      "git_blob": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+      "relevant_lines": [
+        {
+          "line": 35,
+          "text": "## 提交前检查"
+        },
+        {
+          "line": 36,
+          "text": ""
+        },
+        {
+          "line": 37,
+          "text": "未配置 pre-commit 钩子。提交前运行："
+        },
+        {
+          "line": 38,
+          "text": ""
+        },
+        {
+          "line": 39,
+          "text": "```bash"
+        },
+        {
+          "line": 40,
+          "text": "cargo fmt --all -- --check \\"
+        },
+        {
+          "line": 41,
+          "text": "  && cargo clippy --workspace --all-targets -- -D warnings \\"
+        },
+        {
+          "line": 42,
+          "text": "  && cargo test --workspace \\"
+        },
+        {
+          "line": 43,
+          "text": "  && cargo test -p cc-eval -- integration_fixtures_and_corpus"
+        },
+        {
+          "line": 44,
+          "text": "```"
+        },
+        {
+          "line": 45,
+          "text": ""
+        },
+        {
+          "line": 46,
+          "text": "真实工作区性能回归检查："
+        },
+        {
+          "line": 47,
+          "text": ""
+        },
+        {
+          "line": 48,
+          "text": "```bash"
+        },
+        {
+          "line": 49,
+          "text": "CODECORTEX_WRITE_REAL_BENCHMARK=1 \\"
+        },
+        {
+          "line": 50,
+          "text": "  cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture"
+        },
+        {
+          "line": 51,
+          "text": "```"
+        },
+        {
+          "line": 52,
+          "text": ""
+        },
+        {
+          "line": 53,
+          "text": "基准细节见 [docs/BENCHMARK.md](docs/BENCHMARK.md)。"
+        },
+        {
+          "line": 69,
+          "text": "该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。"
+        }
+      ],
+      "repository_path": "CONTRIBUTING.md",
+      "sha256": "00117f468fc463787e21ac2f413da760fa32eb0b1e382d7bdcf486e8d4c496f4",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    },
+    {
+      "bytes": 8141,
+      "git_blob": "6d28b02dada094b2774c0add0db74ae7aa4758cc",
+      "relevant_lines": [
+        {
+          "line": 3,
+          "text": "最近一次 `cargo test --workspace --all-targets`：1258 passed + 15 ignored"
+        },
+        {
+          "line": 4,
+          "text": "（15 个 ignored：cc-eval 的 5 个真实工作区/增量基准、`scale_bench` 的 4 个"
+        },
+        {
+          "line": 5,
+          "text": "合成规模/冷建相位基准、`soak` 的长驻 RSS soak、cc-db 的"
+        },
+        {
+          "line": 6,
+          "text": "`incremental_write_bench` 写阶段基准与重建压力循环、cc-index 的"
+        },
+        {
+          "line": 7,
+          "text": "`type_catalog_bench`/`catalog_bench` 与 cc-server 的"
+        },
+        {
+          "line": 8,
+          "text": "`graph_traversal_bench` 共 3 个 release-only 微基准）。基线数字与本文档"
+        },
+        {
+          "line": 80,
+          "text": "基准的运行方式、最近结果与写阶段优化史见"
+        },
+        {
+          "line": 81,
+          "text": "[BENCHMARK.md](BENCHMARK.md)。测试侧的入口："
+        },
+        {
+          "line": 82,
+          "text": ""
+        },
+        {
+          "line": 83,
+          "text": "- 真实工作区基准：`benchmark_real_workspace`（ignored）把 CodeCortex"
+        },
+        {
+          "line": 84,
+          "text": "  工作区拷到临时目录索引并跑 10 个代表性 MCP 用例；"
+        },
+        {
+          "line": 85,
+          "text": "- 增量正确性：`benchmark_incremental_index_report_correctness`"
+        },
+        {
+          "line": 86,
+          "text": "  （ignored）覆盖全量 → no-op → 单文件增量的报告计数器；"
+        },
+        {
+          "line": 87,
+          "text": "- 增量延迟：`cargo test -p cc-eval bench_incremental -- --ignored"
+        },
+        {
+          "line": 88,
+          "text": "  --nocapture` 跑 3 个场景并硬断言 `dirty_propagation` 状态；"
+        },
+        {
+          "line": 108,
+          "text": "## 提交前检查"
+        },
+        {
+          "line": 109,
+          "text": ""
+        },
+        {
+          "line": 110,
+          "text": "未配置 pre-commit 钩子。提交前运行："
+        },
+        {
+          "line": 111,
+          "text": ""
+        },
+        {
+          "line": 112,
+          "text": "```bash"
+        },
+        {
+          "line": 113,
+          "text": "cargo fmt --all -- --check \\"
+        },
+        {
+          "line": 114,
+          "text": "  && cargo clippy --workspace --all-targets -- -D warnings \\"
+        },
+        {
+          "line": 115,
+          "text": "  && cargo test --workspace --all-targets \\"
+        },
+        {
+          "line": 116,
+          "text": "  && cargo test -p cc-eval -- integration_fixtures_and_corpus"
+        },
+        {
+          "line": 117,
+          "text": "```"
+        },
+        {
+          "line": 118,
+          "text": ""
+        },
+        {
+          "line": 119,
+          "text": "真实工作区性能回归："
+        },
+        {
+          "line": 120,
+          "text": ""
+        },
+        {
+          "line": 121,
+          "text": "```bash"
+        },
+        {
+          "line": 122,
+          "text": "CODECORTEX_WRITE_REAL_BENCHMARK=1 \\"
+        },
+        {
+          "line": 123,
+          "text": "  cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture"
+        },
+        {
+          "line": 124,
+          "text": "```"
+        }
+      ],
+      "repository_path": "docs/TEST_PLAN.md",
+      "sha256": "1b0e87d97f7712107c85a0b29120dd66388b3072d8748bc98f9f377251ae8980",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    },
+    {
+      "bytes": 22065,
+      "git_blob": "f381aa0b03f4a7e30858e2a4507f9149387caa04",
+      "relevant_lines": [
+        {
+          "line": 9,
+          "text": "文档的 schema/表数/工具数/关键默认值由"
+        },
+        {
+          "line": 10,
+          "text": "[P8-FACTS](roadmap/code-index-v2/P8-FACTS.md) 生成并检查。"
+        },
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "这些是本地工程能力和验证入口；完整 release profile、holdout、100k、受控尾延迟、"
+        },
+        {
+          "line": 13,
+          "text": "真实 provider 收益及 G8 需各自当前候选证据。普通 baseline 或 comparison 的退出码 0"
+        },
+        {
+          "line": 14,
+          "text": "不能自动提升为发行认证。下方 legacy 观测、目标值和历史性能结论保持各自原测量范围。"
+        },
+        {
+          "line": 98,
+          "text": "### 真实工作区基准"
+        },
+        {
+          "line": 99,
+          "text": ""
+        },
+        {
+          "line": 100,
+          "text": "```sh"
+        },
+        {
+          "line": 101,
+          "text": "CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture"
+        },
+        {
+          "line": 102,
+          "text": "```"
+        },
+        {
+          "line": 103,
+          "text": ""
+        },
+        {
+          "line": 104,
+          "text": "把 CodeCortex 工作区拷贝到临时目录索引，跑 10 个代表性 MCP 用例。最近一轮："
+        },
+        {
+          "line": 105,
+          "text": "330 文件，全部工具 p95 < 500ms；见"
+        },
+        {
+          "line": 106,
+          "text": "`docs/benchmarks/real_workspace_latest.md`。"
+        }
+      ],
+      "repository_path": "docs/BENCHMARK.md",
+      "sha256": "a06639c5ff81e5312f21d9ea3b2bf97d7bd7f0d8032353caf5be9db8790c0e4e",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    },
+    {
+      "bytes": 50040,
+      "git_blob": "3ca75bb7450cc21d0e64badb49c5e3059fea3fc1",
+      "relevant_lines": [
+        {
+          "line": 480,
+          "text": "    /// Ignored by default: builds and benchmarks a sanitized copy of the real"
+        },
+        {
+          "line": 481,
+          "text": "    /// CodeCortex workspace instead of the 15-file fixture."
+        },
+        {
+          "line": 482,
+          "text": "    #[test]"
+        },
+        {
+          "line": 483,
+          "text": "    #[ignore = \"benchmarks the real workspace copy; run explicitly\"]"
+        },
+        {
+          "line": 484,
+          "text": "    fn benchmark_real_workspace() {"
+        },
+        {
+          "line": 501,
+          "text": "        let backend = runner::CodeIndexBackend::new(&bench_root)"
+        },
+        {
+          "line": 502,
+          "text": "            .expect(\"backend should build real workspace index copy\");"
+        },
+        {
+          "line": 503,
+          "text": "        let cases = real_workspace_benchmark_cases();"
+        },
+        {
+          "line": 504,
+          "text": "        let report = bench::run_benchmark_named("
+        },
+        {
+          "line": 505,
+          "text": "            &backend,"
+        },
+        {
+          "line": 506,
+          "text": "            &bench_root,"
+        },
+        {
+          "line": 507,
+          "text": "            &cases,"
+        },
+        {
+          "line": 508,
+          "text": "            file_count,"
+        },
+        {
+          "line": 509,
+          "text": "            \"codecortex-rust workspace copy\","
+        },
+        {
+          "line": 510,
+          "text": "        );"
+        },
+        {
+          "line": 511,
+          "text": "        let md = bench::generate_benchmark_markdown(&report);"
+        },
+        {
+          "line": 512,
+          "text": "        eprintln!(\"{}\", md);"
+        },
+        {
+          "line": 513,
+          "text": ""
+        },
+        {
+          "line": 514,
+          "text": "        assert_eq!(report.total_cases, cases.len());"
+        },
+        {
+          "line": 515,
+          "text": "        assert!(!report.per_tool.is_empty(), \"should have per-tool results\");"
+        },
+        {
+          "line": 516,
+          "text": ""
+        },
+        {
+          "line": 517,
+          "text": "        if std::env::var(\"CODECORTEX_WRITE_REAL_BENCHMARK\").is_ok()"
+        },
+        {
+          "line": 518,
+          "text": "            || std::env::var(\"CODECORTEX_WRITE_BENCHMARK\").is_ok()"
+        },
+        {
+          "line": 519,
+          "text": "        {"
+        },
+        {
+          "line": 520,
+          "text": "            let bench_dir = workspace_root.join(\"docs\").join(\"benchmarks\");"
+        },
+        {
+          "line": 521,
+          "text": "            std::fs::create_dir_all(&bench_dir).expect(\"create docs/benchmarks\");"
+        },
+        {
+          "line": 522,
+          "text": "            let path = bench_dir.join(\"real_workspace_latest.md\");"
+        },
+        {
+          "line": 523,
+          "text": "            std::fs::write(&path, &md).expect(\"write real workspace benchmark report\");"
+        },
+        {
+          "line": 524,
+          "text": "            eprintln!("
+        },
+        {
+          "line": 525,
+          "text": "                \"Real workspace benchmark report written to {}\","
+        }
+      ],
+      "repository_path": "crates/cc-eval/src/lib.rs",
+      "sha256": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    },
+    {
+      "bytes": 11046,
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "relevant_lines": [
+        {
+          "line": 8,
+          "text": "env:"
+        },
+        {
+          "line": 9,
+          "text": "  CARGO_TERM_COLOR: always"
+        },
+        {
+          "line": 10,
+          "text": "  RUSTFLAGS: -D warnings"
+        },
+        {
+          "line": 22,
+          "text": "      - name: Format check"
+        },
+        {
+          "line": 23,
+          "text": "        run: cargo fmt --all -- --check"
+        },
+        {
+          "line": 24,
+          "text": ""
+        },
+        {
+          "line": 25,
+          "text": "      - name: Clippy"
+        },
+        {
+          "line": 26,
+          "text": "        run: cargo clippy --workspace --all-targets -- -D warnings"
+        },
+        {
+          "line": 27,
+          "text": ""
+        },
+        {
+          "line": 28,
+          "text": "      - name: Compile every default test target"
+        },
+        {
+          "line": 29,
+          "text": "        run: cargo test --workspace --all-targets --locked --no-run"
+        },
+        {
+          "line": 30,
+          "text": ""
+        },
+        {
+          "line": 31,
+          "text": "      # This fixed-e3 integration does not authorize the historical process-fault,"
+        },
+        {
+          "line": 32,
+          "text": "      # GC/WAL targets or semantic_runtime recoverable-retry cases. Keep those"
+        },
+        {
+          "line": 33,
+          "text": "      # tests byte-identical in crates; execute only the normal-path targets here."
+        },
+        {
+          "line": 34,
+          "text": "      - name: Default regression within authorized scope"
+        },
+        {
+          "line": 35,
+          "text": "        run: |"
+        },
+        {
+          "line": 36,
+          "text": "          cargo test --workspace --all-targets --exclude cc-semantic --locked"
+        },
+        {
+          "line": 37,
+          "text": "          cargo test -p cc-semantic --lib --locked"
+        },
+        {
+          "line": 38,
+          "text": "          cargo test -p cc-semantic --locked \\"
+        },
+        {
+          "line": 39,
+          "text": "            --test artifact_cache --test attempt_lease_contract \\"
+        },
+        {
+          "line": 40,
+          "text": "            --test bounded_parallel --test manifest_exact_integration \\"
+        },
+        {
+          "line": 41,
+          "text": "            --test p7_cache_allocation_independent_review --test publish_cas \\"
+        },
+        {
+          "line": 42,
+          "text": "            --test query_cache --test queue_worker --test retry_worker_layering \\"
+        },
+        {
+          "line": 43,
+          "text": "            --test semantic_degrade --test space_switch"
+        },
+        {
+          "line": 61,
+          "text": "      - name: Eval suite"
+        },
+        {
+          "line": 62,
+          "text": "        run: cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture"
+        },
+        {
+          "line": 63,
+          "text": ""
+        },
+        {
+          "line": 64,
+          "text": "      - name: P0 benchmark optional HTTP contract tests"
+        },
+        {
+          "line": 65,
+          "text": "        run: cargo test -p cc-eval --features eval-http --locked"
+        }
+      ],
+      "repository_path": ".github/workflows/ci.yml",
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    },
+    {
+      "bytes": 21396,
+      "git_blob": "356e1abbb1d7eee729af9effbc23d143328fd76c",
+      "relevant_lines": [
+        {
+          "line": 42,
+          "text": "        run: |"
+        },
+        {
+          "line": 43,
+          "text": "          set -o pipefail"
+        },
+        {
+          "line": 44,
+          "text": "          cargo test -p cc-db --locked --lib -- --nocapture \\"
+        },
+        {
+          "line": 45,
+          "text": "            2>&1 | tee \"$RUNNER_TEMP/p7-closeout/db-rebuild-faults.log\""
+        },
+        {
+          "line": 46,
+          "text": "          cargo test -p cc-db --locked --test semantic_rebuild --test semantic_recovery \\"
+        },
+        {
+          "line": 47,
+          "text": "            --test semantic_publish --test semantic_lease --test semantic_queue -- --nocapture \\"
+        },
+        {
+          "line": 48,
+          "text": "            2>&1 | tee \"$RUNNER_TEMP/p7-closeout/db-lifecycle.log\""
+        },
+        {
+          "line": 49,
+          "text": "          cargo test -p cc-semantic --locked --all-targets -- --nocapture \\"
+        },
+        {
+          "line": 50,
+          "text": "            2>&1 | tee \"$RUNNER_TEMP/p7-closeout/semantic-fault-matrix.log\""
+        }
+      ],
+      "repository_path": ".github/workflows/p7-closeout.yml",
+      "sha256": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
+      "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+    }
+  ],
+  "engineering_merge_approval_granted_by_this_report": false,
+  "inspection_notes": [
+    "Two initial read-only shape probes encountered list/dict or missing-key assumptions; corrected to the actual saved JSON shapes, with no source/measurement changes.",
+    "Generic github_fetch direct jobs/{id} endpoint was rejected as unsupported; the supported workflow-run-jobs tool supplied the original completed P7 closeout metadata. This is an inspection transport issue, not a CI/test failure."
+  ],
+  "inspection_scope": "Only retained original CI/P7 logs, fixed-a23 repository documentation/source/workflows, saved official checkout-tree metadata, and a read-only GitHub original P7 job terminal refresh. No test/build/benchmark/primary acceptance run was started, repeated, cancelled or edited.",
+  "new_tests_or_primary_runs": false,
+  "observed_doctest_headings": [
+    {
+      "file": {
+        "bytes": 1063079,
+        "path": "review-ci/github-job-113631480871.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "line": 7115,
+      "text": "   Doc-tests cc_eval"
+    },
+    {
+      "file": {
+        "bytes": 1063079,
+        "path": "review-ci/github-job-113631480871.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "line": 8156,
+      "text": "   Doc-tests cc_eval"
+    }
+  ],
+  "original_ci_job": {
+    "conclusion": "success",
+    "job_id": 113631480871,
+    "job_url": "https://github.com/jyqj/codecortex/actions/runs/37871838887/job/113631480871",
+    "native_metadata_file": {
+      "bytes": 7141,
+      "path": "review-ci/job-113631480871.json",
+      "sha256": "a7cb28767b791d945a9aa4e3030f567ab919794e43e0792b421139939eb4fd74"
+    },
+    "run_attempt": 1,
+    "run_id": 37871838887
+  },
+  "original_log_inventory": [
+    {
+      "bytes": 64303,
+      "path": "review-ci/github-job-113631480552.log",
+      "sha256": "bb453db9cc50007489e1da427e2abae4cf8504c9ce0a856d588878537bb458e9"
+    },
+    {
+      "bytes": 38775,
+      "path": "review-ci/github-job-113631480693.log",
+      "sha256": "5687f69ca4172e994c8657e4f9619099f8b57387d3efefd5cb8cafc766f708c6"
+    },
+    {
+      "bytes": 1063079,
+      "path": "review-ci/github-job-113631480871.log",
+      "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+    },
+    {
+      "bytes": 50969,
+      "path": "review-ci/github-job-113631480995.log",
+      "sha256": "de768a9676642fa286b32622aae207d4190816817b2e88b7e709c7479b189816"
+    },
+    {
+      "bytes": 1534969,
+      "path": "review-ci/github-job-113631481030.log",
+      "sha256": "5583531c7c7ffe0f0f4b69b1578b9cd2ca174f583b47e24c256b3802fb4a78b5"
+    },
+    {
+      "bytes": 72835,
+      "path": "review-ci/github-job-113631481139.log",
+      "sha256": "7f1a997b6fc808d982e4707e5eb6738d4b03184d411fa55d24ea8ae3c9324cd9"
+    },
+    {
+      "bytes": 1909525,
+      "path": "review-ci/github-job-113631481147.log",
+      "sha256": "527e3c81c7a1e8f7abd7f2dd4f6491d47937a6eb58811746c1d4518506df3510"
+    },
+    {
+      "bytes": 55780,
+      "path": "review-ci/github-job-113631481233.log",
+      "sha256": "1ff387c9915d2a567e65fedafaf4bf131579fc39fbe0252f7b4ccbb6a51abd36"
+    }
+  ],
+  "original_p7_closeout_job": {
+    "conclusion": "success",
+    "id": 113631481147,
+    "logs_url": null,
+    "name": "closeout",
+    "run_id": 37871838966,
+    "status": "completed",
+    "steps": [
+      {
+        "conclusion": "success",
+        "name": "Set up job",
+        "number": 1,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run actions/checkout@v4",
+        "number": 2,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Run dtolnay/rust-toolchain@1.95.0",
+        "number": 3,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Bind current source and isolated build",
+        "number": 4,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Actual cache races, process faults and WAL recovery",
+        "number": 5,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Original default, semantic and HTTP wiring contracts",
+        "number": 6,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Original thirteen-checkpoint real stdio lifecycle",
+        "number": 7,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Three-seed real product retry, crash, deletion, recovery and automatic GC",
+        "number": 8,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Attributed resources and actual worker contention",
+        "number": 9,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Preserve final source identity",
+        "number": 10,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Archive exact commands and raw evidence",
+        "number": 11,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Run actions/checkout@v4",
+        "number": 22,
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "Complete job",
+        "number": 23,
+        "status": "completed"
+      }
+    ]
+  },
+  "p8_acceptance_or_release_credit_added": false,
+  "pull_request": 167,
+  "pull_request_url": "https://github.com/jyqj/codecortex/pull/167",
+  "real_workspace_benchmark": {
+    "bounded_policy_interpretation": "The source and workflows establish a separately and explicitly invoked ignored performance regression check, absent from the four-command chain and the examined automatic CI. The documentation does not explicitly say every merge must run it, and does not explicitly call it optional/as-needed. Consequently neither a new mandatory per-merge gate nor a waiver is invented here. Its execution result for these runs remains ignored/not_run.",
+    "current_a23_performance_result": "not_run_ignored",
+    "documented_command": "CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture",
+    "eight_workflow_source_search": {
+      "matching_invocations": [],
+      "paths": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/p7-closeout.yml",
+        ".github/workflows/p7-engineering.yml",
+        ".github/workflows/p8-gates.yml",
+        ".github/workflows/p8-lifecycle.yml",
+        ".github/workflows/p8-platform.yml",
+        ".github/workflows/p8-runtime.yml",
+        ".github/workflows/p8-scale.yml"
+      ]
+    },
+    "environment_variable_scope": "Original source checks presence of CODECORTEX_WRITE_REAL_BENCHMARK or CODECORTEX_WRITE_BENCHMARK only when persisting the generated Markdown report; this flag alone does not turn an ignored test into an executed test.",
+    "explicit_every_merge_requirement_in_reviewed_documents": false,
+    "explicit_optional_or_as_needed_wording_in_reviewed_documents": false,
+    "historical_reports_not_used_as_current_a23_success": true,
+    "included_in_four_command_chain": false,
+    "original_ci_records": [
+      {
+        "file": {
+          "bytes": 1063079,
+          "path": "review-ci/github-job-113631480871.log",
+          "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+        },
+        "line": 1230,
+        "status": "ignored",
+        "text": "test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly"
+      },
+      {
+        "file": {
+          "bytes": 1063079,
+          "path": "review-ci/github-job-113631480871.log",
+          "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+        },
+        "line": 7194,
+        "status": "ignored",
+        "text": "test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly"
+      }
+    ],
+    "original_ci_status": "ignored_not_executed",
+    "recorded_explicit_invocations_in_eight_ci_p7_logs": [],
+    "required_frequency": "not_explicitly_specified",
+    "separately_listed_under_precommit_heading": true,
+    "source_default": "#[ignore = \"benchmarks the real workspace copy; run explicitly\"]",
+    "successful_execution_observed": false
+  },
+  "review_status": "three_documented_checks_have_actual_success_evidence_workspace_literal_command_not_observed",
+  "reviewed_at": "2026-10-09T04:08:29.449775+00:00",
+  "reviewer": "pr_triage",
+  "schema_version": 1,
+  "source_identity": {
+    "actual_ci_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+    "actual_p7_closeout_checkout": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "do_not_relabel_actual_checkout": true,
+    "entire_tracked_tree_equality_verified": true,
+    "official_git_metadata": [
+      {
+        "commit_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "file": {
+          "bytes": 1669,
+          "path": "review-ci/github-git-commit-a23bb72d3c954f385b99fe81ce9189885c208557.json",
+          "sha256": "afc98cdbb65356d5ee296cfec7b86430e4456337c3b0385ad0df6f86a0534df4"
+        },
+        "tree_sha": "58147c952505c44da1f41eb4b9c31643f2303b96"
+      },
+      {
+        "commit_sha": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+        "file": {
+          "bytes": 2821,
+          "path": "review-ci/github-git-commit-75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037.json",
+          "sha256": "88e81165b7467247593c122da29b6de1b50c314927124c93770e8987b913dac7"
+        },
+        "tree_sha": "58147c952505c44da1f41eb4b9c31643f2303b96"
+      }
+    ],
+    "prior_identity_proof": {
+      "bytes": 4440,
+      "path": "review-ci/actual-ci-p7-checkout-tree-equivalence.json",
+      "sha256": "94ce1fac11d524417f0aec709f0182cae23a837d4246ef45464c67217e05c3e2"
+    },
+    "requested_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96"
+  },
+  "source_or_measurement_mutations": false,
+  "task_ledger": {
+    "changes": 0,
+    "done": 163,
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "remaining": 29,
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "status_counts": {
+      "blocked": 1,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "total": 192
+  }
+}

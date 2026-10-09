@@ -1,0 +1,9 @@
+# Original PR190 closeout failure and proposed fixture synchronization repair
+
+The original source f6750cad0df45af4ec2dddc456e76cc188f3a35a ordinary closeout run 38004132959, job 114068898390, failed in the V18 loopback publication-state test. The target reported 11 passed / 1 failed and Cargo exit 101. The status snapshot showed semantic_pending=0. The independent equal-lifetime serialization observation is a separate successful run; it does not make this job green.
+
+The original test reads status before checking whether the mock has received its first request. The request can arrive between those operations, allowing an older status snapshot to be used for the assertion. The proposed fixture change reads the snapshot only after observing that existing request barrier, while the existing semaphore still holds the response. It retains every assertion and the original five-second deadlines. The original run lacks a trace proving this was the unique scheduling cause. Non-author review and new-source CI remain pending in this checkpoint.
+
+The complete original ZIP is retained as 27 exact binary chunks. Concatenate them in integer order, without recompression, to restore the 20,519,133-byte artifact. Its SHA256 must be 759f32b0d0975b971c194048bc3089b15eb11f42b68b89779a61f3c3219467ae. The manifest contains every actual uploaded Git blob. The computed whole-ZIP Git identifier is only a content identity; no standalone whole-ZIP blob upload is claimed. All 94 original ZIP members passed a single transport CRC read. The original tests were not rerun by this transport or analysis.
+
+The full original job log, API responses, exact old/new test source identities and minimal patch are retained alongside the chunks. This checkpoint grants zero TODO credit. Main remains 164/192 complete, 28 remaining; this session has newly completed P8-005 only.

@@ -1,0 +1,45 @@
+{
+  "schema": "p8_round30_PR190_ordinary_closeout_failure_and_fixture_repair_v1",
+  "recorded_utc": "2026-10-09 23:54:01 UTC",
+  "source": "f6750cad0df45af4ec2dddc456e76cc188f3a35a",
+  "run_id": 38004132959,
+  "job_id": 114068898390,
+  "failed_step": "Original default, semantic and HTTP wiring contracts",
+  "failed_test": "loopback::ready_publication_status_keeps_request_policy_and_per_query_coverage_distinct",
+  "actual_outcome": {
+    "passed": 11,
+    "failed": 1,
+    "exit_code": 101,
+    "observed_pending": 0
+  },
+  "failure_cause_boundary": "The source contains a check-after-snapshot race: the mock call counter can become nonzero after status returns but before the counter is read, so the accepted snapshot can predate the request. This is a concrete possible interleaving consistent with the retained failure; the original run did not trace both operations sufficiently to prove that it was the unique scheduling cause.",
+  "proposed_repair": {
+    "author": "/root",
+    "path": "crates/cc-server/tests/p7_v18_parameter_contract.rs",
+    "old_actual_blob": "45228019a386da6f9a0d11cae4621ac81ccec93f",
+    "new_actual_blob": "fafaa3923be8bc2e84fbd020f99c9e9593ac2bdb",
+    "scope": "Observe the existing request counter before taking the status snapshot. All assertions, the held first response, loopback/synthetic scope, waits, deadlines and read-only/network checks remain unchanged.",
+    "non_author_review": "pending separate actual P2 review",
+    "actual_Rust_or_test_execution": "not_run",
+    "integration_scope": "P1 d2b853 preserves the exact donor oracle; proposed P2 adds only this independent fixture synchronization fix. No current-main execution or complete donor CI success is claimed."
+  },
+  "retention": {
+    "full_original_job_log_blob": "3efadf710a054e2beda886cdd29938639145e94b",
+    "bytes": 1814482,
+    "sha256": "b4d5dd7b803a81aeaa08166b4edfe0c8a0c556d9e0755c8e9fcb8006f226075d",
+    "original_zip_artifact": 11650906576,
+    "original_zip_bytes": 20519133,
+    "original_zip_sha256": "759f32b0d0975b971c194048bc3089b15eb11f42b68b89779a61f3c3219467ae",
+    "zip_chunks": 27,
+    "actual_chunk_manifest_blob": "bad305fdda8aaca9b9744039f68f1d5e8d3332cf",
+    "actual_chunk_receipts_blob": "e088ae2a8543e502d462bb02a744be461e6600f7",
+    "original_ZIP_downloads": 1,
+    "ZIP_members_CRC_read_once": 94
+  },
+  "originals": {},
+  "independent_equal_lifetime_diagnostic": "Separate accepted finite observation at run38004163561. That success is not this failed job's success.",
+  "task_credit": 0,
+  "task_done": 164,
+  "task_remaining": 28,
+  "session_newly_done": 1
+}

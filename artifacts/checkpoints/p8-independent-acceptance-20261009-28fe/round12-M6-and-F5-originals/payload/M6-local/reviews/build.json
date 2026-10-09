@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/runtime_review",
+  "verdict": "accepted_fixed_e95_original_native_build_only",
+  "started_utc": "2026-10-09T00:24:20.041705+00:00",
+  "finished_utc": "2026-10-09T00:24:21.123826+00:00",
+  "source_commit": "e95fd750d2f5052d0308c970cd5032c48b765cde",
+  "source_tree": "7fa242edeb826c574d57a43b89f140d03496a9f8",
+  "source_input_count": 1087,
+  "observer_count": 9,
+  "source_manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+  "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+  "actual_committed_source_and_disk_and_original_before_after_all_equal": true,
+  "original_verify_receipt_passed": true,
+  "independent_complete_seal_inventory_before_after_equal": true,
+  "sealed_files_excluding_seal": 17,
+  "sealed_bytes_excluding_seal": 32064737,
+  "seal_sha256": "73a948da66979dfab18aa2522a67d481b2fb2b76549d2a0b2b3e49155c820ad0",
+  "build_receipt_sha256": "c9b372f74d726345f518732c856a65fdc13bc98c0261a65eb092bf9383736f26",
+  "original_build_exit_code": 0,
+  "original_build_elapsed_seconds": 436.64529271499487,
+  "original_build_started_at_utc": "2026-10-09T00:06:19.547367+00:00",
+  "original_build_finished_at_utc": "2026-10-09T00:13:36.192651+00:00",
+  "build_command": [
+    "cargo",
+    "build",
+    "--release",
+    "--locked",
+    "--offline",
+    "--no-default-features",
+    "-p",
+    "cc-server",
+    "--bin",
+    "codecortex",
+    "-p",
+    "cc-eval",
+    "--bin",
+    "p8-oracle",
+    "--bin",
+    "p8-runtime-statistics",
+    "--message-format=json-render-diagnostics",
+    "--target-dir",
+    "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target"
+  ],
+  "target_initially_absent": true,
+  "cold_build_claim": false,
+  "actual_toolchain_bytes_verified": {
+    "cargo": {
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "executable_sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+      "invocation": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+    },
+    "rustc": {
+      "command": [
+        "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "executable_sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+      "invocation": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2"
+    }
+  },
+  "compiler_environment": {
+    "RUSTC": "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": ""
+  },
+  "artifacts": {
+    "codecortex": {
+      "binary_path": "/tmp/codecortex-p8-m6-28fe-20261009/build/codecortex",
+      "binary_sha256": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4",
+      "binary_bytes": 27086168,
+      "copy_source": {
+        "path": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/codecortex",
+        "bytes": 27086168,
+        "sha256": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4"
+      },
+      "cargo_artifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-server#1.0.0",
+        "manifest_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-server/Cargo.toml",
+        "target": {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "codecortex",
+          "src_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-server/src/main.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/codecortex"
+        ],
+        "executable": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/codecortex",
+        "fresh": false
+      },
+      "copied_mode": "0555",
+      "independent_copy_source_size_and_sha_verified": true
+    },
+    "p8-oracle": {
+      "binary_path": "/tmp/codecortex-p8-m6-28fe-20261009/build/p8-oracle",
+      "binary_sha256": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a",
+      "binary_bytes": 2960568,
+      "copy_source": {
+        "path": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-oracle",
+        "bytes": 2960568,
+        "sha256": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a"
+      },
+      "cargo_artifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval#1.0.0",
+        "manifest_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval/Cargo.toml",
+        "target": {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "p8-oracle",
+          "src_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval/src/bin/p8-oracle.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-oracle"
+        ],
+        "executable": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-oracle",
+        "fresh": false
+      },
+      "copied_mode": "0555",
+      "independent_copy_source_size_and_sha_verified": true
+    },
+    "p8-runtime-statistics": {
+      "binary_path": "/tmp/codecortex-p8-m6-28fe-20261009/build/p8-runtime-statistics",
+      "binary_sha256": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d",
+      "binary_bytes": 976544,
+      "copy_source": {
+        "path": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-runtime-statistics",
+        "bytes": 976544,
+        "sha256": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+      },
+      "cargo_artifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval#1.0.0",
+        "manifest_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval/Cargo.toml",
+        "target": {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "p8-runtime-statistics",
+          "src_path": "/tmp/codecortex-p8-m6-28fe-20261009/source/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-runtime-statistics"
+        ],
+        "executable": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-target/release/p8-runtime-statistics",
+        "fresh": false
+      },
+      "copied_mode": "0555",
+      "independent_copy_source_size_and_sha_verified": true
+    }
+  },
+  "inventory": {
+    "build-receipt.json": {
+      "bytes": 314785,
+      "sha256": "c9b372f74d726345f518732c856a65fdc13bc98c0261a65eb092bf9383736f26"
+    },
+    "codecortex": {
+      "bytes": 27086168,
+      "sha256": "07803d0bbc79e00ad9500c16db0eeee25f4dcfa5541456d6e7a4f0225bd523f4"
+    },
+    "observer-source/scripts/p7_build_identity.py": {
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    "observer-source/scripts/p7_stdio_build_receipt.py": {
+      "bytes": 9147,
+      "sha256": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2"
+    },
+    "observer-source/scripts/p8_backfill.py": {
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd"
+    },
+    "observer-source/scripts/p8_cold_build.py": {
+      "bytes": 52649,
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa"
+    },
+    "observer-source/scripts/p8_rollback.py": {
+      "bytes": 38818,
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+    },
+    "observer-source/scripts/p8_runtime.py": {
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+    },
+    "observer-source/scripts/p8_runtime_build.py": {
+      "bytes": 18068,
+      "sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db"
+    },
+    "observer-source/scripts/resource_harness/__init__.py": {
+      "bytes": 74,
+      "sha256": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36"
+    },
+    "observer-source/scripts/resource_harness/runtime.py": {
+      "bytes": 11117,
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+    },
+    "p8-oracle": {
+      "bytes": 2960568,
+      "sha256": "4ed0d23e8a064e49cfb5b86677e1c28b0d8e75e853433e73c77bc9d39a4ac93a"
+    },
+    "p8-runtime-statistics": {
+      "bytes": 976544,
+      "sha256": "a87422b6608b7c077cf84e411a6a83c82e1161243fafcf10ca498bcbaa98324d"
+    },
+    "product-build.jsonl": {
+      "bytes": 224636,
+      "sha256": "ce52b90a5b6edfcb061d3cf38bb5ce69d39608d6f077cf95dadbc22e73d5b02f"
+    },
+    "product-build.stderr": {
+      "bytes": 6192,
+      "sha256": "c9b1c8541fcb58f299f5bfccfe087785afd8b34efed499c9fd7f7bd7a28a0465"
+    },
+    "seal.json": {
+      "bytes": 2751,
+      "sha256": "73a948da66979dfab18aa2522a67d481b2fb2b76549d2a0b2b3e49155c820ad0"
+    },
+    "source-after.json": {
+      "bytes": 146168,
+      "sha256": "9fc25c1d0f95cc94d84de7d0a37925abe3563c4ba0b9412c1aa21256a5db3e5c"
+    },
+    "source-before.json": {
+      "bytes": 146168,
+      "sha256": "9fc25c1d0f95cc94d84de7d0a37925abe3563c4ba0b9412c1aa21256a5db3e5c"
+    }
+  },
+  "original_execution_observation": {
+    "path": "/tmp/codecortex-p8-m6-28fe-20261009/runtime-parent-recovery/original-execution-observation.json",
+    "bytes": 43337,
+    "sha256": "cf5e5cb8c9668a5309662b54ddaeaf178cb3551f9d3175dd0ef14f7f696d15cc"
+  },
+  "scope": [
+    "The original source-bound Python verify_receipt was invoked read-only. No Cargo build, native product/oracle/statistics executable or artifact-supplied code was run.",
+    "No five running native output directory or database was read.",
+    "Threefresh=false Cargo outputs belong to one fresh private target, shared by the runtime observations; not five independent builds.",
+    "Existing dependency cache is reused and cold_build_claim remains false.",
+    "Initial five run/verify parent-directory errors remain original failures. Current recovered observations and original backfill require independent terminal verification.",
+    "This build admission is not one-hour, runtime, resource, parity, scale, release or TODO acceptance."
+  ],
+  "original_ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_completions": 0
+  }
+}

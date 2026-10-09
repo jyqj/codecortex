@@ -1,0 +1,248 @@
+{
+  "as_expected": 34,
+  "classification": "independent offline counterexamples; frozen first-wave scope only; no final coverage acceptance",
+  "controller_sha256": "2a6468f4e3d8cf8a24e22b7a4517ab197be34018148f0f25cf241f8431806c54",
+  "count": 34,
+  "native_or_GitHub_runs_started": 0,
+  "results": [
+    {
+      "as_expected": true,
+      "coverage_accepted": false,
+      "expected_reject": false,
+      "name": "real_original_rep8_unknown_is_schedulable",
+      "rejected": false
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: all 150 original identities are required including pending cells",
+      "expected_reject": true,
+      "name": "missing_initial_cell",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: duplicate initial cell/job",
+      "expected_reject": true,
+      "name": "duplicate_initial_cell",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: predecessor is not a completed failed job",
+      "expected_reject": true,
+      "name": "queued_predecessor",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: predecessor is not a completed failed job",
+      "expected_reject": true,
+      "name": "running_predecessor",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: predecessor is not a completed failed job",
+      "expected_reject": true,
+      "name": "native_success_predecessor",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: another known step failure blocks recovery",
+      "expected_reject": true,
+      "name": "different_known_step_failure",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: late original log changed; reclassification required",
+      "expected_reject": true,
+      "name": "late_original_log_drift",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: late or existing original raw requires independent classification; supplementation revoked",
+      "expected_reject": true,
+      "name": "late_original_shard",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: unregistered extra controller run/attempt; wave cannot be replayed",
+      "expected_reject": true,
+      "name": "duplicate_same_wave_run",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original study was retried or changed; prior history requires review",
+      "expected_reject": true,
+      "name": "original_workflow_rerun",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original job source/run drift",
+      "expected_reject": true,
+      "name": "original_job_identity_drift",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: duplicate/invalid original job id",
+      "expected_reject": true,
+      "name": "duplicate_known_original_job",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original study was retried or changed; prior history requires review",
+      "expected_reject": true,
+      "name": "wrong_run_id_in_original_API_response",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: unknown original workflow job",
+      "expected_reject": true,
+      "name": "unknown_extra_job_ignored",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: unknown original artifact",
+      "expected_reject": true,
+      "name": "unknown_extra_artifact_ignored",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: duplicate globally unique job identity",
+      "expected_reject": true,
+      "name": "same_job_id_reused_under_other_run",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: supplement controller/source identity conflated",
+      "expected_reject": true,
+      "name": "supplement_prior_run_attempt2",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: supplement controller/source identity conflated",
+      "expected_reject": true,
+      "name": "supplement_controller_is_not_SHA",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: late error, active, successful or unclassified predecessor blocks supplementation",
+      "expected_reject": true,
+      "name": "successful_target_cannot_repeat",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: late error, active, successful or unclassified predecessor blocks supplementation",
+      "expected_reject": true,
+      "name": "known_failure_cannot_repeat",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: late error, active, successful or unclassified predecessor blocks supplementation",
+      "expected_reject": true,
+      "name": "invalid_target_cannot_repeat",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "coverage_accepted": false,
+      "expected_reject": false,
+      "name": "frozen_package_and_workflow_hash_closure",
+      "rejected": false
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: nonfinite JSON constant",
+      "expected_reject": true,
+      "name": "strict_json_rejects_{\"x\":NaN}",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: nonfinite JSON constant",
+      "expected_reject": true,
+      "name": "strict_json_rejects_{\"x\":Infinity}",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: nonfinite JSON constant",
+      "expected_reject": true,
+      "name": "strict_json_rejects_{\"x\":-Infinity}",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: nonfinite JSON number",
+      "expected_reject": true,
+      "name": "strict_json_rejects_{\"x\":1e999}",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: duplicate JSON field: x",
+      "expected_reject": true,
+      "name": "strict_json_rejects_{\"x\":1,\"x\":2}",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: duplicate artifact identity/name",
+      "expected_reject": true,
+      "name": "artifact_duplicate_id",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original artifact source/run differs",
+      "expected_reject": true,
+      "name": "artifact_wrong_source",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: unavailable or malformed original artifact",
+      "expected_reject": true,
+      "name": "artifact_expired",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original study was retried or changed; prior history requires review",
+      "expected_reject": true,
+      "name": "wrong_original_branch",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "error": "ValueError: original study was retried or changed; prior history requires review",
+      "expected_reject": true,
+      "name": "wrong_original_workflow",
+      "rejected": true
+    },
+    {
+      "as_expected": true,
+      "coverage_accepted": false,
+      "expected_reject": false,
+      "name": "unrelated_failure_retained_without_native_success_claim",
+      "rejected": false
+    }
+  ],
+  "source": "/workspace/scratch/28fef0db5e01/recovery-audit/snapshot-final/candidate/artifacts/checkpoints/p8-d0-recovery-20261009-28fe/recovery.py"
+}

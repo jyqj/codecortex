@@ -1,0 +1,113 @@
+{
+  "schema": "M5-local-mixed-final-independent-review-v1",
+  "status": "failed_original_matrix_with_C1_scoped_success",
+  "source": "fec0698c7fa4d76076b828cc17cf277ad8b307e0",
+  "execution_receipt": {
+    "path": "runtime-review/round9-m5-mixed-review/failed-originals/execution-receipt.json",
+    "sha256": "6983614f78a35189cf9d4a53842e4752f5a149f69aaeaa4e7683fd6f31f6ef9e"
+  },
+  "checks": {
+    "total": 81,
+    "passed": 78,
+    "failed": [
+      {
+        "artifact_id": "c4",
+        "check": "original_cell_and_both_phase_exits",
+        "passed": false
+      },
+      {
+        "artifact_id": "c8",
+        "check": "original_cell_and_both_phase_exits",
+        "passed": false
+      },
+      {
+        "artifact_id": "c16",
+        "check": "original_cell_and_both_phase_exits",
+        "passed": false
+      }
+    ]
+  },
+  "C1": {
+    "full_seal_exact": true,
+    "operations": 900,
+    "all_terminal_success": true,
+    "reads": 600,
+    "builds": 300,
+    "actual_call_peak": 1,
+    "actual_executor_peak": 1,
+    "read_build_overlap": false,
+    "full_typed_sqlite_tables_compared": 15,
+    "source_and_three_binaries_verified": true,
+    "RPC_wire_responses_and_native_statistics_independently_reconstructed": true
+  },
+  "blocked_cells": [
+    {
+      "acceptance": false,
+      "cli_status": "failed",
+      "concurrency": 4,
+      "diagnostic_snapshot": "failed-originals/failure-readback.json",
+      "full_success_audit_not_attempted": "Original CLI/verify failed; no seal repair, file exclusion, or reclassification.",
+      "original_report_exit_code": 0,
+      "original_report_sha256": "7df990bd4afcd53ae1972429e86d13bfd49efb0fcb2d1392b69c9fa197c63526",
+      "original_report_status": "passed_observation",
+      "phase_exits": {
+        "mixed": 2,
+        "verify": 2
+      },
+      "seal_present": false
+    },
+    {
+      "acceptance": false,
+      "cli_status": "failed",
+      "concurrency": 8,
+      "diagnostic_snapshot": "failed-originals/failure-readback.json",
+      "full_success_audit_not_attempted": "Original CLI/verify failed; no seal repair, file exclusion, or reclassification.",
+      "original_report_exit_code": 0,
+      "original_report_sha256": "ef1e70db2b6b829307a8f1d76c350e31bff14b053e3ba5600c7af83658f48af6",
+      "original_report_status": "passed_observation",
+      "phase_exits": {
+        "mixed": 2,
+        "verify": 2
+      },
+      "seal_present": true
+    },
+    {
+      "acceptance": false,
+      "cli_status": "failed",
+      "concurrency": 16,
+      "diagnostic_snapshot": "failed-originals/failure-readback.json",
+      "full_success_audit_not_attempted": "Original CLI/verify failed; no seal repair, file exclusion, or reclassification.",
+      "original_report_exit_code": 0,
+      "original_report_sha256": "edaf0cb737a5d0c9204e215efdb724a493d15cc8037e3d5d483e65c663f6ad69",
+      "original_report_status": "passed_observation",
+      "phase_exits": {
+        "mixed": 2,
+        "verify": 2
+      },
+      "seal_present": false
+    }
+  ],
+  "failure_originals_unchanged_during_copy": true,
+  "C8_seal_difference": {
+    "missing": [],
+    "added": [
+      "project/.codecortex/index.sqlite3-shm",
+      "project/.codecortex/index.sqlite3-wal"
+    ],
+    "changed": []
+  },
+  "cause": "unresolved; no attribution to product or environment",
+  "limitations": [
+    "Original reports are written before seal_output/verify_output;reportpassed/0/sealed does not supersede actualmixed2/verify2.",
+    "No failed cell was resealed, retried, excluded from the denominator or accepted; the four-cap matrix is failed.",
+    "No product or statistics binary was executed by this reviewer. C1 SQLite comparison used only readonly immutable temporary copies.",
+    "C4/C8/C16 SQLite byte snapshots preserve sidecars as observed after failure; no SQLite connection, checkpoint or cleanup was invoked on these originals.",
+    "Source/build shared and fourcells samehost overlapped soak; no isolated performance or causal inference."
+  ],
+  "ledger_unchanged": {
+    "total": 192,
+    "completed": 163,
+    "remaining": 29
+  },
+  "original_tasks_completed": 0
+}

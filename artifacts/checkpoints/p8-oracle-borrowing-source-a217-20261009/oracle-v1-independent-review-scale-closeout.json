@@ -1,0 +1,91 @@
+{
+  "actual_byte_checks": {
+    "actual_reverse_patch_restores_exact_baseline": true,
+    "clear_values_exact": true,
+    "owned_project_exact": true,
+    "project_row_canonical_run_exact": true,
+    "streaming_same_as_independent_baseline": true,
+    "two_original_projection_tests_exact": true
+  },
+  "baseline": {
+    "file": {
+      "bytes": 14710,
+      "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "mode": "0o644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/oracle.before.rs",
+      "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15"
+    },
+    "oracle_path_same_as_C3ff": "root verified prior source comparison; not measurement relabeling",
+    "source": "M7F fffd950d5b34b0180f308db1428a57d5bf358bf1"
+  },
+  "candidate_manifest": {
+    "bytes": 4554,
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/candidate-manifest-v1.json",
+    "sha256": "d597c10d5c4dd11999e14967d58c34586fb32ca3c19400225dee0843f8c2bf7e"
+  },
+  "control_scope": {
+    "actual_local_execution": "Only Python byte/hash checks and a reverse git apply to a temporary copy. No Rust compilation, rustfmt, tests, native workload, scale/oracle DB replay or cost probe executed.",
+    "new_ignored_cost_probe": "benchmark::oracle::projection_tests::borrowed_serialization_release_cost_probe",
+    "new_normal_controls": [
+      "borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns",
+      "borrowed_projection_uses_original_value_real_encoding",
+      "borrowed_projection_preserves_select_error_order_and_recovers",
+      "borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries"
+    ],
+    "old_controls": "Original two projection unit methods remain exact; existing unchanged reference_spool tier/budget/error/ordering controls and integration 15-table tests remain applicable."
+  },
+  "findings": [
+    {
+      "boundary": "row lifetime and ownership",
+      "conclusion": "Text ValueRef is UTF8-validated to &str and serialized synchronously while the rusqlite Row remains borrowed. The per-row cells Vec is dropped before serialize_row returns its owned String; no borrowed data is retained in RowProjection."
+    },
+    {
+      "boundary": "scalar and blob encoding",
+      "conclusion": "Null, i64 and f64 use the same Value/json! conversion as the unchanged owned project function. This preserves signed-zero and nonfinite float encoding. Blob digest uses the same manifest::digest and serializes the same single blob_digest map entry. There is no direct f64-Serializer equivalence assumption."
+    },
+    {
+      "boundary": "keys and duplicate columns",
+      "conclusion": "The first successful row inserts keys in original column order into the actual serde_json::Map, then caches its keys order and each key last SELECT index. All column values are read before this selection, so overwritten invalid UTF8 or missing-column errors still occur. Existing partial Map state can contain only a prefix of this fixed layout and preserves the same first-insertion ordering. No hardcoded BTree-only serialization order."
+    },
+    {
+      "boundary": "error recovery",
+      "conclusion": "get_ref, UTF8, scalar and blob work remain in original SELECT sequence. The final clear_values runs on both Result success and error, clearing prior owned projection values. Serialization errors remain errors, with no successful prefix result."
+    },
+    {
+      "boundary": "resource and equality protocol",
+      "conclusion": "Original streaming caller performs count and input-row checks before this method; serialized length, cumulative bytes, scratch size and insertion transaction behavior are untouched. Per-row cells allocation is proportional to existing columns; cached indices are per-layout. Both complete source snapshots, all 15 tables, duplicate-preserving SQLite sort, Value equality, signed-zero ordering, and all digest comparisons are unchanged."
+    },
+    {
+      "boundary": "cost probe reference",
+      "conclusion": "Ignored probe invokes the exact former streaming algorithm project -> to_string(reused Map) -> clear_values, not the fresh-map project_row variant. Five named finite synthetic SQLite cases have 256 rows each, one warmup per side and 20 alternating-order rounds. Full Vec bytes and digests are compared. Timings include SELECT traversal/serialization/retained output and exclude final digest calculation; no time threshold and no full-study performance claim."
+    }
+  ],
+  "limitations": [
+    "Static acceptance is not proof of compilation or formatting; normal CI must execute the original and new Rust tests.",
+    "New Vec and scalar/digest allocations remain; no allocation-free claim.",
+    "No measured speedup or attribution of prior five-hour timeouts to this serialization path.",
+    "The cost workflow is authored separately by this reviewer and is not independently reviewed by this report; runtime peer reviews it."
+  ],
+  "protocol_and_ledger": {
+    "formal_task_changes": 0,
+    "new_scale_samples": 0,
+    "old_C_accepted_samples": 41,
+    "old_C_accepted_shards": 4,
+    "original_studies_modified": false,
+    "refs_modified": false,
+    "tasks_done": 163,
+    "tasks_remaining": 29
+  },
+  "reviewed_utc": "2026-10-09T15:47:47.557670+00:00",
+  "reviewer": "scale_closeout",
+  "schema": "oracle-borrowed-serialization-independent-review-v1",
+  "source": {
+    "bytes": 29203,
+    "git_blob": "9f975dbf32a8b71dbeb9d55f83ebfedbdec8c217",
+    "mode": "0o644",
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/crates/cc-eval/src/benchmark/oracle.rs",
+    "repository_path": "crates/cc-eval/src/benchmark/oracle.rs",
+    "sha256": "15e30d355091687cad4ece3dc7b5da6dd1838f81f3f422f1e8da4ad8bb359054"
+  },
+  "status": "accepted_scoped_static"
+}

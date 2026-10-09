@@ -1,0 +1,24 @@
+{
+  "scope": "Pre-execution static corrections; no Actions or Rust execution in v1/v2.",
+  "prior_v2_sha256": "c1371c2fc5f8930b90171627ec180c89aca01e842375792a8bf3cee9bb30b3f6",
+  "findings": [
+    {
+      "finding": "runner context unavailable in top-level env",
+      "resolution": "v1 retained; v2 sets RUNNER_TEMP paths through GITHUB_ENV in runner step",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability"
+    },
+    {
+      "finding": "Cargo warning JSON may quote probe schema text",
+      "resolution": "v3 decodes object then checks its actual schema; compiler-message remains compiler-message"
+    },
+    {
+      "finding": "named empty default feature is present in actual Cargo feature list",
+      "resolution": "v3 requires [default], keeping original default Cargo command; C actual producer features independently read",
+      "actual_reference": {
+        "path": "/workspace/scratch/a217aaae3bde/scale-pr180-C-review/validated/build-validation/cargo.jsonl",
+        "sha256": "27235aaeaecf26817bd4927c8750330fda44d98e1e5a841a6979d3417fcb966e",
+        "relevance": "Same cc-eval manifest default=[]/same default feature command policy; artifact target differs from upcoming --lib test and is not claimed as its execution."
+      }
+    }
+  ]
+}

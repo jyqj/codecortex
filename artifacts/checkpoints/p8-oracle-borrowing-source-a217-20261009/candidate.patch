@@ -1,0 +1,381 @@
+--- a/crates/cc-eval/src/benchmark/oracle.rs
++++ b/crates/cc-eval/src/benchmark/oracle.rs
+@@ -7,6 +7,7 @@
+     normalizer, report, Result,
+ };
+ use rusqlite::{types::ValueRef, Connection, OpenFlags};
++use serde::{ser::SerializeMap, Serialize, Serializer};
+ use serde_json::{json, Value};
+ use std::{collections::BTreeMap, path::Path};
+ const TABLES: &[&str] = &[
+@@ -115,10 +116,48 @@
+ 
+ /// One immutable SELECT layout, reused only within one table and input side.
+ /// Keys are allocated lazily, after the streaming caller checks the first row's
+-/// size. Values are released after serialization; only keys/map nodes survive.
++/// size. Streaming text is borrowed only for the current row. The original
++/// owned projection remains available to the diagnostic Value API.
+ struct RowProjection<'a> {
+     cols: &'a [String],
+     values: serde_json::Map<String, Value>,
++    serialization_order: Option<Vec<usize>>,
++}
++
++enum ProjectedCell<'a> {
++    Scalar(Value),
++    Text(&'a str),
++    BlobDigest(String),
++}
++
++impl Serialize for ProjectedCell<'_> {
++    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
++        match self {
++            Self::Scalar(value) => value.serialize(serializer),
++            Self::Text(value) => serializer.serialize_str(value),
++            Self::BlobDigest(digest) => {
++                let mut object = serializer.serialize_map(Some(1))?;
++                object.serialize_entry("blob_digest", digest)?;
++                object.end()
++            }
++        }
++    }
++}
++
++struct BorrowedProjectedRow<'a, 'row> {
++    cols: &'a [String],
++    order: &'a [usize],
++    cells: &'a [ProjectedCell<'row>],
++}
++
++impl Serialize for BorrowedProjectedRow<'_, '_> {
++    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
++        let mut object = serializer.serialize_map(Some(self.order.len()))?;
++        for &index in self.order {
++            object.serialize_entry(&self.cols[index], &self.cells[index])?;
++        }
++        object.end()
++    }
+ }
+ 
+ impl<'a> RowProjection<'a> {
+@@ -126,6 +165,7 @@
+         Self {
+             cols,
+             values: serde_json::Map::new(),
++            serialization_order: None,
+         }
+     }
+ 
+@@ -162,8 +202,45 @@
+     }
+ 
+     fn serialize_row(&mut self, row: &rusqlite::Row<'_>) -> Result<String> {
+-        self.project(row)?;
+-        let serialized: Result<String> = serde_json::to_string(&self.values).map_err(Into::into);
++        let serialized: Result<String> = (|| {
++            // Read and validate every cell in SELECT order, even a duplicate
++            // key later overwritten by another column. This preserves the
++            // owned projection's DB/UTF8 error precedence.
++            let mut cells = Vec::with_capacity(self.cols.len());
++            for index in 0..self.cols.len() {
++                cells.push(match row.get_ref(index).map_err(db_error)? {
++                    ValueRef::Null => ProjectedCell::Scalar(Value::Null),
++                    ValueRef::Integer(value) => ProjectedCell::Scalar(json!(value)),
++                    ValueRef::Real(value) => ProjectedCell::Scalar(json!(value)),
++                    ValueRef::Text(value) => ProjectedCell::Text(
++                        std::str::from_utf8(value).map_err(|_| invalid("oracle UTF8"))?,
++                    ),
++                    ValueRef::Blob(value) => ProjectedCell::BlobDigest(manifest::digest(value)),
++                });
++            }
++            if self.serialization_order.is_none() {
++                // Derive order from the actual serde Map implementation,
++                // including feature unification. Duplicate keys retain their
++                // original position but use their last SELECT column's value.
++                let mut last_indices = BTreeMap::new();
++                for (index, col) in self.cols.iter().enumerate() {
++                    self.values.entry(col.clone()).or_insert(Value::Null);
++                    last_indices.insert(col.as_str(), index);
++                }
++                self.serialization_order = Some(
++                    self.values
++                        .keys()
++                        .map(|col| last_indices[col.as_str()])
++                        .collect(),
++                );
++            }
++            let borrowed = BorrowedProjectedRow {
++                cols: self.cols,
++                order: self.serialization_order.as_deref().expect("layout initialized"),
++                cells: &cells,
++            };
++            serde_json::to_string(&borrowed).map_err(Into::into)
++        })();
+         self.clear_values();
+         serialized
+     }
+@@ -370,4 +447,263 @@
+         assert_eq!(actual, r#"{"left":null,"right":7}"#);
+         assert!(projection.values.values().all(Value::is_null));
+     }
+-}
++
++    #[test]
++    fn borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns() {
++        use rusqlite::types::Value as SqlValue;
++        let conn = Connection::open_in_memory().unwrap();
++        let layouts = [
++            vec!["z", "a", "odd\"列", "z", ""],
++            vec!["", "z", "a", "odd\"列", "z"],
++            vec!["same", "same", "same", "same", "same"],
++        ];
++        let cases = [
++            vec![
++                SqlValue::Text("overwritten\0\n\"".into()),
++                SqlValue::Integer(i64::MIN),
++                SqlValue::Blob(vec![0, 255, 128]),
++                SqlValue::Real(-0.0),
++                SqlValue::Text("é/中文\t\\".into()),
++            ],
++            vec![
++                SqlValue::Null,
++                SqlValue::Real(f64::INFINITY),
++                SqlValue::Blob(Vec::new()),
++                SqlValue::Real(f64::NEG_INFINITY),
++                SqlValue::Integer(i64::MAX),
++            ],
++        ];
++        let mut statement = conn.prepare("SELECT ?1, ?2, ?3, ?4, ?5").unwrap();
++        for layout in layouts {
++            let cols: Vec<String> = layout.into_iter().map(String::from).collect();
++            let mut projection = RowProjection::new(&cols);
++            for values in &cases {
++                let mut rows = statement.query(rusqlite::params_from_iter(values)).unwrap();
++                let row = rows.next().unwrap().unwrap();
++                let expected = serde_json::to_string(&project_row(row, &cols).unwrap()).unwrap();
++                assert_eq!(projection.serialize_row(row).unwrap(), expected);
++                assert_eq!(projection.serialize_row(row).unwrap(), expected);
++                assert!(projection.values.values().all(Value::is_null));
++            }
++        }
++    }
++
++    #[test]
++    fn borrowed_projection_uses_original_value_real_encoding() {
++        for value in [
++            f64::NAN,
++            f64::INFINITY,
++            f64::NEG_INFINITY,
++            -0.0,
++            0.0,
++            f64::MIN_POSITIVE,
++            f64::from_bits(1),
++            f64::MAX,
++            1.2345678901234567,
++        ] {
++            let original = json!(value);
++            let borrowed = ProjectedCell::Scalar(json!(value));
++            assert_eq!(
++                serde_json::to_string(&borrowed).unwrap(),
++                serde_json::to_string(&original).unwrap()
++            );
++        }
++    }
++
++    #[test]
++    fn borrowed_projection_preserves_select_error_order_and_recovers() {
++        let conn = Connection::open_in_memory().unwrap();
++        let cols = vec!["z".into(), "a".into(), "z".into()];
++        let mut projection = RowProjection::new(&cols);
++        for sql in [
++            "SELECT CAST(x'80' AS TEXT), 'ok', 'overwrites-invalid-text'",
++            "SELECT 1, CAST(x'80' AS TEXT)",
++            "SELECT 1, 2",
++        ] {
++            let mut statement = conn.prepare(sql).unwrap();
++            let mut rows = statement.query([]).unwrap();
++            let row = rows.next().unwrap().unwrap();
++            let original_error = project_row(row, &cols).unwrap_err().to_string();
++            assert_eq!(
++                projection.serialize_row(row).unwrap_err().to_string(),
++                original_error
++            );
++            assert!(projection.values.values().all(Value::is_null));
++            let actual = conn
++                .query_row("SELECT 'old', NULL, 'last'", [], |row| {
++                    let expected =
++                        serde_json::to_string(&project_row(row, &cols).unwrap()).unwrap();
++                    let actual = projection.serialize_row(row).unwrap();
++                    assert_eq!(actual, expected);
++                    Ok(actual)
++                })
++                .unwrap();
++            let expected: Value = json!({"z": "last", "a": null});
++            assert_eq!(actual, serde_json::to_string(&expected).unwrap());
++        }
++    }
++
++    #[test]
++    fn borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries() {
++        let conn = Connection::open_in_memory().unwrap();
++        let cols = vec!["payload".into()];
++        let mut projection = RowProjection::new(&cols);
++        let mut statement = conn.prepare("SELECT ?1").unwrap();
++        for limit in [128, 65_536, 1_048_576] {
++            for offset in [-1_isize, 0, 1] {
++                // The compact JSON wrapper {"payload":""} is fourteen bytes.
++                let text = "x".repeat((limit as isize + offset - 14) as usize);
++                let mut rows = statement.query([&text]).unwrap();
++                let row = rows.next().unwrap().unwrap();
++                let expected = serde_json::to_string(&project_row(row, &cols).unwrap()).unwrap();
++                let actual = projection.serialize_row(row).unwrap();
++                assert_eq!(actual, expected);
++                assert_eq!(actual.len(), (limit as isize + offset) as usize);
++                assert_eq!(actual.len() > limit, offset > 0);
++            }
++        }
++        let escaped = "\0\n\t\"\\é".repeat(256);
++        let mut rows = statement.query([&escaped]).unwrap();
++        let row = rows.next().unwrap().unwrap();
++        let expected = serde_json::to_string(&project_row(row, &cols).unwrap()).unwrap();
++        let actual = projection.serialize_row(row).unwrap();
++        assert_eq!(actual.as_bytes(), expected.as_bytes());
++        assert!(actual.len() > escaped.len());
++    }
++
++    // Exact pre-change streaming baseline: keep its Map across rows instead
++    // of substituting the slower, per-row project_row diagnostic API.
++    fn original_serialize_row(
++        projection: &mut RowProjection<'_>,
++        row: &rusqlite::Row<'_>,
++    ) -> Result<String> {
++        projection.project(row)?;
++        let serialized: Result<String> =
++            serde_json::to_string(&projection.values).map_err(Into::into);
++        projection.clear_values();
++        serialized
++    }
++
++    #[test]
++    #[ignore = "explicit finite release cost observation; no timing acceptance threshold"]
++    fn borrowed_serialization_release_cost_probe() {
++        use rusqlite::types::Value as SqlValue;
++        use std::time::Instant;
++
++        fn collect(
++            statement: &mut rusqlite::Statement<'_>,
++            projection: &mut RowProjection<'_>,
++            borrowed: bool,
++        ) -> (Vec<String>, u128) {
++            let started = Instant::now();
++            let mut rows = statement.query([]).unwrap();
++            let mut output = Vec::new();
++            while let Some(row) = rows.next().unwrap() {
++                output.push(if borrowed {
++                    projection.serialize_row(row).unwrap()
++                } else {
++                    original_serialize_row(projection, row).unwrap()
++                });
++            }
++            (output, started.elapsed().as_nanos())
++        }
++
++        let cases = [
++            (
++                "multiple_text",
++                vec![
++                    SqlValue::Text("é/中文\n\"\\".repeat(512)),
++                    SqlValue::Text("manifest-payload".repeat(256)),
++                    SqlValue::Text("qualified::name".repeat(128)),
++                    SqlValue::Text("path/to/source.rs".repeat(128)),
++                    SqlValue::Integer(17),
++                    SqlValue::Null,
++                ],
++            ),
++            (
++                "short_fields",
++                vec![
++                    SqlValue::Text("a".into()),
++                    SqlValue::Text("bc".into()),
++                    SqlValue::Integer(i64::MIN),
++                    SqlValue::Integer(i64::MAX),
++                    SqlValue::Real(-0.0),
++                    SqlValue::Real(1.25),
++                ],
++            ),
++            (
++                "blob",
++                vec![
++                    SqlValue::Blob([0, 255, 128, 1].repeat(1024)),
++                    SqlValue::Blob(Vec::new()),
++                    SqlValue::Text("blob-name".into()),
++                    SqlValue::Integer(4),
++                    SqlValue::Null,
++                    SqlValue::Real(0.0),
++                ],
++            ),
++            ("empty_text", vec![SqlValue::Text(String::new()); 6]),
++            ("null", vec![SqlValue::Null; 6]),
++        ];
++        let cols: Vec<String> = ["z", "a", "payload", "path", "ordinal", "empty"]
++            .into_iter()
++            .map(String::from)
++            .collect();
++        for (case, values) in cases {
++            let conn = Connection::open_in_memory().unwrap();
++            conn.execute_batch("CREATE TABLE sample(c0,c1,c2,c3,c4,c5)")
++                .unwrap();
++            for _ in 0..256 {
++                conn.execute(
++                    "INSERT INTO sample VALUES(?1,?2,?3,?4,?5,?6)",
++                    rusqlite::params_from_iter(&values),
++                )
++                .unwrap();
++            }
++            let mut statement = conn
++                .prepare("SELECT c0,c1,c2,c3,c4,c5 FROM sample ORDER BY rowid")
++                .unwrap();
++            let mut original = RowProjection::new(&cols);
++            let mut borrowed = RowProjection::new(&cols);
++            let (warm_original, _) = collect(&mut statement, &mut original, false);
++            let (warm_borrowed, _) = collect(&mut statement, &mut borrowed, true);
++            assert_eq!(warm_original, warm_borrowed);
++            drop((warm_original, warm_borrowed));
++            for round in 0..20 {
++                let ((expected, original_ns), (actual, borrowed_ns)) = if round % 2 == 0 {
++                    (
++                        collect(&mut statement, &mut original, false),
++                        collect(&mut statement, &mut borrowed, true),
++                    )
++                } else {
++                    let actual = collect(&mut statement, &mut borrowed, true);
++                    let expected = collect(&mut statement, &mut original, false);
++                    (expected, actual)
++                };
++                assert_eq!(actual, expected);
++                assert_eq!(actual.len(), 256);
++                let original_digest = manifest::digest(&serde_json::to_vec(&expected).unwrap());
++                let borrowed_digest = manifest::digest(&serde_json::to_vec(&actual).unwrap());
++                assert_eq!(original_digest, borrowed_digest);
++                println!(
++                    "{}",
++                    json!({
++                        "schema": "p8-oracle-serialization-cost-v1",
++                        "case": case,
++                        "round": round,
++                        "first": if round % 2 == 0 { "original" } else { "borrowed" },
++                        "rows": actual.len(),
++                        "canonical_bytes": actual.iter().map(String::len).sum::<usize>(),
++                        "original_ns": original_ns.to_string(),
++                        "borrowed_ns": borrowed_ns.to_string(),
++                        "original_digest": original_digest,
++                        "borrowed_digest": borrowed_digest,
++                        "timing_scope": "same SQLite SELECT traversal plus row serialization and output retention",
++                        "timing_threshold": null,
++                        "original_streaming_source_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68"
++                    })
++                );
++            }
++        }
++    }
++}

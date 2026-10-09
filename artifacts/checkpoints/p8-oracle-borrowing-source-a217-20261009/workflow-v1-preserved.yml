@@ -1,0 +1,177 @@
+name: P8 oracle serialization cost observation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: '0'
+  CARGO_BUILD_JOBS: '2'
+  RUSTFLAGS: ''
+  CARGO_ENCODED_RUSTFLAGS: ''
+  PYTHONDONTWRITEBYTECODE: '1'
+  CARGO_TARGET_DIR: ${{ runner.temp }}/p8-oracle-cost-target
+  P8_COST_OUTPUT: ${{ runner.temp }}/p8-oracle-cost
+  P8_COST_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+  P8_COST_TEST: benchmark::oracle::projection_tests::borrowed_serialization_release_cost_probe
+
+jobs:
+  observe:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-cost-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - name: Prepare original output directory
+        run: mkdir "$P8_COST_OUTPUT"
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Bind actual source, compiler and probe command
+        run: |
+          python3 -B - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          from datetime import datetime, timezone
+
+          root = Path(os.environ['GITHUB_WORKSPACE'])
+          out = Path(os.environ['P8_COST_OUTPUT'])
+          sys.path.insert(0, str(root / 'scripts'))
+          from p7_build_identity import source_snapshot
+
+          source = source_snapshot(root)
+          assert source['source_commit'] == os.environ['P8_COST_EXPECTED_HEAD']
+          observers = {}
+          for path in ('scripts/p7_build_identity.py', '.github/workflows/p8-oracle-serialization-cost.yml'):
+              original = subprocess.check_output(['git', 'show', 'HEAD:' + path], cwd=root)
+              live = (root / path).read_bytes()
+              assert live == original, path
+              observers[path] = hashlib.sha256(live).hexdigest()
+          (out / 'source-before.json').write_text(json.dumps(source, indent=2, sort_keys=True) + '\n')
+          (out / 'Cargo.lock').write_bytes((root / 'Cargo.lock').read_bytes())
+          compiler = {}
+          for name, command in [('rustc', ['rustc', '-vV']), ('cargo', ['cargo', '-Vv'])]:
+              value = subprocess.check_output(command, stderr=subprocess.STDOUT)
+              (out / (name + '-before.txt')).write_bytes(value)
+              compiler[name] = hashlib.sha256(value).hexdigest()
+          argv = ['cargo', 'test', '--release', '--locked', '-p', 'cc-eval', '--lib',
+                  os.environ['P8_COST_TEST'], '--', '--exact', '--ignored', '--nocapture', '--test-threads=1']
+          receipt = {'schema': 'p8-oracle-serialization-cost-observation-v1',
+                     'created_utc': datetime.now(timezone.utc).isoformat(),
+                     'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                     'expected_source': os.environ['P8_COST_EXPECTED_HEAD'],
+                     'source_commit': source['source_commit'], 'source_tree': source['source_tree'],
+                     'Cargo_lock_sha256': hashlib.sha256((root / 'Cargo.lock').read_bytes()).hexdigest(),
+                     'observer_inputs': observers, 'toolchain_output_sha256': compiler, 'argv': argv,
+                     'environment': {key: os.environ.get(key) for key in
+                         ('CARGO_INCREMENTAL', 'CARGO_BUILD_JOBS', 'CARGO_TARGET_DIR', 'RUSTFLAGS',
+                          'CARGO_ENCODED_RUSTFLAGS', 'RUSTUP_TOOLCHAIN', 'TMPDIR', 'TMP', 'TEMP')},
+                     'scope': 'Finite release serialization cost observation; not a scale sample or TODO acceptance gate.'}
+          (out / 'identity-before.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+          PY
+      - name: Observe the original finite ignored probe and retain both streams
+        run: |
+          python3 -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          import time
+          from datetime import datetime, timezone
+
+          out = Path(os.environ['P8_COST_OUTPUT'])
+          identity = json.loads((out / 'identity-before.json').read_text())
+          started = datetime.now(timezone.utc).isoformat()
+          begin = time.monotonic_ns()
+          code = None
+          error = None
+          try:
+              with (out / 'probe.stdout').open('wb') as stdout, (out / 'probe.stderr').open('wb') as stderr:
+                  code = subprocess.run(identity['argv'], cwd=os.environ['GITHUB_WORKSPACE'],
+                                        stdout=stdout, stderr=stderr, check=False).returncode
+          except BaseException as exc:
+              error = type(exc).__name__ + ': ' + str(exc)
+              raise
+          finally:
+              receipt = {'started_utc': started, 'finished_utc': datetime.now(timezone.utc).isoformat(),
+                         'wall_ns': time.monotonic_ns() - begin, 'exit_code': code, 'launch_error': error,
+                         'argv': identity['argv'], 'scope': 'Includes compilation; per-round serialization times are in the original probe stdout.'}
+              (out / 'execution.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+              for name, stream in [('probe.stdout', sys.stdout.buffer), ('probe.stderr', sys.stderr.buffer)]:
+                  path = out / name
+                  if path.exists():
+                      with path.open('rb') as source:
+                          for block in iter(lambda: source.read(1024 * 1024), b''):
+                              stream.write(block)
+                      stream.flush()
+          sys.exit(code)
+          PY
+      - name: Preserve after-source identity and original file hashes even on failure
+        if: always()
+        run: |
+          python3 -B - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          root = Path(os.environ['GITHUB_WORKSPACE'])
+          out = Path(os.environ['P8_COST_OUTPUT'])
+          out.mkdir(exist_ok=True)
+          sys.path.insert(0, str(root / 'scripts'))
+          receipt = {'source_unchanged': False, 'observer_inputs_unchanged': False,
+                     'toolchain_outputs_unchanged': False, 'error': None}
+          try:
+              from p7_build_identity import source_snapshot
+              after = source_snapshot(root)
+              (out / 'source-after.json').write_text(json.dumps(after, indent=2, sort_keys=True) + '\n')
+              before = json.loads((out / 'source-before.json').read_text())
+              identity = json.loads((out / 'identity-before.json').read_text())
+              receipt['source_unchanged'] = after == before
+              receipt['observer_inputs_unchanged'] = all(
+                  hashlib.sha256((root / path).read_bytes()).hexdigest() == digest
+                  for path, digest in identity['observer_inputs'].items())
+              compiler = {}
+              for name, command in [('rustc', ['rustc', '-vV']), ('cargo', ['cargo', '-Vv'])]:
+                  value = subprocess.check_output(command, stderr=subprocess.STDOUT)
+                  (out / (name + '-after.txt')).write_bytes(value)
+                  compiler[name] = hashlib.sha256(value).hexdigest()
+              receipt['toolchain_outputs_unchanged'] = compiler == identity['toolchain_output_sha256']
+              assert all(receipt[key] for key in ('source_unchanged', 'observer_inputs_unchanged', 'toolchain_outputs_unchanged'))
+          except Exception as exc:
+              receipt['error'] = type(exc).__name__ + ': ' + str(exc)
+          finally:
+              receipt['files'] = {path.name: {'bytes': path.stat().st_size,
+                  'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+                  for path in sorted(out.iterdir()) if path.is_file() and path.name != 'identity-after.json'}
+              (out / 'identity-after.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+          if receipt['error'] is not None:
+              raise SystemExit(1)
+          PY
+      - name: Preserve every original cost observation, including failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-oracle-serialization-cost-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-oracle-cost
+          if-no-files-found: error

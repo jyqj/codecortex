@@ -1,0 +1,101 @@
+{
+  "baseline": {
+    "file": {
+      "bytes": 14710,
+      "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "mode": "0o644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/oracle.before.rs",
+      "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15"
+    },
+    "oracle_path_same_as_C3ff": "root verified prior source comparison; not measurement relabeling",
+    "source": "M7F fffd950d5b34b0180f308db1428a57d5bf358bf1"
+  },
+  "behavior": {
+    "error_priority": "DB/get_ref and UTF8 errors retain SELECT order even overwritten duplicate columns",
+    "key_order": "derived once from actual serde_json::Map keys after original-order insertion; duplicate keys serialize last SELECT index",
+    "not_claimed": [
+      "no measured speedup",
+      "no full-study result",
+      "no allocation-free claim",
+      "no removal of clear_values traversal",
+      "no change to global equality/duplicates/signed-zero comparison"
+    ],
+    "owned_projection": "project/project_row/canonical unchanged; values cleared on serialize success/error",
+    "read_order": "all original SELECT columns get_ref/UTF8/scalar conversion/digest in original order before any serialization",
+    "real_encoding": "original json!(f64) Value conversion reused including nonfinite and signed zero",
+    "resources": "per-row Vec bounded by original column count; cached key indices; original caller row preflight and all byte/row/scratch/full-table limits unchanged",
+    "text": "borrowed str only during same Row lifetime"
+  },
+  "cost_probe": {
+    "alternating_rounds_per_case": 20,
+    "baseline": "exact old project->to_string(reused values Map)->clear_values, not per-row project_row",
+    "cases": [
+      "multiple_text",
+      "short_fields",
+      "blob",
+      "empty_text",
+      "null"
+    ],
+    "checks": "complete serialized Vec equality and both BLAKE3 digests; no wall threshold",
+    "exact_test": "benchmark::oracle::projection_tests::borrowed_serialization_release_cost_probe",
+    "ignored": true,
+    "rows_per_case": 256,
+    "timing_scope": "same SQLite SELECT traversal plus serialization and output retention; digest after timing",
+    "warmup_per_side": 1
+  },
+  "created_utc": "2026-10-09T15:44:37.160179+00:00",
+  "existing_required_tests": "all original oracle projection, streaming reference-spool/budget/value controls and full existing CI remain applicable",
+  "files": [
+    {
+      "bytes": 29203,
+      "git_blob": "9f975dbf32a8b71dbeb9d55f83ebfedbdec8c217",
+      "mode": "0o644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/crates/cc-eval/src/benchmark/oracle.rs",
+      "repository_path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "sha256": "15e30d355091687cad4ece3dc7b5da6dd1838f81f3f422f1e8da4ad8bb359054"
+    }
+  ],
+  "formal_task_changes": 0,
+  "local_validation": {
+    "cargo": null,
+    "performance": "not_run",
+    "rust_compile": "not_run",
+    "rust_tests": "not_run",
+    "rustc": null,
+    "rustfmt": null,
+    "rustfmt_check": "not_run",
+    "static_checks": "passed"
+  },
+  "normal_new_tests": [
+    "borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns",
+    "borrowed_projection_uses_original_value_real_encoding",
+    "borrowed_projection_preserves_select_error_order_and_recovers",
+    "borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries"
+  ],
+  "patch": {
+    "bytes": 16317,
+    "git_blob": "38546141991e22a07a9eaf5e2713f378d95dd29a",
+    "mode": "0o644",
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-borrowed-serialization-candidate/candidate.patch",
+    "sha256": "2e704ad0322f830d5c32a8a22ea9d7b4706b41c387747c8b32fff03e66f665f1"
+  },
+  "schema": "oracle-borrowed-serialization-candidate-v1",
+  "scope": "one Rust source path; source candidate only; no refs or original workload changed",
+  "tasks_done": 163,
+  "tasks_remaining": 29,
+  "unchanged_checks": {
+    "canonical_and_public_API_byte_identical": true,
+    "clear_values_byte_identical": true,
+    "owned_project_byte_identical": true,
+    "two_original_projection_tests_byte_identical": true
+  },
+  "unchanged_support": [
+    {
+      "bytes": 29924,
+      "git_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "mode": "0o644",
+      "path": "/workspace/scratch/a217aaae3bde/C8-resume-diagnostic/candidate-M7F/guard-view/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4"
+    }
+  ]
+}

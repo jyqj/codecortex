@@ -1,0 +1,14 @@
+fatal: path 'crates/cc-eval/src/bench.rs' exists on disk, but not in 'd0cb69c601e530dcef738af0c2dffb8d3b8bcf28'
+Traceback (most recent call last):
+  File "/workspace/scratch/28fef0db5e01/runtime-review/round14-final-source/audit_source_and_scope.py", line 31, in <module>
+    blob=git('rev-parse',PRODUCT+':'+name);d0blob=git('rev-parse',D0+':'+name)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/28fef0db5e01/runtime-review/round14-final-source/audit_source_and_scope.py", line 12, in git
+    def git(*args):return subprocess.check_output(['git','-C',str(SOURCE),*args],env=ENV).decode().strip()
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-C', '/workspace/scratch/28fef0db5e01/integration-validation/round14-final-source/source', 'rev-parse', 'd0cb69c601e530dcef738af0c2dffb8d3b8bcf28:crates/cc-eval/src/bench.rs']' returned non-zero exit status 128.

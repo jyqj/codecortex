@@ -1,0 +1,15 @@
+# Fixed actual product source review delivery
+
+This directory is a source-review handoff for actual GitHub product `04b34ec76fd33d21fd897fb992d87514f6a2013d`, tree `3d73ccc6685e2f96f74281826707f4adbfab7822`, ordered parents M6 `e95fd750d2f5052d0308c970cd5032c48b765cde` and actual main `55902428d49b09bb4a90cee6ccccf985680618bb`.
+
+The main record at `delivery/artifacts/checkpoints/p8-completion-20261009/independent-source-review.json` uses the unchanged v15 format: BASE7354, exact26 cumulative delta rows, complete1087 native inputs, complete138 validation inputs, accepted_scoped, and the original source/validation scope. No extra exclusion or new gate predicate was introduced. The original cumulative delta shrinks from30 to26 because D0 restores some original BASE bytes, not because inputs were omitted. All236 historical protected inputs retain exact Git blobs and modes.
+
+The official API readback binds the actual commit, ordered parents and tree. The metadata Git view contains the complete immutable tree and blobs; the actual04b34 commit object was not locally available at review time. The review therefore does not claim a local raw-commit readback. No full clone/fetch, source checkout mutation, or reference update was needed.
+
+The409 original named Python tests keep their real executed4d identity. The first390-test run had385 named successes,5 fixture-dependent test errors and1 class-setup error. After materializing only3 exact pre-existing Git fixtures, only24 blocked original names were run and passed. The409-name union is exact and disjoint. Those original failure logs/receipts, completion receipts/logs and byte/mode bridge remain in candidate-controls; no single successful409-run is invented. The actual product's complete1087 native inputs,138 validation inputs and all3 fixtures equal the executed candidate bytes.
+
+The narrower reader check first compared96 recorded Python execution inputs against the138-item v15 validation manifest. One recorded file was the v15 guard, which is excluded by the pre-existing v15 rule and thus not in that manifest. The failed reviewer script and output are retained. The corrected check independently hashes all96 actual product Git blobs, including that guard; it does not add an exclusion or alter the original domain. Final binding has33 successful checks.
+
+The source review preserves the old M6 main review byte for byte and its original follow-up validation in the historical fields. Original review attribution remains historical. New eight-file source review and actual tree binding are explicitly attributed to /root/runtime_review, a non-author of the root's integration. The source-review record grants no runtime, scale, platform, quality, release or TODO completion. The explicit minimum real execution plan is retained.
+
+Root may commit these34 artifact files as the next independent review commit R, then install the original v15 PRODUCT/REVIEW/REGISTRY_SHA256 pins and matching registry. Run the unchanged final source proof/controls after actualR exists. No R commit SHA is invented or installed by this handoff. Nothing here publishes refs or schedules measurements.

@@ -251,7 +251,9 @@ fn identical_cells(a: &rusqlite::Row<'_>, b: &rusqlite::Row<'_>, count: usize) -
             (ValueRef::Null, ValueRef::Null) => true,
             (ValueRef::Integer(a), ValueRef::Integer(b)) => a == b,
             (ValueRef::Real(a), ValueRef::Real(b)) => a.to_bits() == b.to_bits(),
-            (ValueRef::Text(a), ValueRef::Text(b)) | (ValueRef::Blob(a), ValueRef::Blob(b)) => a == b,
+            (ValueRef::Text(a), ValueRef::Text(b)) | (ValueRef::Blob(a), ValueRef::Blob(b)) => {
+                a == b
+            }
             _ => false,
         };
         if !equal {

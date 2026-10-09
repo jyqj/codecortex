@@ -654,7 +654,10 @@ mod acknowledgement_tests {
         .unwrap();
         captured.acknowledge(db).unwrap();
         assert_eq!(
-            db.reads().get_metadata(PROJECT_INPUT_KEY).unwrap().as_deref(),
+            db.reads()
+                .get_metadata(PROJECT_INPUT_KEY)
+                .unwrap()
+                .as_deref(),
             Some(expected.as_str())
         );
         assert_eq!(read_inputs(db).unwrap(), captured.inputs);

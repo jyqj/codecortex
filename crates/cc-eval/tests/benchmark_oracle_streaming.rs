@@ -187,7 +187,10 @@ fn preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests() {
     );
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], true);
-    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], false);
+    assert_eq!(
+        table(&report, "symbols")["equal_input_order_witness"],
+        false
+    );
     assert_eq!(table(&report, "symbols")["incremental_digest"], ad);
     assert_eq!(table(&report, "symbols")["full_digest"], bd);
 }
@@ -197,13 +200,19 @@ fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_pat
     use rusqlite::types::Value as SqlValue;
     for (av, bv) in [
         (SqlValue::Integer(1), SqlValue::Real(1.0)),
-        (SqlValue::Blob(b"same".to_vec()), SqlValue::Text("same".into())),
+        (
+            SqlValue::Blob(b"same".to_vec()),
+            SqlValue::Text("same".into()),
+        ),
     ] {
         let a = fixture();
         let b = fixture();
         for (root, value) in [(a.path(), av), (b.path(), bv)] {
             open(root)
-                .execute("INSERT INTO symbols(name,value) VALUES ('fact',?1)", [value])
+                .execute(
+                    "INSERT INTO symbols(name,value) VALUES ('fact',?1)",
+                    [value],
+                )
                 .unwrap();
         }
         let ca = oracle::canonical(a.path()).unwrap();
@@ -232,7 +241,10 @@ fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_pat
         .unwrap();
     for root in [a.path(), b.path()] {
         open(root)
-            .execute("INSERT INTO symbols(name,value) VALUES ('fact','payload')", [])
+            .execute(
+                "INSERT INTO symbols(name,value) VALUES ('fact','payload')",
+                [],
+            )
             .unwrap();
     }
     let ca = oracle::canonical(a.path()).unwrap();
@@ -335,7 +347,10 @@ fn compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change() {
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], false);
     assert_eq!(table(&report, "symbols")["different_row_count"], 1);
-    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], false);
+    assert_eq!(
+        table(&report, "symbols")["equal_input_order_witness"],
+        false
+    );
 }
 
 #[test]
@@ -405,10 +420,8 @@ fn views_and_virtual_tables_keep_the_original_two_spool_comparison() {
                 )
                 .unwrap();
             } else {
-                db.execute_batch(
-                    "CREATE VIEW symbols AS SELECT 'same' AS name, 'fact' AS value;",
-                )
-                .unwrap();
+                db.execute_batch("CREATE VIEW symbols AS SELECT 'same' AS name, 'fact' AS value;")
+                    .unwrap();
             }
         }
         let ca = oracle::canonical(a.path()).unwrap();

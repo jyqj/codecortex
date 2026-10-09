@@ -1,0 +1,61 @@
+{
+  "schema": "a23-readback-controller-preparation-v1",
+  "repository": "jyqj/codecortex",
+  "base_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "base_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+  "branch": "audit/p8-a23-original-readback-28fe-20261009",
+  "primary_study_changed": false,
+  "primary_measurements_started": 0,
+  "task_changes": 0,
+  "source_checkout": "The readback workflow first copies its controller to RUNNER_TEMP, then checks out exact A23 at the real workspace root. The controller is not an alternative product source.",
+  "current": {
+    "receive_blob": "e7f717680588bc7f93ab668a86cc3284cfd1f2b1",
+    "receive_bytes": 30691,
+    "workflow_blob": "ab5b0d05879f4feebc2c0b025e6d0f5cacf4bd16",
+    "protocol_blob": "181813853df8d823541f5f972967219998f81813",
+    "runtime_module_blob": "a39a6e5d52b780c6646db126c955573c25ea8f46",
+    "platform_module_blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb"
+  },
+  "static_review_changes": [
+    {
+      "version": "receive-v1",
+      "blob": "20a1637c2b2cfaed04f35a41827eda0363be2497",
+      "executed": false,
+      "findings": "Directory CRC/data, true DEFLATE EOF, metadata name/repository, Python bytecode, URL redaction and failed-transfer custody were tightened after non-author review."
+    },
+    {
+      "version": "receive-v2",
+      "blob": "c03ae87d81f676ffa1fc1e4edbf9b4bf3a8e1c31",
+      "executed": false,
+      "findings": "Whole-directory upload could follow checkout view symlinks. Replaced with regular-file-only staging; both checkouts disable credential persistence."
+    },
+    {
+      "version": "receive-v3",
+      "blob": "07e9e5c90a2424ad29fbc640cfe905385a035500",
+      "executed": false,
+      "findings": "Added a valid complete DEFLATE positive fixture before the existing truncation negative fixture."
+    },
+    {
+      "version": "platform-v1",
+      "blob": "d5a3a7058aa19f45fd7b348f255f28202ec13644",
+      "executed": false,
+      "findings": "Added explicit passed boolean to agree with the outer receiver; retained failure result and view guards."
+    }
+  ],
+  "execution_status": "not_run; awaiting whole-package independent static review and exact publication",
+  "native_actions_excluded": [
+    "product or statistical ELF execution",
+    "Cargo build",
+    "performance rerun",
+    "oracle rerun",
+    "native fault injection",
+    "native CLI replay",
+    "old target-path recreation"
+  ],
+  "original_tasks": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

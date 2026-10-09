@@ -1,0 +1,44 @@
+{
+  "scope": "One fixture function; pending independent review and real execution.",
+  "created_at": "2026-10-09T07:20:42.299196+00:00",
+  "head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "parent_tree": "9003d1383b4dbf148ac3aca30d00b5e8c06aaf48",
+  "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+  "old_blob": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+  "new_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+  "new_source": {
+    "path": "review-next-candidate/ready-signal-round11/source.rs",
+    "bytes": 19381,
+    "sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545"
+  },
+  "diff": {
+    "path": "review-next-candidate/ready-signal-round11/source.diff",
+    "bytes": 912,
+    "sha256": "aeca90aba18a6394ce40a66af0fb5e64744fc96c513e26359498d80dbb7fcae8"
+  },
+  "frozen_inputs": {
+    "path": "review-next-candidate/ready-signal-round11/frozen-inputs.json",
+    "bytes": 341461,
+    "sha256": "6a363d3168cc4061f5f6c1689dba47f0ea081b761fefb92d3e76c003d19e2284"
+  },
+  "changed_paths": [
+    "crates/cc-semantic/tests/crash_independent_review.rs"
+  ],
+  "before_after_outside_exact_replacement_identical": true,
+  "diff_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "analysis": [
+    "Parent create_dir(root) rejects old run directories; each of3seeds x5boundaries has a fresh directory and exactly one signal_and_wait invocation.",
+    "durable(pending) writes all PID bytes and syncs file before function return closes it; same-directory rename publishes complete file atomically on the supported Unix hosts.",
+    "Any write/sync/rename error panics child before ready publication; parent retains original15s/death handling. No retry, skip, truncation tolerance or additional delay.",
+    "durable helper and every caller except ready remain byte-identical; parent read/parse/PID-equality, prekill reader checks, SIGKILL/wait, owned-child Drop, natural lease expiry, recovery and negative controls are all byte-identical.",
+    "No directory fsync or power-loss certification claimed; original fixture explicitly excludes power loss. Only process-crash synchronization fixed.",
+    "Original G9f CI failure is retained; this source changes identity and cannot rewrite old failure or provide original scale credit."
+  ],
+  "tests_run": false,
+  "todo_change": 0,
+  "remaining_todo": 29
+}

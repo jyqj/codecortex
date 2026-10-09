@@ -1,0 +1,534 @@
+{
+  "schema_version": 1,
+  "status": "engineering_commands_accepted_and_product_checkpoint_committed",
+  "reviewed_at": "2026-10-09T07:38:13.247984+00:00",
+  "actual_execution_identity": "G9f plus one uncommitted fixture path. P committed only after all five commands and independent source acceptance; tests not rerun under P checkout.",
+  "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+  "product_tree": "9af6748b46abd7a98fb20b2d0a4d4da4dcee56c8",
+  "parent": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "source_bridge": {
+    "path": "review-next-candidate/ready-signal-round11/product-commit/source-bridge.json",
+    "bytes": 1528,
+    "sha256": "de1e2a77d52f8eaeb594d2a15cdfca190181f4d08c7b36bcffff9a1b7755db91"
+  },
+  "source_scope": {
+    "changed_paths": [
+      "crates/cc-semantic/tests/crash_independent_review.rs"
+    ],
+    "change_kind": "Fixture synchronization only; durable full PID payload in sibling ready.pending then atomic rename to ready",
+    "source_sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+    "product_count": 1090,
+    "validation_count": 139,
+    "original_binding_count": 3,
+    "extra_immutable_paths": [
+      "docs/roadmap/code-index-v2/tasks.json",
+      "docs/roadmap/code-index-v2/05-TODO.md",
+      "artifacts/checkpoints/p8-combined-engineering-bfcc-20261009/independent-source-review.json"
+    ],
+    "total_per_command_input_count": 1235,
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "historical_product_delta_count": 47,
+    "all_inputs_before_after_and_postcommit_equal": true
+  },
+  "commands": [
+    {
+      "name": "semantic-fault-matrix",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--locked",
+        "--all-targets",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal",
+      "status": "completed",
+      "started_at": "2026-10-09T07:23:17.264520+00:00",
+      "source_before_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_input_count": 1235,
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+        "CARGO_BUILD_JOBS": "2",
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "RUSTFLAGS": "-D warnings",
+        "RUST_TEST_THREADS": null,
+        "CRASH_INDEPENDENT_EVIDENCE_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence"
+      },
+      "test_threads": "default",
+      "skip_ignore_filter_override": false,
+      "pid": 39034,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T07:25:53.287705+00:00",
+      "source_after_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_unchanged": true,
+      "stdout": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/semantic-fault-matrix.stdout",
+        "bytes": 34595,
+        "sha256": "da87ea4bd1f8550719943f6268a12cacf51da984c8357f8c06aec582fc95c088"
+      },
+      "stderr": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/semantic-fault-matrix.stderr",
+        "bytes": 15631,
+        "sha256": "b188c7239e93c1eaea6de4b0307fd551d88ab6ae0db0748ee2f880d884bc2cd7"
+      },
+      "receipt": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/semantic-fault-matrix.json",
+        "bytes": 1658,
+        "sha256": "8cb83f385e3288c601c3483b55f1d3ed898533fc062979170c945524beb6599c"
+      },
+      "native_exit": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/semantic-fault-matrix.native-exit.json",
+        "bytes": 74,
+        "sha256": "661ae464809b955fb2121309ce6c64e49c067fb37b045abfb3a634cb6e78f47c"
+      },
+      "parsed_test_groups": 22,
+      "parsed_test_counts": {
+        "passed": 355,
+        "failed": 0,
+        "ignored": 6,
+        "measured": 0,
+        "filtered": 0
+      }
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal",
+      "status": "completed",
+      "started_at": "2026-10-09T07:25:53.569110+00:00",
+      "source_before_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_input_count": 1235,
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_INCREMENTAL": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null,
+        "RUSTFLAGS": null,
+        "RUST_TEST_THREADS": null,
+        "CRASH_INDEPENDENT_EVIDENCE_DIR": null
+      },
+      "test_threads": "default",
+      "skip_ignore_filter_override": false,
+      "pid": 40176,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T07:25:55.195660+00:00",
+      "source_after_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_unchanged": true,
+      "stdout": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fmt.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fmt.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "receipt": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fmt.json",
+        "bytes": 1425,
+        "sha256": "194330d66763fe9d4a73a104ed973b69b072477125810aaf3bf84dd709d03e90"
+      },
+      "native_exit": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fmt.native-exit.json",
+        "bytes": 74,
+        "sha256": "359d617dafcf0350f36f22d38b0914d04f532a92935c726a63fd82fc8cdd8ed7"
+      },
+      "parsed_test_groups": 0,
+      "parsed_test_counts": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      }
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal",
+      "status": "completed",
+      "started_at": "2026-10-09T07:25:55.374806+00:00",
+      "source_before_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_input_count": 1235,
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_INCREMENTAL": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null,
+        "RUSTFLAGS": null,
+        "RUST_TEST_THREADS": null,
+        "CRASH_INDEPENDENT_EVIDENCE_DIR": null
+      },
+      "test_threads": "default",
+      "skip_ignore_filter_override": false,
+      "pid": 40180,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T07:26:16.453883+00:00",
+      "source_after_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_unchanged": true,
+      "stdout": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/clippy.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/clippy.stderr",
+        "bytes": 1215,
+        "sha256": "8df72a0acf4bc936df28d46833b100cad9b485bbdcba1f9140806c423cb2dade"
+      },
+      "receipt": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/clippy.json",
+        "bytes": 1472,
+        "sha256": "59d81d44676d25ae9208b8f5d075657fc2d5a4ebba2dfdd62c889ca696ffb206"
+      },
+      "native_exit": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/clippy.native-exit.json",
+        "bytes": 74,
+        "sha256": "c6193a611655138d3688114176645016434c2196c021679cc920f9fa2319edb1"
+      },
+      "parsed_test_groups": 0,
+      "parsed_test_counts": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      }
+    },
+    {
+      "name": "workspace-tests",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--workspace"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal",
+      "status": "completed",
+      "started_at": "2026-10-09T07:26:16.678171+00:00",
+      "source_before_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_input_count": 1235,
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_INCREMENTAL": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null,
+        "RUSTFLAGS": null,
+        "RUST_TEST_THREADS": null,
+        "CRASH_INDEPENDENT_EVIDENCE_DIR": null
+      },
+      "test_threads": "default",
+      "skip_ignore_filter_override": false,
+      "pid": 40637,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T07:35:33.246182+00:00",
+      "source_after_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_unchanged": true,
+      "stdout": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/workspace-tests.stdout",
+        "bytes": 239750,
+        "sha256": "94dd505d9c3b3781db2e2d6203eb115ed1397b7877118e2b12139dab25982503"
+      },
+      "stderr": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/workspace-tests.stderr",
+        "bytes": 139435,
+        "sha256": "59263dddd77f6d00f6d91dc5e69befa1145b4cb5515e71fc2299fe1d3ec0bb51"
+      },
+      "receipt": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/workspace-tests.json",
+        "bytes": 1429,
+        "sha256": "c692b79cdbba1b3e7c945ca82c97b74c871cd11765d108815c9f6dd797559788"
+      },
+      "native_exit": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/workspace-tests.native-exit.json",
+        "bytes": 74,
+        "sha256": "8d45d3b7c73a892991dd34f170b57ab32c485a20e67102a5b9db30f8a47be137"
+      },
+      "parsed_test_groups": 218,
+      "parsed_test_counts": {
+        "passed": 2727,
+        "failed": 0,
+        "ignored": 73,
+        "measured": 0,
+        "filtered": 0
+      }
+    },
+    {
+      "name": "final-fixture",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "-p",
+        "cc-eval",
+        "--",
+        "integration_fixtures_and_corpus"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal",
+      "status": "completed",
+      "started_at": "2026-10-09T07:35:33.486853+00:00",
+      "source_before_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_input_count": 1235,
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_INCREMENTAL": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null,
+        "RUSTFLAGS": null,
+        "RUST_TEST_THREADS": null,
+        "CRASH_INDEPENDENT_EVIDENCE_DIR": null
+      },
+      "test_threads": "default",
+      "skip_ignore_filter_override": false,
+      "pid": 54808,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T07:35:42.028886+00:00",
+      "source_after_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+      "source_unchanged": true,
+      "stdout": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/final-fixture.stdout",
+        "bytes": 10125,
+        "sha256": "4cb96aa08d854268bce64fc7d1328f41c5e391d897fbb8da6730ff6ff5c9ac27"
+      },
+      "stderr": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/final-fixture.stderr",
+        "bytes": 17392,
+        "sha256": "8fb6bfe2dcf848a58baf767a118f96254c76fb530ff37159f8f416ea4263c4ef"
+      },
+      "receipt": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/final-fixture.json",
+        "bytes": 1480,
+        "sha256": "c5970d49f9dc7f20112c2eb729776aaf913b78b2e2eb93af6df5ab47f8ed653f"
+      },
+      "native_exit": {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/final-fixture.native-exit.json",
+        "bytes": 74,
+        "sha256": "d0c2153a6da133253dbfa2270cd85d41156af37ed7f2ed7da8a5c36bfc412bff"
+      },
+      "parsed_test_groups": 89,
+      "parsed_test_counts": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 474
+      }
+    }
+  ],
+  "fault_control": {
+    "exact_test": "independently_observed_sigkill_boundaries",
+    "original_semantic_command_pass": true,
+    "workspace_pass": true,
+    "fixture_result": {
+      "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/results.json",
+      "bytes": 7574,
+      "sha256": "7794305ec9745c3a5ee45ccc286d4e50076ceb38e535dd9347b389ef0042c592"
+    },
+    "rows": 15,
+    "seeds": [
+      101,
+      211,
+      307
+    ],
+    "points": [
+      "uncommitted",
+      "claimed",
+      "response",
+      "artifact",
+      "published"
+    ],
+    "all_original_sigkill9_and_integrity_ok": true,
+    "ready_files": [
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-101-artifact/ready",
+        "bytes": 5,
+        "sha256": "951e5d11f493e3bb81679de26ddf5e5ee959ffd44ec308620eea18163cfb832e",
+        "pid": 39710
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-101-claimed/ready",
+        "bytes": 5,
+        "sha256": "8d7c97286d4e0cc5d985bb5d64d2effa001b0e95075ed078318380aa718ccfa3",
+        "pid": 39615
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-101-published/ready",
+        "bytes": 5,
+        "sha256": "658b5725133f7c13f04eb4b2bd571405b9738181821df51023ab0f5e89b25e1e",
+        "pid": 39735
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-101-response/ready",
+        "bytes": 5,
+        "sha256": "86ae661714afe0c58708928357faffa2f05d8daf7d3455c35cbe224050bc10a1",
+        "pid": 39622
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-101-uncommitted/ready",
+        "bytes": 5,
+        "sha256": "23f1fa7f533c1ab813131e1ab34e388b5f94ee5c725248ea8f92787dbc7dd120",
+        "pid": 39614
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-211-artifact/ready",
+        "bytes": 5,
+        "sha256": "9cce1d5bcdcb3d089c8dfb263d621556f67c7da1de09d5666a8027a38cf69f91",
+        "pid": 39803
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-211-claimed/ready",
+        "bytes": 5,
+        "sha256": "09fdf2f47773dfddab1d2a25a0afd5a7852d14500dab2707be93dc1a58eb5521",
+        "pid": 39737
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-211-published/ready",
+        "bytes": 5,
+        "sha256": "c39b3ee73880026b2a9162b1cc281f6678e5f293c1a43f0dde0e34c66bcf4ab6",
+        "pid": 39824
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-211-response/ready",
+        "bytes": 5,
+        "sha256": "c665a6b3d1cb1ed84b27a6b401cc84876c16f99ca1edf215fb44eefed4bfef12",
+        "pid": 39801
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-211-uncommitted/ready",
+        "bytes": 5,
+        "sha256": "ed1bfe70a49885ffa73f742f8c340563d9bda55fe56e85beefd377cff19ec010",
+        "pid": 39736
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-307-artifact/ready",
+        "bytes": 5,
+        "sha256": "08ea07799da9b8948f1df2e339def3db7af84e92ac2aa59a8da9e795eb97858d",
+        "pid": 39850
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-307-claimed/ready",
+        "bytes": 5,
+        "sha256": "3fe456fe1a442ff3ab0ad569938757f3797d9e79e1c26d319ee213e94d36216d",
+        "pid": 39826
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-307-published/ready",
+        "bytes": 5,
+        "sha256": "710201cecf9de0e20a5db9f2aa44ee1b196cf6abf52c00ed31400ae4f4da8470",
+        "pid": 39878
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-307-response/ready",
+        "bytes": 5,
+        "sha256": "5dd0ec95d6b50384afbb80f954a1e9ded65f5636cedf6525b4b0c91ec545bcef",
+        "pid": 39827
+      },
+      {
+        "path": "review-next-candidate/ready-signal-round11/attempt01/fault-crash-evidence/seed-307-uncommitted/ready",
+        "bytes": 5,
+        "sha256": "ec61da0b6202f24dabeb74007dacb88fe24fed6c32aa195a954c4bec39cc679d",
+        "pid": 39825
+      }
+    ],
+    "remaining_pending_files": 0,
+    "runtime_inventory": {
+      "path": "review-next-candidate/ready-signal-round11/fault-runtime-file-inventory.json",
+      "bytes": 35477,
+      "sha256": "243ec084ce28dbe0e1496cd8947bfe31ec8a4ba5484ee5cc7a23fecb174dae65"
+    }
+  },
+  "platform": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "rustc_verbose": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "source_parent": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "source_scope": "G9f plus one uncommitted fixture-only change; P null",
+    "input_count": 1235,
+    "input_digest": "1dec138a3e9f6d4b3ea24be98f8ec06d488f54eb28162ba6efa16b04f7e5c83e",
+    "cache_provenance": "../target-clone.json",
+    "original_failure_platform": "Ubuntu GitHub Actions; current reproduction/repair validation is native Mac, not Linux CI",
+    "test_threads": "default",
+    "scope": "Original semantic all-targets fault command then the four original engineering commands. No benchmark, scale, retry, skip or changed budgets."
+  },
+  "cache": {
+    "argv": [
+      "/bin/cp",
+      "-cR",
+      "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+      "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "",
+    "source_target": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+    "destination_target": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/ready-signal-1.95-sdk154-round11",
+    "free_bytes_before": 356016435200,
+    "free_bytes_after": 355956883456,
+    "source_inode_unchanged": true,
+    "source_mtime_ns_unchanged": true,
+    "source_job": "wc_job_61EyqQxF1Kv0GBtZ completed",
+    "reuse_scope": "APFS copy-on-write dependency/build cache clone. Cargo normally decides necessary recompilation. Not cold build.",
+    "created_at": "2026-10-09T07:21:56.139516+00:00"
+  },
+  "independent_source_review": {
+    "path": "review-next-candidate/ready-signal-round11-independent/independent-source-review.pending-P.json",
+    "bytes": 3849,
+    "sha256": "f1c93d427e8f7c43ed78f366ce946ad8da56f776eaaea1b1f088eb32055f68f0"
+  },
+  "retained_original_failure": {
+    "source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "run_id": 37896539239,
+    "job_id": 113709066322,
+    "platform": "Ubuntu hosted Rust1.95",
+    "exact_failure": "Original fixture read a visible but empty ready file and PID parse failed; original output retained by pr_triage.",
+    "overwritten_or_retried": false
+  },
+  "limitations": [
+    "Current repair execution is native macOS26.6.2/Rust1.95/SDK15.4, not original Ubuntu CI. Future exact G CI must be kept separately.",
+    "APFS target clone is cache reuse, not cold build; original source target inode/mtime unchanged.",
+    "semantic355 and final fixture overlap the full workspace and are not summed as additional unique tests.",
+    "Original six semantic and73 workspace ignored tests retain original dispositions; no ignore/skip/filter was added.",
+    "No power-loss or physical directory-durability claim; original fixture excludes power loss.",
+    "No benchmark, performance,150-shard study,release or original TODO completion credit.",
+    "Old candidate-combined remains clean atG9f; original in-flight CLI/source not changed. No R/G/push by this task."
+  ],
+  "new_todo_completed": 0,
+  "remaining_todo": 29,
+  "execution_job": {
+    "job_id": "wc_job_1Tb4Q-aOczFi_86F",
+    "actual_wrapper_exit_code": 0,
+    "meaning": "Child receipts, not wrapper alone, establish all5 actual command exits0."
+  },
+  "product_commit_job": "wc_job_AblrMnwKni5nF_86"
+}

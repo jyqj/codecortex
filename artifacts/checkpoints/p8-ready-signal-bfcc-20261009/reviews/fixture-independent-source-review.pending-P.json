@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T07:22:59.055751+00:00",
+  "verdict": "accepted_scoped_source_ready_for_authorized_engineering_validation",
+  "reviewer": "/root/pr_triage",
+  "author": "/root/execution_recon",
+  "parent": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "candidate_P": null,
+  "candidate_path": "candidate-ready-signal",
+  "source_path": "crates/cc-semantic/tests/crash_independent_review.rs",
+  "source_bytes": 19381,
+  "source_sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+  "source_git_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+  "mode": "100644",
+  "diff_bytes": 912,
+  "diff_sha256": "aeca90aba18a6394ce40a66af0fb5e64744fc96c513e26359498d80dbb7fcae8",
+  "scope": "Only complete ready PID publication inside the existing Unix test fixture",
+  "findings": [
+    "Exactly one replacement in signal_and_wait; all bytes outside the four replaced lines are identical to fixed G9f.",
+    "durable helper remains File::create, write_all and sync_all; File drops on return before rename.",
+    "Same-directory pending and final names belong to the existing fresh per-case directory created with create_dir; final ready is not visible when temporary file creation precedes its PID write.",
+    "Atomic same-directory rename publishes final ready only after complete PID write, sync and close. Parent exists/read/PID equality remain unchanged.",
+    "cfg(unix) unchanged: source semantics apply to Linux and macOS; actual platform execution outcomes remain separate.",
+    "The original15s deadline,10ms polling,3seeds,5crash boundaries,exactPID,SIGKILL,OwnedChild cleanup,lease negative controls and recovery assertions are byte unchanged.",
+    "No retry,skip,ignore,deadline enlargement,production/workflow/validator change."
+  ],
+  "inventory": {
+    "product_count": 1090,
+    "validation_count": 139,
+    "frozen_capture_count": 1232,
+    "frozen_capture_sha256": "6a363d3168cc4061f5f6c1689dba47f0ea081b761fefb92d3e76c003d19e2284",
+    "complete_map_equals_G_registry_except_one_file": true,
+    "all_139_validation_hash_mode_blob_equal_G": true,
+    "all_unchanged_captured_modes_blobs_equal_G": true,
+    "extra_binding_paths": [
+      ".github/workflows/ci.yml",
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ]
+  },
+  "original_failure": {
+    "run_id": 37896539239,
+    "job_id": 113709066322,
+    "source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "test": "independently_observed_sigkill_boundaries",
+    "exit_code": 101,
+    "panic": "ParseIntError { kind: Empty }",
+    "archive_id": 11601205855,
+    "preserved_as_failure": true,
+    "precise_interleaving_or_seed_retained": false
+  },
+  "necessary_author_validation": [
+    "Original failure command cargo test -p cc-semantic --locked --all-targets -- --nocapture, preserving actual environment and fresh evidence.",
+    "Four original CONTRIBUTING commands against same frozen source and target identity.",
+    "Actual command stdout/stderr/integer exit and source maps before/after; newP exact bridge if all checks pass."
+  ],
+  "unresolved_source_blockers": [],
+  "reviewer_diagnostic_note": "One initial reviewer assertion compared default abbreviated-index git diff against author full-index diff and exited1 before writing a report. Actual source hash was unchanged; explicit --full-index produced the exact912B author patch. This was a reviewer representation mismatch,not a product/test result.",
+  "limits": [
+    "No original command executed by reviewer.",
+    "Source accepted before newP/R/G or any new runtime result.",
+    "Failed G9f remains failed; its formal scale was not dispatched.",
+    "No originalTODO completion or performance/sample credit."
+  ],
+  "todo": {
+    "done": 163,
+    "remaining": 29,
+    "new_completed": 0
+  }
+}

@@ -226,6 +226,16 @@ def main(profile):
         code = 0
     except BaseException as error:
         report["error_type"] = type(error).__name__
+        # Source locations only: never exception arguments, argv, source text,
+        # token values or transfer URLs. This preserves safe failure diagnosis.
+        locations = []
+        trace = error.__traceback__
+        while trace is not None:
+            code_object = trace.tb_frame.f_code
+            locations.append(dict(file=Path(code_object.co_filename).name,
+                                  function=code_object.co_name, line=trace.tb_lineno))
+            trace = trace.tb_next
+        report["error_locations"] = locations
         if isinstance(error, ValueError):
             report["error"] = str(error)
     finally:

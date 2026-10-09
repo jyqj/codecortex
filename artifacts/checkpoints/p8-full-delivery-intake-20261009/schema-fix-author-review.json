@@ -1,0 +1,70 @@
+{
+  "schema": "G4-runtime-intake-schema-fix-author-review-v1",
+  "status": "static_source_schema_correction_pending_independent_review_and_new_offline_execution",
+  "failed_run": 37885927796,
+  "failed_controller": "93ce30230e10671681b15906a1166e54c3efa989",
+  "failed_job": 113675810610,
+  "failed_original_report": {
+    "blob": "4972528ba2a6e119d9bacfd97c22f6d2583b5721",
+    "bytes": 24351,
+    "sha256": "4953d281acf81570ae16f3bca3bacdf04c76be7769dc1658b968487fd3e075e3",
+    "error_type": "KeyError",
+    "exit_code": 2
+  },
+  "precise_root_cause": "The runtime source_snapshot and observer_snapshot do not contain source_root. Prior intake attempted local['source_root'] in the first normalization loop, guaranteeing KeyError before completing the evidence receipt. This is a schema-mapping defect in the new intake, not a failure of original product/statistics or immutable G4 ZIP.",
+  "schema_proof": [
+    {
+      "source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "path": "scripts/p7_build_identity.py",
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "function": "source_snapshot",
+      "fields": [
+        "source_commit",
+        "source_tree",
+        "input_count",
+        "manifest_sha256",
+        "inputs"
+      ]
+    },
+    {
+      "source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "path": "scripts/p8_runtime_build.py",
+      "bytes": 15242,
+      "sha256": "30efddaeef181bca0714cc798125d18687eeda6289a9a07e89efb95b69476a79",
+      "function": "observer_snapshot",
+      "fields": [
+        "source_commit",
+        "files",
+        "manifest_sha256"
+      ]
+    },
+    {
+      "blob": "594a5aef3cf529ab9de57c80ab2dc5681e6e3522",
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/controller.py",
+      "lines": [
+        268,
+        269,
+        276,
+        277
+      ],
+      "fact": "Exact original producer assigns and writes these dictionaries directly; no source_root field injected. Original seal command always uses SOURCE as cwd and SOURCE/scripts/p8_runtime.py as argv[2]."
+    }
+  ],
+  "change_scope": [
+    "Compare full runtime source and observer dicts directly, including every original input/hash and all keys; no normalization or omitted fields.",
+    "Derive original checkout root from first already-sealed original seal-command cwd; require absolute normalized path and no parent traversal. Every original seal command's full argv and cwd remains compared with that same root, and both exact original reviewer bodies reverse-map that root.",
+    "Keep all original ZIPs/bytes/digests/seals, every original command and result, whole15table/3601/2400/9600/endpoint/statistics gates unchanged.",
+    "Add only filename basename/function/lineno exception locations; no exception args, source text, argv, URLs or credentials.",
+    "New branch first attempt selects G4 only. G2 complete accepted original report4fb07b is not rerun."
+  ],
+  "unchanged_helpers_and_platform": {
+    "disk_zip": "19c1a550c76470668e2a8a2c8b8071de7bccbeaa",
+    "platform_intake": "6810776bf8ae20e6001e87ea2db2e644b10dd8a5",
+    "G2_registration": "85a6238c80683f3ce96a0f5bf743ccedbc99d48a",
+    "log_decoder": "457d3b58730a81793410e0d6ce8841a8819508e5"
+  },
+  "execution": "No new Python/native/Cargo/product execution or original ZIP download occurred here. Source proof and inverse checks are static; first fixed G4-only offline intake must execute all original gates.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

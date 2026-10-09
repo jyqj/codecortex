@@ -1,8 +1,8 @@
-name: Original receiver deliveries complete offline intake
+name: Original G4 runtime delivery complete offline intake
 
 on:
   push:
-    branches: [task/p8-full-delivery-intake-20261009]
+    branches: [task/p8-full-delivery-intake-fix-20261009]
 
 permissions:
   contents: read
@@ -22,8 +22,6 @@ jobs:
         include:
           - profile: G4-runtime
             source: 260f596582f2d82b8d7c707b61a6b8b6a43b069f
-          - profile: G2-platform
-            source: 0272a1fb152fd76a7cfb22386a580629d4038a64
     name: Complete original intake ${{ matrix.profile }}
     steps:
       - name: Check out fixed intake controller at the actual event commit

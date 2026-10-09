@@ -164,9 +164,15 @@ def inspect(archive_path, source_root, scratch):
             import p8_runtime_build as builder
             local_source = identity.source_snapshot(SOURCE)
             local_observer = builder.observer_snapshot(SOURCE)
-            for actual, local in ((source, local_source), (observer, local_observer)):
-                normalized = dict(actual, source_root=local["source_root"])
-                require(normalized == local, "actual exact original source/observer bytes")
+            # Runtime snapshots have no source_root field (unlike cold builds).
+            # Compare the entire original source and observer schemas verbatim.
+            require(source == local_source and observer == local_observer,
+                    "actual exact original source/observer bytes")
+            remote_root = get("commands/seal-%d/command.json" % SPEC[0][2])["cwd"]
+            require(isinstance(remote_root, str) and Path(remote_root).is_absolute()
+                    and str(Path(remote_root)) == remote_root
+                    and ".." not in Path(remote_root).parts,
+                    "original runtime checkout root from recorded seal command")
             soak_command = get("commands/original-soak-review/command.json")
             require(len(soak_command["argv"]) == 3 and soak_command["argv"][1] == "-B"
                     and soak_command["argv"][2].endswith("/soak/inspect.py"),
@@ -182,10 +188,10 @@ def inspect(archive_path, source_root, scratch):
                 if name.startswith("seal-"):
                     spec = next(s for s in SPEC if name == "seal-%d" % s[2])
                     original_dir = remote_output + "/" + spec[0] + "/originals"
-                    argv = [python, "-B", source["source_root"] + "/scripts/p8_runtime.py",
+                    argv = [python, "-B", remote_root + "/scripts/p8_runtime.py",
                             "verify", "--output", original_dir + "/p8-runtime",
                             "--build-output", original_dir + "/p8-build"]
-                    cwd = source["source_root"]
+                    cwd = remote_root
                 else:
                     relative = "mixed/review_mixed.py" if name == "original-mixed-review" else "soak/inspect.py"
                     argv = [python, "-B", remote_output + "/" + relative]
@@ -194,7 +200,6 @@ def inspect(archive_path, source_root, scratch):
                         "actual unchanged offline checker argv and cwd")
             mapping = get("receiver-mapping.json")
             reg = get("registration.json")
-            remote_root = source["source_root"]
             expected_bodies = {
                 "mixed/review_mixed.py": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
                 "soak/inspect.py": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",

@@ -1,16 +1,187 @@
 {
-  "acceptance_boundary": {
-    "baseline": {
-      "done": 163,
-      "remaining": 29,
-      "total": 192
-    },
-    "guard_finalization": "Existing v15 verifier and CI selector logic remain byte-identical. Parent must separately fix and verify only PRODUCT, REVIEW, REGISTRY_SHA256 and registry against this source review.",
-    "runtime_quality_and_task_acceptance": "Not granted. Runtime-only cleanup changes require newly bound actual four mixed profiles, full one-hour soak and backfill. Unchanged observers may use independently accepted599 originals only through explicit complete-source and observer byte-equality applicability, without relabeling original source or bypassing original validators. Original scale completion, dependencies and final CI remain required.",
-    "source_admission": "The exact product source and complete validation inputs have scoped independent review. Authored changes are reviewed by a different agent as recorded in the original reviews.",
-    "task_status_changes": []
-  },
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-09T02:19:30Z",
+  "source": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+  "source_tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
+  "tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
+  "source_parent": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
   "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "scope": "independently_reviewed_source_and_validation_inputs",
+  "verdict": "accepted_scoped",
+  "independent_reviewers": [
+    "/root/acceptance_audit"
+  ],
+  "unresolved_blockers": [],
+  "complete_input_count": 1089,
+  "changed_source_input_count": 41,
+  "validation_input_count": 140,
+  "source_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+  "paths": {
+    "crates/cc-db/src/index_db_multi_insert.rs": {
+      "before_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
+      "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
+    },
+    "crates/cc-db/src/index_db_snapshot_insert.rs": {
+      "before_sha256": null,
+      "sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f"
+    },
+    "crates/cc-db/src/index_db_write_batch.rs": {
+      "before_sha256": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+    },
+    "crates/cc-db/src/index_migrate.rs": {
+      "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+    },
+    "crates/cc-db/src/lib.rs": {
+      "before_sha256": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
+      "sha256": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f"
+    },
+    "crates/cc-db/src/resolution_dependency_store.rs": {
+      "before_sha256": "f5fad6998e4ac37fc0ec20026d270615b006d1e4ca286db5ebdc6b9553bb59d4",
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    "crates/cc-db/src/snapshot_write_txn.rs": {
+      "before_sha256": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    "crates/cc-db/src/symbol_identity_store.rs": {
+      "before_sha256": "16274aaae066b6a5e87bcd6d24657a27de60c45c3ea50bd24cc6fceda9cc7d2b",
+      "sha256": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49"
+    },
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": {
+      "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
+      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+    },
+    "crates/cc-db/tests/p2b_resolution_store.rs": {
+      "before_sha256": "bd5cf52dcdea030916142d4dcaaa058f2be8d6ef89ace9eb577792dc4c67674f",
+      "sha256": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772"
+    },
+    "crates/cc-eval/src/bench.rs": {
+      "before_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
+      "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
+    },
+    "crates/cc-eval/src/benchmark/oracle.rs": {
+      "before_sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711"
+    },
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+      "before_sha256": "dd8fd87c5518375536fea3003dc8ba45c199a595bb64ddbfbb7e74c116fe280c",
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    },
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "before_sha256": "f475d81683f7f253f855691ea8d5cbb5136428f0e43ec9e64fecebd892704336",
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+    },
+    "crates/cc-eval/src/benchmark/sampler.rs": {
+      "before_sha256": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
+      "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+    },
+    "crates/cc-eval/src/benchmark/statistics.rs": {
+      "before_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6",
+      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2"
+    },
+    "crates/cc-eval/src/bin/p8-measurements.rs": {
+      "before_sha256": null,
+      "sha256": "b2d937ee0d3e88febe0c497422d073e3f9a42a9640faa31bed265d4ac5787882"
+    },
+    "crates/cc-eval/src/bin/p8-oracle.rs": {
+      "before_sha256": null,
+      "sha256": "135962540116e01d47db3a34daa9bfebe2117d25773a888b6b36fde85dabdd8e"
+    },
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs": {
+      "before_sha256": null,
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
+    },
+    "crates/cc-eval/src/bin/p8-scale.rs": {
+      "before_sha256": "56492a16a847bbd85f199df2352f05f0ba9b183855151b91ef7ca4ac8727dfe9",
+      "sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90"
+    },
+    "crates/cc-eval/src/report.rs": {
+      "before_sha256": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3",
+      "sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0"
+    },
+    "crates/cc-eval/tests/benchmark_cli.rs": {
+      "before_sha256": "8a1f256e22369c67285119412c78342e5f4ef442ba32f9278eb2c6a72830a430",
+      "sha256": "ac7dcd8e7024735414779e76b2b15613ff885e4c99ddabb2e3846f7065e2f9be"
+    },
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": {
+      "before_sha256": "f41e2520995583b7c748627a3c7233cdc4e1529c644f0c7fdb362a13471a5cff",
+      "sha256": "0102afe7ab68810531b3bff6df57484c5c69e8f680972f0cc23f263a2b00f8b6"
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs": {
+      "before_sha256": "784fc434202c2dffc496137597a2011ff544fc610866dccdba47852fee3ee228",
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
+    },
+    "crates/cc-eval/tests/p8_lifecycle_replay.rs": {
+      "before_sha256": null,
+      "sha256": "f191a19df4900650ed62f4f43ceab059ee18bb3ebc4e72b8857f992122f72fd8"
+    },
+    "crates/cc-eval/tests/p8_measurements.rs": {
+      "before_sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7",
+      "sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
+    },
+    "crates/cc-eval/tests/p8_scale.rs": {
+      "before_sha256": "c14830f8ea4c1d89773982b3689a0c0e953ce5698b6faa2ce412729eebdf9613",
+      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+    },
+    "crates/cc-index/src/build_plan.rs": {
+      "before_sha256": "8912d922270f71f36bee8b0fbe9a89a292803a5cc2ad37d20ad88aa2d2b72d92",
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    "crates/cc-index/src/indexer.rs": {
+      "before_sha256": "ab087982b8add0b9dba69be0660904318d5e7e0731ccac14a388f28f84e14b57",
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
+    },
+    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": {
+      "before_sha256": "9a6b4dbda93067c86ed11c630fa24ebb7cf720879cb9a42430596c6310f781db",
+      "sha256": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c"
+    },
+    "crates/cc-index/src/indexer_phases/reconcile.rs": {
+      "before_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    "crates/cc-index/src/indexer_phases/resolve.rs": {
+      "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
+    },
+    "crates/cc-index/src/lib.rs": {
+      "before_sha256": "9b55efd92672581ec0d7bf24bd2eca83d86d4da4d6b7e5ba526dd9949a39f731",
+      "sha256": "1a6d8e4af4a745bf39dcc03b39c8aad805a620f6e70e96ef0a067354cc79035c"
+    },
+    "crates/cc-index/src/resolver/catalog.rs": {
+      "before_sha256": "2dfc5ff05c972b824c1f7a467f0db99a19e70f2d333d623a2c6090402405aaf5",
+      "sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
+    },
+    "crates/cc-index/src/resolver/catalog_cache.rs": {
+      "before_sha256": "e60fd1f61ca5176813c6e5ff8c18c15f7f99d9b8dc6237b661dc6ef9d3425fb6",
+      "sha256": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a"
+    },
+    "crates/cc-index/src/resource_accounting.rs": {
+      "before_sha256": null,
+      "sha256": "c4189f5a72f8fdd150492a3d24351fe59aa2a921adda9c865eade27eeb46ed33"
+    },
+    "crates/cc-index/tests/qname_identity_transaction.rs": {
+      "before_sha256": "19107a29c077324fb478cc650263bf65b78a12b7571135945c89d3b18e16c630",
+      "sha256": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b"
+    },
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": {
+      "before_sha256": null,
+      "sha256": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29"
+    },
+    "crates/cc-server/src/engine.rs": {
+      "before_sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
+      "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
+    },
+    "crates/cc-server/src/project_session.rs": {
+      "before_sha256": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc",
+      "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
+    }
+  },
   "complete_inputs": {
     "Cargo.lock": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
     "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
@@ -30,19 +201,20 @@
     "crates/cc-db/src/index_db_frontier.rs": "f36216d3847fc110785d2062f7aae6a44798033eb026b1b8cfd27a73f02199ba",
     "crates/cc-db/src/index_db_graph.rs": "95962a7545c9e13bdbefc5294a60c7ca674db5674ac11a82912113d264655ea0",
     "crates/cc-db/src/index_db_graph_read.rs": "9ee40800c9200f693d9e73587f8e677411ddfefa7d681d7bca3400d5f48380ab",
-    "crates/cc-db/src/index_db_multi_insert.rs": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
+    "crates/cc-db/src/index_db_multi_insert.rs": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101",
     "crates/cc-db/src/index_db_query.rs": "d06dda09e00d3b4b02ed54d45e8fe7d38db4242ab592bab49d3e012522de70cd",
     "crates/cc-db/src/index_db_rebuild.rs": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b",
     "crates/cc-db/src/index_db_rebuild_fault_tests.rs": "31f4b60a574b14d2b29ca2a5aa71bb4641a96ea6d801d4de7e9990fee2841165",
     "crates/cc-db/src/index_db_retrieval.rs": "cb7363bd3a93a4e613c6eba6bce9129de6304e4a9cb7d98c9c67698e7b84aa19",
+    "crates/cc-db/src/index_db_snapshot_insert.rs": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f",
     "crates/cc-db/src/index_db_tests.rs": "b20e04ef98ab3a778e4ef909045a8934aa185a894a606ca0cbd5a1819c6684f3",
     "crates/cc-db/src/index_db_types.rs": "f1b1b499879d721e6024b40e28050f705b74b2d13afdda98f55b8bc2c6591d67",
-    "crates/cc-db/src/index_db_write_batch.rs": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
+    "crates/cc-db/src/index_db_write_batch.rs": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a",
     "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
-    "crates/cc-db/src/lib.rs": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
+    "crates/cc-db/src/lib.rs": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f",
     "crates/cc-db/src/public_surface_store.rs": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
     "crates/cc-db/src/read_generation.rs": "54d9b0834214f6e58fbe2fa7a5ec00df77e7aaba1a11eb533498e7a9798f563f",
-    "crates/cc-db/src/resolution_dependency_store.rs": "f5fad6998e4ac37fc0ec20026d270615b006d1e4ca286db5ebdc6b9553bb59d4",
+    "crates/cc-db/src/resolution_dependency_store.rs": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
     "crates/cc-db/src/rows.rs": "5c922df7efa572896cfc01e320f2ccbc8a29aa75840303bb13eca426f32f86c1",
     "crates/cc-db/src/seed_symbol_cache.rs": "667960f8c82df2a1009376bdd43778416b7f3587e50ecb15ca1f9460fce4af79",
     "crates/cc-db/src/semantic_coverage.rs": "ae4d09198d6ed7b605e43d55d2b80af05ba5a1d708963ac3a8bac56aef64947c",
@@ -55,18 +227,18 @@
     "crates/cc-db/src/semantic_recovery.rs": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e",
     "crates/cc-db/src/semantic_space_switch.rs": "d0e18001df11af72e59eb3ca2d4501f458a1f45040b76fbea9756df2676d64d4",
     "crates/cc-db/src/signature_agg.rs": "a931651405dace905001548167c05336e798fbcdcd6009a3db51d6a60ab275c0",
-    "crates/cc-db/src/snapshot_write_txn.rs": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
+    "crates/cc-db/src/snapshot_write_txn.rs": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
     "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
     "crates/cc-db/src/sql_util.rs": "762158a26d237b986b2b76a9bfd8edd895c5919e7e5c9ce491c003a9d62616c9",
     "crates/cc-db/src/statement_work.rs": "e32e6ce3e78cb78088b7aa126420d450db6cbbf37f624872c2663fa2ef2dbdfe",
-    "crates/cc-db/src/symbol_identity_store.rs": "16274aaae066b6a5e87bcd6d24657a27de60c45c3ea50bd24cc6fceda9cc7d2b",
+    "crates/cc-db/src/symbol_identity_store.rs": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49",
     "crates/cc-db/src/unit_of_work.rs": "265a0c4cbddfd237e1cde1e199599389b10b87aa140ea72ecb7a85439aa39142",
     "crates/cc-db/tests/ci_schema_guard_contract.rs": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql": "00a7d1fc249c562160fc0cdc7978ba2198b4ee063f8c6cf77cc564dd3f27407f",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v24.sql": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2",
     "crates/cc-db/tests/fts_identifier_expansion.rs": "e6d96c9b95aad8edeff1e9596b6db71759a2c4e3667163ba008071a43c2cca36",
     "crates/cc-db/tests/incremental_write_bench.rs": "c44dd246f6a90ece521a2a831cb772bce59fa21f3240a0a44e13ea586a95810d",
-    "crates/cc-db/tests/p2b_resolution_store.rs": "bd5cf52dcdea030916142d4dcaaa058f2be8d6ef89ace9eb577792dc4c67674f",
+    "crates/cc-db/tests/p2b_resolution_store.rs": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772",
     "crates/cc-db/tests/p2c_freshness_store.rs": "9db2be89e261c717bd80c2edfec73564f7012433b20990e3e7cee1a5ed4c8576",
     "crates/cc-db/tests/p2d_dependency_cost.rs": "054752b844459d4ccf6f420d28cfcfd1731feddeda784d04324d2201fa9a550b",
     "crates/cc-db/tests/p7_configured_space_transition.rs": "47b41d94e2820d980f59a65eff4624fbafaa02322689abb9998869b1c00ca8d7",
@@ -572,9 +744,9 @@
     "crates/cc-eval/src/benchmark/mutations.rs": "c01a05b198bd96165e59bca597f3a10e96d3c7ac38f8f2bb8a04a5590da5936d",
     "crates/cc-eval/src/benchmark/normalizer.rs": "ce9708b670da3291daf731a4bbc4934a4762c872d35f74c43389826a3ab48092",
     "crates/cc-eval/src/benchmark/oracle.rs": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
-    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
     "crates/cc-eval/src/benchmark/p8_load.rs": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31",
-    "crates/cc-eval/src/benchmark/p8_scale.rs": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+    "crates/cc-eval/src/benchmark/p8_scale.rs": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
     "crates/cc-eval/src/benchmark/readiness.rs": "3c2f327a99f5798d5ee57410fadb381b3fb056b1b98213ffb885e0f4851a3871",
     "crates/cc-eval/src/benchmark/report.rs": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d",
     "crates/cc-eval/src/benchmark/runner.rs": "c5ee07890319d0e6ab31cd74fe0578cf0201e6cbd3b668cff89ded9846c5895a",
@@ -733,7 +905,7 @@
     "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c",
     "crates/cc-index/src/indexer_phases/mod.rs": "5cc7765d277afdb23e1f40c2e44e6d6ae621c1bbd9ba96f8a1ef88b248133a33",
     "crates/cc-index/src/indexer_phases/postprocess.rs": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
-    "crates/cc-index/src/indexer_phases/reconcile.rs": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
+    "crates/cc-index/src/indexer_phases/reconcile.rs": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
     "crates/cc-index/src/indexer_phases/resolve.rs": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
     "crates/cc-index/src/indexer_phases/snapshot.rs": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
     "crates/cc-index/src/indexer_phases/write.rs": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
@@ -804,8 +976,9 @@
     "crates/cc-index/tests/python_provenance_independent_review.rs": "05175e5a48763cc3203bfeb44bde3a8c72c82cd19dc93c049926f1d3e49d7004",
     "crates/cc-index/tests/qname_db_independent_review.rs": "8c5854eea614df414a154539cc05eaee6e5c8974678a65df00d167e95289216b",
     "crates/cc-index/tests/qname_identity_proof.rs": "72aefadc7ebb5212591a5141089964b373244d2cb800addc8b1795211587af0e",
-    "crates/cc-index/tests/qname_identity_transaction.rs": "19107a29c077324fb478cc650263bf65b78a12b7571135945c89d3b18e16c630",
+    "crates/cc-index/tests/qname_identity_transaction.rs": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b",
     "crates/cc-index/tests/qname_owner_diagnostic.rs": "6a52d6b384de312e77614915b354c8179ebb4be3c8866671015bab9db3d26f34",
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
     "crates/cc-index/tests/type_catalog_bench.rs": "0a2f67593006e339789b9d85bf609c35574edf32e145d28cc8cc88e188aabcfe",
     "crates/cc-model/Cargo.toml": "cb4038984b42ea564bef8789c1fca76520d89baac199479c9bd04ed2ce80099a",
     "crates/cc-model/src/architecture.rs": "703efa0e5e4c6d04c8cea6751ad9c3b18725d86d000d089304167484f134e7b2",
@@ -1100,648 +1273,1417 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "incremental_review": {
-    "exact_followup_source_changes": [],
-    "exact_followup_validation_changes": [
-      "scripts/p8_runtime.py",
-      "scripts/tests/test_p8_runtime.py"
-    ],
-    "execution_claims": "All599 observations retain original599 identity. Engineering controls ran on separately identified prior source plus exact two patches. Actual new-runtime full mixed C1/4/8/16, one-hour soak and backfill are pending and must execute with new strict source/observer receipts.",
-    "followup_product_source": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
-    "prior_execution_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
-    "prior_review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
-    "prior_review_sha256": "d6294acc9ff75bc66dbcbc6714f5c2976d689498adaee2549f05c35c4597341e",
-    "prior_review_source": "7867c3c1f94d90fea81b82952a011e21bcdd38ba",
-    "retained_prior_review_path": "artifacts/checkpoints/p8-completion-20261009/round5-independent-source-review.json",
-    "scope": "Two validation-only runtime cleanup files. All 1087 product inputs and 134 other validation inputs remain byte-identical to execution599. Inherit the exact independently reviewed 30-path source delta versus main; source admission only."
+  "validation_inputs": {
+    ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
+    ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
+    ".github/workflows/p8-gates.yml": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
+    ".github/workflows/p8-lifecycle.yml": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
+    ".github/workflows/p8-platform.yml": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+    ".github/workflows/p8-runtime.yml": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+    ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+    "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
+    "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
+    "scripts/code_index_plan.py": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c",
+    "scripts/current-source-registry-v1.json": "fdab5efa046cce7ffc4a9e900a908f781f9c90c282a9eaabf790ad689e44ed60",
+    "scripts/current-source-registry-v2.json": "6bce6b8c8b3a7925bf03dd1559113012d4b9fc650d4d667106ae8c4aab731172",
+    "scripts/current-source-registry-v3.json": "8525ded2edbcbf59f8f7965ffa26c684ef6cf838576d61d634efa8408299acec",
+    "scripts/index_fix_upgrade_validation.py": "fb74c2afe598f59e2fc7222673f111accea1e276c6a304753d17f6c197d51c4f",
+    "scripts/lock_benchmark_inputs.py": "9b3def7e2a87a6c1d8312f19c72d11bdec4c12d33a0fcfc7ce783c37e003c75f",
+    "scripts/module_oracles.py": "3b9bed679bc080eeabfc9dceae106ea3b49d50cca7b415314168c2976653ba1d",
+    "scripts/p0-validation.py": "2f4013d6da41782ccadb15a23213f55a5117ec376747398919e7dcaa27a20145",
+    "scripts/p0_historical_corpus.py": "67be5bc25b0116f666a36af83e88d19acc79515868a3199c01e816d268afee21",
+    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+    "scripts/p7_fault_lifecycle_stdio.py": "0e1a0b6054ff5cb3708a7acfdc210af909849e62d8ff0616160e02e3988a2fdd",
+    "scripts/p7_gate_report.py": "772060b45bd26e787e4d4a7d011df1f24e554506cc97bbbcad0bb642acdd8afb",
+    "scripts/p7_mechanism_build.py": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76",
+    "scripts/p7_offline_network.py": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
+    "scripts/p7_offline_trace.py": "66f17363721e1186d3087ef3259919e2c9c7782cfba18cda9662fd0706ca17d1",
+    "scripts/p7_release_hotspot_diagnosis.py": "06554f2f1516fd833439114701ff51b627b055fc7edcebe27d43762fc5ea3e5f",
+    "scripts/p7_release_resource_preparation.py": "a76865a466252f5863c8e0ad278c4c6814093d4a4a629a9409acf2e6b916901b",
+    "scripts/p7_resource_preparation.py": "1aa3674bf3bb6e5a68dc6a887588de0e17dfe43a88a6c0cd919d03571cc48323",
+    "scripts/p7_stdio_build_receipt.py": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2",
+    "scripts/p8_backfill.py": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+    "scripts/p8_candidate_execution.py": "e5b36f6bb7bb13292734932f442a6b29d5d04e13d47c34b75d1f00bad3164d9b",
+    "scripts/p8_cold_build.py": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974",
+    "scripts/p8_compat.py": "79765d4a8ff3cdb9e5e01625d4a13318a7122b1cda60fed552d16243663c4da2",
+    "scripts/p8_corpus_audit.py": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+    "scripts/p8_external_candidate.py": "3bf04a43b33dd3e71b437162800a9a19e425b01a2c4a93e4eeb71d97e06fa189",
+    "scripts/p8_facts.py": "43d66cbc833740415d1ea24121eca2c23fac55c93ba38498a6e8c36c5535090a",
+    "scripts/p8_gate_controls.py": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7",
+    "scripts/p8_judge_evidence.py": "30569182753837fe29b390d29acb27328337abbf86e088e8ca3740359c3051ac",
+    "scripts/p8_leakage_audit.py": "bb909556f80bb47c76957b117a9187e6cbc934f8ce0df82d169a3aa58bcfb77e",
+    "scripts/p8_lifecycle.py": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d",
+    "scripts/p8_native_registry.py": "488b446221ade5598c058a56019f7e57ffb04cd8c311d52e3c69c7cc538fe6a9",
+    "scripts/p8_recovery.py": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42",
+    "scripts/p8_release_evidence.py": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
+    "scripts/p8_release_review.py": "dd421c1a2ca753c9a4777e6db1a7cc7d2c5ca7e98b87e61a9aff5ea59048c26f",
+    "scripts/p8_resources.py": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1",
+    "scripts/p8_rollback.py": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
+    "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+    "scripts/p8_runtime.py": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3",
+    "scripts/p8_runtime_build.py": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
+    "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+    "scripts/p8_semantic_certification.py": "42dd72cbb08dd398239cd41b927f2a94bedbc8b813583b175191c87f291a72c4",
+    "scripts/resource_harness/__init__.py": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36",
+    "scripts/resource_harness/analyze_existing.py": "13f61dd7b3612a47179aa5626e474bca98d6a78d23fddad5ce594b9050749ef0",
+    "scripts/resource_harness/build.py": "99ee9bd38f1d0895de63cd0f0c0dd587917e3e35b4877936eb91d380c1a03c85",
+    "scripts/resource_harness/driver.py": "60544f300722cb553fc659db5599989424fb95671e9a0a2743e8a0873dc601f6",
+    "scripts/resource_harness/identity.py": "1113c24496e97ece6f52deca3b892a8527c1f9e1f02fca503c80361fd1c097e6",
+    "scripts/resource_harness/measurement.py": "0122fecbae1b4573ff527d2bcdc76a38d56f24018393b1f6312ad250ddc68942",
+    "scripts/resource_harness/product.py": "d73c29f99c8aa9045bf517e9b6a48dc47ae44a2613d5d3c7eedadb1a48d17889",
+    "scripts/resource_harness/protocol-manifest.json": "082da783b24939608f2e598cce2b98b91ccac48fdacf6e6a61880ed60e649c87",
+    "scripts/resource_harness/protocol.py": "51e4893cb23949350674f50c52a70b40359d2d40f8b5374681d93e576d4ccd95",
+    "scripts/resource_harness/runtime.py": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5",
+    "scripts/review/p7_cache_frozen_negative_replay.py": "68d92a11251bfa948047865fbbd131a1e0b7d2e54944e3111f877d51073b9511",
+    "scripts/review/p7_query_encoding_cases.rs": "b06ea67c12606f868be94faf5699170faa7f5a60915eb3bea72f70f7a287e936",
+    "scripts/review/p7_query_encoding_review.py": "e54e68db21a02944e9e734986e8d1d38362dfecb03b87c9659732fd3595fc6ee",
+    "scripts/review/p7_v16_receipt_independent_audit.py": "f55839a603f82743bf7b86ff38ce497eb30127053ee03a79c5ecdb7c240846db",
+    "scripts/review/v19_corpus_audit.py": "7a57a57d2b2facc5051163634fa2cbd25e5e00ec046257d48f29e960f3219ce9",
+    "scripts/reviewed-source-joint22-v10.json": "195fa37b20130e53f3417f8076eb608f18e3b3a98c9206907ba0ce9ab31b3d8a",
+    "scripts/reviewed-source-p7-v9.json": "cbc04f1d578b83b5c4023f10889cc37c17f0ca2aadac4b2e26cd2dc97c08fd16",
+    "scripts/reviewed-source-registry-v10.json": "099617f589ff6d2acfeb93b58b8049ee3eac9d0c6636cf14eaa524873b838708",
+    "scripts/reviewed-source-registry-v11.json": "ef0b1ed53c07e850b7a226195cb1bf4b4a48b705a9e4a9c5311b33e758d89d5e",
+    "scripts/reviewed-source-registry-v12.json": "a600301187ac43276122186732bc0e5c3dd55952dcc5e33ecc5d3e2c244e67d4",
+    "scripts/reviewed-source-registry-v13.json": "b9e520984d04241104ead7cd26635967d9ce4d5f8f8700ce57b9b1d24c03e31a",
+    "scripts/reviewed-source-registry-v14.json": "610502b90e5ef402875dcf7d32d1128681b2eae3b23a9a4f726fc40a823ba03c",
+    "scripts/reviewed-source-registry.json": "5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155",
+    "scripts/source_snapshots/joint22_v10/.github/workflows/ci.yml": "9a869495f3bb51b982d165ac50e76cd86445f9fed561faf151f16608e1f310c8",
+    "scripts/source_snapshots/joint22_v10/README.md": "7a3ebd9c5c42d4bdf08fe497314205f8d1c845120fc75b8c18b90a949168c3ef",
+    "scripts/source_snapshots/joint22_v10/test_reviewed_source.py.txt": "5ea2e7ee8685c911bdd97264cf1815794101119fb31e697efafd4a48432691ee",
+    "scripts/source_snapshots/v12_ci/.github/workflows/ci.yml": "4036528d196d6c65be3566cdc33d4118c48deda776424d9f06b84dff6f2f1921",
+    "scripts/source_snapshots/v12_ci/.github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
+    "scripts/tests/test_p7_ci_architecture_guards.py": "c691a461251f21fc7705cc513fbd21d313b122a82e84ba1fd3dd463fde96bf99",
+    "scripts/tests/test_p7_offline_network.py": "a28cf04a6c64a6f1e9c04a99c5561506b632228bf4eaf2107ec0ee8493040995",
+    "scripts/tests/test_p7_offline_trace.py": "78b1fa64b5aeaf881bac1c86e908486bc42be2d209b5534f2546ab5c8a34c548",
+    "scripts/tests/test_p7_stdio_build_profile.py": "e68566bbda5621516a3089b930f83130f6b1284f87265b0355e3b3158f273010",
+    "scripts/tests/test_p8_backfill.py": "49bf5ffd7bbffdfc98579712737de70c12ae8585cc2f4539b8bb361083f4f98d",
+    "scripts/tests/test_p8_candidate_execution.py": "a057cca1304fa5980ffb786d890cd71067c6a2087bce77eb2d4c63eb4a18fa15",
+    "scripts/tests/test_p8_compat.py": "385d1f0a9e7e8505f3d9dbf4d825a985753767cbd2371b2dc0cfce99e63c805e",
+    "scripts/tests/test_p8_corpus_audit.py": "0a058f5e59b3b3c0c546632eec1fc114f93b0873343b6a5cd3f85a6eda7ffa79",
+    "scripts/tests/test_p8_external_candidate.py": "46ca6394063f52ac3dd3fbd18e0c0b4828fcb3bcb1c15dadd9389cac4842a8aa",
+    "scripts/tests/test_p8_judge_evidence.py": "6ab3541fdc63d90c3c02f667cbbd79c85ff7bff190ff69a0e63ac2a74ddc6625",
+    "scripts/tests/test_p8_leakage_audit.py": "0dcd2d94f3d4208fef08f4da640598267f0500cac90df732946d6060dcafafa7",
+    "scripts/tests/test_p8_lifecycle.py": "dfd9358f076673858048c5ca0bfb940e95b861a676b7daa498f51d8036ae0ebe",
+    "scripts/tests/test_p8_native_registry.py": "e395b68915cf0382f13b9bb1157eea9052c034f377ccb6b4a2ef37cad3569125",
+    "scripts/tests/test_p8_platform.py": "543f604cb9cbcfe1600aa1a5711f27d3eb2ee3e64126d9c95c1ad5612418aae8",
+    "scripts/tests/test_p8_platform_independent_review.py": "86ad7fbe3dcea399537e776833bb3f3d4c058bd9ccc4e3cdea09a1aa724ee5be",
+    "scripts/tests/test_p8_recovery.py": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
+    "scripts/tests/test_p8_release_evidence.py": "62e8fdd449e4fb0fb4878185ebf06e9f9c790906a4f95415bf4138862977d380",
+    "scripts/tests/test_p8_release_review.py": "c4e01032ea7f85d7cf0bdf0430b6c159112f25425d433eff8deb3bca7bd3544e",
+    "scripts/tests/test_p8_resources.py": "992b6feecb4a40d6da15bddd2b89c7d4367bbb867108102182315362c16b7952",
+    "scripts/tests/test_p8_runner_capacity.py": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
+    "scripts/tests/test_p8_runtime.py": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0",
+    "scripts/tests/test_p8_runtime_evidence.py": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
+    "scripts/tests/test_p8_scale_matrix.py": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
+    "scripts/tests/test_p8_semantic_certification.py": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8",
+    "scripts/update-doc-baselines.sh": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+    "scripts/v14_historical_context.py": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6",
+    "scripts/v15_historical_context.py": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20",
+    "scripts/verify_current_source.py": "17d526085b0e767e11ea13069eeb202df6fd62180b96b538c882b7c0565dcbe0",
+    "scripts/verify_current_source_v2.py": "3c331139606840b92d496fcc84cac5ba60cf97e192b72730027125450fadd2ef",
+    "scripts/verify_current_source_v3.py": "9ffcd3bc58b69437093f83daed7324b4525eaf7c51ccfcb0ec7314f939e7f3d4",
+    "scripts/verify_fixed_e3_integration.py": "277f1544bcf51085e10ed2b94fdb5e403c3ec52a40033d70744fa3679ffe75d2",
+    "scripts/verify_historical_integrations_v2.py": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288",
+    "scripts/verify_packing_integration.py": "b05c27464310dd41d759491d226b4e210e45178eb269c534b46bce48c0448ef6",
+    "scripts/verify_reviewed_source.py": "019ce82b6f797920e5db3f786bb27c058b14a9a7b133e99f9b5d195ca12b81a8",
+    "scripts/verify_reviewed_source_joint22_v10.py": "34a53a3151d070e64b9940279173f7810e975bc281c05534757ed18f358d2efa",
+    "scripts/verify_reviewed_source_p7_v9.py": "4a39ddfa306c755e0da762d43cdf9ee928d24b1dac5a78f2a918cbec5e61a51a",
+    "scripts/verify_reviewed_source_v10.py": "96ff8eb7125db80a89f9e839cea95cd6a4db6fad24159d8c71d28c91d2dbc9ab",
+    "scripts/verify_reviewed_source_v11.py": "cb5d33530a4ea0462d1f6b780ea4917c1ec54aef53ce7fd14f72056fe6210ed9",
+    "scripts/verify_reviewed_source_v12.py": "cc7963183bdcfb9730ad379374cb709d0a77f18e8730765f061d3f403cc50238",
+    "scripts/verify_reviewed_source_v13.py": "a870137ff28085baaf435cb1f3e1700365a28f0247fb8774eae17f673887828a",
+    "scripts/verify_reviewed_source_v14.py": "d37219bb0906f0f64d44fcf7ccf944865748e876f597ce83ffe79f5d35b3af70",
+    "tests/source_integrity/test_current_source.py": "d9691557d5b2a6d54270a77a22909bf7df5988e6891eb225d1dd59e695029a9d",
+    "tests/source_integrity/test_current_source_v2.py": "62be5d020b1bc88a999d5dbc11dcd0f29df6986208218ce6eff9e361b74bed85",
+    "tests/source_integrity/test_current_source_v3.py": "f38bf21b6bc5707655c1dc3dac331339e8434875228d0c77ce1bf4f9fa9672ad",
+    "tests/source_integrity/test_historical_integrations_v2.py": "1f8866cf740bc469d05ccf30503078a533ebe85c9d8f4cf01d46bd5450849b39",
+    "tests/source_integrity/test_plan_progress.py": "36705dbdb1c07984aff9902ca3c32b11952b5d067260e0f78a6d60ede5ae9091",
+    "tests/source_integrity/test_reviewed_base.py": "745ea8e9980ee66c67230d0524ea5d37bda93a9d7743682f06c825eccf1c6d30",
+    "tests/source_integrity/test_reviewed_source.py": "4156a6417d59564ec225b2dc0b36df39b7143d575a1aae28d7c2e80be4bd5337",
+    "tests/source_integrity/test_reviewed_source_v10.py": "cafff36f050a72d8b3adabd1b7163f384a708530051fd935960513a18a45becf",
+    "tests/source_integrity/test_reviewed_source_v11.py": "f12de60cbca49b415da706bec69ccae82ea67f2c92f549e0a1b181e0b3c113d2",
+    "tests/source_integrity/test_reviewed_source_v12.py": "97f71cecc4eb032fddcfef37bb5da673ccd83dc2455997372238ea46e625bb74",
+    "tests/source_integrity/test_reviewed_source_v13.py": "a42075de17b4658204cfad1a7adc9fdc3af43d61e41345b7c82b2dee96dcdce4",
+    "tests/source_integrity/test_reviewed_source_v14.py": "26be23a90a88814781c201e2ad60b0bd618334f82651e1ba55f91ca98d688a0e",
+    "tests/source_integrity/test_reviewed_source_v15.py": "4dfc98896afb56cbd42d5219f4f95e56f7228ad30984a2734f2323c85f98938f",
+    "tests/source_integrity/test_v14_historical_context.py": "651632a8fc46bfe97b9cdb4eca1fb8b06d132033e9892402e667337b415c0386",
+    "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
+    "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
+    "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491",
+    "scripts/tests/test_p8_runtime_cache.py": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
+    "scripts/tests/test_p8_runtime_finalization.py": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145",
+    ".github/workflows/p8-snapshot-leaf-engineering.yml": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
+    ".github/workflows/p8-integrated-runtime-controls.yml": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991"
   },
-  "incremental_validation_path_reviewers": {
-    "scripts/p8_runtime.py": [
-      "/root/runtime_closeout",
-      "/root",
-      "/root/pr_audit (independent exact-byte, source and evidence review; no re-execution)"
-    ],
-    "scripts/tests/test_p8_runtime.py": [
-      "/root/runtime_closeout",
-      "/root",
-      "/root/pr_audit (independent exact-byte, source and evidence review; no re-execution)"
-    ]
+  "source_modes": {
+    "Cargo.lock": "100644",
+    "Cargo.toml": "100644",
+    "crates/cc-db/Cargo.toml": "100644",
+    "crates/cc-db/src/capability_read.rs": "100644",
+    "crates/cc-db/src/community_carry.rs": "100644",
+    "crates/cc-db/src/direct_writer.rs": "100644",
+    "crates/cc-db/src/document_store.rs": "100644",
+    "crates/cc-db/src/epoch_rules.rs": "100644",
+    "crates/cc-db/src/file_state_cache.rs": "100644",
+    "crates/cc-db/src/framework_scan.rs": "100644",
+    "crates/cc-db/src/freshness_store.rs": "100644",
+    "crates/cc-db/src/fts.rs": "100644",
+    "crates/cc-db/src/index_db.rs": "100644",
+    "crates/cc-db/src/index_db_arch.rs": "100644",
+    "crates/cc-db/src/index_db_edges.rs": "100644",
+    "crates/cc-db/src/index_db_frontier.rs": "100644",
+    "crates/cc-db/src/index_db_graph.rs": "100644",
+    "crates/cc-db/src/index_db_graph_read.rs": "100644",
+    "crates/cc-db/src/index_db_multi_insert.rs": "100644",
+    "crates/cc-db/src/index_db_query.rs": "100644",
+    "crates/cc-db/src/index_db_rebuild.rs": "100644",
+    "crates/cc-db/src/index_db_rebuild_fault_tests.rs": "100644",
+    "crates/cc-db/src/index_db_retrieval.rs": "100644",
+    "crates/cc-db/src/index_db_snapshot_insert.rs": "100644",
+    "crates/cc-db/src/index_db_tests.rs": "100644",
+    "crates/cc-db/src/index_db_types.rs": "100644",
+    "crates/cc-db/src/index_db_write_batch.rs": "100644",
+    "crates/cc-db/src/index_migrate.rs": "100644",
+    "crates/cc-db/src/lib.rs": "100644",
+    "crates/cc-db/src/public_surface_store.rs": "100644",
+    "crates/cc-db/src/read_generation.rs": "100644",
+    "crates/cc-db/src/resolution_dependency_store.rs": "100644",
+    "crates/cc-db/src/rows.rs": "100644",
+    "crates/cc-db/src/seed_symbol_cache.rs": "100644",
+    "crates/cc-db/src/semantic_coverage.rs": "100644",
+    "crates/cc-db/src/semantic_gc_reads.rs": "100644",
+    "crates/cc-db/src/semantic_manifest_reads.rs": "100644",
+    "crates/cc-db/src/semantic_outbox.rs": "100644",
+    "crates/cc-db/src/semantic_publish.rs": "100644",
+    "crates/cc-db/src/semantic_queue.rs": "100644",
+    "crates/cc-db/src/semantic_rebuild.rs": "100644",
+    "crates/cc-db/src/semantic_recovery.rs": "100644",
+    "crates/cc-db/src/semantic_space_switch.rs": "100644",
+    "crates/cc-db/src/signature_agg.rs": "100644",
+    "crates/cc-db/src/snapshot_write_txn.rs": "100644",
+    "crates/cc-db/src/sql/index_v1.sql": "100644",
+    "crates/cc-db/src/sql_util.rs": "100644",
+    "crates/cc-db/src/statement_work.rs": "100644",
+    "crates/cc-db/src/symbol_identity_store.rs": "100644",
+    "crates/cc-db/src/unit_of_work.rs": "100644",
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": "100644",
+    "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql": "100644",
+    "crates/cc-db/tests/fixtures/p7-ci-schema-v24.sql": "100644",
+    "crates/cc-db/tests/fts_identifier_expansion.rs": "100644",
+    "crates/cc-db/tests/incremental_write_bench.rs": "100644",
+    "crates/cc-db/tests/p2b_resolution_store.rs": "100644",
+    "crates/cc-db/tests/p2c_freshness_store.rs": "100644",
+    "crates/cc-db/tests/p2d_dependency_cost.rs": "100644",
+    "crates/cc-db/tests/p7_configured_space_transition.rs": "100644",
+    "crates/cc-db/tests/public_surface_store.rs": "100644",
+    "crates/cc-db/tests/resolver_bind_independent_review.rs": "100644",
+    "crates/cc-db/tests/resolver_seed_large_exclusion.rs": "100644",
+    "crates/cc-db/tests/semantic_coverage.rs": "100644",
+    "crates/cc-db/tests/semantic_lease.rs": "100644",
+    "crates/cc-db/tests/semantic_outbox.rs": "100644",
+    "crates/cc-db/tests/semantic_publish.rs": "100644",
+    "crates/cc-db/tests/semantic_queue.rs": "100644",
+    "crates/cc-db/tests/semantic_rebuild.rs": "100644",
+    "crates/cc-db/tests/semantic_recovery.rs": "100644",
+    "crates/cc-db/tests/semantic_schema.rs": "100644",
+    "crates/cc-db/tests/semantic_space_switch.rs": "100644",
+    "crates/cc-db/tests/test_edge_empty_population.rs": "100644",
+    "crates/cc-eval/Cargo.toml": "100644",
+    "crates/cc-eval/benchmarks/KNOWN-FAILURES.md": "100644",
+    "crates/cc-eval/benchmarks/README.md": "100644",
+    "crates/cc-eval/benchmarks/USAGE.md": "100644",
+    "crates/cc-eval/benchmarks/goldens/fnmatch.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/comparison-policy.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p0-python-api.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p0-rust-api.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p0-smoke.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p1b-exact.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p1c-bm25.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p1c-intents.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/p1c-softscope.json": "100644",
+    "crates/cc-eval/benchmarks/manifests/public-dev-20261008.dataset-index.json": "100644",
+    "crates/cc-eval/benchmarks/modules/p3c-fixtures.json": "100644",
+    "crates/cc-eval/benchmarks/mutations/p0-python-signature.json": "100644",
+    "crates/cc-eval/benchmarks/mutations/p0-rust-signature.json": "100644",
+    "crates/cc-eval/benchmarks/mutations/p4d-document-identity.json": "100644",
+    "crates/cc-eval/benchmarks/native/p0-codecortex-subset.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p0-python-api.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p0-rust-api.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p0-smoke.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p1b-exact.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p1c-bm25.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p1c-intents.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p1c-softscope.jsonl": "100644",
+    "crates/cc-eval/benchmarks/native/p4d-chunk-ablation.json": "100644",
+    "crates/cc-eval/benchmarks/native/public-dev-20261008/README.md": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/README.md": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/index.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/LICENSE-APACHE": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/LICENSE-MIT": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/README.md": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/author-mechanical-checks.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/author-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/queries.oce-compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/review/serde-first20-independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/review/serde-full150-v2-independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/review/serde-full150-v2-mechanical-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/suite.oce-compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/freeze-validate-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/native.dev-freeze.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/native.dev-validate.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/oce-compat.dev-freeze.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/oce-compat.dev-validate.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/serde/validation/projection-check.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/README.md": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/author-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/compat.dev.suite.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/native.dev.suite.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/review/author-identity-checks.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/review/correction-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/review/vite-first20-independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/review/vite-full149-v2-independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/review/vite-license-correction-independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/compat-freeze.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/compat-freeze.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/frozen-binaries.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/native-compat-validate.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/native-compat-validate.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/native-freeze.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/native-freeze.log": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/projection-check.json": "100644",
+    "crates/cc-eval/benchmarks/public-dev-20261008/vite/validation/validation-summary.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/licenses/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/index.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/application.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/express.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/request.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/response.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/utils.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/source/lib/view.js": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/express/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/licenses/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/auth.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/binding.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/binding_nomsgpack.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/bson.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/default_validator.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/form.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/form_mapping.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/header.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/json.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/msgpack.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/multipart_form_mapping.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/protobuf.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/query.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/toml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/uri.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/xml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/binding/yaml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/codec/json/api.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/codec/json/go_json.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/codec/json/json.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/codec/json/jsoniter.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/codec/json/sonic.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/context.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/context_appengine.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/debug.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/deprecated.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/errors.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/fs.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/gin.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/ginS/gins.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/internal/bytesconv/bytesconv.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/logger.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/mode.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/recovery.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/bson.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/data.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/html.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/json.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/msgpack.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/pdf.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/protobuf.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/reader.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/redirect.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/render.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/text.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/toml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/xml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/render/yaml.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/response_writer.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/routergroup.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/test_helpers.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/utils.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/source/version.go": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/gin/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/README.md": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/artifact-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/build.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/build/build-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/build/cargo-build.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/build/cargo-build.stderr": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/clippy.log": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/fmt.log": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/full_requests_source.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/index-receipt.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/nonvariadic_control.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/original_exceptions_only.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/variadic_named_type.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/index/variadic_tuple_min.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/package-tests.log.gz": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/raw-test-log-sha256.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/evidence/unit-tests.log.gz": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/license-retention-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/mcp_probe.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/pr99-diagnosis.tar.gz": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/retained-licenses.tar.gz": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/verify_evidence.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/requests-type-dependency-fix/verify_index.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/THIRD-PARTY-NOTICES.md": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/inclusion-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/AUTHORS": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/requests-introduction-AUTHORS": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/requests-introduction-LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/requests-introduction-NOTICE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/requests-introduction-utils.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/licenses/werkzeug-0.6.2/werkzeug/http.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/pyproject.toml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/__init__.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/__version__.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/_internal_utils.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/_types.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/adapters.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/api.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/auth.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/certs.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/compat.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/cookies.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/exceptions.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/help.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/hooks.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/models.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/packages.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/sessions.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/status_codes.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/structures.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/source/src/requests/utils.py": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/requests/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/author-packet.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/licenses/LICENSE-APACHE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/licenses/LICENSE-MIT": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/queries.compat.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/queries.native.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/revision-2/author-packet.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/revision-2/changes.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/revision-2/independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/revision-2/queries.compat.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/revision-2/queries.native.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/Cargo.toml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde/Cargo.toml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde/src/lib.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde/src/private/de.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/de/ignored_any.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/de/impls.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/de/mod.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/de/value.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/private/seed.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/ser/impls.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_core/src/ser/mod.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_derive/src/de/enum_.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_derive/src/de/enum_untagged.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_derive/src/internals/attr.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/intake/recovery-authoring-20261008/source/serde_derive/src/internals/case.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/licenses/LICENSE-APACHE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/licenses/LICENSE-MIT": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/Cargo.toml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde/Cargo.toml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde/src/lib.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde/src/private/de.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/de/ignored_any.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/de/impls.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/de/mod.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/de/value.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/private/seed.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/ser/impls.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_core/src/ser/mod.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_derive/src/de/enum_.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_derive/src/de/enum_untagged.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_derive/src/internals/attr.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/source/serde_derive/src/internals/case.rs": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/serde/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/licenses/LICENSE.txt": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/licenses/NOTICE.txt": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/licenses/vscode-uri-LICENSE.md": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/async/client.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/diagnosticFormatter.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/fs.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/fsCallbacks.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/node/encoder.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/node/msgpack.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/node/node.infrastructure.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/node/node.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/node/wtf8.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/options.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/path.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/proto.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/sourceFileCache.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/sync/client.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/syncChannel.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/api/timing.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/ast/clone.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/ast/is.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/ast/modifiers.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/source/packages/typescript/src/ast/visitor.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/typescript/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/author-packet.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/licenses/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/licenses/packages/create-vite/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/licenses/packages/vite/LICENSE.md": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/queries.compat.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/queries.native.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/revision-2/author-packet.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/revision-2/independent-review.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/revision-2/queries.compat.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/revision-2/queries.native.candidate.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/create-vite/index.js": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/create-vite/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/create-vite/src/index.ts": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/bin/vite.js": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/rolldown.config.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/cli.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/config.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/env.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/plugins/importAnalysis.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/preview.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/server/index.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/server/middlewares/base.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/server/middlewares/htmlFallback.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/src/node/server/middlewares/static.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/pnpm-workspace.yaml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/licenses/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/licenses/packages/create-vite/LICENSE": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/licenses/packages/vite/LICENSE.md": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/queries.compat.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/queries.native.dev.jsonl": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source-manifest.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/create-vite/index.js": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/create-vite/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/create-vite/src/index.ts": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/bin/vite.js": "100755",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/package.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/rolldown.config.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/cli.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/config.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/env.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/plugins/importAnalysis.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/preview.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/server/index.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/server/middlewares/base.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/server/middlewares/htmlFallback.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/src/node/server/middlewares/static.ts": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/pnpm-workspace.yaml": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/suite.compat.dev.json": "100644",
+    "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/suite.native.dev.json": "100644",
+    "crates/cc-eval/benchmarks/schema/query.schema.json": "100644",
+    "crates/cc-eval/benchmarks/schema/result.schema.json": "100644",
+    "crates/cc-eval/benchmarks/schema/suite.schema.json": "100644",
+    "crates/cc-eval/corpus/adr_list.toml": "100644",
+    "crates/cc-eval/corpus/architecture_env.toml": "100644",
+    "crates/cc-eval/corpus/architecture_frameworks.toml": "100644",
+    "crates/cc-eval/corpus/architecture_overview.toml": "100644",
+    "crates/cc-eval/corpus/architecture_routes.toml": "100644",
+    "crates/cc-eval/corpus/architecture_routes_express.toml": "100644",
+    "crates/cc-eval/corpus/architecture_services.toml": "100644",
+    "crates/cc-eval/corpus/context_flask_routes.toml": "100644",
+    "crates/cc-eval/corpus/context_golden_bank_transfer.toml": "100644",
+    "crates/cc-eval/corpus/context_golden_format_user.toml": "100644",
+    "crates/cc-eval/corpus/context_golden_order_total.toml": "100644",
+    "crates/cc-eval/corpus/context_golden_refactor.toml": "100644",
+    "crates/cc-eval/corpus/context_graph_enriched.toml": "100644",
+    "crates/cc-eval/corpus/context_task.toml": "100644",
+    "crates/cc-eval/corpus/context_with_intent.toml": "100644",
+    "crates/cc-eval/corpus/error_files_invalid_action.toml": "100644",
+    "crates/cc-eval/corpus/error_impact_no_index.toml": "100644",
+    "crates/cc-eval/corpus/error_invalid_cypher.toml": "100644",
+    "crates/cc-eval/corpus/error_node_missing.toml": "100644",
+    "crates/cc-eval/corpus/error_search_empty_query.toml": "100644",
+    "crates/cc-eval/corpus/error_trace_missing_symbol.toml": "100644",
+    "crates/cc-eval/corpus/explore_flow_js.toml": "100644",
+    "crates/cc-eval/corpus/explore_flow_mode.toml": "100644",
+    "crates/cc-eval/corpus/explore_golden_flow_route_chain.toml": "100644",
+    "crates/cc-eval/corpus/explore_models_hierarchy.toml": "100644",
+    "crates/cc-eval/corpus/explore_symbols.toml": "100644",
+    "crates/cc-eval/corpus/files_list.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_aggregation.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_basic.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_callers.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_golden_multiply_callers.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_optional_match.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_regex_regexp.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_union.toml": "100644",
+    "crates/cc-eval/corpus/graph_query_variable_length_calls.toml": "100644",
+    "crates/cc-eval/corpus/impact_circular.toml": "100644",
+    "crates/cc-eval/corpus/impact_dead_code.toml": "100644",
+    "crates/cc-eval/corpus/impact_dependents_utils.toml": "100644",
+    "crates/cc-eval/corpus/impact_golden_dead_code_known.toml": "100644",
+    "crates/cc-eval/corpus/impact_golden_geometry_callers.toml": "100644",
+    "crates/cc-eval/corpus/impact_golden_utils_blast_radius.toml": "100644",
+    "crates/cc-eval/corpus/index_build.toml": "100644",
+    "crates/cc-eval/corpus/ingest_traces_basic.toml": "100644",
+    "crates/cc-eval/corpus/node_golden_trail_process_user.toml": "100644",
+    "crates/cc-eval/corpus/node_outline.toml": "100644",
+    "crates/cc-eval/corpus/node_outline_typescript.toml": "100644",
+    "crates/cc-eval/corpus/node_source_rust.toml": "100644",
+    "crates/cc-eval/corpus/node_trail.toml": "100644",
+    "crates/cc-eval/corpus/relations_callees_cpp.toml": "100644",
+    "crates/cc-eval/corpus/relations_callees_process.toml": "100644",
+    "crates/cc-eval/corpus/relations_callers.toml": "100644",
+    "crates/cc-eval/corpus/relations_callers_c.toml": "100644",
+    "crates/cc-eval/corpus/relations_cross_file_python.toml": "100644",
+    "crates/cc-eval/corpus/relations_golden_hierarchy_user.toml": "100644",
+    "crates/cc-eval/corpus/relations_golden_py_get_user_callers.toml": "100644",
+    "crates/cc-eval/corpus/relations_hierarchy.toml": "100644",
+    "crates/cc-eval/corpus/search_c_function.toml": "100644",
+    "crates/cc-eval/corpus/search_cpp_method.toml": "100644",
+    "crates/cc-eval/corpus/search_exact_symbol_name.toml": "100644",
+    "crates/cc-eval/corpus/search_go_function.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_c_compute_area.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_cpp_transfer.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_fuzzy_calculate.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_fuzzy_create_user.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_go_handler.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_geometry.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_graph_caller.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_logging.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_order.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_validate_email.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_hybrid_withdraw.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_java_list_users.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_js.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_js_middleware.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_py_class_view.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_python.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_rust_process_order.toml": "100644",
+    "crates/cc-eval/corpus/search_golden_ts_items_service.toml": "100644",
+    "crates/cc-eval/corpus/search_hybrid.toml": "100644",
+    "crates/cc-eval/corpus/search_java_controller.toml": "100644",
+    "crates/cc-eval/corpus/search_rust_function.toml": "100644",
+    "crates/cc-eval/corpus/search_symbol.toml": "100644",
+    "crates/cc-eval/corpus/search_typescript_class.toml": "100644",
+    "crates/cc-eval/corpus/status_basic.toml": "100644",
+    "crates/cc-eval/corpus/trace_c_intra.toml": "100644",
+    "crates/cc-eval/corpus/trace_cpp_method.toml": "100644",
+    "crates/cc-eval/corpus/trace_cross_file_js.toml": "100644",
+    "crates/cc-eval/corpus/trace_golden_c_perimeter_multiply.toml": "100644",
+    "crates/cc-eval/corpus/trace_golden_cpp_transfer_deposit.toml": "100644",
+    "crates/cc-eval/corpus/trace_golden_js_route_chain.toml": "100644",
+    "crates/cc-eval/corpus/trace_golden_rust_order_total.toml": "100644",
+    "crates/cc-eval/corpus/trace_path.toml": "100644",
+    "crates/cc-eval/corpus/trace_rust_intra.toml": "100644",
+    "crates/cc-eval/corpus/trace_same_symbol.toml": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1b-exact/pkg/api/target.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1b-exact/pkg/apix/decoy.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1b-exact/src/codec.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1b-exact/src/noise.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-controls/noise.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-controls/src/alpha/alpha/a.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-controls/src/alpha/noise/b.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-controls/src/target.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/decoder.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/dispatcher.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/display.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/errors.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/example.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/p1c-intents/settings.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/python-api/consumer.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/python-api/provider.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/retrieval/billing.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/retrieval/routes.ts": "100644",
+    "crates/cc-eval/fixtures/index-v2/retrieval/session.py": "100644",
+    "crates/cc-eval/fixtures/index-v2/rust-api/lib.rs": "100644",
+    "crates/cc-eval/fixtures/index-v2/rust-api/provider.rs": "100644",
+    "crates/cc-eval/fixtures/sample-project/UserController.java": "100644",
+    "crates/cc-eval/fixtures/sample-project/account.cpp": "100644",
+    "crates/cc-eval/fixtures/sample-project/api_handler.rs": "100644",
+    "crates/cc-eval/fixtures/sample-project/api_views.py": "100644",
+    "crates/cc-eval/fixtures/sample-project/app.py": "100644",
+    "crates/cc-eval/fixtures/sample-project/app_controller.ts": "100644",
+    "crates/cc-eval/fixtures/sample-project/config.py": "100644",
+    "crates/cc-eval/fixtures/sample-project/geometry.c": "100644",
+    "crates/cc-eval/fixtures/sample-project/geometry.h": "100644",
+    "crates/cc-eval/fixtures/sample-project/handler.js": "100644",
+    "crates/cc-eval/fixtures/sample-project/lib.rs": "100644",
+    "crates/cc-eval/fixtures/sample-project/main.go": "100644",
+    "crates/cc-eval/fixtures/sample-project/middleware.js": "100644",
+    "crates/cc-eval/fixtures/sample-project/models.py": "100644",
+    "crates/cc-eval/fixtures/sample-project/routes.js": "100644",
+    "crates/cc-eval/fixtures/sample-project/server.py": "100644",
+    "crates/cc-eval/fixtures/sample-project/types.ts": "100644",
+    "crates/cc-eval/fixtures/sample-project/utils.js": "100644",
+    "crates/cc-eval/src/bench.rs": "100644",
+    "crates/cc-eval/src/benchmark/ablation.rs": "100644",
+    "crates/cc-eval/src/benchmark/ablation/mechanism.rs": "100644",
+    "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json": "100644",
+    "crates/cc-eval/src/benchmark/ablation/strategy.rs": "100644",
+    "crates/cc-eval/src/benchmark/ablation/strategy/reporting.rs": "100644",
+    "crates/cc-eval/src/benchmark/ablation_tests.rs": "100644",
+    "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs": "100644",
+    "crates/cc-eval/src/benchmark/adapters/mod.rs": "100644",
+    "crates/cc-eval/src/benchmark/adapters/oce_http.rs": "100644",
+    "crates/cc-eval/src/benchmark/adapters/rg.rs": "100644",
+    "crates/cc-eval/src/benchmark/comparison.rs": "100644",
+    "crates/cc-eval/src/benchmark/coverage_diagnostics.rs": "100644",
+    "crates/cc-eval/src/benchmark/fnmatch.rs": "100644",
+    "crates/cc-eval/src/benchmark/gate.rs": "100644",
+    "crates/cc-eval/src/benchmark/importer_oce.rs": "100644",
+    "crates/cc-eval/src/benchmark/manifest.rs": "100644",
+    "crates/cc-eval/src/benchmark/metrics.rs": "100644",
+    "crates/cc-eval/src/benchmark/mod.rs": "100644",
+    "crates/cc-eval/src/benchmark/mutation_case.rs": "100644",
+    "crates/cc-eval/src/benchmark/mutations.rs": "100644",
+    "crates/cc-eval/src/benchmark/normalizer.rs": "100644",
+    "crates/cc-eval/src/benchmark/oracle.rs": "100644",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "100644",
+    "crates/cc-eval/src/benchmark/p8_load.rs": "100644",
+    "crates/cc-eval/src/benchmark/p8_scale.rs": "100644",
+    "crates/cc-eval/src/benchmark/readiness.rs": "100644",
+    "crates/cc-eval/src/benchmark/report.rs": "100644",
+    "crates/cc-eval/src/benchmark/runner.rs": "100644",
+    "crates/cc-eval/src/benchmark/sampler.rs": "100644",
+    "crates/cc-eval/src/benchmark/schema.rs": "100644",
+    "crates/cc-eval/src/benchmark/span_metrics.rs": "100644",
+    "crates/cc-eval/src/benchmark/statistics.rs": "100644",
+    "crates/cc-eval/src/benchmark/validation.rs": "100644",
+    "crates/cc-eval/src/bin/cc-eval-p8-load.rs": "100644",
+    "crates/cc-eval/src/bin/cc-eval.rs": "100644",
+    "crates/cc-eval/src/bin/p8-measurements.rs": "100644",
+    "crates/cc-eval/src/bin/p8-oracle.rs": "100644",
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs": "100644",
+    "crates/cc-eval/src/bin/p8-scale.rs": "100644",
+    "crates/cc-eval/src/corpus.rs": "100644",
+    "crates/cc-eval/src/lib.rs": "100644",
+    "crates/cc-eval/src/report.rs": "100644",
+    "crates/cc-eval/src/runner.rs": "100644",
+    "crates/cc-eval/src/synth.rs": "100644",
+    "crates/cc-eval/src/types.rs": "100644",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "100644",
+    "crates/cc-eval/tests/benchmark_cli.rs": "100644",
+    "crates/cc-eval/tests/benchmark_coverage_diagnostics.rs": "100644",
+    "crates/cc-eval/tests/benchmark_defects.rs": "100644",
+    "crates/cc-eval/tests/benchmark_lock.rs": "100644",
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": "100644",
+    "crates/cc-eval/tests/benchmark_reports.rs": "100644",
+    "crates/cc-eval/tests/benchmark_scoring.rs": "100644",
+    "crates/cc-eval/tests/ci_generation_guard_contract.rs": "100644",
+    "crates/cc-eval/tests/common/p3d_fixture.rs": "100644",
+    "crates/cc-eval/tests/diag_p5e_fix_review_boundary_20261003.rs": "100644",
+    "crates/cc-eval/tests/diag_p5e_fix_review_stage_20261003.rs": "100644",
+    "crates/cc-eval/tests/diag_p5e_stage_receipts_20261003.rs": "100644",
+    "crates/cc-eval/tests/document_identity.rs": "100644",
+    "crates/cc-eval/tests/mcp_dispatch_seam.rs": "100644",
+    "crates/cc-eval/tests/p1a_retrieval.rs": "100644",
+    "crates/cc-eval/tests/p1b_retrieval.rs": "100644",
+    "crates/cc-eval/tests/p1b_scan_accounting.rs": "100644",
+    "crates/cc-eval/tests/p1c_contract.rs": "100644",
+    "crates/cc-eval/tests/p1c_retrieval.rs": "100644",
+    "crates/cc-eval/tests/p1d_concurrency.rs": "100644",
+    "crates/cc-eval/tests/p1d_cost.rs": "100644",
+    "crates/cc-eval/tests/p1d_cost_probe.rs": "100644",
+    "crates/cc-eval/tests/p1d_docs.rs": "100644",
+    "crates/cc-eval/tests/p2a_incremental.rs": "100644",
+    "crates/cc-eval/tests/p2b_incremental.rs": "100644",
+    "crates/cc-eval/tests/p2c_reconcile.rs": "100644",
+    "crates/cc-eval/tests/p2d_cost.rs": "100644",
+    "crates/cc-eval/tests/p2d_mutations.rs": "100644",
+    "crates/cc-eval/tests/p3a_cost.rs": "100644",
+    "crates/cc-eval/tests/p3a_project_model.rs": "100644",
+    "crates/cc-eval/tests/p3b_cost.rs": "100644",
+    "crates/cc-eval/tests/p3b_modules.rs": "100644",
+    "crates/cc-eval/tests/p3c_cost.rs": "100644",
+    "crates/cc-eval/tests/p3c_modules.rs": "100644",
+    "crates/cc-eval/tests/p3d_cost.rs": "100644",
+    "crates/cc-eval/tests/p3d_modules.rs": "100644",
+    "crates/cc-eval/tests/p4a_cost.rs": "100644",
+    "crates/cc-eval/tests/p4a_source.rs": "100644",
+    "crates/cc-eval/tests/p4b_chunks.rs": "100644",
+    "crates/cc-eval/tests/p4b_cost.rs": "100644",
+    "crates/cc-eval/tests/p4c_cost.rs": "100644",
+    "crates/cc-eval/tests/p4c_documents.rs": "100644",
+    "crates/cc-eval/tests/p4d_cost.rs": "100644",
+    "crates/cc-eval/tests/p4d_quality.rs": "100644",
+    "crates/cc-eval/tests/p5a_boundaries.rs": "100644",
+    "crates/cc-eval/tests/p5a_cost.rs": "100644",
+    "crates/cc-eval/tests/p5a_retrieval.rs": "100644",
+    "crates/cc-eval/tests/p5b_cost.rs": "100644",
+    "crates/cc-eval/tests/p5b_execution.rs": "100644",
+    "crates/cc-eval/tests/p5c_budget.rs": "100644",
+    "crates/cc-eval/tests/p5c_cost.rs": "100644",
+    "crates/cc-eval/tests/p5c_hydration.rs": "100644",
+    "crates/cc-eval/tests/p5c_selection.rs": "100644",
+    "crates/cc-eval/tests/p5d_contract.rs": "100644",
+    "crates/cc-eval/tests/p5d_cost.rs": "100644",
+    "crates/cc-eval/tests/p5d_runtime.rs": "100644",
+    "crates/cc-eval/tests/p5e_ablation.rs": "100644",
+    "crates/cc-eval/tests/p5e_context_facets.rs": "100644",
+    "crates/cc-eval/tests/p5e_graph_anchor.rs": "100644",
+    "crates/cc-eval/tests/p5e_identifier.rs": "100644",
+    "crates/cc-eval/tests/p5e_path_domain.rs": "100644",
+    "crates/cc-eval/tests/p5e_priority_pressure.rs": "100644",
+    "crates/cc-eval/tests/p7_mechanism_stdio.rs": "100644",
+    "crates/cc-eval/tests/p7_partial_budget.rs": "100644",
+    "crates/cc-eval/tests/p7_strategy_ablation.rs": "100644",
+    "crates/cc-eval/tests/p7_strategy_stdio.rs": "100644",
+    "crates/cc-eval/tests/p7_validation_work.rs": "100644",
+    "crates/cc-eval/tests/p7_worker_contention.rs": "100644",
+    "crates/cc-eval/tests/p8_lifecycle_replay.rs": "100644",
+    "crates/cc-eval/tests/p8_load.rs": "100644",
+    "crates/cc-eval/tests/p8_mcp_readiness.rs": "100644",
+    "crates/cc-eval/tests/p8_measurements.rs": "100644",
+    "crates/cc-eval/tests/p8_route_reload.rs": "100644",
+    "crates/cc-eval/tests/p8_scale.rs": "100644",
+    "crates/cc-eval/tests/packing_scope_v1.rs": "100644",
+    "crates/cc-eval/tests/packing_validation_work.rs": "100644",
+    "crates/cc-eval/tests/scale_bench.rs": "100644",
+    "crates/cc-eval/tests/semantic_lifecycle.rs": "100644",
+    "crates/cc-eval/tests/soak.rs": "100644",
+    "crates/cc-eval/tests/support/p7_fake_endpoint.rs": "100644",
+    "crates/cc-eval/tests/support/p7_procfs.rs": "100644",
+    "crates/cc-eval/tests/v16_cache_read_soak.rs": "100644",
+    "crates/cc-eval/tests/v16_resource_bounds.rs": "100644",
+    "crates/cc-index/Cargo.toml": "100644",
+    "crates/cc-index/src/build_plan.rs": "100644",
+    "crates/cc-index/src/community.rs": "100644",
+    "crates/cc-index/src/config_linker.rs": "100644",
+    "crates/cc-index/src/dirty_closure.rs": "100644",
+    "crates/cc-index/src/dirty_reload_policy.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/event_emitter.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/field_observer.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/jsx.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/mod.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/rerender.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/state_setter.rs": "100644",
+    "crates/cc-index/src/dispatch_synthesis/vue.rs": "100644",
+    "crates/cc-index/src/documents/delta.rs": "100644",
+    "crates/cc-index/src/documents/mod.rs": "100644",
+    "crates/cc-index/src/documents/render.rs": "100644",
+    "crates/cc-index/src/documents/symbol_identity.rs": "100644",
+    "crates/cc-index/src/framework_registry/activation.rs": "100644",
+    "crates/cc-index/src/framework_registry/file_path.rs": "100644",
+    "crates/cc-index/src/framework_registry/import_marker.rs": "100644",
+    "crates/cc-index/src/framework_registry/mod.rs": "100644",
+    "crates/cc-index/src/framework_registry/package_manifest.rs": "100644",
+    "crates/cc-index/src/framework_registry/route_framework.rs": "100644",
+    "crates/cc-index/src/framework_registry/symbol_pattern.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/actix.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/aspnet.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/axum.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/django.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/express.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/fastapi.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/flask.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/go_router.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/hono.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/laravel.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/mod.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/mount_resolution.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/nestjs.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/python_patterns.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/rails.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/react.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/spring.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/svelte.rs": "100644",
+    "crates/cc-index/src/framework_resolvers/vue.rs": "100644",
+    "crates/cc-index/src/git_cochange.rs": "100644",
+    "crates/cc-index/src/hierarchy.rs": "100644",
+    "crates/cc-index/src/indexer.rs": "100644",
+    "crates/cc-index/src/indexer_phases/analysis.rs": "100644",
+    "crates/cc-index/src/indexer_phases/config_link.rs": "100644",
+    "crates/cc-index/src/indexer_phases/dependencies.rs": "100644",
+    "crates/cc-index/src/indexer_phases/dirty.rs": "100644",
+    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": "100644",
+    "crates/cc-index/src/indexer_phases/mod.rs": "100644",
+    "crates/cc-index/src/indexer_phases/postprocess.rs": "100644",
+    "crates/cc-index/src/indexer_phases/reconcile.rs": "100644",
+    "crates/cc-index/src/indexer_phases/resolve.rs": "100644",
+    "crates/cc-index/src/indexer_phases/snapshot.rs": "100644",
+    "crates/cc-index/src/indexer_phases/write.rs": "100644",
+    "crates/cc-index/src/infra_docker.rs": "100644",
+    "crates/cc-index/src/infra_k8s.rs": "100644",
+    "crates/cc-index/src/infra_pass.rs": "100644",
+    "crates/cc-index/src/infra_terraform.rs": "100644",
+    "crates/cc-index/src/lib.rs": "100644",
+    "crates/cc-index/src/memory_budget.rs": "100644",
+    "crates/cc-index/src/module_resolution/go.rs": "100644",
+    "crates/cc-index/src/module_resolution/mod.rs": "100644",
+    "crates/cc-index/src/module_resolution/package.rs": "100644",
+    "crates/cc-index/src/module_resolution/python.rs": "100644",
+    "crates/cc-index/src/module_resolution/rust.rs": "100644",
+    "crates/cc-index/src/module_resolution/typescript.rs": "100644",
+    "crates/cc-index/src/pass_gate.rs": "100644",
+    "crates/cc-index/src/project_model/config_cache.rs": "100644",
+    "crates/cc-index/src/project_model/go.rs": "100644",
+    "crates/cc-index/src/project_model/go_capture.rs": "100644",
+    "crates/cc-index/src/project_model/jsonc.rs": "100644",
+    "crates/cc-index/src/project_model/mod.rs": "100644",
+    "crates/cc-index/src/project_model/package.rs": "100644",
+    "crates/cc-index/src/project_model/python.rs": "100644",
+    "crates/cc-index/src/project_model/python_inventory.rs": "100644",
+    "crates/cc-index/src/project_model/python_inventory/native.rs": "100644",
+    "crates/cc-index/src/project_model/python_inventory/revalidation.rs": "100644",
+    "crates/cc-index/src/project_model/python_inventory/tests.rs": "100644",
+    "crates/cc-index/src/project_model/python_provenance_tests.rs": "100644",
+    "crates/cc-index/src/project_model/rust.rs": "100644",
+    "crates/cc-index/src/project_model/rust_capture.rs": "100644",
+    "crates/cc-index/src/project_model/source_capture.rs": "100644",
+    "crates/cc-index/src/project_model/typescript.rs": "100644",
+    "crates/cc-index/src/resolver/cargo_workspace.rs": "100644",
+    "crates/cc-index/src/resolver/catalog.rs": "100644",
+    "crates/cc-index/src/resolver/catalog_cache.rs": "100644",
+    "crates/cc-index/src/resolver/evidence.rs": "100644",
+    "crates/cc-index/src/resolver/helpers.rs": "100644",
+    "crates/cc-index/src/resolver/mod.rs": "100644",
+    "crates/cc-index/src/resolver/p2b_tests.rs": "100644",
+    "crates/cc-index/src/resolver/resolve_core.rs": "100644",
+    "crates/cc-index/src/resolver/resolve_outcome.rs": "100644",
+    "crates/cc-index/src/resolver/route_resolve.rs": "100644",
+    "crates/cc-index/src/resolver/type_atom_identifier_tests.rs": "100644",
+    "crates/cc-index/src/resolver/type_edges.rs": "100644",
+    "crates/cc-index/src/resolver/types.rs": "100644",
+    "crates/cc-index/src/resource_accounting.rs": "100644",
+    "crates/cc-index/src/scanner.rs": "100644",
+    "crates/cc-index/src/source_snapshot_tests.rs": "100644",
+    "crates/cc-index/src/synthesis_pipeline.rs": "100644",
+    "crates/cc-index/src/synthesis_symbol_resolver.rs": "100644",
+    "crates/cc-index/src/type_catalog.rs": "100644",
+    "crates/cc-index/tests/explicit_text_admission.rs": "100644",
+    "crates/cc-index/tests/independent_qname_parser_public.rs": "100644",
+    "crates/cc-index/tests/independent_qname_repair_guard.rs": "100644",
+    "crates/cc-index/tests/p3a_project_model.rs": "100644",
+    "crates/cc-index/tests/p3b_modules.rs": "100644",
+    "crates/cc-index/tests/p3c_modules.rs": "100644",
+    "crates/cc-index/tests/p3d_boundaries.rs": "100644",
+    "crates/cc-index/tests/p4b_render.rs": "100644",
+    "crates/cc-index/tests/p4c_identity.rs": "100644",
+    "crates/cc-index/tests/provenance_review_support/legacy.rs": "100644",
+    "crates/cc-index/tests/provenance_review_support/prototype_compatibility.rs": "100644",
+    "crates/cc-index/tests/python_declaration_identity.rs": "100644",
+    "crates/cc-index/tests/python_identity_resource_integration.rs": "100644",
+    "crates/cc-index/tests/python_inventory_capture.rs": "100644",
+    "crates/cc-index/tests/python_inventory_resource_integration.rs": "100644",
+    "crates/cc-index/tests/python_inventory_revalidation.rs": "100644",
+    "crates/cc-index/tests/python_provenance_independent_review.rs": "100644",
+    "crates/cc-index/tests/qname_db_independent_review.rs": "100644",
+    "crates/cc-index/tests/qname_identity_proof.rs": "100644",
+    "crates/cc-index/tests/qname_identity_transaction.rs": "100644",
+    "crates/cc-index/tests/qname_owner_diagnostic.rs": "100644",
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": "100644",
+    "crates/cc-index/tests/type_catalog_bench.rs": "100644",
+    "crates/cc-model/Cargo.toml": "100644",
+    "crates/cc-model/src/architecture.rs": "100644",
+    "crates/cc-model/src/build_explain.rs": "100644",
+    "crates/cc-model/src/chunk.rs": "100644",
+    "crates/cc-model/src/chunk_policy.rs": "100644",
+    "crates/cc-model/src/config.rs": "100644",
+    "crates/cc-model/src/context.rs": "100644",
+    "crates/cc-model/src/declaration_identity.rs": "100644",
+    "crates/cc-model/src/diagnostic.rs": "100644",
+    "crates/cc-model/src/dispatch_site.rs": "100644",
+    "crates/cc-model/src/edge.rs": "100644",
+    "crates/cc-model/src/error.rs": "100644",
+    "crates/cc-model/src/framework_taxonomy.rs": "100644",
+    "crates/cc-model/src/freshness.rs": "100644",
+    "crates/cc-model/src/generation.rs": "100644",
+    "crates/cc-model/src/go_project.rs": "100644",
+    "crates/cc-model/src/graph_catalog.rs": "100644",
+    "crates/cc-model/src/graph_explain.rs": "100644",
+    "crates/cc-model/src/id.rs": "100644",
+    "crates/cc-model/src/identity.rs": "100644",
+    "crates/cc-model/src/impact.rs": "100644",
+    "crates/cc-model/src/infra.rs": "100644",
+    "crates/cc-model/src/input_file.rs": "100644",
+    "crates/cc-model/src/lane_receipt.rs": "100644",
+    "crates/cc-model/src/lib.rs": "100644",
+    "crates/cc-model/src/module_inputs.rs": "100644",
+    "crates/cc-model/src/package_surface.rs": "100644",
+    "crates/cc-model/src/parse.rs": "100644",
+    "crates/cc-model/src/project_model.rs": "100644",
+    "crates/cc-model/src/public_surface.rs": "100644",
+    "crates/cc-model/src/query.rs": "100644",
+    "crates/cc-model/src/repo_path.rs": "100644",
+    "crates/cc-model/src/resolution.rs": "100644",
+    "crates/cc-model/src/retrieval.rs": "100644",
+    "crates/cc-model/src/retrieval_cost.rs": "100644",
+    "crates/cc-model/src/route_normalize.rs": "100644",
+    "crates/cc-model/src/scope.rs": "100644",
+    "crates/cc-model/src/search.rs": "100644",
+    "crates/cc-model/src/semantic.rs": "100644",
+    "crates/cc-model/src/source.rs": "100644",
+    "crates/cc-model/src/symbol.rs": "100644",
+    "crates/cc-model/src/symbol_identity.rs": "100644",
+    "crates/cc-model/src/type_assign.rs": "100644",
+    "crates/cc-model/tests/declaration_identity_independent_review.rs": "100644",
+    "crates/cc-model/tests/declaration_identity_resources.rs": "100644",
+    "crates/cc-model/tests/declaration_identity_v1.rs": "100644",
+    "crates/cc-model/tests/declaration_resource_independent.rs": "100644",
+    "crates/cc-model/tests/p2b_resolution.rs": "100644",
+    "crates/cc-model/tests/p4a_source.rs": "100644",
+    "crates/cc-model/tests/provenance_compatibility.rs": "100644",
+    "crates/cc-model/tests/public_surface_encoding.rs": "100644",
+    "crates/cc-model/tests/support/declaration_resource_baseline.rs": "100644",
+    "crates/cc-model/tests/support/resource_api_probes/borrowed_mutation.rs": "100644",
+    "crates/cc-model/tests/support/resource_api_probes/check.py": "100644",
+    "crates/cc-model/tests/support/resource_api_probes/custom_provider.rs": "100644",
+    "crates/cc-model/tests/support/resource_api_probes/mutable_ref.rs": "100644",
+    "crates/cc-model/tests/support/resource_api_probes/owned_shared.rs": "100644",
+    "crates/cc-parsers/Cargo.toml": "100644",
+    "crates/cc-parsers/src/broker_patterns.rs": "100644",
+    "crates/cc-parsers/src/c_cpp.rs": "100644",
+    "crates/cc-parsers/src/chunker.rs": "100644",
+    "crates/cc-parsers/src/chunker/boundaries.rs": "100644",
+    "crates/cc-parsers/src/chunker/budget.rs": "100644",
+    "crates/cc-parsers/src/chunker/fallback.rs": "100644",
+    "crates/cc-parsers/src/chunker/merge.rs": "100644",
+    "crates/cc-parsers/src/chunker/split.rs": "100644",
+    "crates/cc-parsers/src/dataflow_common.rs": "100644",
+    "crates/cc-parsers/src/exports/conservative.rs": "100644",
+    "crates/cc-parsers/src/exports/go.rs": "100644",
+    "crates/cc-parsers/src/exports/jsts.rs": "100644",
+    "crates/cc-parsers/src/exports/mod.rs": "100644",
+    "crates/cc-parsers/src/exports/python.rs": "100644",
+    "crates/cc-parsers/src/exports/rust.rs": "100644",
+    "crates/cc-parsers/src/generic.rs": "100644",
+    "crates/cc-parsers/src/go.rs": "100644",
+    "crates/cc-parsers/src/go_modules.rs": "100644",
+    "crates/cc-parsers/src/http_call_helpers.rs": "100644",
+    "crates/cc-parsers/src/import_common.rs": "100644",
+    "crates/cc-parsers/src/java.rs": "100644",
+    "crates/cc-parsers/src/jsts/calls.rs": "100644",
+    "crates/cc-parsers/src/jsts/extras.rs": "100644",
+    "crates/cc-parsers/src/jsts/imports_exports.rs": "100644",
+    "crates/cc-parsers/src/jsts/mod.rs": "100644",
+    "crates/cc-parsers/src/jsts/references.rs": "100644",
+    "crates/cc-parsers/src/jsts/routes.rs": "100644",
+    "crates/cc-parsers/src/jsts/symbols.rs": "100644",
+    "crates/cc-parsers/src/jsts/tests.rs": "100644",
+    "crates/cc-parsers/src/jsts/visitor.rs": "100644",
+    "crates/cc-parsers/src/lang_spec.rs": "100644",
+    "crates/cc-parsers/src/lib.rs": "100644",
+    "crates/cc-parsers/src/parse_common.rs": "100644",
+    "crates/cc-parsers/src/python/extras.rs": "100644",
+    "crates/cc-parsers/src/python/mod.rs": "100644",
+    "crates/cc-parsers/src/python/references.rs": "100644",
+    "crates/cc-parsers/src/python/routes.rs": "100644",
+    "crates/cc-parsers/src/python_identity.rs": "100644",
+    "crates/cc-parsers/src/rust.rs": "100644",
+    "crates/cc-parsers/src/rust_modules.rs": "100644",
+    "crates/cc-parsers/src/sfc.rs": "100644",
+    "crates/cc-parsers/src/spec_driven.rs": "100644",
+    "crates/cc-parsers/src/traits.rs": "100644",
+    "crates/cc-parsers/tests/c_cpp_declarator_boundaries.rs": "100644",
+    "crates/cc-parsers/tests/declaration_boundary_hints.rs": "100644",
+    "crates/cc-parsers/tests/fixtures/python_identity/WITNESSES.md": "100644",
+    "crates/cc-parsers/tests/fixtures/python_identity/witness.py": "100644",
+    "crates/cc-parsers/tests/fixtures/python_identity_independent/.gitattributes": "100644",
+    "crates/cc-parsers/tests/fixtures/python_identity_independent/nested.py": "100644",
+    "crates/cc-parsers/tests/fixtures/python_identity_r1/WITNESSES.md": "100644",
+    "crates/cc-parsers/tests/independent_cpp_final_declarators.rs": "100644",
+    "crates/cc-parsers/tests/jsts_call_truth.rs": "100644",
+    "crates/cc-parsers/tests/p2b_go_surface.rs": "100644",
+    "crates/cc-parsers/tests/p4a_source.rs": "100644",
+    "crates/cc-parsers/tests/p4b_chunks.rs": "100644",
+    "crates/cc-parsers/tests/public_surface.rs": "100644",
+    "crates/cc-parsers/tests/public_surface_edges.rs": "100644",
+    "crates/cc-parsers/tests/python_call_truth.rs": "100644",
+    "crates/cc-parsers/tests/python_identity_adapter.rs": "100644",
+    "crates/cc-parsers/tests/python_identity_independent.rs": "100644",
+    "crates/cc-parsers/tests/python_identity_r1_independent_delta.rs": "100644",
+    "crates/cc-parsers/tests/python_identity_trivia_r1.rs": "100644",
+    "crates/cc-search/Cargo.toml": "100644",
+    "crates/cc-search/src/cypher/ast.rs": "100644",
+    "crates/cc-search/src/cypher/executor.rs": "100644",
+    "crates/cc-search/src/cypher/fast_path.rs": "100644",
+    "crates/cc-search/src/cypher/lexer.rs": "100644",
+    "crates/cc-search/src/cypher/mod.rs": "100644",
+    "crates/cc-search/src/cypher/parser.rs": "100644",
+    "crates/cc-search/src/cypher/traversal_semantics.rs": "100644",
+    "crates/cc-search/src/dsl.rs": "100644",
+    "crates/cc-search/src/engine.rs": "100644",
+    "crates/cc-search/src/engine_cache.rs": "100644",
+    "crates/cc-search/src/engine_graph.rs": "100644",
+    "crates/cc-search/src/engine_lane_tests.rs": "100644",
+    "crates/cc-search/src/engine_test_support.rs": "100644",
+    "crates/cc-search/src/enrich.rs": "100644",
+    "crates/cc-search/src/evidence.rs": "100644",
+    "crates/cc-search/src/evidence_hydrator.rs": "100644",
+    "crates/cc-search/src/evidence_path.rs": "100644",
+    "crates/cc-search/src/execution.rs": "100644",
+    "crates/cc-search/src/fusion.rs": "100644",
+    "crates/cc-search/src/grep.rs": "100644",
+    "crates/cc-search/src/lanes.rs": "100644",
+    "crates/cc-search/src/lanes/exact_symbol.rs": "100644",
+    "crates/cc-search/src/lanes/path.rs": "100644",
+    "crates/cc-search/src/lanes/semantic_adapter.rs": "100644",
+    "crates/cc-search/src/lib.rs": "100644",
+    "crates/cc-search/src/plan.rs": "100644",
+    "crates/cc-search/src/preselect.rs": "100644",
+    "crates/cc-search/src/query_policy.rs": "100644",
+    "crates/cc-search/src/query_target.rs": "100644",
+    "crates/cc-search/src/rrf.rs": "100644",
+    "crates/cc-search/src/scope.rs": "100644",
+    "crates/cc-search/src/score_trace.rs": "100644",
+    "crates/cc-search/src/selection/budget.rs": "100644",
+    "crates/cc-search/src/selection/coverage.rs": "100644",
+    "crates/cc-search/src/selection/mod.rs": "100644",
+    "crates/cc-search/src/selection/overlap.rs": "100644",
+    "crates/cc-search/src/semantic_hydrate_guard.rs": "100644",
+    "crates/cc-semantic/Cargo.toml": "100644",
+    "crates/cc-semantic/docs/ENCODING-SPACE.md": "100644",
+    "crates/cc-semantic/src/admission.rs": "100644",
+    "crates/cc-semantic/src/cache.rs": "100644",
+    "crates/cc-semantic/src/cache_read_bounds_tests.rs": "100644",
+    "crates/cc-semantic/src/capability.rs": "100644",
+    "crates/cc-semantic/src/degrade.rs": "100644",
+    "crates/cc-semantic/src/error.rs": "100644",
+    "crates/cc-semantic/src/gc.rs": "100644",
+    "crates/cc-semantic/src/gc_concurrency_tests.rs": "100644",
+    "crates/cc-semantic/src/lib.rs": "100644",
+    "crates/cc-semantic/src/policy.rs": "100644",
+    "crates/cc-semantic/src/ports.rs": "100644",
+    "crates/cc-semantic/src/providers.rs": "100644",
+    "crates/cc-semantic/src/providers/fake.rs": "100644",
+    "crates/cc-semantic/src/providers/openai_compatible.rs": "100644",
+    "crates/cc-semantic/src/publish.rs": "100644",
+    "crates/cc-semantic/src/queue.rs": "100644",
+    "crates/cc-semantic/src/reconcile.rs": "100644",
+    "crates/cc-semantic/src/recovery.rs": "100644",
+    "crates/cc-semantic/src/space_switch.rs": "100644",
+    "crates/cc-semantic/src/spec.rs": "100644",
+    "crates/cc-semantic/src/types.rs": "100644",
+    "crates/cc-semantic/src/vector.rs": "100644",
+    "crates/cc-semantic/src/vector/exact.rs": "100644",
+    "crates/cc-semantic/tests/artifact_cache.rs": "100644",
+    "crates/cc-semantic/tests/attempt_lease_contract.rs": "100644",
+    "crates/cc-semantic/tests/bounded_parallel.rs": "100644",
+    "crates/cc-semantic/tests/crash_independent_review.rs": "100644",
+    "crates/cc-semantic/tests/gc_concurrent_replacement.rs": "100644",
+    "crates/cc-semantic/tests/gc_unlink_accounting.rs": "100644",
+    "crates/cc-semantic/tests/manifest_exact_integration.rs": "100644",
+    "crates/cc-semantic/tests/opportunistic_reclaim.rs": "100644",
+    "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": "100644",
+    "crates/cc-semantic/tests/p7_crash_preparation.rs": "100644",
+    "crates/cc-semantic/tests/p7_staging_gc_preparation.rs": "100644",
+    "crates/cc-semantic/tests/publish_cas.rs": "100644",
+    "crates/cc-semantic/tests/query_cache.rs": "100644",
+    "crates/cc-semantic/tests/queue_worker.rs": "100644",
+    "crates/cc-semantic/tests/reconcile_rebuild.rs": "100644",
+    "crates/cc-semantic/tests/retry_worker_layering.rs": "100644",
+    "crates/cc-semantic/tests/semantic_degrade.rs": "100644",
+    "crates/cc-semantic/tests/semantic_gc.rs": "100644",
+    "crates/cc-semantic/tests/semantic_recovery.rs": "100644",
+    "crates/cc-semantic/tests/space_switch.rs": "100644",
+    "crates/cc-semantic/tests/staging_gc_independent_review.rs": "100644",
+    "crates/cc-server/Cargo.toml": "100644",
+    "crates/cc-server/src/capability_status.rs": "100644",
+    "crates/cc-server/src/cli.rs": "100644",
+    "crates/cc-server/src/engine.rs": "100644",
+    "crates/cc-server/src/engine_query.rs": "100644",
+    "crates/cc-server/src/graph_cycles.rs": "100644",
+    "crates/cc-server/src/graph_flow.rs": "100644",
+    "crates/cc-server/src/graph_read_model/bridge_spec.rs": "100644",
+    "crates/cc-server/src/graph_read_model/bridges.rs": "100644",
+    "crates/cc-server/src/graph_read_model/cache.rs": "100644",
+    "crates/cc-server/src/graph_read_model/mod.rs": "100644",
+    "crates/cc-server/src/graph_read_model/projections.rs": "100644",
+    "crates/cc-server/src/graph_trace.rs": "100644",
+    "crates/cc-server/src/graph_type_hierarchy.rs": "100644",
+    "crates/cc-server/src/graph_types.rs": "100644",
+    "crates/cc-server/src/graph_walk.rs": "100644",
+    "crates/cc-server/src/handlers/context.rs": "100644",
+    "crates/cc-server/src/handlers/core.rs": "100644",
+    "crates/cc-server/src/handlers/facade.rs": "100644",
+    "crates/cc-server/src/handlers/freshness.rs": "100644",
+    "crates/cc-server/src/handlers/graph.rs": "100644",
+    "crates/cc-server/src/handlers/mod.rs": "100644",
+    "crates/cc-server/src/handlers/output_budget.rs": "100644",
+    "crates/cc-server/src/impact.rs": "100644",
+    "crates/cc-server/src/installer/helpers.rs": "100644",
+    "crates/cc-server/src/installer/mod.rs": "100644",
+    "crates/cc-server/src/installer/registry.rs": "100644",
+    "crates/cc-server/src/installer/targets/claude_code.rs": "100644",
+    "crates/cc-server/src/installer/targets/codex_cli.rs": "100644",
+    "crates/cc-server/src/installer/targets/cursor.rs": "100644",
+    "crates/cc-server/src/installer/targets/gemini_cli.rs": "100644",
+    "crates/cc-server/src/installer/targets/mod.rs": "100644",
+    "crates/cc-server/src/installer/targets/opencode.rs": "100644",
+    "crates/cc-server/src/installer/targets/vscode.rs": "100644",
+    "crates/cc-server/src/installer/targets/zed.rs": "100644",
+    "crates/cc-server/src/lib.rs": "100644",
+    "crates/cc-server/src/main.rs": "100644",
+    "crates/cc-server/src/mcp.rs": "100644",
+    "crates/cc-server/src/mcp_query_tests.rs": "100644",
+    "crates/cc-server/src/path_guard.rs": "100644",
+    "crates/cc-server/src/project_session.rs": "100644",
+    "crates/cc-server/src/project_startup_tests.rs": "100644",
+    "crates/cc-server/src/query_handle.rs": "100644",
+    "crates/cc-server/src/semantic_http_transport.rs": "100644",
+    "crates/cc-server/src/semantic_provider_factory.rs": "100644",
+    "crates/cc-server/src/semantic_query_encoding.rs": "100644",
+    "crates/cc-server/src/semantic_runtime.rs": "100644",
+    "crates/cc-server/src/semantic_runtime_maintenance_tests.rs": "100644",
+    "crates/cc-server/src/semantic_scope_guard.rs": "100644",
+    "crates/cc-server/src/semantic_wiring.rs": "100644",
+    "crates/cc-server/src/service_factory.rs": "100644",
+    "crates/cc-server/src/session_tasks.rs": "100644",
+    "crates/cc-server/src/shared_provider_gate_tests.rs": "100644",
+    "crates/cc-server/src/symbol_extract.rs": "100644",
+    "crates/cc-server/src/symbol_resolution.rs": "100644",
+    "crates/cc-server/src/tools.rs": "100644",
+    "crates/cc-server/src/watcher.rs": "100644",
+    "crates/cc-server/tests/cache_key_review_behavior.rs": "100644",
+    "crates/cc-server/tests/graph_traversal_bench.rs": "100644",
+    "crates/cc-server/tests/independent_qname_repair_public.rs": "100644",
+    "crates/cc-server/tests/index_fix_pinned_handle.rs": "100644",
+    "crates/cc-server/tests/mcp_startup.rs": "100644",
+    "crates/cc-server/tests/mcp_stdio.rs": "100644",
+    "crates/cc-server/tests/p7_acceptance_matrix.rs": "100644",
+    "crates/cc-server/tests/p7_dense_artifact_coverage.rs": "100644",
+    "crates/cc-server/tests/p7_gc_retention_config.rs": "100644",
+    "crates/cc-server/tests/p7_production_fairness_model_review.rs": "100644",
+    "crates/cc-server/tests/p7_query_deadline_public.rs": "100644",
+    "crates/cc-server/tests/p7_query_production.rs": "100644",
+    "crates/cc-server/tests/p7_runtime_independent_review.rs": "100644",
+    "crates/cc-server/tests/p7_status_snapshot_independent_review.rs": "100644",
+    "crates/cc-server/tests/p7_v05_all_lane_scope.rs": "100644",
+    "crates/cc-server/tests/p7_v05_scope_public.rs": "100644",
+    "crates/cc-server/tests/p7_v05_v11_independent_review.rs": "100644",
+    "crates/cc-server/tests/p7_v11_cache_consumption.rs": "100644",
+    "crates/cc-server/tests/p7_v11_cache_key_matrix.rs": "100644",
+    "crates/cc-server/tests/p7_v11_generation_public.rs": "100644",
+    "crates/cc-server/tests/p7_v11_ready_epoch_independent_review.rs": "100644",
+    "crates/cc-server/tests/p7_v16_exact_oracle.rs": "100644",
+    "crates/cc-server/tests/p7_v16_oracle_independent_review.rs": "100644",
+    "crates/cc-server/tests/p7_v18_fault_contract.rs": "100644",
+    "crates/cc-server/tests/p7_v18_parameter_contract.rs": "100644",
+    "crates/cc-server/tests/python_declaration_public.rs": "100644",
+    "crates/cc-server/tests/qname_db_independent_review.rs": "100644",
+    "crates/cc-server/tests/qname_identity_lifecycle.rs": "100644",
+    "crates/cc-server/tests/qname_public_diagnostic.rs": "100644",
+    "crates/cc-server/tests/support/p7_status_review/legacy.rs": "100644",
+    "crates/cc-server/tests/v11_consumption_independent_review.rs": "100644"
   },
-  "independent_reviewers": [
-    "/root",
-    "/root/scale_closeout",
-    "/root/runtime_closeout",
-    "/root/pr_audit"
-  ],
-  "paths": {
-    "crates/cc-db/src/index_migrate.rs": {
-      "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
-      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
-    },
-    "crates/cc-db/src/sql/index_v1.sql": {
-      "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
-      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
-    },
-    "crates/cc-db/tests/ci_schema_guard_contract.rs": {
-      "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
-      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
-    },
-    "crates/cc-eval/src/bench.rs": {
-      "before_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
-      "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
-    },
-    "crates/cc-eval/src/benchmark/oracle.rs": {
-      "before_sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
-      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711"
-    },
-    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
-      "before_sha256": "dd8fd87c5518375536fea3003dc8ba45c199a595bb64ddbfbb7e74c116fe280c",
-      "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2"
-    },
-    "crates/cc-eval/src/benchmark/p8_scale.rs": {
-      "before_sha256": "f475d81683f7f253f855691ea8d5cbb5136428f0e43ec9e64fecebd892704336",
-      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
-    },
-    "crates/cc-eval/src/benchmark/sampler.rs": {
-      "before_sha256": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
-      "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
-    },
-    "crates/cc-eval/src/benchmark/statistics.rs": {
-      "before_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6",
-      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2"
-    },
-    "crates/cc-eval/src/bin/p8-measurements.rs": {
-      "before_sha256": null,
-      "sha256": "b2d937ee0d3e88febe0c497422d073e3f9a42a9640faa31bed265d4ac5787882"
-    },
-    "crates/cc-eval/src/bin/p8-oracle.rs": {
-      "before_sha256": null,
-      "sha256": "135962540116e01d47db3a34daa9bfebe2117d25773a888b6b36fde85dabdd8e"
-    },
-    "crates/cc-eval/src/bin/p8-runtime-statistics.rs": {
-      "before_sha256": null,
-      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
-    },
-    "crates/cc-eval/src/bin/p8-scale.rs": {
-      "before_sha256": "56492a16a847bbd85f199df2352f05f0ba9b183855151b91ef7ca4ac8727dfe9",
-      "sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90"
-    },
-    "crates/cc-eval/src/report.rs": {
-      "before_sha256": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3",
-      "sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0"
-    },
-    "crates/cc-eval/tests/benchmark_cli.rs": {
-      "before_sha256": "8a1f256e22369c67285119412c78342e5f4ef442ba32f9278eb2c6a72830a430",
-      "sha256": "ac7dcd8e7024735414779e76b2b15613ff885e4c99ddabb2e3846f7065e2f9be"
-    },
-    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": {
-      "before_sha256": "f41e2520995583b7c748627a3c7233cdc4e1529c644f0c7fdb362a13471a5cff",
-      "sha256": "0102afe7ab68810531b3bff6df57484c5c69e8f680972f0cc23f263a2b00f8b6"
-    },
-    "crates/cc-eval/tests/p7_worker_contention.rs": {
-      "before_sha256": "784fc434202c2dffc496137597a2011ff544fc610866dccdba47852fee3ee228",
-      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
-    },
-    "crates/cc-eval/tests/p8_lifecycle_replay.rs": {
-      "before_sha256": null,
-      "sha256": "f191a19df4900650ed62f4f43ceab059ee18bb3ebc4e72b8857f992122f72fd8"
-    },
-    "crates/cc-eval/tests/p8_measurements.rs": {
-      "before_sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7",
-      "sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
-    },
-    "crates/cc-eval/tests/p8_scale.rs": {
-      "before_sha256": "c14830f8ea4c1d89773982b3689a0c0e953ce5698b6faa2ce412729eebdf9613",
-      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
-    },
-    "crates/cc-index/src/build_plan.rs": {
-      "before_sha256": "8912d922270f71f36bee8b0fbe9a89a292803a5cc2ad37d20ad88aa2d2b72d92",
-      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
-    },
-    "crates/cc-index/src/indexer.rs": {
-      "before_sha256": "ab087982b8add0b9dba69be0660904318d5e7e0731ccac14a388f28f84e14b57",
-      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
-    },
-    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": {
-      "before_sha256": "9a6b4dbda93067c86ed11c630fa24ebb7cf720879cb9a42430596c6310f781db",
-      "sha256": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c"
-    },
-    "crates/cc-index/src/indexer_phases/resolve.rs": {
-      "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
-      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
-    },
-    "crates/cc-index/src/lib.rs": {
-      "before_sha256": "9b55efd92672581ec0d7bf24bd2eca83d86d4da4d6b7e5ba526dd9949a39f731",
-      "sha256": "1a6d8e4af4a745bf39dcc03b39c8aad805a620f6e70e96ef0a067354cc79035c"
-    },
-    "crates/cc-index/src/resolver/catalog.rs": {
-      "before_sha256": "2dfc5ff05c972b824c1f7a467f0db99a19e70f2d333d623a2c6090402405aaf5",
-      "sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
-    },
-    "crates/cc-index/src/resolver/catalog_cache.rs": {
-      "before_sha256": "e60fd1f61ca5176813c6e5ff8c18c15f7f99d9b8dc6237b661dc6ef9d3425fb6",
-      "sha256": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a"
-    },
-    "crates/cc-index/src/resource_accounting.rs": {
-      "before_sha256": null,
-      "sha256": "c4189f5a72f8fdd150492a3d24351fe59aa2a921adda9c865eade27eeb46ed33"
-    },
-    "crates/cc-server/src/engine.rs": {
-      "before_sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
-      "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
-    },
-    "crates/cc-server/src/project_session.rs": {
-      "before_sha256": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc",
-      "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
-    }
+  "validation_modes": {
+    ".github/workflows/p7-closeout.yml": "100644",
+    ".github/workflows/p7-engineering.yml": "100644",
+    ".github/workflows/p8-gates.yml": "100644",
+    ".github/workflows/p8-integrated-runtime-controls.yml": "100644",
+    ".github/workflows/p8-lifecycle.yml": "100644",
+    ".github/workflows/p8-platform.yml": "100644",
+    ".github/workflows/p8-runtime.yml": "100644",
+    ".github/workflows/p8-scale.yml": "100644",
+    ".github/workflows/p8-snapshot-leaf-engineering.yml": "100644",
+    "scripts/check_module_architecture.py": "100644",
+    "scripts/check_source_architecture.py": "100644",
+    "scripts/code_index_plan.py": "100644",
+    "scripts/current-source-registry-v1.json": "100644",
+    "scripts/current-source-registry-v2.json": "100644",
+    "scripts/current-source-registry-v3.json": "100644",
+    "scripts/index_fix_upgrade_validation.py": "100644",
+    "scripts/lock_benchmark_inputs.py": "100644",
+    "scripts/module_oracles.py": "100644",
+    "scripts/p0-validation.py": "100644",
+    "scripts/p0_historical_corpus.py": "100644",
+    "scripts/p7_build_identity.py": "100644",
+    "scripts/p7_fault_lifecycle_stdio.py": "100644",
+    "scripts/p7_gate_report.py": "100644",
+    "scripts/p7_mechanism_build.py": "100644",
+    "scripts/p7_offline_network.py": "100644",
+    "scripts/p7_offline_trace.py": "100644",
+    "scripts/p7_release_hotspot_diagnosis.py": "100644",
+    "scripts/p7_release_resource_preparation.py": "100644",
+    "scripts/p7_resource_preparation.py": "100644",
+    "scripts/p7_stdio_build_receipt.py": "100644",
+    "scripts/p8_backfill.py": "100644",
+    "scripts/p8_candidate_execution.py": "100644",
+    "scripts/p8_cold_build.py": "100644",
+    "scripts/p8_compat.py": "100644",
+    "scripts/p8_corpus_audit.py": "100644",
+    "scripts/p8_external_candidate.py": "100644",
+    "scripts/p8_facts.py": "100644",
+    "scripts/p8_gate_controls.py": "100644",
+    "scripts/p8_judge_evidence.py": "100644",
+    "scripts/p8_leakage_audit.py": "100644",
+    "scripts/p8_lifecycle.py": "100644",
+    "scripts/p8_native_registry.py": "100644",
+    "scripts/p8_recovery.py": "100644",
+    "scripts/p8_release_evidence.py": "100644",
+    "scripts/p8_release_review.py": "100644",
+    "scripts/p8_resources.py": "100644",
+    "scripts/p8_rollback.py": "100644",
+    "scripts/p8_runner_capacity.py": "100644",
+    "scripts/p8_runtime.py": "100644",
+    "scripts/p8_runtime_build.py": "100644",
+    "scripts/p8_scale_matrix.py": "100644",
+    "scripts/p8_semantic_certification.py": "100644",
+    "scripts/resource_harness/__init__.py": "100644",
+    "scripts/resource_harness/analyze_existing.py": "100644",
+    "scripts/resource_harness/build.py": "100644",
+    "scripts/resource_harness/driver.py": "100644",
+    "scripts/resource_harness/identity.py": "100644",
+    "scripts/resource_harness/measurement.py": "100644",
+    "scripts/resource_harness/product.py": "100644",
+    "scripts/resource_harness/protocol-manifest.json": "100644",
+    "scripts/resource_harness/protocol.py": "100644",
+    "scripts/resource_harness/runtime.py": "100644",
+    "scripts/review/p7_cache_frozen_negative_replay.py": "100644",
+    "scripts/review/p7_query_encoding_cases.rs": "100644",
+    "scripts/review/p7_query_encoding_review.py": "100644",
+    "scripts/review/p7_v16_receipt_independent_audit.py": "100644",
+    "scripts/review/v19_corpus_audit.py": "100644",
+    "scripts/reviewed-source-joint22-v10.json": "100644",
+    "scripts/reviewed-source-p7-v9.json": "100644",
+    "scripts/reviewed-source-registry-v10.json": "100644",
+    "scripts/reviewed-source-registry-v11.json": "100644",
+    "scripts/reviewed-source-registry-v12.json": "100644",
+    "scripts/reviewed-source-registry-v13.json": "100644",
+    "scripts/reviewed-source-registry-v14.json": "100644",
+    "scripts/reviewed-source-registry.json": "100644",
+    "scripts/source_snapshots/joint22_v10/.github/workflows/ci.yml": "100644",
+    "scripts/source_snapshots/joint22_v10/README.md": "100644",
+    "scripts/source_snapshots/joint22_v10/test_reviewed_source.py.txt": "100644",
+    "scripts/source_snapshots/v12_ci/.github/workflows/ci.yml": "100644",
+    "scripts/source_snapshots/v12_ci/.github/workflows/p7-engineering.yml": "100644",
+    "scripts/tests/test_p7_ci_architecture_guards.py": "100644",
+    "scripts/tests/test_p7_offline_network.py": "100644",
+    "scripts/tests/test_p7_offline_trace.py": "100644",
+    "scripts/tests/test_p7_stdio_build_profile.py": "100644",
+    "scripts/tests/test_p8_backfill.py": "100644",
+    "scripts/tests/test_p8_candidate_execution.py": "100644",
+    "scripts/tests/test_p8_compat.py": "100644",
+    "scripts/tests/test_p8_corpus_audit.py": "100644",
+    "scripts/tests/test_p8_external_candidate.py": "100644",
+    "scripts/tests/test_p8_judge_evidence.py": "100644",
+    "scripts/tests/test_p8_leakage_audit.py": "100644",
+    "scripts/tests/test_p8_lifecycle.py": "100644",
+    "scripts/tests/test_p8_native_registry.py": "100644",
+    "scripts/tests/test_p8_platform.py": "100644",
+    "scripts/tests/test_p8_platform_independent_review.py": "100644",
+    "scripts/tests/test_p8_recovery.py": "100644",
+    "scripts/tests/test_p8_release_evidence.py": "100644",
+    "scripts/tests/test_p8_release_review.py": "100644",
+    "scripts/tests/test_p8_resources.py": "100644",
+    "scripts/tests/test_p8_runner_capacity.py": "100644",
+    "scripts/tests/test_p8_runtime.py": "100644",
+    "scripts/tests/test_p8_runtime_cache.py": "100644",
+    "scripts/tests/test_p8_runtime_evidence.py": "100644",
+    "scripts/tests/test_p8_runtime_finalization.py": "100644",
+    "scripts/tests/test_p8_scale_matrix.py": "100644",
+    "scripts/tests/test_p8_semantic_certification.py": "100644",
+    "scripts/update-doc-baselines.sh": "100755",
+    "scripts/v14_historical_context.py": "100644",
+    "scripts/v15_historical_context.py": "100644",
+    "scripts/verify_current_source.py": "100644",
+    "scripts/verify_current_source_v2.py": "100644",
+    "scripts/verify_current_source_v3.py": "100644",
+    "scripts/verify_fixed_e3_integration.py": "100644",
+    "scripts/verify_historical_integrations_v2.py": "100644",
+    "scripts/verify_packing_integration.py": "100644",
+    "scripts/verify_reviewed_source.py": "100644",
+    "scripts/verify_reviewed_source_joint22_v10.py": "100644",
+    "scripts/verify_reviewed_source_p7_v9.py": "100644",
+    "scripts/verify_reviewed_source_v10.py": "100644",
+    "scripts/verify_reviewed_source_v11.py": "100644",
+    "scripts/verify_reviewed_source_v12.py": "100644",
+    "scripts/verify_reviewed_source_v13.py": "100644",
+    "scripts/verify_reviewed_source_v14.py": "100755",
+    "tests/source_integrity/test_current_source.py": "100644",
+    "tests/source_integrity/test_current_source_v2.py": "100644",
+    "tests/source_integrity/test_current_source_v3.py": "100644",
+    "tests/source_integrity/test_historical_integrations_v2.py": "100644",
+    "tests/source_integrity/test_plan_progress.py": "100644",
+    "tests/source_integrity/test_reviewed_base.py": "100644",
+    "tests/source_integrity/test_reviewed_source.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v10.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v11.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v12.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v13.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v14.py": "100644",
+    "tests/source_integrity/test_reviewed_source_v15.py": "100644",
+    "tests/source_integrity/test_v14_historical_context.py": "100644",
+    "tests/source_integrity/v13_historical_ci_adapter.py": "100644",
+    "tests/source_integrity/v14_historical_test_adapter.py": "100644",
+    "tests/source_integrity/v15_historical_test_adapter.py": "100644"
   },
-  "review_records": {
-    "backfill-feature-independent-review.json": {
-      "bytes": 3316,
-      "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
-    },
-    "doc-key-index-independent-review.json": {
-      "bytes": 9275,
-      "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
-    },
-    "doc-key-index-root-review.json": {
-      "bytes": 3288,
-      "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
-    },
-    "doc-key-index-rust-validation.json": {
-      "bytes": 3728,
-      "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
-    },
-    "lint-independent-review.json": {
-      "bytes": 3718,
-      "sha256": "0923f5f1f9334582a1060a68f5b04a2908a9f46d1752f71c3c7e4463e35407b5"
-    },
-    "platform-independent-review.json": {
-      "bytes": 8524,
-      "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
-    },
-    "platform-port-independent-review.json": {
-      "bytes": 8379,
-      "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
-    },
-    "pr-audit-scoped-review.json": {
-      "bytes": 4770,
-      "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
-    },
-    "root-independent-review.json": {
-      "bytes": 5342,
-      "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
-    },
-    "round5-integration-root-review.json": {
-      "bytes": 4789,
-      "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
-    },
-    "round6-runtime-cleanup/independent-failure-path-review.json": {
-      "bytes": 17565,
-      "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
-    },
-    "round6-runtime-cleanup/root-independent-review.json": {
-      "bytes": 5099,
-      "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
-    },
-    "scale-independent-review-supplement.json": {
-      "bytes": 2062,
-      "sha256": "3287bd5ece3b9b0ac23c73f5af7d42fea8762e783189e76d659910ece5abd966"
-    },
-    "scale-independent-review.json": {
-      "bytes": 8967,
-      "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
-    },
-    "scale-origin-independent-review.json": {
-      "bytes": 3886,
-      "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
-    },
-    "scale-sparse-independent-review.json": {
-      "bytes": 5674,
-      "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
-    },
-    "source-guard-independent-review.json": {
-      "bytes": 6505,
-      "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
-    }
-  },
-  "reviewed_at_utc": "2026-10-08T20:58:55.760824+00:00",
-  "round6_independent_assembly_review": {
-    "all_git_and_disk_inputs_match": true,
-    "archives": [
-      {
-        "all_members_independently_rehashed": true,
-        "archive": "original-evidence.tar.gz",
-        "control_observations": 6,
-        "files": 643,
-        "sha256": "2f79bac4019a0c2b21e35d746f1eca30c2990fec489b5707779b92a935ce1e03",
-        "uncompressed_file_bytes": 627429
-      },
-      {
-        "all_members_independently_rehashed": true,
-        "archive": "patched-evidence.tar.gz",
-        "control_observations": 6,
-        "files": 643,
-        "sha256": "ec4b76a68dbded7a6cb604257ebcbb6bdbba3b30fdeb8b10d1119c2f3170f77f",
-        "uncompressed_file_bytes": 687230
-      },
-      {
-        "all_members_independently_rehashed": true,
-        "archive": "root-independent-evidence.tar.gz",
-        "control_observations": 6,
-        "files": 643,
-        "sha256": "4187265c02b2e158ba8c8d8c0e77162392c5931c0e3fb73f066439d903fcf610",
-        "uncompressed_file_bytes": 693076
-      }
-    ],
-    "authorship_boundary": "Hygiene source authored by pr_audit retains root independent review; imported prior platform behavior retains runtime_closeout review; scale behavior retains scale_closeout review. Runtime patch authorship is external PR160, behavior independently reviewed/exercised by runtime_closeout and root, source/evidence assembly independently reviewed by pr_audit.",
-    "ci_selector_and_v15_logic_unchanged": true,
-    "complete_source_inputs": 1087,
-    "complete_validation_inputs": 136,
-    "frozen_v14_paths": [
-      "scripts/verify_reviewed_source_v14.py",
-      "scripts/reviewed-source-registry-v14.json",
-      "tests/source_integrity/test_reviewed_source_v14.py",
-      "scripts/v14_historical_context.py",
-      "tests/source_integrity/v14_historical_test_adapter.py",
-      "tests/source_integrity/test_v14_historical_context.py"
-    ],
-    "inherited_current_source_hash_coverage": {
-      "crates/cc-db/src/index_migrate.rs": [
-        {
-          "record": "doc-key-index-independent-review.json",
-          "reviewer": "/root/pr_audit"
-        }
-      ],
-      "crates/cc-db/src/sql/index_v1.sql": [
-        {
-          "record": "doc-key-index-independent-review.json",
-          "reviewer": "/root/pr_audit"
-        }
-      ],
-      "crates/cc-db/tests/ci_schema_guard_contract.rs": [
-        {
-          "record": "doc-key-index-independent-review.json",
-          "reviewer": "/root/pr_audit"
-        }
-      ],
-      "crates/cc-eval/src/bench.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/src/benchmark/oracle.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-eval/src/benchmark/oracle/streaming.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-eval/src/benchmark/p8_scale.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-eval/src/benchmark/sampler.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/src/benchmark/statistics.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/src/bin/p8-measurements.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/src/bin/p8-oracle.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/src/bin/p8-runtime-statistics.rs": [
-        {
-          "record": "lint-independent-review.json",
-          "reviewer": "/root/pr_audit"
-        }
-      ],
-      "crates/cc-eval/src/bin/p8-scale.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-eval/src/report.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/tests/benchmark_cli.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/tests/benchmark_oracle_streaming.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-eval/tests/p7_worker_contention.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/tests/p8_lifecycle_replay.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/tests/p8_measurements.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-eval/tests/p8_scale.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/build_plan.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/indexer.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/indexer_phases/resolve.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/lib.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-index/src/resolver/catalog.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/resolver/catalog_cache.rs": [
-        {
-          "record": "scale-independent-review.json",
-          "reviewer": "/root/scale_closeout"
-        }
-      ],
-      "crates/cc-index/src/resource_accounting.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-server/src/engine.rs": [
-        {
-          "record": "root-independent-review.json",
-          "reviewer": "/root"
-        }
-      ],
-      "crates/cc-server/src/project_session.rs": [
-        {
-          "record": "pr-audit-scoped-review.json",
-          "reviewer": "/root/pr_audit"
-        }
-      ]
-    },
-    "method": "Read exact Git blobs and working-tree inputs, review runtime/test diff, verify inherited nonauthor review coverage, independently stream/hash every archived member and compare archived control observations and original logs. No tests or workloads rerun by this reviewer.",
-    "old_review_records_rehashed": {
-      "backfill-feature-independent-review.json": {
-        "bytes": 3316,
-        "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
-      },
-      "doc-key-index-independent-review.json": {
-        "bytes": 9275,
-        "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
-      },
-      "doc-key-index-root-review.json": {
-        "bytes": 3288,
-        "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
-      },
-      "doc-key-index-rust-validation.json": {
-        "bytes": 3728,
-        "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
-      },
-      "lint-independent-review.json": {
-        "bytes": 3718,
-        "sha256": "0923f5f1f9334582a1060a68f5b04a2908a9f46d1752f71c3c7e4463e35407b5"
-      },
-      "platform-independent-review.json": {
-        "bytes": 8524,
-        "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
-      },
-      "platform-port-independent-review.json": {
-        "bytes": 8379,
-        "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
-      },
-      "pr-audit-scoped-review.json": {
-        "bytes": 4770,
-        "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
-      },
-      "root-independent-review.json": {
-        "bytes": 5342,
-        "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
-      },
-      "round5-integration-root-review.json": {
-        "bytes": 4789,
-        "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
-      },
-      "scale-independent-review-supplement.json": {
-        "bytes": 2062,
-        "sha256": "3287bd5ece3b9b0ac23c73f5af7d42fea8762e783189e76d659910ece5abd966"
-      },
-      "scale-independent-review.json": {
-        "bytes": 8967,
-        "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
-      },
-      "scale-origin-independent-review.json": {
-        "bytes": 3886,
-        "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
-      },
-      "scale-sparse-independent-review.json": {
-        "bytes": 5674,
-        "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
-      },
-      "source-guard-independent-review.json": {
-        "bytes": 6505,
-        "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
-      }
-    },
-    "reviewer": "/root/pr_audit",
-    "round6_original_evidence": {
-      "README.md": {
-        "bytes": 2338,
-        "git_blob": "009d7c4444abdc3fb73fd5999e690e5786283714",
-        "sha256": "feccd8499327b96a8017ae54ed12301cfd38129a8e1eed5ee7b987cd78fb9d8e"
-      },
-      "archive-verification.json": {
-        "bytes": 1607,
-        "git_blob": "6f2fe59436e1c9e6040d0093c99ef43163493cfc",
-        "sha256": "02c4b6803d620eff52735bed1e6aa079f1a2dbf634c8cd0b6bdfafc94c7cc5f2"
-      },
-      "evidence-applicability-boundary.json": {
-        "bytes": 7439,
-        "git_blob": "e2e268b0615b2840934e4602f13a21ea78c30488",
-        "sha256": "673b68e32dabda0902a3d304b891715814c83e8123d17844d01ece9a940406b0"
-      },
-      "independent-failure-path-review.json": {
-        "bytes": 17565,
-        "git_blob": "c57859f30969804174b04dae21f80d6f2ead8564",
-        "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
-      },
-      "original-evidence-inventory.json": {
-        "bytes": 127254,
-        "git_blob": "498026699396cdec7c7bbc76bcd2fdfe93a885ec",
-        "sha256": "9a48d4ec71117b3edd060546f82c367bc8a5b39c995f055b31eed898bf27c6b8"
-      },
-      "original-evidence.tar.gz": {
-        "bytes": 173326,
-        "git_blob": "c9bfb0367d0e50680cf01e42ec37aea5b83f60bf",
-        "sha256": "2f79bac4019a0c2b21e35d746f1eca30c2990fec489b5707779b92a935ce1e03"
-      },
-      "original-tests.log": {
-        "bytes": 5386,
-        "git_blob": "7c562b588f4ff6d0704bc127d16e2f12c92836e9",
-        "sha256": "0a74715940b4a2eceed8acc14fb1c548c182535d13b4133eaed2add85c881083"
-      },
-      "p8-regressions-receipt.json": {
-        "bytes": 912,
-        "git_blob": "2358dada0c9b8145838cb07056c26457a2576362",
-        "sha256": "d9d988b3b941bd67476da35fd12fe2a73205c360179e5a273f92b259d6fa44da"
-      },
-      "p8-regressions.log": {
-        "bytes": 60308,
-        "git_blob": "b1c5a53fa2a34b40463311fa4ff799299e6a34bb",
-        "sha256": "f8353a36bf95ee7eeb880650b5f767f949b9af3072e8249f7ba1e837567fedbb"
-      },
-      "p8_runtime.py.pr160.patch": {
-        "bytes": 9915,
-        "git_blob": "8a1b8ed85c85797573f3362f58e2ddd632dc33c4",
-        "sha256": "88a816b417b60386555ba6c0b7f3e9ffd5f17c4af11497825334cf2bbc2fd78d"
-      },
-      "patched-evidence-inventory.json": {
-        "bytes": 126627,
-        "git_blob": "2748c814645e25d88bd0e8c20ce4a880e376a05c",
-        "sha256": "2dc1ea5e0235526d01aa640cfd3a7f4ae7cf1c0f546e512eeceffa13c96c7e27"
-      },
-      "patched-evidence.tar.gz": {
-        "bytes": 179137,
-        "git_blob": "7fe7dbacef0ae99315ab3a543d860c9886a4a923",
-        "sha256": "ec4b76a68dbded7a6cb604257ebcbb6bdbba3b30fdeb8b10d1119c2f3170f77f"
-      },
-      "patched-tests.log": {
-        "bytes": 2211,
-        "git_blob": "fd99e1114d5c8f74bbd6dd70dbca4859a382257c",
-        "sha256": "8e86c132b7918bdb712b369d3c36c6edf6793f0f049296f72ebbed98e7515334"
-      },
-      "regression-inputs-before.json": {
-        "bytes": 163821,
-        "git_blob": "a2128b9ba9ba1813c0182756957d6cd07140207e",
-        "sha256": "863ce7940a7bab1dbf271cd460011c87f1e93dfce18fad361d35e66bfc071fe6"
-      },
-      "root-independent-evidence-inventory.json": {
-        "bytes": 132414,
-        "git_blob": "d81062298ebb83060d71e7db6e8fd30748d723c1",
-        "sha256": "bb34299c418d27cdbc90187322536c418eb5413ca0613887cdf5429fcc7fd4d1"
-      },
-      "root-independent-evidence.tar.gz": {
-        "bytes": 179515,
-        "git_blob": "a4b48f02e51ef169e9799c03a91eea87a2fdb3aa",
-        "sha256": "4187265c02b2e158ba8c8d8c0e77162392c5931c0e3fb73f066439d903fcf610"
-      },
-      "root-independent-review.json": {
-        "bytes": 5099,
-        "git_blob": "583f5f49ab145de8f889e4108a96b611b4d733fc",
-        "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
-      },
-      "root-independent-tests.log": {
-        "bytes": 2211,
-        "git_blob": "b89c7ddfb444be33eb0bd8d4b553ee0769cfcaff",
-        "sha256": "dce0b99b833ba15a330e6c023b10987368a9994b8a649a687addd305b138378e"
-      },
-      "test_p8_runtime.py.pr160.patch": {
-        "bytes": 11251,
-        "git_blob": "b05fdd76adddd65071bb57180810ed5c1c3630ab",
-        "sha256": "88921d35c6c72769a18e5c8168d6cc8f13723d03ada9b8d3507e2952b3326a31"
-      }
-    },
-    "tested_bytes": {
-      "actual_working_tree_base": "7d9cd68431595f6197909f89e627d3e0d2305a42",
-      "all1223_tested_input_hashes_equal_new_product": true,
-      "full_suite_log_sha256": "f8353a36bf95ee7eeb880650b5f767f949b9af3072e8249f7ba1e837567fedbb",
-      "full_suite_tests": 361,
-      "modified_validation_inputs": [
-        "scripts/p8_runtime.py",
-        "scripts/tests/test_p8_runtime.py"
-      ],
-      "old_protocol_failures": 3,
-      "old_protocol_tests": 14,
-      "patched_protocol_tests_passed": 14,
-      "pre_post_unchanged_attestation": "Root receipt, independently bound to preserved before inventory and exact final product bytes; this reviewer did not execute the suite.",
-      "root_independent_protocol_tests_passed": 14,
-      "source_commit_not_relabelled": true,
-      "tested_input_count": 1223
-    }
-  },
-  "schema_version": 1,
-  "scope": "independently_reviewed_source_and_validation_inputs",
-  "source": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
   "source_path_reviewers": {
+    "crates/cc-db/src/index_db_multi_insert.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
+    "crates/cc-db/src/index_db_snapshot_insert.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
+    "crates/cc-db/src/index_db_write_batch.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
     "crates/cc-db/src/index_migrate.rs": [
       "/root",
       "/root/pr_audit"
+    ],
+    "crates/cc-db/src/lib.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
+    "crates/cc-db/src/resolution_dependency_store.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
+    "crates/cc-db/src/snapshot_write_txn.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
     ],
     "crates/cc-db/src/sql/index_v1.sql": [
       "/root",
       "/root/pr_audit"
     ],
+    "crates/cc-db/src/symbol_identity_store.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
     "crates/cc-db/tests/ci_schema_guard_contract.rs": [
       "/root",
       "/root/pr_audit"
+    ],
+    "crates/cc-db/tests/p2b_resolution_store.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
     ],
     "crates/cc-eval/src/bench.rs": [
       "/root"
@@ -1750,10 +2692,10 @@
       "/root/scale_closeout"
     ],
     "crates/cc-eval/src/benchmark/oracle/streaming.rs": [
-      "/root/scale_closeout"
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
     ],
     "crates/cc-eval/src/benchmark/p8_scale.rs": [
-      "/root/scale_closeout"
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
     ],
     "crates/cc-eval/src/benchmark/sampler.rs": [
       "/root"
@@ -1804,6 +2746,9 @@
     "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": [
       "/root/scale_closeout"
     ],
+    "crates/cc-index/src/indexer_phases/reconcile.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
     "crates/cc-index/src/indexer_phases/resolve.rs": [
       "/root/scale_closeout"
     ],
@@ -1819,6 +2764,12 @@
     "crates/cc-index/src/resource_accounting.rs": [
       "/root"
     ],
+    "crates/cc-index/tests/qname_identity_transaction.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": [
+      "/root/acceptance_audit (non-author fixed-body and integration review)"
+    ],
     "crates/cc-server/src/engine.rs": [
       "/root"
     ],
@@ -1826,145 +2777,339 @@
       "/root/pr_audit"
     ]
   },
-  "tree": "37ca8500f61d51700044d5e09e01d3a953528673",
-  "unresolved_blockers": [],
-  "validation_inputs": {
-    ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
-    ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
-    ".github/workflows/p8-gates.yml": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
-    ".github/workflows/p8-lifecycle.yml": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
-    ".github/workflows/p8-platform.yml": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
-    ".github/workflows/p8-runtime.yml": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
-    ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
-    "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
-    "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",
-    "scripts/code_index_plan.py": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c",
-    "scripts/current-source-registry-v1.json": "fdab5efa046cce7ffc4a9e900a908f781f9c90c282a9eaabf790ad689e44ed60",
-    "scripts/current-source-registry-v2.json": "6bce6b8c8b3a7925bf03dd1559113012d4b9fc650d4d667106ae8c4aab731172",
-    "scripts/current-source-registry-v3.json": "8525ded2edbcbf59f8f7965ffa26c684ef6cf838576d61d634efa8408299acec",
-    "scripts/index_fix_upgrade_validation.py": "fb74c2afe598f59e2fc7222673f111accea1e276c6a304753d17f6c197d51c4f",
-    "scripts/lock_benchmark_inputs.py": "9b3def7e2a87a6c1d8312f19c72d11bdec4c12d33a0fcfc7ce783c37e003c75f",
-    "scripts/module_oracles.py": "3b9bed679bc080eeabfc9dceae106ea3b49d50cca7b415314168c2976653ba1d",
-    "scripts/p0-validation.py": "2f4013d6da41782ccadb15a23213f55a5117ec376747398919e7dcaa27a20145",
-    "scripts/p0_historical_corpus.py": "67be5bc25b0116f666a36af83e88d19acc79515868a3199c01e816d268afee21",
-    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
-    "scripts/p7_fault_lifecycle_stdio.py": "0e1a0b6054ff5cb3708a7acfdc210af909849e62d8ff0616160e02e3988a2fdd",
-    "scripts/p7_gate_report.py": "772060b45bd26e787e4d4a7d011df1f24e554506cc97bbbcad0bb642acdd8afb",
-    "scripts/p7_mechanism_build.py": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76",
-    "scripts/p7_offline_network.py": "cea9c968db91b1f7d7354e9f7b873199e5f444305aa5cb70165d4a22f3a73433",
-    "scripts/p7_offline_trace.py": "66f17363721e1186d3087ef3259919e2c9c7782cfba18cda9662fd0706ca17d1",
-    "scripts/p7_release_hotspot_diagnosis.py": "06554f2f1516fd833439114701ff51b627b055fc7edcebe27d43762fc5ea3e5f",
-    "scripts/p7_release_resource_preparation.py": "a76865a466252f5863c8e0ad278c4c6814093d4a4a629a9409acf2e6b916901b",
-    "scripts/p7_resource_preparation.py": "1aa3674bf3bb6e5a68dc6a887588de0e17dfe43a88a6c0cd919d03571cc48323",
-    "scripts/p7_stdio_build_receipt.py": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2",
-    "scripts/p8_backfill.py": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
-    "scripts/p8_candidate_execution.py": "e5b36f6bb7bb13292734932f442a6b29d5d04e13d47c34b75d1f00bad3164d9b",
-    "scripts/p8_cold_build.py": "1da7189714959645f83762749d6bb6741e494e7a1ca4b9a2416d9d5366f315a3",
-    "scripts/p8_compat.py": "79765d4a8ff3cdb9e5e01625d4a13318a7122b1cda60fed552d16243663c4da2",
-    "scripts/p8_corpus_audit.py": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
-    "scripts/p8_external_candidate.py": "3bf04a43b33dd3e71b437162800a9a19e425b01a2c4a93e4eeb71d97e06fa189",
-    "scripts/p8_facts.py": "43d66cbc833740415d1ea24121eca2c23fac55c93ba38498a6e8c36c5535090a",
-    "scripts/p8_gate_controls.py": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7",
-    "scripts/p8_judge_evidence.py": "30569182753837fe29b390d29acb27328337abbf86e088e8ca3740359c3051ac",
-    "scripts/p8_leakage_audit.py": "bb909556f80bb47c76957b117a9187e6cbc934f8ce0df82d169a3aa58bcfb77e",
-    "scripts/p8_lifecycle.py": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d",
-    "scripts/p8_native_registry.py": "488b446221ade5598c058a56019f7e57ffb04cd8c311d52e3c69c7cc538fe6a9",
-    "scripts/p8_recovery.py": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42",
-    "scripts/p8_release_evidence.py": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
-    "scripts/p8_release_review.py": "dd421c1a2ca753c9a4777e6db1a7cc7d2c5ca7e98b87e61a9aff5ea59048c26f",
-    "scripts/p8_resources.py": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1",
-    "scripts/p8_rollback.py": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
-    "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
-    "scripts/p8_runtime.py": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
-    "scripts/p8_runtime_build.py": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
-    "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
-    "scripts/p8_semantic_certification.py": "42dd72cbb08dd398239cd41b927f2a94bedbc8b813583b175191c87f291a72c4",
-    "scripts/resource_harness/__init__.py": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36",
-    "scripts/resource_harness/analyze_existing.py": "13f61dd7b3612a47179aa5626e474bca98d6a78d23fddad5ce594b9050749ef0",
-    "scripts/resource_harness/build.py": "99ee9bd38f1d0895de63cd0f0c0dd587917e3e35b4877936eb91d380c1a03c85",
-    "scripts/resource_harness/driver.py": "60544f300722cb553fc659db5599989424fb95671e9a0a2743e8a0873dc601f6",
-    "scripts/resource_harness/identity.py": "1113c24496e97ece6f52deca3b892a8527c1f9e1f02fca503c80361fd1c097e6",
-    "scripts/resource_harness/measurement.py": "0122fecbae1b4573ff527d2bcdc76a38d56f24018393b1f6312ad250ddc68942",
-    "scripts/resource_harness/product.py": "d73c29f99c8aa9045bf517e9b6a48dc47ae44a2613d5d3c7eedadb1a48d17889",
-    "scripts/resource_harness/protocol-manifest.json": "082da783b24939608f2e598cce2b98b91ccac48fdacf6e6a61880ed60e649c87",
-    "scripts/resource_harness/protocol.py": "51e4893cb23949350674f50c52a70b40359d2d40f8b5374681d93e576d4ccd95",
-    "scripts/resource_harness/runtime.py": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5",
-    "scripts/review/p7_cache_frozen_negative_replay.py": "68d92a11251bfa948047865fbbd131a1e0b7d2e54944e3111f877d51073b9511",
-    "scripts/review/p7_query_encoding_cases.rs": "b06ea67c12606f868be94faf5699170faa7f5a60915eb3bea72f70f7a287e936",
-    "scripts/review/p7_query_encoding_review.py": "e54e68db21a02944e9e734986e8d1d38362dfecb03b87c9659732fd3595fc6ee",
-    "scripts/review/p7_v16_receipt_independent_audit.py": "f55839a603f82743bf7b86ff38ce497eb30127053ee03a79c5ecdb7c240846db",
-    "scripts/review/v19_corpus_audit.py": "7a57a57d2b2facc5051163634fa2cbd25e5e00ec046257d48f29e960f3219ce9",
-    "scripts/reviewed-source-joint22-v10.json": "195fa37b20130e53f3417f8076eb608f18e3b3a98c9206907ba0ce9ab31b3d8a",
-    "scripts/reviewed-source-p7-v9.json": "cbc04f1d578b83b5c4023f10889cc37c17f0ca2aadac4b2e26cd2dc97c08fd16",
-    "scripts/reviewed-source-registry-v10.json": "099617f589ff6d2acfeb93b58b8049ee3eac9d0c6636cf14eaa524873b838708",
-    "scripts/reviewed-source-registry-v11.json": "ef0b1ed53c07e850b7a226195cb1bf4b4a48b705a9e4a9c5311b33e758d89d5e",
-    "scripts/reviewed-source-registry-v12.json": "a600301187ac43276122186732bc0e5c3dd55952dcc5e33ecc5d3e2c244e67d4",
-    "scripts/reviewed-source-registry-v13.json": "b9e520984d04241104ead7cd26635967d9ce4d5f8f8700ce57b9b1d24c03e31a",
-    "scripts/reviewed-source-registry-v14.json": "610502b90e5ef402875dcf7d32d1128681b2eae3b23a9a4f726fc40a823ba03c",
-    "scripts/reviewed-source-registry.json": "5bad3c57408e0e7c681e16e4fdd75229b10b8086628b97d12b8823aea637b155",
-    "scripts/source_snapshots/joint22_v10/.github/workflows/ci.yml": "9a869495f3bb51b982d165ac50e76cd86445f9fed561faf151f16608e1f310c8",
-    "scripts/source_snapshots/joint22_v10/README.md": "7a3ebd9c5c42d4bdf08fe497314205f8d1c845120fc75b8c18b90a949168c3ef",
-    "scripts/source_snapshots/joint22_v10/test_reviewed_source.py.txt": "5ea2e7ee8685c911bdd97264cf1815794101119fb31e697efafd4a48432691ee",
-    "scripts/source_snapshots/v12_ci/.github/workflows/ci.yml": "4036528d196d6c65be3566cdc33d4118c48deda776424d9f06b84dff6f2f1921",
-    "scripts/source_snapshots/v12_ci/.github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
-    "scripts/tests/test_p7_ci_architecture_guards.py": "c691a461251f21fc7705cc513fbd21d313b122a82e84ba1fd3dd463fde96bf99",
-    "scripts/tests/test_p7_offline_network.py": "a28cf04a6c64a6f1e9c04a99c5561506b632228bf4eaf2107ec0ee8493040995",
-    "scripts/tests/test_p7_offline_trace.py": "78b1fa64b5aeaf881bac1c86e908486bc42be2d209b5534f2546ab5c8a34c548",
-    "scripts/tests/test_p7_stdio_build_profile.py": "e68566bbda5621516a3089b930f83130f6b1284f87265b0355e3b3158f273010",
-    "scripts/tests/test_p8_backfill.py": "49bf5ffd7bbffdfc98579712737de70c12ae8585cc2f4539b8bb361083f4f98d",
-    "scripts/tests/test_p8_candidate_execution.py": "a057cca1304fa5980ffb786d890cd71067c6a2087bce77eb2d4c63eb4a18fa15",
-    "scripts/tests/test_p8_compat.py": "385d1f0a9e7e8505f3d9dbf4d825a985753767cbd2371b2dc0cfce99e63c805e",
-    "scripts/tests/test_p8_corpus_audit.py": "0a058f5e59b3b3c0c546632eec1fc114f93b0873343b6a5cd3f85a6eda7ffa79",
-    "scripts/tests/test_p8_external_candidate.py": "46ca6394063f52ac3dd3fbd18e0c0b4828fcb3bcb1c15dadd9389cac4842a8aa",
-    "scripts/tests/test_p8_judge_evidence.py": "6ab3541fdc63d90c3c02f667cbbd79c85ff7bff190ff69a0e63ac2a74ddc6625",
-    "scripts/tests/test_p8_leakage_audit.py": "0dcd2d94f3d4208fef08f4da640598267f0500cac90df732946d6060dcafafa7",
-    "scripts/tests/test_p8_lifecycle.py": "dfd9358f076673858048c5ca0bfb940e95b861a676b7daa498f51d8036ae0ebe",
-    "scripts/tests/test_p8_native_registry.py": "e395b68915cf0382f13b9bb1157eea9052c034f377ccb6b4a2ef37cad3569125",
-    "scripts/tests/test_p8_platform.py": "5224a63b68accdcc6de858f3110316cc0739dfedac99c47b09c2472aedf0c8d7",
-    "scripts/tests/test_p8_platform_independent_review.py": "86ad7fbe3dcea399537e776833bb3f3d4c058bd9ccc4e3cdea09a1aa724ee5be",
-    "scripts/tests/test_p8_recovery.py": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
-    "scripts/tests/test_p8_release_evidence.py": "62e8fdd449e4fb0fb4878185ebf06e9f9c790906a4f95415bf4138862977d380",
-    "scripts/tests/test_p8_release_review.py": "c4e01032ea7f85d7cf0bdf0430b6c159112f25425d433eff8deb3bca7bd3544e",
-    "scripts/tests/test_p8_resources.py": "992b6feecb4a40d6da15bddd2b89c7d4367bbb867108102182315362c16b7952",
-    "scripts/tests/test_p8_runner_capacity.py": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
-    "scripts/tests/test_p8_runtime.py": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0",
-    "scripts/tests/test_p8_runtime_evidence.py": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1",
-    "scripts/tests/test_p8_scale_matrix.py": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
-    "scripts/tests/test_p8_semantic_certification.py": "1b3cb06f5bcc4a46fd2effe436cb46e7a4995a0e70830231a3c03015f92f92a8",
-    "scripts/update-doc-baselines.sh": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
-    "scripts/v14_historical_context.py": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6",
-    "scripts/v15_historical_context.py": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20",
-    "scripts/verify_current_source.py": "17d526085b0e767e11ea13069eeb202df6fd62180b96b538c882b7c0565dcbe0",
-    "scripts/verify_current_source_v2.py": "3c331139606840b92d496fcc84cac5ba60cf97e192b72730027125450fadd2ef",
-    "scripts/verify_current_source_v3.py": "9ffcd3bc58b69437093f83daed7324b4525eaf7c51ccfcb0ec7314f939e7f3d4",
-    "scripts/verify_fixed_e3_integration.py": "277f1544bcf51085e10ed2b94fdb5e403c3ec52a40033d70744fa3679ffe75d2",
-    "scripts/verify_historical_integrations_v2.py": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288",
-    "scripts/verify_packing_integration.py": "b05c27464310dd41d759491d226b4e210e45178eb269c534b46bce48c0448ef6",
-    "scripts/verify_reviewed_source.py": "019ce82b6f797920e5db3f786bb27c058b14a9a7b133e99f9b5d195ca12b81a8",
-    "scripts/verify_reviewed_source_joint22_v10.py": "34a53a3151d070e64b9940279173f7810e975bc281c05534757ed18f358d2efa",
-    "scripts/verify_reviewed_source_p7_v9.py": "4a39ddfa306c755e0da762d43cdf9ee928d24b1dac5a78f2a918cbec5e61a51a",
-    "scripts/verify_reviewed_source_v10.py": "96ff8eb7125db80a89f9e839cea95cd6a4db6fad24159d8c71d28c91d2dbc9ab",
-    "scripts/verify_reviewed_source_v11.py": "cb5d33530a4ea0462d1f6b780ea4917c1ec54aef53ce7fd14f72056fe6210ed9",
-    "scripts/verify_reviewed_source_v12.py": "cc7963183bdcfb9730ad379374cb709d0a77f18e8730765f061d3f403cc50238",
-    "scripts/verify_reviewed_source_v13.py": "a870137ff28085baaf435cb1f3e1700365a28f0247fb8774eae17f673887828a",
-    "scripts/verify_reviewed_source_v14.py": "d37219bb0906f0f64d44fcf7ccf944865748e876f597ce83ffe79f5d35b3af70",
-    "tests/source_integrity/test_current_source.py": "d9691557d5b2a6d54270a77a22909bf7df5988e6891eb225d1dd59e695029a9d",
-    "tests/source_integrity/test_current_source_v2.py": "62be5d020b1bc88a999d5dbc11dcd0f29df6986208218ce6eff9e361b74bed85",
-    "tests/source_integrity/test_current_source_v3.py": "f38bf21b6bc5707655c1dc3dac331339e8434875228d0c77ce1bf4f9fa9672ad",
-    "tests/source_integrity/test_historical_integrations_v2.py": "1f8866cf740bc469d05ccf30503078a533ebe85c9d8f4cf01d46bd5450849b39",
-    "tests/source_integrity/test_plan_progress.py": "36705dbdb1c07984aff9902ca3c32b11952b5d067260e0f78a6d60ede5ae9091",
-    "tests/source_integrity/test_reviewed_base.py": "745ea8e9980ee66c67230d0524ea5d37bda93a9d7743682f06c825eccf1c6d30",
-    "tests/source_integrity/test_reviewed_source.py": "4156a6417d59564ec225b2dc0b36df39b7143d575a1aae28d7c2e80be4bd5337",
-    "tests/source_integrity/test_reviewed_source_v10.py": "cafff36f050a72d8b3adabd1b7163f384a708530051fd935960513a18a45becf",
-    "tests/source_integrity/test_reviewed_source_v11.py": "f12de60cbca49b415da706bec69ccae82ea67f2c92f549e0a1b181e0b3c113d2",
-    "tests/source_integrity/test_reviewed_source_v12.py": "97f71cecc4eb032fddcfef37bb5da673ccd83dc2455997372238ea46e625bb74",
-    "tests/source_integrity/test_reviewed_source_v13.py": "a42075de17b4658204cfad1a7adc9fdc3af43d61e41345b7c82b2dee96dcdce4",
-    "tests/source_integrity/test_reviewed_source_v14.py": "26be23a90a88814781c201e2ad60b0bd618334f82651e1ba55f91ca98d688a0e",
-    "tests/source_integrity/test_reviewed_source_v15.py": "4dfc98896afb56cbd42d5219f4f95e56f7228ad30984a2734f2323c85f98938f",
-    "tests/source_integrity/test_v14_historical_context.py": "651632a8fc46bfe97b9cdb4eca1fb8b06d132033e9892402e667337b415c0386",
-    "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
-    "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
-    "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
+  "incremental_validation_path_reviewers": {
+    "scripts/p8_runtime.py": [
+      "/root/pr_audit (independent original fixed soak-cache semantic review)",
+      "/root/acceptance_audit (non-author finalization delta and exact main integration review)"
+    ],
+    "scripts/tests/test_p8_runtime_cache.py": [
+      "/root/pr_audit (independent original fixed cache controls review)",
+      "/root/acceptance_audit (exact-byte integration only; original author recusal)"
+    ],
+    "scripts/p8_cold_build.py": [
+      "/root/acceptance_audit"
+    ],
+    "scripts/tests/test_p8_platform.py": [
+      "/root/acceptance_audit"
+    ],
+    "scripts/tests/test_p8_runtime_finalization.py": [
+      "/root/acceptance_audit"
+    ],
+    ".github/workflows/p8-snapshot-leaf-engineering.yml": [
+      "/root/acceptance_audit"
+    ],
+    ".github/workflows/p8-integrated-runtime-controls.yml": [
+      "/root/acceptance_audit"
+    ]
   },
-  "verdict": "accepted_scoped"
+  "author_independence": {
+    "/root/acceptance_audit": "Non-author of all thirteen adopted native inputs, five-path integration, finalization helper/test, and both auxiliary controllers. Earlier resource/statistics/lifecycle and soak-cache authorship is explicitly not self-approved: unchanged native inputs inherit the exact main canonical non-author review; cache semantics and its test inherit /root/pr_audit's fixed v3 review and R4. This review freshly verifies the complete actual P mapping, integration, immutable bytes and those non-author delta reviews.",
+    "/root/pr_audit": "Author of the five-path integration and finalization transplant/Python50 controller; those scopes are independently reviewed by acceptance_audit. Separately a non-author reviewer of original cache logic and snapshot leaf batching, as recorded in immutable scoped reports.",
+    "/root/scale_engineering": "Author of snapshot leaf batching and Rust53 controller; their source and controller scopes are independently reviewed by acceptance_audit and prior batch semantic cross-review.",
+    "/root": "Publication/integration owner and author of the thirteenth equivalent lint proposal; those scopes are independently checked here. No root author self-approval is substituted for this complete input review."
+  },
+  "prior_accepted_review": {
+    "review_source": "f25d0b994edf9c08c5514864701e3b050b317c88",
+    "reviewed_source": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
+    "review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+    "review_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
+    "copied_at_actual_parent_477_byte_identical": true,
+    "inherited_source_delta_paths": 28,
+    "inherited_validation_inputs": 133,
+    "inheritance_rule": "Only exact SHA256 and Git mode/blob matches retain prior non-author source acceptance; prior executions retain their original source/observer identities.",
+    "source_reviewers": [
+      "/root",
+      "/root/scale_closeout",
+      "/root/runtime_closeout",
+      "/root/pr_audit"
+    ],
+    "inherited_review_records": {
+      "backfill-feature-independent-review.json": {
+        "bytes": 3316,
+        "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
+      },
+      "doc-key-index-independent-review.json": {
+        "bytes": 9275,
+        "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
+      },
+      "doc-key-index-root-review.json": {
+        "bytes": 3288,
+        "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
+      },
+      "doc-key-index-rust-validation.json": {
+        "bytes": 3728,
+        "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
+      },
+      "lint-independent-review.json": {
+        "bytes": 3718,
+        "sha256": "0923f5f1f9334582a1060a68f5b04a2908a9f46d1752f71c3c7e4463e35407b5"
+      },
+      "platform-independent-review.json": {
+        "bytes": 8524,
+        "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
+      },
+      "platform-port-independent-review.json": {
+        "bytes": 8379,
+        "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
+      },
+      "pr-audit-scoped-review.json": {
+        "bytes": 4770,
+        "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
+      },
+      "root-independent-review.json": {
+        "bytes": 5342,
+        "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
+      },
+      "round5-integration-root-review.json": {
+        "bytes": 4789,
+        "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
+      },
+      "round6-runtime-cleanup/independent-failure-path-review.json": {
+        "bytes": 17565,
+        "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
+      },
+      "round6-runtime-cleanup/root-independent-review.json": {
+        "bytes": 5099,
+        "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
+      },
+      "scale-independent-review-supplement.json": {
+        "bytes": 2062,
+        "sha256": "3287bd5ece3b9b0ac23c73f5af7d42fea8762e783189e76d659910ece5abd966"
+      },
+      "scale-independent-review.json": {
+        "bytes": 8967,
+        "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
+      },
+      "scale-origin-independent-review.json": {
+        "bytes": 3886,
+        "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
+      },
+      "scale-sparse-independent-review.json": {
+        "bytes": 5674,
+        "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
+      },
+      "source-guard-independent-review.json": {
+        "bytes": 6505,
+        "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
+      }
+    }
+  },
+  "supplemental_cache_review": {
+    "original_review_source": "9c24adfa6bb8b8114b4dec8c8a344072957956ce",
+    "original_product_source": "f5319d6a04f83aabe9dd635137382f4782d8d189",
+    "original_guard_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "fixed_v3_review_sha256": "0614a66b096b4726a544a3fd3093cc196a8d5a799f13e5166f58bd0a3594b6f9",
+    "fixed_v3_reviewer": "/root/pr_audit",
+    "cache_test_sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
+    "boundary": "Reuse exact reviewed cache code and test semantics; this does not upgrade old seven-observer execution receipts to the current nine-observer product or new source."
+  },
+  "actual_commit_verification": {
+    "github_git_commit_endpoint": "https://api.github.com/repos/jyqj/codecortex/git/commits/6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+    "actual_sole_parent_verified": true,
+    "actual_root_tree_verified": true,
+    "remote_subtrees": {
+      "crates": {
+        "sha": "62370c5cdfc6eb4a0db326b8a5afe288c5aab3b5",
+        "entries": 1296,
+        "truncated": false
+      },
+      "scripts": {
+        "sha": "fe536b012d75232ffee54fa4c8eed6d328789a64",
+        "entries": 126,
+        "truncated": false
+      },
+      ".github": {
+        "sha": "a3412bd2bffa8e2e055283cb0f6494c1f7c73ede",
+        "entries": 11,
+        "truncated": false
+      },
+      "tests": {
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "entries": 29,
+        "truncated": false
+      }
+    },
+    "remote_parent_compare": {
+      "total_commits": 1,
+      "files": 41,
+      "additions": 27,
+      "modifications": 14,
+      "product_changes": 13,
+      "python_changes": 5,
+      "workflow_additions": 2,
+      "artifact_additions": 21
+    },
+    "full_source_and_validation_body_hashes_recomputed": 1229,
+    "required_input_bodies_missing": [],
+    "exact_proposal_modes_and_git_blobs": true,
+    "original_BASE_product_bodies_recomputed": 1082,
+    "original_BASE_delta_recomputed": 41,
+    "all_existing_product_inputs_retained": true,
+    "all_undeclared_nonartifact_inputs_unchanged": true,
+    "artifact_only_main_bridge": {
+      "from": "55902428d49b09bb4a90cee6ccccf985680618bb",
+      "to": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "before_tree": "aa6977a0c4d609ac4409889446a28d0bbfa8c7bf",
+      "after_tree": "76604ef43da4ae0427006c7c3a5a3b46c5c16b55",
+      "unchanged_nonartifact_root_entries": 12,
+      "only_changed_root_entry": "artifacts"
+    },
+    "original_gate_blobs": {
+      "scripts/verify_reviewed_source_v14.py": "5e5ef518787ec7445731eec75eface5e70cc834a",
+      "scripts/reviewed-source-registry-v14.json": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+      "tests/source_integrity/test_reviewed_source_v14.py": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+      "scripts/v14_historical_context.py": "48296d55b90f56e8ee97c52dab0430087487f462",
+      "tests/source_integrity/v14_historical_test_adapter.py": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+      "tests/source_integrity/test_v14_historical_context.py": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+      ".github/workflows/p7-engineering.yml": "f99933edf0bd03c0d9fa5ba520ed94dfbbd49e12",
+      "scripts/verify_reviewed_source_v15.py": "257d27ff19399d9e97bdf2dd70ca3ce2ff4ae7c1",
+      "scripts/reviewed-source-registry-v15.json": "653c40ca3e7454541008082ad13ad6fe592e6894",
+      ".github/workflows/ci.yml": "8c7325eb88b791f909e72c4b6c79b417185e4386"
+    },
+    "TODO_ledger": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "new_done": 0,
+      "unchanged_parent": true,
+      "steps_acceptance_and_dependencies_unchanged": true
+    },
+    "validation_enumeration": "Exact existing v15 validation_path predicate and three original roots; 140 inputs includes both new tests and both new workflows. No exclusion added.",
+    "current_P_pins_are_inherited": "This P is source only. Its original main v15 PRODUCT/REVIEW/registry pins remain unchanged; a subsequent exact trust-root installation and real source-integrity/CI execution are required."
+  },
+  "validation_delta": [
+    {
+      "path": "scripts/p8_cold_build.py",
+      "before_sha256": "1da7189714959645f83762749d6bb6741e494e7a1ca4b9a2416d9d5366f315a3",
+      "sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "before_sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+      "sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
+    },
+    {
+      "path": "scripts/tests/test_p8_platform.py",
+      "before_sha256": "5224a63b68accdcc6de858f3110316cc0739dfedac99c47b09c2472aedf0c8d7",
+      "sha256": "543f604cb9cbcfe1600aa1a5711f27d3eb2ee3e64126d9c95c1ad5612418aae8"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime_cache.py",
+      "before_sha256": null,
+      "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime_finalization.py",
+      "before_sha256": null,
+      "sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+    },
+    {
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "before_sha256": null,
+      "sha256": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad"
+    },
+    {
+      "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+      "before_sha256": null,
+      "sha256": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991"
+    }
+  ],
+  "review_evidence": {
+    "native12": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/native12-independent.json",
+      "git_blob": "3c07296605474109f7330d7cdba04ce2bc6bab39",
+      "status": "added",
+      "sha256": "1479a6fd84df97099ff5f5c815322f62db19439dedf71eb2354d90cf26616d1d"
+    },
+    "predicate_and_manifest": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/predicate-and-manifest-independent.json",
+      "git_blob": "c8a4e5dad499eea5997d40806b3c2c0da18f515a",
+      "status": "added",
+      "sha256": "b6a95231b4f53d46de1ddc745aacb2ca11f61f8238799e2a8f40d37371db692a"
+    },
+    "python5": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-independent.json",
+      "git_blob": "79edc0c14bb60c5c305670eff2d7975114cd9bd4",
+      "status": "added",
+      "sha256": "a0ebae65db8d34f59e5c3424f6405fb509f4eba602e5f7edc1de18279df4caa9"
+    },
+    "python5_all_validation": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-validation-independent.json",
+      "git_blob": "82fec2e172d83c158db5928a46a89e2065d4a469",
+      "status": "added",
+      "sha256": "f0479d780006b7f2411fdcc688b2f46a04d7acd4381d02977627232f0ca37e61"
+    },
+    "rust53_structure": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-structure-independent.json",
+      "git_blob": "862090be0d6d05aed62df7b5b9ae49682babfdbe",
+      "status": "added",
+      "sha256": "f2c7ff6432a1db4adf72ca5397933a57794cc747b4adffb4197d4a831c55c1ac"
+    },
+    "rust53_binding": {
+      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-final-binding-independent.json",
+      "git_blob": "f3670bfabc86e7975ce2201794fb6b670fac4b09",
+      "status": "added",
+      "sha256": "276bd7e911bcbaba9f0b92bc877588e226db6aae5d1dc107ef50c37ac2387d61"
+    },
+    "python50_transport": {
+      "path": "artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/independent-review.json",
+      "git_blob": "19d812c3d1fb90fc883ab09fe4753c2948a5e7be",
+      "status": "added",
+      "sha256": "01d479e6de12476849a4e5c9fb3ac954bee2623ba0be447fd515c2518c708baa"
+    },
+    "snapshot05e_non_author": {
+      "sha256": "2e2b9283a7ba35b7f6e8e66728e3709838fe73ec9358352deff364f07ccd03bb",
+      "source": "05e4ad5a04ad10db9cef6b6399c8c6bacddb8737"
+    },
+    "snapshot_ced_test_followup": {
+      "sha256": "268b117b41f0196f86e624a375cda18707011af9dc363c40e76d181187316b57",
+      "source": "cedfd4f8ca84b91033225b00944d9b6f1815dbde"
+    },
+    "finalization_helper_non_author": {
+      "sha256": "c428ce7683b39e5be5b6a5ab706584fdc72b0931b856fc328cdccda9023ae31a"
+    }
+  },
+  "key_semantic_findings": [
+    "Snapshot-only leaf insertion is confined to the full SnapshotWriteTxn entry, with exact inverse preservation of shared false branches; existing other entry points, table order, FK/OR REPLACE order, survivor identity checks, chunks and FTS operations retain their original contracts.",
+    "Batches preserve source row order and exact typed bind values with at most 64 borrowed references and 64 KiB measured ToSql payload; tiers 64/8/1 and legal oversized single rows preserve existing budgets. Deferred SQLite execution is not represented as identical first-error precedence between competing independent failures.",
+    "Conflict tests include separate id and symbol_uid uniqueness, 7/8/63/64 boundaries, cross-file survivor identity, actual FTS MATCH posting queries and rowid relationships. These tests are statically admitted; new actual Rust execution is still required.",
+    "The thirteenth native expression is the exact previously reviewed is_none_or equivalent for None/equal/unequal cases, addressing an actually observed Rust1.95 Clippy failure without changing admission bounds.",
+    "Python integration preserves the main nine-observer build/source/provenance contract and exact original tests while adding the reviewed cache/finalization and cold collector failure-only receipt behavior.",
+    "Rust53 controller preserves original thirteen commands and forty-one actual method names, adds twelve statically enumerated methods in five commands, and rejects empty/ignored/wrong-name populations. All original scale seed, N30, shard, capacity, deadline, raw and oracle limits remain unchanged.",
+    "Python50 controller preserves all fourteen runtime, fifteen evidence, thirteen cache and eight finalization methods plus twenty-four exact subcases; it validates actual names/outcomes, source and nine observers before/after, raw inventory and cleanup. It has no Cargo or product workload.",
+    "Python50 hidden-file upload is limited to its two owned RUNNER_TEMP output paths. The fixture checkout is freshly initialized synthetic Git, not the actual authenticated checkout. Actual complete transport still requires receipt-to-ZIP validation.",
+    "Both auxiliary workflows use the fixed branch, actual github.sha, first-attempt guards and read-only repository permission. This source approval starts no new N150 primary study and grants no retry/substitution permission."
+  ],
+  "prior_runtime47_observation": {
+    "run": 37870351197,
+    "job": 113626762113,
+    "source": "c8decec3e74955de089f5fd1effbe985dfcbe6b5",
+    "artifact": 11590332872,
+    "actual_methods_passed": 47,
+    "actual_subcases_passed": 24,
+    "observer_count": 7,
+    "archive_status": "incomplete",
+    "missing_receipt_files": 630,
+    "missing_bytes": 463965,
+    "cause_scope": "All missing paths are fixture checkout/.git hidden files omitted by the old upload configuration; all 877 received sealed files match original receipt and no original bytes were repaired.",
+    "cannot_substitute_for_current_main_50_or_9_observers": true,
+    "original_zip_git_blob": "c668d8be2bdc53181961de0fc6e8e9d2ad5942ee",
+    "independent_review_git_blob": "987b8be166b2bfb56ade90f4c84fc8e04da4078d",
+    "original_identity_and_incomplete_archive_preserved": true
+  },
+  "acceptance_boundary": [
+    "This is a complete non-author source and validation-input approval for the exact P commit and tree above, plus explicit inheritance of only byte-identical previously independently reviewed inputs.",
+    "It does not certify a successful build, Rust53/Python50 execution, original CI, source-integrity proof execution after new pins, eight-platform matrix, runtime/soak/recovery, a complete N150 scale study, quality evaluation, release or any original TODO closure for P.",
+    "G, G4, D0, c8, 8e and other historical source/observer/compiler receipts retain their actual identities and limitations. They are neither rewritten nor promoted to this P.",
+    "The new source changes product bytes; prior runtime/benchmark measurements are not asserted to be source-equivalent or causal performance evidence for this combination.",
+    "No original acceptance threshold, N denominator, capacity budget, dependency, heldout separation, original source guard, CI assertion or workload plan was lowered.",
+    "No Cargo, product workload or tests were executed by this final reviewer; only read-only API/Git/source-byte, AST-derived prior evidence and in-memory content verification were used. No new local files were written.",
+    "No heldout benchmark corpus was semantically inspected or executed for this review. Required opaque complete-input byte hashing does not confer quality acceptance.",
+    "Actual subsequent source-integrity proof and required CI must pass for the final pinned G. No merge or release readiness is granted here."
+  ],
+  "assembly_notes": [
+    "An initial in-memory audit checker representation used JSON null directly in Python and failed before checks. It was corrected to json.loads, then the full 1229 body checks and independent BASE delta checks passed. This was audit tooling only; no repository or original evidence was changed."
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
 }

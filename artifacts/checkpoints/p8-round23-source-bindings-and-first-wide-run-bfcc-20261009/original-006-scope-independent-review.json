@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-09T18:32:08.283Z",
+  "reviewer": "/root/todo_audit",
+  "scope": "Independent original P8-005/006 acceptance versus later registered scale study population; no study, code, protocol or ledger mutation",
+  "sources": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "bytes": 864471,
+      "sha256": "d51f61a920d887d375e95ca529509d0750233ea22477e40f7d43b3caa985c495",
+      "git_blob": "959a25ba851ff88f286bab0fa14167878129b1dd"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08"
+    }
+  ],
+  "original_tasks": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-004"
+      ],
+      "steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "acceptance_subgates": {
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      }
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ]
+    }
+  ],
+  "conclusion": {
+    "original_006_explicit_five_sizes_times_nine_stages_times_N30": false,
+    "reason": "The original task and C05/C15/V07/V20 specify workload, correctness, attribution, scale coverage and evidence quality, but do not define their full Cartesian product. The exact 5×9×30 plus 5×30=1500 population appears in the later P8-SCALE producer/registration.",
+    "not_a_waiver": "V20's 1k–100k coverage, meaningful incremental/fanout curves, all stated mutation kinds, complete closure/parity and sufficient registered statistical evidence remain requirements. Absence of an explicit Cartesian product does not make one small smoke or a cold-only capacity report sufficient for P8-006.",
+    "N_boundary": "09 §9 includes query-profile warmup/all samples and an initial at-least-30-per-layer recommendation, then calls the values design floors that may be locked after P0 resource evaluation. This cannot be erased as optional, but neither explicitly extends N30 to every indexing phase at every size. The applicable frozen P0/profile plan must establish the actual required N; this review does not invent a substitute minimum.",
+    "registered_studies": "Every already registered capacity_v1/wide 150-shard/1500-sample population remains exact. Failed, incomplete or partial populations cannot pass their original aggregate, be relabeled complete, be pooled across sources, or be retrospectively narrowed."
+  },
+  "requirements": [
+    {
+      "item": "Five exact capacities",
+      "original": "P8-005 steps and acceptance_subgates full_1k_5k_10k_50k_100k_scale_acceptance; 09 D4",
+      "effect": "P8-005 requires fixed-seed release capacity evidence for 1k/5k/10k/50k/100k and actual counts. D4 also includes real repository coverage for P8 full certification.",
+      "not_implied": "No sentence makes every P8-006 mutation family at every size a universal N30 Cartesian product."
+    },
+    {
+      "item": "P8-006 operation coverage",
+      "original": "tasks P8-006.steps and 09 L171",
+      "effect": "No-op, body, API, config, batch1/10/100/1000 and beyond-budget closure must be measured and attributed; incremental-scale and fanout-curve scope must be supported.",
+      "not_implied": "Nine main-stage names include cold and are a later producer partition, not nine independent original task rows."
+    },
+    {
+      "item": "Correctness and histories",
+      "original": "C05 L43–47; V07 L29; 09 L163–167",
+      "effect": "Conservative complete invalidation, durable remainder/status, resume/fixed point, warm/cold history invariance, A/B same pristine basis, full control at each checkpoint and complete relevant oracle. Handwritten controls, integrity/FK and public query witnesses retain their purposes.",
+      "not_implied": "Partial parity or build count alone does not establish all closed checkpoints."
+    },
+    {
+      "item": "Performance attribution",
+      "original": "C15 L122; task006.acceptance; 06 L67; 09 L177,183–185",
+      "effect": "Actual phase/work counts and distinct timing scopes, raw sample N/distributions/appropriate uncertainty/comparison applicability; unavailable resources labeled honestly, no best-of or unjustified tail/causal claims.",
+      "not_implied": "No invented absolute SLA, no elapsed-run-based waiver, no claim that mere completion or N30 automatically proves reliable p99."
+    },
+    {
+      "item": "Source and regressions",
+      "original": "C16 L126 and task006.acceptance",
+      "effect": "Current target evidence and relevant regressions, explicit scope/source/run identities; prior different sources can support separately named components only with applicability justified, not relabeled or pooled.",
+      "not_implied": "Not every main documentation change automatically forces a new full performance cohort."
+    },
+    {
+      "item": "Dependencies",
+      "original": "tasks P8-006.depends_on and dependency_semantics",
+      "effect": "P7-020, P8-001, P8-005 are hard integration dependencies; required conditions must truly close.",
+      "not_implied": "Own-component evidence does not bypass unresolved P8-005."
+    }
+  ],
+  "registered_population_origins": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        99,
+        119
+      ],
+      "text": "## 完整矩阵的确定分片与原始记录重放\n\n单个 `--matrix --repetitions 30` 输出在输入清单阶段就可能超过原 512 MiB 上限。\n2026-10-09 增加可选 `--shard-index I --shard-count C`：`repetitions` 仍表示预先登记的\n**全部**重复数，release 的至少 30 次要求不变。第 I 片执行半开区间\n`[floor(N*I/C), floor(N*(I+1)/C))`，原始 `repetition` 身份不从零重编。\n每片仍有独立的 deadline、512 MiB 最大输出预算、临时树、不可覆盖输出、原始两侧\nbuild 和完整 15 表 oracle。`shard_only=true` 明确说明该输出只覆盖局部样本；单片\n成功不会将矩阵、P8 原任务或 G8 改为通过。\n\n`scripts/p8_scale_matrix.py` 固定 1k/5k/10k/50k/100k、batch 1/10/100/1000、\nfanout 1/4/16/64/128、dirty budget 8、最多 128 次 resume，默认 N=30、每规模 6 片。\n普通 1k 生成树包含 960 普通代码文件、20 route TS 和 20 YAML；新的 batch policy\n在需要时使用这些已经存在的额外输入，因此实际 1000 文件变更不再被代码专用列表的\n960 上限阻塞。其他小批次仍采用原普通代码顺序，原操作正文与 before/after digest\n继续完整记录。该变更不声称所有被修改文件都是普通代码文件。\n\nfanout 是独立的小夹具工作量，预先指定由 **1k 规模的 6 片**执行，共每个 fanout\n30 次。其他规模的片使用显式 `--skip-fanout`，该选项只允许和 shard 一起使用；\n原 fanout 参数仍保留在计划中。聚合器拒绝把每个规模重复执行的同一 fanout population\n合并成 150 个独立重复。未使用 shard 时，旧默认 smoke、全部 fanout 和原参数边界保持。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        149,
+        159
+      ],
+      "text": "聚合器逐条消费完整 raw，要求每个注册样本的输入、两侧 cold、8 个 mutation 阶段、\n每次原始 build、closure 完成态、全部 15 表行数/判等/摘要、配置独立见证齐全。\n它重验 no-op 的实际零改动、批次数量与操作正文、每个 fanout 的完整 canonical\n事实、逐 caller 调用边和每次 resume；同名重复记录、缺片、截断 JSONL、预算停止、\n失败事件、不同源码/二进制/配置/输入/实际硬件环境均失败。输入与文件清单的摘要\n只用于完整性绑定，不替代原 oracle 的 Value 判等，包括 signed zero 的既有语义。\n\n全部默认片对应 **1500 个样本**：5 规模 × 9 主阶段 × 30 次，加 5 fanout × 30 次。\n输出保留每组所有计时，分开原 engine 时间、MCP 调用 wall、包含证据处理的增量 wall、\nfull control、oracle wall 和整个 fanout replay；不混用这些范围。内存 canonical\n排序只缓存每行原 JSON 排序键一次，不改投影、重复行、排序后 Value 判等或旧行数保护。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        185,
+        189
+      ],
+      "text": "标签启动；普通 PR 不会自动触发整个大矩阵。它先构建一次固定二进制，再分片执行，\n最后下载每片原件独立重放，失败片也上传。默认旧协议遇到实际 runner 硬件不一致时\n聚合明确失败；显式容量协议采用下面登记的按 host/CPU/kernel 分层覆盖规则。\n一个 workflow 或测试文件的存在不构成已执行证据；\n最终是否完成原 P8-005/006 仍由实际记录和独立任务验收决定。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        199,
+        227
+      ],
+      "text": "## 显式大规模容量协议 `scale_capacity_v1`\n\n2026-10-09 的旧 8/128 工程预检先在 1k 暴露 Python direct export 的无关转发链加载缺陷；\n按原 resolver 终止语义修复后，同一 1k 计划完成所有阶段。随后原 10k 计划保留了全部\n9 组原件：cold/no-op 完成，body/API/config 与全部四种 batch 各在 129 次真实构建后\n仍明确 `incomplete_not_certified`，不会因有 full control 而假装闭包完成。旧记录的来源为\n`803773e4`，其失败没有被重标成新协议成功。这些工程预检也不代替正式 N=30 矩阵。\n\n大范围失效有现存语义依据：函数体插入使位置派生的 symbol_id 移动；接收者调用的\nSymbolInventory 依赖、ModuleConfig 依赖和未知/转发表面的保守传播还可能扩大 dirty\n闭包。取消这些依赖而不证明完整读取依赖会漏掉过时目标。本协议显式登记更大的每次\n工作预算，继续处理完整闭包；原深度/文件/转发边硬预算与 incomplete 语义保持。\n\n| 参数 | 新协议固定值与范围 |\n|---|---|\n| 主规模 dirty work budget | 200，与当前产品默认值一致 |\n| 主规模最大 resume | 1024，在既有 CLI 合法范围内 |\n| 独立 fanout dirty/resume | 8/128，保留原专门超预算压力 |\n| 主规模/阶段/重复 | 原五规模与全部九主阶段，N=30；每规模 30 片，每片恰好 1 rep |\n| fanout population | 只由 1k 的 30 片执行，五个 fanout 各 N=30 |\n| canonical 累计容量 | 显式专用入口 16 GiB，仍累计两侧全部十五表；通用默认 4 GiB 与通用 validator 上界 8 GiB 不变 |\n| 同时占用 scratch | 8 GiB，保留原 max_page_count、2 MiB cache 和每表复用 |\n| 每侧每表/每行保护 | 500 万行/1 MiB，保持原值 |\n| native deadline/证据 | 18,000,000ms/512 MiB，每片独立，耗尽仍失败 |\n| 可用磁盘预检 | `256 KiB × files + 4 GiB`；100k 约需 28.4 GiB；这是登记估计，不是峰值或足够空间的证明 |\n\n`ScalePlan.capacity_profile` 必须明确为 `scale_capacity_v1`，同时指定 release、单一规范规模、\n每片一个全局 repetition 与固定 200/1024。仅输入这个名字不会悄悄覆盖原 CLI 默认值。\n旧 smoke/release 计划、默认 4 GiB oracle、通用非法预算拒绝和默认严格同环境重放继续可用。"
+    }
+  ],
+  "key_original_excerpts": [
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        148,
+        155
+      ],
+      "text": "| 层 | 规划覆盖（目标，不是已完成数量） | 阶段 |\n|---|---|---|\n| D0 | 40 个以内的确定性关键缺陷/契约样例，足够快且可定位 | P0/P1 |\n| D1 | 外部 cc-switch+Flask 兼容集，共 metadata 声明的 200 题；导入前核验 | P0 importer，P1 起连续运行 |\n| D2 | 6 个以上真实仓库，覆盖 Rust/JS/TS/Python/Go 与至少一个 mixed monorepo；初始约 600 个审阅问题 | P0 方法，P2–P5 扩充 |\n| D3 | 100 个以上 mutation sequences，含单操作与多步组合；小型公开夹具可复现 | P0 oracle，P2–P7 |\n| D4 | 1k/5k/10k/50k/100k 文件合成规模，外加真实仓库；同时报告 symbols/chunks/edges/vector count | P0 seed，P8 完整认证 |\n| D5 | held-out repo/module/query-family；中英改写与自然语言零词面重合；不得被开发集反复调参污染 | P0 分割规则，P8 认证 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        161,
+        177
+      ],
+      "text": "## 8. 增量 oracle\n\n每条 mutation 从同一 pristine snapshot 克隆 A/B：A 连续执行事件域/普通增量，B 在每个检查点全量重建。canonical compare 排除 rowid/timestamps/物理插入顺序，但保留符号身份、目标关系、策略、歧义、公共表面、doc/span、FTS 实际查询和 semantic manifest。对允许部分闭包的阶段比较已声明 freshness，并在 reconcile 后要求一致。\n\n操作矩阵：body/comment/signature/visibility/import/export/reexport/config/新增/删除/rename/case-only rename/新同名符号/负向查找补全/目录移动/feature 条件/大于 dirty budget 的 fanout/重导出环/同 mtime-size 内容变化。再叠加 worker 慢响应、取消、重启、DB 换库和 model switch。\n\n不要让两条路径调用同一个错误 normalization 后“证明等价”。保留手写 gold 小夹具、DB integrity/FK、公开 MCP 查询和差异最小化样例；生成器使用固定 seed，失败序列自动 shrink 并落证据。真实源码可接受启发式 precision 限制，但不能接受同输入随 warm/cold 历史改变结果。\n\n## 9. 性能采样与资源\n\n分离：cold build（空 index/空 parse cache）、reopen query（新进程，OS page cache 未清）、warm uncached query（不同 query 防 result-cache）、warm cache-hit query、no-op update、single body update、public API fanout、config-only update、batch 1/10/100/1000 文件、watcher backlog、semantic backfill/partial query/model switch。\n\n冷 OS cache 仅在明确且可复现的受控 runner 上测；没有清理就不要标 cold disk。常规 profile 不用 sudo 清缓存。release build 测性能，debug/test build 的结果单独标签。每种 query profile 预热后采集全部样本，禁止 best-of；起始建议每层至少 30 个重复，正式尾延迟 profile 至少 200 个同类样本并报告 N/CI，不能因样本小仍声称稳定 p99。各数值是设计下限，可在 P0 资源评估后锁定。\n\n并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。\n\n资源分 client runner、CodeCortex 子进程树、LSP/模型服务、OCE 外部容器。缺权限时 reported unavailable，不填 0。macOS RSS 单位与 Linux 不同；ru_maxrss 是高水位，不是瞬时 RSS，采样函数必须有平台测试。记录 peak sampling interval、index/FTS/cache/向量占用、读写字节、model requests/tokens/cache hits/重复费用不确定次数。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "lines": [
+        29,
+        29
+      ],
+      "text": "| V07 | dirty oracle | 增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity | L2/L3 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "lines": [
+        42,
+        42
+      ],
+      "text": "| V20 | 性能/资源/成本 | 1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用 | L3/L5 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "lines": [
+        65,
+        67
+      ],
+      "text": "硬正确性：scope泄漏、错误源码/版本、删除复活、错误空间、非法预算对象、编译/基础测试失败、缓存历史改变 deterministic 结果、输入锁失效、评分器 goldens 失败均阻断。不能用吞吐/nDCG 提升抵消。\n\n质量/性能 gate 不凭本轮设计虚构绝对 SLA。P0 在固定设备/配置上冻结基线、margin、重复数与置信区间方法；参考初始 guardrails 在 09-BENCHMARK 第10节。正式报告包含 sample N、比较适用性和 inconclusive，数据不足不能自动 passed。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "lines": [
+        41,
+        47
+      ],
+      "text": "## C05｜增量闭包与一致性状态\n\n把变化分为 SourceBody、PublicSurface、ModuleConfig、FileInventory、ParserVersion、ChunkerVersion、FeatureConditions。优先只对需要的层更新：纯 body 变化通常不传播导入者；surface/config/inventory 变化按依赖图传播；parser 能力版本改变可以要求重建对应语言事实。没有充分依赖信息时保守扩大，不静默跳过。\n\n复用当前 dirty closure 和 DirtyResolveOnly。跨语言 package 级关系先映射为 package contribution，再关联文件。重导出环以固定点处理，指纹采用环/组件稳定化策略，不把每轮拼接上游 hash 导致永不收敛。\n\n预算不足时持久化 remainder/frontier、起始 basis、待处理原因；状态 incomplete，后续内部增量维护任务继续。该任务属于索引维护，不引入通用 Agent 工作流。所有根因事件都进入 durable frontier，不能一次返回 budget_exceeded 后永远遗忘。basis 改变时重新验证 frontier，必要时重新求闭包。用户要求完整关系时可触发有预算的对账或返回明确不足，不能默认把旧边当新边。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "lines": [
+        120,
+        126
+      ],
+      "text": "## C15｜性能可归因\n\n每阶段报告 touched/parsed/resolved/written/reconciled 数量，catalog cache hit/compaction、FTS 扫描/解压、SQL calls、候选筛选、预算拒绝和向量复用统计。索引报告是用户触发的返回证据，不引入持续产品遥测数据库。benchmark 独立采集资源与原始结果，见 09-BENCHMARK.md。\n\n## C16｜完成定义\n\n一个能力完成必须同时具备：行为规格、实际模型/持久化/编排/MCP 接线、正负回归、旧功能回归、性能/质量对照、配置与文档、故障恢复/回滚、当前目标 SHA 的证据。写了 trait 或新增目录不算完成。任何为性能保留的近似都必须有 capability、precision/recall 及作用范围，不把“更快”兑换成未声明的错误。"
+    }
+  ],
+  "minimum_complete_acceptance_boundary": [
+    "Map all original P8-006 operation/scale/fanout/history requirements to completed, applicable real results; show any remaining coverage explicitly. A justified coverage mapping can use distinct named component studies without asserting one shared cohort.",
+    "Keep fixed source/build/input/configuration, release profile, actual work counts, full closed-checkpoint A/B oracle and raw failure/status evidence. Complete beyond-budget resume rather than certify an unfinished closure.",
+    "Use the actual predeclared sampling and comparison rule for each target profile. Where the original documents do not give an exact grid or N, do not silently substitute an arbitrary count or convert insufficient data from inconclusive to pass.",
+    "Complete relevant current-source regression obligations and the original hard dependencies before marking the task done.",
+    "For the studies already launched or explicitly registered as 150/1500, retain all original 150/1500 acceptance rules and their genuine terminal outcomes. An alternative future task-oriented design would be a new independent plan, not a repair or replacement of those records."
+  ],
+  "not_determined_here": [
+    "Whether an earlier P0 lock specifies N or a finer workload×size grid for the exact contemplated alternative. No applicable unseen lock is presumed absent.",
+    "Whether existing completed independent components already cover every remaining scale/fanout requirement; this audit is not an acceptance of uninspected or unfinished results.",
+    "No proposal to launch a new smaller study and no change to any registered old/current study."
+  ],
+  "state": {
+    "done": 163,
+    "remaining": 29,
+    "new_completed": 0,
+    "old_failed_and_incomplete_studies_unchanged": true,
+    "studies_started": 0,
+    "tests_run": 0
+  }
+}

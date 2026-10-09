@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-09T18:34:42.596Z",
+  "reviewer": "/root/todo_audit",
+  "question": "Can five completed rep0 cells with all stages, full parity, high-fanout closure and relevant regressions close original P8-006 while its registered1500 population is incomplete?",
+  "conservative_decision": "No, under the currently selected and registered acceptance path. Accept the real correctness/attribution/first-repetition components; keep P8-006 in_progress.",
+  "reason_not_to_overstate": "This is not a finding that P0 or original tasks eternally require exactly1500 samples. No such universal Cartesian lock was found in the bounded original-source review.",
+  "bounded_P0_findings": [
+    {
+      "path": "crates/cc-eval/benchmarks/manifests/comparison-policy.json",
+      "bytes": 150,
+      "sha256": "772e80a15db0326627d2a9228263343ca52b57fb4e2fae83ff36a481495be77f",
+      "git_blob": "9f0597098a74db19363798c07efcd2445819048a",
+      "relevant_content": {
+        "schema_version": 1,
+        "max_ndcg_regression": 0.01,
+        "max_top1_regression": 0.01,
+        "max_latency_ratio": 1.2,
+        "minimum_latency_samples": 200
+      }
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/manifests/p0-smoke.json",
+      "bytes": 633,
+      "sha256": "28f64a113a85b09a5506558bbbce4c31c0b52f097a93e4651f178b4769a50944",
+      "git_blob": "182f735a4168a1728c06d24019b02403636d6c1d",
+      "relevant_content": {
+        "schema_version": 1,
+        "name": "P0 authored smoke",
+        "source": {
+          "root": "../../fixtures/index-v2/retrieval",
+          "commit": null,
+          "digest": "132b85a9f59be96f9c379401a07ebfd1c0e31dd1ffbacd8140b393c04530ac3d",
+          "files": [
+            "session.py",
+            "billing.py",
+            "routes.ts"
+          ]
+        },
+        "queries": "../native/p0-smoke.jsonl",
+        "queries_digest": "28e372c84b204b92f744c324fe1dcc49da94b4790abebf9195765d04cb4b869e",
+        "scoring": "codecortex-native-v1",
+        "repetitions": 3,
+        "warmup": 0,
+        "seed": 27,
+        "timeout_ms": 30000,
+        "top_k": 10,
+        "engine_config": {
+          "auto_index": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json",
+      "bytes": 971,
+      "sha256": "232f557a444db30e4f5050b6d4bdb0e5e012c010cb8659e4853491dea6444110",
+      "git_blob": "deb414356a25801362b7e65a94aab01c9efb1c58",
+      "relevant_content": {
+        "schema_version": 1,
+        "name": "P0 current CodeCortex source DEV subset (20261003 semantic migration)",
+        "source": {
+          "root": "../../..",
+          "commit": null,
+          "digest": "53ba52cff1e2834d963df4060823cc3ae7b394f5040fc5a9cff82f1aecd44f06",
+          "files": [
+            "cc-db/src/index_migrate.rs",
+            "cc-index/src/dirty_closure.rs",
+            "cc-index/src/indexer_phases/dirty.rs",
+            "cc-model/src/id.rs",
+            "cc-model/src/public_surface.rs",
+            "cc-model/src/retrieval.rs",
+            "cc-parsers/src/chunker.rs",
+            "cc-search/src/plan.rs",
+            "cc-search/src/preselect.rs",
+            "cc-search/src/scope.rs"
+          ]
+        },
+        "queries": "../native/p0-codecortex-subset.jsonl",
+        "queries_digest": "0e8d23b84798094470fec6672989b48a4ed34c2958b830d669b951cf70bedb30",
+        "scoring": "codecortex-native-v1",
+        "repetitions": 3,
+        "warmup": 0,
+        "seed": 27,
+        "timeout_ms": 30000,
+        "top_k": 10,
+        "engine_config": {
+          "auto_index": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/USAGE.md",
+      "bytes": 7504,
+      "sha256": "8385d586f6c7e9596835083c6069ae1c489dce2ce8729048e542767b8df206db",
+      "git_blob": "1e2e8803ed014a62b7f34dc34c7c064512dc13fc",
+      "relevant_content": [
+        {
+          "line": 49,
+          "text": "Exit 0 means the baseline measurement completed without integrity/availability failures, not that the engine is a high-quality retrieval system. Exit 1 means a product/gate failure; exit 2 invalid input/protocol/infrastructure; exit 3 explicit cancellation with a partial artifact prefix. Small-sample comparisons are inconclusive and nonzero. The smoke negative case intentionally exposes a current product failure."
+        },
+        {
+          "line": 51,
+          "text": "Warmup and repetitions come from the locked suite, not hidden command defaults. `--profile performance` additionally requires a release-built eval binary, warmup and at least 200 rows. Product binary provenance must still be checked against its build receipt. Stage-boundary RSS is labelled sampled, not continuous peak RSS; external service memory stays unavailable unless independently measured. P0's source subsets and small mutations are not the P8 six-repository/100k/holdout certification."
+        }
+      ]
+    }
+  ],
+  "P0_summary": {
+    "query_suite_repetitions": 3,
+    "comparison_minimum_latency_samples": 200,
+    "no_update_cell_N30_or_1500_rule_found": true,
+    "scope": "Explicitly inspected versioned query manifests/policy/usage, P0-IMPLEMENTATION and original P0 task references; not a claim to search every historical object."
+  },
+  "P0_original_report": {
+    "path": "docs/roadmap/code-index-v2/P0-IMPLEMENTATION.md",
+    "bytes": 10027,
+    "sha256": "835b29e4d38a906f537fcc30dbccae1382900f61ecc249a180e6c8f2d15349ff",
+    "git_blob": "8e57e02969956525ffa073b8a183d7cb258b729e",
+    "line77": "两组均未发现返回源码正文与本地被测副本不符的证据；这不意味着每个结果都回答了问题。两个报告通过离线回放后 metrics 摘要逐字节一致。42 请求的小样本比较正确返回 `inconclusive` / exit 1，而非认证 p95。"
+  },
+  "missing_reference": {
+    "path": "artifacts/benchmarks/p0-final-runs/comparison.json",
+    "ref": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "official_result": "404 Not Found",
+    "effect": "Not treated as read or as evidence of absence of all historic locks; no speculative ref probing."
+  },
+  "task006_current_evidence": {
+    "original_task_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "line_range": [
+      11920,
+      11939
+    ],
+    "scope": "275e run37896198208",
+    "accepted_shards": 3,
+    "registered_shards": 150,
+    "full_aggregate_accepted": false,
+    "text": "Explicit partial_original_incremental_evidence_not_full_acceptance; complete incremental/fanout population and P8-005 dependency not closed.",
+    "interpretation": "Documents scoped partial evidence under that run's registered population, not a permanent rewrite of all future task definitions."
+  },
+  "decisive_sources": [
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "lines": [
+        65,
+        67
+      ],
+      "meaning": "No hard correctness failures and no automatic pass from insufficient data; use frozen baseline/repetition/CI policy."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        171,
+        185
+      ],
+      "meaning": "Operation profile separation, all samples, starting repetition design floors, registered gates and honest inconclusive/comparison scope."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        29,
+        29
+      ],
+      "meaning": "The current release producer requires at least30 repetitions."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        99,
+        107
+      ],
+      "meaning": "Repetitions denotes entire registered population; an accepted shard does not pass original tasks."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        262,
+        274
+      ],
+      "meaning": "Five first cells are actual global repetition0, not additional or substituted N1 samples; coverage remains150shards/1500samples and missing/failed pieces do not pass."
+    }
+  ],
+  "decision_boundary": {
+    "components_can_be_accepted": [
+      "five real capacity/operation first repetitions",
+      "complete full-table closed-checkpoint correctness",
+      "real budget-exceeded to completed frontier resume behavior",
+      "relevant actual-source regressions",
+      "attributable work and timing observations with N1 explicitly stated"
+    ],
+    "cannot_yet_claim": [
+      "complete registered scale study",
+      "a completed statistical population by relabeling partial samples",
+      "full P8-006 acceptance under the currently chosen incomplete study",
+      "p95/p99 or causal speedup from N1"
+    ],
+    "future_alternative": "A separately justified complete task-oriented coverage/sampling design would need honest prospective scope and original requirements. This report neither proposes nor starts one, nor retroactively changes old/current registrations."
+  },
+  "state": {
+    "new_tasks_closed": 0,
+    "remaining": 29,
+    "tests_executed": 0,
+    "studies_started": 0,
+    "remote_mutations": 0
+  }
+}

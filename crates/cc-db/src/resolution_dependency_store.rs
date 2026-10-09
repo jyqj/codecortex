@@ -126,22 +126,35 @@ impl ReadOps<'_> {
         let cap = limit.saturating_add(1);
         let mut result = BTreeSet::new();
         let excluded: BTreeSet<&str> = excluded.iter().map(String::as_str).collect();
-        let probe_cap = cap.saturating_add(excluded.len());
         if events.is_empty() {
             return Ok((Vec::new(), work));
         }
+        // Keep the no-exclusion query unchanged. Otherwise apply the exact
+        // completed set before LIMIT, so it does not consume the cap+1 witness.
+        // A JSON array contains strings only (never NULL), preserves embedded
+        // NULs, and uses one parameter regardless of the completed-set size.
+        let excluded_json = if excluded.is_empty() {
+            None
+        } else {
+            Some(serde_json::to_string(&excluded).map_err(db_err)?)
+        };
         let mut grouped: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
         for d in events {
             grouped.entry(d.kind.as_str()).or_default().push(&d.key);
         }
         let conn = self.0.read_conn()?;
         for (kind, keys) in grouped {
-            for batch in keys.chunks(IN_BATCH_SIZE - 2) {
+            let reserved = if excluded_json.is_some() { 3 } else { 2 };
+            for batch in keys.chunks(IN_BATCH_SIZE - reserved) {
                 let placeholders = (2..batch.len() + 2)
                     .map(|i| format!("?{i}"))
                     .collect::<Vec<_>>()
                     .join(",");
-                let sql=format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}",batch.len()+2);
+                let sql = if excluded_json.is_some() {
+                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) AND file_path NOT IN (SELECT value FROM json_each(?{})) ORDER BY file_path LIMIT ?{}", batch.len() + 2, batch.len() + 3)
+                } else {
+                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}", batch.len() + 2)
+                };
                 let mut args: Vec<rusqlite::types::Value> =
                     vec![rusqlite::types::Value::Text(kind.into())];
                 args.extend(
@@ -149,22 +162,28 @@ impl ReadOps<'_> {
                         .iter()
                         .map(|k| rusqlite::types::Value::Text((*k).into())),
                 );
-                args.push((probe_cap.min(i64::MAX as usize) as i64).into());
+                let sql_limit = cap.min(i64::MAX as usize) as i64;
+                let mut bindings: Vec<&dyn rusqlite::ToSql> =
+                    args.iter().map(|v| v as &dyn rusqlite::ToSql).collect();
+                if let Some(excluded_json) = &excluded_json {
+                    bindings.push(excluded_json);
+                }
+                bindings.push(&sql_limit);
                 let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
                 crate::statement_work::reset(&stmt);
                 let mut yielded = 0;
                 {
                     let rows = stmt
-                        .query_map(rusqlite::params_from_iter(args), |r| r.get::<_, String>(0))
+                        .query_map(rusqlite::params_from_iter(bindings), |r| {
+                            r.get::<_, String>(0)
+                        })
                         .map_err(db_err)?;
                     for row in rows {
                         let path = row.map_err(db_err)?;
                         yielded += 1;
-                        if !excluded.contains(path.as_str()) {
-                            result.insert(path);
-                            if result.len() > cap {
-                                result.pop_last();
-                            }
+                        result.insert(path);
+                        if result.len() > cap {
+                            result.pop_last();
                         }
                     }
                 }

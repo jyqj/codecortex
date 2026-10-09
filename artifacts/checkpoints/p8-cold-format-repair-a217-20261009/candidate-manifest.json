@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "parent": "044c008c9459cfa61e7701db2eb868342c508a39",
+  "parent_tree": "2dafb408835b5bec6cb7cfa5533d46082595f0ae",
+  "original_job": 113899341171,
+  "original_log": {
+    "path": "original.log",
+    "source": "/workspace/scratch/a217aaae3bde/p8-cold-only-integration/current-ci/failed-check-113899341171/original.log",
+    "bytes": 39821,
+    "sha256": "9598be30773f6d2c5a7b4ab92be7c8a8fc7107d70eabc4c07705c7be1d2ca138",
+    "git_blob": "01486310ca85ed8d17616ac604e6eba8c12044df",
+    "mode": "100644"
+  },
+  "files": [
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "mode": "100644",
+      "before": {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "source": "/workspace/scratch/a217aaae3bde/p8-cold-format-repair/before/crates/cc-eval/src/benchmark/p8_scale.rs",
+        "bytes": 50085,
+        "sha256": "0de0a396cf71ad39f49a4956a844101173edaaf09db8fdca264f07152c0d3a03",
+        "git_blob": "0cd6078cac9458de0f7387a50ad68e58ced9ca00",
+        "mode": "100644"
+      },
+      "after": {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "source": "/workspace/scratch/a217aaae3bde/p8-cold-format-repair/after/crates/cc-eval/src/benchmark/p8_scale.rs",
+        "bytes": 50070,
+        "sha256": "cc2042fb837caa12b46b592052dcbc037af38f88aa2def36561d01aa97ccb9f4",
+        "git_blob": "5b224771769869b7b7f38bbde5bcd99474b19df8",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "mode": "100644",
+      "before": {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "source": "/workspace/scratch/a217aaae3bde/p8-cold-format-repair/before/crates/cc-eval/tests/p8_scale.rs",
+        "bytes": 24788,
+        "sha256": "3b4f7df5e83d00975abd1df14880f7a8af553d3b3372abef9c59ed69722671e6",
+        "git_blob": "64fd186c65d5f854b7d02a84462313190fbbb176",
+        "mode": "100644"
+      },
+      "after": {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "source": "/workspace/scratch/a217aaae3bde/p8-cold-format-repair/after/crates/cc-eval/tests/p8_scale.rs",
+        "bytes": 24796,
+        "sha256": "4e6c35bfc364e1cfe1e8deb468dc03d733c9073acc4b33ee8505f7fe4f9991db",
+        "git_blob": "fc23cc40d85b9b6425591c20f8506f3159b6a208",
+        "mode": "100644"
+      }
+    }
+  ],
+  "hunk_count": 3,
+  "scope": "only exact actual rustfmt output; first hunk removes redundant closure braces around a sole json expression; other two preserve non-whitespace bytes",
+  "preparation_note": "Initial evidence parser asserted all hunks had equal non-whitespace text and stopped before writing any candidate; rustfmt legitimately collapses the first closure block. This corrected parser applies only all three exact original log hunks with unique before matches.",
+  "status": "Rust format/compile/tests not_run; no ref or new study",
+  "original_study_head": "044c008c9459cfa61e7701db2eb868342c508a39"
+}

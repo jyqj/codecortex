@@ -1,0 +1,462 @@
+{
+  "active": [
+    {
+      "boundary": "New author head4866 discovered only at post-close inventory; original73885 A results not transferred. New integration reviewed next round.",
+      "branch": "task/p8-empty-input-preparation-50c-20261009",
+      "decision": "keep active integration/study scope",
+      "draft": true,
+      "head": "4866ec5558f1cedd34c7dc54231af65b77f706ec",
+      "pr": 181
+    },
+    {
+      "boundary": "Keep original execution identity and ongoing work.",
+      "branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+      "decision": "keep active integration/study scope",
+      "draft": true,
+      "head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "pr": 180
+    },
+    {
+      "boundary": "Keep original execution identity and ongoing work.",
+      "branch": "task/p8-combined-engineering-bfcc-20261009",
+      "decision": "keep active integration/study scope",
+      "draft": true,
+      "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "pr": 178
+    }
+  ],
+  "before_inventory": {
+    "blob": "caf04bdb51ce2cb6aca8998c5c9b4fba7146211f",
+    "bytes": 10436,
+    "sha256": "fc793e19cc7219f5f7e6c4008e2c63fe5418db6e27a7eb895a99ceb7f92b5c7e"
+  },
+  "closed": [
+    {
+      "actual_state": "closed",
+      "branch": "fix/parallel-retry-progress-20261003",
+      "closed_at": "2026-10-09T10:06:50Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「superseded」关闭。\n\n当前 main `fd9ca5db…` 的 `crates/cc-semantic/src/queue.rs` 已保留成功处理 NeedsRetry 后继续有限 drain 的逻辑，同时真实错误、关闭和取消仍停止；`crates/cc-server/src/semantic_runtime.rs` 保留 width 2 / width 0 两个 recoverable_retry 回归以及明确 ignored 的原冻结反例。独立审查与主线程均核实际当前源码，旧候选的功能范围已由当前实现承接。\n\n原 head [cec4ad8e](https://github.com/jyqj/codecortex/commit/cec4ad8ef47c6c3fe86cae6a35e357935b94a0ec) 及分支 `fix/parallel-retry-progress-20261003` 已复读确认保留；不删除分支、不反向合入旧源码、不改写原失败或旧 CI。此处仅处置该 PR 的评审状态，当前原 TODO 仍为 163 done /29 remaining，本轮没有因此新增完成任务。",
+      "comment_id": 6078770485,
+      "decision": "superseded",
+      "head": "cec4ad8ef47c6c3fe86cae6a35e357935b94a0ec",
+      "merged": false,
+      "pr": 122,
+      "preserved_branch_sha": "cec4ad8ef47c6c3fe86cae6a35e357935b94a0ec",
+      "reason": "当前 main `fd9ca5db…` 的 `crates/cc-semantic/src/queue.rs` 已保留成功处理 NeedsRetry 后继续有限 drain 的逻辑，同时真实错误、关闭和取消仍停止；`crates/cc-server/src/semantic_runtime.rs` 保留 width 2 / width 0 两个 recoverable_retry 回归以及明确 ignored 的原冻结反例。独立审查与主线程均核实际当前源码，旧候选的功能范围已由当前实现承接。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "perf/bounded-parallel-backfill-20261003",
+      "closed_at": "2026-10-09T10:06:53Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「superseded」关闭。\n\n当前 main `fd9ca5db…` 已采用 physically joined、共享有限 claim budget 的 parallel drain，并演进到最多四个 whole-attempt workers；`semantic_wiring.rs` 在同一 shared provider gate 上采用配置，busy/conflicting adoption 返回错误。旧两 worker/first-wins 候选已被后续实现替代，旧失败与有限 AB 的原范围保持不变。\n\n原 head [8c7c764a](https://github.com/jyqj/codecortex/commit/8c7c764ac17c5725c08ab2c22a4c2aea87ca35a2) 及分支 `perf/bounded-parallel-backfill-20261003` 已复读确认保留；不删除分支、不反向合入旧源码、不改写原失败或旧 CI。此处仅处置该 PR 的评审状态，当前原 TODO 仍为 163 done /29 remaining，本轮没有因此新增完成任务。",
+      "comment_id": 6078771128,
+      "decision": "superseded",
+      "head": "8c7c764ac17c5725c08ab2c22a4c2aea87ca35a2",
+      "merged": false,
+      "pr": 119,
+      "preserved_branch_sha": "8c7c764ac17c5725c08ab2c22a4c2aea87ca35a2",
+      "reason": "当前 main `fd9ca5db…` 已采用 physically joined、共享有限 claim budget 的 parallel drain，并演进到最多四个 whole-attempt workers；`semantic_wiring.rs` 在同一 shared provider gate 上采用配置，busy/conflicting adoption 返回错误。旧两 worker/first-wins 候选已被后续实现替代，旧失败与有限 AB 的原范围保持不变。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "perf/fifo-claim-index-20261003",
+      "closed_at": "2026-10-09T10:06:56Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「superseded」关闭。\n\n当前 main `fd9ca5db…` 与已审候选 M 均逐字保留核心 `semantic_outbox.rs` blob `9f12087e3e6b8c372ad8dd50c06bebd42276712d`，包括使用 `semantic_outbox_fifo_pending` 的 guarded FIFO claim；原 matching-open/fresh-DDL 索引维护及已审 DEV 锁定承接也已核。该实现已由后续主线采用。关闭不增加原 AB 的性能结论，原 5k 端到端未改善及所有旧失败继续保留。\n\n原 head [52a50730](https://github.com/jyqj/codecortex/commit/52a50730b58e2b59351449fc80f65771b24c26a8) 及分支 `perf/fifo-claim-index-20261003` 已复读确认保留；不删除分支、不反向合入旧源码、不改写原失败或旧 CI。此处仅处置该 PR 的评审状态，当前原 TODO 仍为 163 done /29 remaining，本轮没有因此新增完成任务。",
+      "comment_id": 6078771901,
+      "decision": "superseded",
+      "head": "52a50730b58e2b59351449fc80f65771b24c26a8",
+      "merged": false,
+      "pr": 114,
+      "preserved_branch_sha": "52a50730b58e2b59351449fc80f65771b24c26a8",
+      "reason": "当前 main `fd9ca5db…` 与已审候选 M 均逐字保留核心 `semantic_outbox.rs` blob `9f12087e3e6b8c372ad8dd50c06bebd42276712d`，包括使用 `semantic_outbox_fifo_pending` 的 guarded FIFO claim；原 matching-open/fresh-DDL 索引维护及已审 DEV 锁定承接也已核。该实现已由后续主线采用。关闭不增加原 AB 的性能结论，原 5k 端到端未改善及所有旧失败继续保留。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "audit/v19-development-baseline",
+      "closed_at": "2026-10-09T10:06:58Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「historical evidence recorded」关闭。\n\n完整 23 路径均位于旧固定源码的 `public-v19/protocol/global-dev-review/development-baseline/`：计划、运行/回放收据、日志、原 raw 与许可证归档。该 PR 的可复现失败记录工作已经完成，后续产品修复与完整质量认证继续按原任务单独处理。原 888 个未观察行、Partial、exit 1/2、formal600/cleanholdout 为零的边界均保持原义；关闭不意味着 V19 或质量基线通过。\n\n原 head [5d3d9e10](https://github.com/jyqj/codecortex/commit/5d3d9e101198cebdfa1a959f74ad6ef5da4a064c) 及分支 `audit/v19-development-baseline` 已复读确认保留；不删除分支、不反向合入旧源码、不改写原失败或旧 CI。此处仅处置该 PR 的评审状态，当前原 TODO 仍为 163 done /29 remaining，本轮没有因此新增完成任务。",
+      "comment_id": 6078772528,
+      "decision": "historical evidence recorded",
+      "head": "5d3d9e101198cebdfa1a959f74ad6ef5da4a064c",
+      "merged": false,
+      "pr": 95,
+      "preserved_branch_sha": "5d3d9e101198cebdfa1a959f74ad6ef5da4a064c",
+      "reason": "完整 23 路径均位于旧固定源码的 `public-v19/protocol/global-dev-review/development-baseline/`：计划、运行/回放收据、日志、原 raw 与许可证归档。该 PR 的可复现失败记录工作已经完成，后续产品修复与完整质量认证继续按原任务单独处理。原 888 个未观察行、Partial、exit 1/2、formal600/cleanholdout 为零的边界均保持原义；关闭不意味着 V19 或质量基线通过。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-gin-dev-review",
+      "closed_at": "2026-10-09T10:09:00Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n主线历史 admission 明确绑定本 Gin source/provenance review 的固定 head，后继 #82 的修复审查继续保留旧 63 条接受记录及四项原争议历史；公开 DEV 登记承接为 Gin 67 native /55 compat。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [ba79bcfc](https://github.com/jyqj/codecortex/commit/ba79bcfc3f2bcc622297ef53b5de37ce205a5c89) 和分支 `codex/cloud-gin-dev-review` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078802158,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "ba79bcfc3f2bcc622297ef53b5de37ce205a5c89",
+      "merged": false,
+      "pr": 76,
+      "preserved_branch_sha": "ba79bcfc3f2bcc622297ef53b5de37ce205a5c89",
+      "reason": "主线历史 admission 明确绑定本 Gin source/provenance review 的固定 head，后继 #82 的修复审查继续保留旧 63 条接受记录及四项原争议历史；公开 DEV 登记承接为 Gin 67 native /55 compat。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "review/public-v19-requests-remaining",
+      "closed_at": "2026-10-09T10:09:03Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n主线 Requests admission 将本固定 head 列为 prior review；独立复核确认全部 11 个增量文件在后继 #80 中逐路径、逐 blob 保留。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [c2026eba](https://github.com/jyqj/codecortex/commit/c2026ebad0b6037f1c30b7d2b34055e211849b70) 和分支 `review/public-v19-requests-remaining` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078802956,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "c2026ebad0b6037f1c30b7d2b34055e211849b70",
+      "merged": false,
+      "pr": 75,
+      "preserved_branch_sha": "c2026ebad0b6037f1c30b7d2b34055e211849b70",
+      "reason": "主线 Requests admission 将本固定 head 列为 prior review；独立复核确认全部 11 个增量文件在后继 #80 中逐路径、逐 blob 保留。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "corpus/v19-requests-f0022-scope",
+      "closed_at": "2026-10-09T10:09:06Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n本固定 author head 正是主线 Requests admission 的输入，后继 #80 复核接受 f0022 修订及 16 个新公开 DEV 行；主线登记承接为 Requests 91 native /83 compat。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [e49f9ada](https://github.com/jyqj/codecortex/commit/e49f9ada5826b4206d2128f3bfb8d31603ff42fa) 和分支 `corpus/v19-requests-f0022-scope` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078803679,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "e49f9ada5826b4206d2128f3bfb8d31603ff42fa",
+      "merged": false,
+      "pr": 74,
+      "preserved_branch_sha": "e49f9ada5826b4206d2128f3bfb8d31603ff42fa",
+      "reason": "本固定 author head 正是主线 Requests admission 的输入，后继 #80 复核接受 f0022 修订及 16 个新公开 DEV 行；主线登记承接为 Requests 91 native /83 compat。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "corpus/v19-requests-dev-extension",
+      "closed_at": "2026-10-09T10:09:10Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n后继 #74 的实际固定 base 为本 head，其公开 Requests 扩充已由 #74/#80 审查链及主线 Requests 91 native /83 compat 登记承接。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [a9941df9](https://github.com/jyqj/codecortex/commit/a9941df988bad756b39be6cc7807d6708368f031) 和分支 `corpus/v19-requests-dev-extension` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078804408,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "a9941df988bad756b39be6cc7807d6708368f031",
+      "merged": false,
+      "pr": 73,
+      "preserved_branch_sha": "a9941df988bad756b39be6cc7807d6708368f031",
+      "reason": "后继 #74 的实际固定 base 为本 head，其公开 Requests 扩充已由 #74/#80 审查链及主线 Requests 91 native /83 compat 登记承接。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "review/public-v19-requests-dev",
+      "closed_at": "2026-10-09T10:09:13Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n后继 #75 的实际固定 base 为本 head；独立复核确认全部 8 个增量文件在 #80 中逐路径、逐 blob 保留，包括原 needs_change 与 checker 历史。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [ed3b9987](https://github.com/jyqj/codecortex/commit/ed3b998731bca26d1682dd455e47530453e71caa) 和分支 `review/public-v19-requests-dev` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078805225,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "ed3b998731bca26d1682dd455e47530453e71caa",
+      "merged": false,
+      "pr": 72,
+      "preserved_branch_sha": "ed3b998731bca26d1682dd455e47530453e71caa",
+      "reason": "后继 #75 的实际固定 base 为本 head；独立复核确认全部 8 个增量文件在 #80 中逐路径、逐 blob 保留，包括原 needs_change 与 checker 历史。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-express-dev-review",
+      "closed_at": "2026-10-09T10:09:15Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n后继 #78 精确复制三份核心原 review/dispute blob，#79 复审八项修复并保留旧 62 条接受记录；主线 Express admission 绑定该固定后继 #79。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [24affebc](https://github.com/jyqj/codecortex/commit/24affebcaab1caa9acd08841233867c89931dbf3) 和分支 `codex/cloud-express-dev-review` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078805963,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "24affebcaab1caa9acd08841233867c89931dbf3",
+      "merged": false,
+      "pr": 71,
+      "preserved_branch_sha": "24affebcaab1caa9acd08841233867c89931dbf3",
+      "reason": "后继 #78 精确复制三份核心原 review/dispute blob，#79 复审八项修复并保留旧 62 条接受记录；主线 Express admission 绑定该固定后继 #79。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "corpus/v19-requests-license",
+      "closed_at": "2026-10-09T10:09:18Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n后继 #73 的实际固定 base 为本 head；独立复核确认 9 项 BSD、notice 和原始实现证据在主线迁移后的 licenses 目录仍为相同 blob，主线 Requests admission 记录九项保留许可文件并采用 #80 许可审查链。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [22353112](https://github.com/jyqj/codecortex/commit/22353112f4125f6fac6541c4043cc174ed56550a) 和分支 `corpus/v19-requests-license` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078806533,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "22353112f4125f6fac6541c4043cc174ed56550a",
+      "merged": false,
+      "pr": 70,
+      "preserved_branch_sha": "22353112f4125f6fac6541c4043cc174ed56550a",
+      "reason": "后继 #73 的实际固定 base 为本 head；独立复核确认 9 项 BSD、notice 和原始实现证据在主线迁移后的 licenses 目录仍为相同 blob，主线 Requests admission 记录九项保留许可文件并采用 #80 许可审查链。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "corpus/v19-express-dev-supplement",
+      "closed_at": "2026-10-09T10:09:21Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 工作已由固定后继承接」关闭。\n\n后继 #78 的实际固定 base 为本 head；两项 Express 公开 DEV 补充已进入 #78 修订与 #79 审查，并由主线 Express 70 native /59 compat 登记承接。\n\n依据为当前 main 的[原历史 admission](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json)及 public-dev-20261008 注册/投影；主线程已读取实际原件和固定 SHA。这里确认的是该 PR 的有限作者/审查范围已被采用，不表示整分支已合入，也不表示 V19、holdout、全局独立性或质量门通过。\n\n原 head [0850acc4](https://github.com/jyqj/codecortex/commit/0850acc4fdacde2609c56cf733b7776e5027ceff) 和分支 `corpus/v19-express-dev-supplement` 已复读确认保留。独有旧脚本、收据、争议、失败与原 CI 均继续由该固定 head 保存，不删除分支、不重写旧结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078807200,
+      "decision": "public DEV work adopted by fixed successors",
+      "head": "0850acc4fdacde2609c56cf733b7776e5027ceff",
+      "merged": false,
+      "pr": 69,
+      "preserved_branch_sha": "0850acc4fdacde2609c56cf733b7776e5027ceff",
+      "reason": "后继 #78 的实际固定 base 为本 head；两项 Express 公开 DEV 补充已进入 #78 修订与 #79 审查，并由主线 Express 70 native /59 compat 登记承接。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "audit/v19-four-repo-dev-admission",
+      "closed_at": "2026-10-09T10:10:30Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线 public-dev-20261008/index.json 将本确切 head 设为 historical_anchor；主线保留的四仓 historical-admission.json 与本 PR 原 46,153 字节 admission 逐字相同。完整 11 路径仅属历史 global-dev-review，其有限准入阶段已被后续注册采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [5385f5a7](https://github.com/jyqj/codecortex/commit/5385f5a7a2a875c6d5cbd049bdde039bf71bbf32) 和分支 `audit/v19-four-repo-dev-admission` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078824283,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+      "merged": false,
+      "pr": 91,
+      "preserved_branch_sha": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+      "reason": "主线 public-dev-20261008/index.json 将本确切 head 设为 historical_anchor；主线保留的四仓 historical-admission.json 与本 PR 原 46,153 字节 admission 逐字相同。完整 11 路径仅属历史 global-dev-review，其有限准入阶段已被后续注册采用。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "audit/v19-gin-dev-admission",
+      "closed_at": "2026-10-09T10:10:33Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n完整 9 路径为 Gin 三仓准入阶段的检查器和证据。后继四仓 admission 与主线索引保留同一 Gin 作者、#82 审阅身份及 67 native /55 compat 范围，该中间阶段已被后续公开 DEV 注册采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [1bb86a6a](https://github.com/jyqj/codecortex/commit/1bb86a6afaf64f8e922f0b71d42d5d6801567e52) 和分支 `audit/v19-gin-dev-admission` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078824970,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "1bb86a6afaf64f8e922f0b71d42d5d6801567e52",
+      "merged": false,
+      "pr": 90,
+      "preserved_branch_sha": "1bb86a6afaf64f8e922f0b71d42d5d6801567e52",
+      "reason": "完整 9 路径为 Gin 三仓准入阶段的检查器和证据。后继四仓 admission 与主线索引保留同一 Gin 作者、#82 审阅身份及 67 native /55 compat 范围，该中间阶段已被后续公开 DEV 注册采用。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-typescript-remaining-review",
+      "closed_at": "2026-10-09T10:10:36Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线 TypeScript review_sha 精确绑定本 head；17 个新增路径的剩余 53 条审阅工作已进入后继完整 73 条 DEV admission。原 component needschange 和后来单独的 pair adjudication 继续分别保留。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [704c0fd0](https://github.com/jyqj/codecortex/commit/704c0fd0901c85c51eaaa265bfc1aab49ccb3341) 和分支 `codex/cloud-typescript-remaining-review` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078825605,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "704c0fd0901c85c51eaaa265bfc1aab49ccb3341",
+      "merged": false,
+      "pr": 87,
+      "preserved_branch_sha": "704c0fd0901c85c51eaaa265bfc1aab49ccb3341",
+      "reason": "主线 TypeScript review_sha 精确绑定本 head；17 个新增路径的剩余 53 条审阅工作已进入后继完整 73 条 DEV admission。原 component needschange 和后来单独的 pair adjudication 继续分别保留。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "audit/v19-two-repo-admission",
+      "closed_at": "2026-10-09T10:10:38Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n完整 13 路径属于最初 Express/Requests 两仓准入及检查器证据。同一作者/审阅身份及 Express 70/59、Requests 91/83 范围已进入四仓 admission 和主线索引，该中间阶段已被后续注册采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [9213fef9](https://github.com/jyqj/codecortex/commit/9213fef97c8bd32843eab6815227f7d78142ab80) 和分支 `audit/v19-two-repo-admission` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078826329,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "9213fef97c8bd32843eab6815227f7d78142ab80",
+      "merged": false,
+      "pr": 86,
+      "preserved_branch_sha": "9213fef97c8bd32843eab6815227f7d78142ab80",
+      "reason": "完整 13 路径属于最初 Express/Requests 两仓准入及检查器证据。同一作者/审阅身份及 Express 70/59、Requests 91/83 范围已进入四仓 admission 和主线索引，该中间阶段已被后续注册采用。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-typescript-dev-review",
+      "closed_at": "2026-10-09T10:10:42Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线原 historical-admission.json 以 first20_review_sha 精确绑定本 head；5 个新增路径中的 TypeScript 首20条审阅已与 #87 后继审阅共同进入完整73条公开 DEV。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [d6a41bbc](https://github.com/jyqj/codecortex/commit/d6a41bbcf76b5dc15e4924e54c7375f673d714f7) 和分支 `codex/cloud-typescript-dev-review` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078827047,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "d6a41bbcf76b5dc15e4924e54c7375f673d714f7",
+      "merged": false,
+      "pr": 83,
+      "preserved_branch_sha": "d6a41bbcf76b5dc15e4924e54c7375f673d714f7",
+      "reason": "主线原 historical-admission.json 以 first20_review_sha 精确绑定本 head；5 个新增路径中的 TypeScript 首20条审阅已与 #87 后继审阅共同进入完整73条公开 DEV。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-gin-repair-review",
+      "closed_at": "2026-10-09T10:10:44Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线索引和 historical-admission.json 的 Gin review_sha 均精确绑定本 head，并保留67 native /55 compat修正范围。4个新增路径的repair-v2独立审阅已被采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [5aafcda4](https://github.com/jyqj/codecortex/commit/5aafcda4a5098c8407d9373eafc3185e59932550) 和分支 `codex/cloud-gin-repair-review` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078827679,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "5aafcda4a5098c8407d9373eafc3185e59932550",
+      "merged": false,
+      "pr": 82,
+      "preserved_branch_sha": "5aafcda4a5098c8407d9373eafc3185e59932550",
+      "reason": "主线索引和 historical-admission.json 的 Gin review_sha 均精确绑定本 head，并保留67 native /55 compat修正范围。4个新增路径的repair-v2独立审阅已被采用。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "review/public-v19-requests-delta",
+      "closed_at": "2026-10-09T10:10:47Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线 Requests review_sha 精确绑定本 head及91 native /83 compat范围，原admission明确记录九份BSD lineage/notice验证。26个新增路径的历史/增量审阅已被采用，原争议与checker历史继续保留。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [3aae8bf2](https://github.com/jyqj/codecortex/commit/3aae8bf2a690213426af91427dc837fedbe50c83) 和分支 `review/public-v19-requests-delta` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078828344,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "3aae8bf2a690213426af91427dc837fedbe50c83",
+      "merged": false,
+      "pr": 80,
+      "preserved_branch_sha": "3aae8bf2a690213426af91427dc837fedbe50c83",
+      "reason": "主线 Requests review_sha 精确绑定本 head及91 native /83 compat范围，原admission明确记录九份BSD lineage/notice验证。26个新增路径的历史/增量审阅已被采用，原争议与checker历史继续保留。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "codex/cloud-express-repair-review",
+      "closed_at": "2026-10-09T10:10:50Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线 Express review_sha 精确绑定本 head、作者#78及70 native /59 compat范围；4个新增路径中的修正八条独审已被采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [0c0ec9e8](https://github.com/jyqj/codecortex/commit/0c0ec9e8906493373faf800ca37b78c589f38324) 和分支 `codex/cloud-express-repair-review` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078828984,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "0c0ec9e8906493373faf800ca37b78c589f38324",
+      "merged": false,
+      "pr": 79,
+      "preserved_branch_sha": "0c0ec9e8906493373faf800ca37b78c589f38324",
+      "reason": "主线 Express review_sha 精确绑定本 head、作者#78及70 native /59 compat范围；4个新增路径中的修正八条独审已被采用。",
+      "verified": true
+    },
+    {
+      "actual_state": "closed",
+      "branch": "corpus/v19-express-dev-review-fixes",
+      "closed_at": "2026-10-09T10:10:52Z",
+      "comment": "第29轮独立范围审查后，将本历史草稿按「公开 DEV 注册与投影已采用」关闭。\n\n主线历史索引精确绑定本author head、版本化修复suite及#79独审，并包含相应Express70 native /59 compat的reviewed-dev-20261008投影。完整18路径只属公开DEV作者数据/检查器范围，已通过该后继注册链采用。\n\n主线程和非作者复核了当前 main 的[固定作者/审阅索引](https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-eval/benchmarks/public-dev-20261008/index.json)、原 admission 及该 PR 完整改动范围。此处确认有限的公开 DEV 作者/审查工作已被承接，不表示旧整分支已合入，也不表示质量、holdout、全局独立性或 V19 门通过。\n\n原 head [465e9e0b](https://github.com/jyqj/codecortex/commit/465e9e0bd435e2e30c08de8702f78a0d10c49c8e) 和分支 `corpus/v19-express-dev-review-fixes` 已复读确认保留；独有原脚本、收据、失败、争议及旧 CI 均留在原身份下，不删除分支或改写结果。此 PR 清理不计作新 TODO 完成，当前仍 163 done /29 remaining。",
+      "comment_id": 6078829588,
+      "decision": "public DEV adopted through registration and projection",
+      "head": "465e9e0bd435e2e30c08de8702f78a0d10c49c8e",
+      "merged": false,
+      "pr": 78,
+      "preserved_branch_sha": "465e9e0bd435e2e30c08de8702f78a0d10c49c8e",
+      "reason": "主线历史索引精确绑定本author head、版本化修复suite及#79独审，并包含相应Express70 native /59 compat的reviewed-dev-20261008投影。完整18路径只属公开DEV作者数据/检查器范围，已通过该后继注册链采用。",
+      "verified": true
+    }
+  ],
+  "counts": {
+    "after_open": 8,
+    "before_open": 29,
+    "closed_by_this_session_in_this_round": 21,
+    "deleted_branches": 0,
+    "merged_PRs": 0,
+    "newly_completed_original_todos": 0,
+    "remaining_original_todos": 29
+  },
+  "fixed_main": "fd9ca5db6485b575872c722995c451db926d05c9",
+  "independent_reviewers": {
+    "acceptance_review": [
+      76,
+      75,
+      74,
+      73,
+      72,
+      71,
+      70,
+      69,
+      65
+    ],
+    "recovery_audit": [
+      91,
+      90,
+      87,
+      86,
+      83,
+      82,
+      80,
+      79,
+      78
+    ],
+    "root": "Current original admission/index, scoped current source, full PR95 scope, actual old3/4 product paths, all21 before-head/closed/mergedfalse/after-branch readbacks",
+    "runtime_review": [
+      137,
+      127,
+      122,
+      119,
+      114,
+      95
+    ]
+  },
+  "interpretation": "No old PR is relabeled merged. Source/evidence adoption is scoped, original branches preserve unmerged unique history, failures and CI identities. Public DEV adoption is not a V19, holdout, general quality, statistical independence or fresh task completion claim.",
+  "kept_historical": [
+    {
+      "head": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "pr": 137,
+      "reason": "Unique requests_native_zero_analogue.rs and unresolved qname/gold namespace scope have no established replacement."
+    },
+    {
+      "head": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "pr": 127,
+      "reason": "Unique publish_semantic_group API and semantic_publish_group_tests remain absent; not adopted into production queue."
+    },
+    {
+      "head": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "pr": 65,
+      "reason": "An independent original 10000-resample repository-membership-stratified paired family-cluster bootstrap protocol remains without demonstrated adoption or retirement. Existing 2000-resample diagnostic does not establish equivalence. Prior explicit scope-retention comment6075374015 preserved."
+    },
+    {
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "missing_product_paths": [
+        "crates/cc-eval/benchmarks/no_graph_retrieval.json",
+        "crates/cc-eval/benchmarks/quality_smoke.json",
+        "crates/cc-eval/examples/quality_replay.rs",
+        "crates/cc-eval/examples/quality_run.rs",
+        "crates/cc-eval/src/quality.rs",
+        "crates/cc-eval/tests/incremental_oracle.rs",
+        "crates/cc-search/src/symbol_chunks.rs"
+      ],
+      "pr": 3,
+      "reason": "Several original product/evaluator paths remain absent at the latest integrated candidate. Existing evolved paths and past CI success do not prove the full old intent has been ported. No complete semantic replacement proof was established by this bounded review. Preserve the fixed original PR and branch; do not reverse-merge old schema/benchmark or claim wholly superseded."
+    },
+    {
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "missing_product_paths": [
+        "crates/cc-db/src/lookup_dependencies.rs",
+        "crates/cc-eval/benchmarks/bm25_only.json",
+        "crates/cc-eval/benchmarks/facts_smoke.json",
+        "crates/cc-eval/benchmarks/no_graph_all.json",
+        "crates/cc-eval/benchmarks/quality_adversarial.json",
+        "crates/cc-eval/benchmarks/trace_candidates.json",
+        "crates/cc-eval/examples/quality_run.rs",
+        "crates/cc-eval/src/quality.rs",
+        "crates/cc-eval/tests/fact_oracle.rs",
+        "crates/cc-eval/tests/incremental_oracle.rs",
+        "crates/cc-parsers/src/ast_facts.rs",
+        "crates/cc-parsers/tests/fact_contract.rs",
+        "crates/cc-search/src/diagnostics.rs",
+        "crates/cc-search/src/symbol_chunks.rs"
+      ],
+      "pr": 4,
+      "reason": "Several original product/evaluator paths remain absent at the latest integrated candidate. Existing evolved paths and past CI success do not prove the full old intent has been ported. No complete semantic replacement proof was established by this bounded review. Preserve the fixed original PR and branch; do not reverse-merge old schema/benchmark or claim wholly superseded."
+    }
+  ],
+  "mutations": {
+    "PR_state_closed": 21,
+    "branches_deleted": 0,
+    "comments": 21,
+    "product_files": 0,
+    "task_status": 0,
+    "workflow_changes": 0
+  },
+  "primary_adoption_evidence": {
+    "current_implementation": {
+      "FIFO_outbox": "9f12087e3e6b8c372ad8dd50c06bebd42276712d",
+      "queue": "911aa8c7f46bd7d45fc08da85047aa52ea13b528",
+      "runtime": "8bd4167e3f2b55953481aa4de68c97c635a689d8",
+      "wiring": "e570079ff5fac58aef48adc2b831ad148263062a"
+    },
+    "public_dev": {
+      "current_main_file_and_actual_M_product_tree_confirmed": true,
+      "dataset_index": "7a1154354d6784f3977f46c0457ef077514807aa",
+      "extended_index": "96b798fce4e979e6e1b64325d4e10f0b212bc328",
+      "historical_admission": {
+        "blob": "1feea7f59dc1766e95dc986a78ecfff945bb783a",
+        "bytes": 46153,
+        "path": "artifacts/benchmarks/p8-public-dev-reviewed-20261008/historical-admission.json",
+        "sha256": "b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425"
+      },
+      "historical_anchor": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+      "projection_receipt": {
+        "blob": "5a38002eb234698cd573fbda4e87252ff1c17203",
+        "sha256": "6864e62107b8be888f3d91968d627f72c7088802241bbee5c68b91f79cf687df"
+      }
+    }
+  },
+  "recorded_at_utc": "2026-10-09 10:19:00 UTC",
+  "repository": "jyqj/codecortex",
+  "round": 29,
+  "schema": "codecortex-pr-management-outcome-v1",
+  "scope": "Existing29 open draft PRs; independent scope review of26 historical drafts"
+}

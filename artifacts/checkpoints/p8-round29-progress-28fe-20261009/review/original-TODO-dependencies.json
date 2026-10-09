@@ -1,0 +1,356 @@
+{
+  "available_preparatory_work": {
+    "P8_019": "Use the existing actual release archive/replay process when a real fixed-source candidate package is available. Existing 39 fixtures are mechanism evidence, not release closure. No new packager or invented gate is needed.",
+    "owners": "P8-017/P8-018 remain with 36fea; PR181 integration remains with 50c."
+  },
+  "conclusion": "Only P8-005 and P7-018 have completed direct hard prerequisites. P7-018 retains the existing explicit real-provider authorization block. No other original unfinished TODO can be closed independently before P8-005 under the original hard dependency graph.",
+  "done": 163,
+  "independent_reviewers": [
+    "acceptance_review: original remaining29 and hard dependency semantics",
+    "runtime_review: original scale scheduling and budget semantics"
+  ],
+  "minimum_requested": 10,
+  "mutations": {
+    "dependencies": 0,
+    "task_definitions": 0,
+    "task_status": 0,
+    "workflow": 0
+  },
+  "newly_done": 0,
+  "original_scale_schedule": {
+    "build_and_five_preflight_jobs": 6,
+    "job_timeout_minutes": 350,
+    "meaning": "Budgets are not ETA; the original workflow automatically admits the next145 only after all5 preflights succeed. No alternative dispatch/retry/cancellation was performed.",
+    "measure_max_parallel": 10,
+    "measure_needs": [
+      "build",
+      "preflight"
+    ],
+    "native_deadline_ms": 18000000,
+    "outer_python_allowance_seconds": 120,
+    "preflight_max_parallel": 5,
+    "remaining_shards_not_instantiated": 145,
+    "run": 37902429727,
+    "source_workflow_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+    "successful_preflights": 3,
+    "unfinished_preflights": [
+      "50k rep0",
+      "100k rep0"
+    ]
+  },
+  "original_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+  "remaining": 29,
+  "reviewed_main": "fd9ca5db6485b575872c722995c451db926d05c9",
+  "round": 29,
+  "schema": "codecortex-original-todo-dependency-review-v1",
+  "shortest_ten": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "task_blob": "1365970c32d0883cc05a37f9333ffb9589299141",
+  "tasks": [
+    {
+      "depends_on": [
+        "P7-017"
+      ],
+      "id": "P7-018",
+      "status": "blocked",
+      "title": "受授权的真实provider小集认证"
+    },
+    {
+      "depends_on": [
+        "P8-004"
+      ],
+      "id": "P8-005",
+      "status": "in_progress",
+      "title": "完整规模1k到100k"
+    },
+    {
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "id": "P8-006",
+      "status": "in_progress",
+      "title": "增量规模与fanout曲线"
+    },
+    {
+      "depends_on": [
+        "P8-006"
+      ],
+      "id": "P8-007",
+      "status": "in_progress",
+      "title": "多并发与混合负载"
+    },
+    {
+      "depends_on": [
+        "P8-007"
+      ],
+      "id": "P8-008",
+      "status": "in_progress",
+      "title": "冷建/重开/热查分层"
+    },
+    {
+      "depends_on": [
+        "P8-008"
+      ],
+      "id": "P8-009",
+      "status": "in_progress",
+      "title": "内存/磁盘/费用总账"
+    },
+    {
+      "depends_on": [
+        "P8-009"
+      ],
+      "id": "P8-010",
+      "status": "in_progress",
+      "title": "长时soak与连续修改"
+    },
+    {
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "id": "P8-011",
+      "status": "in_progress",
+      "title": "端到端故障与恢复认证"
+    },
+    {
+      "depends_on": [
+        "P8-011"
+      ],
+      "id": "P8-012",
+      "status": "in_progress",
+      "title": "MSRV与平台冷构建矩阵"
+    },
+    {
+      "depends_on": [
+        "P8-012"
+      ],
+      "id": "P8-013",
+      "status": "in_progress",
+      "title": "指标/门槛与失败退出最终认证"
+    },
+    {
+      "depends_on": [
+        "P8-013"
+      ],
+      "id": "P8-014",
+      "status": "in_progress",
+      "title": "可选LLM评审旁证流程"
+    },
+    {
+      "depends_on": [
+        "P8-013",
+        "P7-018"
+      ],
+      "id": "P8-015",
+      "status": "in_progress",
+      "title": "真实语义效果发布认证"
+    },
+    {
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "id": "P8-016",
+      "status": "in_progress",
+      "title": "数据库/配置/包回滚演练"
+    },
+    {
+      "depends_on": [
+        "P8-016"
+      ],
+      "id": "P8-017",
+      "status": "in_progress",
+      "title": "删除临时兼容和重复模块"
+    },
+    {
+      "depends_on": [
+        "P8-017"
+      ],
+      "id": "P8-018",
+      "status": "in_progress",
+      "title": "文档事实与安装契约同步"
+    },
+    {
+      "depends_on": [
+        "P8-018"
+      ],
+      "id": "P8-019",
+      "status": "in_progress",
+      "title": "发布工件与完整报告归档"
+    },
+    {
+      "depends_on": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "id": "P8-020",
+      "status": "in_progress",
+      "title": "P8发布评审与遗留关闭"
+    },
+    {
+      "depends_on": [
+        "P8-020"
+      ],
+      "id": "P9-001",
+      "status": "todo",
+      "title": "ANN收益与选型决策"
+    },
+    {
+      "depends_on": [
+        "P9-001"
+      ],
+      "id": "P9-002",
+      "status": "todo",
+      "title": "ANN适配与过滤更新闭环"
+    },
+    {
+      "depends_on": [
+        "P9-002"
+      ],
+      "id": "P9-003",
+      "status": "todo",
+      "title": "ANN量化和规模认证"
+    },
+    {
+      "depends_on": [
+        "P9-003"
+      ],
+      "id": "P9-004",
+      "status": "todo",
+      "title": "ANN决策收口"
+    },
+    {
+      "depends_on": [
+        "P8-020"
+      ],
+      "id": "P9-005",
+      "status": "todo",
+      "title": "LSP按需生命周期"
+    },
+    {
+      "depends_on": [
+        "P9-005"
+      ],
+      "id": "P9-006",
+      "status": "todo",
+      "title": "LSP源码快照和冲突表达"
+    },
+    {
+      "depends_on": [
+        "P9-006"
+      ],
+      "id": "P9-007",
+      "status": "todo",
+      "title": "LSP精度/内存收益认证"
+    },
+    {
+      "depends_on": [
+        "P9-007"
+      ],
+      "id": "P9-008",
+      "status": "todo",
+      "title": "LSP工具面和安装边界收口"
+    },
+    {
+      "depends_on": [
+        "P8-020"
+      ],
+      "id": "P9-009",
+      "status": "todo",
+      "title": "可选rerank端口与降级"
+    },
+    {
+      "depends_on": [
+        "P9-009"
+      ],
+      "id": "P9-010",
+      "status": "todo",
+      "title": "rerank盲测与费用消融"
+    },
+    {
+      "depends_on": [
+        "P9-010"
+      ],
+      "id": "P9-011",
+      "status": "todo",
+      "title": "按需查询分解收益决策"
+    },
+    {
+      "depends_on": [
+        "P9-001",
+        "P9-002",
+        "P9-003",
+        "P9-004",
+        "P9-005",
+        "P9-006",
+        "P9-007",
+        "P9-008",
+        "P9-009",
+        "P9-010",
+        "P9-011"
+      ],
+      "id": "P9-012",
+      "status": "todo",
+      "title": "P9可选增强逐项结项"
+    }
+  ],
+  "total": 192,
+  "transitively_depend_on_P8_005": [
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-014",
+    "P8-015",
+    "P8-016",
+    "P8-017",
+    "P8-018",
+    "P8-019",
+    "P8-020",
+    "P9-001",
+    "P9-002",
+    "P9-003",
+    "P9-004",
+    "P9-005",
+    "P9-006",
+    "P9-007",
+    "P9-008",
+    "P9-009",
+    "P9-010",
+    "P9-011",
+    "P9-012"
+  ]
+}

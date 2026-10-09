@@ -1,4 +1,4 @@
-//! Shared JSON/TOML helpers for installer targets.
+//! Shared JSON helpers for installer targets.
 
 use std::path::Path;
 
@@ -138,19 +138,6 @@ pub(crate) fn upsert_claude_hook(
     write_json_root(settings_path, &root)
 }
 
-/// Append content to a file if a marker string is not already present.
-pub(crate) fn append_if_missing(path: &Path, marker: &str, content: &str) -> CcResult<()> {
-    let existing = std::fs::read_to_string(path).unwrap_or_default();
-    if existing.contains(marker) {
-        return Ok(());
-    }
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::write(path, format!("{}{}", existing, content))?;
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -241,15 +228,5 @@ mod tests {
         let err = remove_json_key(&path, "mcpServers", "codecortex").unwrap_err();
         assert!(matches!(err, CcError::Config(_)));
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "{ not json");
-    }
-
-    #[test]
-    fn append_if_missing_is_idempotent() {
-        let dir = tempfile::TempDir::new().unwrap();
-        let path = dir.path().join("config.toml");
-        append_if_missing(&path, "codecortex", "[codecortex]\n").unwrap();
-        append_if_missing(&path, "codecortex", "[codecortex]\n").unwrap();
-        let content = std::fs::read_to_string(&path).unwrap();
-        assert_eq!(content.matches("codecortex").count(), 1);
     }
 }

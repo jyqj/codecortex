@@ -56,6 +56,29 @@ MCP 客户端从别的工作目录拉起服务器时,自动项目发现(向上�
 
 ## MCP 调用问题
 
+### Codex CLI 安装或卸载失败
+
+`codecortex install` 对 `~/.codex/config.toml` 做结构化 TOML 更新，匹配
+`mcp_servers` 下名为 `codecortex` 的实际键。注释、其他服务的路径、
+`codecortex.other` 这样的不同服务名都不会被当成该服务。带引号的键、
+内联表、嵌套表和多行值按 TOML 结构处理；路径中的反斜杠、引号及其他
+特殊字符由序列化器正确转义。
+
+重复安装会更新该服务的 `command` 和 `args`，保留其 `env`、超时等其他
+选项。已有 `enabled=false` 也会保留；安装后工具不可用时先核对这个设置。
+卸载仅删除该服务及其子表，不删除其他服务。配置中没有该服务时，卸载
+保持文件原始字节不变。
+
+读取错误、无效 UTF-8、TOML 语法错误或非表类型的 `mcp_servers` /
+`mcp_servers.codecortex` 都会使操作失败，不会把原配置当成空文件覆盖。
+按错误提示检查对应配置；`--force` 只扩大自动检测的安装目标，不会跳过
+配置校验。若现有 CodeCortex 条目使用 `url` 连接远端服务，安装器会保留
+该条目并报告冲突；决定切换到本地 stdio 后，先明确移除旧条目再安装。
+
+CLI 会逐个打印成功目标和错误；任一目标失败时，安装 / 卸载命令返回非零
+退出码，其他已经成功的目标仍保留其结果。不要只据最后的成功目标数量
+判断整次操作已成功。
+
 ### 工具调用报参数错误(-32602 或工具级错误结果)
 
 参数没过校验,两条通道都自带诊断:
@@ -84,7 +107,12 @@ MCP 客户端从别的工作目录拉起服务器时,自动项目发现(向上�
 
 ## 配置迁移
 
-配置加载对未知键只告警不失败;已在历史版本移除的键会提示删除。
+普通配置对象的未知键会告警并忽略;已在历史版本移除的键会提示删除。
+`query` 对象使用 `deny_unknown_fields`,其中未知键会使整份项目配置
+反序列化失败,随后使用默认配置并应用环境变量覆盖。先按日志修正键名,
+再确认所需配置已生效;读取或解析失败不能当作配置加载成功。
+详见 [CONFIGURATION.md](CONFIGURATION.md) 与实际加载入口
+[`load_project_config`](../crates/cc-model/src/config.rs)。
 
 | 已移除的键 | 移除原因 / 替代 |
 |------------|----------------|
@@ -99,29 +127,40 @@ MCP 客户端从别的工作目录拉起服务器时,自动项目发现(向上�
 
 ## 语义缓存与降级(P6,可选)
 
-语义持久化是可选功能(`semantic` feature + 组合根接线),默认构建不加载
-`cc-semantic`、不读配置、不创建任何文件;以下条目面向"语义功能已接线"
-的部署。机制事实摘编自
-[STORAGE.md](internals/STORAGE.md#语义持久化p6schema-v22)(crash 点恢复)
-与 [CONFIGURATION.md](CONFIGURATION.md#语义缓存与降级p6可选)(降级语义);
-组合根尚未接线的部分在条目内如实注明。
+语义持久化是可选功能,默认构建不接入 `cc-semantic`。普通项目配置仍然
+读取,本地索引和日志目录仍可创建,见
+[`CodeIndex::set_project`](../crates/cc-server/src/engine.rs)。
+启用 `semantic` feature 后,`semantic.enabled=false` 使语义子系统不装配,
+不会为它创建 cache 目录;`semantic-http` 进一步提供受配置门控的 provider
+transport。当前组合根已接入 cache、worker、预算、租约与 GC,以下按实际
+部署是否启用对应能力排查。配置说明见
+[CONFIGURATION.md](CONFIGURATION.md#语义缓存与降级p6可选),接线入口见
+[`semantic_wiring.rs`](../crates/cc-server/src/semantic_wiring.rs)。
 
 ### dense 检索少了文档 / 怀疑语义缓存损坏
 
 - **缓存缺失(Miss)是常态,不是故障**:冷缓存或未回填的文档在 dense lane
   缺席,lexical/graph 本地检索不受影响,绝不把缺向量当完整空结果;
-  纯 Miss 永不触发降级状态。
-- **缓存损坏(Corrupt)**:检索侧一律跳过候选、不报错——健康文档照常返回,
-  坏对象不污染结果。worker 侧显式检测点会把坏对象双半隔离进
+  纯 Miss 不计为 corruption。实际范围内的 artifact 缺口仍会使原本
+  Complete 的 dense receipt 变成 Partial,原因 `semantic_artifact_unavailable`。
+- **缓存损坏(Corrupt)**:exact 扫描跳过已检测损坏的候选,保留合法候选,
+  并报告该次扫描的 artifact 缺口。真实文件读取错误仍会传播为错误,
+  不能把它们记成 Miss 或完整成功。边界见
+  [`search_controlled_with_coverage`](../crates/cc-semantic/src/vector/exact.rs)。
+  worker 侧显式检测点会把坏对象隔离进
   `<root>/quarantine/`(保留 `.meta.json` 证据 + `.report.json` 诊断
-  sidecar),补嵌成功后新产物覆盖原地址、发布 CAS 重新可见——**自愈**,
-  不需要手工删库。
+  sidecar),在预算内补嵌并通过发布 CAS 后,产物才可重新可见。
 - **损坏的可见性**:判据为 `corrupt_events > 0 || re-embed 预算耗尽`,
-  满足其一即 capability status 透出 `semantic_state: "degraded"` +
-  `degraded_reason`。注意:透出槽与映射逻辑已交付
-  (`capability_status.rs`),降级快照的转写由组合根完成——接线完成前该
-  字段尚无生产写入点,事实依据以 outbox `last_error` 与 quarantine
-  目录内容为准。
+  已挂接的语义子系统满足其一时,capability status 透出
+  `semantic_state: "degraded"` 与 `degraded_reason`。worker drain 已将当前
+  ledger 快照转写到对应服务,由
+  [`apply_semantic_degradation`](../crates/cc-server/src/capability_status.rs)
+  读取。ledger 为 degraded 时,后续 dense 查询可在扫描前返回
+  Unavailable(`semantic_provider_degraded`),本地 lanes 继续工作。
+  corruption 事件在该 ledger 生命周期内累积,补嵌成功本身不会清除它们;
+  需同时核对当前能力状态、outbox `last_error` 与 quarantine 诊断,不能
+  仅凭新产物存在就断言已经恢复 ready。计数规则见
+  [`DegradationLedger::snapshot`](../crates/cc-semantic/src/degrade.rs)。
 
 ### `CODECORTEX_SEMANTIC_CACHE_ROOT` 不生效 / cache 目录没出现
 
@@ -133,21 +172,40 @@ MCP 客户端从别的工作目录拉起服务器时,自动项目发现(向上�
 3. cache 首层按项目 namespace 隔离(`<root>/namespace-<ns>/…`):跨项目
    不共享、跨克隆(同项目身份)共享;**不绑 incarnation**——索引重建换库
    后同一项目解析出同一 namespace;
-4. `.codecortex.json` 目前**没有**语义相关键;cache 机制已交付库层,
-   根目录/项目身份的组合根接线归接线轮(见 CONFIGURATION.md 语义节)。
+4. `.codecortex.json` 已有 `semantic` 配置节,由组合根读取;cache 根目录
+   仍采用上面的环境变量/平台规则。核对 `semantic.enabled`、所构建的
+   feature 以及启动日志,不能只凭目录不存在判断环境变量未生效。预算、
+   租约与 GC 的配置键见 [CONFIGURATION.md](CONFIGURATION.md#语义缓存与降级p6可选)。
 
 ### outbox 出现 `failed` 死信 / 提示 "re-embed budget exhausted"
 
-- **识别**:任务终态 `failed`、`last_error` 含 `semantic re-embed budget
-  exhausted`——即"已付费产物损坏后的补嵌"触发了进程生命周期 re-embed
-  预算上限。拒绝发生在调用付费 provider **之前**,attempt 预算耗尽而死
-  信,**不静默无界重费**;死信只清点、绝不自动复活;manifest 行保留,
-  dense 检索对受影响文档降级为空(不伪造结果)。
-- **处置**:①查 `<root>/quarantine/` 的 `.report.json` 确认坏对象来源
-  (磁盘/进程异常);②排除环境问题后重启进程——进程内预算随重启清零
-  (outbox 行计数为持久审计轨);③重推 reconcile,任务重新入队后预算内
-  补嵌 → put 覆盖 → 发布 CAS,可见集合自愈。首嵌不计入预算;预算与
-  GC 宽限目前均为调用方参数,尚无配置文件键。
+- **识别**:先核对 `last_error`,不能把所有 `failed` 都归为预算问题。
+  包含 `semantic re-embed budget exhausted` 时,表示已检测损坏输入的
+  补嵌被进程生命周期预算拒绝;拒绝发生在调用 provider **之前**。
+  outbox 的 attempt 预算与这个补嵌预算独立,终态 `failed` 持久保留。
+- **配置**:`semantic.reembed_budget_max` 默认 `null`(不另设数量上限),
+  首次嵌入不计入这个补嵌预算;`semantic.worker_lease_secs` 默认 `600`,
+  `semantic.gc_min_retention_secs` 默认 `3600`,启用语义时后两者均须
+  为正值。配置值与允许范围见 [CONFIGURATION.md](CONFIGURATION.md)。
+
+处置顺序:
+
+1. 保存 `status(aspect="capabilities")` 输出、相关日志和
+   `<root>/quarantine/` 中的 `.report.json`,排查存储、输入或 provider
+   的实际失败原因。
+2. 修复原因及错误配置后重新启动 MCP 服务器,再核对日志和能力状态。
+   新的进程内 ledger 会重新开始计数,但 outbox 中的重试次数、退避、
+   live lease 与终态不会因此重置。
+3. 同一文档版本、输入和空间的任务仍为 `failed` 时,保留其诊断继续处理。
+   当前 MCP/CLI 没有按 outbox `task_id` 复活单条死信的命令;普通重开
+   和补齐缺失任务的流程也不会将它重新入队。后续恢复应依据完整诊断
+   选择可验证的操作,不要手工修改数据库状态绕过重试预算。
+
+这一持久边界由
+[`enqueue_semantic_worker_missing`](../crates/cc-db/src/document_store.rs)
+与实际运行时回归
+[`reopen_preserves_live_retry_budget_and_terminal_failure`](../crates/cc-server/src/semantic_runtime.rs)
+共同约束。
 
 ### 换库 / 重建索引后,语义要重新付费吗
 

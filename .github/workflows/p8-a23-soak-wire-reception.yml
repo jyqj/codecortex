@@ -1,0 +1,57 @@
+name: Original a23 soak offline wire reception
+
+on:
+  push:
+    branches: [task/p8-a23-soak-wire-reception-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  offline_replay:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Require first reviewed receiver attempt
+        shell: bash
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - name: Check out the external controller at its actual event commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: receiver
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-a23-soak-wire-reception-20261009/
+      - name: Check out immutable original a23 source and observers separately
+        uses: actions/checkout@v4
+        with:
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          path: source
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Cargo.toml
+            /Cargo.lock
+            /crates/
+            /scripts/
+      - name: Verify original complete artifact, all wire roles and retained statistics
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -B -u receiver/artifacts/checkpoints/p8-a23-soak-wire-reception-20261009/controller.py
+      - name: Preserve original evidence and every offline result with documented raw-log exclusion
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-a23-soak-wire-reception-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p8-a23-soak-wire-reception
+            !${{ runner.temp }}/p8-a23-soak-wire-reception/job-113631481157.log
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 21

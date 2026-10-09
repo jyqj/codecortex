@@ -1,0 +1,68 @@
+{
+  "schema": "oracle-equal-lifetime-probe-v2-independent-review-v1",
+  "reviewer": "/root/scale_closeout",
+  "reviewed_at_utc": "2026-10-09T17:00:12.719784+00:00",
+  "verdict": "accepted_scoped_static",
+  "base": "9ddae045f6925140a4d652c5f28f64add459eff1",
+  "manifest": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-oracle-equal-lifetime-candidate/candidate-manifest-v2.json",
+    "bytes": 2851,
+    "sha256": "2651986174658c20a651c9196aa44b7ee75327b29462cf246de0f7176f4dee67"
+  },
+  "files": [
+    {
+      "after": {
+        "bytes": 37632,
+        "git_blob": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a",
+        "sha256": "b4175911e4bad1669afcaaab68385de89821045d71181b38ef8db478e76811b2"
+      },
+      "before": {
+        "bytes": 29266,
+        "git_blob": "1b2cc162d888706a46ca9a3b4e2dd9275b86352b",
+        "sha256": "47e18440ea51d7ae8091081009ea50251e160ace7595c6c77dbc4d8d63b25985"
+      },
+      "mode": "100644",
+      "path": "crates/cc-eval/src/benchmark/oracle.rs"
+    },
+    {
+      "after": {
+        "bytes": 14589,
+        "git_blob": "89c434b3ed7eeea90600583e8837bf5a40d5117f",
+        "sha256": "43de5bdbba63a8cb5d42bb044bfd08272fa4032e5beceac7986c8fba2bce5088"
+      },
+      "before": null,
+      "mode": "100644",
+      "path": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml"
+    }
+  ],
+  "independence": "Runtime_closeout authored both candidate paths. This review independently read the complete two-path patch, inline observer and retained control records; no product implementation or timing change authored by reviewer.",
+  "findings": [
+    "Entire prior Rust prefix, including all production RowProjection logic, old regular tests and old ignored v1 probe, is byte-identical; only a new ignored method is appended. The old workflow also remains byte-identical.",
+    "collect body and exact timer boundaries match v1; fixed five case inputs/column names match byte-for-byte. Same SQLite SELECT traversal, row serialization and output Vec retention are timed; post-timing validation, hashing and output destruction are excluded.",
+    "Each side returns only elapsed integer, digest String and byte count after comparing every output String against the common immutable reference, checking256 rows, hashing and explicitly dropping its output Vec. No prior side output Vec survives into the next side timer. The shared reference remains equally live; small result/digest values, allocator/caches and differing implementation internal states are not normalized or claimed eliminated.",
+    "One untimed full reference per case and per-side warmup precede20 rounds; original-first/borrowed-first alternate10/10. All100 paired records remain. No speed threshold, best-of selection, old-measurement replacement or whole-parity/scale speedup claim.",
+    "Rust borrow/move review finds no apparent type or lifetime blocker: explicit output drop occurs before return, sum type is fixed by usize return, assertions borrow digest/reference and serialized scalars are reused without moving the reference across rounds. ActualRust compiler/formatter remain pending.",
+    "Independent workflow label/schema/artifact/run+attempt separate this experiment. Locked release Cargo selects exact cc_eval libtest and enabled default feature; source/observer/lock/toolchain before-after, actual post-execution ELF hash and raw stdout/stderr/exit are retained with always upload.",
+    "Actual inline observer requires all5×20 distinct slots,256 rows,decimal timing strings,equal reference/original/borrowed digests,positive canonicalbytes,exact lifetime/scope/no-threshold fields,one passed ignored test and one fresh correct release Cargo producer. It rejects zero tests or incomplete output without calling them a timing result.",
+    "New v2 field original_row_projection_source_blob correctly identifies historical oracle.rs blob4c7fdb879e039af164b3b10ea1491d538c69ac68; it does not misidentify current streaming.rs. Old v1 field/results are retained unchanged."
+  ],
+  "control_evidence": {
+    "record": "/workspace/scratch/a217aaae3bde/p8-oracle-equal-lifetime-candidate/workflow-static-and-output-controls-v2.json",
+    "sha256": "d394455a9e88cc159e2d06fb578c0d100b624700f4a07d32e35bb18cfe90d4f6",
+    "actual_author_records": {
+      "positive": 2,
+      "negative": 11,
+      "all_expected": true
+    },
+    "scope": "Read existing actual inline-observer synthetic controls and inputs. Reviewer only parsed YAML/three Python ASTs and checked byte/hash bindings; did not rerun those controls."
+  },
+  "remaining_limits": [
+    "Rustfmt/compilation/newignoredprobe execution not_run.",
+    "Reference is allocated by original path and retained in both timings; cache/allocator/order effects remain and must be reported.",
+    "The old original cost result and held production-integration decision remain separate; this new experiment does not invalidate them.",
+    "No newTODO acceptance gate, no label/ref/run mutation by review."
+  ],
+  "unresolved_blockers": [],
+  "formal_task_completion": false,
+  "remaining": 29
+}

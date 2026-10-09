@@ -1,0 +1,67 @@
+{
+  "base": "9ddae045f6925140a4d652c5f28f64add459eff1",
+  "execution": {
+    "compilation": "not_run",
+    "native_study": "not_run",
+    "probe": "not_run",
+    "remote_ref": "unchanged",
+    "rustfmt": "not_run"
+  },
+  "files": [
+    {
+      "after": {
+        "bytes": 37627,
+        "git_blob": "81314b70fac57ef564c0f2f4dff7bedcbdd13a4f",
+        "sha256": "8f047d46c0e608ac2394f12f076cbcc92ae297ce8762391618012edcd3a52384"
+      },
+      "before": {
+        "bytes": 29266,
+        "git_blob": "1b2cc162d888706a46ca9a3b4e2dd9275b86352b",
+        "sha256": "47e18440ea51d7ae8091081009ea50251e160ace7595c6c77dbc4d8d63b25985"
+      },
+      "mode": "100644",
+      "path": "crates/cc-eval/src/benchmark/oracle.rs"
+    },
+    {
+      "after": {
+        "bytes": 14584,
+        "git_blob": "9855033350d512555a9b7da2e3ac9f137e50760d",
+        "sha256": "0a3d08da2bae0ba94f756af3d1a7ad97cdfa81ab846eed0ff77659c4376d032e"
+      },
+      "before": null,
+      "mode": "100644",
+      "path": ".github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml"
+    }
+  ],
+  "no_new_dependencies": true,
+  "original_ignored_probe_byte_identical": true,
+  "original_rust_prefix_unchanged": true,
+  "original_workflow": {
+    "bytes": 13226,
+    "git_blob": "8783b06e765ce32386def8f567393fdb82a4dc10",
+    "path": ".github/workflows/p8-oracle-serialization-cost.yml",
+    "sha256": "7ca90faa64663e5b2e99c6045d1e97e646c7e88b1bea2775cd4c732cbfd76273"
+  },
+  "patch": {
+    "bytes": 23640,
+    "git_blob": "d19bb12e17ee713d00d17f783afaf21a59dab671",
+    "sha256": "a80ad921a4f760e955005ceabd10054b5463987781c9230f51b98a5633a5d351"
+  },
+  "production_code_unchanged": true,
+  "protocol": {
+    "alternating_first": true,
+    "cases": 5,
+    "elapsed_threshold": null,
+    "label": "p8-oracle-equal-lifetime-cost-run",
+    "lifetime": "Observe-side returns only scalar time/length and digest after full byte comparison, hash and explicit drop(output)",
+    "original_baseline": "Exact old Map-reuse helper unchanged",
+    "reference": "One immutable full reference per case, produced and hashed before warm/measured rounds",
+    "remaining_order_effects": "No allocator/cache reset or causal claim; all 100 paired rounds retained",
+    "rounds_per_case": 20,
+    "rows_per_side": 256,
+    "schema": "p8-oracle-serialization-equal-lifetime-cost-v1",
+    "scope": "Independent mechanism experiment, not old v1 repeat/correction, full-parity speedup, or TODO gate",
+    "timer": "Same collect function/SQLite SELECT as v1; includes allocation and retention, excludes post-timing verification/hash/drop"
+  },
+  "schema": "oracle-equal-lifetime-candidate-v1"
+}

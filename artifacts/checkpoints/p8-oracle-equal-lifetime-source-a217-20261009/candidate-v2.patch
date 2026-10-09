@@ -1,0 +1,451 @@
+--- a/crates/cc-eval/src/benchmark/oracle.rs
++++ b/crates/cc-eval/src/benchmark/oracle.rs
+@@ -709,4 +709,191 @@
+             }
+         }
+     }
+-}
++
++    #[test]
++    #[ignore = "explicit finite release cost observation; no timing acceptance threshold"]
++    fn borrowed_serialization_equal_lifetime_release_cost_probe() {
++        use rusqlite::types::Value as SqlValue;
++        use std::time::Instant;
++
++        fn collect(
++            statement: &mut rusqlite::Statement<'_>,
++            projection: &mut RowProjection<'_>,
++            borrowed: bool,
++        ) -> (Vec<String>, u128) {
++            let started = Instant::now();
++            let mut rows = statement.query([]).unwrap();
++            let mut output = Vec::new();
++            while let Some(row) = rows.next().unwrap() {
++                output.push(if borrowed {
++                    projection.serialize_row(row).unwrap()
++                } else {
++                    original_serialize_row(projection, row).unwrap()
++                });
++            }
++            (output, started.elapsed().as_nanos())
++        }
++
++        // The output Vec never crosses this function boundary. Both sides
++        // retain only the same immutable reference while their timer runs.
++        fn observe_side(
++            statement: &mut rusqlite::Statement<'_>,
++            projection: &mut RowProjection<'_>,
++            borrowed: bool,
++            reference: &[String],
++            reference_digest: &str,
++        ) -> (u128, String, usize) {
++            let (output, elapsed_ns) = collect(statement, projection, borrowed);
++            assert_eq!(output.as_slice(), reference);
++            assert_eq!(output.len(), 256);
++            let canonical_bytes = output.iter().map(String::len).sum();
++            let digest = manifest::digest(&serde_json::to_vec(&output).unwrap());
++            assert_eq!(digest, reference_digest);
++            drop(output);
++            (elapsed_ns, digest, canonical_bytes)
++        }
++
++        let cases = [
++            (
++                "multiple_text",
++                vec![
++                    SqlValue::Text("é/中文\n\"\\".repeat(512)),
++                    SqlValue::Text("manifest-payload".repeat(256)),
++                    SqlValue::Text("qualified::name".repeat(128)),
++                    SqlValue::Text("path/to/source.rs".repeat(128)),
++                    SqlValue::Integer(17),
++                    SqlValue::Null,
++                ],
++            ),
++            (
++                "short_fields",
++                vec![
++                    SqlValue::Text("a".into()),
++                    SqlValue::Text("bc".into()),
++                    SqlValue::Integer(i64::MIN),
++                    SqlValue::Integer(i64::MAX),
++                    SqlValue::Real(-0.0),
++                    SqlValue::Real(1.25),
++                ],
++            ),
++            (
++                "blob",
++                vec![
++                    SqlValue::Blob([0, 255, 128, 1].repeat(1024)),
++                    SqlValue::Blob(Vec::new()),
++                    SqlValue::Text("blob-name".into()),
++                    SqlValue::Integer(4),
++                    SqlValue::Null,
++                    SqlValue::Real(0.0),
++                ],
++            ),
++            ("empty_text", vec![SqlValue::Text(String::new()); 6]),
++            ("null", vec![SqlValue::Null; 6]),
++        ];
++        let cols: Vec<String> = ["z", "a", "payload", "path", "ordinal", "empty"]
++            .into_iter()
++            .map(String::from)
++            .collect();
++        for (case, values) in cases {
++            let conn = Connection::open_in_memory().unwrap();
++            conn.execute_batch("CREATE TABLE sample(c0,c1,c2,c3,c4,c5)")
++                .unwrap();
++            for _ in 0..256 {
++                conn.execute(
++                    "INSERT INTO sample VALUES(?1,?2,?3,?4,?5,?6)",
++                    rusqlite::params_from_iter(&values),
++                )
++                .unwrap();
++            }
++            let mut statement = conn
++                .prepare("SELECT c0,c1,c2,c3,c4,c5 FROM sample ORDER BY rowid")
++                .unwrap();
++            let mut original = RowProjection::new(&cols);
++            let mut borrowed = RowProjection::new(&cols);
++            // Independent protocol: build one immutable complete reference
++            // outside all measured rounds. Preserve the original baseline's
++            // reusable Map and the same SQLite input/SELECT for both sides.
++            let (reference, _) = collect(&mut statement, &mut original, false);
++            assert_eq!(reference.len(), 256);
++            let reference_digest = manifest::digest(&serde_json::to_vec(&reference).unwrap());
++            let reference_bytes = reference.iter().map(String::len).sum::<usize>();
++            for is_borrowed in [false, true] {
++                let projection = if is_borrowed {
++                    &mut borrowed
++                } else {
++                    &mut original
++                };
++                let _ = observe_side(
++                    &mut statement,
++                    projection,
++                    is_borrowed,
++                    &reference,
++                    &reference_digest,
++                );
++            }
++            for round in 0..20 {
++                // Each completed side verifies full bytes, hashes and drops
++                // its output before the next side enters collect's timer.
++                let (original_result, borrowed_result) = if round % 2 == 0 {
++                    let original_result = observe_side(
++                        &mut statement,
++                        &mut original,
++                        false,
++                        &reference,
++                        &reference_digest,
++                    );
++                    let borrowed_result = observe_side(
++                        &mut statement,
++                        &mut borrowed,
++                        true,
++                        &reference,
++                        &reference_digest,
++                    );
++                    (original_result, borrowed_result)
++                } else {
++                    let borrowed_result = observe_side(
++                        &mut statement,
++                        &mut borrowed,
++                        true,
++                        &reference,
++                        &reference_digest,
++                    );
++                    let original_result = observe_side(
++                        &mut statement,
++                        &mut original,
++                        false,
++                        &reference,
++                        &reference_digest,
++                    );
++                    (original_result, borrowed_result)
++                };
++                let (original_ns, original_digest, original_bytes) = original_result;
++                let (borrowed_ns, borrowed_digest, borrowed_bytes) = borrowed_result;
++                assert_eq!(original_bytes, reference_bytes);
++                assert_eq!(borrowed_bytes, reference_bytes);
++                println!(
++                    "{}",
++                    json!({
++                        "schema": "p8-oracle-serialization-equal-lifetime-cost-v1",
++                        "case": case,
++                        "round": round,
++                        "first": if round % 2 == 0 { "original" } else { "borrowed" },
++                        "rows": reference.len(),
++                        "canonical_bytes": reference_bytes,
++                        "original_ns": original_ns.to_string(),
++                        "borrowed_ns": borrowed_ns.to_string(),
++                        "reference_digest": reference_digest,
++                        "original_digest": original_digest,
++                        "borrowed_digest": borrowed_digest,
++                        "timing_scope": "same SQLite SELECT traversal plus row serialization and output retention; verification, hash and output drop excluded",
++                        "output_lifetime": "one immutable shared reference; each side output verified, hashed and dropped before next side timing",
++                        "order_limit": "alternating order retained; allocator and cache history not reset or claimed eliminated",
++                        "timing_threshold": null,
++                        "original_row_projection_source_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
++                        "comparison_protocol": "independent equal-lifetime observation; not a rerun or correction of the v1 retained-pair probe"
++                    })
++                );
++            }
++        }
++    }
++}
+--- /dev/null
++++ b/.github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml
+@@ -0,0 +1,253 @@
++name: P8 oracle equal-lifetime serialization cost observation
++
++on:
++  workflow_dispatch:
++  pull_request:
++    types: [labeled]
++
++permissions:
++  contents: read
++
++defaults:
++  run:
++    shell: bash
++
++env:
++  CARGO_TERM_COLOR: never
++  CARGO_INCREMENTAL: '0'
++  CARGO_BUILD_JOBS: '2'
++  RUSTFLAGS: ''
++  CARGO_ENCODED_RUSTFLAGS: ''
++  PYTHONDONTWRITEBYTECODE: '1'
++  P8_COST_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
++  P8_COST_TEST: benchmark::oracle::projection_tests::borrowed_serialization_equal_lifetime_release_cost_probe
++
++jobs:
++  observe:
++    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-oracle-equal-lifetime-cost-run'
++    runs-on: ubuntu-24.04
++    timeout-minutes: 90
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          ref: ${{ github.event.pull_request.head.sha || github.sha }}
++          sparse-checkout-cone-mode: false
++          sparse-checkout: |
++            /*
++            !/artifacts/
++      - name: Prepare original output directory
++        run: |
++          mkdir "$RUNNER_TEMP/p8-oracle-equal-lifetime-cost"
++          printf 'P8_COST_OUTPUT=%s/p8-oracle-equal-lifetime-cost\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
++          printf 'CARGO_TARGET_DIR=%s/p8-oracle-equal-lifetime-cost-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
++      - uses: dtolnay/rust-toolchain@1.95.0
++      - name: Bind actual source, compiler and probe command
++        run: |
++          python3 -B - <<'PY'
++          import hashlib
++          import json
++          import os
++          from pathlib import Path
++          import subprocess
++          import sys
++          from datetime import datetime, timezone
++
++          root = Path(os.environ['GITHUB_WORKSPACE'])
++          out = Path(os.environ['P8_COST_OUTPUT'])
++          sys.path.insert(0, str(root / 'scripts'))
++          from p7_build_identity import source_snapshot
++
++          source = source_snapshot(root)
++          assert source['source_commit'] == os.environ['P8_COST_EXPECTED_HEAD']
++          observers = {}
++          for path in ('scripts/p7_build_identity.py', '.github/workflows/p8-oracle-serialization-equal-lifetime-cost.yml'):
++              original = subprocess.check_output(['git', 'show', 'HEAD:' + path], cwd=root)
++              live = (root / path).read_bytes()
++              assert live == original, path
++              observers[path] = hashlib.sha256(live).hexdigest()
++          (out / 'source-before.json').write_text(json.dumps(source, indent=2, sort_keys=True) + '\n')
++          (out / 'Cargo.lock').write_bytes((root / 'Cargo.lock').read_bytes())
++          compiler = {}
++          for name, command in [('rustc', ['rustc', '-vV']), ('cargo', ['cargo', '-Vv'])]:
++              value = subprocess.check_output(command, stderr=subprocess.STDOUT)
++              (out / (name + '-before.txt')).write_bytes(value)
++              compiler[name] = hashlib.sha256(value).hexdigest()
++          argv = ['cargo', 'test', '--release', '--locked', '--message-format=json', '-p', 'cc-eval', '--lib',
++                  os.environ['P8_COST_TEST'], '--', '--exact', '--ignored', '--nocapture', '--test-threads=1']
++          receipt = {'schema': 'p8-oracle-serialization-equal-lifetime-cost-observation-v1',
++                     'created_utc': datetime.now(timezone.utc).isoformat(),
++                     'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
++                     'expected_source': os.environ['P8_COST_EXPECTED_HEAD'],
++                     'source_commit': source['source_commit'], 'source_tree': source['source_tree'],
++                     'Cargo_lock_sha256': hashlib.sha256((root / 'Cargo.lock').read_bytes()).hexdigest(),
++                     'observer_inputs': observers, 'toolchain_output_sha256': compiler, 'argv': argv,
++                     'environment': {key: os.environ.get(key) for key in
++                         ('CARGO_INCREMENTAL', 'CARGO_BUILD_JOBS', 'CARGO_TARGET_DIR', 'RUSTFLAGS',
++                          'CARGO_ENCODED_RUSTFLAGS', 'RUSTUP_TOOLCHAIN', 'TMPDIR', 'TMP', 'TEMP')},
++                     'scope': 'Finite release serialization cost observation; not a scale sample or TODO acceptance gate.'}
++          (out / 'identity-before.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
++          PY
++      - name: Observe the independent equal-lifetime finite ignored probe and retain both streams
++        run: |
++          python3 -B - <<'PY'
++          import json
++          import os
++          from pathlib import Path
++          import subprocess
++          import sys
++          import time
++          from datetime import datetime, timezone
++
++          out = Path(os.environ['P8_COST_OUTPUT'])
++          identity = json.loads((out / 'identity-before.json').read_text())
++          started = datetime.now(timezone.utc).isoformat()
++          begin = time.monotonic_ns()
++          code = None
++          error = None
++          try:
++              with (out / 'probe.stdout').open('wb') as stdout, (out / 'probe.stderr').open('wb') as stderr:
++                  code = subprocess.run(identity['argv'], cwd=os.environ['GITHUB_WORKSPACE'],
++                                        stdout=stdout, stderr=stderr, check=False).returncode
++          except BaseException as exc:
++              error = type(exc).__name__ + ': ' + str(exc)
++              raise
++          finally:
++              receipt = {'started_utc': started, 'finished_utc': datetime.now(timezone.utc).isoformat(),
++                         'wall_ns': time.monotonic_ns() - begin, 'exit_code': code, 'launch_error': error,
++                         'argv': identity['argv'], 'scope': 'Includes compilation; per-round serialization times are in the original probe stdout.'}
++              (out / 'execution.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
++              for name, stream in [('probe.stdout', sys.stdout.buffer), ('probe.stderr', sys.stderr.buffer)]:
++                  path = out / name
++                  if path.exists():
++                      with path.open('rb') as source:
++                          for block in iter(lambda: source.read(1024 * 1024), b''):
++                              stream.write(block)
++                      stream.flush()
++          sys.exit(code)
++          PY
++      - name: Preserve after-source identity and original file hashes even on failure
++        if: always()
++        run: |
++          python3 -B - <<'PY'
++          import hashlib
++          import json
++          import os
++          from pathlib import Path
++          import re
++          import subprocess
++          import sys
++
++          def observe_cost_output(out, root, target):
++              records, binaries, finishes = [], [], []
++              execution = json.loads((out / 'execution.json').read_text())
++              assert execution['exit_code'] == 0 and execution['launch_error'] is None
++              raw = (out / 'probe.stdout').read_text()
++              for line in raw.splitlines():
++                  start = line.find('{')
++                  if start < 0:
++                      continue
++                  try:
++                      # libtest may prefix its first probe object with the test name.
++                      value, end = json.JSONDecoder().raw_decode(line[start:])
++                  except json.JSONDecodeError:
++                      continue
++                  if not isinstance(value, dict):
++                      continue
++                  if value.get('schema') == 'p8-oracle-serialization-equal-lifetime-cost-v1':
++                      assert not line[start + end:].strip(), 'trailing probe output'
++                      records.append(value)
++                  elif start == 0:
++                      if value.get('reason') == 'build-finished':
++                          finishes.append(value)
++                      if (value.get('reason') == 'compiler-artifact'
++                              and value.get('target', {}).get('name') == 'cc_eval'
++                              and value.get('target', {}).get('kind') == ['lib']
++                              and value.get('profile', {}).get('test') is True
++                              and value.get('executable')):
++                          binaries.append(value)
++              expected = {(case, round_) for case in
++                  ('multiple_text', 'short_fields', 'blob', 'empty_text', 'null') for round_ in range(20)}
++              slots = []
++              for value in records:
++                  assert type(value.get('round')) is int and type(value.get('rows')) is int
++                  assert value['rows'] == 256
++                  slots.append((value['case'], value['round']))
++                  assert value['first'] == ('original' if value['round'] % 2 == 0 else 'borrowed')
++                  assert all(isinstance(value.get(key), str) and re.fullmatch(r'[0-9]+', value[key])
++                             for key in ('original_ns', 'borrowed_ns'))
++                  assert re.fullmatch(r'[0-9a-f]{64}', value['original_digest'])
++                  assert value['original_digest'] == value['borrowed_digest']
++                  assert value['original_digest'] == value['reference_digest']
++                  assert type(value.get('canonical_bytes')) is int and value['canonical_bytes'] > 0
++                  assert value.get('timing_threshold', 'absent') is None
++                  assert value['original_row_projection_source_blob'] == '4c7fdb879e039af164b3b10ea1491d538c69ac68'
++                  assert value['timing_scope'] == ('same SQLite SELECT traversal plus row serialization and output retention; '
++                                                   'verification, hash and output drop excluded')
++                  assert value['output_lifetime'] == ('one immutable shared reference; each side output verified, '
++                                                     'hashed and dropped before next side timing')
++                  assert value['order_limit'] == 'alternating order retained; allocator and cache history not reset or claimed eliminated'
++                  assert value['comparison_protocol'] == ('independent equal-lifetime observation; '
++                                                         'not a rerun or correction of the v1 retained-pair probe')
++              assert len(slots) == 100 and len(set(slots)) == 100 and set(slots) == expected
++              assert re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;', raw)
++              assert finishes == [{'reason': 'build-finished', 'success': True}]
++              assert len(binaries) == 1
++              binary = binaries[0]
++              assert binary['package_id'].rpartition('#')[0].endswith('/cc-eval')
++              assert Path(binary['manifest_path']).resolve() == root / 'crates/cc-eval/Cargo.toml'
++              assert Path(binary['target']['src_path']).resolve() == root / 'crates/cc-eval/src/lib.rs'
++              assert binary['features'] == ['default'] and binary['fresh'] is False
++              assert binary['profile']['opt_level'] == '3' and binary['profile']['debug_assertions'] is False
++              executable = Path(binary['executable']).resolve(strict=True)
++              assert executable.is_file() and executable.is_relative_to(target.resolve())
++              digest = hashlib.sha256()
++              with executable.open('rb') as source:
++                  for block in iter(lambda: source.read(1024 * 1024), b''):
++                      digest.update(block)
++              return {'schema': 'p8-oracle-serialization-equal-lifetime-cost-observation-v1', 'status': 'observed',
++                      'records': records, 'record_count': 100, 'compiler_artifact': binary,
++                      'test_executable_sha256': digest.hexdigest(), 'test_executable_bytes': executable.stat().st_size,
++                      'scope': 'Finite local mechanism cost only; no timing threshold or scale/TODO acceptance.'}
++
++          root = Path(os.environ['GITHUB_WORKSPACE'])
++          out = Path(os.environ['P8_COST_OUTPUT'])
++          out.mkdir(exist_ok=True)
++          sys.path.insert(0, str(root / 'scripts'))
++          receipt = {'source_unchanged': False, 'observer_inputs_unchanged': False,
++                     'toolchain_outputs_unchanged': False, 'error': None}
++          try:
++              from p7_build_identity import source_snapshot
++              after = source_snapshot(root)
++              (out / 'source-after.json').write_text(json.dumps(after, indent=2, sort_keys=True) + '\n')
++              before = json.loads((out / 'source-before.json').read_text())
++              identity = json.loads((out / 'identity-before.json').read_text())
++              receipt['source_unchanged'] = after == before
++              receipt['observer_inputs_unchanged'] = all(
++                  hashlib.sha256((root / path).read_bytes()).hexdigest() == digest
++                  for path, digest in identity['observer_inputs'].items())
++              compiler = {}
++              for name, command in [('rustc', ['rustc', '-vV']), ('cargo', ['cargo', '-Vv'])]:
++                  value = subprocess.check_output(command, stderr=subprocess.STDOUT)
++                  (out / (name + '-after.txt')).write_bytes(value)
++                  compiler[name] = hashlib.sha256(value).hexdigest()
++              receipt['toolchain_outputs_unchanged'] = compiler == identity['toolchain_output_sha256']
++              assert all(receipt[key] for key in ('source_unchanged', 'observer_inputs_unchanged', 'toolchain_outputs_unchanged'))
++              observed = observe_cost_output(out, root, Path(os.environ['CARGO_TARGET_DIR']))
++              (out / 'cost-observation.json').write_text(json.dumps(observed, indent=2, sort_keys=True) + '\n')
++          except Exception as exc:
++              receipt['error'] = type(exc).__name__ + ': ' + str(exc)
++          finally:
++              receipt['files'] = {path.name: {'bytes': path.stat().st_size,
++                  'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
++                  for path in sorted(out.iterdir()) if path.is_file() and path.name != 'identity-after.json'}
++              (out / 'identity-after.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
++          if receipt['error'] is not None:
++              raise SystemExit(1)
++          PY
++      - name: Preserve every original cost observation, including failure
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: p8-oracle-serialization-equal-lifetime-cost-${{ github.run_id }}-${{ github.run_attempt }}
++          path: ${{ runner.temp }}/p8-oracle-equal-lifetime-cost
++          if-no-files-found: error

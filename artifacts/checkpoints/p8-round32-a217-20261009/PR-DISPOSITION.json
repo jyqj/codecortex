@@ -1,0 +1,124 @@
+{
+  "schema": "round32-eight-open-pr-disposition-v1",
+  "as_of": "2026-10-09T13:19:09.215Z",
+  "main": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+  "formal_todos": {
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "scope": "Read-only disposition; no PR/ref mutation and no new native run. Parent alone executes normal PR operations.",
+  "prs": [
+    {
+      "number": 180,
+      "head": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "decision": "Ready，正常评审；等待实际合并门",
+      "reason": "原v15/组合树已核；本轮源码CI尚未全完，原C研究与G2观察仍分源。后续M5候选尚非当前head。",
+      "review": {
+        "path": "p8-db-lock-observation-integration/M4-independent-source-review.json",
+        "bytes": 195473,
+        "sha256": "c4ab447d72e16e868f5fb8be317c7d427f4da69c61d8ac63051338c40c658164",
+        "git_blob": "d8a8b1dfecbf5a62f362108f7077644fa76106d2"
+      }
+    },
+    {
+      "number": 184,
+      "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+      "decision": "Ready，保留待当前checks",
+      "reason": "复用canonical schema中既有两条索引DDL，无新增索引/写放大；精确Mac21项控与fmt/clippy/v15已验，但不替代当前Actions完整CI。",
+      "review": {
+        "path": "original-C3ff-platform-gates/PR184-canonical-index-review/independent-scoped-review.json",
+        "bytes": 24146,
+        "sha256": "7a13d4f9f9c35a8d917c07b2805b989643ae5081b43af452e9d4ba54a3459209",
+        "git_blob": "c6a886d90e5ce7bbd550a21bfdc71021f7217f0e"
+      }
+    },
+    {
+      "number": 178,
+      "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "decision": "Draft保留；原study终态后可作功能后继关闭",
+      "reason": "不是G4 Git祖先。225项原增量=17同/5演进/203原archive缺；功能hunk已保留/演进，必须明确固定历史源码、独有档案与study结果承接，不称全字节合入。",
+      "review": {
+        "path": "original-C3ff-platform-gates/PR178-supersession-review/independent-supersession-review.json",
+        "bytes": 3928,
+        "sha256": "7ef9ca181957e22fe478f0c677db0d6c12d95ded2166d8a61e6230fc4b73069e",
+        "git_blob": "504d5a5ba13b74052f12706a44d845ef835b69a4"
+      }
+    },
+    {
+      "number": 137,
+      "head": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "decision": "Draft保留，选择性迁移诊断",
+      "reason": "原CI两新增test先因缺固定input env失败；旧packing guard又固定731inputs/ci.yml，而head有732，接线修补不能独立令旧分支合规。测试/原零质量证据未被当前覆盖，不混入M5。",
+      "review": {
+        "path": "pr137-qname-ci-triage/scoped-triage-and-repair-boundary.json",
+        "bytes": 6310,
+        "sha256": "24ef11bb6f829f4bb190cdd039bf98c8aabd007ee03a4412b840c568530f042b",
+        "git_blob": "a4272252453898f971bb34835ec3068d0e2c0c8a"
+      }
+    },
+    {
+      "number": 127,
+      "head": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "decision": "Draft保留，未来按需提取",
+      "reason": "≤4批次semantic CAS发布API仍独有，未接production queue；主线/G4为0同/1演进/7缺。旧base历史CI绿不构成当前生命周期兼容/吞吐证明。",
+      "review": {
+        "path": "original-C3ff-platform-gates/PR127-65-triage/independent-triage-review.json",
+        "bytes": 23312,
+        "sha256": "64c55c9181e5ef73b13f1bf87469ff51f49429dd0b59d3c5e06bdd2f15a39317",
+        "git_blob": "84225456f46e7b290432b245d4bd2759cb752d53"
+      }
+    },
+    {
+      "number": 65,
+      "head": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "decision": "Draft保留预注册/承接决策",
+      "reason": "10000次按repo-membership分层paired family方案未被现2000非分层报告实现替代；保留comment6075374015仍有效。custody bookkeeping覆盖不等统计设计已吸收，不新增holdout实验。",
+      "review": {
+        "path": "original-C3ff-platform-gates/PR127-65-triage/independent-triage-review.json",
+        "bytes": 23312,
+        "sha256": "64c55c9181e5ef73b13f1bf87469ff51f49429dd0b59d3c5e06bdd2f15a39317",
+        "git_blob": "84225456f46e7b290432b245d4bd2759cb752d53"
+      }
+    },
+    {
+      "number": 4,
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "decision": "保留历史意图；仅逐项提取",
+      "reason": "叠在PR3旧树；AST/typed依赖/缓存等有新实现，但旧gold fixture与symbol→chunk语义尚需明确取舍，不能整枝覆盖schema25或视全重复。",
+      "review": {
+        "path": "scale-pr180-C-review/legacy-pr3-pr4-triage/legacy-pr3-pr4-disposition-review.json",
+        "bytes": 16314,
+        "sha256": "d12e8e883c1fb5913960af52bfb6035b4cbebc52bc48648cac994b74a20f7f0d",
+        "git_blob": "21d4ebc2687e0f3fbb4076f74b37c88d39acc5d8"
+      }
+    },
+    {
+      "number": 3,
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "decision": "保留至残余迁移明确",
+      "reason": "唯一确定遗漏的final graph-neighbor filepath tie已作单文件候选并静审，尚未编译/执行；top20另点不改。旧fixture/projection意图仍需记录，不因一个hunk拟吸收就关闭全PR。",
+      "review": {
+        "path": "scale-pr180-C-review/legacy-pr3-pr4-triage/legacy-pr3-pr4-disposition-review.json",
+        "bytes": 16314,
+        "sha256": "d12e8e883c1fb5913960af52bfb6035b4cbebc52bc48648cac994b74a20f7f0d",
+        "git_blob": "21d4ebc2687e0f3fbb4076f74b37c88d39acc5d8"
+      }
+    }
+  ],
+  "current_CI_scope": {
+    "G4": "7full-page run sets; gates success, engineering in_progress; CI3queued; runtime6queued; lifecyclequeued; platform3running/6queued; P7close4queued. Not fullgreen.",
+    "PR184": "7full-page sets; gates/engineering success; CI msrv success,check/security running; lifecycle running; runtimebackfill success+5queued; platform9queued/P7close4queued. No ZIP/native acceptance claimed."
+  },
+  "additional_review": {
+    "preselect_tie": "preselect-pr3-tie-candidate/independent-review-pr-audit.json",
+    "LG2_controls": "original-LG2-runtime/admission-controls-independent-review.json",
+    "LG2_controls_original_zip": "original-LG2-runtime/controls-artifact-independent-addendum.json"
+  },
+  "publication_binding": {
+    "container_path": "artifacts/checkpoints/p8-round32-a217-20261009/round32-public-evidence.tar.gz",
+    "container_sha256": "31a17c5b83023ad63b97dcd384c644976b0b5d9608eea8e2ae62dc492a33a0a0",
+    "historical_member": "pr-audit/pr-disposition/PR-DISPOSITION.json",
+    "scope": "Relative to this artifact-only delivery tree; no self-referential commit hash."
+  }
+}

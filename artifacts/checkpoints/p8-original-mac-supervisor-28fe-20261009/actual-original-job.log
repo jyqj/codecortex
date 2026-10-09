@@ -1,0 +1,913 @@
+﻿2026-10-09T05:59:34.7420070Z Current runner version: '2.337.0'
+2026-10-09T05:59:34.7438180Z ##[group]Runner Image Provisioner
+2026-10-09T05:59:34.7438800Z Hosted Compute Agent
+2026-10-09T05:59:34.7439280Z Version: 20260828.587
+2026-10-09T05:59:34.7439700Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-09T05:59:34.7440260Z Build Date: 2026-08-28T16:44:25Z
+2026-10-09T05:59:34.7440780Z Worker ID: {220bc560-5299-4732-8b52-98ad2d5dd54e}
+2026-10-09T05:59:34.7441290Z Azure Region: westus
+2026-10-09T05:59:34.7441730Z ##[endgroup]
+2026-10-09T05:59:34.7442580Z ##[group]Operating System
+2026-10-09T05:59:34.7443050Z macOS
+2026-10-09T05:59:34.7443490Z 26.6.2
+2026-10-09T05:59:34.7443870Z 25G83
+2026-10-09T05:59:34.7444220Z ##[endgroup]
+2026-10-09T05:59:34.7444650Z ##[group]Runner Image
+2026-10-09T05:59:34.7445030Z Image: macos-26-arm64
+2026-10-09T05:59:34.7445650Z Version: 20260907.0351.1
+2026-10-09T05:59:34.7446580Z Included Software: https://github.com/actions/runner-images/blob/macos-26-arm64/20260907.0351/images/macos/macos-26-arm64-Readme.md
+2026-10-09T05:59:34.7447940Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20260907.0351
+2026-10-09T05:59:34.7448760Z ##[endgroup]
+2026-10-09T05:59:34.7449680Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T05:59:34.7451290Z Contents: read
+2026-10-09T05:59:34.7451680Z Metadata: read
+2026-10-09T05:59:34.7452100Z ##[endgroup]
+2026-10-09T05:59:34.7453940Z Secret source: Actions
+2026-10-09T05:59:34.7454620Z Cache mode: write
+2026-10-09T05:59:34.7455100Z Prepare workflow directory
+2026-10-09T05:59:34.7882150Z Prepare all required actions
+2026-10-09T05:59:34.7946930Z Getting action download info
+2026-10-09T05:59:35.1004540Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T05:59:35.3381060Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:686976e191b89faba57d3206551f0f330d8cb249)
+2026-10-09T05:59:35.6154870Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T05:59:35.8570960Z Complete job name: original_case
+2026-10-09T05:59:35.8941830Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T05:59:35.8942310Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T05:59:35.8942740Z [36;1mimport datetime, json, os, pathlib, platform[0m
+2026-10-09T05:59:35.8943580Z [36;1mprefix = "p8-mac-original-supervisor-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"][0m
+2026-10-09T05:59:35.8944380Z [36;1mtemporary = pathlib.Path(os.environ["RUNNER_TEMP"])[0m
+2026-10-09T05:59:35.8945020Z [36;1mowned = {key: str(temporary / (prefix + "-" + suffix)) for key, suffix in ([0m
+2026-10-09T05:59:35.8945750Z [36;1m    ("P8_EVIDENCE", "evidence"), ("CARGO_HOME", "cargo"), ("RUSTUP_HOME", "rustup"),[0m
+2026-10-09T05:59:35.8946370Z [36;1m    ("CARGO_TARGET_DIR", "target"), ("TMPDIR", "tmp"))}[0m
+2026-10-09T05:59:35.8946870Z [36;1mroot = pathlib.Path(owned["P8_EVIDENCE"])[0m
+2026-10-09T05:59:35.8947420Z [36;1mfor path in owned.values():[0m
+2026-10-09T05:59:35.8947880Z [36;1m    pathlib.Path(path).mkdir()[0m
+2026-10-09T05:59:35.8948320Z [36;1mos.environ.update(owned)[0m
+2026-10-09T05:59:35.8948910Z [36;1mwith pathlib.Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:[0m
+2026-10-09T05:59:35.8949560Z [36;1m    for key, value in owned.items():[0m
+2026-10-09T05:59:35.8950020Z [36;1m        stream.write(key + "=" + value + "\n")[0m
+2026-10-09T05:59:35.8950530Z [36;1mrecord = {[0m
+2026-10-09T05:59:35.8951070Z [36;1m    "schema": "p8-original-mac-supervisor-start-v1", "status": "initialized_not_executed",[0m
+2026-10-09T05:59:35.8951830Z [36;1m    "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),[0m
+2026-10-09T05:59:35.8952600Z [36;1m    "controller_commit": os.environ["GITHUB_SHA"], "repository": os.environ["GITHUB_REPOSITORY"],[0m
+2026-10-09T05:59:35.8953440Z [36;1m    "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],[0m
+2026-10-09T05:59:35.8954260Z [36;1m    "fixed_source": "a23bb72d3c954f385b99fe81ce9189885c208557",[0m
+2026-10-09T05:59:35.8955620Z [36;1m    "original_test": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",[0m
+2026-10-09T05:59:35.8956510Z [36;1m    "scope": "One unchanged original test once on this actual macOS host; no general Mac regression or TODO acceptance",[0m
+2026-10-09T05:59:35.8957250Z [36;1m    "actual_host": platform.platform(),[0m
+2026-10-09T05:59:35.8957760Z [36;1m    "environment": {key: os.environ.get(key) for key in ([0m
+2026-10-09T05:59:35.8958450Z [36;1m        "RUNNER_OS", "RUNNER_ARCH", "RUNNER_ENVIRONMENT", "ImageOS", "ImageVersion",[0m
+2026-10-09T05:59:35.8959360Z [36;1m        "SDKROOT", "DEVELOPER_DIR", "MACOSX_DEPLOYMENT_TARGET", "CARGO_HOME", "RUSTUP_HOME", "CARGO_TARGET_DIR", "TMPDIR")},[0m
+2026-10-09T05:59:35.8960550Z [36;1m    "test_timeout_policy": "Original 250ms worker and less-than-2s test assertions remain unchanged; workflow limit only contains setup/execution",[0m
+2026-10-09T05:59:35.8961590Z [36;1m    "source_changed": False, "todo_completed": 0, "todo_remaining": 29,[0m
+2026-10-09T05:59:35.8962120Z [36;1m}[0m
+2026-10-09T05:59:35.8962570Z [36;1mwith (root / "workflow-start.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T05:59:35.8963260Z [36;1m    json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T05:59:35.8964040Z [36;1m    stream.write("\n")[0m
+2026-10-09T05:59:35.8964660Z [36;1mprint(json.dumps({"kind": "workflow_start", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T05:59:35.8965350Z [36;1mif os.environ["GITHUB_RUN_ATTEMPT"] != "1":[0m
+2026-10-09T05:59:35.8966010Z [36;1m    raise RuntimeError("registered original-test observation admits only workflow attempt 1")[0m
+2026-10-09T05:59:35.8966730Z [36;1mif os.environ["GITHUB_REPOSITORY"] != "jyqj/codecortex":[0m
+2026-10-09T05:59:35.8967290Z [36;1m    raise RuntimeError("unexpected repository")[0m
+2026-10-09T05:59:35.8967760Z [36;1mPY[0m
+2026-10-09T05:59:35.9011610Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:59:35.9012300Z env:
+2026-10-09T05:59:35.9012630Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:59:35.9013090Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:59:35.9013430Z   CARGO_TERM_COLOR: never
+2026-10-09T05:59:35.9013770Z ##[endgroup]
+2026-10-09T05:59:36.1015510Z {"kind": "workflow_start", "value": {"actual_host": "macOS-26.6.2-arm64-arm-64bit-Mach-O", "controller_commit": "af6c29f107d9426d104f34e7d83e070e0e383e5a", "environment": {"CARGO_HOME": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo", "CARGO_TARGET_DIR": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target", "DEVELOPER_DIR": null, "ImageOS": "macos26", "ImageVersion": "20260907.0351.1", "MACOSX_DEPLOYMENT_TARGET": null, "RUNNER_ARCH": "ARM64", "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_OS": "macOS", "RUSTUP_HOME": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup", "SDKROOT": null, "TMPDIR": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp"}, "fixed_source": "a23bb72d3c954f385b99fe81ce9189885c208557", "original_test": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline", "repository": "jyqj/codecortex", "run_attempt": "1", "run_id": "37891034688", "schema": "p8-original-mac-supervisor-start-v1", "scope": "One unchanged original test once on this actual macOS host; no general Mac regression or TODO acceptance", "source_changed": false, "started_at": "2026-10-09T05:59:36.063786+00:00", "status": "initialized_not_executed", "test_timeout_policy": "Original 250ms worker and less-than-2s test assertions remain unchanged; workflow limit only contains setup/execution", "todo_completed": 0, "todo_remaining": 29}}
+2026-10-09T05:59:36.1214460Z ##[group]Run actions/checkout@v4
+2026-10-09T05:59:36.1214940Z with:
+2026-10-09T05:59:36.1215270Z   persist-credentials: false
+2026-10-09T05:59:36.1215690Z   ref: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:59:36.1216360Z   path: original
+2026-10-09T05:59:36.1216770Z   repository: jyqj/codecortex
+2026-10-09T05:59:36.1219420Z   token: ***
+2026-10-09T05:59:36.1219810Z   ssh-strict: true
+2026-10-09T05:59:36.1220130Z   ssh-user: git
+2026-10-09T05:59:36.1220450Z   clean: true
+2026-10-09T05:59:36.1220800Z   sparse-checkout-cone-mode: true
+2026-10-09T05:59:36.1221180Z   fetch-depth: 1
+2026-10-09T05:59:36.1221510Z   fetch-tags: false
+2026-10-09T05:59:36.1221870Z   show-progress: true
+2026-10-09T05:59:36.1222250Z   lfs: false
+2026-10-09T05:59:36.1222570Z   submodules: false
+2026-10-09T05:59:36.1222920Z   set-safe-directory: true
+2026-10-09T05:59:36.1223290Z   allow-unsafe-pr-checkout: false
+2026-10-09T05:59:36.1223680Z env:
+2026-10-09T05:59:36.1224080Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:59:36.1224470Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:59:36.1224880Z   CARGO_TERM_COLOR: never
+2026-10-09T05:59:36.1225450Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T05:59:36.1226270Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T05:59:36.1227160Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T05:59:36.1228210Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T05:59:36.1229110Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T05:59:36.1229780Z ##[endgroup]
+2026-10-09T05:59:36.3450200Z Syncing repository: jyqj/codecortex
+2026-10-09T05:59:36.3451540Z ##[group]Getting Git version info
+2026-10-09T05:59:36.3452160Z Working directory is '/Users/runner/work/codecortex/codecortex/original'
+2026-10-09T05:59:36.3452960Z [command]/opt/homebrew/bin/git version
+2026-10-09T05:59:36.3937800Z git version 2.55.0
+2026-10-09T05:59:36.3950030Z ##[endgroup]
+2026-10-09T05:59:36.3956750Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/73b850b1-cecc-423d-b858-e2804d1b8bc5/.gitconfig'
+2026-10-09T05:59:36.3964130Z Temporarily overriding HOME='/Users/runner/work/_temp/73b850b1-cecc-423d-b858-e2804d1b8bc5' before making global git config changes
+2026-10-09T05:59:36.3965440Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T05:59:36.3968860Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/original
+2026-10-09T05:59:36.4067270Z ##[group]Initializing the repository
+2026-10-09T05:59:36.4071350Z [command]/opt/homebrew/bin/git init /Users/runner/work/codecortex/codecortex/original
+2026-10-09T05:59:36.4264970Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T05:59:36.4265950Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T05:59:36.4266770Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T05:59:36.4267400Z hint: call:
+2026-10-09T05:59:36.4267820Z hint:
+2026-10-09T05:59:36.4268290Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T05:59:36.4268810Z hint:
+2026-10-09T05:59:36.4269330Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T05:59:36.4270120Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T05:59:36.4270640Z hint:
+2026-10-09T05:59:36.4270950Z hint: 	git branch -m <name>
+2026-10-09T05:59:36.4271290Z hint:
+2026-10-09T05:59:36.4271850Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T05:59:36.4272610Z Initialized empty Git repository in /Users/runner/work/codecortex/codecortex/original/.git/
+2026-10-09T05:59:36.4275040Z [command]/opt/homebrew/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T05:59:36.4356270Z ##[endgroup]
+2026-10-09T05:59:36.4357410Z ##[group]Disabling automatic garbage collection
+2026-10-09T05:59:36.4358100Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-09T05:59:36.4428440Z ##[endgroup]
+2026-10-09T05:59:36.4429040Z ##[group]Setting up auth
+2026-10-09T05:59:36.4429650Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:59:36.4493110Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:59:36.5351190Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:59:36.5459200Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:59:36.6195410Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:59:36.6262840Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:59:36.7362210Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T05:59:36.7437070Z ##[endgroup]
+2026-10-09T05:59:36.7437740Z ##[group]Fetching the repository
+2026-10-09T05:59:36.7442620Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:59:55.8501610Z From https://github.com/jyqj/codecortex
+2026-10-09T05:59:55.8521320Z  * branch            a23bb72d3c954f385b99fe81ce9189885c208557 -> FETCH_HEAD
+2026-10-09T05:59:55.8572410Z ##[endgroup]
+2026-10-09T05:59:55.8586510Z ##[group]Determining the checkout info
+2026-10-09T05:59:55.8594230Z ##[endgroup]
+2026-10-09T05:59:55.8596190Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-09T05:59:55.8775400Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T05:59:55.8942340Z ##[group]Checking out the ref
+2026-10-09T05:59:55.8943750Z [command]/opt/homebrew/bin/git checkout --progress --force a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:59:57.0675190Z Updating files:  16% (3701/22303)
+2026-10-09T05:59:57.1115220Z Updating files:  17% (3792/22303)
+2026-10-09T05:59:57.1559730Z Updating files:  18% (4015/22303)
+2026-10-09T05:59:57.2151710Z Updating files:  19% (4238/22303)
+2026-10-09T05:59:57.2658750Z Updating files:  20% (4461/22303)
+2026-10-09T05:59:57.3479960Z Updating files:  21% (4684/22303)
+2026-10-09T05:59:57.3912460Z Updating files:  22% (4907/22303)
+2026-10-09T05:59:57.4738730Z Updating files:  23% (5130/22303)
+2026-10-09T05:59:57.5570330Z Updating files:  24% (5353/22303)
+2026-10-09T05:59:57.5996260Z Updating files:  25% (5576/22303)
+2026-10-09T05:59:57.6668720Z Updating files:  26% (5799/22303)
+2026-10-09T05:59:57.7896400Z Updating files:  27% (6022/22303)
+2026-10-09T05:59:57.8865440Z Updating files:  28% (6245/22303)
+2026-10-09T05:59:57.9519470Z Updating files:  29% (6468/22303)
+2026-10-09T05:59:57.9830180Z Updating files:  29% (6619/22303)
+2026-10-09T05:59:58.0791470Z Updating files:  30% (6691/22303)
+2026-10-09T05:59:58.1491180Z Updating files:  31% (6914/22303)
+2026-10-09T05:59:58.2152610Z Updating files:  32% (7137/22303)
+2026-10-09T05:59:58.3168010Z Updating files:  33% (7360/22303)
+2026-10-09T05:59:58.9471830Z Updating files:  34% (7584/22303)
+2026-10-09T05:59:59.5286310Z Updating files:  34% (7644/22303)
+2026-10-09T05:59:59.6015380Z Updating files:  35% (7807/22303)
+2026-10-09T05:59:59.7603350Z Updating files:  36% (8030/22303)
+2026-10-09T05:59:59.8096420Z Updating files:  37% (8253/22303)
+2026-10-09T05:59:59.8623240Z Updating files:  38% (8476/22303)
+2026-10-09T05:59:59.9513510Z Updating files:  39% (8699/22303)
+2026-10-09T05:59:59.9624610Z Updating files:  39% (8894/22303)
+2026-10-09T06:00:00.0845120Z Updating files:  40% (8922/22303)
+2026-10-09T06:00:00.1276670Z Updating files:  41% (9145/22303)
+2026-10-09T06:00:00.1785550Z Updating files:  42% (9368/22303)
+2026-10-09T06:00:00.2222350Z Updating files:  43% (9591/22303)
+2026-10-09T06:00:00.2587160Z Updating files:  44% (9814/22303)
+2026-10-09T06:00:00.2988560Z Updating files:  45% (10037/22303)
+2026-10-09T06:00:00.3384310Z Updating files:  46% (10260/22303)
+2026-10-09T06:00:00.4023470Z Updating files:  47% (10483/22303)
+2026-10-09T06:00:00.4377730Z Updating files:  48% (10706/22303)
+2026-10-09T06:00:00.6897410Z Updating files:  49% (10929/22303)
+2026-10-09T06:00:00.7331430Z Updating files:  50% (11152/22303)
+2026-10-09T06:00:00.8502470Z Updating files:  51% (11375/22303)
+2026-10-09T06:00:00.9480940Z Updating files:  52% (11598/22303)
+2026-10-09T06:00:01.0362850Z Updating files:  52% (11727/22303)
+2026-10-09T06:00:01.1031270Z Updating files:  53% (11821/22303)
+2026-10-09T06:00:01.2645320Z Updating files:  54% (12044/22303)
+2026-10-09T06:00:01.3189260Z Updating files:  55% (12267/22303)
+2026-10-09T06:00:01.3720230Z Updating files:  56% (12490/22303)
+2026-10-09T06:00:01.4327050Z Updating files:  57% (12713/22303)
+2026-10-09T06:00:01.5239660Z Updating files:  58% (12936/22303)
+2026-10-09T06:00:01.6095740Z Updating files:  59% (13159/22303)
+2026-10-09T06:00:01.6911820Z Updating files:  60% (13382/22303)
+2026-10-09T06:00:01.7582060Z Updating files:  61% (13605/22303)
+2026-10-09T06:00:01.8036930Z Updating files:  62% (13828/22303)
+2026-10-09T06:00:01.8542890Z Updating files:  63% (14051/22303)
+2026-10-09T06:00:01.9003790Z Updating files:  64% (14274/22303)
+2026-10-09T06:00:01.9406400Z Updating files:  65% (14497/22303)
+2026-10-09T06:00:01.9415140Z Updating files:  65% (14706/22303)
+2026-10-09T06:00:01.9902980Z Updating files:  66% (14720/22303)
+2026-10-09T06:00:02.0374010Z Updating files:  67% (14944/22303)
+2026-10-09T06:00:02.1167340Z Updating files:  68% (15167/22303)
+2026-10-09T06:00:02.1734170Z Updating files:  69% (15390/22303)
+2026-10-09T06:00:02.2532640Z Updating files:  70% (15613/22303)
+2026-10-09T06:00:02.3896410Z Updating files:  71% (15836/22303)
+2026-10-09T06:00:02.4759040Z Updating files:  72% (16059/22303)
+2026-10-09T06:00:02.7756490Z Updating files:  73% (16282/22303)
+2026-10-09T06:00:02.8332660Z Updating files:  74% (16505/22303)
+2026-10-09T06:00:02.8961950Z Updating files:  75% (16728/22303)
+2026-10-09T06:00:02.9416880Z Updating files:  76% (16951/22303)
+2026-10-09T06:00:02.9531140Z Updating files:  76% (17122/22303)
+2026-10-09T06:00:03.0608890Z Updating files:  77% (17174/22303)
+2026-10-09T06:00:03.1456990Z Updating files:  78% (17397/22303)
+2026-10-09T06:00:03.2102620Z Updating files:  79% (17620/22303)
+2026-10-09T06:00:03.2896040Z Updating files:  80% (17843/22303)
+2026-10-09T06:00:03.3296030Z Updating files:  81% (18066/22303)
+2026-10-09T06:00:03.3927800Z Updating files:  82% (18289/22303)
+2026-10-09T06:00:03.8155800Z Updating files:  83% (18512/22303)
+2026-10-09T06:00:03.9451740Z Updating files:  84% (18735/22303)
+2026-10-09T06:00:03.9675360Z Updating files:  84% (18955/22303)
+2026-10-09T06:00:04.1970830Z Updating files:  85% (18958/22303)
+2026-10-09T06:00:04.6278270Z Updating files:  86% (19181/22303)
+2026-10-09T06:00:04.6996820Z Updating files:  87% (19404/22303)
+2026-10-09T06:00:04.8081150Z Updating files:  88% (19627/22303)
+2026-10-09T06:00:04.8676550Z Updating files:  89% (19850/22303)
+2026-10-09T06:00:04.9393410Z Updating files:  90% (20073/22303)
+2026-10-09T06:00:04.9587910Z Updating files:  90% (20220/22303)
+2026-10-09T06:00:05.0556360Z Updating files:  91% (20296/22303)
+2026-10-09T06:00:05.9466050Z Updating files:  92% (20519/22303)
+2026-10-09T06:00:06.6176370Z Updating files:  92% (20595/22303)
+2026-10-09T06:00:06.6814560Z Updating files:  93% (20742/22303)
+2026-10-09T06:00:06.7332550Z Updating files:  94% (20965/22303)
+2026-10-09T06:00:06.8010060Z Updating files:  95% (21188/22303)
+2026-10-09T06:00:06.9407250Z Updating files:  96% (21411/22303)
+2026-10-09T06:00:06.9630130Z Updating files:  96% (21584/22303)
+2026-10-09T06:00:07.0284790Z Updating files:  97% (21634/22303)
+2026-10-09T06:00:07.1012830Z Updating files:  98% (21857/22303)
+2026-10-09T06:00:07.1679890Z Updating files:  99% (22080/22303)
+2026-10-09T06:00:07.1680900Z Updating files: 100% (22303/22303)
+2026-10-09T06:00:07.1681820Z Updating files: 100% (22303/22303), done.
+2026-10-09T06:00:07.2358900Z HEAD is now at a23bb72 test(p8): bind combined source admission for original full execution
+2026-10-09T06:00:07.2786310Z ##[endgroup]
+2026-10-09T06:00:07.3197650Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-09T06:00:07.3300110Z a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T06:00:07.3349150Z ##[group]Removing auth
+2026-10-09T06:00:07.3372890Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T06:00:07.3383090Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T06:00:07.5323700Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T06:00:07.5446120Z http.https://github.com/.extraheader
+2026-10-09T06:00:07.5612030Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T06:00:07.5941930Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T06:00:07.8169410Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T06:00:07.8398570Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T06:00:08.0467070Z ##[endgroup]
+2026-10-09T06:00:08.1017950Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-09T06:00:08.1018370Z with:
+2026-10-09T06:00:08.1018570Z   toolchain: 1.95.0
+2026-10-09T06:00:08.1018860Z env:
+2026-10-09T06:00:08.1019090Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:08.1019920Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:08.1020180Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:08.1020680Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:08.1021270Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:08.1022020Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:08.1022710Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:08.1023260Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:08.1023770Z ##[endgroup]
+2026-10-09T06:00:08.1118840Z ##[start-action display=Parse toolchain version;id=toolchain.parse]
+2026-10-09T06:00:08.1191700Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T06:00:08.1192070Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T06:00:08.1192570Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T06:00:08.1193120Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T06:00:08.1193410Z [36;1m  exit 1[0m
+2026-10-09T06:00:08.1194330Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T06:00:08.1195620Z [36;1m  if [[ macOS == macOS ]]; then[0m
+2026-10-09T06:00:08.1196860Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:08.1198120Z [36;1m  else[0m
+2026-10-09T06:00:08.1199060Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:08.1200090Z [36;1m  fi[0m
+2026-10-09T06:00:08.1200840Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T06:00:08.1203410Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:08.1203810Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T06:00:08.1204390Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:08.1204970Z [36;1melse[0m
+2026-10-09T06:00:08.1205330Z [36;1m  delimiter=EOF[0m
+2026-10-09T06:00:08.1205790Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T06:00:08.1206270Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:08.1206790Z [36;1mfi[0m
+2026-10-09T06:00:08.1316900Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:08.1317660Z env:
+2026-10-09T06:00:08.1318120Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:08.1331410Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:08.1331710Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:08.1332230Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:08.1332800Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:08.1333320Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:08.1333850Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:08.1334350Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:08.1334680Z   toolchain: 1.95.0
+2026-10-09T06:00:08.1334830Z ##[endgroup]
+2026-10-09T06:00:08.2266380Z ##[end-action id=toolchain.parse;outcome=success;conclusion=success;duration_ms=114]
+2026-10-09T06:00:08.2274320Z ##[start-action display=Set $CARGO_HOME;id=toolchain.__run]
+2026-10-09T06:00:08.2335020Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T06:00:08.2335690Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T06:00:08.2385550Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:08.2385840Z env:
+2026-10-09T06:00:08.2386040Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:08.2386260Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:08.2386460Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:08.2386820Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:08.2387370Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:08.2387900Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:08.2388490Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:08.2389040Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:08.2389440Z ##[endgroup]
+2026-10-09T06:00:08.2861680Z ##[end-action id=toolchain.__run;outcome=success;conclusion=success;duration_ms=58]
+2026-10-09T06:00:08.2867910Z ##[start-action display=Install rustup if needed;id=toolchain.__run_2]
+2026-10-09T06:00:08.2917780Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T06:00:08.2918130Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T06:00:08.2918790Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T06:00:08.2919420Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T06:00:08.2919650Z [36;1mfi[0m
+2026-10-09T06:00:08.2986680Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:08.2986990Z env:
+2026-10-09T06:00:08.2987210Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:08.2987440Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:08.2987630Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:08.2988370Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:08.2989230Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:08.2989890Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:08.2990480Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:08.2991080Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:08.2991610Z ##[endgroup]
+2026-10-09T06:00:08.3388740Z ##[end-action id=toolchain.__run_2;outcome=success;conclusion=success;duration_ms=51]
+2026-10-09T06:00:08.3394640Z ##[start-action display=Install rustup if needed on windows;id=toolchain.__run_3]
+2026-10-09T06:00:08.3410230Z ##[end-action id=toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T06:00:08.3424630Z ##[start-action display=rustup toolchain install 1.95.0;id=toolchain.__run_4]
+2026-10-09T06:00:08.3458220Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T06:00:08.3459790Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T06:00:08.3460810Z [36;1mflags=()[0m
+2026-10-09T06:00:08.3461460Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T06:00:08.3462360Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T06:00:08.3463470Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T06:00:08.3464480Z [36;1mlog=$(mktemp)[0m
+2026-10-09T06:00:08.3465670Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T06:00:08.3488150Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T06:00:08.3488820Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T06:00:08.3489430Z [36;1m    break[0m
+2026-10-09T06:00:08.3489650Z [36;1m  else[0m
+2026-10-09T06:00:08.3489850Z [36;1m    status=$?[0m
+2026-10-09T06:00:08.3490090Z [36;1m  fi[0m
+2026-10-09T06:00:08.3490420Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T06:00:08.3490930Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T06:00:08.3491330Z [36;1m    exit "$status"[0m
+2026-10-09T06:00:08.3491520Z [36;1m  fi[0m
+2026-10-09T06:00:08.3491870Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T06:00:08.3492300Z [36;1m  sleep 30[0m
+2026-10-09T06:00:08.3492550Z [36;1mdone[0m
+2026-10-09T06:00:08.3556770Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:08.3557070Z env:
+2026-10-09T06:00:08.3557280Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:08.3557510Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:08.3557740Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:08.3558230Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:08.3558880Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:08.3559500Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:08.3560190Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:08.3561560Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:08.3562950Z   toolchain: 1.95.0
+2026-10-09T06:00:08.3563390Z   targets: 
+2026-10-09T06:00:08.3563820Z   components: 
+2026-10-09T06:00:08.3564330Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T06:00:08.3564850Z ##[endgroup]
+2026-10-09T06:00:08.6370630Z info: syncing channel updates for 1.95.0-aarch64-apple-darwin
+2026-10-09T06:00:08.9285070Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+2026-10-09T06:00:08.9340940Z info: downloading 3 components
+2026-10-09T06:00:18.2937340Z 
+2026-10-09T06:00:18.4538730Z   1.95.0-aarch64-apple-darwin installed - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T06:00:18.4541270Z 
+2026-10-09T06:00:18.4569620Z info: default toolchain set to 1.95.0-aarch64-apple-darwin
+2026-10-09T06:00:18.4572890Z info: self-update is disabled for this build of rustup
+2026-10-09T06:00:18.4574220Z info: any updates to rustup will need to be fetched with your system package manager
+2026-10-09T06:00:18.4904980Z ##[end-action id=toolchain.__run_4;outcome=success;conclusion=success;duration_ms=10147]
+2026-10-09T06:00:18.4941040Z ##[start-action display=rustup default 1.95.0;id=toolchain.__run_5]
+2026-10-09T06:00:18.5047390Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T06:00:18.5048580Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T06:00:18.5252450Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:18.5252840Z env:
+2026-10-09T06:00:18.5253290Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:18.5253620Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:18.5253980Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:18.5254460Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:18.5255400Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:18.5256140Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:18.5256780Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:18.5266890Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:18.5268530Z   toolchain: 1.95.0
+2026-10-09T06:00:18.5269270Z ##[endgroup]
+2026-10-09T06:00:18.6523620Z info: using existing install for 1.95.0-aarch64-apple-darwin
+2026-10-09T06:00:18.6548940Z info: default toolchain set to 1.95.0-aarch64-apple-darwin
+2026-10-09T06:00:18.6549250Z 
+2026-10-09T06:00:18.6787920Z   1.95.0-aarch64-apple-darwin unchanged - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T06:00:18.6796160Z 
+2026-10-09T06:00:18.6818860Z ##[end-action id=toolchain.__run_5;outcome=success;conclusion=success;duration_ms=187]
+2026-10-09T06:00:18.6823300Z ##[start-action display=Create cachekey;id=toolchain.rustc-version]
+2026-10-09T06:00:18.6849740Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T06:00:18.6850630Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T06:00:18.6851390Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T06:00:18.6851870Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T06:00:18.6895550Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:18.6896050Z env:
+2026-10-09T06:00:18.6896290Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:18.6896630Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:18.6896970Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:18.6897590Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:18.6898200Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:18.6898890Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:18.6899490Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:18.6900240Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:18.6900650Z   toolchain: 1.95.0
+2026-10-09T06:00:18.6901710Z ##[endgroup]
+2026-10-09T06:00:18.8206170Z ##[end-action id=toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=138]
+2026-10-09T06:00:18.8209750Z ##[start-action display=Disable incremental compilation;id=toolchain.__run_6]
+2026-10-09T06:00:18.8268810Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T06:00:18.8269360Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T06:00:18.8269690Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T06:00:18.8270050Z [36;1mfi[0m
+2026-10-09T06:00:18.8313300Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:18.8313650Z env:
+2026-10-09T06:00:18.8313990Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:18.8314250Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:18.8314500Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:18.8314870Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:18.8315380Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:18.8315930Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:18.8316550Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:18.8317160Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:18.8317510Z ##[endgroup]
+2026-10-09T06:00:18.8803350Z ##[end-action id=toolchain.__run_6;outcome=success;conclusion=success;duration_ms=59]
+2026-10-09T06:00:18.8808760Z ##[start-action display=Enable colors in Cargo output;id=toolchain.__run_7]
+2026-10-09T06:00:18.8850590Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T06:00:18.8851300Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T06:00:18.8851610Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T06:00:18.8851850Z [36;1mfi[0m
+2026-10-09T06:00:18.8895850Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:18.8896190Z env:
+2026-10-09T06:00:18.8896370Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:18.8896570Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:18.8896760Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:18.8897150Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:18.8897690Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:18.8898210Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:18.8898780Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:18.8899300Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:18.8899700Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:18.8899900Z ##[endgroup]
+2026-10-09T06:00:18.9478840Z ##[end-action id=toolchain.__run_7;outcome=success;conclusion=success;duration_ms=66]
+2026-10-09T06:00:18.9482970Z ##[start-action display=Enable Cargo sparse registry;id=toolchain.__run_8]
+2026-10-09T06:00:18.9513190Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T06:00:18.9513790Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T06:00:18.9514490Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T06:00:18.9515270Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T06:00:18.9515860Z [36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T06:00:18.9516590Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T06:00:18.9517140Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T06:00:18.9518120Z [36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T06:00:18.9518650Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T06:00:18.9519050Z [36;1m  fi[0m
+2026-10-09T06:00:18.9519300Z [36;1mfi[0m
+2026-10-09T06:00:18.9624180Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:18.9625090Z env:
+2026-10-09T06:00:18.9625460Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:18.9625730Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:18.9625960Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:18.9626400Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:18.9627020Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:18.9627710Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:18.9628290Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:18.9628850Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:18.9629220Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:18.9629400Z   toolchain: 1.95.0
+2026-10-09T06:00:18.9629770Z ##[endgroup]
+2026-10-09T06:00:19.1186010Z ##[end-action id=toolchain.__run_8;outcome=success;conclusion=success;duration_ms=170]
+2026-10-09T06:00:19.1194630Z ##[start-action display=Work around spurious network errors in curl 8.0;id=toolchain.__run_9]
+2026-10-09T06:00:19.1276610Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T06:00:19.1278150Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T06:00:19.1278930Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T06:00:19.1279550Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T06:00:19.1280990Z [36;1mfi[0m
+2026-10-09T06:00:19.1465130Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:19.1465540Z env:
+2026-10-09T06:00:19.1465770Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:19.1466080Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:19.1466310Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:19.1466680Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:19.1467290Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:19.1467860Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:19.1468550Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:19.1469270Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:19.1469670Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:19.1469910Z   toolchain: 1.95.0
+2026-10-09T06:00:19.1470120Z ##[endgroup]
+2026-10-09T06:00:19.2435000Z ##[end-action id=toolchain.__run_9;outcome=success;conclusion=success;duration_ms=123]
+2026-10-09T06:00:19.2440210Z ##[start-action display=rustc +1.95.0 --version --verbose;id=toolchain.__run_10]
+2026-10-09T06:00:19.2494620Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T06:00:19.2494970Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T06:00:19.2541400Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:19.2541700Z env:
+2026-10-09T06:00:19.2541880Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:19.2542200Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:19.2542450Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:19.2542940Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:19.2543550Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:19.2544430Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:19.2545150Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:19.2545790Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:19.2546210Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:19.2546400Z   toolchain: 1.95.0
+2026-10-09T06:00:19.2546580Z ##[endgroup]
+2026-10-09T06:00:19.3495090Z rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T06:00:19.3501070Z binary: rustc
+2026-10-09T06:00:19.3508650Z commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+2026-10-09T06:00:19.3521080Z commit-date: 2026-04-14
+2026-10-09T06:00:19.3521760Z host: aarch64-apple-darwin
+2026-10-09T06:00:19.3522620Z release: 1.95.0
+2026-10-09T06:00:19.3531170Z LLVM version: 22.1.2
+2026-10-09T06:00:19.3574860Z ##[end-action id=toolchain.__run_10;outcome=success;conclusion=success;duration_ms=113]
+2026-10-09T06:00:19.3655290Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T06:00:19.3655640Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T06:00:19.3655930Z [36;1mimport json, os, pathlib, platform, subprocess, sys, time[0m
+2026-10-09T06:00:19.3656270Z [36;1mroot = pathlib.Path(os.environ["P8_EVIDENCE"])[0m
+2026-10-09T06:00:19.3656760Z [36;1mrecord = {"schema": "p8-original-mac-supervisor-environment-v1", "platform": platform.platform(),[0m
+2026-10-09T06:00:19.3657450Z [36;1m          "commands": [], "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "passed": False}[0m
+2026-10-09T06:00:19.3657860Z [36;1mcommands = [[0m
+2026-10-09T06:00:19.3658100Z [36;1m    ("rustc-version", ["rustc", "+1.95.0", "-Vv"]),[0m
+2026-10-09T06:00:19.3658420Z [36;1m    ("cargo-version", ["cargo", "+1.95.0", "-V"]),[0m
+2026-10-09T06:00:19.3658760Z [36;1m    ("sdk-path", ["xcrun", "--show-sdk-path"]),[0m
+2026-10-09T06:00:19.3659110Z [36;1m    ("sdk-version", ["xcrun", "--show-sdk-version"]),[0m
+2026-10-09T06:00:19.3659600Z [36;1m    ("xcode-selection", ["xcode-select", "-p"]),[0m
+2026-10-09T06:00:19.3659900Z [36;1m    ("host-version", ["sw_vers"]),[0m
+2026-10-09T06:00:19.3660210Z [36;1m][0m
+2026-10-09T06:00:19.3660420Z [36;1mtry:[0m
+2026-10-09T06:00:19.3660590Z [36;1m    for label, argv in commands:[0m
+2026-10-09T06:00:19.3661090Z [36;1m        result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)[0m
+2026-10-09T06:00:19.3661630Z [36;1m        for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):[0m
+2026-10-09T06:00:19.3662110Z [36;1m            with (root / (label + "." + suffix)).open("xb") as stream:[0m
+2026-10-09T06:00:19.3662450Z [36;1m                stream.write(raw)[0m
+2026-10-09T06:00:19.3662910Z [36;1m        record["commands"].append({"label": label, "argv": argv, "exit_code": result.returncode,[0m
+2026-10-09T06:00:19.3663450Z [36;1m                                   "stdout": result.stdout.decode("utf-8", "replace"),[0m
+2026-10-09T06:00:19.3663890Z [36;1m                                   "stderr": result.stderr.decode("utf-8", "replace")})[0m
+2026-10-09T06:00:19.3664400Z [36;1m    # SDK query failures stay observed facts; they do not substitute SDKs or sources.[0m
+2026-10-09T06:00:19.3664750Z [36;1m    rust = record["commands"][0][0m
+2026-10-09T06:00:19.3665000Z [36;1m    cargo = record["commands"][1][0m
+2026-10-09T06:00:19.3665550Z [36;1m    record["passed"] = rust["exit_code"] == 0 and "release: 1.95.0" in rust["stdout"].splitlines() and cargo["exit_code"] == 0 and cargo["stdout"].startswith("cargo 1.95.0 ")[0m
+2026-10-09T06:00:19.3666130Z [36;1mexcept Exception as error:[0m
+2026-10-09T06:00:19.3666520Z [36;1m    record["error"] = {"class": type(error).__name__, "message": str(error)}[0m
+2026-10-09T06:00:19.3666920Z [36;1mfinally:[0m
+2026-10-09T06:00:19.3667230Z [36;1m    with (root / "environment.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:00:19.3667680Z [36;1m        json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:00:19.3668520Z [36;1m        stream.write("\n")[0m
+2026-10-09T06:00:19.3669030Z [36;1m    print(json.dumps({"kind": "actual_environment", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:00:19.3669500Z [36;1msys.exit(0 if record["passed"] else 2)[0m
+2026-10-09T06:00:19.3669760Z [36;1mPY[0m
+2026-10-09T06:00:19.3722270Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:19.3722640Z env:
+2026-10-09T06:00:19.3722880Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:19.3723140Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:19.3723360Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:19.3723820Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:19.3724460Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:19.3725570Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:19.3726280Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:19.3727000Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:19.3727420Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:19.3727630Z ##[endgroup]
+2026-10-09T06:00:22.5606480Z {"kind": "actual_environment", "value": {"commands": [{"argv": ["rustc", "+1.95.0", "-Vv"], "exit_code": 0, "label": "rustc-version", "stderr": "", "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n"}, {"argv": ["cargo", "+1.95.0", "-V"], "exit_code": 0, "label": "cargo-version", "stderr": "", "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n"}, {"argv": ["xcrun", "--show-sdk-path"], "exit_code": 0, "label": "sdk-path", "stderr": "", "stdout": "/Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk\n"}, {"argv": ["xcrun", "--show-sdk-version"], "exit_code": 0, "label": "sdk-version", "stderr": "", "stdout": "26.5\n"}, {"argv": ["xcode-select", "-p"], "exit_code": 0, "label": "xcode-selection", "stderr": "", "stdout": "/Applications/Xcode_26.6.app/Contents/Developer\n"}, {"argv": ["sw_vers"], "exit_code": 0, "label": "host-version", "stderr": "", "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n"}], "observed_at": "2026-10-09T06:00:19Z", "passed": true, "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O", "schema": "p8-original-mac-supervisor-environment-v1"}}
+2026-10-09T06:00:22.5728870Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T06:00:22.5730310Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T06:00:22.5731540Z [36;1mimport hashlib, json, os, pathlib, stat, subprocess, sys, time[0m
+2026-10-09T06:00:22.5733050Z [36;1mroot = pathlib.Path(os.environ["P8_EVIDENCE"])[0m
+2026-10-09T06:00:22.5733650Z [36;1msource = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"[0m
+2026-10-09T06:00:22.5734340Z [36;1mphase = os.environ["P8_SNAPSHOT_PHASE"][0m
+2026-10-09T06:00:22.5734810Z [36;1mexpected_head = "a23bb72d3c954f385b99fe81ce9189885c208557"[0m
+2026-10-09T06:00:22.5736400Z [36;1mexpected_tree = "58147c952505c44da1f41eb4b9c31643f2303b96"[0m
+2026-10-09T06:00:22.5736800Z [36;1mexpected = {[0m
+2026-10-09T06:00:22.5737490Z [36;1m    "crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"},[0m
+2026-10-09T06:00:22.5738850Z [36;1m    "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"},[0m
+2026-10-09T06:00:22.5739610Z [36;1m}[0m
+2026-10-09T06:00:22.5739790Z [36;1mdef identity(raw):[0m
+2026-10-09T06:00:22.5740190Z [36;1m    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),[0m
+2026-10-09T06:00:22.5741280Z [36;1m            "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}[0m
+2026-10-09T06:00:22.5742670Z [36;1mdef git(args, label):[0m
+2026-10-09T06:00:22.5745080Z [36;1m    result = subprocess.run(["git"] + args, cwd=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)[0m
+2026-10-09T06:00:22.5746820Z [36;1m    for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):[0m
+2026-10-09T06:00:22.5748070Z [36;1m        with (root / (phase + "-" + label + "." + suffix)).open("xb") as stream:[0m
+2026-10-09T06:00:22.5749310Z [36;1m            stream.write(raw)[0m
+2026-10-09T06:00:22.5749810Z [36;1m    if result.returncode:[0m
+2026-10-09T06:00:22.5750170Z [36;1m        raise RuntimeError("source Git observation failed: " + label)[0m
+2026-10-09T06:00:22.5750610Z [36;1m    return result.stdout[0m
+2026-10-09T06:00:22.5751320Z [36;1mrecord = {"schema": "p8-original-mac-supervisor-source-v1", "phase": phase, "expected_head": expected_head,[0m
+2026-10-09T06:00:22.5752030Z [36;1m          "expected_tree": expected_tree, "expected_files": expected, "files": {}, "passed": False,[0m
+2026-10-09T06:00:22.5752700Z [36;1m          "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "errors": []}[0m
+2026-10-09T06:00:22.5753100Z [36;1mtry:[0m
+2026-10-09T06:00:22.5753510Z [36;1m    record["head"] = git(["rev-parse", "HEAD"], "head").decode().strip()[0m
+2026-10-09T06:00:22.5754020Z [36;1m    record["tree"] = git(["rev-parse", "HEAD^{tree}"], "tree").decode().strip()[0m
+2026-10-09T06:00:22.5754750Z [36;1m    status = git(["status", "--porcelain=v1", "--untracked-files=all"], "status")[0m
+2026-10-09T06:00:22.5756050Z [36;1m    record["clean"] = status == b""[0m
+2026-10-09T06:00:22.5756460Z [36;1m    for index, (name, wanted) in enumerate(expected.items()):[0m
+2026-10-09T06:00:22.5756830Z [36;1m        path = source / name[0m
+2026-10-09T06:00:22.5757180Z [36;1m        if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode):[0m
+2026-10-09T06:00:22.5757740Z [36;1m            raise ValueError("original source is not a regular file")[0m
+2026-10-09T06:00:22.5758080Z [36;1m        raw = path.read_bytes()[0m
+2026-10-09T06:00:22.5758390Z [36;1m        actual = identity(raw)[0m
+2026-10-09T06:00:22.5758820Z [36;1m        original = git(["show", "HEAD:" + name], "blob-" + str(index))[0m
+2026-10-09T06:00:22.5759360Z [36;1m        record["files"][name] = {"actual": actual, "expected": wanted, "git_bytes_equal": raw == original}[0m
+2026-10-09T06:00:22.5761710Z [36;1m    record["passed"] = record["head"] == expected_head and record["tree"] == expected_tree and record["clean"] and all([0m
+2026-10-09T06:00:22.5763610Z [36;1m        row["actual"] == row["expected"] and row["git_bytes_equal"] for row in record["files"].values()) and len(record["files"]) == 2[0m
+2026-10-09T06:00:22.5764970Z [36;1m    if phase == "after":[0m
+2026-10-09T06:00:22.5765840Z [36;1m        before = json.loads((root / "source-before.json").read_bytes())[0m
+2026-10-09T06:00:22.5768710Z [36;1m        record["before_after_equal"] = before["passed"] and before["head"] == record["head"] and before["tree"] == record["tree"] and before["files"] == record["files"][0m
+2026-10-09T06:00:22.5769390Z [36;1m        record["passed"] = record["passed"] and record["before_after_equal"][0m
+2026-10-09T06:00:22.5769930Z [36;1mexcept Exception as error:[0m
+2026-10-09T06:00:22.5770360Z [36;1m    record["errors"].append({"class": type(error).__name__, "message": str(error)})[0m
+2026-10-09T06:00:22.5770880Z [36;1mwith (root / ("source-" + phase + ".json")).open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:00:22.5771430Z [36;1m    json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:00:22.5771840Z [36;1m    stream.write("\n")[0m
+2026-10-09T06:00:22.5772360Z [36;1mprint(json.dumps({"kind": "source_snapshot", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:00:22.5773450Z [36;1msys.exit(0 if record["passed"] else 2)[0m
+2026-10-09T06:00:22.5773880Z [36;1mPY[0m
+2026-10-09T06:00:22.5833660Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:22.5833990Z env:
+2026-10-09T06:00:22.5834220Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:22.5834460Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:22.5834770Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:22.5835180Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:22.5835800Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:22.5836360Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:22.5836940Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:22.5837490Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:22.5838570Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:22.5839150Z   P8_SNAPSHOT_PHASE: before
+2026-10-09T06:00:22.5839800Z ##[endgroup]
+2026-10-09T06:00:23.1120700Z {"kind": "source_snapshot", "value": {"clean": true, "errors": [], "expected_files": {"crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}}, "expected_head": "a23bb72d3c954f385b99fe81ce9189885c208557", "expected_tree": "58147c952505c44da1f41eb4b9c31643f2303b96", "files": {"crates/cc-eval/src/benchmark/p8_scale.rs": {"actual": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "expected": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "git_bytes_equal": true}, "crates/cc-eval/tests/p8_scale.rs": {"actual": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}, "expected": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}, "git_bytes_equal": true}}, "head": "a23bb72d3c954f385b99fe81ce9189885c208557", "observed_at": "2026-10-09T06:00:22Z", "passed": true, "phase": "before", "schema": "p8-original-mac-supervisor-source-v1", "tree": "58147c952505c44da1f41eb4b9c31643f2303b96"}}
+2026-10-09T06:00:23.1191190Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T06:00:23.1191670Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T06:00:23.1192150Z [36;1mimport hashlib, json, os, pathlib, re, stat, subprocess, sys, time[0m
+2026-10-09T06:00:23.1192660Z [36;1mroot = pathlib.Path(os.environ["P8_EVIDENCE"])[0m
+2026-10-09T06:00:23.1193110Z [36;1msource = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"[0m
+2026-10-09T06:00:23.1193630Z [36;1mtarget = pathlib.Path(os.environ["CARGO_TARGET_DIR"]).resolve(strict=True)[0m
+2026-10-09T06:00:23.1194110Z [36;1mname = "subprocess_descendant_cannot_hold_stderr_past_worker_deadline"[0m
+2026-10-09T06:00:23.1194730Z [36;1margv = ["cargo", "+1.95.0", "test", "--locked", "-p", "cc-eval", "--test", "p8_scale", name, "--", "--exact", "--nocapture"][0m
+2026-10-09T06:00:23.1195380Z [36;1mrecord = {"schema": "p8-original-mac-supervisor-execution-v1", "argv": argv, "cwd": str(source),[0m
+2026-10-09T06:00:23.1196110Z [36;1m          "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "status": "starting",[0m
+2026-10-09T06:00:23.1197370Z [36;1m          "cargo_exit_code": None, "exact_original_case_passed": False, "test_binary": None,[0m
+2026-10-09T06:00:23.1198340Z [36;1m          "scope": "Only this unchanged original test on this actual host/environment; no full-workspace or platform certification",[0m
+2026-10-09T06:00:23.1198900Z [36;1m          "errors": []}[0m
+2026-10-09T06:00:23.1199260Z [36;1mwith (root / "test-start.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:00:23.1199780Z [36;1m    json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:00:23.1200270Z [36;1m    stream.write("\n")[0m
+2026-10-09T06:00:23.1200560Z [36;1mstart = time.monotonic()[0m
+2026-10-09T06:00:23.1200920Z [36;1mtry:[0m
+2026-10-09T06:00:23.1201270Z [36;1m    # These original streams are written directly throughout the one Cargo invocation.[0m
+2026-10-09T06:00:23.1201870Z [36;1m    with (root / "cargo.stdout").open("xb") as stdout, (root / "cargo.stderr").open("xb") as stderr:[0m
+2026-10-09T06:00:23.1202390Z [36;1m        result = subprocess.run(argv, cwd=source, stdout=stdout, stderr=stderr, check=False)[0m
+2026-10-09T06:00:23.1202810Z [36;1m    record["cargo_exit_code"] = result.returncode[0m
+2026-10-09T06:00:23.1203100Z [36;1m    record["status"] = "returned"[0m
+2026-10-09T06:00:23.1203390Z [36;1m    out = (root / "cargo.stdout").read_bytes()[0m
+2026-10-09T06:00:23.1203680Z [36;1m    err = (root / "cargo.stderr").read_bytes()[0m
+2026-10-09T06:00:23.1204040Z [36;1m    text, error_text = out.decode("utf-8", "replace"), err.decode("utf-8", "replace")[0m
+2026-10-09T06:00:23.1204520Z [36;1m    matches = re.findall(r"(?m)^\s*Running tests/p8_scale\.rs \((.+)\)\s*$", error_text)[0m
+2026-10-09T06:00:23.1204870Z [36;1m    if len(matches) == 1:[0m
+2026-10-09T06:00:23.1205110Z [36;1m        binary = pathlib.Path(matches[0])[0m
+2026-10-09T06:00:23.1205370Z [36;1m        if not binary.is_absolute():[0m
+2026-10-09T06:00:23.1205690Z [36;1m            binary = source / binary[0m
+2026-10-09T06:00:23.1206440Z [36;1m        if binary.is_symlink() or not stat.S_ISREG(binary.stat().st_mode):[0m
+2026-10-09T06:00:23.1206980Z [36;1m            raise ValueError("actual test executable is not a regular file")[0m
+2026-10-09T06:00:23.1207410Z [36;1m        binary = binary.resolve(strict=True)[0m
+2026-10-09T06:00:23.1207780Z [36;1m        if target not in binary.parents:[0m
+2026-10-09T06:00:23.1208260Z [36;1m            raise ValueError("actual test executable is outside the owned target")[0m
+2026-10-09T06:00:23.1208660Z [36;1m        info = binary.stat()[0m
+2026-10-09T06:00:23.1208940Z [36;1m        sha = hashlib.sha256()[0m
+2026-10-09T06:00:23.1209260Z [36;1m        git = hashlib.sha1(b"blob " + str(info.st_size).encode() + b"\0")[0m
+2026-10-09T06:00:23.1209640Z [36;1m        with binary.open("rb") as stream:[0m
+2026-10-09T06:00:23.1210250Z [36;1m            for block in iter(lambda: stream.read(1024 * 1024), b""):[0m
+2026-10-09T06:00:23.1210570Z [36;1m                sha.update(block)[0m
+2026-10-09T06:00:23.1210850Z [36;1m                git.update(block)[0m
+2026-10-09T06:00:23.1224370Z [36;1m        record["test_binary"] = {"actual_path": str(binary), "bytes": info.st_size,[0m
+2026-10-09T06:00:23.1225210Z [36;1m                                "sha256": sha.hexdigest(), "git_blob": git.hexdigest(),[0m
+2026-10-09T06:00:23.1225680Z [36;1m                                "mode": stat.S_IMODE(info.st_mode), "source": "unique actual Cargo Running line"}[0m
+2026-10-09T06:00:23.1226080Z [36;1m    elif result.returncode == 0:[0m
+2026-10-09T06:00:23.1226590Z [36;1m        record["errors"].append({"class": "IdentityError", "message": "successful Cargo output did not identify exactly one p8_scale executable"})[0m
+2026-10-09T06:00:23.1227110Z [36;1m    record["original_output_assertions"] = {[0m
+2026-10-09T06:00:23.1227550Z [36;1m        "running_exactly_one": len(re.findall(r"(?m)^running 1 test\s*$", text)) == 1,[0m
+2026-10-09T06:00:23.1228100Z [36;1m        "exact_named_test_ok": len(re.findall(r"(?m)^test " + re.escape(name) + r" \.\.\. ok\s*$", text)) == 1,[0m
+2026-10-09T06:00:23.1229160Z [36;1m        "one_passed_no_ignored": len(re.findall(r"(?m)^test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; \d+ filtered out; finished in .+$", text)) == 1,[0m
+2026-10-09T06:00:23.1229720Z [36;1m    }[0m
+2026-10-09T06:00:23.1230350Z [36;1m    record["exact_original_case_passed"] = result.returncode == 0 and record["test_binary"] is not None and all(record["original_output_assertions"].values()) and not record["errors"][0m
+2026-10-09T06:00:23.1230930Z [36;1mexcept Exception as error:[0m
+2026-10-09T06:00:23.1231190Z [36;1m    record["status"] = "execution_or_identity_error"[0m
+2026-10-09T06:00:23.1231570Z [36;1m    record["errors"].append({"class": type(error).__name__, "message": str(error)})[0m
+2026-10-09T06:00:23.1231890Z [36;1mfinally:[0m
+2026-10-09T06:00:23.1232170Z [36;1m    record["elapsed_seconds_including_build"] = time.monotonic() - start[0m
+2026-10-09T06:00:23.1232590Z [36;1m    record["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())[0m
+2026-10-09T06:00:23.1233320Z [36;1m    record["workflow_step_exit_code"] = 0 if record["exact_original_case_passed"] else (record["cargo_exit_code"] if type(record["cargo_exit_code"]) is int and record["cargo_exit_code"] > 0 else 2)[0m
+2026-10-09T06:00:23.1233940Z [36;1m    for suffix in ("stdout", "stderr"):[0m
+2026-10-09T06:00:23.1234240Z [36;1m        path = root / ("cargo." + suffix)[0m
+2026-10-09T06:00:23.1234540Z [36;1m        if path.is_file():[0m
+2026-10-09T06:00:23.1234780Z [36;1m            raw = path.read_bytes()[0m
+2026-10-09T06:00:23.1235160Z [36;1m            record["cargo_" + suffix] = {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}[0m
+2026-10-09T06:00:23.1235620Z [36;1m    with (root / "test-receipt.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:00:23.1236800Z [36;1m        json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:00:23.1237220Z [36;1m        stream.write("\n")[0m
+2026-10-09T06:00:23.1237720Z [36;1m    print(json.dumps({"kind": "original_test_receipt", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:00:23.1238840Z [36;1m    for suffix in ("stdout", "stderr"):[0m
+2026-10-09T06:00:23.1239150Z [36;1m        path = root / ("cargo." + suffix)[0m
+2026-10-09T06:00:23.1239410Z [36;1m        if path.is_file():[0m
+2026-10-09T06:00:23.1239960Z [36;1m            print(json.dumps({"kind": "complete_original_cargo_" + suffix, "raw_utf8": path.read_bytes().decode("utf-8", "replace")}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:00:23.1240600Z [36;1msys.exit(record["workflow_step_exit_code"])[0m
+2026-10-09T06:00:23.1240900Z [36;1mPY[0m
+2026-10-09T06:00:23.1278550Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:00:23.1278830Z env:
+2026-10-09T06:00:23.1279250Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:00:23.1279480Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:00:23.1279670Z   CARGO_TERM_COLOR: never
+2026-10-09T06:00:23.1280070Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:00:23.1280670Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:00:23.1281290Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:00:23.1281850Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:00:23.1282370Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:00:23.1282740Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:00:23.1282950Z ##[endgroup]
+2026-10-09T06:02:01.7351800Z {"kind": "original_test_receipt", "value": {"argv": ["cargo", "+1.95.0", "test", "--locked", "-p", "cc-eval", "--test", "p8_scale", "subprocess_descendant_cannot_hold_stderr_past_worker_deadline", "--", "--exact", "--nocapture"], "cargo_exit_code": 0, "cargo_stderr": {"bytes": 13137, "sha256": "02d5a6b8e2bac51a9c5194d9ac7e25856f4d067dfe4bfbb2c42fbaaec36fad3d"}, "cargo_stdout": {"bytes": 187, "sha256": "4e2ebed011ef1be3a52e7785f178c3a95ebdbf4327a6a301d340d5452174b2c6"}, "cwd": "/Users/runner/work/codecortex/codecortex/original", "elapsed_seconds_including_build": 98.53030683299994, "errors": [], "exact_original_case_passed": true, "finished_at": "2026-10-09T06:02:01Z", "original_output_assertions": {"exact_named_test_ok": true, "one_passed_no_ignored": true, "running_exactly_one": true}, "schema": "p8-original-mac-supervisor-execution-v1", "scope": "Only this unchanged original test on this actual host/environment; no full-workspace or platform certification", "started_at": "2026-10-09T06:00:23Z", "status": "returned", "test_binary": {"actual_path": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target/debug/deps/p8_scale-2e1d6a779b7501c7", "bytes": 48248408, "git_blob": "be896846ac70b3491aede38eb170d449a201e65c", "mode": 493, "sha256": "f4be9957278dacac55da1cb616a8e4ef947a8cffb77c33ecc9bb2e1e15cf3d95", "source": "unique actual Cargo Running line"}, "workflow_step_exit_code": 0}}
+2026-10-09T06:02:01.7375040Z {"kind": "complete_original_cargo_stdout", "raw_utf8": "\nrunning 1 test\ntest subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.12s\n\n"}
+2026-10-09T06:02:01.7730780Z {"kind": "complete_original_cargo_stderr", "raw_utf8": "    Updating crates.io index\n Downloading crates ...\n  Downloaded clap_lex v1.0.0\n  Downloaded anstyle-query v1.1.5\n  Downloaded block-buffer v0.10.4\n  Downloaded arrayref v0.3.9\n  Downloaded serde_spanned v0.6.9\n  Downloaded ref-cast-impl v1.0.25\n  Downloaded socket2 v0.6.3\n  Downloaded option-ext v0.2.0\n  Downloaded ref-cast v1.0.25\n  Downloaded version_check v0.9.5\n  Downloaded zstd-safe v7.2.4\n  Downloaded zstd v0.13.3\n  Downloaded tracing-core v0.1.36\n  Downloaded uuid v1.23.0\n  Downloaded toml_edit v0.22.27\n  Downloaded typenum v1.20.1\n  Downloaded tree-sitter-go v0.23.4\n  Downloaded tree-sitter-javascript v0.23.1\n  Downloaded tree-sitter-java v0.23.5\n  Downloaded tree-sitter-python v0.23.6\n  Downloaded winnow v0.7.15\n  Downloaded tracing-subscriber v0.3.23\n  Downloaded chrono v0.4.44\n  Downloaded vcpkg v0.2.15\n  Downloaded tree-sitter-c v0.23.4\n  Downloaded rayon v1.11.0\n  Downloaded syn v2.0.117\n  Downloaded clap_builder v4.6.0\n  Downloaded blake3 v1.8.4\n  Downloaded tree-sitter-rust v0.23.3\n  Downloaded rmcp v2.2.0\n  Downloaded regex-syntax v0.8.10\n  Downloaded rustix v1.1.4\n  Downloaded nix v0.31.2\n  Downloaded bstr v1.12.1\n  Downloaded tracing v0.1.44\n  Downloaded tree-sitter v0.24.7\n  Downloaded rusqlite v0.40.1\n  Downloaded serde_json v1.0.149\n  Downloaded regex v1.12.3\n  Downloaded process-wrap v9.1.0\n  Downloaded regex-automata v0.4.14\n  Downloaded hashbrown v0.17.1\n  Downloaded hashbrown v0.16.1\n  Downloaded futures-util v0.3.32\n  Downloaded aho-corasick v1.1.4\n  Downloaded tokio-util v0.7.18\n  Downloaded schemars v1.2.1\n  Downloaded rand v0.10.3\n  Downloaded indexmap v2.13.0\n  Downloaded sharded-slab v0.1.7\n  Downloaded serde v1.0.228\n  Downloaded zstd-sys v2.0.16+zstd.1.5.7\n  Downloaded mio v1.2.0\n  Downloaded tree-sitter-typescript v0.23.2\n  Downloaded memchr v2.8.0\n  Downloaded tokio v1.50.0\n  Downloaded libc v0.2.183\n  Downloaded cc v1.2.58\n  Downloaded base64 v0.22.1\n  Downloaded serde_core v1.0.228\n  Downloaded rayon-core v1.13.0\n  Downloaded log v0.4.29\n  Downloaded futures v0.3.32\n  Downloaded darling_core v0.23.0\n  Downloaded tree-sitter-cpp v0.23.4\n  Downloaded clap v4.6.0\n  Downloaded chacha20 v0.10.2\n  Downloaded bytes v1.11.1\n  Downloaded unicode-ident v1.0.24\n  Downloaded serde_derive v1.0.228\n  Downloaded proc-macro2 v1.0.106\n  Downloaded num-traits v0.2.19\n  Downloaded notify v8.2.0\n  Downloaded ignore v0.4.25\n  Downloaded tracing-attributes v0.1.31\n  Downloaded toml v0.8.23\n  Downloaded tokio-stream v0.1.18\n  Downloaded tempfile v3.27.0\n  Downloaded smallvec v1.15.1\n  Downloaded shlex v1.3.0\n  Downloaded hashlink v0.12.1\n  Downloaded getrandom v0.4.2\n  Downloaded futures-channel v0.3.32\n  Downloaded darling_macro v0.23.0\n  Downloaded crossbeam-utils v0.8.21\n  Downloaded crossbeam-epoch v0.9.20\n  Downloaded core-foundation-sys v0.8.7\n  Downloaded clap_derive v4.6.0\n  Downloaded allocator-api2 v0.2.21\n  Downloaded tokio-macros v2.6.1\n  Downloaded thread_local v1.1.9\n  Downloaded thiserror v2.0.18\n  Downloaded streaming-iterator v0.1.9\n  Downloaded schemars_derive v1.2.1\n  Downloaded rmcp-macros v2.2.0\n  Downloaded pin-project-lite v0.2.17\n  Downloaded parking_lot_core v0.9.12\n  Downloaded parking_lot v0.12.5\n  Downloaded once_cell v1.21.4\n  Downloaded iana-time-zone v0.1.65\n  Downloaded foldhash v0.2.0\n  Downloaded digest v0.10.7\n  Downloaded darling v0.23.0\n  Downloaded crossbeam-deque v0.8.6\n  Downloaded cfg-if v1.0.4\n  Downloaded bitflags v2.11.0\n  Downloaded zmij v1.0.21\n  Downloaded walkdir v2.5.0\n  Downloaded utf8parse v0.2.2\n  Downloaded tracing-log v0.2.0\n  Downloaded thiserror-impl v2.0.18\n  Downloaded slab v0.4.12\n  Downloaded signal-hook-registry v1.4.8\n  Downloaded sha2 v0.10.9\n  Downloaded serde_derive_internals v0.29.1\n  Downloaded rand_core v0.10.0\n  Downloaded r2d2 v0.8.10\n  Downloaded quote v1.0.45\n  Downloaded pastey v0.2.1\n  Downloaded nu-ansi-term v0.50.3\n  Downloaded notify-types v2.1.0\n  Downloaded lru v0.18.2\n  Downloaded lock_api v0.4.14\n  Downloaded jobserver v0.1.34\n  Downloaded globset v0.4.18\n  Downloaded futures-executor v0.3.32\n  Downloaded find-msvc-tools v0.1.9\n  Downloaded fallible-iterator v0.3.0\n  Downloaded either v1.15.0\n  Downloaded dirs v5.0.1\n  Downloaded constant_time_eq v0.4.2\n  Downloaded cfg_aliases v0.2.1\n  Downloaded autocfg v1.5.0\n  Downloaded anstyle v1.0.14\n  Downloaded anstream v1.0.0\n  Downloaded tree-sitter-language v0.1.7\n  Downloaded toml_write v0.1.2\n  Downloaded toml_datetime v0.6.11\n  Downloaded strsim v0.11.1\n  Downloaded scopeguard v1.2.0\n  Downloaded scheduled-thread-pool v0.2.7\n  Downloaded same-file v1.0.6\n  Downloaded pkg-config v0.3.32\n  Downloaded itoa v1.0.18\n  Downloaded ident_case v1.0.1\n  Downloaded futures-core v0.3.32\n  Downloaded fallible-streaming-iterator v0.1.9\n  Downloaded dyn-clone v1.0.20\n  Downloaded crypto-common v0.1.7\n  Downloaded r2d2_sqlite v0.35.0\n  Downloaded is_terminal_polyfill v1.70.2\n  Downloaded futures-macro v0.3.32\n  Downloaded colorchoice v1.0.5\n  Downloaded matchers v0.2.0\n  Downloaded heck v0.5.0\n  Downloaded generic-array v0.14.7\n  Downloaded futures-task v0.3.32\n  Downloaded futures-sink v0.3.32\n  Downloaded futures-io v0.3.32\n  Downloaded fsevent-sys v4.1.0\n  Downloaded fastrand v2.3.0\n  Downloaded errno v0.3.14\n  Downloaded dirs-sys v0.4.1\n  Downloaded cpufeatures v0.2.17\n  Downloaded arrayvec v0.7.6\n  Downloaded lazy_static v1.5.0\n  Downloaded async-trait v0.1.89\n  Downloaded anstyle-parse v1.0.0\n  Downloaded equivalent v1.0.2\n  Downloaded libsqlite3-sys v0.38.1\n   Compiling libc v0.2.183\n   Compiling shlex v1.3.0\n   Compiling find-msvc-tools v0.1.9\n   Compiling proc-macro2 v1.0.106\n   Compiling quote v1.0.45\n   Compiling unicode-ident v1.0.24\n   Compiling jobserver v0.1.34\n   Compiling cc v1.2.58\n   Compiling syn v2.0.117\n   Compiling cfg-if v1.0.4\n   Compiling memchr v2.8.0\n   Compiling tree-sitter-language v0.1.7\n   Compiling serde_core v1.0.228\n   Compiling smallvec v1.15.1\n   Compiling pin-project-lite v0.2.17\n   Compiling serde v1.0.228\n   Compiling pkg-config v0.3.32\n   Compiling parking_lot_core v0.9.12\n   Compiling scopeguard v1.2.0\n   Compiling equivalent v1.0.2\n   Compiling lock_api v0.4.14\n   Compiling bitflags v2.11.0\n   Compiling once_cell v1.21.4\n   Compiling zmij v1.0.21\n   Compiling parking_lot v0.12.5\n   Compiling aho-corasick v1.1.4\n   Compiling regex-syntax v0.8.10\n   Compiling serde_derive v1.0.228\n   Compiling regex-automata v0.4.14\n   Compiling tracing-core v0.1.36\n   Compiling itoa v1.0.18\n   Compiling log v0.4.29\n   Compiling tracing-attributes v0.1.31\n   Compiling errno v0.3.14\n   Compiling serde_json v1.0.149\n   Compiling crossbeam-utils v0.8.21\n   Compiling getrandom v0.4.2\n   Compiling rand_core v0.10.0\n   Compiling autocfg v1.5.0\n   Compiling num-traits v0.2.19\n   Compiling tracing v0.1.44\n   Compiling zstd-sys v2.0.16+zstd.1.5.7\n   Compiling futures-core v0.3.32\n   Compiling allocator-api2 v0.2.21\n   Compiling foldhash v0.2.0\n   Compiling vcpkg v0.2.15\n   Compiling thiserror v2.0.18\n   Compiling crossbeam-epoch v0.9.20\n   Compiling hashbrown v0.17.1\n   Compiling libsqlite3-sys v0.38.1\n   Compiling thiserror-impl v2.0.18\n   Compiling blake3 v1.8.4\n   Compiling core-foundation-sys v0.8.7\n   Compiling strsim v0.11.1\n   Compiling futures-sink v0.3.32\n   Compiling futures-channel v0.3.32\n   Compiling iana-time-zone v0.1.65\n   Compiling chacha20 v0.10.2\n   Compiling signal-hook-registry v1.4.8\n   Compiling futures-macro v0.3.32\n   Compiling tokio-macros v2.6.1\n   Compiling mio v1.2.0\n   Compiling socket2 v0.6.3\n   Compiling constant_time_eq v0.4.2\n   Compiling version_check v0.9.5\n   Compiling arrayvec v0.7.6\n   Compiling slab v0.4.12\n   Compiling futures-task v0.3.32\n   Compiling futures-io v0.3.32\n   Compiling zstd-safe v7.2.4\n   Compiling hashbrown v0.16.1\n   Compiling arrayref v0.3.9\n   Compiling bytes v1.11.1\n   Compiling indexmap v2.13.0\n   Compiling tokio v1.50.0\n   Compiling futures-util v0.3.32\n   Compiling generic-array v0.14.7\n   Compiling rand v0.10.3\n   Compiling crossbeam-deque v0.8.6\n   Compiling chrono v0.4.44\n   Compiling hashlink v0.12.1\n   Compiling regex v1.12.3\n   Compiling scheduled-thread-pool v0.2.7\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling ident_case v1.0.1\n   Compiling cfg_aliases v0.2.1\n   Compiling fallible-iterator v0.3.0\n   Compiling rayon-core v1.13.0\n   Compiling rusqlite v0.40.1\n   Compiling nix v0.31.2\n   Compiling darling_core v0.23.0\n   Compiling r2d2 v0.8.10\n   Compiling uuid v1.23.0\n   Compiling cc-model v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-model)\n   Compiling tree-sitter-cpp v0.23.4\n   Compiling tree-sitter-go v0.23.4\n   Compiling tree-sitter-c v0.23.4\n   Compiling tree-sitter-rust v0.23.3\n   Compiling tree-sitter v0.24.7\n   Compiling tree-sitter-javascript v0.23.1\n   Compiling tree-sitter-java v0.23.5\n   Compiling tree-sitter-python v0.23.6\n   Compiling tree-sitter-typescript v0.23.2\n   Compiling typenum v1.20.1\n   Compiling ref-cast v1.0.25\n   Compiling same-file v1.0.6\n   Compiling utf8parse v0.2.2\n   Compiling anstyle-parse v1.0.0\n   Compiling walkdir v2.5.0\n   Compiling darling_macro v0.23.0\n   Compiling r2d2_sqlite v0.35.0\n   Compiling zstd v0.13.3\n   Compiling futures-executor v0.3.32\n   Compiling serde_spanned v0.6.9\n   Compiling toml_datetime v0.6.11\n   Compiling ref-cast-impl v1.0.25\n   Compiling serde_derive_internals v0.29.1\n   Compiling bstr v1.12.1\n   Compiling toml_write v0.1.2\n   Compiling anstyle-query v1.1.5\n   Compiling streaming-iterator v0.1.9\n   Compiling winnow v0.7.15\n   Compiling either v1.15.0\n   Compiling is_terminal_polyfill v1.70.2\n   Compiling anstyle v1.0.14\n   Compiling colorchoice v1.0.5\n   Compiling anstream v1.0.0\n   Compiling rayon v1.11.0\n   Compiling toml_edit v0.22.27\n   Compiling schemars_derive v1.2.1\n   Compiling globset v0.4.18\n   Compiling futures v0.3.32\n   Compiling cc-db v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-db)\n   Compiling darling v0.23.0\n   Compiling lru v0.18.2\n   Compiling heck v0.5.0\n   Compiling lazy_static v1.5.0\n   Compiling rmcp v2.2.0\n   Compiling clap_lex v1.0.0\n   Compiling option-ext v0.2.0\n   Compiling rustix v1.1.4\n   Compiling dyn-clone v1.0.20\n   Compiling schemars v1.2.1\n   Compiling dirs-sys v0.4.1\n   Compiling clap_builder v4.6.0\n   Compiling clap_derive v4.6.0\n   Compiling sharded-slab v0.1.7\n   Compiling cc-parsers v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-parsers)\n   Compiling rmcp-macros v2.2.0\n   Compiling process-wrap v9.1.0\n   Compiling toml v0.8.23\n   Compiling ignore v0.4.25\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling tokio-stream v0.1.18\n   Compiling tokio-util v0.7.18\n   Compiling matchers v0.2.0\n   Compiling tracing-log v0.2.0\n   Compiling async-trait v0.1.89\n   Compiling notify-types v2.1.0\n   Compiling thread_local v1.1.9\n   Compiling fsevent-sys v4.1.0\n   Compiling nu-ansi-term v0.50.3\n   Compiling pastey v0.2.1\n   Compiling base64 v0.22.1\n   Compiling tracing-subscriber v0.3.23\n   Compiling notify v8.2.0\n   Compiling digest v0.10.7\n   Compiling cc-index v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-index)\nwarning: unused imports: `config_cache::Loader` and `python`\n --> crates/cc-index/src/project_model/python_inventory.rs:3:13\n  |\n3 | use super::{config_cache::Loader, python};\n  |             ^^^^^^^^^^^^^^^^^^^^  ^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\n   Compiling clap v4.6.0\n   Compiling cc-search v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-search)\nwarning: function `bound` is never used\n  --> crates/cc-index/src/project_model/python_inventory.rs:96:4\n   |\n96 | fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {\n   |    ^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `sum` is never used\n   --> crates/cc-index/src/project_model/python_inventory.rs:103:4\n    |\n103 | fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {\n    |    ^^^\n\nwarning: function `supported_document` is never used\n   --> crates/cc-index/src/project_model/python_inventory.rs:290:4\n    |\n290 | fn supported_document(doc: &ConfigDocument) -> Result<()> {\n    |    ^^^^^^^^^^^^^^^^^^\n\nwarning: struct `OutputMeter` is never constructed\n   --> crates/cc-index/src/project_model/python_inventory.rs:331:8\n    |\n331 | struct OutputMeter {\n    |        ^^^^^^^^^^^\n\n   Compiling dirs v5.0.1\n   Compiling cpufeatures v0.2.17\n   Compiling fastrand v2.3.0\n   Compiling tempfile v3.27.0\n   Compiling sha2 v0.10.9\n   Compiling cc-server v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-server)\nwarning: `cc-index` (lib) generated 5 warnings (run `cargo fix --lib -p cc-index` to apply 1 suggestion)\n   Compiling cc-eval v1.0.0 (/Users/runner/work/codecortex/codecortex/original/crates/cc-eval)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 38s\n     Running tests/p8_scale.rs (/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target/debug/deps/p8_scale-2e1d6a779b7501c7)\n"}
+2026-10-09T06:02:01.7858000Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T06:02:01.7858520Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T06:02:01.7858830Z [36;1mimport hashlib, json, os, pathlib, stat, subprocess, sys, time[0m
+2026-10-09T06:02:01.7859240Z [36;1mroot = pathlib.Path(os.environ["P8_EVIDENCE"])[0m
+2026-10-09T06:02:01.7859620Z [36;1msource = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"[0m
+2026-10-09T06:02:01.7860040Z [36;1mphase = os.environ["P8_SNAPSHOT_PHASE"][0m
+2026-10-09T06:02:01.7860380Z [36;1mexpected_head = "a23bb72d3c954f385b99fe81ce9189885c208557"[0m
+2026-10-09T06:02:01.7860840Z [36;1mexpected_tree = "58147c952505c44da1f41eb4b9c31643f2303b96"[0m
+2026-10-09T06:02:01.7861200Z [36;1mexpected = {[0m
+2026-10-09T06:02:01.7861840Z [36;1m    "crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"},[0m
+2026-10-09T06:02:01.7863140Z [36;1m    "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"},[0m
+2026-10-09T06:02:01.7863790Z [36;1m}[0m
+2026-10-09T06:02:01.7864150Z [36;1mdef identity(raw):[0m
+2026-10-09T06:02:01.7864490Z [36;1m    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),[0m
+2026-10-09T06:02:01.7865240Z [36;1m            "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}[0m
+2026-10-09T06:02:01.7865640Z [36;1mdef git(args, label):[0m
+2026-10-09T06:02:01.7866160Z [36;1m    result = subprocess.run(["git"] + args, cwd=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)[0m
+2026-10-09T06:02:01.7866780Z [36;1m    for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):[0m
+2026-10-09T06:02:01.7867210Z [36;1m        with (root / (phase + "-" + label + "." + suffix)).open("xb") as stream:[0m
+2026-10-09T06:02:01.7867590Z [36;1m            stream.write(raw)[0m
+2026-10-09T06:02:01.7867840Z [36;1m    if result.returncode:[0m
+2026-10-09T06:02:01.7868190Z [36;1m        raise RuntimeError("source Git observation failed: " + label)[0m
+2026-10-09T06:02:01.7868520Z [36;1m    return result.stdout[0m
+2026-10-09T06:02:01.7869010Z [36;1mrecord = {"schema": "p8-original-mac-supervisor-source-v1", "phase": phase, "expected_head": expected_head,[0m
+2026-10-09T06:02:01.7869640Z [36;1m          "expected_tree": expected_tree, "expected_files": expected, "files": {}, "passed": False,[0m
+2026-10-09T06:02:01.7870140Z [36;1m          "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "errors": []}[0m
+2026-10-09T06:02:01.7870540Z [36;1mtry:[0m
+2026-10-09T06:02:01.7870830Z [36;1m    record["head"] = git(["rev-parse", "HEAD"], "head").decode().strip()[0m
+2026-10-09T06:02:01.7871310Z [36;1m    record["tree"] = git(["rev-parse", "HEAD^{tree}"], "tree").decode().strip()[0m
+2026-10-09T06:02:01.7871740Z [36;1m    status = git(["status", "--porcelain=v1", "--untracked-files=all"], "status")[0m
+2026-10-09T06:02:01.7872150Z [36;1m    record["clean"] = status == b""[0m
+2026-10-09T06:02:01.7872530Z [36;1m    for index, (name, wanted) in enumerate(expected.items()):[0m
+2026-10-09T06:02:01.7872930Z [36;1m        path = source / name[0m
+2026-10-09T06:02:01.7873310Z [36;1m        if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode):[0m
+2026-10-09T06:02:01.7873710Z [36;1m            raise ValueError("original source is not a regular file")[0m
+2026-10-09T06:02:01.7874070Z [36;1m        raw = path.read_bytes()[0m
+2026-10-09T06:02:01.7874310Z [36;1m        actual = identity(raw)[0m
+2026-10-09T06:02:01.7874680Z [36;1m        original = git(["show", "HEAD:" + name], "blob-" + str(index))[0m
+2026-10-09T06:02:01.7875200Z [36;1m        record["files"][name] = {"actual": actual, "expected": wanted, "git_bytes_equal": raw == original}[0m
+2026-10-09T06:02:01.7876030Z [36;1m    record["passed"] = record["head"] == expected_head and record["tree"] == expected_tree and record["clean"] and all([0m
+2026-10-09T06:02:01.7876760Z [36;1m        row["actual"] == row["expected"] and row["git_bytes_equal"] for row in record["files"].values()) and len(record["files"]) == 2[0m
+2026-10-09T06:02:01.7877230Z [36;1m    if phase == "after":[0m
+2026-10-09T06:02:01.7877650Z [36;1m        before = json.loads((root / "source-before.json").read_bytes())[0m
+2026-10-09T06:02:01.7878320Z [36;1m        record["before_after_equal"] = before["passed"] and before["head"] == record["head"] and before["tree"] == record["tree"] and before["files"] == record["files"][0m
+2026-10-09T06:02:01.7878920Z [36;1m        record["passed"] = record["passed"] and record["before_after_equal"][0m
+2026-10-09T06:02:01.7879310Z [36;1mexcept Exception as error:[0m
+2026-10-09T06:02:01.7879660Z [36;1m    record["errors"].append({"class": type(error).__name__, "message": str(error)})[0m
+2026-10-09T06:02:01.7880190Z [36;1mwith (root / ("source-" + phase + ".json")).open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:02:01.7880680Z [36;1m    json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:02:01.7881090Z [36;1m    stream.write("\n")[0m
+2026-10-09T06:02:01.7881660Z [36;1mprint(json.dumps({"kind": "source_snapshot", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:02:01.7882300Z [36;1msys.exit(0 if record["passed"] else 2)[0m
+2026-10-09T06:02:01.7882640Z [36;1mPY[0m
+2026-10-09T06:02:01.8151090Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:02:01.8151570Z env:
+2026-10-09T06:02:01.8151870Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:02:01.8152120Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:02:01.8152370Z   CARGO_TERM_COLOR: never
+2026-10-09T06:02:01.8152720Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:02:01.8153360Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:02:01.8153880Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:02:01.8221660Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:02:01.8222290Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:02:01.8222830Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:02:01.8223090Z   P8_SNAPSHOT_PHASE: after
+2026-10-09T06:02:01.8223410Z ##[endgroup]
+2026-10-09T06:02:02.5968390Z {"kind": "source_snapshot", "value": {"before_after_equal": true, "clean": true, "errors": [], "expected_files": {"crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}}, "expected_head": "a23bb72d3c954f385b99fe81ce9189885c208557", "expected_tree": "58147c952505c44da1f41eb4b9c31643f2303b96", "files": {"crates/cc-eval/src/benchmark/p8_scale.rs": {"actual": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "expected": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"}, "git_bytes_equal": true}, "crates/cc-eval/tests/p8_scale.rs": {"actual": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}, "expected": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"}, "git_bytes_equal": true}}, "head": "a23bb72d3c954f385b99fe81ce9189885c208557", "observed_at": "2026-10-09T06:02:01Z", "passed": true, "phase": "after", "schema": "p8-original-mac-supervisor-source-v1", "tree": "58147c952505c44da1f41eb4b9c31643f2303b96"}}
+2026-10-09T06:02:02.6056790Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T06:02:02.6057770Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T06:02:02.6058660Z [36;1mimport hashlib, json, os, pathlib, time[0m
+2026-10-09T06:02:02.6059780Z [36;1mroot = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("p8-mac-original-supervisor-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"] + "-evidence")[0m
+2026-10-09T06:02:02.6060760Z [36;1mif root.is_symlink():[0m
+2026-10-09T06:02:02.6062470Z [36;1m    raise RuntimeError("evidence directory is a symlink")[0m
+2026-10-09T06:02:02.6068660Z [36;1mroot.mkdir(exist_ok=True)[0m
+2026-10-09T06:02:02.6070430Z [36;1mrecord = {"schema": "p8-original-mac-supervisor-workflow-terminal-v1",[0m
+2026-10-09T06:02:02.6071080Z [36;1m          "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),[0m
+2026-10-09T06:02:02.6071910Z [36;1m          "controller_commit": os.environ["GITHUB_SHA"], "run_id": os.environ["GITHUB_RUN_ID"],[0m
+2026-10-09T06:02:02.6073900Z [36;1m          "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],[0m
+2026-10-09T06:02:02.6075350Z [36;1m          "stage_outcomes": {key: os.environ.get(key) for key in ([0m
+2026-10-09T06:02:02.6076850Z [36;1m              "P8_INITIALIZE", "P8_CHECKOUT", "P8_TOOLCHAIN", "P8_ENVIRONMENT", "P8_BEFORE", "P8_TEST", "P8_AFTER", "P8_JOB")},[0m
+2026-10-09T06:02:02.6078060Z [36;1m          "scope": "One original test observation, no full Mac workspace claim or TODO completion",[0m
+2026-10-09T06:02:02.6078650Z [36;1m          "todo_completed": 0, "todo_remaining": 29}[0m
+2026-10-09T06:02:02.6079360Z [36;1mwith (root / "workflow-terminal.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:02:02.6080080Z [36;1m    json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:02:02.6080480Z [36;1m    stream.write("\n")[0m
+2026-10-09T06:02:02.6081390Z [36;1mfiles = [][0m
+2026-10-09T06:02:02.6081880Z [36;1mfor path in sorted(root.iterdir()):[0m
+2026-10-09T06:02:02.6082330Z [36;1m    if path.is_symlink() or not path.is_file():[0m
+2026-10-09T06:02:02.6083330Z [36;1m        raise RuntimeError("unexpected evidence object")[0m
+2026-10-09T06:02:02.6084590Z [36;1m    raw = path.read_bytes()[0m
+2026-10-09T06:02:02.6085910Z [36;1m    files.append({"path": path.name, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()})[0m
+2026-10-09T06:02:02.6086710Z [36;1mwith (root / "output-manifest.json").open("x", encoding="utf-8") as stream:[0m
+2026-10-09T06:02:02.6087840Z [36;1m    json.dump({"files": files, "scope": "Regular evidence files; target/cache intentionally separate"}, stream, indent=2, sort_keys=True, allow_nan=False)[0m
+2026-10-09T06:02:02.6088600Z [36;1m    stream.write("\n")[0m
+2026-10-09T06:02:02.6089180Z [36;1mprint(json.dumps({"kind": "workflow_terminal", "value": record}, sort_keys=True, allow_nan=False), flush=True)[0m
+2026-10-09T06:02:02.6089770Z [36;1mPY[0m
+2026-10-09T06:02:02.6138230Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:02:02.6138570Z env:
+2026-10-09T06:02:02.6138800Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:02:02.6138990Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:02:02.6139180Z   CARGO_TERM_COLOR: never
+2026-10-09T06:02:02.6139550Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:02:02.6140440Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:02:02.6141010Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:02:02.6141610Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:02:02.6142160Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:02:02.6142580Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:02:02.6142780Z   P8_INITIALIZE: success
+2026-10-09T06:02:02.6142950Z   P8_CHECKOUT: success
+2026-10-09T06:02:02.6146840Z   P8_TOOLCHAIN: success
+2026-10-09T06:02:02.6147850Z   P8_ENVIRONMENT: success
+2026-10-09T06:02:02.6148500Z   P8_BEFORE: success
+2026-10-09T06:02:02.6149030Z   P8_TEST: success
+2026-10-09T06:02:02.6149500Z   P8_AFTER: success
+2026-10-09T06:02:02.6150210Z   P8_JOB: success
+2026-10-09T06:02:02.6150490Z ##[endgroup]
+2026-10-09T06:02:02.6973620Z {"kind": "workflow_terminal", "value": {"controller_commit": "af6c29f107d9426d104f34e7d83e070e0e383e5a", "observed_at": "2026-10-09T06:02:02Z", "run_attempt": "1", "run_id": "37891034688", "schema": "p8-original-mac-supervisor-workflow-terminal-v1", "scope": "One original test observation, no full Mac workspace claim or TODO completion", "stage_outcomes": {"P8_AFTER": "success", "P8_BEFORE": "success", "P8_CHECKOUT": "success", "P8_ENVIRONMENT": "success", "P8_INITIALIZE": "success", "P8_JOB": "success", "P8_TEST": "success", "P8_TOOLCHAIN": "success"}, "todo_completed": 0, "todo_remaining": 29}}
+2026-10-09T06:02:02.7108030Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T06:02:02.7108290Z with:
+2026-10-09T06:02:02.7108520Z   name: p8-mac-original-supervisor-37891034688-attempt1
+2026-10-09T06:02:02.7108930Z   path: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:02:02.7109470Z   include-hidden-files: true
+2026-10-09T06:02:02.7109660Z   if-no-files-found: error
+2026-10-09T06:02:02.7109860Z   compression-level: 6
+2026-10-09T06:02:02.7110050Z   overwrite: false
+2026-10-09T06:02:02.7110200Z env:
+2026-10-09T06:02:02.7110410Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:02:02.7110620Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T06:02:02.7110870Z   CARGO_TERM_COLOR: never
+2026-10-09T06:02:02.7111220Z   P8_EVIDENCE: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-evidence
+2026-10-09T06:02:02.7111790Z   CARGO_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-cargo
+2026-10-09T06:02:02.7112430Z   RUSTUP_HOME: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-rustup
+2026-10-09T06:02:02.7113000Z   CARGO_TARGET_DIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target
+2026-10-09T06:02:02.7113600Z   TMPDIR: /Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-tmp
+2026-10-09T06:02:02.7113970Z   CARGO_INCREMENTAL: 0
+2026-10-09T06:02:02.7114200Z ##[endgroup]
+2026-10-09T06:02:03.2378920Z (node:60889) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T06:02:03.2380420Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T06:02:03.2548900Z With the provided path, there will be 42 files uploaded
+2026-10-09T06:02:03.2549950Z Artifact name is valid!
+2026-10-09T06:02:03.2550540Z Root directory input is valid!
+2026-10-09T06:02:03.6104780Z Beginning upload of artifact content to blob storage
+2026-10-09T06:02:03.6245070Z (node:60889) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T06:02:03.8447170Z Uploaded bytes 51076
+2026-10-09T06:02:03.8927360Z Finished uploading artifact content to blob storage!
+2026-10-09T06:02:03.8928150Z SHA256 digest of uploaded artifact zip is fc3e8920a166e289349b5d784311bb3fbb9f23c0f029d602158051e954f3451c
+2026-10-09T06:02:03.8929940Z Finalizing artifact upload
+2026-10-09T06:02:04.1511950Z Artifact p8-mac-original-supervisor-37891034688-attempt1.zip successfully finalized. Artifact ID 11598438382
+2026-10-09T06:02:04.1512850Z Artifact p8-mac-original-supervisor-37891034688-attempt1 has been successfully uploaded! Final size is 51076 bytes. Artifact ID is 11598438382
+2026-10-09T06:02:04.1527610Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37891034688/artifacts/11598438382
+2026-10-09T06:02:04.1716180Z Post job cleanup.
+2026-10-09T06:02:04.2958560Z [command]/opt/homebrew/bin/git version
+2026-10-09T06:02:04.3052790Z git version 2.55.0
+2026-10-09T06:02:04.3073440Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/dc752b09-d0e1-45c5-a002-d29f8b5e4dc5/.gitconfig'
+2026-10-09T06:02:04.3082420Z Temporarily overriding HOME='/Users/runner/work/_temp/dc752b09-d0e1-45c5-a002-d29f8b5e4dc5' before making global git config changes
+2026-10-09T06:02:04.3097510Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T06:02:04.3098290Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/original
+2026-10-09T06:02:04.3186450Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T06:02:04.3264470Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T06:02:04.4529280Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T06:02:04.4612780Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T06:02:04.5560050Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T06:02:04.5633220Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T06:02:04.8081280Z Cleaning up orphan processes
+2026-10-09T06:02:05.5378620Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

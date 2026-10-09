@@ -1,0 +1,650 @@
+{
+  "schema": "pr172-actual-CI-terminal-independent-review-v1",
+  "reviewer": "/root/runtime_review",
+  "reviewed_at": "2026-10-09 06:01:15 UTC",
+  "decision": "accepted_actual_CI_source_validation_scope",
+  "archive_review": {
+    "git_blob": "73269447f81e48091119fe63715dca85b99d420e",
+    "sha256": "efe6402e8ab9e74723c2e34b8258629fc09a9b31a1a3f7197c1c4faa325f0ccf",
+    "persistent_ref": "evidence/p8-round19-pr-management-28fe-20261009",
+    "persistent_commit": "f64cd0e6bdcabb5d9d2cd706e1de12f386f6f8a3",
+    "path": "artifacts/checkpoints/p8-round21-progress-28fe-20261009/pr172-independent-archive-review.json"
+  },
+  "purpose": "Terminal followup to earlier in-progress #172 snapshot. Read actual check log; no rerun and no MSRV-checkout substitution.",
+  "actual_execution": {
+    "repository": "jyqj/codecortex",
+    "PR": 172,
+    "run_id": 37888773299,
+    "run_attempt": 1,
+    "event": "pull_request",
+    "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+    "run_status": "completed",
+    "run_conclusion": "success",
+    "updated_at": "2026-10-09T05:57:17Z",
+    "job_id": 113684712716,
+    "job_status": "completed",
+    "job_conclusion": "success",
+    "job_started_at": "2026-10-09T05:29:20Z",
+    "job_completed_at": "2026-10-09T05:57:16Z",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:29:21Z",
+        "completed_at": "2026-10-09T05:29:23Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:29:23Z",
+        "completed_at": "2026-10-09T05:30:01Z"
+      },
+      {
+        "name": "Run dtolnay/rust-toolchain@stable",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:30:01Z",
+        "completed_at": "2026-10-09T05:30:04Z"
+      },
+      {
+        "name": "Run Swatinem/rust-cache@v2",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:30:04Z",
+        "completed_at": "2026-10-09T05:30:15Z"
+      },
+      {
+        "name": "Format check",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:30:15Z",
+        "completed_at": "2026-10-09T05:30:20Z"
+      },
+      {
+        "name": "Clippy",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:30:20Z",
+        "completed_at": "2026-10-09T05:30:45Z"
+      },
+      {
+        "name": "Compile every default test target",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:30:45Z",
+        "completed_at": "2026-10-09T05:33:08Z"
+      },
+      {
+        "name": "Default regression within authorized scope",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:33:08Z",
+        "completed_at": "2026-10-09T05:37:36Z"
+      },
+      {
+        "name": "Fixed resource driver harmless fixtures and TODO consistency",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:37:36Z",
+        "completed_at": "2026-10-09T05:49:21Z"
+      },
+      {
+        "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:49:21Z",
+        "completed_at": "2026-10-09T05:50:06Z"
+      },
+      {
+        "name": "Eval suite",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:50:06Z",
+        "completed_at": "2026-10-09T05:50:11Z"
+      },
+      {
+        "name": "P0 benchmark optional HTTP contract tests",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:50:11Z",
+        "completed_at": "2026-10-09T05:53:47Z"
+      },
+      {
+        "name": "P0 real MCP subprocess adapter",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:53:47Z",
+        "completed_at": "2026-10-09T05:55:07Z"
+      },
+      {
+        "name": "P2-A public surface real MCP regression",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:07Z",
+        "completed_at": "2026-10-09T05:55:08Z"
+      },
+      {
+        "name": "P2-B resolution dependency real MCP regression",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:08Z",
+        "completed_at": "2026-10-09T05:55:08Z"
+      },
+      {
+        "name": "P2-C durable recovery and freshness MCP regression",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:08Z",
+        "completed_at": "2026-10-09T05:55:09Z"
+      },
+      {
+        "name": "P2-D multi-language public truth regression",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:09Z",
+        "completed_at": "2026-10-09T05:55:10Z"
+      },
+      {
+        "name": "P3-A project config recovery real MCP",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:10Z",
+        "completed_at": "2026-10-09T05:55:10Z"
+      },
+      {
+        "name": "P3-B package and module recovery real MCP",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:10Z",
+        "completed_at": "2026-10-09T05:55:11Z"
+      },
+      {
+        "name": "P3-C Go package recovery real MCP",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:11Z",
+        "completed_at": "2026-10-09T05:55:11Z"
+      },
+      {
+        "name": "P3-C available independent module oracles",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:11Z",
+        "completed_at": "2026-10-09T05:55:15Z"
+      },
+      {
+        "name": "P3-D module boundary and architecture contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:15Z",
+        "completed_at": "2026-10-09T05:55:15Z"
+      },
+      {
+        "name": "P4-A source fidelity and real MCP indexing",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:15Z",
+        "completed_at": "2026-10-09T05:55:20Z"
+      },
+      {
+        "name": "P4-B chunk budgets and live-session policy changes",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:20Z",
+        "completed_at": "2026-10-09T05:55:21Z"
+      },
+      {
+        "name": "P4-C document versions and source freshness",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:21Z",
+        "completed_at": "2026-10-09T05:55:21Z"
+      },
+      {
+        "name": "P4-D identity and chunk-quality gates",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:21Z",
+        "completed_at": "2026-10-09T05:55:23Z"
+      },
+      {
+        "name": "P5-A versioned retrieval lanes",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:23Z",
+        "completed_at": "2026-10-09T05:55:26Z"
+      },
+      {
+        "name": "P5-B bounded query execution and cancellation",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:26Z",
+        "completed_at": "2026-10-09T05:55:47Z"
+      },
+      {
+        "name": "P5-C generation, bounded assembly and final source verification",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:47Z",
+        "completed_at": "2026-10-09T05:55:52Z"
+      },
+      {
+        "name": "P5-D capabilities, query pins and public policies",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:52Z",
+        "completed_at": "2026-10-09T05:55:54Z"
+      },
+      {
+        "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:54Z",
+        "completed_at": "2026-10-09T05:55:55Z"
+      },
+      {
+        "name": "P7 semantic product disabled stdio contract",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:55:55Z",
+        "completed_at": "2026-10-09T05:57:13Z"
+      },
+      {
+        "name": "Post Run Swatinem/rust-cache@v2",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:57:14Z",
+        "completed_at": "2026-10-09T05:57:14Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:57:14Z",
+        "completed_at": "2026-10-09T05:57:14Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T05:57:14Z",
+        "completed_at": "2026-10-09T05:57:14Z"
+      }
+    ],
+    "other_CI_jobs": [
+      {
+        "id": 113684712509,
+        "name": "security",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1"
+      },
+      {
+        "id": 113684712786,
+        "name": "msrv",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1"
+      }
+    ],
+    "toolchain": {
+      "host": "x86_64-unknown-linux-gnu",
+      "release": "1.99.0",
+      "LLVM": "23.1.1",
+      "channel": "stable",
+      "evidence_lines": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396
+      ]
+    }
+  },
+  "actual_check_checkout": {
+    "commit": "5b9c654a6b628c17a1fc0e61660de2080e79641f",
+    "tree": "48cb1d9798fc23a636ac759b5ecfbf44a8a029f1",
+    "parents": [
+      "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "c6a19b32bd2f676f024df9d5070ab673a85515c1"
+    ],
+    "log_evidence": [
+      {
+        "line": 185,
+        "text": "2026-10-09T05:30:01.8229866Z HEAD is now at 5b9c654a Merge c6a19b32bd2f676f024df9d5070ab673a85515c1 into 7d5402a17cfdd06274e8204ec544bd4db104f872"
+      },
+      {
+        "line": 187,
+        "text": "2026-10-09T05:30:01.8717389Z [command]/usr/bin/git log -1 --format=%H"
+      },
+      {
+        "line": 188,
+        "text": "2026-10-09T05:30:01.8747134Z 5b9c654a6b628c17a1fc0e61660de2080e79641f"
+      }
+    ],
+    "official_commit_readback": "c01cafa2e6788d753d6b8c9d2a24abd36876b2b2",
+    "not_MSRV_substitution": true
+  },
+  "source_applicability": {
+    "all_twelve_nonartifact_root_entries_identical_to_E_head_current_base_and_actual_check_merge": true,
+    "unchanged_entries": [
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "51facfc382452eab53969020f8ca0beaadb65114"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3"
+      },
+      {
+        "path": "Cargo.lock",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24"
+      },
+      {
+        "path": "Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      {
+        "path": "DESIGN.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "38531b85f2d458d049ca7379eb65188132388ed4"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c"
+      },
+      {
+        "path": "crates",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "233c93b5f6cdb2c928f17c93cd41b4d0b6676094"
+      },
+      {
+        "path": "docs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e4232e5b46891e4293aa548d380a7755edcdfccd"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d"
+      }
+    ],
+    "whole_tree_equal_to_E": false,
+    "reason": "Actual merge additionally contains reviewed archive and existing main evidence including #171 Mac failures; source/validation applicability is byte-domain identity, not whole-tree equality.",
+    "original_execution_labels_retained": [
+      "E=a23bb72d3c954f385b99fe81ce9189885c208557",
+      "actual check=5b9c654a6b628c17a1fc0e61660de2080e79641f"
+    ]
+  },
+  "original_commands": [
+    "2026-10-09T05:37:36.7954412Z PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v",
+    "2026-10-09T05:37:36.7954940Z python3 scripts/code_index_plan.py",
+    "2026-10-09T05:37:36.7955459Z PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v",
+    "2026-10-09T05:37:36.7955986Z python3 scripts/p8_facts.py --check",
+    "2026-10-09T05:37:36.7956471Z PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v",
+    "2026-10-09T05:37:36.7957489Z python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15",
+    "2026-10-09T05:37:36.7958126Z python3 scripts/verify_historical_integrations_v2.py"
+  ],
+  "unittest_controls": [
+    {
+      "count": 46,
+      "actual_named_ok_count": 46,
+      "non_ok": [],
+      "summary_line": 5258,
+      "summary": "2026-10-09T05:37:41.8366121Z Ran 46 tests in 3.235s",
+      "terminal_OK": "2026-10-09T05:37:41.8366446Z OK",
+      "named_records_sha256": "73d3579027f53224d82e007a8a693c385ad7c60ab024c44f0adc02a8df471caa",
+      "first_named_line": 5210,
+      "last_named_line": 5255
+    },
+    {
+      "count": 409,
+      "actual_named_ok_count": 409,
+      "non_ok": [],
+      "summary_line": 5673,
+      "summary": "2026-10-09T05:38:29.5654970Z Ran 409 tests in 47.329s",
+      "terminal_OK": "2026-10-09T05:38:29.5655323Z OK",
+      "named_records_sha256": "5f7577249b9d8d027ad5b023175b541682449b6f291f54781231036b4b82dfd2",
+      "first_named_line": 5262,
+      "last_named_line": 5670
+    },
+    {
+      "count": 181,
+      "actual_named_ok_count": 181,
+      "non_ok": [],
+      "summary_line": 5885,
+      "summary": "2026-10-09T05:47:50.6414463Z Ran 181 tests in 549.051s",
+      "terminal_OK": "2026-10-09T05:47:50.6414784Z OK",
+      "named_records_sha256": "7c653d4096d08cb121c37cbe2cad657781f5ff2f40001fbc06192200b1d7848f",
+      "first_named_line": 5694,
+      "last_named_line": 5882
+    }
+  ],
+  "source_v15": {
+    "line": 5888,
+    "time": "2026-10-09T05:49:18.6060614Z",
+    "data": {
+      "schema_version": 10,
+      "source_version": "p8-completion-source-20261009-v15",
+      "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+      "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "product_source": "254009277688d64677361a0ca33e5dea73f295ef",
+      "review_source": "3a11f30f9f00a89fe3cd481b3b7609066728baad",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1087,
+      "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+    },
+    "actual_pass": true,
+    "runtime_quality_boundary_retained": true
+  },
+  "facts": {
+    "line": 5678,
+    "time": "2026-10-09T05:38:29.6395460Z",
+    "status": "passed",
+    "errors": [],
+    "runtime_certified": false,
+    "scope": "declared_documentation_facts_only",
+    "input_sha256": {
+      "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+      "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "crates/cc-model/src/config.rs": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c",
+      "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+      "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+      "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+      "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+      "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+    }
+  },
+  "plans": [
+    {
+      "line": 5261,
+      "time": "2026-10-09T05:37:41.8993827Z",
+      "data": {
+        "status": "passed",
+        "task_count": 192,
+        "states": {
+          "done": 163,
+          "blocked": 1,
+          "in_progress": 16,
+          "todo": 12
+        },
+        "task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "views": 4
+      }
+    },
+    {
+      "line": 5897,
+      "time": "2026-10-09T05:49:21.2833179Z",
+      "data": {
+        "status": "passed",
+        "task_count": 192,
+        "states": {
+          "done": 163,
+          "blocked": 1,
+          "in_progress": 16,
+          "todo": 12
+        },
+        "task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "views": 4
+      }
+    },
+    {
+      "line": 9488,
+      "time": "2026-10-09T05:55:54.1682941Z",
+      "data": {
+        "status": "passed",
+        "task_count": 192,
+        "states": {
+          "done": 163,
+          "blocked": 1,
+          "in_progress": 16,
+          "todo": 12
+        },
+        "task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "views": 4
+      }
+    }
+  ],
+  "historical_integrity": {
+    "line": 5898,
+    "time": "2026-10-09T05:49:21.2931142Z",
+    "status": "passed",
+    "scope": "historical_integrity_and_current_task_definitions_only",
+    "verifier_version": "historical-integrations-v2",
+    "current_plan_check": "passed",
+    "current_task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "legacy_files_unchanged": 9,
+    "task_count": 192,
+    "evidence_content_acceptance": "not_granted_by_this_verifier",
+    "quality_and_100k": "not_inherited",
+    "V19": "open",
+    "full_P7": "open",
+    "fault_runtime_tests": "not_run",
+    "full_original_JSON_retained_in_raw_log": true
+  },
+  "Linux_supervisor_regression": {
+    "observed_original_test_lines": [
+      {
+        "line": 2133,
+        "text": "2026-10-09T05:36:05.9407620Z test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+      },
+      {
+        "line": 8105,
+        "text": "2026-10-09T05:53:22.4331081Z test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+      }
+    ],
+    "scope": "Two real Linux CI invocations passed. Neither is a macOS observation or changes archived macOS1.95/SDK15.4 failure."
+  },
+  "preserved_originals": [
+    {
+      "path": "pr172-check-113684712716.log",
+      "git_blob": "108e481f99503bd45893debbdb446582b683056c",
+      "bytes": 1064064,
+      "sha256": "95e66d15637d150e7c043fdfdfb1ed866e26fada91b4d45d79b1b0198f5a7451",
+      "line_count_including_final_empty": 9585,
+      "encoding": "Exact connector-decoded UTF-8 text including leading BOM, original CR/LF/ANSI and final newline; not normalized or filtered.",
+      "GitHub_blob_readback_exact": true
+    },
+    {
+      "path": "CI-jobs.json",
+      "git_blob": "f7236aa6c0c8465f7c9d31b5ef3a3d8c735426da",
+      "bytes": 11249,
+      "sha256": "5d3d879cb59d63bf9279099dc8aadc98e0769bf8688a6fba74bd87e95babc0b4",
+      "original_tool_text_bytes": true
+    },
+    {
+      "path": "CI-run.json",
+      "git_blob": "9739dd7cd3efc9c0acaa6864aff209941d674871",
+      "bytes": 11976,
+      "sha256": "d4470d8483f949896a93eb7bdd9fef58e00832a0e6cd2abc4d3108333002083e",
+      "original_tool_text_bytes": true
+    },
+    {
+      "path": "actual-checkout-commit.json",
+      "git_blob": "c01cafa2e6788d753d6b8c9d2a24abd36876b2b2",
+      "bytes": 2594,
+      "sha256": "4075c5beee28ed22a8deffde480c63de706f645c5cdd38f907b4c68a48146775",
+      "original_tool_text_bytes": true
+    }
+  ],
+  "history_preservation": {
+    "earlier_running_job_404": "Earlier05:49 BlobNotFound remains in prior review; terminal success is a later observation, not rewrite.",
+    "prior_FINAL_local_exits": "Original [-9,1,0,0,0,0] executions unchanged, not replaced by this different CI execution.",
+    "prior_local_E_guard_wrapper_failures": "Remain intact in #172 archive; null original CLI status remains null.",
+    "Mac_failure": "Not resolved or waived.",
+    "negative_control_output": "Raw log retains invalid_inputs/exit2 fixture output printed after P8 unittest OK; aggregate original suites and shell step terminated successfully; no raw line removed."
+  },
+  "conclusion": {
+    "same_head_original_CI_completed_success": true,
+    "normal_artifact_merge_scope": "Earlier fixed-tree artifact review plus actual terminal CI supports normal merge of c6a19b into reviewed base. If refs change, recheck; never replace main with old head whole tree.",
+    "native_or_scale_or_release_acceptance": false,
+    "formal_task_completion": false,
+    "task_counts": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    },
+    "normal_merge_completed_at_verified_tree": true
+  },
+  "not_performed": [
+    "No source/workflow/task/PR/ref modifications by reviewer.",
+    "No test/native/benchmark execution or retry.",
+    "No merge performed by reviewer.",
+    "No interpretation of eight-platform success as macOS full-workspace success."
+  ],
+  "final_actual_merge_independent_readback": {
+    "commit": "a6b51ffc7d02a798b0230b9f7ec5ccda1b5757ed",
+    "tree": "48cb1d9798fc23a636ac759b5ecfbf44a8a029f1",
+    "parents": [
+      "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "c6a19b32bd2f676f024df9d5070ab673a85515c1"
+    ],
+    "main_ref": "a6b51ffc7d02a798b0230b9f7ec5ccda1b5757ed",
+    "tree_exactly_equals_actual_CI_tree": true,
+    "parents_exactly_equal_reviewed_merge_parents": true,
+    "main_exactly_equals_actual_merge": true,
+    "root_operation_receipt_git_blob": "979f5d46187ecba6ebf321ed0ae4e3f8910ba4ff",
+    "commit_API_body_sha256": "599e2da2a88cada4ccab826edd94045e6495dfc86990328349a211cda1db6432",
+    "main_ref_API_body_sha256": "69ac8c0aea4608b47333ec0d32cc071aa29289669612f67baa4954f6555f07d8",
+    "no_merge_or_ref_mutation_by_this_reviewer": true
+  }
+}

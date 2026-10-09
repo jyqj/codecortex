@@ -1,0 +1,317 @@
+{
+  "schema": "pr161-original-task-notes-navigation-carry-forward-v1",
+  "reviewer": "/root/pr_audit",
+  "reviewed_at": "2026-10-09T04:55:55.920487+00:00",
+  "pr_head": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+  "main_engineering_merge": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "compared_execution_E": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "source_tasks_blob": {
+    "sha": "f36b757b0d75ac9b495be039b35b187e8d4ff788",
+    "bytes": 810214,
+    "sha256": "a9b1e95e38ed207b6d1950d98ee68a8a51a706dd427559f2484290346e006bee",
+    "capture_path": "/dev/shm/a217aaae3bde/platform-review/round17-pr-triage/pr161-tasks-blob-1791517066875.json",
+    "capture_normalization": "Removed one capture-added LF only when required to reconstruct original Git blob; actual original Git SHA1 matched."
+  },
+  "original192_task_definitions_dependencies_status_preserved": true,
+  "all_top_level_task_fields_equal_E": true,
+  "changed_task_note_count": 4,
+  "changed_task_notes": [
+    {
+      "task_id": "P8-007",
+      "changed_fields": [
+        "implementation_notes",
+        "evidence"
+      ],
+      "original_definition_and_status_unchanged": true,
+      "original_depends_on": [
+        "P8-006"
+      ],
+      "status": "in_progress",
+      "branch_evidence": [
+        {
+          "status": "local_engineering_advanced_not_full_acceptance",
+          "round": 3,
+          "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+          "artifacts": [
+            "artifacts/checkpoints/p8-load-20261007",
+            "docs/roadmap/code-index-v2/P8-LOAD.md",
+            "artifacts/checkpoints/p8-local-waves-20261007/round3"
+          ],
+          "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+        },
+        {
+          "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+          "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+          ],
+          "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+          "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+          "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+          "summary": "第2–3轮独立审查修复 runtime 全终态与退出处理：完整对账不一致保留 exit 1 和统计；submit 入队前/后失败、KeyboardInterrupt、raw 预算失败保留实际已投递终态；未收敛工作不封存。runtime 30 项独立控制、全 P8 Python 350 项通过。完整 C1/4/8/16 read/build/backfill 实际证据及 P8-006 前置仍需独立关闭。",
+          "execution_identity": {
+            "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+            "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+            "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+            "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+          }
+        }
+      ],
+      "branch_implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。\n2026-10-08 独立验收补充（28fe）：第2–3轮独立审查修复 runtime 全终态与退出处理：完整对账不一致保留 exit 1 和统计；submit 入队前/后失败、KeyboardInterrupt、raw 预算失败保留实际已投递终态；未收敛工作不封存。runtime 30 项独立控制、全 P8 Python 350 项通过。完整 C1/4/8/16 read/build/backfill 实际证据及 P8-006 前置仍需独立关闭。",
+      "application": "Preserve as historical branch-specific statements; do not auto-append as accepted E evidence or change task status."
+    },
+    {
+      "task_id": "P8-010",
+      "changed_fields": [
+        "implementation_notes",
+        "evidence"
+      ],
+      "original_definition_and_status_unchanged": true,
+      "original_depends_on": [
+        "P8-009"
+      ],
+      "status": "in_progress",
+      "branch_evidence": [
+        {
+          "status": "local_engineering_advanced_not_full_acceptance",
+          "round": 3,
+          "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+          "artifacts": [
+            "artifacts/checkpoints/p8-load-20261007",
+            "docs/roadmap/code-index-v2/P8-LOAD.md",
+            "artifacts/checkpoints/p8-local-waves-20261007/round3"
+          ],
+          "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+        },
+        {
+          "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+          "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+          ],
+          "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+          "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+          "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+          "summary": "第2–3轮独立审查修复异常调度后的后台写入与封存竞态，保留原 180 秒排空和 70 秒清理上限；所有已拥有工作收敛后才能封存。提交失败及中断的原负控已红转绿，原错误和全部实际终态可追踪。此为驱动可靠性修复，不能代替完整一小时 soak 与资源趋势验收。",
+          "execution_identity": {
+            "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+            "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+            "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+            "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+          }
+        }
+      ],
+      "branch_implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增有界长生命周期worker、body/add/rename/delete/API/restore循环、停止投递后排空和终点原15表+3公开探针对账；比较前不修复增量侧。四组每组12次修改，144操作/48修改均完成且终点一致。取消/deadline/raw预算有实测非零收据；仅短时smoke，未认证长时资源增长、真实切分支或catalog压实。\n2026-10-08 独立验收补充（28fe）：第2–3轮独立审查修复异常调度后的后台写入与封存竞态，保留原 180 秒排空和 70 秒清理上限；所有已拥有工作收敛后才能封存。提交失败及中断的原负控已红转绿，原错误和全部实际终态可追踪。此为驱动可靠性修复，不能代替完整一小时 soak 与资源趋势验收。",
+      "application": "Preserve as historical branch-specific statements; do not auto-append as accepted E evidence or change task status."
+    },
+    {
+      "task_id": "P8-012",
+      "changed_fields": [
+        "implementation_notes",
+        "evidence"
+      ],
+      "original_definition_and_status_unchanged": true,
+      "original_depends_on": [
+        "P8-011"
+      ],
+      "status": "in_progress",
+      "branch_evidence": [
+        {
+          "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-next-ten-20261008/platform/"
+          ],
+          "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+          "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+          "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases",
+          "summary": "八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run"
+        },
+        {
+          "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-next-ten-20261008/platform-cold-default/"
+          ],
+          "scope": "one actual Linux default cold-build cell only; not a complete platform or MSRV matrix",
+          "review": "platform implementation, main integration and independent evidence review; complete inputs match the fixed candidate",
+          "rollback_status": "isolated new target and disposable fixture; preserve original cold receipt and prior matrix",
+          "summary": "补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留"
+        },
+        {
+          "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+          "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+          ],
+          "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+          "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+          "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+          "summary": "第2轮修复便携八格汇总比本地校验宽松的问题：统一构建契约，重验原选择、feature/profile/compiler/log/target/source/binary 绑定；空或畸形集合保留非零失败 matrix。42 项独立平台控制通过。真实八平台原件必须继续按其实际执行 commit 审阅，当前 source admission 不直接授予平台或任务验收。",
+          "execution_identity": {
+            "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+            "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+            "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+            "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+          }
+        }
+      ],
+      "branch_implementation_notes": "\n2026-10-08 第一轮：八格冷构建与源码/工具链/产物严格回执；本轮实际矩阵8项not_run。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 第三轮补充（不重复计数）：补充实际Linux/Rust1.95/default/dev全新target冷构建：151.146秒、verify通过；785项输入与78ae候选相同，矩阵1 passed/7 not_run。旧8项not_run回执原样保留。\n2026-10-08 独立验收补充（28fe）：第2轮修复便携八格汇总比本地校验宽松的问题：统一构建契约，重验原选择、feature/profile/compiler/log/target/source/binary 绑定；空或畸形集合保留非零失败 matrix。42 项独立平台控制通过。真实八平台原件必须继续按其实际执行 commit 审阅，当前 source admission 不直接授予平台或任务验收。",
+      "application": "Preserve as historical branch-specific statements; do not auto-append as accepted E evidence or change task status."
+    },
+    {
+      "task_id": "P8-016",
+      "changed_fields": [
+        "implementation_notes",
+        "evidence"
+      ],
+      "original_definition_and_status_unchanged": true,
+      "original_depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "status": "in_progress",
+      "branch_evidence": [
+        {
+          "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-next-ten-20261008/platform/"
+          ],
+          "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+          "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+          "rollback_status": "revert this task tooling; fixtures are separate from user source and original databases",
+          "summary": "已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份"
+        },
+        {
+          "target_sha": "b592d57756adf20361e18a2b54045aedfb056cd8",
+          "review_sha": "33a36ae5514fe4c5f1a74da315d373a7084787f1",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/"
+          ],
+          "scope": "independently reviewed engineering repairs and synthetic controls; not full original-task or runtime/release acceptance",
+          "review": "Different implementation and review agents; exact file, source manifest and original control hashes are bound by the committed review records",
+          "rollback_status": "Revert the isolated repair product with its admission metadata; preserve original successful and failed observations",
+          "summary": "第2轮修复 cold-build 列表 manifest 与历史 map manifest 的回滚读取不兼容；核对原 digest/count，拒绝重复路径/重复 JSON key/不规范路径，并对同一份 schema 原字节完成哈希和解析。29 项独立回滚/恢复控制通过。原真实历史版本对、active cache、disable fallback 和硬前置的验收仍开放。",
+          "execution_identity": {
+            "local_product_sha": "f2366d9139049d301f4f1d6695d307f52d8855b3",
+            "local_review_sha": "8aebe2979f161b6f2edb5360b73a53c2057e3eb6",
+            "publication_tree": "57d41b7184ffc959f2be19b3349a0c16ed588b02",
+            "note": "Original controls retain their executed local identities; independent full-tree equivalence binds the published product. No original test log is relabeled."
+          }
+        }
+      ],
+      "branch_implementation_notes": "\n2026-10-08 第一轮：已有明确a213a4cf两包经4次真实stdio有限回滚，保留源码/配置/原DB备份。只计原始TODO推进，完整前置/验收仍开放。\n2026-10-08 独立验收补充（28fe）：第2轮修复 cold-build 列表 manifest 与历史 map manifest 的回滚读取不兼容；核对原 digest/count，拒绝重复路径/重复 JSON key/不规范路径，并对同一份 schema 原字节完成哈希和解析。29 项独立回滚/恢复控制通过。原真实历史版本对、active cache、disable fallback 和硬前置的验收仍开放。",
+      "application": "Preserve as historical branch-specific statements; do not auto-append as accepted E evidence or change task status."
+    }
+  ],
+  "five_original_navigation_leaf_bindings": [
+    {
+      "source_commit": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+      "source_path": "README.md",
+      "git_blob_sha1": "b3927340df55f0e25fd9e979986d960a3a1c22b2",
+      "mode": "100644",
+      "type": "blob",
+      "bytes": 7151,
+      "current_E_same_path_equal": false,
+      "original_Git_locator": "https://github.com/jyqj/codecortex/blob/34aa30d7bad4b5069934aa008c9394f514995a4b/README.md",
+      "proposed_archive_path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/README.md",
+      "disposition": "historical_navigation_and_notes_only_not_current_status_or_source",
+      "public_transfer_scan": "Git_blob_identity_only_not_full_text_scan_in_this_record"
+    },
+    {
+      "source_commit": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+      "source_path": "docs/roadmap/code-index-v2/05-TODO.md",
+      "git_blob_sha1": "605f42c7f55c8c630bfcf5574768ac93f622b7d4",
+      "mode": "100644",
+      "type": "blob",
+      "bytes": 609531,
+      "current_E_same_path_equal": false,
+      "original_Git_locator": "https://github.com/jyqj/codecortex/blob/34aa30d7bad4b5069934aa008c9394f514995a4b/docs/roadmap/code-index-v2/05-TODO.md",
+      "proposed_archive_path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/05-TODO.md",
+      "disposition": "historical_navigation_and_notes_only_not_current_status_or_source",
+      "public_transfer_scan": "Git_blob_identity_only_not_full_text_scan_in_this_record"
+    },
+    {
+      "source_commit": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+      "source_path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "git_blob_sha1": "6a945baefe67795cfa4af1e15ad7069239e2eb11",
+      "mode": "100644",
+      "type": "blob",
+      "bytes": 19025,
+      "current_E_same_path_equal": false,
+      "original_Git_locator": "https://github.com/jyqj/codecortex/blob/34aa30d7bad4b5069934aa008c9394f514995a4b/docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "proposed_archive_path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "disposition": "historical_navigation_and_notes_only_not_current_status_or_source",
+      "public_transfer_scan": "Git_blob_identity_only_not_full_text_scan_in_this_record"
+    },
+    {
+      "source_commit": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+      "source_path": "docs/roadmap/code-index-v2/README.md",
+      "git_blob_sha1": "08415a0b6b5b6a317be47bb2e19a41b8182a2597",
+      "mode": "100644",
+      "type": "blob",
+      "bytes": 11754,
+      "current_E_same_path_equal": false,
+      "original_Git_locator": "https://github.com/jyqj/codecortex/blob/34aa30d7bad4b5069934aa008c9394f514995a4b/docs/roadmap/code-index-v2/README.md",
+      "proposed_archive_path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/README.md",
+      "disposition": "historical_navigation_and_notes_only_not_current_status_or_source",
+      "public_transfer_scan": "Git_blob_identity_only_not_full_text_scan_in_this_record"
+    },
+    {
+      "source_commit": "34aa30d7bad4b5069934aa008c9394f514995a4b",
+      "source_path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob_sha1": "f36b757b0d75ac9b495be039b35b187e8d4ff788",
+      "mode": "100644",
+      "type": "blob",
+      "bytes": 810214,
+      "current_E_same_path_equal": false,
+      "original_Git_locator": "https://github.com/jyqj/codecortex/blob/34aa30d7bad4b5069934aa008c9394f514995a4b/docs/roadmap/code-index-v2/tasks.json",
+      "proposed_archive_path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/tasks.json",
+      "disposition": "historical_navigation_and_notes_only_not_current_status_or_source",
+      "public_transfer_scan": "complete_original_tasks_blob_checked_no_actual_file_ids_or_library_uris"
+    }
+  ],
+  "proposed_tree_elements": [
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b3927340df55f0e25fd9e979986d960a3a1c22b2"
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/05-TODO.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "605f42c7f55c8c630bfcf5574768ac93f622b7d4"
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6a945baefe67795cfa4af1e15ad7069239e2eb11"
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08415a0b6b5b6a317be47bb2e19a41b8182a2597"
+    },
+    {
+      "path": "artifacts/checkpoints/pr-evidence-archive-161-34aa30d7/retained-navigation/docs/roadmap/code-index-v2/tasks.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f36b757b0d75ac9b495be039b35b187e8d4ff788"
+    }
+  ],
+  "closure_boundary": [
+    "Notes are retained historical assertions at34aa, not acceptance or official completion.",
+    "Corresponding current E evidence comes from exact frozen native reviews and future original acceptance mapping.",
+    "No existing source/validation/task file is replaced by preserving original navigation under an archive namespace.",
+    "Any final PR161 close requires parent review of explicit archive/reference selection and fresh head."
+  ],
+  "remote_mutations": false,
+  "formal_task_completion": false,
+  "task_counts": {
+    "done": 163,
+    "remaining": 29
+  }
+}

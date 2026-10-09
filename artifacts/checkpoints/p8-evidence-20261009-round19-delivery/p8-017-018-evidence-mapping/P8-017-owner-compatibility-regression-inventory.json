@@ -1,0 +1,440 @@
+{
+  "actual_deleted_duplicate_implementation_regression": {
+    "distribution_and_interval_keep_one_nearest_rank_convention": {
+      "actual_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "actual_ok_occurrences": [
+        {
+          "line": 2103,
+          "original_line": "2026-10-09T02:34:58.8426832Z test distribution_and_interval_keep_one_nearest_rank_convention ... ok"
+        },
+        {
+          "line": 8068,
+          "original_line": "2026-10-09T02:51:47.4358934Z test distribution_and_interval_keep_one_nearest_rank_convention ... ok"
+        }
+      ],
+      "count_semantics": "Occurrences, not independent unique samples; source #[ignore] alone is not a pass, these exact original execution lines are.",
+      "declaration_line": 17,
+      "execution_log": {
+        "bytes": 1063079,
+        "git_blob_sha1": "e77d20161c8dbe2d6ce2ecd1ccfbab0790e2a6b7",
+        "path": "/dev/shm/a217aaae3bde/platform-review/pr167-execution/job-113631480871-original.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "source": "crates/cc-eval/tests/p8_measurements.rs",
+      "source_sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
+    },
+    "legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values": {
+      "actual_checkout": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "actual_ok_occurrences": [
+        {
+          "line": 2101,
+          "original_line": "2026-10-09T02:34:58.8412676Z test legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values ... ok"
+        },
+        {
+          "line": 8067,
+          "original_line": "2026-10-09T02:51:47.4349749Z test legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values ... ok"
+        }
+      ],
+      "count_semantics": "Occurrences, not independent unique samples; source #[ignore] alone is not a pass, these exact original execution lines are.",
+      "declaration_line": 54,
+      "execution_log": {
+        "bytes": 1063079,
+        "git_blob_sha1": "e77d20161c8dbe2d6ce2ecd1ccfbab0790e2a6b7",
+        "path": "/dev/shm/a217aaae3bde/platform-review/pr167-execution/job-113631480871-original.log",
+        "sha256": "c73a3352988d4fc54a9120e01796fc9222c7a324c68b252a1cff2793803cb41f"
+      },
+      "source": "crates/cc-eval/tests/p8_measurements.rs",
+      "source_sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
+    }
+  },
+  "actual_main_tree": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+  "actual_merged_main": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "counts": {
+    "done": 163,
+    "remaining": 29
+  },
+  "decision_timing": "No fixedE change duringcurrentfullscaleacceptance; rootdecideslaterproductchangeonlyafterreview.",
+  "execution_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "formal_task_completion": false,
+  "main_applicability": {
+    "all_12_nonartifact_roots_equal_E": true,
+    "executions_not_relabelled_as_M": true,
+    "record": {
+      "bytes": 6358,
+      "git_blob_sha1": "68552ee9c8a0722ca055e38b56e1e7a947750519",
+      "path": "/dev/shm/a217aaae3bde/platform-review/round19-actual-E-merge/independent-review.json",
+      "sha256": "74c586e09b79d958cc61d5650e6a6882c630891d351123423c85840a735dc37c"
+    }
+  },
+  "native_test_or_product_executions": 0,
+  "original_gap_record": {
+    "bytes": 23288,
+    "git_blob_sha1": "796a48636e79fcfa9a30365878c015d36e032e65",
+    "path": "/workspace/scratch/a217aaae3bde/checkpoint-round19-prep/p8-017-019-gap-review/gap-report.json",
+    "sha256": "217f61a99bbfbb5dc58b76d3688ba815424e602e008b91705d8a72b5b0e3d296"
+  },
+  "original_task": {
+    "acceptance": [
+      "运行路径只有一个事实与算法所有者，删除有回归证据",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "batch": "P8-D",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "conditional": null,
+    "conditional_dependencies": [],
+    "contracts_doc": "02-CONTRACTS.md",
+    "deliverables": [
+      "删除临时兼容和重复模块的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V21 验证证据（实施时生成）"
+    ],
+    "depends_on": [
+      "P8-016"
+    ],
+    "evidence": [
+      {
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/cleanup/"
+        ],
+        "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放",
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00"
+      }
+    ],
+    "id": "P8-017",
+    "implementation_notes": "\n2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "priority": "normal",
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "scope": [
+      "crates/cc-index/",
+      "crates/cc-search/",
+      "crates/cc-eval/"
+    ],
+    "status": "in_progress",
+    "steps": [
+      "清临时旧branch/重复评分器/多份schema来源",
+      "保留必要外部wire兼容"
+    ],
+    "title": "删除临时兼容和重复模块",
+    "validations": [
+      "V18",
+      "V21"
+    ]
+  },
+  "owners": [
+    {
+      "action": "Keep existingE implementation; oldcleanup claim bench/reportremain duplicate is historical,notcurrent.",
+      "callers": [
+        "distribution",
+        "quantile_interval",
+        "bench::run_benchmark_named",
+        "bench::IncrementalStats::from_durations",
+        "bench duration stats",
+        "report::compute_summary"
+      ],
+      "classification": "shared_owner_already_implemented",
+      "existing_regression": [
+        "distribution_and_interval_keep_one_nearest_rank_convention",
+        "legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values"
+      ],
+      "id": "rust-quantile-owner",
+      "necessary_compatibility": "Caller-specificms/us units andempty-wire0 stay atlegacycallers; versionedemptyOption remainsnull.",
+      "owner": "benchmark::statistics::nearest_rank",
+      "source_paths": [
+        "crates/cc-eval/src/benchmark/statistics.rs",
+        "crates/cc-eval/src/bench.rs",
+        "crates/cc-eval/src/report.rs"
+      ]
+    },
+    {
+      "action": "No replacement now; aftercurrentmatrix,decide explicitcompatibility adapter versus same-unitsharedowner andonlythen scope differentialregression.",
+      "callers": [
+        "run report.latency",
+        "run report.latency_by_operation"
+      ],
+      "classification": "separate_legacy_ns_estimator_requires_classification_before_change",
+      "existing_regression": [
+        "Accepted E runtime6sealedoriginals andexactRuststats replay retained separately; not proof a futureconsolidation is wire-identical."
+      ],
+      "id": "runtime-python-ns",
+      "necessary_compatibility": "Raw ns andlegacy ns summary cannotbe reconstructed byRust integerus×1000; preserveallterminaldenominator,null/empty andwireprecision.",
+      "owner": "scripts/p8_runtime.py::latency_summary",
+      "source_paths": [
+        "scripts/p8_runtime.py",
+        "crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+      ]
+    },
+    {
+      "action": "Keep; functionname collisionis not duplicatequantilealgorithm.",
+      "callers": [
+        "scale reporttiming aggregates"
+      ],
+      "classification": "different_n_min_max_mean_statistic",
+      "existing_regression": [
+        "Original b107 shard review andpendingfullmatrix; not needed to prove deletion because no deletion proposed."
+      ],
+      "id": "scale-nontail-summary",
+      "necessary_compatibility": "No p95/p99/tail estimate promised.",
+      "owner": "benchmark::p8_scale::distribution",
+      "source_paths": [
+        "crates/cc-eval/src/benchmark/p8_scale.rs"
+      ]
+    },
+    {
+      "action": "Keepsemanticallydistinctprofiles; do notmergeby metricname.",
+      "callers": [
+        "benchmark::report::summarize"
+      ],
+      "classification": "one_dispatch_with_explicit_OceCompat_and_Native_profiles",
+      "existing_regression": [
+        "ExistingCI benchmarktestgroups,notanewprofile-equivalenceordeleteproof."
+      ],
+      "id": "versioned-quality-owner",
+      "necessary_compatibility": "Distinctpathpatterns/nativegroups/alternatives/spansandprofiledenominators areintentional.",
+      "owner": "benchmark::metrics::score",
+      "source_paths": [
+        "crates/cc-eval/src/benchmark/metrics.rs",
+        "crates/cc-eval/src/benchmark/report.rs",
+        "crates/cc-eval/src/benchmark/schema.rs"
+      ]
+    },
+    {
+      "action": "Keepuntilanexplicitsemanticadapterandoriginalcorpusregressionisspecified.",
+      "callers": [
+        "TOML EvalCase runner"
+      ],
+      "classification": "legacy_assertion_contract_distinct_from_versioned_Query",
+      "existing_regression": [
+        "No explicitfullwireadapter/deletionmappingprovedbythisstaticinventory."
+      ],
+      "id": "legacy-evalcase-assertions",
+      "necessary_compatibility": "Legacy symbolnameRecall@5/MRR+per-casethreshold differsfromgroup/path/spanqueryscore.",
+      "owner": "runner::check_assertions andlegacy expected_symbols path",
+      "source_paths": [
+        "crates/cc-eval/src/runner.rs",
+        "crates/cc-eval/src/types.rs",
+        "crates/cc-eval/src/corpus.rs"
+      ]
+    },
+    {
+      "action": "KeepRustowner; inventoryotherdomainsbeforeclaimallmultischemasgone.",
+      "callers": [
+        "cc-eval schema CLI"
+      ],
+      "classification": "single_schema_source_in_read_path",
+      "existing_regression": [
+        "CurrentCIversionedbenchmarkcontracts; staticownerproofdoesnotcertifyeveryschemafileinrepository."
+      ],
+      "id": "versioned-schema-owner",
+      "necessary_compatibility": "GeneratedJSONschemasareoutputs,notanotherhandwrittenowner.",
+      "owner": "Rust Suite/Query/Row+schemars",
+      "source_paths": [
+        "crates/cc-eval/src/benchmark/schema.rs",
+        "crates/cc-eval/src/bin/cc-eval.rs"
+      ]
+    },
+    {
+      "action": "Keepunless specifictemporarypathisprovenunnecessary.",
+      "callers": [
+        "compatibility evidence/legacy inputnormalization"
+      ],
+      "classification": "separate_lock_envelope_not_second_qualityscorer",
+      "existing_regression": [
+        "No deletionproposed; originalsourceguardandcompatcontrolsremainhistorical/currentpertheiridentities."
+      ],
+      "id": "compat-lock-adapter",
+      "necessary_compatibility": "Pinsactualoriginalschema/scorerbytes andparsedQuerynormalization; externalwiremayneedadapter.",
+      "owner": "scripts/p8_compat.py lock/normalization adapter",
+      "source_paths": [
+        "scripts/p8_compat.py"
+      ]
+    },
+    {
+      "action": "No deletionbyname; specificcleanuprequirescompatibilityandtargetedregressiondecision.",
+      "callers": [
+        "test/benchmarkdiagnosticoutput"
+      ],
+      "classification": "testdiagnostics_notsecondproductqualityowner",
+      "existing_regression": [
+        "Acceptedactualbackfill usesp7_worker_contention; thisdoesnotestablishbothhelpersaretemporary."
+      ],
+      "id": "test-only-percentiles",
+      "necessary_compatibility": "Differenttestprotocols/units/denominatorsmustnotbe silentlyreplaced.",
+      "owner": "p7_worker_contention andincremental_write_bench localdiagnosticclosures",
+      "source_paths": [
+        "crates/cc-eval/tests/p7_worker_contention.rs",
+        "crates/cc-db/tests/incremental_write_bench.rs"
+      ]
+    }
+  ],
+  "peer_gap_wording_review": {
+    "bytes": 1415,
+    "git_blob_sha1": "b8c1abaadb82b103e39cbcc2c5b3d0bb67b8745a",
+    "path": "/dev/shm/a217aaae3bde/scale-combined-E-review/P8-017-gap-wording-cross-review.json",
+    "sha256": "29eb6654d64bc8ac72dda43e0a5e63cab091a326061a6bbaf7c11f8c03f0e914"
+  },
+  "peer_static_inventory": {
+    "bytes": 7927,
+    "git_blob_sha1": "451c8b883ffba3ac878610de9eb1fd7e524002b2",
+    "path": "/dev/shm/a217aaae3bde/scale-combined-E-review/P8-017-narrow-static-owner-gap-review.json",
+    "sha256": "b27f10d797b006f2fe44e8a01cc90ff10232eb1a5b5640bf32c40b51bb8e44d2"
+  },
+  "remaining_scope": "Thislistisexactforthereadownerpaths,notanexhaustivecc-index/cc-search/cc-evalallbranchinventory. Remainingclassificationanddeletion-specificregressionmapstayopen;noadditionalbugorblanketrefactorisasserted.",
+  "schema": "P8-017-scoped-owner-compatibility-and-regression-inventory-v1",
+  "source_inputs": {
+    "crates/cc-db/tests/incremental_write_bench.rs": {
+      "bytes": 23035,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "32831e7be29c8ddde6cb8163bd2929e45cf9d639",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-db/tests/incremental_write_bench.rs",
+      "sha256": "c44dd246f6a90ece521a2a831cb772bce59fa21f3240a0a44e13ea586a95810d"
+    },
+    "crates/cc-eval/src/bench.rs": {
+      "bytes": 22677,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "67b5b31d925af18017864298acc30e924e368327",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/bench.rs",
+      "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
+    },
+    "crates/cc-eval/src/benchmark/metrics.rs": {
+      "bytes": 5469,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "fa0104a8ed385b7db87b3237ea27231c5745f32e",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/benchmark/metrics.rs",
+      "sha256": "b44093ea835e42643ce141e7a3c8c5d7a64c39f11bb299fb4b952259ffbc8516"
+    },
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "bytes": 46139,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+    },
+    "crates/cc-eval/src/benchmark/report.rs": {
+      "bytes": 14477,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/benchmark/report.rs",
+      "sha256": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d"
+    },
+    "crates/cc-eval/src/benchmark/schema.rs": {
+      "bytes": 4328,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "95c77b433956a75c6bb3255c95f6017e987b9a06",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/benchmark/schema.rs",
+      "sha256": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765"
+    },
+    "crates/cc-eval/src/benchmark/statistics.rs": {
+      "bytes": 12903,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2"
+    },
+    "crates/cc-eval/src/bin/cc-eval.rs": {
+      "bytes": 16918,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "73c4666b05611b2e7b6578412f8f7dc4365e7d4c",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/bin/cc-eval.rs",
+      "sha256": "99de08c18fa7b0172693763c9e14c3be2778cb2109f15ed5e474b20238350578"
+    },
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs": {
+      "bytes": 17027,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
+    },
+    "crates/cc-eval/src/corpus.rs": {
+      "bytes": 861,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "8020b67ef7027f8dec09597b708e341ecb2a4628",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/corpus.rs",
+      "sha256": "6be7ebdc33fee95cbae3f08cfb5ba337c375d79b6329cca9e77b1d2da6b5e8b2"
+    },
+    "crates/cc-eval/src/report.rs": {
+      "bytes": 6552,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "efe65553afc0fb64a90eb24bf9188641fe210edb",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/report.rs",
+      "sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0"
+    },
+    "crates/cc-eval/src/runner.rs": {
+      "bytes": 21425,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "e771db498b9124321f2d3ef57faf387c12f672d7",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/runner.rs",
+      "sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f"
+    },
+    "crates/cc-eval/src/types.rs": {
+      "bytes": 7291,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "a209d87bea4deabb77d719cd55bd410cd79af194",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/src/types.rs",
+      "sha256": "193759cd04ab0e2b91bd865e4264c7ad19e0bbef6772da026e42a28bd09d63d9"
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs": {
+      "bytes": 23104,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "5920466ea32a5470532309a46c92d6638959d53c",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
+    },
+    "scripts/p8_compat.py": {
+      "bytes": 27848,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "b5926ff3cb185e95e97e6a46e4520f47ac5771af",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "scripts/p8_compat.py",
+      "sha256": "79765d4a8ff3cdb9e5e01625d4a13318a7122b1cda60fed552d16243663c4da2"
+    },
+    "scripts/p8_runtime.py": {
+      "bytes": 58896,
+      "bytes_read_from_exact_Git": true,
+      "git_blob_sha1": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "git_mode": "100644",
+      "materialized_view_compared": true,
+      "repository_path": "scripts/p8_runtime.py",
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+    }
+  },
+  "source_task_index_ref_or_remote_edits": false,
+  "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+  "status_action": "no_change"
+}

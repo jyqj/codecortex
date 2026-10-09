@@ -485,36 +485,39 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
     // the inherited stderr pipe open after the worker itself exits normally.
     std::fs::write(
         &helper,
-        "#!/bin/sh\nwhile [ \"$#\" -gt 0 ]; do\n case \"$1\" in --output) shift; out=\"$1\";; esac\n shift\ndone\nsleep 20 &\nprintf '{\"passed\":true}' > \"$out/worker-summary.json\"\n",
+        "#!/bin/sh\nif [ \"$1\" = \"--fixture-preflight\" ]; then exit 0; fi\nwhile [ \"$#\" -gt 0 ]; do\n case \"$1\" in --output) shift; out=\"$1\";; esac\n shift\ndone\nsleep 20 &\nprintf '{\"passed\":true}' > \"$out/worker-summary.json\"\n",
     )
     .unwrap();
     std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
-    // This scenario needs a ready helper that exits normally before its
-    // descendant's inherited stderr is drained; it does not certify cold
-    // executable startup within 250ms. Establish that precondition once with
-    // a separate, bounded fixture setup. The same supervisor cleans up its
-    // fresh process group, including the setup's sleeping descendant.
-    let readiness_plan = ScalePlan {
-        deadline_ms: 2_000,
-        ..ScalePlan::default()
-    };
-    let readiness =
-        p8_scale::run_supervised(&readiness_plan, &temp.path().join("readiness"), &helper);
-    let ready = readiness.as_ref().is_ok_and(|report| {
-        report["exit_code"] == 0
-            && report["worker_exit_code"] == 0
-            && report["summary"]["passed"] == true
-            && report["stderr_complete"] == true
-            && report["fixture_cleanup"]["error"].is_null()
-            && report["release_certification"] == "not_run"
-    });
-    eprintln!("single helper readiness (separate from the 250ms assertion): {readiness:?}");
-    if !ready {
-        let evidence = temp.keep();
-        panic!(
-            "helper readiness failed without retry: {readiness:?}; evidence retained at {}",
-            evidence.display()
-        );
+    // Preparing the freshly written executable is separate from the scenario:
+    // a cold executable launch may exceed 250ms before reaching the shell.
+    // Run this no-descendant branch exactly once, with its own bounded setup.
+    // The supervised invocation below still includes its entire child lifetime.
+    let preflight_started = std::time::Instant::now();
+    let mut preflight = std::process::Command::new(&helper)
+        .arg("--fixture-preflight")
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    loop {
+        if preflight_started.elapsed() >= std::time::Duration::from_secs(2) {
+            let _ = preflight.kill();
+            let _ = preflight.wait();
+            panic!("fixture preflight exceeded its 2s setup bound");
+        }
+        match preflight.try_wait() {
+            Ok(Some(status)) => {
+                assert!(status.success(), "fixture preflight failed: {status}");
+                break;
+            }
+            Ok(None) => std::thread::sleep(std::time::Duration::from_millis(10)),
+            Err(error) => {
+                let _ = preflight.kill();
+                let _ = preflight.wait();
+                panic!("fixture preflight could not collect child status: {error}");
+            }
+        }
     }
     let plan = ScalePlan {
         deadline_ms: 250,
@@ -527,6 +530,8 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
         "a descendant must not turn the 250ms deadline into a 20s join"
     );
     assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["worker_exit_code"], 0, "{report}");
+    assert_eq!(report["summary"]["passed"], true, "{report}");
     assert_eq!(report["stderr_complete"], true);
     assert_eq!(report["release_certification"], "not_run");
 }

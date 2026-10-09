@@ -1,0 +1,99 @@
+--- a/crates/cc-search/src/preselect.rs
++++ b/crates/cc-search/src/preselect.rs
+@@ -599,7 +599,11 @@
+ 
+     // Sort by score and limit
+     let mut result: Vec<(String, f64)> = neighbor_files.into_iter().collect();
+-    result.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
++    result.sort_by(|a, b| {
++        b.1.partial_cmp(&a.1)
++            .unwrap_or(std::cmp::Ordering::Equal)
++            .then_with(|| a.0.cmp(&b.0))
++    });
+     result.truncate(expansion_limit);
+     Ok(result)
+ }
+@@ -1438,4 +1442,82 @@
+             assert!(bill.iter().any(|(n, _)| *n == LAYER_GRAPH_NEIGHBOR));
+         }
+     }
+-}
++
++    /// Four incoming files share one seed, so the separate top-20 seed policy
++    /// cannot affect this fixture. All five possible edges fit the DAO limit.
++    fn db_with_tied_graph_neighbors(reverse: bool, stronger_z: bool) -> (TempDir, IndexDb) {
++        let tmp = TempDir::new().unwrap();
++        let db = IndexDb::open(&tmp.path().join("graph_ties.db")).unwrap().0;
++        let conn = crate::test_seed::seed_conn(&db);
++        conn.execute_batch(
++            "INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at)
++                 VALUES('src/seed.rs','Rust','seed',1.0,100,'2024-01-01');
++             INSERT INTO symbols(symbol_id,symbol_uid,file_path,name,kind,start_line,end_line)
++                 VALUES('seed','uid:seed','src/seed.rs','seed','function',1,10);",
++        )
++        .unwrap();
++        let mut files = ["src/a.rs", "src/b.rs", "src/c.rs", "src/z.rs"];
++        if reverse {
++            files.reverse();
++        }
++        for file in files {
++            conn.execute(
++                "INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at)
++                     VALUES(?1,'Rust','neighbor',1.0,100,'2024-01-01')",
++                [file],
++            )
++            .unwrap();
++            let uid = format!("uid:{file}");
++            conn.execute(
++                "INSERT INTO symbols(symbol_id,symbol_uid,file_path,name,kind,start_line,end_line)
++                     VALUES(?1,?2,?1,'neighbor','function',1,10)",
++                (file, &uid),
++            )
++            .unwrap();
++            let calls = if stronger_z && file == "src/z.rs" { 2 } else { 1 };
++            for line in 1..=calls {
++                let edge = format!("{file}:{line}");
++                conn.execute(
++                    "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,
++                         caller_symbol_uid,callee_symbol_uid,resolution_kind,resolution_confidence)
++                         VALUES(?1,?2,'neighbor','seed',?3,?4,'uid:seed','resolved',1.0)",
++                    (&edge, file, line, &uid),
++                )
++                .unwrap();
++            }
++        }
++        drop(conn);
++        (tmp, db)
++    }
++
++    #[test]
++    fn graph_neighbor_ties_select_file_order_before_truncation() {
++        for reverse in [false, true] {
++            let (_tmp, db) = db_with_tied_graph_neighbors(reverse, false);
++            let scores = HashMap::from([("src/seed.rs".to_string(), 2.0)]);
++            for _ in 0..8 {
++                let result =
++                    score_graph_neighbors(&db, &scores, 2, &RankingConfig::default()).unwrap();
++                let paths: Vec<_> = result.iter().map(|(path, _)| path.as_str()).collect();
++                assert_eq!(paths, ["src/a.rs", "src/b.rs"]);
++                assert!(result.iter().all(|(_, score)| (*score - 0.8).abs() < 1e-12));
++            }
++        }
++    }
++
++    #[test]
++    fn graph_neighbor_score_precedes_file_order_at_the_cutoff() {
++        for reverse in [false, true] {
++            let (_tmp, db) = db_with_tied_graph_neighbors(reverse, true);
++            let scores = HashMap::from([("src/seed.rs".to_string(), 2.0)]);
++            for _ in 0..8 {
++                let result =
++                    score_graph_neighbors(&db, &scores, 2, &RankingConfig::default()).unwrap();
++                let paths: Vec<_> = result.iter().map(|(path, _)| path.as_str()).collect();
++                assert_eq!(paths, ["src/z.rs", "src/a.rs"]);
++                assert!((result[0].1 - 0.9).abs() < 1e-12);
++                assert!((result[1].1 - 0.8).abs() < 1e-12);
++            }
++        }
++    }
++}

@@ -1,0 +1,93 @@
+{
+  "actions": "Read existing two source blobs and parse AST navigation only; no original guard execution, native compile/workload, checkout/index change, commit/ref or workflow operation.",
+  "actual_code_basis": [
+    {
+      "bytes": 11089,
+      "functions": {
+        "approved_union": {
+          "end_line": 204,
+          "line": 196
+        },
+        "load_registry": {
+          "end_line": 76,
+          "line": 69
+        },
+        "main": {
+          "end_line": 241,
+          "line": 225
+        },
+        "reconstruct": {
+          "end_line": 193,
+          "line": 143
+        },
+        "verify_ci": {
+          "end_line": 222,
+          "line": 215
+        },
+        "verify_snapshots": {
+          "end_line": 140,
+          "line": 134
+        },
+        "verify_validation_inputs": {
+          "end_line": 131,
+          "line": 123
+        }
+      },
+      "git_blob": "a167cc418ccb81165f1067a4f6b0c88df0a25d57",
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "sha256": "02d9be39f2c14306d5af4d98c0873328e9afbdbac7aa8809b8385c4317e86f61",
+      "source": "1d39f382d4e08e702a55693c9c614fa477bf7e0c"
+    },
+    {
+      "bytes": 8682,
+      "functions": {
+        "approved_union": {
+          "end_line": 212,
+          "line": 210
+        },
+        "verify_current_history": {
+          "end_line": 157,
+          "line": 152
+        }
+      },
+      "git_blob": "f7e68c27ce4d728a2e637e34fe863f74c25d485d",
+      "path": "scripts/v15_historical_context.py",
+      "sha256": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20",
+      "source": "1d39f382d4e08e702a55693c9c614fa477bf7e0c"
+    }
+  ],
+  "algorithm_findings": [
+    "load_registry checks its fixed digest and identities, not current checkout HEAD identity.",
+    "reconstruct reads fixed PRODUCT and REVIEW blobs, validates the declared complete product/delta/validation maps, and compares the relevant current files to the fixed source bytes.",
+    "main checks current product bytes and tracked inventory plus current validation inventory and exact CI selector. It does not assert HEAD equals PRODUCT, REVIEW, or M2.",
+    "verify_current_history checks each protected historical path and its bytes; extra unrelated documentation/artifact files do not themselves change those protected bytes.",
+    "The fixed review record at REVIEW_PATH and the admitted old historical inputs must remain present and exact. Sparse omissions still cause an actual guard failure and must not be treated as a pass."
+  ],
+  "corrected_scope": "A documentation/archive-only reconciliation that retains the exact M2 admitted source and validation domains may retain M2 unchanged verifier and registry pins and execute the original v15 on the resulting complete checkout. A changed HEAD alone does not require new PRODUCT/REVIEW pins. No prospective pass is claimed.",
+  "created_utc": "2026-10-09T11:35:50.421537+00:00",
+  "formal_completion": false,
+  "future_LP_distinction": "Adding LP changes real product and validation inputs; that future composition cannot keep M2 pins merely because the present archive/docs reconciliation can. Previous LP map/feature composition design remains a design requiring exact applicable source admission.",
+  "permitted_reconciliation": {
+    "also_require": [
+      "Original exact CI selector/P7 engineering workflow constraints",
+      "Original fixed source review bytes at the pinned path",
+      "All historical protected files unchanged",
+      "No product/validation added, removed or altered outside original inventories",
+      "Original v15 actual execution succeeds on the resulting view"
+    ],
+    "new_guard_execution_in_this_review": false,
+    "replace_with_new_main_guards": false,
+    "retain_exact_M2_guard_pair": true,
+    "retain_product_inputs": 1093,
+    "retain_validation_inputs": 139
+  },
+  "prior_overstatement": "Neither old set of pins can certify a newly composed commit. Bind the actual future product/review/guards via the original admission workflow and run original v15; no predicates should change.",
+  "remaining_todos": 29,
+  "reviewer": "/root/scale_closeout",
+  "schema": "guard-scope-correction-addendum-v1",
+  "supersedes_only_guard_rebinding_requirement_in": {
+    "bytes": 16609,
+    "path": "/workspace/scratch/a217aaae3bde/scale-pr180-C-review/new-main-b941-M2-reconciliation-design.json",
+    "sha256": "2d4281676c59c443435c4ce7065ca02ef2a65d0d1599c804a874277fc11f3fd3"
+  }
+}

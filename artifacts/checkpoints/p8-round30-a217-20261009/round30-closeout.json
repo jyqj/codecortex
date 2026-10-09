@@ -1,0 +1,137 @@
+{
+  "schema": "p8-round30-closeout-v1",
+  "round": 30,
+  "closed_at": "2026-10-09T11:40:47Z",
+  "accounting": {
+    "original_total": 192,
+    "original_done": 163,
+    "newly_completed_this_round": 0,
+    "newly_completed_this_session": 0,
+    "remaining": 29,
+    "target_ids": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "acceptance_definitions_dependencies_and_statuses_unchanged": true
+  },
+  "sources": {
+    "original_C": {
+      "head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "product_count": 1092,
+      "validation_count": 139
+    },
+    "diagnostic_LG": {
+      "head": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+      "workflow_run": 37919399759,
+      "admission_job": 113783411293,
+      "actual_ci_status_at_cutoff": "queued",
+      "actual_Rust_or_feature_workload_result_at_cutoff": false,
+      "prior_original_v15_exit_code": 0
+    },
+    "external_PR180": {
+      "head": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+      "observed_main": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+      "independent_product_source": true,
+      "M3_actual_source_admission_included": false
+    }
+  },
+  "accepted_this_round": {
+    "C_scale_cumulative": {
+      "accepted_shards": 4,
+      "required_shards": 150,
+      "accepted_samples": 41,
+      "required_samples": 1500,
+      "study_complete": false,
+      "original_run": 37910924354
+    },
+    "C_runtime_cumulative": {
+      "mixed_profiles_accepted": [
+        1,
+        4,
+        8,
+        16
+      ],
+      "original_mixed_artifact_ids": [
+        11611743908,
+        11612539681,
+        11612256751,
+        11611524778
+      ],
+      "backfill_accepted_in_prior_round": true,
+      "accepted_groups": 5,
+      "required_groups": 6,
+      "soak_original_acceptance_at_cutoff": false,
+      "DB_acquisition_supplement_source": "independent LG; not credited by default mixed"
+    },
+    "C_platform_cumulative": {
+      "accepted_cells": 7,
+      "required_cells": 8,
+      "new_cells": [
+        {
+          "cell": "linux-1.95-semantic",
+          "original_artifact_ids": [
+            11612174906,
+            11612935410
+          ],
+          "original_review_exit_code": 0
+        },
+        {
+          "cell": "linux-1.95-default",
+          "original_artifact_ids": [
+            11612952575,
+            11612759454
+          ],
+          "original_review_exit_code": 0
+        }
+      ],
+      "collector_complete_at_cutoff": false
+    }
+  },
+  "storage_adaptation": {
+    "scope": "optional artifact-root argument; fixed source, 27 original predicates, eight-cell collector set and outer 250 MiB reserve unchanged",
+    "old_helper_original_bytes_retained": true,
+    "native_workload_reexecutions": 0
+  },
+  "artifact_bundle": {
+    "bytes": 1990989,
+    "filename": "round30-public-evidence.tar.gz",
+    "format": "USTAR + gzip; sorted targets, fixed zero ownership/timestamps, original regular-file modes",
+    "git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+    "sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+    "member_paths": 140,
+    "payload_bytes": 4099174,
+    "complete_member_byte_hash_mode_readback": true,
+    "raw_github_zips_included": false
+  },
+  "preservation": {
+    "original_140_selected_files_unchanged": true,
+    "previous_R29_files_unchanged": true,
+    "original_ZIPs_and_reviews_retained": true,
+    "unknown_or_mode_mismatched_derived_files_not_repaired_or_removed": true,
+    "private_captures_excluded": true,
+    "original_tasks_definitions_dependencies_statuses_unchanged": true
+  },
+  "open_requirements": [
+    "Original full 150-shard/1500-sample study and its original registered denominators/budgets.",
+    "Original C soak artifact acceptance and final platform cell plus eight-cell collector.",
+    "LG actual controls and four feature-on mixed observations with exact new source identity.",
+    "Applicable final-source regressions, dependency closure and original benchmark delivery; no new live/G8/cross-platform full-workspace requirement introduced."
+  ],
+  "explicit_exclusions": [
+    "private captures and transfer identifiers",
+    "original GitHub ZIPs and native executables",
+    "all round29 original payload files",
+    "round31 soak intake and final eighth platform/collector",
+    "round31 LG actual failure and formatting follow-up",
+    "M3 actual source admission, still pending at Round30 cutoff"
+  ],
+  "publication_scope": "Only new artifacts/checkpoints/p8-round30-a217-20261009 paths on the evidence branch; no product/ref other than explicitly leased evidence ref is to be changed."
+}

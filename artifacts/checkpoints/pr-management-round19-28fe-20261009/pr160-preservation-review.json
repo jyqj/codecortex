@@ -1,0 +1,1894 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T04:29:32.857Z",
+  "reviewer": "/root/runtime_review",
+  "repository": "jyqj/codecortex",
+  "verdict": "superseded_closure_is_preservation_safe_with_existing_evidence_refs_retained",
+  "scope": "PR160_fixed_head_history_preservation_and_management_only",
+  "identity": {
+    "pull_request": 160,
+    "state": "open",
+    "draft": true,
+    "head": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "branch": "task/p8-completion-20261009",
+    "branch_ref_actual": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "head_tree": "645404431ca15770d6e729785a3ada68b096c593",
+    "actual_main": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "reported_current_mergeability": {
+      "mergeable": null,
+      "mergeable_state": "unknown"
+    },
+    "note": "Current API says mergeable=null/unknown. Earlier conflicted state is historical, not repeated as a new observation."
+  },
+  "pr_file_list": {
+    "declared": 133,
+    "pages": [
+      {
+        "page": 1,
+        "count": 100
+      },
+      {
+        "page": 2,
+        "count": 33
+      }
+    ],
+    "complete": true,
+    "unique_filenames": 133,
+    "comparison_note": "PR files compare to its merge-base, not directly to current main. Direct head/main trees were independently read."
+  },
+  "artifact_scope": {
+    "all_old_artifact_root_subtrees_except_checkpoints_identical": true,
+    "old_checkpoint_count": 173,
+    "main_checkpoint_count": 191,
+    "old_checkpoint_roots_identical_except": [
+      "p8-completion-20261009"
+    ],
+    "old_checkpoint_roots_removed": [],
+    "new_main_checkpoint_roots": [
+      "backfill-phase-costs-v2-20261003",
+      "fifo-100k-paired-decision-20261003",
+      "independent-capability-v2-review-20261003",
+      "independent-direct-writer-review-20261003",
+      "independent-fifo-claim-review-20261003",
+      "independent-go-call-fix-20261003",
+      "independent-parallel-drain-review-20261003",
+      "independent-v2-100k-release-20261003",
+      "independent-v24-migration-20261003",
+      "p8-independent-acceptance-20261009-28fe",
+      "p8-scale-cache-20261009",
+      "parallel-startup-100k-paired-20261003",
+      "pr-evidence-archive-104",
+      "pr-evidence-archive-105-108-124",
+      "pr-evidence-archive-106-109-112-115-116-118-120-126-133",
+      "pr-evidence-archive-163",
+      "public-dev-kind-review-20261003",
+      "v24-failure-triage-20261003"
+    ],
+    "head_checkpoint_tree": "0fb28d8384302b9ce04dbd7c76a5de39f375c03b",
+    "main_checkpoint_tree": "f5f08026a30266b62507c93095252ec05d371c64",
+    "complete_recursive_head_tree_truncated": false,
+    "total_original_regular_files": 69,
+    "total_original_regular_bytes": 67054093,
+    "same_path_same_blob_mode_in_main": 6,
+    "different_or_missing_at_same_main_path": 63,
+    "different_nonempty_files": 62,
+    "different_bytes": 60276314,
+    "zero_byte_different_path": "scale-engineering-D0/finalize.stderr",
+    "empty_blob_also_present_elsewhere_in_main_checkpoint": true,
+    "all_originals_still_only_on_PR160_branch": false,
+    "note": "The 62 nonempty figure is a same-path preservation gap in main, not a claim of repository-wide unique blob absence. Six separate existing evidence heads retain the checkpoint."
+  },
+  "frozen_other_reachability": {
+    "tag_refs_found": 0,
+    "refs_response_count": 498,
+    "branch_references_are_mutable_not_guaranteed_immutable_by_name": true,
+    "fixed_commit_oids_are_recorded": true,
+    "complete_checkpoint_at_other_refs": [
+      {
+        "ref": "refs/heads/task/p8-round10-evidence-20261008",
+        "commit": "64230c8a628813d4f4f7c733e9779f17e85606b8",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      },
+      {
+        "ref": "refs/heads/task/p8-round11-evidence-20261008",
+        "commit": "b2aede645d76cf44f58d70de1df94de00c32031b",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      },
+      {
+        "ref": "refs/heads/task/p8-round12-evidence-20261009",
+        "commit": "5e55c7e38fcdde01d49156ebd531ceb8e6160fbe",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      },
+      {
+        "ref": "refs/heads/task/p8-round13-evidence-20261009",
+        "commit": "0072cf64d00868249ae2e7db6809fb8c424f7a0d",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      },
+      {
+        "ref": "refs/heads/task/p8-round14-evidence-20261009",
+        "commit": "7520427ca691cf66232f8b41a3d09bb922a6e9d7",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      },
+      {
+        "ref": "refs/heads/task/p8-round15-evidence-20261009",
+        "commit": "aba11b861aee65e48b58b7fe8ac2c81564f91029",
+        "contents_children_count": 13,
+        "all_child_blob_or_tree_sha_equal": true
+      }
+    ],
+    "strongest_mode_and_history_proof": {
+      "ref": "refs/heads/task/p8-round15-evidence-20261009",
+      "commit": "aba11b861aee65e48b58b7fe8ac2c81564f91029",
+      "root_artifacts_tree": "3515a39bc23fb6d55d61da5c6bd2072eef85bde7",
+      "checkpoints_tree": "22ae8634c507aed16c9876eead51d4c4e16b4f8e",
+      "checkpoint_entry": {
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0fb28d8384302b9ce04dbd7c76a5de39f375c03b"
+      },
+      "entire_original_69_files_modes_and_blobs_equal": true,
+      "compare_status": "ahead",
+      "ahead_by": 6,
+      "behind_by": 0,
+      "merge_base": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "all_G4_commit_history_reachable": true
+    }
+  },
+  "nonartifact_source_boundary": {
+    "main_outside_artifacts_exactly_equals_merged_A23": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "G4_native_tree": "aff9893e4f10f4b772e966716957ff8a30f9f750",
+    "main_native_tree": "233c93b5f6cdb2c928f17c93cd41b4d0b6676094",
+    "G4_native_count": 1087,
+    "main_native_count": 1087,
+    "whole_G4_product_not_byte_identical_to_main": true,
+    "actual_differences": {
+      "crates": [
+        {
+          "path": "crates/cc-db/src/resolution_dependency_store.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "a93a1df4b4847be95f9c3891be19ec648c238a28",
+            "bytes": 10194
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+            "bytes": 10207
+          }
+        },
+        {
+          "path": "crates/cc-db/src/symbol_identity_store.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "f4195acd4db1cfdd6197ae614fd61f7fe176eeff",
+            "bytes": 8868
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "c9200289e1cf67bc4824b25a161907edfc526490",
+            "bytes": 8890
+          }
+        },
+        {
+          "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "2db5f65c6c6655bf74d64e9996a614c4a6d62800",
+            "bytes": 6006
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+            "bytes": 8252
+          }
+        },
+        {
+          "path": "crates/cc-eval/src/bench.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "72aa02d69c3e0710dcdb07925a285571f0a842e0",
+            "bytes": 22927
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "67b5b31d925af18017864298acc30e924e368327",
+            "bytes": 22677
+          }
+        },
+        {
+          "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "1281d5340096699663308c92ce27978ae96ac84e",
+            "bytes": 46137
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+            "bytes": 46139
+          }
+        },
+        {
+          "path": "crates/cc-eval/src/benchmark/statistics.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "ccd40630a2e30fa7bc74b0fa5814068a26c07a7a",
+            "bytes": 12794
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+            "bytes": 12903
+          }
+        },
+        {
+          "path": "crates/cc-eval/src/report.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "4d3b2341711a540b768261a3430875d146afc884",
+            "bytes": 6909
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "efe65553afc0fb64a90eb24bf9188641fe210edb",
+            "bytes": 6552
+          }
+        },
+        {
+          "path": "crates/cc-eval/tests/p8_measurements.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "edc8c2fa30c97c7e5b4e32ee48c0b5fadde65df5",
+            "bytes": 19964
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "5c3927b40cbc0d894be6d86895ec1ed8c14bbffb",
+            "bytes": 22509
+          }
+        },
+        {
+          "path": "crates/cc-index/tests/qname_identity_transaction.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "bf683e227bcf12371679d07edc4cb7adeb09edbc",
+            "bytes": 3280
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "258f2840f410faffe72ac981dfc70d6bb2e163ff",
+            "bytes": 4594
+          }
+        },
+        {
+          "path": "crates/cc-server/src/project_session.rs",
+          "g4": {
+            "mode": "100644",
+            "blob": "6e3f854331c6c2d3a4d2a9b6c029144c46294e74",
+            "bytes": 48029
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "c10c9e4585a9e192b2af9ed99630096d8c861c18",
+            "bytes": 49886
+          }
+        }
+      ],
+      "scripts": [
+        {
+          "path": "scripts/p8_backfill.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "3b9b2fdadd37b8e8de1dca0c8a7678ec5cf37976",
+            "bytes": 5820
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+            "bytes": 8799
+          }
+        },
+        {
+          "path": "scripts/p8_cold_build.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+            "bytes": 51726
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+            "bytes": 52649
+          }
+        },
+        {
+          "path": "scripts/p8_rollback.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "c561d61443467c2737babf498e213f13ed094e93",
+            "bytes": 38551
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+            "bytes": 38818
+          }
+        },
+        {
+          "path": "scripts/p8_runtime.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "146f2a91799d3e50d069a5f00a694592ea343138",
+            "bytes": 51214
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+            "bytes": 58896
+          }
+        },
+        {
+          "path": "scripts/p8_runtime_build.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "cba1839bd4c48479521083bea1b416bd1a505ffa",
+            "bytes": 15242
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+            "bytes": 18068
+          }
+        },
+        {
+          "path": "scripts/reviewed-source-registry-v15.json",
+          "g4": {
+            "mode": "100644",
+            "blob": "b43d79d938f509d5bbb920e8d9d85b5a4fbe4c12",
+            "bytes": 167674
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "83b78abdac53b449564e3c4a78f9f9cb78f5c4fd",
+            "bytes": 169979
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_backfill.py",
+          "g4": null,
+          "main": {
+            "mode": "100644",
+            "blob": "8a6d822360ea32bedd229dfc2de10e269ef76361",
+            "bytes": 4690
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_platform.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "7c1c638bd5964b035c9a738df53522c649896b86",
+            "bytes": 37704
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "aa8066379b4acf2c2581c85199e4d29fc1d1cb53",
+            "bytes": 42727
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_recovery.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "f7a45890870323518de919f8ddedf8eda4816a58",
+            "bytes": 17686
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "2df6ce3f08fc65780c47ab23a58ad62c43821eb8",
+            "bytes": 23133
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba",
+            "bytes": 14568
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+            "bytes": 50900
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime_cache.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf",
+            "bytes": 20087
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "f4286b62d81f27ca0e54942d0d7a07d2dbbb1b5f",
+            "bytes": 23273
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime_evidence.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "fc9593f9c2fb3c9dabd2d5fe7d3e97556a8e53b5",
+            "bytes": 12695
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "0db559c8e6f84fe4c76abacffbff65b66066bd40",
+            "bytes": 15897
+          }
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime_finalization.py",
+          "g4": null,
+          "main": {
+            "mode": "100644",
+            "blob": "67e3a732ca18e89550e2004fabfa7d137a451648",
+            "bytes": 9355
+          }
+        },
+        {
+          "path": "scripts/verify_reviewed_source_v15.py",
+          "g4": {
+            "mode": "100644",
+            "blob": "64d928e7f17b64c47c3810b9188a6b9059330155",
+            "bytes": 11076
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "c8b96fed01151dfdb0e7cf63a34c6e6a7eb708a1",
+            "bytes": 11077
+          }
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/P8_RUNTIME_EVIDENCE.md",
+          "g4": {
+            "mode": "100644",
+            "blob": "88477fc615e2c4e5e54490062d8c6051980f230f",
+            "bytes": 7403
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+            "bytes": 8616
+          }
+        },
+        {
+          "path": "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md",
+          "g4": {
+            "mode": "100644",
+            "blob": "4e90884b9c852621c27f999e3b972992a976c076",
+            "bytes": 10228
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "7277c6421281eda9b3c6ca5bdd1711160416fc26",
+            "bytes": 9659
+          }
+        },
+        {
+          "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+          "g4": {
+            "mode": "100644",
+            "blob": "75c0d419af5ce194e1d464182dc302349f657665",
+            "bytes": 24928
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+            "bytes": 26078
+          }
+        }
+      ],
+      ".github": [
+        {
+          "path": ".github/workflows/p8-runtime.yml",
+          "g4": {
+            "mode": "100644",
+            "blob": "323e8e5df6ae98ba7e4f0a09665e981f093348bc",
+            "bytes": 5343
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+            "bytes": 5782
+          }
+        },
+        {
+          "path": ".github/workflows/p8-scale.yml",
+          "g4": {
+            "mode": "100644",
+            "blob": "cf8dd204ef4fecc426dec9b68839a46e43b93f77",
+            "bytes": 5501
+          },
+          "main": {
+            "mode": "100644",
+            "blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+            "bytes": 8621
+          }
+        }
+      ]
+    },
+    "interpretation": "Parent's already-reviewed A23 adoption is the product supersession basis. This audit independently proves current main has the exact A23 non-artifact trees and preserves the old G4 source/history via a descendant evidence ref. It does not rerun or newly certify functional equivalence of differing product, observer, or test files."
+  },
+  "preservation_manifest": [
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/README.md",
+      "relative_path": "README.md",
+      "mode": "100644",
+      "blob": "407f49561c10bc3b393c5b39160bc387159cffaf",
+      "bytes": 5488,
+      "same_path_main_blob": "af93c120d4146b531f954e38e969091284608e5c",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/README.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/P4-identity-bridge.json",
+      "relative_path": "cache-engineering/P4-identity-bridge.json",
+      "mode": "100644",
+      "blob": "54bf6ec1e0c1a629bab7c0462b5ef25328a08c2f",
+      "bytes": 2283,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/P4-identity-bridge.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/R3-binding-audit.json",
+      "relative_path": "cache-engineering/R3-binding-audit.json",
+      "mode": "100644",
+      "blob": "d15e1618c55010e261e52e16a0e83a02d0adacec",
+      "bytes": 2016,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/R3-binding-audit.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/README.md",
+      "relative_path": "cache-engineering/README.md",
+      "mode": "100644",
+      "blob": "86551909f3e0316dc11a67fb4571890ea9ea78f4",
+      "bytes": 3230,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/README.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/actual-small-probe-independent-audit.json",
+      "relative_path": "cache-engineering/actual-small-probe-independent-audit.json",
+      "mode": "100644",
+      "blob": "2e2530a14ce26f0284bb6fc1980e531f07b4006f",
+      "bytes": 3026,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/actual-small-probe-independent-audit.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-manifest.json",
+      "relative_path": "cache-engineering/cache-engineering-manifest.json",
+      "mode": "100644",
+      "blob": "314deb2e14c0d553cd19008c09a605435df72d3e",
+      "bytes": 32568,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz",
+      "relative_path": "cache-engineering/cache-engineering-originals.tar.gz",
+      "mode": "100644",
+      "blob": "4f27a801ce60061d0739ed0d755f811c5cb2afb1",
+      "bytes": 916043,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/cache-engineering-originals.tar.gz"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/finalize_cache_source_review.py",
+      "relative_path": "cache-engineering/finalize_cache_source_review.py",
+      "mode": "100644",
+      "blob": "fb84f34c729f0e8d5aba6546c9ebeeb08d00980d",
+      "bytes": 12817,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/finalize_cache_source_review.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/import_published_commit.py",
+      "relative_path": "cache-engineering/import_published_commit.py",
+      "mode": "100644",
+      "blob": "81805d3c8439afb63bed4e508aca84adc1f38815",
+      "bytes": 2638,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/import_published_commit.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/inspect_actual_small_probe.py",
+      "relative_path": "cache-engineering/inspect_actual_small_probe.py",
+      "mode": "100644",
+      "blob": "73bd23007952aca1a3c5ad9e70a4560717695ebd",
+      "bytes": 7533,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/inspect_actual_small_probe.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/intake-P4.json",
+      "relative_path": "cache-engineering/intake-P4.json",
+      "mode": "100644",
+      "blob": "16ac3ab10d3e0f7911f8490d497840ea76ebcdfa",
+      "bytes": 257571,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/intake-P4.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/package_cache_evidence.py",
+      "relative_path": "cache-engineering/package_cache_evidence.py",
+      "mode": "100644",
+      "blob": "f018a6703dc552ea6bbc7925009a3cb08306611f",
+      "bytes": 3378,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/cache-engineering/package_cache_evidence.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/engineering-originals-manifest.json",
+      "relative_path": "engineering-originals-manifest.json",
+      "mode": "100644",
+      "blob": "13f73c24b5354fa70e1df519fa09efe208544b60",
+      "bytes": 1446,
+      "same_path_main_blob": "13f73c24b5354fa70e1df519fa09efe208544b60",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/engineering-originals-manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/engineering-originals.tar.gz",
+      "relative_path": "engineering-originals.tar.gz",
+      "mode": "100644",
+      "blob": "5ba9d2228ff925c36e4f079c8af32bcd699c9b54",
+      "bytes": 4626176,
+      "same_path_main_blob": "5ba9d2228ff925c36e4f079c8af32bcd699c9b54",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/engineering-originals.tar.gz"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/DELIVERABLES.json",
+      "relative_path": "final-engineering/DELIVERABLES.json",
+      "mode": "100644",
+      "blob": "efbf84b9bbd0707b2b77f347c91560f1d1080115",
+      "bytes": 1509,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/DELIVERABLES.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/README.md",
+      "relative_path": "final-engineering/README.md",
+      "mode": "100644",
+      "blob": "7163b5364b270dac433efcd97f1dc294a9fe5dc6",
+      "bytes": 3541,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/README.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/TRANSPORT.md",
+      "relative_path": "final-engineering/TRANSPORT.md",
+      "mode": "100644",
+      "blob": "02513cbc466836d455b890e7877fbd00babea24d",
+      "bytes": 2024,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/TRANSPORT.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/assemble_transport.py",
+      "relative_path": "final-engineering/assemble_transport.py",
+      "mode": "100644",
+      "blob": "4999096157e82430d65eea846ef69cd9394627bf",
+      "bytes": 3412,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/assemble_transport.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/build_archive.py",
+      "relative_path": "final-engineering/build_archive.py",
+      "mode": "100644",
+      "blob": "94e5ea21fdf0b7a936622eefed1fd0cd5d448b9f",
+      "bytes": 12855,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/build_archive.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-001",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-001",
+      "mode": "100644",
+      "blob": "368356efbe6ba5953b1073800d3bedb0b0bf4da6",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-001"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-002",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-002",
+      "mode": "100644",
+      "blob": "ac170e9e6743458f5061bb7a15808725f199a0c5",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-002"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-003",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-003",
+      "mode": "100644",
+      "blob": "4b54bc0ea79d7a18d90c70826ca77ce5732e46ba",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-003"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-004",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-004",
+      "mode": "100644",
+      "blob": "40262ff63335e13f75cc9467b8f9ed6065f4666a",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-004"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-005",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-005",
+      "mode": "100644",
+      "blob": "2718711aa736dbd27de73be4a9cc7f0dc399a367",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-005"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-006",
+      "relative_path": "final-engineering/chunks/evidence-part-001.tar.gz.chunk-006",
+      "mode": "100644",
+      "blob": "f75831f13e7e336ea226bdcd8747145d7f92a5c6",
+      "bytes": 3955416,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-001.tar.gz.chunk-006"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-001",
+      "relative_path": "final-engineering/chunks/evidence-part-002.tar.gz.chunk-001",
+      "mode": "100644",
+      "blob": "0ce783b8d0568880dee7af0d4619982aca427206",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-001"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-002",
+      "relative_path": "final-engineering/chunks/evidence-part-002.tar.gz.chunk-002",
+      "mode": "100644",
+      "blob": "d38c9089e8534ed302fe023e8c33a00ab4e194c9",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-002"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-003",
+      "relative_path": "final-engineering/chunks/evidence-part-002.tar.gz.chunk-003",
+      "mode": "100644",
+      "blob": "57ca0d16f836f15b8091c671c69d80ee81660730",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-003"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-004",
+      "relative_path": "final-engineering/chunks/evidence-part-002.tar.gz.chunk-004",
+      "mode": "100644",
+      "blob": "a870e222c086d1f6b28047a43825ad1ec8f77bb8",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-004"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-005",
+      "relative_path": "final-engineering/chunks/evidence-part-002.tar.gz.chunk-005",
+      "mode": "100644",
+      "blob": "6bf288e2c6415fee1c00acbf68585205b6cab460",
+      "bytes": 1517469,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/evidence-part-002.tar.gz.chunk-005"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/sources.bundle.chunk-001",
+      "relative_path": "final-engineering/chunks/sources.bundle.chunk-001",
+      "mode": "100644",
+      "blob": "16565245b2e1a3b17db41d933ae2a7e58e491be2",
+      "bytes": 4194303,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/sources.bundle.chunk-001"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/sources.bundle.chunk-002",
+      "relative_path": "final-engineering/chunks/sources.bundle.chunk-002",
+      "mode": "100644",
+      "blob": "7c4e5ee8a1af265396173c83e716b3131a22905a",
+      "bytes": 2575877,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/chunks/sources.bundle.chunk-002"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/files.manifest.json",
+      "relative_path": "final-engineering/files.manifest.json",
+      "mode": "100644",
+      "blob": "6774d9019ed72102e1f7adff7fbccba4801c4c00",
+      "bytes": 516790,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/files.manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/sources.bundle.json",
+      "relative_path": "final-engineering/sources.bundle.json",
+      "mode": "100644",
+      "blob": "c6958166ce6a3e08a4587061ce988975dd83dbb3",
+      "bytes": 2192,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/sources.bundle.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/summary.json",
+      "relative_path": "final-engineering/summary.json",
+      "mode": "100644",
+      "blob": "216e46cd31401f0540ccfc66d8dc276aeb8ca390",
+      "bytes": 7005,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/summary.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/transport-manifest.json",
+      "relative_path": "final-engineering/transport-manifest.json",
+      "mode": "100644",
+      "blob": "8c2092498699c7f87c929f851b19259c06e634ed",
+      "bytes": 5907,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/transport-manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/verification.json",
+      "relative_path": "final-engineering/verification.json",
+      "mode": "100644",
+      "blob": "e49a845237d2387976c7ac44772df163d64d140a",
+      "bytes": 2180,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/verification.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/verify_archive.py",
+      "relative_path": "final-engineering/verify_archive.py",
+      "mode": "100644",
+      "blob": "bd15c0fb2ba9b0c68a1f0bbc9e90c919ddeafe50",
+      "bytes": 4474,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/final-engineering/verify_archive.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/DELIVERABLES.json",
+      "relative_path": "followup-engineering/DELIVERABLES.json",
+      "mode": "100644",
+      "blob": "cbfbea5f07b2d97d314b0cd2c358a9dd70a5ada4",
+      "bytes": 1701,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/DELIVERABLES.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/README.md",
+      "relative_path": "followup-engineering/README.md",
+      "mode": "100644",
+      "blob": "464bc2fbe855b3dccef1df6abfd637c61cdc51c4",
+      "bytes": 5200,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/README.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/archive-verification.json",
+      "relative_path": "followup-engineering/archive-verification.json",
+      "mode": "100644",
+      "blob": "ab5b38720c0c28564d4654fb3ab947b6d313212d",
+      "bytes": 626,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/archive-verification.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-heads.txt",
+      "relative_path": "followup-engineering/bundle-heads.txt",
+      "mode": "100644",
+      "blob": "d75c7d474f7930557fd70d8911161712929ff2a9",
+      "bytes": 86,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-heads.txt"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-provenance.json",
+      "relative_path": "followup-engineering/bundle-provenance.json",
+      "mode": "100644",
+      "blob": "b3391bbe883e5564c166ed82e4445c473b10ce10",
+      "bytes": 1561,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-provenance.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-verify.stderr",
+      "relative_path": "followup-engineering/bundle-verify.stderr",
+      "mode": "100644",
+      "blob": "daf39401e53716dfda838d493eefd5cb02e084be",
+      "bytes": 102,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-verify.stderr"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-verify.stdout",
+      "relative_path": "followup-engineering/bundle-verify.stdout",
+      "mode": "100644",
+      "blob": "b48ee366a1a8c482f1bc55f0f265dd0fa7d0d069",
+      "bytes": 230,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/bundle-verify.stdout"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/create_archive.py",
+      "relative_path": "followup-engineering/create_archive.py",
+      "mode": "100644",
+      "blob": "866574f7a5e2531cf3f883499b7e7c26e9376407",
+      "bytes": 12433,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/create_archive.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/engineering-originals.tar.gz",
+      "relative_path": "followup-engineering/engineering-originals.tar.gz",
+      "mode": "100644",
+      "blob": "b69bb7dbd442311197b0b37ac094077af0f98227",
+      "bytes": 4121754,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/engineering-originals.tar.gz"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/followup-local-commits.bundle",
+      "relative_path": "followup-engineering/followup-local-commits.bundle",
+      "mode": "100644",
+      "blob": "2d53147f1af43aa108ad588f53ad76fc81328f6c",
+      "bytes": 8329,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/followup-local-commits.bundle"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/manifest.json",
+      "relative_path": "followup-engineering/manifest.json",
+      "mode": "100644",
+      "blob": "d0aa1abeeda1eca3f7443c59f1882418dca8a252",
+      "bytes": 847193,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/verify_archive.py",
+      "relative_path": "followup-engineering/verify_archive.py",
+      "mode": "100644",
+      "blob": "d9eb29c9cd01c5907bf1058778cdd2210d4586aa",
+      "bytes": 4331,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-engineering/verify_archive.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-review/archive-delivery.json",
+      "relative_path": "followup-review/archive-delivery.json",
+      "mode": "100644",
+      "blob": "c6e8672f51a7d96149ff401951735477f7812cd2",
+      "bytes": 2922,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-review/archive-delivery.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-review/finalize_followup_source_review.py",
+      "relative_path": "followup-review/finalize_followup_source_review.py",
+      "mode": "100644",
+      "blob": "8910e9f9f39b5ad7798f519769296d2b369a472b",
+      "bytes": 12041,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-review/finalize_followup_source_review.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-review/independent-binding-audit.json",
+      "relative_path": "followup-review/independent-binding-audit.json",
+      "mode": "100644",
+      "blob": "48a78bd0d20720e143a8c17e907446c9181a33a5",
+      "bytes": 875,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-review/independent-binding-audit.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-review/intake-P3.json",
+      "relative_path": "followup-review/intake-P3.json",
+      "mode": "100644",
+      "blob": "cc5bb9359599a876d6f773dcd8641d176628c2a0",
+      "bytes": 257401,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-review/intake-P3.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/followup-review/inventory_git_inputs.py",
+      "relative_path": "followup-review/inventory_git_inputs.py",
+      "mode": "100644",
+      "blob": "0199cc47b9220a6813c4a8b01752c622eb067e75",
+      "bytes": 5528,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/followup-review/inventory_git_inputs.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+      "relative_path": "independent-source-review.json",
+      "mode": "100644",
+      "blob": "254772c5c6ef81e2098a254f6fdd601140d2ff69",
+      "bytes": 267621,
+      "same_path_main_blob": "378cc28dfdd0309e09d5c4a21941caaa0f07de25",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/pr-audit.json",
+      "relative_path": "pr-audit.json",
+      "mode": "100644",
+      "blob": "3390e8e8f02ee8fab7aad24eece31d248c2242ab",
+      "bytes": 17523,
+      "same_path_main_blob": "3390e8e8f02ee8fab7aad24eece31d248c2242ab",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/pr-audit.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/pr-triage-applied.json",
+      "relative_path": "pr-triage-applied.json",
+      "mode": "100644",
+      "blob": "cf85184be88111ee4eac4d4002f77f448b3f2a98",
+      "bytes": 6740,
+      "same_path_main_blob": "cf85184be88111ee4eac4d4002f77f448b3f2a98",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/pr-triage-applied.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/D0-engineering-manifest.json",
+      "relative_path": "scale-engineering-D0/D0-engineering-manifest.json",
+      "mode": "100644",
+      "blob": "6c5630cd9b8387a5ca47305485da19a3781708d4",
+      "bytes": 17509,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/D0-engineering-manifest.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/D0-engineering-originals.tar.gz",
+      "relative_path": "scale-engineering-D0/D0-engineering-originals.tar.gz",
+      "mode": "100644",
+      "blob": "07cea6329cc78ca4997a4e41a026a291ce46ce79",
+      "bytes": 2613992,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/D0-engineering-originals.tar.gz"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/README.md",
+      "relative_path": "scale-engineering-D0/README.md",
+      "mode": "100644",
+      "blob": "82c9faa1de1666321cd3432ca93756ffb01aa4dd",
+      "bytes": 2570,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/README.md"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/actual-P5-intake.json",
+      "relative_path": "scale-engineering-D0/actual-P5-intake.json",
+      "mode": "100644",
+      "blob": "a412716c88682727742a0a6766af45e4d43fdbd3",
+      "bytes": 257883,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/actual-P5-intake.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/controller-second-registration-review.json",
+      "relative_path": "scale-engineering-D0/controller-second-registration-review.json",
+      "mode": "100644",
+      "blob": "ee3ec518c20cdc3cb3cd9f04a6caa959d9ca3d57",
+      "bytes": 1711,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/controller-second-registration-review.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize.stderr",
+      "relative_path": "scale-engineering-D0/finalize.stderr",
+      "mode": "100644",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize.stderr"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize.stdout",
+      "relative_path": "scale-engineering-D0/finalize.stdout",
+      "mode": "100644",
+      "blob": "9de5e57781189fb8ddc8a1f6d85efb6798c494f7",
+      "bytes": 304,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize.stdout"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize_P5_source_review.py",
+      "relative_path": "scale-engineering-D0/finalize_P5_source_review.py",
+      "mode": "100644",
+      "blob": "691b1d84e285354d7be82033ad3e775c3d7a2f08",
+      "bytes": 22126,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/finalize_P5_source_review.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/package_D0_evidence.py",
+      "relative_path": "scale-engineering-D0/package_D0_evidence.py",
+      "mode": "100644",
+      "blob": "bd472a8fcaa11a64c9cbd576654e339709073262",
+      "bytes": 8013,
+      "same_path_main_blob": null,
+      "same_path_main_mode": null,
+      "present_same_path_same_blob_mode": false,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-engineering-D0/package_D0_evidence.py"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-preflight-originals.json",
+      "relative_path": "scale-preflight-originals.json",
+      "mode": "100644",
+      "blob": "343541052d8c54ba24e038b4a6ff1769002a03ee",
+      "bytes": 589,
+      "same_path_main_blob": "343541052d8c54ba24e038b4a6ff1769002a03ee",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-preflight-originals.json"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-completion-20261009/scale-preflight-originals.tar.gz",
+      "relative_path": "scale-preflight-originals.tar.gz",
+      "mode": "100644",
+      "blob": "c538f7fa49fc712f40082d65a70b657b27b0fb63",
+      "bytes": 2125305,
+      "same_path_main_blob": "c538f7fa49fc712f40082d65a70b657b27b0fb63",
+      "same_path_main_mode": "100644",
+      "present_same_path_same_blob_mode": true,
+      "round15_commit_path": "artifacts/checkpoints/p8-completion-20261009/scale-preflight-originals.tar.gz"
+    }
+  ],
+  "minimum_optional_main_preservation": {
+    "required_for_closure_without_deleting_existing_evidence_refs": false,
+    "purpose": "A new archive namespace can also put the complete historical checkpoint on main without overwriting current p8-completion source-review metadata.",
+    "base_main": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "tree_elements": [
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0fb28d8384302b9ce04dbd7c76a5de39f375c03b"
+      }
+    ],
+    "existing_objects_only": true,
+    "reupload_recompress_or_decode_binary_archives_required": false,
+    "expanded_minimum_same_path_gap_elements": [
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "407f49561c10bc3b393c5b39160bc387159cffaf"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/P4-identity-bridge.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "54bf6ec1e0c1a629bab7c0462b5ef25328a08c2f"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/R3-binding-audit.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d15e1618c55010e261e52e16a0e83a02d0adacec"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "86551909f3e0316dc11a67fb4571890ea9ea78f4"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/actual-small-probe-independent-audit.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2e2530a14ce26f0284bb6fc1980e531f07b4006f"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/cache-engineering-manifest.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "314deb2e14c0d553cd19008c09a605435df72d3e"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/cache-engineering-originals.tar.gz",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4f27a801ce60061d0739ed0d755f811c5cb2afb1"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/finalize_cache_source_review.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fb84f34c729f0e8d5aba6546c9ebeeb08d00980d"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/import_published_commit.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "81805d3c8439afb63bed4e508aca84adc1f38815"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/inspect_actual_small_probe.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73bd23007952aca1a3c5ad9e70a4560717695ebd"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/intake-P4.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "16ac3ab10d3e0f7911f8490d497840ea76ebcdfa"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/cache-engineering/package_cache_evidence.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f018a6703dc552ea6bbc7925009a3cb08306611f"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/DELIVERABLES.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "efbf84b9bbd0707b2b77f347c91560f1d1080115"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7163b5364b270dac433efcd97f1dc294a9fe5dc6"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/TRANSPORT.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "02513cbc466836d455b890e7877fbd00babea24d"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/assemble_transport.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4999096157e82430d65eea846ef69cd9394627bf"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/build_archive.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "94e5ea21fdf0b7a936622eefed1fd0cd5d448b9f"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-001",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "368356efbe6ba5953b1073800d3bedb0b0bf4da6"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-002",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ac170e9e6743458f5061bb7a15808725f199a0c5"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-003",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4b54bc0ea79d7a18d90c70826ca77ce5732e46ba"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-004",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "40262ff63335e13f75cc9467b8f9ed6065f4666a"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-005",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2718711aa736dbd27de73be4a9cc7f0dc399a367"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-001.tar.gz.chunk-006",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f75831f13e7e336ea226bdcd8747145d7f92a5c6"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-002.tar.gz.chunk-001",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0ce783b8d0568880dee7af0d4619982aca427206"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-002.tar.gz.chunk-002",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d38c9089e8534ed302fe023e8c33a00ab4e194c9"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-002.tar.gz.chunk-003",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "57ca0d16f836f15b8091c671c69d80ee81660730"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-002.tar.gz.chunk-004",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a870e222c086d1f6b28047a43825ad1ec8f77bb8"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/evidence-part-002.tar.gz.chunk-005",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6bf288e2c6415fee1c00acbf68585205b6cab460"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/sources.bundle.chunk-001",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "16565245b2e1a3b17db41d933ae2a7e58e491be2"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/chunks/sources.bundle.chunk-002",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7c4e5ee8a1af265396173c83e716b3131a22905a"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/files.manifest.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6774d9019ed72102e1f7adff7fbccba4801c4c00"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/sources.bundle.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c6958166ce6a3e08a4587061ce988975dd83dbb3"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/summary.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "216e46cd31401f0540ccfc66d8dc276aeb8ca390"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/transport-manifest.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c2092498699c7f87c929f851b19259c06e634ed"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/verification.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e49a845237d2387976c7ac44772df163d64d140a"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/final-engineering/verify_archive.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bd15c0fb2ba9b0c68a1f0bbc9e90c919ddeafe50"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/DELIVERABLES.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cbfbea5f07b2d97d314b0cd2c358a9dd70a5ada4"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "464bc2fbe855b3dccef1df6abfd637c61cdc51c4"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/archive-verification.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ab5b38720c0c28564d4654fb3ab947b6d313212d"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/bundle-heads.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d75c7d474f7930557fd70d8911161712929ff2a9"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/bundle-provenance.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b3391bbe883e5564c166ed82e4445c473b10ce10"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/bundle-verify.stderr",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "daf39401e53716dfda838d493eefd5cb02e084be"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/bundle-verify.stdout",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b48ee366a1a8c482f1bc55f0f265dd0fa7d0d069"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/create_archive.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "866574f7a5e2531cf3f883499b7e7c26e9376407"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/engineering-originals.tar.gz",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b69bb7dbd442311197b0b37ac094077af0f98227"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/followup-local-commits.bundle",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2d53147f1af43aa108ad588f53ad76fc81328f6c"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/manifest.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d0aa1abeeda1eca3f7443c59f1882418dca8a252"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-engineering/verify_archive.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d9eb29c9cd01c5907bf1058778cdd2210d4586aa"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-review/archive-delivery.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c6e8672f51a7d96149ff401951735477f7812cd2"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-review/finalize_followup_source_review.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8910e9f9f39b5ad7798f519769296d2b369a472b"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-review/independent-binding-audit.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48a78bd0d20720e143a8c17e907446c9181a33a5"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-review/intake-P3.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cc5bb9359599a876d6f773dcd8641d176628c2a0"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/followup-review/inventory_git_inputs.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0199cc47b9220a6813c4a8b01752c622eb067e75"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/independent-source-review.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "254772c5c6ef81e2098a254f6fdd601140d2ff69"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/D0-engineering-manifest.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6c5630cd9b8387a5ca47305485da19a3781708d4"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/D0-engineering-originals.tar.gz",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "07cea6329cc78ca4997a4e41a026a291ce46ce79"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "82c9faa1de1666321cd3432ca93756ffb01aa4dd"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/actual-P5-intake.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a412716c88682727742a0a6766af45e4d43fdbd3"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/controller-second-registration-review.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ee3ec518c20cdc3cb3cd9f04a6caa959d9ca3d57"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/finalize.stderr",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/finalize.stdout",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9de5e57781189fb8ddc8a1f6d85efb6798c494f7"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/finalize_P5_source_review.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "691b1d84e285354d7be82033ad3e775c3d7a2f08"
+      },
+      {
+        "path": "artifacts/checkpoints/pr-evidence-archive-160/originals/scale-engineering-D0/package_D0_evidence.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bd472a8fcaa11a64c9cbd576654e339709073262"
+      }
+    ],
+    "note": "The single tree reference includes all 69 original files, including the six already present at the original main path. The expanded alternative retains the 63 differing/missing paths including the original zero-byte stderr. These are prepared proposals only; neither tree nor ref was created."
+  },
+  "management_recommendation": {
+    "can_close_as_superseded": true,
+    "can_mark_merged": false,
+    "conditions": [
+      "Keep the existing evidence refs and their fixed commit locators, especially round15 aba11b861aee65e48b58b7fe8ac2c81564f91029.",
+      "Use superseded-by-merged-A23 wording; retain the G4 and all failed/unknown execution identities.",
+      "Do not delete branches, tags, source history, archives, or raw files as part of closing this PR.",
+      "If cleanup policy requires main-local evidence, first apply and read back the optional new-namespace archive tree."
+    ],
+    "unresolved_preservation_blockers_for_close_only": [],
+    "original_todo_acceptance_granted": false
+  },
+  "limitations": {
+    "no_native_or_test_execution": true,
+    "no_ref_pr_or_comment_mutation": true,
+    "no_binary_archive_content_reverification": true,
+    "no_claim_of_new_performance_or_runtime_acceptance": true,
+    "large_full_recursive_artifact_queries_failed": "Two initial full recursive artifacts-tree reads returned Transport closed. Both are retained as failed transport attempts; complete relevant subtree enumeration then succeeded with truncated=false and unchanged sibling-tree identities.",
+    "not_claiming_all_498_refs_protected_or_permanent": true
+  },
+  "evidence_provenance": [
+    {
+      "key": "pr160-current",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/160",
+      "observed_at": "2026-10-09T04:24:50.357Z",
+      "bytes": 28617,
+      "sha256": "4d08f41c2b81f32c787099d7d3c5d3bcea57d60213fb9598b6bc1080f30ffcc0"
+    },
+    {
+      "key": "pr160-main",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/ref/heads/main",
+      "observed_at": "2026-10-09T04:24:49.906Z",
+      "bytes": 328,
+      "sha256": "c421194909215d72c5f101e7671a4fd314dd52d662e46f01b4ae8f8c8a1201cd"
+    },
+    {
+      "key": "pr160-files1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/160/files?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:25:10.849Z",
+      "bytes": 519931,
+      "sha256": "ffb5ef7760ca4fe5b589ef6180463a5c26fa6e43e7f1feb4c10f7b7784461227"
+    },
+    {
+      "key": "pr160-files2",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/160/files?per_page=100&page=2",
+      "observed_at": "2026-10-09T04:25:10.548Z",
+      "bytes": 581138,
+      "sha256": "e1100315611c45fbd5276935a92229c35df02e31bc61fbf90f0bd006e45940a3"
+    },
+    {
+      "key": "pr160-headtree",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "observed_at": "2026-10-09T04:25:10.472Z",
+      "bytes": 2921,
+      "sha256": "e273035593edbc7b3ccf3e6d964c50f8da0b05cdf6735cafa336a0d4923d3460"
+    },
+    {
+      "key": "pr160-maintree",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b21cce4c8661589267ad5719f850accbec088d2f",
+      "observed_at": "2026-10-09T04:25:10.529Z",
+      "bytes": 2921,
+      "sha256": "3fa6e5f2d636fa6f5c1aedb520d7f1c3d4ddaa9c42c1b268fa0b665748eb24e5"
+    },
+    {
+      "key": "pr160-headref",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/ref/heads/task/p8-completion-20261009",
+      "observed_at": "2026-10-09T04:25:10.318Z",
+      "bytes": 407,
+      "sha256": "96c1b57cbd18f4179f83b5efd719f189779d3c201946725c752e6c51a473da95"
+    },
+    {
+      "key": "pr160-headcommit",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "observed_at": "2026-10-09T04:25:28.177Z",
+      "bytes": 1132,
+      "sha256": "ec43dafe76350011dbcbdd3c1cf64f068fff1a4665ef8442b770754a8d477040"
+    },
+    {
+      "key": "pr160-headartifacts-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/14f38062c7395fe50dca4f9b58a37ce49f3c86e3",
+      "observed_at": "2026-10-09T04:25:42.050Z",
+      "bytes": 1203,
+      "sha256": "3680405e7a3ee60ae4248cd5454ea6f44b7360cdd75cab60f865244b2c9c386d"
+    },
+    {
+      "key": "pr160-mainartifacts-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2b41cb5a6fc09724ee0ae281b767a36f375c4f1f",
+      "observed_at": "2026-10-09T04:25:42.050Z",
+      "bytes": 1203,
+      "sha256": "1d123603e6312ce0320a6b58d7533ce1d1f1e4a0ed74e6f5105409c1fe42fac3"
+    },
+    {
+      "key": "pr160-headcheckpoints",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/db4fed5683fb12548e5d48dd6ba497a153db1f0d",
+      "observed_at": "2026-10-09T04:25:47.463Z",
+      "bytes": 39533,
+      "sha256": "9a3908decb184d9211c65ca545215edb6c98769f92a40d051cfd3234c71ca9b3"
+    },
+    {
+      "key": "pr160-maincheckpoints",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/cafd9efca70bdc338b431594c5ce5e47afc517dc",
+      "observed_at": "2026-10-09T04:25:47.469Z",
+      "bytes": 43662,
+      "sha256": "c097563cddd0119b8140436449de0bc0334bfbda6fae047b95977471335b2c53"
+    },
+    {
+      "key": "pr160-headcheckpoint",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0fb28d8384302b9ce04dbd7c76a5de39f375c03b?recursive=1",
+      "observed_at": "2026-10-09T04:25:54.505Z",
+      "bytes": 18704,
+      "sha256": "338ff475d94d2797f08ff7cabd9466d8db10ea46a0ad5eb9670d40e154e2186f"
+    },
+    {
+      "key": "pr160-maincheckpoint",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f5f08026a30266b62507c93095252ec05d371c64?recursive=1",
+      "observed_at": "2026-10-09T04:25:54.335Z",
+      "bytes": 26927,
+      "sha256": "ca5cb0471a7b478c83a68c2db861cc51c44548b287b698b5d45fdb214e895daa"
+    },
+    {
+      "key": "pr160-refs",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/matching-refs/",
+      "observed_at": "2026-10-09T04:25:28.709Z",
+      "bytes": 198648,
+      "sha256": "031009956393e67e5cdafea30323fb4e1c0153d5dabe50ab7445d44ef71b9c4d"
+    },
+    {
+      "key": "pr160-round15-root",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/aba11b861aee65e48b58b7fe8ac2c81564f91029",
+      "observed_at": "2026-10-09T04:27:16.225Z",
+      "bytes": 2921,
+      "sha256": "6ca8c45ace6e478d6125bd6c70b90efed7ebe493b316c9192d0fc04842317eb1"
+    },
+    {
+      "key": "pr160-round15-artifacts",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/3515a39bc23fb6d55d61da5c6bd2072eef85bde7",
+      "observed_at": "2026-10-09T04:27:44.237Z",
+      "bytes": 1203,
+      "sha256": "303fe5e443235e47c8e03dee952ea5531725c4a2a2fa66e695094254087dd58a"
+    },
+    {
+      "key": "pr160-round15-checkpoints",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/22ae8634c507aed16c9876eead51d4c4e16b4f8e",
+      "observed_at": "2026-10-09T04:27:57.900Z",
+      "bytes": 40871,
+      "sha256": "8c663ff9be52b083d67caf36218301a11fa6674d490ebc2d3147d54be3d09a28"
+    },
+    {
+      "key": "pr160-headscripts",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/fbcb5465b03cc18fe1e7fd93210dbde4a10a9c7b?recursive=1",
+      "observed_at": "2026-10-09T04:25:28.249Z",
+      "bytes": 29242,
+      "sha256": "8c7891e5cde0ac76963f91c7a01d53ad90f5eb2b1e9e55acff1bfd28bdc2836e"
+    },
+    {
+      "key": "pr160-mainscripts",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/e4232e5b46891e4293aa548d380a7755edcdfccd?recursive=1",
+      "observed_at": "2026-10-09T04:25:28.161Z",
+      "bytes": 29718,
+      "sha256": "740c7b4fb3545befa4eaa8096e81eeabb4e9b44816b20a1aa1b33c22559ebf17"
+    },
+    {
+      "key": "pr160-headgithub",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0e4c570d1c6c7cfc0297e7933751e79da5881aef?recursive=1",
+      "observed_at": "2026-10-09T04:27:16.294Z",
+      "bytes": 2231,
+      "sha256": "4a3673231c39a0ca3e6e8b4347c37fe85c7a65e4b8cf0026984235883c94512e"
+    },
+    {
+      "key": "pr160-headdocs",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/97817061834360e6e6345571121ee3766e4d56a4?recursive=1",
+      "observed_at": "2026-10-09T04:27:16.393Z",
+      "bytes": 114153,
+      "sha256": "28537d309efeae7e49bec2c8cd32ff9e32f5edabe53ba432ffa65851089e7ca2"
+    },
+    {
+      "key": "pr160-maindocs",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d?recursive=1",
+      "observed_at": "2026-10-09T04:27:16.274Z",
+      "bytes": 114152,
+      "sha256": "d8f8e91663ee09cbbe7f1a532346ef2c2ca50ae790cde6079c7945b936c53ab2"
+    },
+    {
+      "key": "pr160-maincrates",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/233c93b5f6cdb2c928f17c93cd41b4d0b6676094?recursive=1",
+      "observed_at": "2026-10-09T04:27:16.704Z",
+      "bytes": 332738,
+      "sha256": "5372730e6ba1314a12056087ed85f4fda947f6d006cbb7f7deea2b80ee82c135"
+    }
+  ],
+  "ancestry_evidence": {
+    "api": "github_compare_commits",
+    "base": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "head": "aba11b861aee65e48b58b7fe8ac2c81564f91029",
+    "status": "ahead",
+    "ahead_by": 6,
+    "behind_by": 0,
+    "total_commits": 6,
+    "merge_base": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "observed_at": "2026-10-09T04:28:17.991Z"
+  },
+  "original_todo_state": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_completed": 0
+  }
+}

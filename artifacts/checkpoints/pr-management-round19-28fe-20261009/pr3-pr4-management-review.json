@@ -1,0 +1,1481 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T04:44:58.893Z",
+  "reviewer": "/root/runtime_review",
+  "repository": "jyqj/codecortex",
+  "scope": "read_only_management_review_of_PR3_and_PR4_only",
+  "fixed_main": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "verdict": "keep_both_open_for_independent_scope_migration_review",
+  "safe_to_close_as_superseded": {
+    "3": false,
+    "4": false
+  },
+  "prs": [
+    {
+      "number": 3,
+      "url": "https://github.com/jyqj/codecortex/pull/3",
+      "title": "refactor: harden non-embedding code indexing and add replayable quality benchmarks",
+      "state": "open",
+      "draft": true,
+      "updated_at": "2026-10-08T17:30:54Z",
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "head_ref": "opt/code-index-benchmark-v2-20260906",
+      "actual_branch_ref": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "head_tree": "e27d1f91ab4108d2f2e27272d7431cb4801d8142",
+      "base": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+      "base_ref": "main",
+      "mergeable_state": "dirty",
+      "body_original": "## 本轮目标\n\n不引入 embedding、向量数据库或外部模型；先修复代码索引/检索的正确性边界，并建立可复现、可回归的 benchmark 机制。\n\n## 生产实现\n\n- **检索作用域拆分**：调用者的 file/path/language 是 hard scope；启发式 preselect 不再改写 `SearchRequest.file_paths`。词法和图通道可独立补召回，grep 继续采用有界扫描提示。\n- **评分与确定性**：修正 SQLite 负向 BM25 的预选单调性；明确 UNINDEXED 字段权重；在候选截断前使用稳定 tie-break；同一 lane 的重复候选只投一次 RRF 票。\n- **长符号投影**：独立 `symbol_chunks` 区间策略，最小完整容器或多个相交分片，修复长函数被图检索找到后无法映射回代码的问题。\n- **增量正确性**：没有完整导出契约的语言采用有预算的保守传播；依赖来源由 imports 扩充为 imports + 已绑定 call/ref 目标。Dirty reload 仅保留源码未变文件中的 `parser_exact` 本地绑定，其余 resolver 状态清除重算。\n- **架构边界**：分析阶段改用 `AnalysisInputs`，分离不可变构建输入与可变解释收集器；保持七 crate 单向依赖、SQLite 权威存储和原有提交/epoch 守卫。\n- 修复已有 dead-code/Clippy 问题及格式漂移。没有新增 Cargo 依赖。\n\n## Benchmark 机制\n\n`Manifest → 隔离源码快照 → 真实 MCP → raw.jsonl → 独立评分 → report.json`\n\n新增身份/区间 gold、可见源码 anchor、AND-of-OR 证据组、无答案任务与 schema/error 分母。排名保持原始输出位置；重复项不能重复获取相关性信用。保留每次请求延迟，不再将 best-of-two 汇总成 p95。\n\n原始结果逐条落盘，可离线重放并与报告逐字节比较。header 记录实现版本、源码/manifest hash、完整配置、构建环境与工作区差异。配对脚本先按任务、再按仓库汇总；回归夹具不输出推断置信区间。\n\n新增 TS/Python/Rust 持久会话增量 oracle：签名修改和删除后，逐步与独立全量索引比较。初始必须存在已解析跨文件调用，避免空图假通过。\n\n永久 `Code index quality` CI 包含质量协议、增量 oracle、真实 MCP 观测/重放、文档基线与 release 1k scale smoke。临时开发脚本和有写权限的开发 workflow 已从最终树中删除；永久质量 workflow 为只读权限。\n\n## 已执行验证\n\n[完整开发验证与同 harness 对照](https://github.com/jyqj/codecortex/actions/runs/33982629712) 全部通过，实际测试实现 SHA 为 `dc6b3b306b4bad87f53e1c59cf66e489cd87c9b8`；后续提交仅同步文档与永久 CI，最终 PR CI 再验证最终合并候选。\n\n- `cargo clippy --workspace --all-targets --locked -- -D warnings` 通过。\n- `cargo test --workspace --all-targets --locked`：**1326 passed, 0 failed, 16 ignored**。\n- 3/3 增量差分 oracle 通过；既有 MCP corpus integration 通过。\n- 新 10 任务质量回归共 60 次测量全部通过；raw replay 与报告逐字节一致。\n- Python 配对比较协议测试 7/7 通过。\n\n[原始观测与报告 artifact](https://github.com/jyqj/codecortex/actions/runs/33982629712/artifacts/9974258365)；该开发 artifact 保留 14 天，永久质量 CI 的新 artifact 保留 90 天。\n\n## 同一新评测器下的结果\n\n**范围仅为 2 个手工项目、9 个文件、10 个定向回归任务（7 正例、3 负例），不是泛化基准。** 基线生产代码为 `4514630`，只移植 eval harness；基线与候选采用隔离编译目录、相同配置和测量参数。\n\n| 指标（正例按任务平均） | 原生产实现 | 本轮实现 |\n|---|---:|---:|\n| Recall@5 | 0.642857 | 1.000000 |\n| MRR | 0.714286 | 0.904762 |\n| 声明证据组满足率 | 0.571429 | 1.000000 |\n| 无答案正确拒绝率 | 1.000000 | 1.000000 |\n\n修复了基线的 `preselect-rescue`、`graph-rescue`、`split-symbol-graph` 三类失败。\n\n**成本同时披露**：同轮 debug 小夹具的 cold p95 为 12.466 → 12.854 ms，warm p95 为 2.743 → 5.133 ms；输出证据增加，不能宣传为速度提升。仓库宏平均与任务平均口径不同，完整结果见 `docs/benchmarks/code_index_quality_round1.md`。\n\n## 边界与后续\n\n本轮没有声称通用语义索引完备：全局同名候选桶变化、从未绑定引用、其他未覆盖依赖和超预算闭包仍有边界；非 JS/TS 保守传播可能增加更新成本。输出字节不是精确模型 token；证据组齐全也不是 agent 任务成功率。真实 held-out 仓库、token 预算和下游任务实验留待后续独立验证。\n\n设计与运行入口：`docs/adr/0003-retrieval-scope-and-quality-contracts.md`、`docs/BENCHMARK_V2.md`。\n\n本 PR 只提交评审，不执行合并。\n\n## 2026-10-07 整合后处理\n\n此 PR 保持开放，等待独立范围审查。固定 head：`9619641903f0b9f397007ebbe85893ce8f6b5f97`；已合入 main 的比较源：`886f90a542a6174a037c79eebbb4f74848fb1f53`（整合 PR #142）。\n\n固定源无祖先关系；delta 路径 3 同字节、32 演进、13 缺失、0 删除仍缺失、0 删除后重现；unique 非 merge 提交 0/12 有 raw-delta 匹配，unique merge 0 个。独立旧非 embedding 索引/检索与质量回放功能仍有 13 条新增路径未集成、32 条路径演进；需逐项语义迁移审查。原 head 曾冲突且 CI 失败，不能直接反向合并旧 schema/benchmark。\n\n完整采用关系、缺口和处置快照记录在 `artifacts/checkpoints/pr-management-20261007/`，随当前推进批 PR #143 保存。后续按尚未采用的具体意图拆分迁移；旧 head 的 CI 与测量继续按原来源解释。\n",
+      "comments_complete": [
+        {
+          "id": 5553832951,
+          "url": "https://github.com/jyqj/codecortex/pull/3#issuecomment-5553832951",
+          "created_at": "2026-09-05T18:17:33Z",
+          "updated_at": "2026-09-05T18:17:33Z",
+          "body": "## 最终验证状态与未解除的安全阻塞\n\n核对的 PR head：`9619641903f0b9f397007ebbe85893ce8f6b5f97`。本 PR 未合并；GitHub 显示无合并冲突，但**不应把它当作全部检查通过的 merge-ready PR**。\n\n### 已通过\n\n- [正式 CI](https://github.com/jyqj/codecortex/actions/runs/33983158344)：`check`（format、Clippy、workspace tests、既有 MCP eval）与 `msrv`（Rust 1.95.0）成功。\n- [正式 Code index quality](https://github.com/jyqj/codecortex/actions/runs/33983158235)：`quality-contracts` 与 `scale-smoke` 均成功。包含增量/全量 oracle、质量原始记录与精确重放、文档基线、release 1k 规模与 ground-truth 检查。\n- 开发验证与配对质量结果仍以正文及 `docs/benchmarks/code_index_quality_round1.md` 指明的实测提交为准，不将历史数值换贴到其他提交。\n\n### 未通过：现有锁文件的安全审计\n\n[security 失败日志](https://github.com/jyqj/codecortex/actions/runs/33983158344/job/101351883643) 实际运行了 cargo-audit 0.22.2，发现：\n\n| 已锁定依赖 | 审计报告 | 后续修复方向 |\n|---|---|---|\n| crossbeam-epoch 0.9.18 | **RUSTSEC-2026-0204，阻塞性漏洞** | 升到 >=0.9.20 并重跑验证 |\n| anyhow 1.0.102 | RUSTSEC-2026-0190，unsound | >=1.0.103 |\n| rand 0.10.0 | RUSTSEC-2026-0097，unsound | 0.10 系列 >=0.10.1 |\n| lru 0.12.5 | RUSTSEC-2026-0002 / 0253，unsound | >=0.18.2，涉及版本系列升级，需缓存 API/行为回归验证 |\n| chacha20 0.10.0 | yanked | 更新到非撤回的兼容版本 |\n| instant 0.1.13 | RUSTSEC-2024-0384，unmaintained | 先核对传递依赖来源，再规划替换；不是本轮直接新增依赖 |\n\n本 PR 没有改动 Cargo.toml/Cargo.lock，因此这些是原锁文件的问题，不是本轮引入。不过“原有问题”不构成忽略安全门的理由。\n\n另外，原 `rustsec/audit-check` action 尝试发布额外 Check Run 时权限不足；它已经将完整审计报告输出到日志。**权限报错不是唯一失败原因：依赖漏洞本身仍存在。** 后续可采用只读权限的 cargo-audit CLI 保留报告，并将 unsound/yanked 升级为显式失败门，或正确配置 action 所需的最小权限；不能只修权限就宣称漏洞解决。\n\n我尝试提交依赖修复和 CI 收尾改动时，写入工具被安全检查拦截，该写入没有生效。没有绕过拦截、添加 ignore、关闭 security job 或修改其失败语义；当前锁文件保持原样。安全依赖更新及其验证是本 PR 合并前仍需完成的一项工作。"
+        }
+      ],
+      "comments_count_declared": 1,
+      "comments_count_returned": 1,
+      "review_comments_declared": 0,
+      "review_submissions_returned": 0,
+      "actual_ancestry_to_main": {
+        "base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+        "head": "b21cce4c8661589267ad5719f850accbec088d2f",
+        "status": "diverged",
+        "ahead_by": 419,
+        "behind_by": 12,
+        "total_commits": 419,
+        "merge_base": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+        "head_is_ancestor_of_main": false,
+        "compare_file_rows_returned": 300,
+        "compare_file_rows_used_as_full_diff": false,
+        "note": "300 file compare truncation boundary is not interpreted as a complete source diff. Only ancestry metadata is used from this endpoint."
+      },
+      "complete_PR_changed_file_inventory": {
+        "declared": 48,
+        "returned": 48,
+        "unique": 48,
+        "pages": 1,
+        "per_page": 100,
+        "complete": true,
+        "current_main_comparison_counts": {
+          "identical_blob": 3,
+          "different_blob": 32,
+          "missing_path": 13
+        },
+        "paths": [
+          {
+            "path": ".github/workflows/quality.yml",
+            "old_blob": "3eb877c05d6a8ce038ac26c4cda7df5bb9a73833",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "README.md",
+            "old_blob": "727f42478b81ea898df8d5396cdf5f1658a80ba6",
+            "status": "modified",
+            "current_blob": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_db_graph.rs",
+            "old_blob": "f9f2c5704df27d1526a9cbef61c0e2831479133a",
+            "status": "modified",
+            "current_blob": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_db_multi_insert.rs",
+            "old_blob": "4515d141c0911b73f17b7fcfb12c82a96f6068f7",
+            "status": "modified",
+            "current_blob": "e04b8652f15fe6c09761c575646c9c3028f7fc05",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_db_retrieval.rs",
+            "old_blob": "f2caaa22dc6a09b958d6bac15c1efcd99f29ed1a",
+            "status": "modified",
+            "current_blob": "1d2b6c6cf7529cf09c03c7124cfdd32abf308698",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/tests/incremental_write_bench.rs",
+            "old_blob": "9f1c21cb9371a48fce5f2ea3706e39b81d14ba84",
+            "status": "modified",
+            "current_blob": "32831e7be29c8ddde6cb8163bd2929e45cf9d639",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/no_graph_retrieval.json",
+            "old_blob": "457105796a82d698ee402469ddd36a1b6fb3528f",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/quality_smoke.json",
+            "old_blob": "3f6ce1b485962a32ee96afbff43e8dce9afc79cf",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/examples/quality_replay.rs",
+            "old_blob": "84cb86af21e0c660ff91d9f2cd7082774b0b11b9",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/examples/quality_run.rs",
+            "old_blob": "555589c715e95bf92eedf63a6f70d007589003e6",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/src/bench.rs",
+            "old_blob": "a04b088b609ed1c55a1f831ba0b1b3db930ebb7e",
+            "status": "modified",
+            "current_blob": "67b5b31d925af18017864298acc30e924e368327",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-eval/src/lib.rs",
+            "old_blob": "c06eca4138b0a9f7e6e9b5fa555e19ed13ad68ae",
+            "status": "modified",
+            "current_blob": "3ca75bb7450cc21d0e64badb49c5e3059fea3fc1",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-eval/src/quality.rs",
+            "old_blob": "5f0c1aa096e33419dcf035bc751314da40a35041",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/src/runner.rs",
+            "old_blob": "0c99914cf1b1e3b2193986248144b9c26276a055",
+            "status": "modified",
+            "current_blob": "e771db498b9124321f2d3ef57faf387c12f672d7",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-eval/tests/incremental_oracle.rs",
+            "old_blob": "2e0e3e9e78f2050a204ec8cf0698291ac3d8465e",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/tests/scale_bench.rs",
+            "old_blob": "70eff9100af6b8074433bf786308c5713940fc48",
+            "status": "modified",
+            "current_blob": "70eff9100af6b8074433bf786308c5713940fc48",
+            "current_mode": "100644",
+            "comparison": "identical_blob"
+          },
+          {
+            "path": "crates/cc-index/src/build_plan.rs",
+            "old_blob": "9391ce0987d4cc988fdbc4aa9608406d088ad528",
+            "status": "modified",
+            "current_blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/community.rs",
+            "old_blob": "1e3e78871ce31c9d7c0d0ddb104a798ae731e727",
+            "status": "modified",
+            "current_blob": "1e3137115739355d7bb461e38d769106d6ef5359",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/config_linker.rs",
+            "old_blob": "9493ee2e6405422676b4810daee2e7244b414fd4",
+            "status": "modified",
+            "current_blob": "9493ee2e6405422676b4810daee2e7244b414fd4",
+            "current_mode": "100644",
+            "comparison": "identical_blob"
+          },
+          {
+            "path": "crates/cc-index/src/dirty_reload_policy.rs",
+            "old_blob": "e21a72d3f044b703d790bbdd840c9f55b5f63e78",
+            "status": "modified",
+            "current_blob": "a81e7be263b0a980e8d520ef310021ab74b587cd",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer.rs",
+            "old_blob": "95a8a1b65e0544124383156f01aea34fe2976910",
+            "status": "modified",
+            "current_blob": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/analysis.rs",
+            "old_blob": "8838a9da89d5d952b20d354ded2b4efcffc5bd42",
+            "status": "modified",
+            "current_blob": "683bede57d3adf768f8f15ab91668e6036e4f6fb",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/config_link.rs",
+            "old_blob": "47f4b9bb20edff0e91a98850725415ac2fdbd855",
+            "status": "modified",
+            "current_blob": "d781cfa587b7a33bd555d1ddb3cb086612593712",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/dirty.rs",
+            "old_blob": "ff98f886b7b2e10e5a1aa6ca98d3744895539b53",
+            "status": "modified",
+            "current_blob": "ffcfce673e9501e36797fad3a07f42cb0348dc6f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/mod.rs",
+            "old_blob": "37877f56d97d09acfd119fd20e09edc3cc0c6754",
+            "status": "modified",
+            "current_blob": "a17e8aba1e19fe0c6020e47980544bac8d6837d9",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/infra_pass.rs",
+            "old_blob": "ead4406d72a36d6af1c3fc8378b0cf422b613021",
+            "status": "modified",
+            "current_blob": "ead4406d72a36d6af1c3fc8378b0cf422b613021",
+            "current_mode": "100644",
+            "comparison": "identical_blob"
+          },
+          {
+            "path": "crates/cc-index/src/memory_budget.rs",
+            "old_blob": "8288ff60691b8c0a5e2cad768b171df7c1ffc23a",
+            "status": "modified",
+            "current_blob": "e76153badb5136e95924aa9f14288c227e88ab49",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/scanner.rs",
+            "old_blob": "c4b2de04371644427f997fb7333d7ee80482bbba",
+            "status": "modified",
+            "current_blob": "8e89915f736e799274d802be9ffdd22567c650c9",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-model/src/config.rs",
+            "old_blob": "e74b4081c242d5959903ef47abe3c17173b68646",
+            "status": "modified",
+            "current_blob": "93c6c68cadcf8a4b8dcd34951b048c213dc02d72",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/engine.rs",
+            "old_blob": "2bfe98e173cc1e70ac63844db6eab1007997e188",
+            "status": "modified",
+            "current_blob": "916311a4d748f3dffbb149f5ad0f8255cf1ab36f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/engine_lane_tests.rs",
+            "old_blob": "fa9a882c9215724f04e6d997c1eade175e595971",
+            "status": "modified",
+            "current_blob": "2da259536f72ae5ec4e9f9fffa3bf2ebdf8ff0b7",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/lanes.rs",
+            "old_blob": "4bfcdce4c6addeb00ca8726151a9c843acb5b158",
+            "status": "modified",
+            "current_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/lib.rs",
+            "old_blob": "a9bf77740a47bb3250a9fccbfbeee566025c5a7c",
+            "status": "modified",
+            "current_blob": "bd573dbec512f8fec6debb95dea632d50b97ed51",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/plan.rs",
+            "old_blob": "a038d63d0ca69e3cf177954bb4fe7e0d0ee4784d",
+            "status": "modified",
+            "current_blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/preselect.rs",
+            "old_blob": "dbb3f037dfc64c50b72dbb0b6b5fa390949227d1",
+            "status": "modified",
+            "current_blob": "383e8774d35d51d6406a669f5361eb34f6607c20",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/symbol_chunks.rs",
+            "old_blob": "43d1432d50a2f9b5014649bfc44f167217664c4e",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-server/src/engine.rs",
+            "old_blob": "964aa2298e8d6c32aece580b252b9b6ff4dd073f",
+            "status": "modified",
+            "current_blob": "8c8bcf70a321875cd99252b50a9c2010bedaec19",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/BENCHMARK.md",
+            "old_blob": "96e1a07108e8f7fea8278f7a7374f049b54591e5",
+            "status": "modified",
+            "current_blob": "f381aa0b03f4a7e30858e2a4507f9149387caa04",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/BENCHMARK_V2.md",
+            "old_blob": "4fac04c0df4dce8e90eff9ea68323a1f111f6960",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/README.md",
+            "old_blob": "f76a91f382a88995aeef391dd989aef188479744",
+            "status": "modified",
+            "current_blob": "c2f75506abe6f74d1b2aa9240effd54c8b6f1857",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/TEST_PLAN.md",
+            "old_blob": "bcd75795ae600af700d0115e5493d7358c932618",
+            "status": "modified",
+            "current_blob": "6d28b02dada094b2774c0add0db74ae7aa4758cc",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/adr/0003-retrieval-scope-and-quality-contracts.md",
+            "old_blob": "ec6c2bfdf4e262c5e99c2eaced90e52b2dafe374",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/benchmarks/code_index_quality_round1.md",
+            "old_blob": "4f9058d8124fff64addeddf87cc807781caceffb",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/internals/INDEXING.md",
+            "old_blob": "0a39c08732eaeb8cea18969da6d2554614441950",
+            "status": "modified",
+            "current_blob": "934475a480df1b9f0312440808dbbca604b5501c",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/internals/SEARCH.md",
+            "old_blob": "8ba9bf38685791690d383ed429416d6318e1e464",
+            "status": "modified",
+            "current_blob": "1a7a615eeb0f2a6b18f89e8b30f28b5a7cfcf048",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "scripts/compare_quality.py",
+            "old_blob": "e691be045c9bd045b8101bdf63d2a25d146050f6",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "scripts/tests/test_compare_quality.py",
+            "old_blob": "18059eff8c8f6ba4d374c68cf3ffb08a3c3c7c98",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "scripts/update-doc-baselines.sh",
+            "old_blob": "4ae48696f015f0b02757e1dff95cbffd303a3164",
+            "status": "modified",
+            "current_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+            "current_mode": "100755",
+            "comparison": "different_blob"
+          }
+        ],
+        "method": "Each of the complete original PR changed paths is compared to full untruncated current-main crate/scripts/docs/workflow subtree inventories and root blobs. Original after-blob identities come from the official PR file list. Path absence is not by itself a semantic absence proof."
+      },
+      "decision": "keep",
+      "blockers": [
+        "Actual head is not an ancestor of current main.",
+        "Current PR body explicitly retains the PR for independent scope/migration review.",
+        "Concrete source/test/benchmark paths remain absent, and many existing paths have evolved; no complete intent-to-successor equivalence proof was supplied or found in the narrowly reviewed management records.",
+        "Historical validation claims belong to their original heads, not to current main."
+      ],
+      "history": {
+        "original_source_commit_resolves": true,
+        "original_branch_ref_resolves": true,
+        "original_raw_execution_artifact_completeness_certified_in_this_review": false,
+        "existing_management_decision": {
+          "number": 3,
+          "title": "refactor: harden non-embedding code indexing and add replayable quality benchmarks",
+          "head_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+          "base": "main",
+          "base_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+          "recommended_class": "retain_requires_scope_review",
+          "auto_close_eligible": false,
+          "recommended_action": "retain_for_scope_review",
+          "reason": "固定源无祖先关系；delta 路径 3 同字节、32 演进、13 缺失、0 删除仍缺失、0 删除后重现；unique 非 merge 提交 0/12 有 raw-delta 匹配，unique merge 0 个。独立旧非 embedding 索引/检索与质量回放功能仍有 13 条新增路径未集成、32 条路径演进；需逐项语义迁移审查。原 head 曾冲突且 CI 失败，不能直接反向合并旧 schema/benchmark。",
+          "audit_evidence": {
+            "head_is_ancestor_of_integrated_source": false,
+            "delta_base": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+            "path_counts": {
+              "exact": 3,
+              "evolved": 32,
+              "missing": 13,
+              "deleted_still_absent": 0,
+              "deleted_reintroduced": 0
+            },
+            "path_groups_sha256": "8dce0a15552b22d94de95940374f7c006e07a6310997eef3baf3514f80563fee",
+            "unresolved_path_examples": {
+              "evolved": [
+                "README.md",
+                "crates/cc-db/src/index_db_graph.rs",
+                "crates/cc-db/src/index_db_multi_insert.rs"
+              ],
+              "missing": [
+                ".github/workflows/quality.yml",
+                "crates/cc-eval/benchmarks/no_graph_retrieval.json",
+                "crates/cc-eval/benchmarks/quality_smoke.json"
+              ]
+            },
+            "unique_nonmerge_commits": 12,
+            "matched_unique_nonmerge_commits": 0,
+            "unique_merge_commits": [],
+            "original_to_matching_raw_delta_commits": {
+              "9619641903f0b9f397007ebbe85893ce8f6b5f97": [],
+              "f8dc6f861621dfc7383e5fbabc70139c086fe8fb": [],
+              "dc6b3b306b4bad87f53e1c59cf66e489cd87c9b8": [],
+              "aa8fa1deeab725ebe8ffe7cd89746bb0ae3d5a62": [],
+              "630bc030c703f4c5ac6219467da9c0c39966ab59": [],
+              "483c29d0e6bf076e1d9bb5dcf47129748f066c4d": [],
+              "686df25e3d1bf15a0466be74c9847acf281e882f": [],
+              "4f57a8765c5f4c6a1fab809e06d99fda45cd56c9": [],
+              "88c250d517cb4fa804ddc081c424e3a4733a3a17": [],
+              "cf21ddf8881793251c93572643371698e1f2301b": [],
+              "6989cbeae602abe10eccb952fc533578aec2e35f": [],
+              "143324f233f70e2c6491acadf4f21e04c6fda4e2": []
+            }
+          },
+          "independent_unintegrated_scope": true
+        }
+      }
+    },
+    {
+      "number": 4,
+      "url": "https://github.com/jyqj/codecortex/pull/4",
+      "title": "fix: AST-backed code facts, dependency-correct incremental indexing and evidence benchmark v3",
+      "state": "open",
+      "draft": true,
+      "updated_at": "2026-10-08T17:30:52Z",
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "head_ref": "fix/nonembedding-facts-verified-20260906",
+      "actual_branch_ref": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "head_tree": "ebc83b1d389e6f3a9f8ba43c518bc4df6a47d70f",
+      "base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "base_ref": "opt/code-index-benchmark-v2-20260906",
+      "mergeable_state": "clean",
+      "body_original": "## 交付与验证状态\n\n本 PR **叠加在尚未合并的 #3 上**，只评审后续代码事实、解析依赖、检索诊断、benchmark v3 及依赖安全修复；不重复 #3 的差异，**不执行合并**。#3 合并后需重新确认本 PR 的 base/diff。\n\n最终 head：`0466d490a169eb25d2c9070c65aae36060f2220b`；源码 tree：`ebc83b1d389e6f3a9f8ba43c518bc4df6a47d70f`。\n最终本地验证提交 `cdb8345a6f0cfdf9a3fd6d72aff0da2e1e3a5db2`、远端 CI merge commit `74bbb3da7cd49d3ec6586eab874721b5288bf34b` 和本 PR head **具有同一源码 tree**。CI raw header 明确记录 tree、配置与干净工作区。\n\n**远端最终验证全部通过：**\n\n- [CI：格式、Clippy、完整工作区测试、eval、Rust 1.95 MSRV、安全审计](https://github.com/jyqj/codecortex/actions/runs/34039657167)\n- [Code index quality：独立事实、连续增量 oracle、真实 MCP、token 预算及逐字节重放、release 1K scale](https://github.com/jyqj/codecortex/actions/runs/34039657162)\n- [最终质量原始观测 artifact](https://github.com/jyqj/codecortex/actions/runs/34039657162/artifacts/9991306184)\n- [最终安全 JSON](https://github.com/jyqj/codecortex/actions/runs/34039657167/artifacts/9991317210)；[1K 规模报告](https://github.com/jyqj/codecortex/actions/runs/34039657162/artifacts/9991301714)\n\n本评审分支为 **3 个干净提交、70 个文件，3582 additions / 700 deletions**。临时传输、工具链准备、依赖准备和发布工作流均不在最终树或本评审分支历史中；所有永久 CI 为只读 contents 权限。交付补丁已在 #3 的精确源码树上实际应用，应用后 tree 与最终 head 完全相同。\n\n## 生产修复\n\n- **事实提取**：JS/TS 与 Python 的调用/引用由 AST 及词法作用域产生，移除把函数声明、注释和字符串合入调用图的 regex 路径。保留真正递归，修复嵌套函数归属、参数遮蔽、箭头函数声明区间与同条声明多个函数的身份问题。语法层已确定的遮蔽/歧义不再被后续全局同名回退覆盖。\n- **导入/重导出**：ES import 按实际 default/named/namespace 绑定记录；具名、别名与星号重导出有有界、循环安全的解析。明确导入未解析时不回退到无关全局同名符号；相同路径距离的候选保留歧义，不依赖插入顺序任意选一个。\n- **检索/投影**：chunk→symbol 优先精确名字及区间，再使用最小容器；同一符号的多个分片分别获得图分值，邻接证据另行去重。grep 不再被 working set/preselect 当作硬范围裁剪，但仍遵守调用者 scope 和扫描预算。查询选择保留靠后的代码标识符；Unicode、安全 FTS 引号与 acronym 分词有测试。\n- **诊断/缓存**：通道工作量、候选 union、rerank 窗口、返回数量、读失败及预算限制成为结构化诊断，包括空结果。截断/降级结果不缓存；候选位置 trace 有独立上限，截断不伪装成完整阶段召回。\n- **完整消融**：`search.graph_features=false` 同时关闭预选图邻居、graph lane、图重排与图富化；lexical/grep 的零权重真正关闭对应通道。\n- **增量正确性**：持久化负向与非局部名字查找依赖，以及模块查找依赖。新增同名候选、补齐缺失模块和修改重导出会刷新受影响的旧决策；依赖记录与其他事实在同一事务更新。超预算/失败的 freshness 状态保留，空更新不能擦除；成功全量构建恢复完整状态。\n- **缓存迁移**：schema v8，旧索引一次全量重建，清理旧事实并建立 lookup_dependencies。\n\n## 安全检查发现的问题也已修复\n\n初次 CI 发现旧依赖的已知漏洞/内存安全告警，而非直接把 CI 改成忽略。\n升级 `crossbeam-epoch 0.9.21`、`lru 0.18.4`、`anyhow 1.0.104`、`rand 0.10.2`、`chacha20 0.10.2` 和 `notify 8.2.0 / notify-types 2.1.0`，移除停止维护的 `instant`。\n\n固定 cargo-audit 0.22.2，使用 `--deny warnings`，**252 个锁定依赖，0 个已知漏洞、0 个告警、没有 ignore 项**。最终 CI 安全 JSON 保留数据库提交及时间。用只读 CLI 替换需要 Checks 写权限的 audit-check action，保留非零退出码和报告，不扩大永久权限。\n\n没有 embedding、向量数据库或外部模型依赖；安全修复升级了既有依赖族及必要传递依赖。\n\n## Benchmark v3 与验收结果\n\n`docs/BENCHMARK_V3.md`、ADR-0004 与 `docs/benchmarks/code_index_audit_round2.md` 明确已实现契约及未覆盖边界。\n\n- **事实 oracle**：12 个 JS/TS/Python 闭世界源码场景，同时查验数据库事实与真实 MCP，逐条保留 raw。相同 gold 下 #3 原生产实现 0/12 场景完全通过，修复后 12/12；0/12 不是总体准确率为零，而是精确事实集合存在声明伪调用等差异。\n- **增量 oracle**：7 个持久会话/独立全量差分测试，覆盖签名/删除、名字候选增删、缺失模块补齐、超预算与 no-op、重导出修改；比较实际目标、引用、导入、chunk 和 lookup_dependencies。\n- **MCP 对抗回归**：2 个手工项目、11 文件、13 任务：9 个源码证据正例、1 个定位正例、3 个负例；3 cold-session + 3 warm-cache，共 78 次原始观测/变体。\n- **独立证据评分**：冻结源码逐行校验、跨分片区间合并；重复/无效项仍消耗排名与成本。定位不冒充读到实现；旧特殊 novelty nDCG 不作为跨切块打包质量的主指标。\n- **真实 tokenizer**：tiktoken 0.12.0 / cl100k_base，数据 hash 校验，计分时离线。完整 handler JSON 成本与 normalized-source-prefix 离线适配器分别报告；不把适配器当作生产打包或 agent 成功率。\n- **重放与消融**：原始报告和 token-budget 报告逐字节重放；无图/BM25 对照的预期质量门失败保留，不删除失败样本。\n\n最终本地工作区：**1348 passed, 0 failed, 16 ignored**；严格 Clippy、format、文档计数检查通过。Python **18/18**，事实 **12/12**，增量 **7/7**。最终远端 release 1K ground truth **8/8**。\n最终依赖版本本地与远端的 78 次 MCP 观测均：Recall@5 **1.0**、MRR **0.883333**、声明证据组满足率 **1.0**、负例正确空结果率 **1.0**、工具/schema 错误 **0**。\n\n## 配对实验：收益与成本一并披露\n\n以下历史配对实验在安全依赖升级前的相同实现 tree `6dad3e6b2fedbe1d17a2b8683bcd95b68c8da0f5` 上进行，实际本地 SHA `10134dcba8b1e8a945e01a0a918c3f17da699c4f`，对应评审提交 `34fe2fbd75c8ac34ad52ee4a61dc712985ba2b5f`。不重新标记为最终依赖提交的延迟实测。基线只移植 eval harness，生产代码保持 #3，构建目录隔离。\n\n| 指标（10 正例按任务等权） | #3 基线 | 修复实现 | 完全无图 | BM25-only |\n|---|---:|---:|---:|---:|\n| Recall@5 | 0.80 | 1.00 | 0.85 | 0.75 |\n| MRR | 0.733333 | 0.883333 | 0.85 | 0.80 |\n| 声明证据组满足率（含定位） | 0.80 | 1.00 | 0.80 | 0.70 |\n| 无答案正确空结果率 | 1.00 | 1.00 | 1.00 | 1.00 |\n| 工具/schema 错误 | 0 | 0 | 0 | 0 |\n\n历史配对 debug 小夹具 cold-session p95 **11.673 → 13.770 ms**，warm-cache p95 **3.820 → 4.035 ms**；每模式 39 次观测，OS cache 保留、session 初始化不计。输出平均字节 **3801.77 → 4253.38**。增加补召回和诊断有成本，不宣传速度提升，也不预测 50K 仓库延迟。\n\n安全更新后的单独本地观测（当前相同 tree）cold p95 **13.960 ms**、warm p95 **4.724 ms**；独立原始数据 SHA-256 `946ad6f88eb2c094bda9e11dd046853b28ec09e8564cb3c1be82aac46ed29098`，不能与先前不同测量轮次混成新的配对速度结论。\n\n## 仍需后续独立验证的范围\n\n不声称完整 Python/JS 类型系统、反射和动态调用语义已解决；confidence 仍为策略分数，不是校准概率。增量保证限于已记录的名字/模块/绑定依赖，不是所有关系、配置、并发及丢失 watcher 事件的一般全量等价证明。\n\n未完成真实 held-out 仓库人工金标与端到端 agent 实验，不用当前回归夹具、token 适配器或重复调用制造泛化结论。不改动手工权重来追逐夹具分数。本轮交付的是可核验的事实修复、不完整状态和可重放评测，而非未经实验的普遍语义排名承诺。\n\n## 2026-10-07 整合后处理\n\n此 PR 保持开放，等待独立范围审查。固定 head：`0466d490a169eb25d2c9070c65aae36060f2220b`；已合入 main 的比较源：`886f90a542a6174a037c79eebbb4f74848fb1f53`（整合 PR #142）。\n\n固定源无祖先关系；delta 路径 1 同字节、48 演进、21 缺失、0 删除仍缺失、0 删除后重现；unique 非 merge 提交 0/15 有 raw-delta 匹配，unique merge 0 个。独立 AST facts、增量索引与 benchmark 功能仍有 21 条新增路径未集成、48 条路径演进；原 head 的历史 CI 成功不证明完整功能已被当前栈采纳，需单独迁移审查。\n\n完整采用关系、缺口和处置快照记录在 `artifacts/checkpoints/pr-management-20261007/`，随当前推进批 PR #143 保存。后续按尚未采用的具体意图拆分迁移；旧 head 的 CI 与测量继续按原来源解释。\n",
+      "comments_complete": [],
+      "comments_count_declared": 0,
+      "comments_count_returned": 0,
+      "review_comments_declared": 0,
+      "review_submissions_returned": 0,
+      "actual_ancestry_to_main": {
+        "base": "0466d490a169eb25d2c9070c65aae36060f2220b",
+        "head": "b21cce4c8661589267ad5719f850accbec088d2f",
+        "status": "diverged",
+        "ahead_by": 419,
+        "behind_by": 15,
+        "total_commits": 419,
+        "merge_base": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+        "head_is_ancestor_of_main": false,
+        "compare_file_rows_returned": 300,
+        "compare_file_rows_used_as_full_diff": false,
+        "note": "300 file compare truncation boundary is not interpreted as a complete source diff. Only ancestry metadata is used from this endpoint."
+      },
+      "complete_PR_changed_file_inventory": {
+        "declared": 70,
+        "returned": 70,
+        "unique": 70,
+        "pages": 1,
+        "per_page": 100,
+        "complete": true,
+        "current_main_comparison_counts": {
+          "identical_blob": 1,
+          "different_blob": 48,
+          "missing_path": 21
+        },
+        "paths": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "old_blob": "6a5e11bd37328195ff4659b7ab267f5d79a9f47f",
+            "status": "modified",
+            "current_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": ".github/workflows/quality.yml",
+            "old_blob": "63f80a0aed6c823f23196b4b7d8c0efcda49be9b",
+            "status": "modified",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": ".gitignore",
+            "old_blob": "36d034d311cd66eb9d4a08b234f0ae9e8f3af9fe",
+            "status": "modified",
+            "current_blob": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "Cargo.lock",
+            "old_blob": "7b7d31055e3820f01f0531bee77bc858646e6538",
+            "status": "modified",
+            "current_blob": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "Cargo.toml",
+            "old_blob": "4c50675e7e4d938295583ce34ac759b446d5a0da",
+            "status": "modified",
+            "current_blob": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "README.md",
+            "old_blob": "d3002b64bcecf2eb03b6fac1f648bec2f4f6ed9a",
+            "status": "modified",
+            "current_blob": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/fts.rs",
+            "old_blob": "e2db8aca1b6dd0c17ec5c522bfed3f7a3bd8e0a6",
+            "status": "modified",
+            "current_blob": "ad9e99706a9d655196741ee2578fce5eafa29143",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_db_multi_insert.rs",
+            "old_blob": "dc4723b6cb07d662c0bc4afaaad12f1292b7fd7a",
+            "status": "modified",
+            "current_blob": "e04b8652f15fe6c09761c575646c9c3028f7fc05",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_db_write_batch.rs",
+            "old_blob": "e2c8385090b07c02ce013f3a6bcff7cdb73bc074",
+            "status": "modified",
+            "current_blob": "1595240371f2d8833a14a63e9db43c62f2e6be95",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/index_migrate.rs",
+            "old_blob": "b35dedcdab69a5fed7999f7c736a03a55dd1ca96",
+            "status": "modified",
+            "current_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/lib.rs",
+            "old_blob": "164ed4eb74aacef3c8dad019b9d5e56fd8c81e7f",
+            "status": "modified",
+            "current_blob": "0d166ab95cd6442c6f8bf38012804c769c2f1ab3",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-db/src/lookup_dependencies.rs",
+            "old_blob": "e071089d8ccbc192c820a71bee5e2fd8864e5fa5",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-db/src/sql/index_v1.sql",
+            "old_blob": "deb7f34c6f6a28789b8f7316bb7acb1a417cebc7",
+            "status": "modified",
+            "current_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/bm25_only.json",
+            "old_blob": "ab0a8bc1407905955d828628a4bfbc675d9ea9f7",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/facts_smoke.json",
+            "old_blob": "c7ce6d7684a172abe1a58e7b2d56639edecf9951",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/no_graph_all.json",
+            "old_blob": "5724ddf6032c4a29177ece4b54609dad7fa0720f",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/quality_adversarial.json",
+            "old_blob": "810e9368f8ad18739d9805d1f374e67f6f15c5d0",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/benchmarks/trace_candidates.json",
+            "old_blob": "77ed297bc329e96cdd5c30e847499a9e91c16434",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/examples/quality_run.rs",
+            "old_blob": "4230578ba8fd19cfc39d26469be6e83cc9a3f547",
+            "status": "modified",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/src/quality.rs",
+            "old_blob": "f485150c9d2db5e4d81d59c2f859fc76e4d7b540",
+            "status": "modified",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/tests/fact_oracle.rs",
+            "old_blob": "79081427cb23d27a2e0a89d4cab10d5a9d3ba218",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-eval/tests/incremental_oracle.rs",
+            "old_blob": "917545a38cf891b94791d729af955d04ccb1f7fd",
+            "status": "modified",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-index/src/build_plan.rs",
+            "old_blob": "b9f3b099e56f607337e239b2801fe40d5300e73a",
+            "status": "modified",
+            "current_blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/dirty_reload_policy.rs",
+            "old_blob": "bd734220d9833679ced1cd98818bf91d8c458771",
+            "status": "modified",
+            "current_blob": "a81e7be263b0a980e8d520ef310021ab74b587cd",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/dirty.rs",
+            "old_blob": "6728b4b7c721201fbe93a7dba5f153d0fdae7cf3",
+            "status": "modified",
+            "current_blob": "ffcfce673e9501e36797fad3a07f42cb0348dc6f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+            "old_blob": "d16b732abc024e9bda61e506c5ac0029cb590fdc",
+            "status": "modified",
+            "current_blob": "675be9852afd8e78144836758cd696780cbb8a3d",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/catalog.rs",
+            "old_blob": "fe89e2e5d77b78356de4b29e84f67c148d0953d7",
+            "status": "modified",
+            "current_blob": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/helpers.rs",
+            "old_blob": "96878d580f5138b159687291006a4bd3fc62ecf2",
+            "status": "modified",
+            "current_blob": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/mod.rs",
+            "old_blob": "78ae3d7f72bf92ad0129430b5fc35e642872a004",
+            "status": "modified",
+            "current_blob": "eeb67a3c7e9363ddab8ca99a336e0dacad60c262",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/resolve_core.rs",
+            "old_blob": "97ffce5eebb6aa110801f9a373bb8ce824528568",
+            "status": "modified",
+            "current_blob": "a59b6fbffa5840f7ad14ad1b2b0dc116a1c7b792",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/resolve_outcome.rs",
+            "old_blob": "be41e06937826cf8f65166a89d6df52ed18d09fb",
+            "status": "modified",
+            "current_blob": "080450b84241da9172eea8b72b151b331a920608",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-index/src/resolver/types.rs",
+            "old_blob": "aa6ace528a2d359a73d5211eaf32032004ec5e57",
+            "status": "modified",
+            "current_blob": "ece000325748d462e53cf1f92ac1c10f46d26fe4",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-model/src/config.rs",
+            "old_blob": "ba42ee1d2ffe320d1db02beb9d0b992b702488e0",
+            "status": "modified",
+            "current_blob": "93c6c68cadcf8a4b8dcd34951b048c213dc02d72",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-model/src/edge.rs",
+            "old_blob": "f9b92766e669f6a12198d099e26bf98fc09e0840",
+            "status": "modified",
+            "current_blob": "32d4cf4a1344401d68480b4ee1602b4e524c8fb6",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/ast_facts.rs",
+            "old_blob": "8e04d4c76e44957b6f049bec452b868c895782c9",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-parsers/src/jsts/extras.rs",
+            "old_blob": "81641ffd4137d6ba232748baad7e12fc6e057018",
+            "status": "modified",
+            "current_blob": "81641ffd4137d6ba232748baad7e12fc6e057018",
+            "current_mode": "100644",
+            "comparison": "identical_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/jsts/imports_exports.rs",
+            "old_blob": "1df0fa8e43ed0c31340d099979c4a7f82656ef23",
+            "status": "modified",
+            "current_blob": "2a28a9435e2c0c22b4613707f6b4c401fd27defb",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/jsts/mod.rs",
+            "old_blob": "6a6e4cb6d152508a6093dd1560db6c786362ed2a",
+            "status": "modified",
+            "current_blob": "6e80bd0a992ffc40e3fa42f39c45093903d62b89",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/jsts/symbols.rs",
+            "old_blob": "d0560083266f0e6316e0182f8c8a97442bb9a08e",
+            "status": "modified",
+            "current_blob": "ac64915bf7465ae27a0694aeea0988c2fb087a01",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/jsts/visitor.rs",
+            "old_blob": "02d3d698b4e06e5f53e4dd378b7c0b9bd4fbec3a",
+            "status": "modified",
+            "current_blob": "cf21c14696cc842a4c4f4005cd27f544c2802e6e",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/lib.rs",
+            "old_blob": "220eda17e1c760a897e640c6ac76f11e9682a9c3",
+            "status": "modified",
+            "current_blob": "f7035dfb1babc631b5afcdc759406d90b0ed8f23",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/src/python/mod.rs",
+            "old_blob": "71a2dc5159ee972653cb9bd3d987f09ba85a26b7",
+            "status": "modified",
+            "current_blob": "f90cc8cece19a90dc08d7e70e583d298fe22ad54",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-parsers/tests/fact_contract.rs",
+            "old_blob": "495f865a2698a0da024b64e29bb54eeb3ac5faa0",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-search/src/diagnostics.rs",
+            "old_blob": "a69f5ca1e11478d82de8d090210e34c07e5c0a2c",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-search/src/engine.rs",
+            "old_blob": "520ca26f706a25ce1323e3b7fb40e33a18cb272a",
+            "status": "modified",
+            "current_blob": "916311a4d748f3dffbb149f5ad0f8255cf1ab36f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/engine_graph.rs",
+            "old_blob": "d176555c18131d18f92bcd10aeb2643db353851e",
+            "status": "modified",
+            "current_blob": "be9c1915d3e1652d7ce4284c02c99e76ae6d358e",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/engine_lane_tests.rs",
+            "old_blob": "5002d42a92483ba24f37033d3a4b9b80dfd2fc31",
+            "status": "modified",
+            "current_blob": "2da259536f72ae5ec4e9f9fffa3bf2ebdf8ff0b7",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/enrich.rs",
+            "old_blob": "5bb94d4ea03bd37cb2a8b3fd2f35c38d590c7c61",
+            "status": "modified",
+            "current_blob": "c7b37b78fa2920ac0b21a1628b99a16f24b13230",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/lanes.rs",
+            "old_blob": "05851588517eb3c8adaa00493c779aeaf2e2bcf5",
+            "status": "modified",
+            "current_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/lib.rs",
+            "old_blob": "a66fdc5194d6b42d25a4313b6ee99af5726f8969",
+            "status": "modified",
+            "current_blob": "bd573dbec512f8fec6debb95dea632d50b97ed51",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/plan.rs",
+            "old_blob": "9a527fe57dfd9bc8d37dcc3898fae0f79a5998ba",
+            "status": "modified",
+            "current_blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/preselect.rs",
+            "old_blob": "fbd8ab9e76098bf33388d149c7573f758ee5ff91",
+            "status": "modified",
+            "current_blob": "383e8774d35d51d6406a669f5361eb34f6607c20",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/rrf.rs",
+            "old_blob": "3df2ae9fbd8112374a5cecb305a8f9176a192807",
+            "status": "modified",
+            "current_blob": "94569f688ace455a859475b5e63bc5240ac46e4f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "crates/cc-search/src/symbol_chunks.rs",
+            "old_blob": "b7389eef3ab6d4c3667a413617f08b1bddb07495",
+            "status": "modified",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "crates/cc-server/src/engine.rs",
+            "old_blob": "c0bcac523b66d56a96c3d6864818bb316aef8ad7",
+            "status": "modified",
+            "current_blob": "8c8bcf70a321875cd99252b50a9c2010bedaec19",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/ARCHITECTURE.md",
+            "old_blob": "38562cd766c6d304b05acb5589ad44b496b8c69d",
+            "status": "modified",
+            "current_blob": "797fe35160c17148ac41d9e0b9ef0a56a1cfc08d",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/BENCHMARK.md",
+            "old_blob": "f38f048c92b9d21e4ad6d5f6becb55974c303dd7",
+            "status": "modified",
+            "current_blob": "f381aa0b03f4a7e30858e2a4507f9149387caa04",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/BENCHMARK_V3.md",
+            "old_blob": "2421b3199f18276f33bd2da60ffedb2009575275",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/CONFIGURATION.md",
+            "old_blob": "e69ac17d2b81d25610940a9d3099a411745a4f1f",
+            "status": "modified",
+            "current_blob": "64a156436a90d8ff4551e01632a8d19e381b769f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/README.md",
+            "old_blob": "8b88280e59c4bf4c4b8b54dbd53c89a0b29b1db4",
+            "status": "modified",
+            "current_blob": "c2f75506abe6f74d1b2aa9240effd54c8b6f1857",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/TEST_PLAN.md",
+            "old_blob": "3f629c503f1bb7ca3ff0a3cdff22df250fcc2bc8",
+            "status": "modified",
+            "current_blob": "6d28b02dada094b2774c0add0db74ae7aa4758cc",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/adr/0004-facts-dependencies-and-budget-evidence.md",
+            "old_blob": "ff2b94acd0e19f4ed370af9bd0fb9c4e738f7e86",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/benchmarks/code_index_audit_round2.md",
+            "old_blob": "732e56b5ed030d0d52a3b9d486dd72b98d265208",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "docs/internals/INDEXING.md",
+            "old_blob": "688e2b936d6c5e4dbe3ced11910e2544ac9d61e3",
+            "status": "modified",
+            "current_blob": "934475a480df1b9f0312440808dbbca604b5501c",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/internals/SEARCH.md",
+            "old_blob": "b4782df5ed123a16e874751965530258da4e6694",
+            "status": "modified",
+            "current_blob": "1a7a615eeb0f2a6b18f89e8b30f28b5a7cfcf048",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "docs/internals/STORAGE.md",
+            "old_blob": "aec4618d9d757150625e837e7289f3d7b68bef96",
+            "status": "modified",
+            "current_blob": "3c85e490215a325f22fc80c78400fb8ff074132f",
+            "current_mode": "100644",
+            "comparison": "different_blob"
+          },
+          {
+            "path": "scripts/evidence_budget.py",
+            "old_blob": "6a0eefe2a6fd26046bf5d199beaca8b14986e197",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "scripts/requirements-eval.txt",
+            "old_blob": "a45ee8632c4f3f4d3357651bbd256aa8ec5ce167",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "scripts/tests/test_evidence_budget.py",
+            "old_blob": "e007d8e6bdb031c8abd423909d835c76eb552008",
+            "status": "added",
+            "current_blob": null,
+            "current_mode": null,
+            "comparison": "missing_path"
+          },
+          {
+            "path": "scripts/update-doc-baselines.sh",
+            "old_blob": "6a156cb0afe566224df55c00306fa6c94ca62e88",
+            "status": "modified",
+            "current_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+            "current_mode": "100755",
+            "comparison": "different_blob"
+          }
+        ],
+        "method": "Each of the complete original PR changed paths is compared to full untruncated current-main crate/scripts/docs/workflow subtree inventories and root blobs. Original after-blob identities come from the official PR file list. Path absence is not by itself a semantic absence proof."
+      },
+      "decision": "keep",
+      "blockers": [
+        "Actual head is not an ancestor of current main.",
+        "Current PR body explicitly retains the PR for independent scope/migration review.",
+        "Concrete source/test/benchmark paths remain absent, and many existing paths have evolved; no complete intent-to-successor equivalence proof was supplied or found in the narrowly reviewed management records.",
+        "Historical validation claims belong to their original heads, not to current main."
+      ],
+      "history": {
+        "original_source_commit_resolves": true,
+        "original_branch_ref_resolves": true,
+        "original_raw_execution_artifact_completeness_certified_in_this_review": false,
+        "existing_management_decision": {
+          "number": 4,
+          "title": "fix: AST-backed code facts, dependency-correct incremental indexing and evidence benchmark v3",
+          "head_sha": "0466d490a169eb25d2c9070c65aae36060f2220b",
+          "base": "opt/code-index-benchmark-v2-20260906",
+          "base_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+          "recommended_class": "retain_requires_scope_review",
+          "auto_close_eligible": false,
+          "recommended_action": "retain_for_scope_review",
+          "reason": "固定源无祖先关系；delta 路径 1 同字节、48 演进、21 缺失、0 删除仍缺失、0 删除后重现；unique 非 merge 提交 0/15 有 raw-delta 匹配，unique merge 0 个。独立 AST facts、增量索引与 benchmark 功能仍有 21 条新增路径未集成、48 条路径演进；原 head 的历史 CI 成功不证明完整功能已被当前栈采纳，需单独迁移审查。",
+          "audit_evidence": {
+            "head_is_ancestor_of_integrated_source": false,
+            "delta_base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+            "path_counts": {
+              "exact": 1,
+              "evolved": 48,
+              "missing": 21,
+              "deleted_still_absent": 0,
+              "deleted_reintroduced": 0
+            },
+            "path_groups_sha256": "693c82fc4c907f396cc3acedd8007634a07c007d2f5b36c56cd2c3d379fb83a5",
+            "unresolved_path_examples": {
+              "evolved": [
+                ".github/workflows/ci.yml",
+                ".gitignore",
+                "Cargo.lock"
+              ],
+              "missing": [
+                ".github/workflows/quality.yml",
+                "crates/cc-db/src/lookup_dependencies.rs",
+                "crates/cc-eval/benchmarks/bm25_only.json"
+              ]
+            },
+            "unique_nonmerge_commits": 15,
+            "matched_unique_nonmerge_commits": 0,
+            "unique_merge_commits": [],
+            "original_to_matching_raw_delta_commits": {
+              "0466d490a169eb25d2c9070c65aae36060f2220b": [],
+              "aaccea09b8f5d63d53def2a95d8c6ac0682c8ca1": [],
+              "34fe2fbd75c8ac34ad52ee4a61dc712985ba2b5f": [],
+              "9619641903f0b9f397007ebbe85893ce8f6b5f97": [],
+              "f8dc6f861621dfc7383e5fbabc70139c086fe8fb": [],
+              "dc6b3b306b4bad87f53e1c59cf66e489cd87c9b8": [],
+              "aa8fa1deeab725ebe8ffe7cd89746bb0ae3d5a62": [],
+              "630bc030c703f4c5ac6219467da9c0c39966ab59": [],
+              "483c29d0e6bf076e1d9bb5dcf47129748f066c4d": [],
+              "686df25e3d1bf15a0466be74c9847acf281e882f": [],
+              "4f57a8765c5f4c6a1fab809e06d99fda45cd56c9": [],
+              "88c250d517cb4fa804ddc081c424e3a4733a3a17": [],
+              "cf21ddf8881793251c93572643371698e1f2301b": [],
+              "6989cbeae602abe10eccb952fc533578aec2e35f": [],
+              "143324f233f70e2c6491acadf4f21e04c6fda4e2": []
+            }
+          },
+          "independent_unintegrated_scope": true
+        }
+      }
+    }
+  ],
+  "successor_relation": {
+    "pr3_to_pr4": {
+      "status": "ahead",
+      "ahead_by": 3,
+      "behind_by": 0,
+      "merge_base": "9619641903f0b9f397007ebbe85893ce8f6b5f97"
+    },
+    "interpretation": "PR4 is the exact three-commit successor stacked on PR3, but PR4 is itself open and not contained in current main; this does not justify treating PR3 as already integrated. Current P8/A23 main is not asserted to be a semantics-complete successor for these legacy functions."
+  },
+  "preserved_management_material": {
+    "path": "artifacts/checkpoints/pr-management-20261007",
+    "tree": "dc004d5387268a2160a52631582bccf66941aac2",
+    "files": [
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "blob": "7763c8bd36d54b5f063624701ce5b80a4e48697b",
+        "bytes": 9861
+      },
+      {
+        "path": "cleanup-outcome.json",
+        "mode": "100644",
+        "blob": "5927019eacb435e8e34382d3d7b98309247ef76d",
+        "bytes": 26036
+      },
+      {
+        "path": "index.json",
+        "mode": "100644",
+        "blob": "4c8173ff85b746431e90ccf58751977c446ac49a",
+        "bytes": 195337
+      },
+      {
+        "path": "main-postmerge-ci.json",
+        "mode": "100644",
+        "blob": "c4cef0a340868e9905b7b03413052632a009b615",
+        "bytes": 699
+      },
+      {
+        "path": "pr139-ledger-history.json",
+        "mode": "100644",
+        "blob": "155409365bc8d58c36b0f05a8b32e239105e76e2",
+        "bytes": 4283
+      },
+      {
+        "path": "reproduce.py",
+        "mode": "100644",
+        "blob": "7914ee024fd0d39dd9ed07892409e8bb522877b7",
+        "bytes": 12586
+      },
+      {
+        "path": "retained-followup.json",
+        "mode": "100644",
+        "blob": "b59512922e50d4739a113e514b3b211b4f74e4f7",
+        "bytes": 1084
+      }
+    ],
+    "current_main_direct_contents_check": {
+      "path": "artifacts/checkpoints/pr-management-20261007/retained-followup.json",
+      "commit": "b21cce4c8661589267ad5719f850accbec088d2f",
+      "blob": "b59512922e50d4739a113e514b3b211b4f74e4f7",
+      "bytes": 1084,
+      "sha256": "e5b2f6486f923b8e2a9e8a61e5ea53e558429b111cde2b855f64841e2738a670",
+      "body_equals_fixed_git_blob": true
+    },
+    "conclusion": "The previous keep decisions and provenance are preserved in main; this management archive is not asserted to contain all original CI raw bytes."
+  },
+  "security_and_quality_boundary": {
+    "pr3_original_security_failure_is_unresolved_in_its_fixed_old_head_according_to_comment_5553832951": true,
+    "no_inference_of_current_main_dependency_vulnerability": true,
+    "pr4_security_fix_and_validation_claims_remain_original_source_bound": true,
+    "heldout_and_agent_experiments_remain_future_scope_in_original_bodies": true,
+    "no_holdout_files_read_no_V19_action": true,
+    "heldout_future_scope_not_added_as_new_condition_for_admin_closure": true,
+    "no_old_DEV_or_small_fixture_result_promoted_to_current_quality": true
+  },
+  "minimum_followup_before_reconsidering_close": [
+    "Create a scoped migration/equivalence map for PR3's 13 absent paths and 32 evolved paths, and PR4's 21 absent paths and 48 evolved paths; distinguish already-equivalent behavior, intentionally retired contract, and still-unported behavior.",
+    "Independently review that map and its concrete source/test evidence, then explicitly supersede the retained-scope decision. Do not reverse-merge the old schema or old CI wholesale.",
+    "Preserve original head/ref and historical run provenance while doing any eventual administrative closure. Do not label old CI or DEV measurements as current-main evidence."
+  ],
+  "evidence_provenance": [
+    {
+      "key": "pr3-current",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/3",
+      "observed_at": "2026-10-09T04:41:51.039Z",
+      "decoded_utf8_bytes": 21133,
+      "sha256": "b6c0420f6ca20bd7859fa04da1b10d0abcc98009c2dd26e3aca633f4dc9ca761"
+    },
+    {
+      "key": "pr4-current",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/4",
+      "observed_at": "2026-10-09T04:41:51.170Z",
+      "decoded_utf8_bytes": 24343,
+      "sha256": "0e06f13e5c80ebbb7bb56a140b8a71bf57198c016b19a8fd4ea07c12ad04d482"
+    },
+    {
+      "key": "pr3-comments1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/issues/3/comments?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:41:50.965Z",
+      "decoded_utf8_bytes": 5845,
+      "sha256": "07328e721b2fcbd4b997c1e1afcf82f618173a8eda0bd4e2533a002ff6170a95"
+    },
+    {
+      "key": "pr4-comments1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/issues/4/comments?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:41:50.883Z",
+      "decoded_utf8_bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "key": "pr3-files1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/3/files?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:42:12.096Z",
+      "decoded_utf8_bytes": 171130,
+      "sha256": "744a16f418bd2aba40c85d2bc440d40cc44538bfa43bc21742f766c886bc7e58"
+    },
+    {
+      "key": "pr4-files1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/4/files?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:42:11.944Z",
+      "decoded_utf8_bytes": 285029,
+      "sha256": "05fdcb3cc05693a1e289edc255b2a0e8d60de29c5d8507cdfb14e7613646a25d"
+    },
+    {
+      "key": "pr3-reviews1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/3/reviews?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:42:11.194Z",
+      "decoded_utf8_bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "key": "pr4-reviews1",
+      "url": "https://api.github.com/repos/jyqj/codecortex/pulls/4/reviews?per_page=100&page=1",
+      "observed_at": "2026-10-09T04:42:11.325Z",
+      "decoded_utf8_bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "key": "pr34-mainroot",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b21cce4c8661589267ad5719f850accbec088d2f",
+      "observed_at": "2026-10-09T04:42:44.132Z",
+      "decoded_utf8_bytes": 2921,
+      "sha256": "3fa6e5f2d636fa6f5c1aedb520d7f1c3d4ddaa9c42c1b268fa0b665748eb24e5"
+    },
+    {
+      "key": "pr34-maincrates",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/233c93b5f6cdb2c928f17c93cd41b4d0b6676094?recursive=1",
+      "observed_at": "2026-10-09T04:42:44.191Z",
+      "decoded_utf8_bytes": 332738,
+      "sha256": "5372730e6ba1314a12056087ed85f4fda947f6d006cbb7f7deea2b80ee82c135"
+    },
+    {
+      "key": "pr34-mainscripts",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/e4232e5b46891e4293aa548d380a7755edcdfccd?recursive=1",
+      "observed_at": "2026-10-09T04:42:44.063Z",
+      "decoded_utf8_bytes": 29718,
+      "sha256": "740c7b4fb3545befa4eaa8096e81eeabb4e9b44816b20a1aa1b33c22559ebf17"
+    },
+    {
+      "key": "pr34-maindocs",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d?recursive=1",
+      "observed_at": "2026-10-09T04:42:44.228Z",
+      "decoded_utf8_bytes": 114152,
+      "sha256": "d8f8e91663ee09cbbe7f1a532346ef2c2ca50ae790cde6079c7945b936c53ab2"
+    },
+    {
+      "key": "pr34-maingithub",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/51facfc382452eab53969020f8ca0beaadb65114?recursive=1",
+      "observed_at": "2026-10-09T04:42:44.029Z",
+      "decoded_utf8_bytes": 2231,
+      "sha256": "7ba6a208bbed2ef994d4b15f4e44f60a4417f6674541f76e546f7348f7851f88"
+    },
+    {
+      "key": "pr34-management-tree",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/dc004d5387268a2160a52631582bccf66941aac2?recursive=1",
+      "observed_at": "2026-10-09T04:43:05.595Z",
+      "decoded_utf8_bytes": 1753,
+      "sha256": "b7bba42e30b973699225202544e501ab012bddbf981ba81a1b525d164a1b8cfa"
+    },
+    {
+      "key": "pr34-management-index",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4c8173ff85b746431e90ccf58751977c446ac49a",
+      "observed_at": "2026-10-09T04:43:18.390Z",
+      "decoded_utf8_bytes": 195337,
+      "sha256": "a2a51697cd579ed2ae6de79de22b92187c9a4601ce9087607d3ae5ee64e7f75c"
+    },
+    {
+      "key": "pr34-retained-followup",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/b59512922e50d4739a113e514b3b211b4f74e4f7",
+      "observed_at": "2026-10-09T04:43:18.395Z",
+      "decoded_utf8_bytes": 1084,
+      "sha256": "e5b2f6486f923b8e2a9e8a61e5ea53e558429b111cde2b855f64841e2738a670"
+    },
+    {
+      "key": "pr34-cleanup-outcome",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5927019eacb435e8e34382d3d7b98309247ef76d",
+      "observed_at": "2026-10-09T04:43:18.416Z",
+      "decoded_utf8_bytes": 26036,
+      "sha256": "6b6c8e24966e005be5717c69e7d4fb199f584b98e2ee69716b7a35ad43645d59"
+    },
+    {
+      "key": "pr34-current-main-retained-followup",
+      "url": "https://api.github.com/repos/jyqj/codecortex/contents/artifacts/checkpoints/pr-management-20261007/retained-followup.json?ref=b21cce4c8661589267ad5719f850accbec088d2f",
+      "observed_at": "2026-10-09T04:44:24.514Z",
+      "decoded_utf8_bytes": 1084,
+      "sha256": "e5b2f6486f923b8e2a9e8a61e5ea53e558429b111cde2b855f64841e2738a670"
+    },
+    {
+      "key": "pr3-headref",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/ref/heads/opt/code-index-benchmark-v2-20260906",
+      "observed_at": "2026-10-09T04:43:06.129Z",
+      "decoded_utf8_bytes": 437,
+      "sha256": "d3a672fb38257b1918209e665870dc6b4a8e6e9f4af595f30d7dfe43140a5843"
+    },
+    {
+      "key": "pr4-headref",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/ref/heads/fix/nonembedding-facts-verified-20260906",
+      "observed_at": "2026-10-09T04:43:05.595Z",
+      "decoded_utf8_bytes": 451,
+      "sha256": "31fb14d3e85372fc8e88f46a6728b1cf64945927e54fff4fccc897963c460b8a"
+    },
+    {
+      "key": "pr3-headcommit",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "observed_at": "2026-10-09T04:43:05.542Z",
+      "decoded_utf8_bytes": 1234,
+      "sha256": "77552e622cd3d262895acc1f49ab629910a1856547acbff85bf982d7cc6ea38e"
+    },
+    {
+      "key": "pr4-headcommit",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/0466d490a169eb25d2c9070c65aae36060f2220b",
+      "observed_at": "2026-10-09T04:43:05.564Z",
+      "decoded_utf8_bytes": 1620,
+      "sha256": "a461d80e94e8a03f4f6e5607bf70ffdbd7d28ceff52dd603f32dc9e76ce58f62"
+    }
+  ],
+  "compare_provenance": [
+    {
+      "key": "pr3-to-main",
+      "observed_at": "2026-10-09T04:41:52.975Z",
+      "endpoint_tool": "github_compare_commits",
+      "base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "head": "b21cce4c8661589267ad5719f850accbec088d2f",
+      "status": "diverged",
+      "full_result_canonical_json_sha256": "8f3d4295ed5c7841f8cb8cc720d8e12591db326ed74c0dbd5aadf21b9d633a96"
+    },
+    {
+      "key": "pr4-to-main",
+      "observed_at": "2026-10-09T04:41:53.032Z",
+      "endpoint_tool": "github_compare_commits",
+      "base": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "head": "b21cce4c8661589267ad5719f850accbec088d2f",
+      "status": "diverged",
+      "full_result_canonical_json_sha256": "9ca9fc8d36a542509b9d38aea7440b431fdddd724583590b6f341885f5b42ac4"
+    },
+    {
+      "key": "pr3-to-pr4",
+      "observed_at": "2026-10-09T04:43:19.029Z",
+      "endpoint_tool": "github_compare_commits",
+      "base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "status": "ahead",
+      "full_result_canonical_json_sha256": "24e7531cb1fbe7276fc7aeb2c64148482bd237c7d4f0e1b1bbfd5001ae1ddd25"
+    }
+  ],
+  "actions_taken": {
+    "read_API": true,
+    "create_report_blob_only": true,
+    "modified_PR": false,
+    "modified_refs": false,
+    "comments_sent": false,
+    "tests_run": false,
+    "native_executed": false,
+    "cloud_runner_used": false
+  },
+  "original_todos": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_completed": 0
+  }
+}

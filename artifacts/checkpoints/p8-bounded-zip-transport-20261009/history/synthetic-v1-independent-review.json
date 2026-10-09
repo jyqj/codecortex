@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "status": "accepted_scoped_static_for_first_external_synthetic_control_execution",
+  "reviewer": "acceptance_audit",
+  "repository": "jyqj/codecortex",
+  "publication_plan": {
+    "blob": "4d8db2f46abd208161f131887a7ce2ef4315aa06",
+    "bytes": 5881,
+    "sha256": "2bbb4bd26d99a9cd5f6b3a019c885eac34a883cd98c14c8c778adf8865332fa9"
+  },
+  "proposed_parent": "9aacfbea2771209134b4f2dd8889cbb4e2a3d099",
+  "proposed_branch": "task/p8-bounded-zip-controls-20261009",
+  "reviewed_files": [
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/verified_range.py",
+      "blob": "039058250749aab034954d7db310d6ec4ca4647b",
+      "bytes": 9051,
+      "mode": "100644",
+      "sha256": "900072eb28bbf56f747fcb2b976f87f84b06b1b99562de696be2d0f526c7043a"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/zip_intake.py",
+      "blob": "3708ef78539e3af92afe11752d622f244c4fa856",
+      "bytes": 9959,
+      "mode": "100644",
+      "sha256": "e784a9bea2246d13eef400741c03e18a3912e65eb4f2d915ed993d1395d5fc58"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/test_verified_range.py",
+      "blob": "b0c1d0ab1c2401110cd07ee272a51eb1394e59d0",
+      "bytes": 14437,
+      "mode": "100644",
+      "sha256": "559b9a4a8c4dd0240ac7d9353818ce1de7e494f1bb6fffa1e03f6f5d4d4bbca2"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/curl_transport.py",
+      "blob": "4725f963a98f73c876422948b94e1dc628bb746b",
+      "bytes": 9583,
+      "mode": "100644",
+      "sha256": "96c7c6e5fe6ca24893f597cf756a410834d3beb0e64c34d8d9784d3861ae7f22"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/test_curl_transport.py",
+      "blob": "bb6444f2c58e6331265eebc9ae6297dd18bcfb09",
+      "bytes": 12856,
+      "mode": "100644",
+      "sha256": "2a531521abe174dc8c284427c6f6302815f871656d775a961922f57430c727a6"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/run_controls.py",
+      "blob": "191debd3e8c980f208ed2e23198ebf80e48a85a5",
+      "bytes": 7514,
+      "mode": "100644",
+      "sha256": "f477b2f7c99da8333a51b5bc55d126d7efcb296cd3010f141b96c11ee9c5b6c5"
+    },
+    {
+      "path": ".github/workflows/p8-bounded-zip-controls.yml",
+      "blob": "71a59ab2f32cd35f37b0be94f5e5c894ff14b7fe",
+      "bytes": 1206,
+      "mode": "100644",
+      "sha256": "fb2480195cf5c1d9b854d23955fc06c2f4b69d20a67a210cb1a8254135e9f44d"
+    }
+  ],
+  "checks": {
+    "actual_methods": [
+      "test_verified_range.RangeControls.test_initial_full_digest_length_and_status",
+      "test_verified_range.RangeControls.test_deferred_initial_headers",
+      "test_verified_range.RangeControls.test_cross_block_tail_and_bounded_read_all",
+      "test_verified_range.RangeControls.test_lru_eviction_revalidates_and_stays_bounded",
+      "test_verified_range.RangeControls.test_200_is_not_a_range",
+      "test_verified_range.RangeControls.test_each_content_range_coordinate_is_exact",
+      "test_verified_range.RangeControls.test_short_and_long_range_bodies",
+      "test_verified_range.RangeControls.test_same_etag_changed_bytes_rejected_by_initial_block_sha",
+      "test_verified_range.RangeControls.test_changed_etag_rejected",
+      "test_verified_range.RangeControls.test_duplicate_header_content_length_and_encoding_rejected",
+      "test_verified_range.RangeControls.test_request_total_bytes_and_deadline_budgets",
+      "test_verified_range.RangeControls.test_negative_seek_and_oversized_read_rejected",
+      "test_verified_range.ZipControls.test_stored_and_deflated_all_bytes_match_stdlib",
+      "test_verified_range.ZipControls.test_descriptor_and_forced_local_zip64_via_stdlib",
+      "test_verified_range.ZipControls.test_nested_no_whole_zip_buffer_and_expanded_identity",
+      "test_verified_range.ZipControls.test_large_nested_stored_and_incompressible_deflate_bound_every_seek_read",
+      "test_verified_range.ZipControls.test_corrupt_crc_rejected_even_when_corrupt_zip_digest_is_registered",
+      "test_verified_range.ZipControls.test_duplicate_escape_directory_and_nonregular_rejected",
+      "test_verified_range.ZipControls.test_encryption_and_unknown_compression_rejected",
+      "test_verified_range.ZipControls.test_selected_file_and_combined_budgets_and_missing_member",
+      "test_verified_range.ZipControls.test_original_seal_complete_population_and_mutation",
+      "test_curl_transport.CurlTransportControls.test_origin_complete_bounded_chunks_exact_headers_and_metrics",
+      "test_curl_transport.CurlTransportControls.test_range_exact_inclusive_bounds_if_match_and_full_response",
+      "test_curl_transport.CurlTransportControls.test_origin_short_and_extra_are_rejected_and_reaped",
+      "test_curl_transport.CurlTransportControls.test_range_wrong_status_short_and_extra_are_rejected",
+      "test_curl_transport.CurlTransportControls.test_invalid_origin_authority_never_starts_curl",
+      "test_curl_transport.CurlTransportControls.test_invalid_range_and_etag_never_start_curl",
+      "test_curl_transport.CurlTransportControls.test_early_generator_abandonment_is_cleaned_by_context",
+      "test_curl_transport.CurlTransportControls.test_second_origin_or_concurrent_curl_is_refused",
+      "test_curl_transport.CurlTransportControls.test_malformed_folded_oversized_and_interim_headers_fail_closed",
+      "test_curl_transport.CurlTransportControls.test_redirect_headers_are_not_followed_or_published",
+      "test_curl_transport.CurlTransportControls.test_process_spawn_and_nonzero_errors_do_not_expose_URL",
+      "test_curl_transport.CurlTransportControls.test_timeout_is_sanitized_and_owned_kill_is_bounded"
+    ],
+    "runner_fixed_inputs": {
+      "verified_range.py": "039058250749aab034954d7db310d6ec4ca4647b",
+      "zip_intake.py": "3708ef78539e3af92afe11752d622f244c4fa856",
+      "test_verified_range.py": "b0c1d0ab1c2401110cd07ee272a51eb1394e59d0",
+      "curl_transport.py": "4725f963a98f73c876422948b94e1dc628bb746b",
+      "test_curl_transport.py": "bb6444f2c58e6331265eebc9ae6297dd18bcfb09"
+    },
+    "plan_hash": {
+      "bytes": 5881,
+      "sha256": "2bbb4bd26d99a9cd5f6b3a019c885eac34a883cd98c14c8c778adf8865332fa9"
+    }
+  },
+  "review_scope": {
+    "readonly_full_text_inspection": true,
+    "pure_javascript_hash_and_literal_population_checks": true,
+    "python_AST_or_compile_execution": false,
+    "dynamic_controls_executed": false,
+    "network_artifact_reception": false,
+    "local_files_written": false,
+    "Cargo_or_native_product_or_statistics_execution": false,
+    "Git_ref_or_commit_or_tree_created": false
+  },
+  "findings": [
+    {
+      "area": "Origin and subsequent byte identity",
+      "decision": "accepted_scoped_static",
+      "detail": "The first full body is checked against registered size/SHA256 while fixed256KiB block SHA256 values are recorded. Every later206 aligned range must match exact inclusive coordinates, original total, body size, Content-Length, ETag, identity encoding and its initial block hash. A repeated ETag alone cannot authorize changed bytes."
+    },
+    {
+      "area": "Bounded standard-library ZIP access",
+      "decision": "accepted_scoped_static",
+      "detail": "The final CountedSeek has an independent logical cursor and128KiB trailing byte window. EOCD/Zip64-locator short backwards movements can use retained bytes. A target earlier than the window resets the original ZipExtFile to0 then reads/discards at most64KiB per call. Forward movement never delegates a large standard-library seek. Caller reads remain at most4MiB; the256KiB/8-block LRU,4096 requests and original4x archive-body budget remain fixed."
+    },
+    {
+      "area": "Complete bytes and original inventory",
+      "decision": "accepted_scoped_static",
+      "detail": "stdlib zipfile fully consumes each selected and unselected member in64KiB pieces, enforcing original CRC plus central size and computing SHA256. Path/duplicate/type/compression/encryption checks remain fail-closed. Nested-to-expanded population comparison and both original seals are bidirectional. No custom local-header or descriptor parser has been added; descriptor/forced localZip64 fixture acceptance remains limited to the standard-library behavior actually tested."
+    },
+    {
+      "area": "Resource and seek claims",
+      "decision": "bounded_no_completion_promise",
+      "detail": "Combined25000 members,8MiB metadata,16MiB selected bytes,4MiB selected-file bound,4GiB perZIP expanded limit remain explicit. The later real receiver must independently enforce its96MiB working budget plus512MiB reserve. Large central directories or repeated nested inflation may still exhaust the unchanged4x/4096/deadline limits; this review does not certify the actual package can finish. API read/seek/discard counters do not claim CPU inflation cost. Core network_bytes counts response bodies; curl separately counts response headers."
+    },
+    {
+      "area": "Curl lifecycle and secret handling",
+      "decision": "accepted_scoped_static",
+      "detail": "The fixed HTTPS authority, bounded Range/strong If-Match, no redirects or retries, bounded headers/read sizes and one-owned-child rule are preserved. Origin generators are single-use; context close also stops an abandoned generator. Startup/nonzero/timeout errors use fixed messages without printing URL, argv or rawheaders; stderr is discarded. terminate/kill waits are bounded and unconfirmed shutdown remains failure."
+    },
+    {
+      "area": "33-method control execution",
+      "decision": "ready_for_first_execution_not_passed",
+      "detail": "Independent static method-name extraction exactly matches33 unique plan and runner IDs:21 Range/ZIP methods plus12 fake-Popen Curl methods. Before/after hashes pin all five test inputs to their complete Git blobs. The runner requires actual checkout HEAD==GITHUB_SHA, attempt1, exact discovered population,33 executions, no failures/errors/skips/expected failures/unexpected successes. The large deterministic incompressible nested fixture retains both stored and deflated cases, asserts final payload SHA, actual reset/discard behavior, tail cache use/bound and original body budget."
+    },
+    {
+      "area": "Workflow scope and retention",
+      "decision": "accepted_scoped_static",
+      "detail": "Only the new dedicated push branch runs onUbuntu24.04 withcontents:read and10minutes, actualgithub.sha checkout and attempt1. No actual artifact URL is provided. No product,Cargo or statistics binary runs. Report/stdout/stderr are always uploaded including hidden files; hard shutdown may still prevent complete upload. This auxiliary controller does not mutate product source, original G4 receivers, original measurements or the approval chain."
+    }
+  ],
+  "historical_drafts": [
+    {
+      "blob": "552530386aecdbdf526285320a1ae551fd065015",
+      "status": "static_blocked_superseded",
+      "reason": "Direct ZipExtFile forward seek can cause CPython3.12 reads up to16MiB, exceeding the fixed4MiB adapter bound; small old fixture did not exercise it."
+    },
+    {
+      "blob": "cd6b73352b3006e7612636a32b852f600f602598",
+      "status": "static_budget_risk_superseded",
+      "reason": "Resetting to0 even for tiny EOCD backward movements can repeatedly re-read the whole nested stream and exhaust4x. Final128KiB window removes that specific pattern without raising budgets."
+    }
+  ],
+  "stdlib_reference": {
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.0/Lib/zipfile/__init__.py",
+    "retrieval": "GitHub MCP primary-source body inspected",
+    "methods": [
+      "_EndRecData",
+      "_EndRecData64",
+      "ZipExtFile.seek",
+      "ZipExtFile._read1",
+      "ZipExtFile._read2"
+    ],
+    "not_a_dynamic_result": true
+  },
+  "remaining_required": [
+    "Parent actual commit/tree/parent/payload bridge before first branch publication.",
+    "All33 synthetic controls must actually execute and pass, with complete raw report and fixed input before/after identities, before admitting real ZIP reception.",
+    "Final real receiver composition, fixed original package identity, capacity gate and complete original protocol checks require their own review and actual execution. This report does not accept actual raw evidence."
+  ],
+  "environment_note": "Local exec-server disconnected; no Python AST, unit test, actualcurl or artifact transfer was run during this review. This is not classified as a product failure.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

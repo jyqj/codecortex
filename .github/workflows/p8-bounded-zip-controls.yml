@@ -1,0 +1,39 @@
+name: Bounded ZIP transport synthetic controls only
+
+on:
+  push:
+    branches: [task/p8-bounded-zip-controls-20261009]
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  synthetic_controls:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-bounded-zip-transport-20261009/
+      - name: Execute every fixed synthetic control without original artifact URLs
+        shell: bash
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          python3 -B -u artifacts/checkpoints/p8-bounded-zip-transport-20261009/run_controls.py \
+            "$RUNNER_TEMP/p8-bounded-zip-controls"
+      - name: Preserve synthetic report including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-bounded-zip-synthetic-controls-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-bounded-zip-controls
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 21

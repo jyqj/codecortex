@@ -1,0 +1,104 @@
+{
+  "schema": "p8-bounded-zip-synthetic-control-publication-v1",
+  "status": "static_candidate_dynamic_controls_not_executed",
+  "suggested_parent": "9aacfbea2771209134b4f2dd8889cbb4e2a3d099",
+  "branch": "task/p8-bounded-zip-controls-20261009",
+  "files": [
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/verified_range.py",
+      "blob": "039058250749aab034954d7db310d6ec4ca4647b",
+      "bytes": 9051,
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/zip_intake.py",
+      "blob": "3708ef78539e3af92afe11752d622f244c4fa856",
+      "bytes": 9959,
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/test_verified_range.py",
+      "blob": "b0c1d0ab1c2401110cd07ee272a51eb1394e59d0",
+      "bytes": 14437,
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/curl_transport.py",
+      "blob": "4725f963a98f73c876422948b94e1dc628bb746b",
+      "bytes": 9583,
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/test_curl_transport.py",
+      "blob": "bb6444f2c58e6331265eebc9ae6297dd18bcfb09",
+      "bytes": 12856,
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-bounded-zip-transport-20261009/run_controls.py",
+      "blob": "191debd3e8c980f208ed2e23198ebf80e48a85a5",
+      "bytes": 7514,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/p8-bounded-zip-controls.yml",
+      "blob": "71a59ab2f32cd35f37b0be94f5e5c894ff14b7fe",
+      "bytes": 1206,
+      "mode": "100644"
+    }
+  ],
+  "expected_method_count": 33,
+  "expected_method_ids": [
+    "test_verified_range.RangeControls.test_initial_full_digest_length_and_status",
+    "test_verified_range.RangeControls.test_deferred_initial_headers",
+    "test_verified_range.RangeControls.test_cross_block_tail_and_bounded_read_all",
+    "test_verified_range.RangeControls.test_lru_eviction_revalidates_and_stays_bounded",
+    "test_verified_range.RangeControls.test_200_is_not_a_range",
+    "test_verified_range.RangeControls.test_each_content_range_coordinate_is_exact",
+    "test_verified_range.RangeControls.test_short_and_long_range_bodies",
+    "test_verified_range.RangeControls.test_same_etag_changed_bytes_rejected_by_initial_block_sha",
+    "test_verified_range.RangeControls.test_changed_etag_rejected",
+    "test_verified_range.RangeControls.test_duplicate_header_content_length_and_encoding_rejected",
+    "test_verified_range.RangeControls.test_request_total_bytes_and_deadline_budgets",
+    "test_verified_range.RangeControls.test_negative_seek_and_oversized_read_rejected",
+    "test_verified_range.ZipControls.test_stored_and_deflated_all_bytes_match_stdlib",
+    "test_verified_range.ZipControls.test_descriptor_and_forced_local_zip64_via_stdlib",
+    "test_verified_range.ZipControls.test_nested_no_whole_zip_buffer_and_expanded_identity",
+    "test_verified_range.ZipControls.test_large_nested_stored_and_incompressible_deflate_bound_every_seek_read",
+    "test_verified_range.ZipControls.test_corrupt_crc_rejected_even_when_corrupt_zip_digest_is_registered",
+    "test_verified_range.ZipControls.test_duplicate_escape_directory_and_nonregular_rejected",
+    "test_verified_range.ZipControls.test_encryption_and_unknown_compression_rejected",
+    "test_verified_range.ZipControls.test_selected_file_and_combined_budgets_and_missing_member",
+    "test_verified_range.ZipControls.test_original_seal_complete_population_and_mutation",
+    "test_curl_transport.CurlTransportControls.test_origin_complete_bounded_chunks_exact_headers_and_metrics",
+    "test_curl_transport.CurlTransportControls.test_range_exact_inclusive_bounds_if_match_and_full_response",
+    "test_curl_transport.CurlTransportControls.test_origin_short_and_extra_are_rejected_and_reaped",
+    "test_curl_transport.CurlTransportControls.test_range_wrong_status_short_and_extra_are_rejected",
+    "test_curl_transport.CurlTransportControls.test_invalid_origin_authority_never_starts_curl",
+    "test_curl_transport.CurlTransportControls.test_invalid_range_and_etag_never_start_curl",
+    "test_curl_transport.CurlTransportControls.test_early_generator_abandonment_is_cleaned_by_context",
+    "test_curl_transport.CurlTransportControls.test_second_origin_or_concurrent_curl_is_refused",
+    "test_curl_transport.CurlTransportControls.test_malformed_folded_oversized_and_interim_headers_fail_closed",
+    "test_curl_transport.CurlTransportControls.test_redirect_headers_are_not_followed_or_published",
+    "test_curl_transport.CurlTransportControls.test_process_spawn_and_nonzero_errors_do_not_expose_URL",
+    "test_curl_transport.CurlTransportControls.test_timeout_is_sanitized_and_owned_kill_is_bounded"
+  ],
+  "actual_artifact_reception": false,
+  "artifact_URL_in_workflow": false,
+  "product_Cargo_statistics_execution": false,
+  "P_R_G_change": false,
+  "scope": "Only deterministic in-memory synthetic standard-library ZIP and mocked curl controls. No actual artifact URL or download. All 33 methods required; no skips/expected-failures/unexpected-successes. First attempt only. Actual receive remains pending separate admission and review.",
+  "historical_candidates": [
+    {
+      "blob": "552530386aecdbdf526285320a1ae551fd065015",
+      "reason": "static block: nested stdlib forward seek may exceed4MiB adapter read limit"
+    },
+    {
+      "blob": "cd6b73352b3006e7612636a32b852f600f602598",
+      "reason": "static risk: reset-to-zero on tiny EOCD backseek may exhaust original4x transport budget; superseded by bounded128KiB tail window"
+    }
+  ],
+  "execution_environment": "local exec-server disconnected; one small recovery probe was terminated without output; no dynamic pass claimed",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

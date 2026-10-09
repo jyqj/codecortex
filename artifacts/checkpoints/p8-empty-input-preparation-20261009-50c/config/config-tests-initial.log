@@ -1,0 +1,23 @@
+   Compiling cc-index v1.0.0 (/workspace/scratch/50c364fd60b1/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.52s
+     Running tests/full_snapshot_empty_config.rs (target/debug/deps/full_snapshot_empty_config-58e26847aa7d82d7)
+
+running 2 tests
+test typed_module_config_still_resolves_when_heuristic_tokens_are_empty ... FAILED
+test empty_config_full_rebuild_clears_old_links_and_can_relink_later ... ok
+
+failures:
+
+---- typed_module_config_still_resolves_when_heuristic_tokens_are_empty stdout ----
+
+thread 'typed_module_config_still_resolves_when_heuristic_tokens_are_empty' (324) panicked at crates/cc-index/tests/full_snapshot_empty_config.rs:106:10:
+called `Result::unwrap()` on an `Err` value: Database("no such column: callee_file in SELECT callee_file FROM call_edges WHERE file_path = 'src/use.ts' AND callee_symbol = 'target' at offset 7")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    typed_module_config_still_resolves_when_heuristic_tokens_are_empty
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `-p cc-index --test full_snapshot_empty_config`

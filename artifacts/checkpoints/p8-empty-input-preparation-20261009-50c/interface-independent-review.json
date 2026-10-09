@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "implementation_author": "/root/scale_audit",
+  "review_kind": "independent_source_review_and_actual_targeted_execution",
+  "reviewed_at_utc": "2026-10-09T07:51:35.971019+00:00",
+  "base_commit": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "local_execution_commit": "6ffce3cea9534d3f253d3d0f7f2c5f9169495cca",
+  "decision": "accepted_for_narrow_semantics_preserving_change",
+  "blocking_findings": [],
+  "reviewed_patch": {
+    "sha256": "ca31741651a965a61e49787e83a569cf177c316e4b87713ee7ca90f66408f41b",
+    "bytes": 14141,
+    "command": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "6ffce3cea9534d3f253d3d0f7f2c5f9169495cca",
+      "--",
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs"
+    ]
+  },
+  "reviewed_files": [
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+      "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "bytes": 11716
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "sha256": "f94829eed06d69bb250d751fda89fa89685ae4db7aa315df2c79dc1da52ea923",
+      "git_blob": "77eb31f25d0daf2c18e6010a6cbd37152f41a4cc",
+      "bytes": 9741
+    }
+  ],
+  "unchanged_proof_dependencies": [
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "equals_base": true
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "equals_base": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_graph.rs",
+      "sha256": "95962a7545c9e13bdbefc5294a60c7ca674db5674ac11a82912113d264655ea0",
+      "equals_base": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_edges.rs",
+      "sha256": "d1dd3e4022b5d3e516c200d7cf5c0efd039e220f75b4adde39261aeab8936452",
+      "equals_base": true
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/mod.rs",
+      "sha256": "6c3dc3e98e5d366ceeb370f3346006647ff57b99c35feba7358022452536c91b",
+      "equals_base": true
+    },
+    {
+      "path": "crates/cc-index/src/synthesis_pipeline.rs",
+      "sha256": "d765e32dde7bbe2008a7c2db9bdb451a9ffb57098a30691e5a7a1ea9d2e5980f",
+      "equals_base": true
+    }
+  ],
+  "structural_comparisons": {
+    "call_read_exclusion_overlay_and_empty_call_guard_equal_base": true,
+    "call_prefix_sha256": "5d10d9b2b39133333896f7f4c01b8f80359b6183b74e3ba41bd47210e333648b",
+    "method_maps_container_selection_fanout_edge_fields_and_dedup_equal_base": true,
+    "algorithm_tail_sha256": "ba6d84b1b6c1b0b4f309720ad949c8240213e5abae3be2652b121f2bd8f7a4a6"
+  },
+  "findings": [
+    {
+      "id": "I1",
+      "status": "accepted",
+      "subject": "UNIQUE UID equivalence",
+      "reason": "The current production full schema declares symbols.symbol_uid TEXT UNIQUE; index_migrate includes that exact schema. symbol_dispatch_rows selects only non-NULL UIDs and collects all typed decoding results before returning. The old map skipped empty UIDs, and the new set does likewise. For valid persisted rows every nonempty UID has one kind, so the set of interface/trait rows exactly equals filtering the prior UID-keyed map. No SQL-side filter hides malformed ordinary symbols."
+    },
+    {
+      "id": "I2",
+      "status": "accepted",
+      "subject": "Original SQL and decode failure boundaries",
+      "reason": "Reads remain committed/prior-overlaid calls, then fully decoded symbol rows, then fully decoded implements pairs. No-call returns before symbol/implements reads; no-interface returns before implements reads. The new no-implements return is equivalent to the former empty interface-to-implementors map because every returned pair was inserted without filtering. Moved work consists only of infallible in-memory lookup construction, not SQL or row decoding."
+    },
+    {
+      "id": "I3",
+      "status": "accepted",
+      "subject": "Stale cleanup and disabled state",
+      "reason": "The enabled pass initializes delete_call_kinds=[interface_dispatch] before all prerequisite returns, so no interfaces/implements still schedules old synthetic edge removal. Disabled behavior returns an empty delta without reading or scheduling deletion. apply_synthesis_round is unchanged and the real SQLite control confirms stale synthetic edges are removed while real calls remain."
+    },
+    {
+      "id": "I4",
+      "status": "accepted",
+      "subject": "Prior overlay",
+      "reason": "Persisted excluded-kind filtering and all prior call insertions are byte-identical. The no-call guard remains after overlay insertion. The PassContext contract and registry establish that earlier passes do not synthesize implements semantic relations; this patch does not alter that existing committed-semantic scope."
+    },
+    {
+      "id": "I5",
+      "status": "accepted",
+      "subject": "Same-name containers, fanout and emitted graph",
+      "reason": "The original symbol-row traversal populates name_to_container_uid in the same order. Interface-set membership is equal, so first matching same-name interface selection is preserved. The algorithm from container_method_map construction through edge deduplication is byte-identical to base, including fanout comparison, self-edge skip, confidence/strategy fields, edge IDs and first-occurrence deduplication. This preserves existing same-name ambiguity behavior; it does not improve or newly certify that policy."
+    }
+  ],
+  "actual_test_execution": {
+    "receipt_path": "/workspace/scratch/50c364fd60b1/validation/interface-independent-tests.json",
+    "receipt_sha256": "b3fa1eeb2e0efd36e4430b90d63547a249151395fa763ead2f2ad3efabbf5e88",
+    "log_path": "/workspace/scratch/50c364fd60b1/validation/interface-independent-tests.log",
+    "log_sha256": "a01cf23b82e9316ff61ec5435804d6b6da328658915bb224d748c490be2f28f9",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "interface_dispatch",
+      "--",
+      "--test-threads=1"
+    ],
+    "source_commit_before": "6ffce3cea9534d3f253d3d0f7f2c5f9169495cca",
+    "source_commit_after": "6ffce3cea9534d3f253d3d0f7f2c5f9169495cca",
+    "source_unchanged": true,
+    "source_inventory_scope": "git-tracked crates/**, Cargo.toml and Cargo.lock",
+    "source_inventory_before_sha256": "0d4faf47276a704755b9c9633124da25f4eaeb7ec6dcf2489d98efceabaaa722",
+    "source_inventory_after_sha256": "0d4faf47276a704755b9c9633124da25f4eaeb7ec6dcf2489d98efceabaaa722",
+    "exit_code": 0,
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 421,
+    "selection": "8 new prerequisite/decoding/cleanup/overlay controls, 2 existing interface-dispatch functional/fanout regressions, and 1 existing interface signature coverage control",
+    "target_reused": true,
+    "warning": "The actual log contains one cc-model corrupt incremental compilation artifact warning. The compiler stated that the artifact was ignored/deleted. The warning is retained; this is neither a clean-build claim nor a performance result."
+  },
+  "nonblocking_limits": [
+    "No new dedicated same-name-container fixture was added. Preservation is established by unchanged row-order map construction, set membership equivalence, and a byte-identical downstream algorithm.",
+    "The source equality argument assumes the repository production schema with its UNIQUE constraint; arbitrary manual replacement of symbols with a weaker table is outside this change.",
+    "Existing cross-process compute/apply visibility semantics are unchanged and are not upgraded to an atomic multi-query snapshot by this review."
+  ],
+  "publication_identity": "Execution and this review remain bound to local commit 6ffce3cea9534d3f253d3d0f7f2c5f9169495cca. A later connector-created remote commit needs a separate tree/blob bridge; old runs must not be relabeled as execution of that remote SHA.",
+  "not_claimed": [
+    "No speedup or memory measurement.",
+    "No full workspace/all-targets/MSRV/CI/source-guard/100k certification.",
+    "No P8 TODO completion, release approval or live-provider result."
+  ],
+  "rollback": "Revert interface_dispatch.rs and its new test module; no schema, persisted data format or public API migration is introduced."
+}

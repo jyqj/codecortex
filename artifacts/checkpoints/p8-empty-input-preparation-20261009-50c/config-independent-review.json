@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "review_kind": "independent_source_review_with_owner_execution_log_inspection",
+  "reviewed_at_utc": "2026-10-09T07:46:19.730122+00:00",
+  "base_commit": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "observed_head": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "branch": "task/p8-empty-config-50c-20261009",
+  "decision": "accepted_for_narrow_semantics_preserving_change",
+  "blocking_findings": [],
+  "reviewed_patch": {
+    "sha256": "addeca703ad0522daddb07285aa9af63c4152d9ac820299f2860a62cc132a306",
+    "bytes": 6577,
+    "construction": "Concatenate git diff --binary --full-index BASE -- snapshot.rs and git diff --no-index --binary --full-index -- /dev/null tests/full_snapshot_empty_config.rs in reviewed_files order."
+  },
+  "reviewed_files": [
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5",
+      "bytes": 10476
+    },
+    {
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+      "bytes": 3850
+    }
+  ],
+  "unchanged_proof_dependencies": [
+    {
+      "path": "crates/cc-index/src/indexer_phases/config_link.rs",
+      "sha256": "cc8086f8f4b894c645da222b53df194b22b5516e1a6d9002bea04d40ff00a7ff",
+      "equals_base_bytes": true
+    },
+    {
+      "path": "crates/cc-index/src/config_linker.rs",
+      "sha256": "9a6e56304087a92dc9bbec804e354dc3df6f7b1e863d2276c552ac3b61294e74",
+      "equals_base_bytes": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/write.rs",
+      "sha256": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
+      "equals_base_bytes": true
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c",
+      "equals_base_bytes": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
+      "equals_base_bytes": true
+    },
+    {
+      "path": "crates/cc-index/src/project_model/mod.rs",
+      "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923",
+      "equals_base_bytes": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "C1",
+      "status": "accepted",
+      "subject": "Empty-token equivalence",
+      "reason": "The branch runs only after the unchanged config signature/scan and typed-config retain. With zero tokens, resolve_config_links previously iterated zero times, returned no links, and build_config_link_units_from_snapshot returned Ok(Vec::new()) before any per-config filesystem reads. Skipping symbol/path cloning and lookup construction has the same returned data and no skipped durable writes."
+    },
+    {
+      "id": "C2",
+      "status": "accepted",
+      "subject": "All full adapters retain metadata and replacement semantics",
+      "reason": "build staging, temp DB, and DirectWriter all call prepare_full_snapshot_payload and write_full_snapshot_contents. The empty branch returns an empty config-unit list, not an early function return. Timestamp, filtered raw cache, signature, signature algorithm, file/route/hierarchy writes and graph-signature baseline remain on the common path. Snapshot replacement clears old config refs without requiring incremental per-file cleanup."
+    },
+    {
+      "id": "C3",
+      "status": "accepted",
+      "subject": "Typed configuration and nonempty token channels",
+      "reason": "Typed config filtering precedes the new branch. ProjectModel apply_imports/seal_modules/verify/acknowledge are unchanged. For nonempty tokens the same symbol collector, indexed path order and existing builder receive equal immutable inputs; ModulePath, FilePath and DependencyImport branches are unchanged."
+    },
+    {
+      "id": "C4",
+      "status": "accepted",
+      "subject": "Incremental stale-link cleanup",
+      "reason": "build_config_link_units_gated, seen_config_files construction including typed role transitions, Some(ConfigLinkRound) handling, apply_config_link_units and incremental metadata remain byte-identical to base. The full-then-incremental empty-cache lifecycle is covered by the new integration fixture."
+    },
+    {
+      "id": "C5",
+      "status": "accepted_with_coverage_limits",
+      "subject": "Tests",
+      "reason": "The two added actual SQLite tests cover a previously linked INI becoming token-empty on full rebuild, empty-cache metadata, later source-only incremental and re-linking, and typed TS path resolution with an empty heuristic token population. The owner corrected only an invalid test SQL column name; the prior failed execution is retained."
+    }
+  ],
+  "test_evidence": {
+    "independently_executed_tests": [],
+    "owner_log_inspected": {
+      "path": "/workspace/scratch/50c364fd60b1/validation/config-tests-corrected.log",
+      "sha256": "9e3c1c5ecd4c10a40f6fc05e5328ee3b3e8276cd8536e120828ccd9fc88e1aa8",
+      "observed_summary": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "source_binding_limit": "Source review pins the inspected final two-file bytes; this reviewer did not rerun the test command or independently construct its build receipt."
+    },
+    "prior_failed_log": "/workspace/scratch/50c364fd60b1/validation/config-tests-initial.log",
+    "existing_relevant_tests": [
+      "config_linker::tests::scan_then_resolve_links_all_three_channels_and_survives_serde",
+      "indexer_phases::config_link::config_linker_gate_tests::full_build_always_rescans_config_files",
+      "indexer_phases::config_link existing cached-token/fresh-scan/zero-token stale-clearing regressions"
+    ]
+  },
+  "nonblocking_test_limits": [
+    "The new public build_index integration tests execute the staged full-build path; they do not independently force the legacy temp-db and DirectWriter adapters. Common unchanged call structure supplies the static equivalence argument for those adapters.",
+    "The added tests do not independently assert all three nonempty token channels. Those branches and their existing three-channel serde regression are unchanged; normal targeted regressions should preserve their actual execution evidence.",
+    "The new tests check that the signature is a valid u64, not its exact value; the existing signature and unconditional-full-rescan regressions cover that separate contract."
+  ],
+  "not_claimed": [
+    "No measured speedup, memory reduction, 100k completion, V20 gate, P8 task completion or release approval.",
+    "No independent execution of all full adapters, current CI, MSRV, source-guard approval or full workspace test suite."
+  ],
+  "rollback": "Revert the single production snapshot.rs change and optional corresponding tests; no schema/config/metadata migration is introduced."
+}

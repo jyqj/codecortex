@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "status": "accepted_scoped_static",
+  "reviewer": "pr_audit",
+  "author": "root",
+  "scope": "Full15 byte-framing transport decoder; no receiver or study execution",
+  "inputs": {
+    "dc62ec41cd36a266a007dd8b015f34dfaf8f9bdf": {
+      "bytes": 9219,
+      "sha256": "582f898d4364df44336ce7d92394d37622373c4da94fb5a32f6c24dad5a498a7"
+    },
+    "567d9aeee3ebd0d8373ac5c41d63b7483b22057d": {
+      "bytes": 15204,
+      "sha256": "32ebfe29fec0ef2b68af2b12c9f446be2a9d5b3bb08d1ea5afeb55afd8928a85"
+    },
+    "66f4711308b3bb40b4bb4e4d9e9b0b024adb586f": {
+      "bytes": 5835,
+      "sha256": "10148ce1965cdaa407dc1b2943019a06c0c6cf5eb28cf7819c74135aa91dac0e"
+    },
+    "2b4dccd2422a0a59a41fa1d944314d7802b7bdfa": {
+      "bytes": 2407,
+      "sha256": "50a69320f93781815a8f353ac7afcb3ae0032fe12d5db1f6df70ad9e3381949c"
+    },
+    "cb82eba2c263b5830dcf17cca32b1e3ea60feaf0": {
+      "bytes": 14243,
+      "sha256": "6da29c67c0107937b92841f4a63f80e84a1e8b225f309480295aaa783c119b8f"
+    }
+  },
+  "actual_static_checks": {
+    "records": {
+      "dc62ec41cd36a266a007dd8b015f34dfaf8f9bdf": {
+        "bytes": 9219,
+        "sha256": "582f898d4364df44336ce7d92394d37622373c4da94fb5a32f6c24dad5a498a7"
+      },
+      "567d9aeee3ebd0d8373ac5c41d63b7483b22057d": {
+        "bytes": 15204,
+        "sha256": "32ebfe29fec0ef2b68af2b12c9f446be2a9d5b3bb08d1ea5afeb55afd8928a85"
+      },
+      "66f4711308b3bb40b4bb4e4d9e9b0b024adb586f": {
+        "bytes": 5835,
+        "sha256": "10148ce1965cdaa407dc1b2943019a06c0c6cf5eb28cf7819c74135aa91dac0e"
+      },
+      "2b4dccd2422a0a59a41fa1d944314d7802b7bdfa": {
+        "bytes": 2407,
+        "sha256": "50a69320f93781815a8f353ac7afcb3ae0032fe12d5db1f6df70ad9e3381949c"
+      }
+    },
+    "forward_equal": true,
+    "inverse_equal": true,
+    "each_change_unique": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "actual_execution_attribution": "root, not independently re-executed by this reviewer",
+    "controls_result_population": 15,
+    "emitter_file_order_equal": [
+      "prepare/source-before.json",
+      "prepare/source-after.json",
+      "prepare/stdout.log",
+      "prepare/stderr.log",
+      "prepare/receipt.json",
+      "replay/source-before.json",
+      "replay/source-after.json",
+      "replay/capacity-results.json",
+      "replay/aggregate-command.json",
+      "replay/aggregate-result.json",
+      "replay/independent-matrix/matrix.json",
+      "replay/remote-matrix-comparison.json",
+      "replay/stdout.log",
+      "replay/stderr.log",
+      "replay/receipt.json"
+    ],
+    "emitter_schema_equal": true,
+    "emitter_chunk_bytes": 1024,
+    "emitter_json": "sort_keys=True; compact separators; fixed ASCII scalar frame fields",
+    "bounds": {
+      "ordinary_file": 4194304,
+      "matrix_file": 16777216,
+      "total_raw": 25165824,
+      "complete_log": 67108864,
+      "physical_frame_line": 2048,
+      "maximum_frames": 24620
+    },
+    "maximum_frames_reason": "24MiB/1024 + at most 14 incomplete last chunks over 15 files + 30 headers/end frames"
+  },
+  "findings": [
+    "The generator scans one log line and yields one frame at a time; it does not construct an all-frame object array. Original input log plus returned files remain bounded, not constant-memory streaming.",
+    "Whole raw arrays use exact header lengths after per-file and cumulative size checks. SHA256 consumes full 64-byte blocks and one/two bounded padding blocks; length encoding is exact within these bounds.",
+    "UTF8 decoding rejects bad leads/continuations, truncation, overlong forms, surrogates and >U+10FFFF, and handles codepoints spanning transport chunks after complete raw reconstruction.",
+    "Canonical frame JSON and exact key sets reject duplicate keys/noncanonical serialization. Typed integer/count/index/byte checks, canonical base64 padding, per-chunk and full hashes, header/end identity, exact file order and stream exhaustion reject missing/repeated/substituted data.",
+    "Empty text files remain valid header/end pairs with SHA of empty bytes. JSON bodies are parsed only after exact UTF8/raw verification; semantic receipt acceptance remains outside this decoder.",
+    "Control source contains exactly 15 named controls including actual maximum matrix/total reconstruction and cumulative plus-one rejection. The recorded execution is root's V8 run, not repeated by this reviewer."
+  ],
+  "recorded_controls": {
+    "result_blob": "2b4dccd2422a0a59a41fa1d944314d7802b7bdfa",
+    "tests": 15,
+    "all_passed": true,
+    "capacity": {
+      "raw_bytes": 25165824,
+      "matrix_bytes": 16777216,
+      "frames": 24616,
+      "log_bytes": 39365863
+    },
+    "reviewer_reexecuted": false
+  },
+  "limits": [
+    "No real full receiver input was decoded in this review.",
+    "No receiver, native executable, Cargo, network, product workload or measurement was executed.",
+    "Decoded complete transport alone does not prove original prepare/replay success; original return code, final receipts, source checks, complete artifact custody and original consumer gates remain required.",
+    "The helper's byte/UTF8 compatibility observations mentioned by root but not contained in these four fixed blobs are not counted as independently received tests here."
+  ],
+  "unresolved_blockers": [],
+  "todo_closed": 0,
+  "todo_remaining": 29
+}

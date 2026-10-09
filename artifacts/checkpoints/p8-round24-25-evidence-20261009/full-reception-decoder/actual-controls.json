@@ -1,0 +1,92 @@
+{
+  "schema": "p8-full15-V8-transport-controls-v1",
+  "status": "passed",
+  "tests": 15,
+  "results": [
+    {
+      "name": "all15_exact_population_unicode_chunk_split_empty_logs",
+      "status": "passed",
+      "files": 15,
+      "frames": 43,
+      "raw_bytes": 1064
+    },
+    {
+      "name": "missing_last_frame",
+      "status": "passed",
+      "refused": "missing frame"
+    },
+    {
+      "name": "extra_duplicate_file",
+      "status": "passed",
+      "refused": "extra or duplicate file/frame"
+    },
+    {
+      "name": "wrong_file_order",
+      "status": "passed",
+      "refused": "header/order"
+    },
+    {
+      "name": "ordinary_file_4MiB_plus1",
+      "status": "passed",
+      "refused": "file size bound"
+    },
+    {
+      "name": "matrix_file_16MiB_plus1",
+      "status": "passed",
+      "refused": "file size bound"
+    },
+    {
+      "name": "chunk_index_changed",
+      "status": "passed",
+      "refused": "chunk order/count"
+    },
+    {
+      "name": "chunk_digest_changed",
+      "status": "passed",
+      "refused": "chunk raw bytes/hash"
+    },
+    {
+      "name": "duplicate_JSON_key",
+      "status": "passed",
+      "refused": "noncanonical or duplicate-key frame"
+    },
+    {
+      "name": "noncanonical_base64_padding_bits",
+      "status": "passed",
+      "refused": "noncanonical base64 padding bits"
+    },
+    {
+      "name": "invalid_UTF8_raw",
+      "status": "passed",
+      "refused": "invalid UTF8 lead"
+    },
+    {
+      "name": "whole_digest_changed_with_consistent_header_end",
+      "status": "passed",
+      "refused": "whole raw bytes/hash"
+    },
+    {
+      "name": "lone_UTF16_surrogate_log",
+      "status": "passed",
+      "refused": "lone UTF16 surrogate"
+    },
+    {
+      "name": "actual16MiB_matrix_and_exact24MiB_total_complete_decode",
+      "status": "passed",
+      "files": 15,
+      "frames": 24616,
+      "raw_bytes": 25165824,
+      "matrix_bytes": 16777216,
+      "log_bytes": 39365863,
+      "matrix_sha256": "d2c74741c455c08a5407252e05774e7960f98b00f7e7298ecd748a16dc5a0f6b"
+    },
+    {
+      "name": "actual24MiB_prefix_then_total_plus1",
+      "status": "passed",
+      "refused": "total raw file bound"
+    }
+  ],
+  "scope": "actual in-memory V8 transport controls; no Python wrapper execution, real artifacts, product or measurements",
+  "started_utc": "2026-10-09 10:26:58 UTC",
+  "completed_utc": "2026-10-09 10:29:36 UTC"
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "p8-candidate-rustfmt-decoder-exact-replacements-v1",
+  "old": {
+    "blob": "ea20582dbda468521953d9a5edbc0951c3b37426",
+    "bytes": 7919,
+    "sha256": "0bbb19ff9b8e3d84e1b8fcb2ecf9f2fec1aeb8309b0b06199fbb8e8f8ae974c1"
+  },
+  "after": {
+    "blob": "9c3a43e3f7ae25beca29f7766364447ea2080587",
+    "bytes": 8061,
+    "sha256": "f188427b5eff82bb103d040820e00eeb6eaecc991d41cef4eb0e0b30285c96fd"
+  },
+  "changes": [
+    {
+      "before": "// Pure V8 transport decoder for exactly six synthetic-control evidence files.",
+      "after": "// Pure V8 transport decoder for exactly six candidate-rustfmt evidence files."
+    },
+    {
+      "before": "const SYNTHETIC_SCHEMA=\"p8-original-receiver-controls-frame-v1\";",
+      "after": "const SYNTHETIC_SCHEMA=\"p8-candidate-rustfmt-frame-v1\";"
+    },
+    {
+      "before": "const SYNTHETIC_FILES=[\"controls-report.json\",\"stdout.log\",\"stderr.log\",\"source-before.json\",\"source-after.json\",\"execution-receipt.json\"];",
+      "after": "const SYNTHETIC_FILES=[\"formatted-sources.json\",\"commands.json\",\"stderr.log\",\"source-before.json\",\"source-after.json\",\"receipt.json\"];"
+    },
+    {
+      "before": "function decodeSyntheticSixFileLog(log){",
+      "after": "function decodeCandidateRustfmtSixFileLog(log){"
+    },
+    {
+      "before": "utf8Bytes(log).length<=16*1024*1024",
+      "after": "utf8Bytes(log).length<=32*1024*1024"
+    },
+    {
+      "before": "frames.length<=6*(256+2)",
+      "after": "frames.length<=12*1024+5+12"
+    },
+    {
+      "before": "let at=0;const files={},metadata=[];",
+      "after": "let at=0,totalRawBytes=0;const files={},metadata=[];"
+    },
+    {
+      "before": "requireFrame(Number.isSafeInteger(head.bytes)&&head.bytes>=0&&head.bytes<=262144,\"file size bound\");",
+      "after": "requireFrame(Number.isSafeInteger(head.bytes)&&head.bytes>=0&&head.bytes<=4*1024*1024,\"file size bound\");\n  totalRawBytes+=head.bytes;requireFrame(totalRawBytes<=12*1024*1024,\"cumulative raw file bound\");"
+    },
+    {
+      "before": "scope:\"synthetic-six-files-transport-only; no test-success inference\"",
+      "after": "scope:\"candidate-rustfmt-six-files-transport-only; no formatter-success or semantics inference\""
+    }
+  ],
+  "forward_equal": true,
+  "inverse_equal": true,
+  "bounds": {
+    "old": {
+      "file": 262144,
+      "log": 16777216,
+      "frames": 1548,
+      "total_raw": "no distinct cumulative check"
+    },
+    "new": {
+      "file": 4194304,
+      "total_raw": 12582912,
+      "log": 33554432,
+      "frames": 12305,
+      "line": 2048,
+      "chunk": 1024
+    }
+  },
+  "reason": "12MiB /1024 + at most 5 partial tails across six files +12 headers/end =12305 frames. Physical frame budget at 2048B/line needs up to 25,200,640B before incidental logging, therefore32MiB log limit. No old hashing/UTF8/base64 implementation changed.",
+  "emitter": {
+    "runner": "b8b475ef0d6f728807518388752b6306f5a491a1",
+    "schema": "p8-candidate-rustfmt-frame-v1",
+    "names": [
+      "formatted-sources.json",
+      "commands.json",
+      "stderr.log",
+      "source-before.json",
+      "source-after.json",
+      "receipt.json"
+    ],
+    "equal": true
+  },
+  "semantics": "Transport completeness only. Actual formatter exit0, final receipt passed, fifteen successful outputs, unchanged source/controller, full artifact custody and independently checked formatter-only deltas remain required.",
+  "runtime_execution": "15 small synthetic controls in V8; no formatter, Python, Cargo or product execution.",
+  "todo_closed": 0,
+  "todo_remaining": 29
+}

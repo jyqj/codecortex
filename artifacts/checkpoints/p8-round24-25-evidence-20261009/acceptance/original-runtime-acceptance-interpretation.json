@@ -1,0 +1,546 @@
+{
+  "schema": "p8-original-runtime-contract-boundary-review-v1",
+  "reviewer": "/root/acceptance_audit",
+  "status": "corrected_prior_overbroad_missing_diagnostics_interpretation",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "run": 37890757030,
+  "conclusion": "G275's existing accepted mixed/backfill data can support the original P8-007 measurement requirements at their explicitly limited client/acquisition/progress boundaries. It is not justified to turn missing finer backend decomposition into a new mandatory complete telemetry architecture or repeated-hour prerequisite. This corrects the prior overbroad interpretation; it does not relabel missing internal timestamps, certify all tails or close P8-007 while P8-006 remains open.",
+  "normative_sources": [
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "section": 9,
+      "oid": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "full_text_read": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "oid": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "fields_read": [
+        "P8-007",
+        "P8-010"
+      ],
+      "unchanged_original_fields": true
+    }
+  ],
+  "reconciliation_input": {
+    "commit": "27e60348f01d16298dd4d28f48dd1e2d47ee687c",
+    "path": "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c/runtime-attribution-reconciliation.json",
+    "bytes": 28755,
+    "sha256": "debdd0f17f18888a2b51408c613abf3a8dbd2ac3621bf0692d13cdf08e7b9932",
+    "scope": "Read as an interpretation to test, not as a substitute for G275 raw evidence. C8 observations are not used for the conclusions."
+  },
+  "retained_original_custody": {
+    "independent_review": "528fed03d56fab5506c6182a48e42c2e3fd3bd48",
+    "complete_reception": "ce1278f0c96548399c84ebe9bc86000e3753b04e",
+    "complete_reception_bytes": 2166938,
+    "complete_reception_sha256": "53d840315bec62f6a3e30f684a14d203cc359699cde87d7600112e46c40d1d5f",
+    "complete_reception_full_Git_text_rehashed_in_this_review": true,
+    "delivery_manifest": "d551874abafec383274bc3824b5a5b102c85ede5",
+    "R19_commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea"
+  },
+  "fresh_read_only_original_checks": {
+    "source": "Existing native original custody, no new original ZIP download or workload.",
+    "safe_files": [
+      {
+        "path": "replay-output/review-runtime/backfill-11597519732-review.json",
+        "bytes": 10436,
+        "sha256": "ee15e5c4847a1b0fa0754272d9ef9bc148d3e90e734bd936d17144562f0e2c91",
+        "read_api_trailing_LF_restored_to_pinned_hash": true
+      },
+      {
+        "path": "replay-output/offline-replay/statistics-11598875346.json",
+        "bytes": 46058,
+        "sha256": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9",
+        "read_api_trailing_LF_restored_to_pinned_hash": true,
+        "profile": "mixed",
+        "concurrency": 1,
+        "outcomes": {
+          "success": 900
+        },
+        "expected": 900,
+        "recorded": 900,
+        "missing": 0,
+        "unexpected": 0,
+        "exit_code": 0,
+        "latency_scope": "client observations include transport, admission and validation; no separated backend service or queue claim",
+        "operation_populations": [
+          {
+            "operation": "read",
+            "n": 600,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          },
+          {
+            "operation": "build",
+            "n": 300,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "replay-output/offline-replay/statistics-11598690899.json",
+        "bytes": 46192,
+        "sha256": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c",
+        "read_api_trailing_LF_restored_to_pinned_hash": true,
+        "profile": "mixed",
+        "concurrency": 4,
+        "outcomes": {
+          "success": 900
+        },
+        "expected": 900,
+        "recorded": 900,
+        "missing": 0,
+        "unexpected": 0,
+        "exit_code": 0,
+        "latency_scope": "client observations include transport, admission and validation; no separated backend service or queue claim",
+        "operation_populations": [
+          {
+            "operation": "read",
+            "n": 600,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          },
+          {
+            "operation": "build",
+            "n": 300,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "replay-output/offline-replay/statistics-11598815621.json",
+        "bytes": 46296,
+        "sha256": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a",
+        "read_api_trailing_LF_restored_to_pinned_hash": true,
+        "profile": "mixed",
+        "concurrency": 8,
+        "outcomes": {
+          "success": 900
+        },
+        "expected": 900,
+        "recorded": 900,
+        "missing": 0,
+        "unexpected": 0,
+        "exit_code": 0,
+        "latency_scope": "client observations include transport, admission and validation; no separated backend service or queue claim",
+        "operation_populations": [
+          {
+            "operation": "read",
+            "n": 600,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          },
+          {
+            "operation": "build",
+            "n": 300,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "replay-output/offline-replay/statistics-11598543621.json",
+        "bytes": 46450,
+        "sha256": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1",
+        "read_api_trailing_LF_restored_to_pinned_hash": true,
+        "profile": "mixed",
+        "concurrency": 16,
+        "outcomes": {
+          "success": 900
+        },
+        "expected": 900,
+        "recorded": 900,
+        "missing": 0,
+        "unexpected": 0,
+        "exit_code": 0,
+        "latency_scope": "client observations include transport, admission and validation; no separated backend service or queue claim",
+        "operation_populations": [
+          {
+            "operation": "read",
+            "n": 600,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          },
+          {
+            "operation": "build",
+            "n": 300,
+            "missing": 0,
+            "fields": [
+              "all_attempt_offered_to_terminal",
+              "client_call_to_terminal_including_validation",
+              "client_dispatch_wait",
+              "scheduled_to_terminal",
+              "successful_offered_to_terminal",
+              "write_admission_and_preparation"
+            ]
+          }
+        ]
+      }
+    ],
+    "raw_summary_files": [
+      {
+        "path": "raw/seed-7/summary.json",
+        "bytes": 13185,
+        "sha256": "aef38339e7b52218734771270689910d8c4a313688e94b886f7187bfcea7c9d0",
+        "read_api_trailing_LF_restored_to_pinned_hash": false
+      },
+      {
+        "path": "raw/seed-19/summary.json",
+        "bytes": 13209,
+        "sha256": "e9905f9dbbe99b42c49e2f2777b576658267c1d122b7cf31cb4de26ac093b8ad",
+        "read_api_trailing_LF_restored_to_pinned_hash": false
+      },
+      {
+        "path": "raw/seed-43/summary.json",
+        "bytes": 13212,
+        "sha256": "c8e81e757f4725f132ca85757b4de3215b4ec0cfb8060c009f88b1765ce48ca7",
+        "read_api_trailing_LF_restored_to_pinned_hash": false
+      }
+    ],
+    "raw_held_before": [
+      {
+        "path": "raw/seed-7/held-before.json",
+        "bytes": 3547,
+        "sha256": "61c1a0f6a9923f64634f341dfed09b60519da15477d4f4be4df2399b9a045516"
+      },
+      {
+        "path": "raw/seed-19/held-before.json",
+        "bytes": 3549,
+        "sha256": "47958752912e5b365a52d7bdd61a514b2a7ae886c488a5858040bf4053efb8cf"
+      },
+      {
+        "path": "raw/seed-43/held-before.json",
+        "bytes": 3551,
+        "sha256": "5f07e41afa98a31f22c3c8461cb39e53b558a5a5d98fe128cd9c11348b57ee54"
+      }
+    ],
+    "raw_report_ranges": "Read exact p8-runtime/report.json lines1–35 and1310–1424 for each mixed artifact, corroborating original configured/actual concurrency, original outcomes, raw timing and cleanup fields. These partial range reads are not represented as new full-report hashing; complete-report custody is inherited from the previously accepted full original ZIP audit.",
+    "transport_notes": [
+      "read_files omitted the final LF on the five pretty-printed safe reports; appending that single LF exactly restored each pinned byte length/SHA. No JSON reserialization or report rewriting occurred.",
+      "The three original summaries and three held-before bodies directly matched pinned original member byte lengths/SHA.",
+      "An initial guessed report.json path was not_found; actual inventory showed p8-runtime/report.json. An initial full-report request hit its output budget and was not claimed full; subsequent targeted ranges were used. No source, files, statistics or measurements were modified."
+    ]
+  },
+  "requirement_mapping": [
+    {
+      "requirement": "P8-007: C1/4/8/16 mixed read/build/backfill; record offered load and queueing",
+      "evidence": "Four original G275 stdio mixed profiles, each offered/recorded/success=900, no missing/unexpected rows: 600 reads plus 300 builds. Actual concurrency maxima 1/4/7/12; read/build overlap true for C4/8/16. Separately the same-source release backfill has 3 seeds × quiet/held × C1/4/8/16 ×32 =768 local queries.",
+      "decision": "Existing evidence supports the original configured mixed and fake-backfill scope; no requirement to achieve an instantaneous maximum exactly equal to configured C was found.",
+      "limit": "Do not claim actual simultaneous 8/16, or live-provider/backfill inside the default mixed product profile."
+    },
+    {
+      "requirement": "§9 queue + service + end-to-end latency",
+      "evidence": "Original Rust statistics for all four 900-operation populations retain client_dispatch_wait, write_admission_and_preparation, client_call_to_terminal_including_validation, all_attempt_offered_to_terminal and scheduled_to_terminal. Read N600/build N300 remain separate; missing=0.",
+      "decision": "These are real source-bound client observation segments, and §9 does not specify internal ExecutionPool timestamps as the sole accepted boundary. This is scoped coverage, not missing measurements being replaced with zeros.",
+      "limit": "No separated backend queue/service, worker-round or internal exclusive lock-wait distribution is measured. Never rename call-to-terminal including transport/validation as pure backend service."
+    },
+    {
+      "requirement": "Throughput, error/timeout and no concealed offered tail",
+      "evidence": "All four primary outcome populations contain 900/900 successful attempts, no missing/unexpected attempts and original all-attempt latency families. Original observed_work_ns is retained for each count; 900 completions over approximately448–449.5seconds is the observed scheduled-load throughput, not maximum capacity.",
+      "decision": "Complete count/time/outcome evidence exists; original failures would remain in offered denominators under the unchanged owner. No new sampling is needed to establish this existing observation.",
+      "limit": "Zero observed failures is specific to these original runs. Mixed mutation strata of50 and backfill cells of32 retain explicit insufficient/stable-tail limitations, rather than invented certified p99."
+    },
+    {
+      "requirement": "DB lock-wait subject",
+      "evidence": "Three original DB probes during held-provider work: read_conn checkout2/3/3microseconds; SELECT9/10/11microseconds; independent BEGIN IMMEDIATE;ROLLBACK23/23/27microseconds, with unchanged DB generation.",
+      "decision": "It is incorrect to say no DB acquisition/availability or contention observation exists. These timed acquisition probes cover the subject at their declared inclusive boundary; the reviewed original text does not mandate a pure-wait decomposition for every lock.",
+      "limit": "Checkout includes implementation overhead; writer elapsed includes acquisition, SQL and rollback. busy_timeout_ms100 is configuration, not observed wait. These are three probes, not per-MCP pure lock-wait samples or a lock quantile distribution."
+    },
+    {
+      "requirement": "Worker contention and no deadlock/starvation under the original profile",
+      "evidence": "In every held-before raw record, actual provider active=waiting=4, claimed=4 and pending=20. All768 original local queries pass the original2second watchdog, build/model progress controls pass the original5second watchdog, and all three final queues have claimed=pending=0, uncovered=0 with zero stale old-model publication.",
+      "decision": "The existing quiet/held comparison and real worker/provider queue state constitute measured contention/progress evidence. It is not merely a fake label or absent telemetry.",
+      "limit": "Synthetic provider vectors, separate in-process profile, not live-provider quality/cost; no new worker-admission or per-round timing distribution; finite observed profiles do not prove all future schedules."
+    },
+    {
+      "requirement": "P8-010 original long soak",
+      "evidence": "Already accepted own-source hour:3601operations=1201build+2400read;3600053700026ns observed work;200branchswitches,25compactions,15-table parity; full9600four-role wire mapping accepted. ConfiguredC4 actualmaximum1 retained.",
+      "decision": "No clause located requires repeating that hour merely to collect a stronger optional diagnostic architecture. Existing hour remains in its actual source/scope; not reopened by this interpretation correction.",
+      "limit": "Does not waive its original queue/RSS/mutation/parity/regression or dependency conditions, and does not claim the hour delivered C4 actual overlap."
+    },
+    {
+      "requirement": "Task closure and source identity",
+      "evidence": "P8-007 depends_on P8-006; P8-010 depends_on P8-009. Original relevant regressions and evidence gates remain source-bound.",
+      "decision": "Keep007 open until006 is satisfied; this scope clarification does not close any task or transfer G275 observations to current main. Optional diagnostics are not an extra dependency.",
+      "limit": "No all-domains-same-final-SHA gate, new provider authorization, additional one-hour run or 13-file diagnostic implementation prerequisite is introduced."
+    }
+  ],
+  "mixed_original_counts": [
+    {
+      "artifact_id": 11598875346,
+      "configured_concurrency": 1,
+      "actual_maximum": 1,
+      "read": 600,
+      "build": 300,
+      "offered": 900,
+      "success": 900,
+      "missing": 0,
+      "observed_work_ns": 449502370493
+    },
+    {
+      "artifact_id": 11598690899,
+      "configured_concurrency": 4,
+      "actual_maximum": 4,
+      "read": 600,
+      "build": 300,
+      "offered": 900,
+      "success": 900,
+      "missing": 0,
+      "observed_work_ns": 448012394598
+    },
+    {
+      "artifact_id": 11598815621,
+      "configured_concurrency": 8,
+      "actual_maximum": 7,
+      "read": 600,
+      "build": 300,
+      "offered": 900,
+      "success": 900,
+      "missing": 0,
+      "observed_work_ns": 448015606240
+    },
+    {
+      "artifact_id": 11598543621,
+      "configured_concurrency": 16,
+      "actual_maximum": 12,
+      "read": 600,
+      "build": 300,
+      "offered": 900,
+      "success": 900,
+      "missing": 0,
+      "observed_work_ns": 448014323441
+    }
+  ],
+  "DB_probes": [
+    {
+      "seed": 7,
+      "single_read_pool_checkout_us": 2,
+      "read_statement_us": 9,
+      "writer_acquire_and_rollback_us": 23,
+      "writer_busy_timeout_ms": 100,
+      "generation_unchanged": true,
+      "quiet_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "held_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "queue_final": {
+        "attempt_count": 55,
+        "claimed": 0,
+        "pending": 0,
+        "published": 25,
+        "total": 77,
+        "uncovered": 0
+      }
+    },
+    {
+      "seed": 19,
+      "single_read_pool_checkout_us": 3,
+      "read_statement_us": 10,
+      "writer_acquire_and_rollback_us": 23,
+      "writer_busy_timeout_ms": 100,
+      "generation_unchanged": true,
+      "quiet_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "held_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "queue_final": {
+        "attempt_count": 55,
+        "claimed": 0,
+        "pending": 0,
+        "published": 25,
+        "total": 77,
+        "uncovered": 0
+      }
+    },
+    {
+      "seed": 43,
+      "single_read_pool_checkout_us": 3,
+      "read_statement_us": 11,
+      "writer_acquire_and_rollback_us": 27,
+      "writer_busy_timeout_ms": 100,
+      "generation_unchanged": true,
+      "quiet_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "held_cells": [
+        {
+          "concurrency": 1,
+          "n": 32
+        },
+        {
+          "concurrency": 4,
+          "n": 32
+        },
+        {
+          "concurrency": 8,
+          "n": 32
+        },
+        {
+          "concurrency": 16,
+          "n": 32
+        }
+      ],
+      "queue_final": {
+        "attempt_count": 55,
+        "claimed": 0,
+        "pending": 0,
+        "published": 25,
+        "total": 77,
+        "uncovered": 0
+      }
+    }
+  ],
+  "optional_diagnostics": {
+    "reviewer_is_product_diagnostics_proposal_author": true,
+    "proposal_role": "Optional finer attribution/engineering improvement, unless a separate future claim expressly requires it. Its 13 files, typed per-RPC identity, seven lock categories, fixed diagnostic budget and new controls are not retroactive requirements of the original §9/P8-007/P8-010.",
+    "current_static_observer_review": "51fe5f49e1233e27c81c82022f86c34dd5f2d053",
+    "does_not_replace_original_acceptance": true
+  },
+  "actual_execution": {
+    "new_product": false,
+    "new_statistics": false,
+    "new_Python_or_Rust_tests": false,
+    "new_sampling": false,
+    "source_or_refs_changed": false,
+    "original_evidence_modified": false
+  },
+  "task_ledger": {
+    "new_done": 0,
+    "remaining": 29,
+    "P8_007": "retain in_progress; P8-006 dependency not satisfied"
+  }
+}

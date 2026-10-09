@@ -1,0 +1,77 @@
+{
+  "schema": "p8-candidate-rustfmt-decoder-small-controls-v1",
+  "scope": "synthetic transport only; no rustfmt, Cargo, tests or product execution",
+  "tests": 15,
+  "cases": [
+    {
+      "name": "six_files_unicode_multichunk_empty_stderr_exact_bytes",
+      "status": "passed"
+    },
+    {
+      "name": "timestamps_and_unrelated_log_are_allowed",
+      "status": "passed"
+    },
+    {
+      "name": "failed_receipt_decodes_without_claiming_success",
+      "status": "passed"
+    },
+    {
+      "name": "missing_chunk_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "duplicate_complete_file_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "wrong_file_order_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "wrong_schema_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "changed_chunk_hash_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "end_header_mismatch_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "duplicate_frame_keys_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "per_file_4m_plus_one_rejected_before_allocation",
+      "status": "passed"
+    },
+    {
+      "name": "fractional_header_count_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "invalid_utf8_rejected_with_valid_transport_hashes",
+      "status": "passed"
+    },
+    {
+      "name": "noncanonical_base64_padding_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "invalid_json_body_rejected_with_valid_transport_hashes",
+      "status": "passed"
+    }
+  ],
+  "all_passed": true,
+  "fixture_raw_bytes": 2315,
+  "fixture_log_bytes": 6834,
+  "fixture_frames": 19,
+  "unexecuted_capacity_boundaries": [
+    "12MiB cumulative maximum",
+    "32MiB log maximum",
+    "12305 maximum frame population",
+    "4MiB positive maximum"
+  ]
+}

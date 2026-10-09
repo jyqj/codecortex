@@ -1,0 +1,246 @@
+{
+  "schema": "p8-pr-engineering-merge-boundary-review-v1",
+  "reviewer": "/root/execution_recon",
+  "scope": "Read-only review of explicit repository, PR, and platform merge constraints. This is not a merge authorization, new benchmark, test execution, TODO acceptance, or release certification.",
+  "repository": "jyqj/codecortex",
+  "pr": 167,
+  "source_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "main_source_commit": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+  "conclusion": {
+    "ordinary_engineering_merge_explicitly_requires_complete_150_shards": false,
+    "classification": "No blanket 150-shard-before-engineering-merge gate found in the inspected original repository guidance, actual PR body/commits/comments, or active branch rules. The full matrix remains mandatory for original P8-005/006 acceptance and strict aggregate success.",
+    "engineering_merge_decision": "Root owns current-session authorization and verification of ordinary engineering checks. This report does not execute or approve a merge.",
+    "todo_count": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    }
+  },
+  "policy_findings": [
+    {
+      "id": "separate-large-study-profile",
+      "path": "docs/roadmap/code-index-v2/07-ROLLOUT.md",
+      "lines": [
+        56,
+        56
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/07-ROLLOUT.md#L56",
+      "finding": "The explicit mitigation for 100k tests exhausting developer machines is nightly/release execution and no mandatory run on ordinary PRs.",
+      "classification": "Explicit ordinary-PR versus large certification study boundary"
+    },
+    {
+      "id": "ci-profiles",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        187,
+        191
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/09-BENCHMARK.md#L187-L191",
+      "finding": "PR fast, nightly, and release profiles are separate. The 100k, long soak, cold builds/MSRV/platform, and complete holdout list belongs to Release, while PR fast covers key contracts, fixed small mutations, and real stdio smoke.",
+      "classification": "Profile-specific execution requirements; not a blanket 150-shard merge gate"
+    },
+    {
+      "id": "explicit-scale-task-gates",
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        184,
+        197
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/P8-SCALE.md#L184-L197",
+      "finding": "The complete scale workflow is only explicitly dispatched or label-triggered. Ordinary PRs do not automatically run the large matrix. Actual records and independent task acceptance determine completion of original P8-005/006; complete measurement does not automatically edit tasks.json or establish release/G8.",
+      "classification": "Original task/performance acceptance remains required"
+    },
+    {
+      "id": "strict-scale-aggregate",
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        267,
+        276
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/P8-SCALE.md#L267-L276",
+      "finding": "All five index-0 preflights must pass before the other 145. Aggregate still requires all 150 and thirty samples per group; any missing/failed shard cannot pass. This audit does not reduce or replace those gates.",
+      "classification": "Mandatory original aggregate gate"
+    },
+    {
+      "id": "ordinary-engineering-checks",
+      "path": "CONTRIBUTING.md",
+      "lines": [
+        35,
+        53
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/CONTRIBUTING.md#L35-L53",
+      "finding": "Pre-commit guidance requires fmt, warning-free clippy, workspace tests, cc-eval fixture/corpus integration, and documents a real-workspace benchmark command. This boundary audit has not newly executed these commands or independently audited coverage of the ignored real-workspace command.",
+      "classification": "Existing engineering validation still applies; no invention of an absence of all merge requirements"
+    },
+    {
+      "id": "authorization-boundary",
+      "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "lines": [
+        84,
+        109
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/08-HANDOFF.md#L84-L109",
+      "finding": "L88 says do not automatically merge main when submitting a PR; L109 makes commit/PR/merge depend on current explicit user authorization. Root must assess authorization from the actual session. The independent reviewer does not perform that action or require a new user confirmation by this report.",
+      "classification": "Actual session authorization constraint; not a performance-study gate"
+    },
+    {
+      "id": "default-feature-certification",
+      "path": "docs/roadmap/code-index-v2/07-ROLLOUT.md",
+      "lines": [
+        39,
+        39
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/07-ROLLOUT.md#L39",
+      "finding": "Default-enabling new features requires full certification. This separate constraint must not be ignored if a proposed change enables a new default feature. The reviewed a23 scope is existing-path bounded SQL reuse and observation correctness, with no claim of newly certified release capability.",
+      "classification": "Feature activation constraint; not recast as a blanket merge prohibition"
+    },
+    {
+      "id": "historical-engineering-precedent",
+      "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "lines": [
+        151,
+        153
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/4775bf44dc09c11cea88211e06ccec97c4de44aa/docs/roadmap/code-index-v2/08-HANDOFF.md#L151-L153",
+      "finding": "The recorded PR144 engineering delivery retained all ten P8 tasks in_progress and required combined-head CI. This supports the repository's distinction between engineering integration and task closure, but is not itself authorization for PR167.",
+      "classification": "Historical corroboration only"
+    }
+  ],
+  "search_scope": {
+    "main_and_a23_markdown_paths": 133,
+    "merge_term_hit_lines_per_commit": 201,
+    "path_inventory": "review-pr/merge-boundary/searched-markdown-paths.json",
+    "full_search_logs": [
+      "review-pr/merge-boundary/main-merge-policy-grep.txt",
+      "review-pr/merge-boundary/a23-merge-policy-grep.txt"
+    ],
+    "original_guidance_identical_between_main_and_a23_for_all_seven_excerpted_files": true,
+    "source_excerpt_evidence": "review-pr/merge-boundary/fixed-source-policy-excerpts.json",
+    "limitations": "Conclusion is bounded to the inspected tracked repository guidance and observed API resources. Historical PR-specific merge wording is not silently generalized into a current 150-shard gate."
+  },
+  "actual_platform_rules": {
+    "observed_utc": "2026-10-09T03:57:26.545206+00:00",
+    "main": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+    "protected": false,
+    "required_status_checks_enforcement": "off",
+    "required_status_contexts": [],
+    "required_status_checks": [],
+    "rulesets_including_parents": [],
+    "branch_rules": [],
+    "native_authenticated_protection_result": "HTTP 404 Branch not protected",
+    "plugin_limit": "Integration branch-protection detail returned HTTP 403 due to administration access; separately authenticated read-only gh returned explicit unprotected 404, consistent with branch and ruleset APIs.",
+    "delete_branch_on_merge": false,
+    "allow_merge_commit": true,
+    "allow_squash_merge": true,
+    "allow_rebase_merge": true,
+    "evidence": "review-pr/merge-boundary/metadata-summary.json"
+  },
+  "actual_pr_scope": {
+    "rest_observed_utc": "2026-10-09T03:57:18Z",
+    "graphql_observed_utc": "2026-10-09T04:03:31.191461+00:00",
+    "state": "OPEN",
+    "draft": false,
+    "merged": false,
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "base_ref_oid_in_pr_payload": "55902428d49b09bb4a90cee6ccccf985680618bb",
+    "mergeable": true,
+    "mergeable_state": "unstable",
+    "formal_reviews_observed": 0,
+    "scope_claims": "PR body, all three commit messages, and two OWNER comments preserve original execution requirements and 29 remaining tasks; original execution is required before TODO closure. No explicit text requiring 150 scale shards before a scoped engineering merge was found.",
+    "body_evidence": "review-pr/merge-boundary/pr167-rest-retrieval.json",
+    "review_evidence": "review-pr/merge-boundary/pr167-review-retrieval.json",
+    "comments_evidence": "review-pr/merge-boundary/pr167-comment-retrieval.json",
+    "comment_ids": [
+      6073354429,
+      6073654419
+    ],
+    "commit_evidence": "review-pr/merge-boundary/pr-closing-and-commit-metadata.json"
+  },
+  "pr160_preservation": {
+    "state": "OPEN",
+    "head": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+    "branch": "task/p8-completion-20261009",
+    "pr167_closing_issues_reference_count": 0,
+    "pr167_commit_messages_close_160": false,
+    "pr160_head_ancestor_of_a23": false,
+    "ancestry_command_exit_code": 1,
+    "explicit_root_condition": "Keep PR160 open and preserve its branch/history evidence.",
+    "conclusion": "No issue-closing reference, branch deletion setting, or PR160-head ancestry route was observed that would automatically close or remove PR160 when a23 is ordinarily integrated.",
+    "evidence": [
+      "review-pr/merge-boundary/pr-closing-and-commit-metadata.json",
+      "review-pr/merge-boundary/a23-preservation-side-effects-receipt.json",
+      "review-pr/merge-boundary/metadata-summary.json"
+    ]
+  },
+  "original_scale_preservation": {
+    "run_id": 37872522779,
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "workflow": ".github/workflows/p8-scale.yml",
+    "workflow_trigger_lines": [
+      3,
+      6
+    ],
+    "events": [
+      "workflow_dispatch",
+      "pull_request:labeled"
+    ],
+    "push_trigger": false,
+    "closed_trigger": false,
+    "scale_concurrency_group": null,
+    "checkout_lines": [
+      25,
+      61,
+      121,
+      176
+    ],
+    "checkout_ref_expression": "github.event.pull_request.head.sha || github.sha",
+    "expected_source_lines": [
+      77,
+      137
+    ],
+    "other_workflow_concurrency": {
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "lines": [
+        12,
+        14
+      ],
+      "group": "p8-lifecycle-${{ github.event.pull_request.number || github.ref }}",
+      "cancel_in_progress": true
+    },
+    "inference": "The inspected workflow has no merge/closed/push trigger or concurrency group and retains the immutable event head in every checkout and expected-source binding. The lifecycle group cannot collide with this ungrouped scale run. Repository workflow configuration therefore does not provide an ordinary-merge path that cancels or changes the source of the existing study. Continue observing actual run state; no cancellation, rerun, new source substitution, or dispatch is authorized to this reviewer.",
+    "evidence": [
+      "review-pr/merge-boundary/fixed-source-policy-excerpts.json",
+      "review-pr/merge-boundary/a23-workflow-cancel-boundary-grep.txt",
+      "review-pr/merge-boundary/a23-preservation-side-effects-receipt.json"
+    ]
+  },
+  "actual_scale_observation": {
+    "observed_utc": "2026-10-09T04:06:26Z",
+    "original_shards_passed": 4,
+    "original_shards_required": 150,
+    "accepted_original_samples": 41,
+    "original_samples_required": 1500,
+    "active_job": 113638100879,
+    "active_phase": "100000 / shard0 original native workload",
+    "active_step_started_at": "2026-10-09T02:24:01Z",
+    "remaining_145_created": false,
+    "aggregate_executed": false,
+    "new_todo_completion_credit": 0
+  },
+  "conditions_for_root_decision": [
+    "Honor existing session authorization and ordinary engineering verification; this report is not an action approval.",
+    "Keep exact a23 source branch/object and the running original scale study; do not substitute P305bf performance samples or recast observations as completed validation.",
+    "Keep PR160 open and preserve original historical evidence references and branches.",
+    "Keep all original TODOs and 29 remaining unchanged until their original dependency and actual execution gates pass.",
+    "Distinguish a23-source validation from any new merge commit's own CI and final-head checks."
+  ],
+  "actions_performed": [
+    "Read-only GitHub APIs and native git source/ancestry reads",
+    "Created independent review/evidence files only"
+  ],
+  "actions_not_performed": [
+    "No merge, close, comment, label, dispatch, cancel, retry, source edit, or task-state edit"
+  ],
+  "report_created_utc": "2026-10-09T04:08:35.258098+00:00"
+}

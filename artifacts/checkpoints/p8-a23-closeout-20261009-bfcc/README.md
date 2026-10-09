@@ -6,7 +6,7 @@ This checkpoint tracks ten **original** tasks: P8-005 through P8-013, plus P8-01
 
 | Role | Exact identity |
 | --- | --- |
-| Main inspected for integration | `4775bf44dc09c11cea88211e06ccec97c4de44aa` |
+| Main at the original integration inspection | `4775bf44dc09c11cea88211e06ccec97c4de44aa` |
 | Product composition | `254009277688d64677361a0ca33e5dea73f295ef` |
 | Independent source review | `3a11f30f9f00a89fe3cd481b3b7609066728baad` |
 | P8 actual measurement source | `a23bb72d3c954f385b99fe81ce9189885c208557` |
@@ -67,6 +67,20 @@ The warmed RSS was 115,081,216 bytes; tail median 144,728,064 stayed below the o
 The [copied manifest](round5-soak-terminal/copied-audit-manifest.json) contains 50 exact selected files totaling 7,629,003 bytes, including the original selection manifest. The [raw-stream archive explanation](round5-soak-terminal/review-runtime/soak-11594089439-archive-README.md) identifies the complete original streams and lossless per-line offset/length/hash indices. The 70,117,809-byte raw JSONL and 322,493,166-byte product stdio remain complete in the official original artifact and the retained native originals; indices are locators, not replacement raw data or a self-contained replay claim.
 
 All seven a23 runtime/lifecycle components now have scoped independent acceptance. The complete original scale aggregate and hard dependencies remain pending. This terminal evidence does not change the canonical **163 done / 29 remaining**, and the session still has **zero newly completed original TODOs**.
+
+## Round 6 source admission and engineering follow-up
+
+PR [#167](https://github.com/jyqj/codecortex/pull/167) was merged by `jyqj` at 2026-10-09 04:16:47 UTC into actual main `b21cce4c8661589267ad5719f850accbec088d2f`. This session did not perform that merge. The [independent merge equivalence review](round6-reviewed-engineering/review-pr/main-M-a23-equivalence/main-M-a23-equivalence-review.json) verifies all 1,087 product inputs, all 138 validation inputs and the canonical task blob are exactly a23. Its 188 other changed paths are artifacts. Original measurements remain attributed to their actual a23 checkout. PR #168 was independently closed without merging at 04:16:02 UTC; its G1 failure is retained. PR #169 remains a draft at frozen G2 and is now conflicting; the [integration comment](https://github.com/jyqj/codecortex/pull/169#issuecomment-6074381694) and needs-rebase label record that follow-up.
+
+The literal `cargo test --workspace` command was not present in the original split CI logs, so it was run separately against unchanged a23 on the connected Mac. The [original command audit](round6-reviewed-engineering/review-pr/a23-engineering-premerge-command-audit.json) preserves the distinction. Default SDK 27 failed at the linker before tests. A separate Rust 1.95.0 / SDK 15.4 attempt compiled and then failed `subprocess_descendant_cannot_hold_stderr_past_worker_deadline`; its p8_scale binary reported 11 passed and 1 failed. The same original binary failed once in isolation, and a persistent external observer calling the original supervisor reproduced deadline_exceeded with empty stderr and no worker summary. The exact workspace gate has therefore **not passed**, and doctests were not reached.
+
+The [failure assessment](round6-reviewed-engineering/review-ci/premerge-workspace/failure-assessment.json) retains all original failures, command/source/ABI identities, full captured streams and process-group cleanup evidence. Original Linux CI ran the same test successfully under observed stable Rust 1.99.0; that different platform/toolchain result does not erase the Mac failures. At this archive snapshot the cause is still under investigation; no deadline, test assertion or formal scale parameter was weakened. The [public follow-up](https://github.com/jyqj/codecortex/pull/167#issuecomment-6074384941) also records that the external merge preceded the newly observed failure.
+
+A separate snapshot-batching candidate now has the fixed chain P `305bf145e2474000d7c7d806507117d65a4863ad` → R `252e28744aa55a4b14414787f74e00783f87712f` → G `5cae24fbdf456dcf06932d9ed83a4c600d538136`. Its [independent source review](https://github.com/jyqj/codecortex/blob/252e28744aa55a4b14414787f74e00783f87712f/artifacts/checkpoints/p8-a23-snapshot-bfcc-20261009/independent-source-review.json) retains all 138 a23 validation inputs, including the three protections absent from G1/G2. The original v15 source verifier completed with actual integer exit 0 and complete stdout/stderr. Its actual run was R plus two uncommitted binding files. The [post-G binding review](round6-reviewed-engineering/review-next-candidate/post-g-binding/post-g-source-binding-review.json) proves those exact two verified files became G, every other tree input stayed at R, and the official remote ref matches. It does not relabel that earlier execution as a direct G checkout.
+
+The [first local wrapper timeout](round6-reviewed-engineering/review-next-candidate/original-v15-cli/outer-timeout-record.json) remains retained with unknown original child integer exit; the successful [second execution receipt](round6-reviewed-engineering/review-next-candidate/original-v15-cli-attempt02/result.json) is separate. The larger local source-verification wrapper window did not change any measurement protocol deadline. No G workload or full-scale acceptance is claimed.
+
+The [Round 6 copied manifest](round6-reviewed-engineering/copied-audit-manifest.json) binds 81 exact selected files totaling 2,730,014 bytes. The [ten-original-task closeout map](round6-reviewed-engineering/review-next-candidate/original-task-closeout-map.json) retains the original definitions, dependencies and still-pending closure conditions. The original a23 full scale study continues unchanged. Counts remain **192 total, 163 done, 29 remaining; zero newly completed original TODOs**.
 
 ## Completion and rollback
 

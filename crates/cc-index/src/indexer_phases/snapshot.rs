@@ -57,10 +57,6 @@ impl Indexer {
             walk_manifest,
             project_model,
         } = inputs;
-        // Pre-collect snapshot data for config links before entering the
-        // rebuild closure (the closure must not query the live DB).
-        let symbol_targets = Self::collect_symbol_targets(write_units);
-        let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
         // Full builds always scan. Signature first, scan second: a config
         // file changing in between leaves a stale signature behind, which
         // forces a rescan next build — never a wrong skip. With a shared-walk
@@ -80,12 +76,24 @@ impl Indexer {
         if let Some(model) = project_model {
             raw_tokens.retain(|token| !model.inputs().configs.contains_key(&token.config_file));
         }
-        let config_units = Self::build_config_link_units_from_snapshot(
-            project_path,
-            symbol_targets,
-            &indexed_files,
-            &raw_tokens,
-        )?;
+        let config_units = if raw_tokens.is_empty() {
+            // No token can produce a config link. Keep the signature and
+            // empty-token cache below, without cloning the full symbol/file
+            // catalog or building lookup tables that have no consumers.
+            Vec::new()
+        } else {
+            // Collect only when needed, still before the rebuild closure:
+            // the closure must not query the live DB.
+            let symbol_targets = Self::collect_symbol_targets(write_units);
+            let indexed_files: Vec<String> =
+                write_units.iter().map(|u| u.rel_path.clone()).collect();
+            Self::build_config_link_units_from_snapshot(
+                project_path,
+                symbol_targets,
+                &indexed_files,
+                &raw_tokens,
+            )?
+        };
 
         Ok(FullSnapshotPayload {
             config_units,

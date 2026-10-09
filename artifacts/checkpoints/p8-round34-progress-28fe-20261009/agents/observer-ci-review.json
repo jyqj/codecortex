@@ -1,0 +1,176 @@
+{
+  "schema": "p8-db-observer-round34-independent-review-v1",
+  "repository": "jyqj/codecortex",
+  "scope": "incremental changes after round33; official GitHub objects only; no dispatch, rerun, cancel, or ref mutation",
+  "reviewed_objects": {
+    "workflow_run": {
+      "id": 37930392164,
+      "url": "https://github.com/jyqj/codecortex/actions/runs/37930392164",
+      "event": "push",
+      "attempt": 1,
+      "head_branch": "task/p8-db-lock-observation-a217-20261009",
+      "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "branch_head_at_final_read": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "branch_head_unchanged": true,
+      "top_level_status_at_final_read": "queued",
+      "top_level_conclusion_at_final_read": null,
+      "created_at": "2026-10-09T12:29:43Z",
+      "updated_at": "2026-10-09T13:13:28Z"
+    },
+    "admission_and_controls": {
+      "job_id": 113819400505,
+      "status": "completed",
+      "conclusion": "success",
+      "exact_checkout": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "source_admission": {
+        "source_version": "p8-completion-source-20261009-v15",
+        "schema_version": 10,
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "b79f7749eb8f0a6c728493adfb073ca7db5563be",
+        "review_source": "87c697343f9d5a465cac7527f2e16933410ccd26",
+        "complete_inputs": 1094,
+        "previous_proof_executed": "p8-oracle-compat-source-20261008-v14",
+        "status": "passed"
+      },
+      "rustfmt": "success",
+      "default_off_contract": {
+        "command_scope": "cc-server p8_db_lock_observation without default features",
+        "passed": 1,
+        "failed": 0
+      },
+      "feature_on_controls": {
+        "cc_db_lock_observation_tests": {
+          "passed": 8,
+          "failed": 0,
+          "filtered_out": 207
+        },
+        "cc_server_status_test": {
+          "passed": 1,
+          "failed": 0
+        }
+      },
+      "python_runtime_controls": {
+        "passed": 77,
+        "failed": 0,
+        "elapsed_seconds": 17.53
+      },
+      "note": "Expected panic output in two negative unit controls was followed by passing results; the job and step conclusions are success."
+    },
+    "admission_artifact": {
+      "id": 11617781499,
+      "name": "p8-db-lock-controls-4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "size_in_bytes": 7220,
+      "digest": "sha256:576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b",
+      "created_at": "2026-10-09T13:13:25Z",
+      "uploaded_files": 6
+    },
+    "mixed_jobs_at_final_read": {
+      "c1": {
+        "job_id": 113835779540,
+        "status": "queued",
+        "conclusion": null,
+        "build": "not_started",
+        "workload": "not_started",
+        "verify": "not_started",
+        "artifact": null
+      },
+      "c4": {
+        "job_id": 113835779486,
+        "status": "queued",
+        "conclusion": null,
+        "build": "not_started",
+        "workload": "not_started",
+        "verify": "not_started",
+        "artifact": null
+      },
+      "c8": {
+        "job_id": 113835779454,
+        "status": "in_progress",
+        "conclusion": null,
+        "build": "success",
+        "workload": "in_progress",
+        "verify": "pending",
+        "artifact": null
+      },
+      "c16": {
+        "job_id": 113835779541,
+        "status": "queued",
+        "conclusion": null,
+        "build": "not_started",
+        "workload": "not_started",
+        "verify": "not_started",
+        "artifact": null
+      }
+    },
+    "pr180": {
+      "number": 180,
+      "url": "https://github.com/jyqj/codecortex/pull/180",
+      "state": "open",
+      "draft": true,
+      "head_sha": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+      "tree_sha": "9755e717368ffb51bc084c3348c1715b00b34d0d",
+      "parents": [
+        "832f79b8702c6cdfb567b7cf949508cd4589f286",
+        "aae42c4a729ce60d591360dbbf4350b41e43bc9c",
+        "b356043c2c0c970d000e5f5e32f1dff69f88454f"
+      ],
+      "observer_absorbed": true,
+      "observer_blob_comparison_to_run_head": {
+        "crates/cc-db/src/lock_observation.rs": {
+          "run_head": "d18f631984ba149376cabc74a2ba03bc3d5d4fd2",
+          "pr180_head": "d18f631984ba149376cabc74a2ba03bc3d5d4fd2",
+          "same": true
+        },
+        "crates/cc-db/Cargo.toml": {
+          "run_head": "bed1ee2a9d36d85300ab737b63deeaa62361c3b8",
+          "pr180_head": "bed1ee2a9d36d85300ab737b63deeaa62361c3b8",
+          "same": true
+        },
+        "crates/cc-server/tests/p8_db_lock_observation.rs": {
+          "run_head": "85975d11c030a982ce2cb5da0c2f8ffe64f572e2",
+          "pr180_head": "85975d11c030a982ce2cb5da0c2f8ffe64f572e2",
+          "same": true
+        },
+        "scripts/p8_runtime_lock_observation.py": {
+          "run_head": "2b1e901cf462bb36c34daf1f34bbd7ca7c0cbf36",
+          "pr180_head": "2b1e901cf462bb36c34daf1f34bbd7ca7c0cbf36",
+          "same": true
+        },
+        ".github/workflows/p8-db-lock-observation.yml": {
+          "run_head": "be748aa8c8ee902661fa81bc1be3683a508e9d27",
+          "pr180_head": "051025f69a5fc24ec683d32f0c823e70ae4beb68",
+          "same": false,
+          "reason": "run branch includes the isolated push trigger repair; PR180 retains create/workflow_dispatch workflow form"
+        }
+      },
+      "evidence_boundary": "The observer product is present in PR180, but run 37930392164 is bound to 4d18dcdb, not PR180 head 0e6b07c. Its future measurements must retain the 4d18dcdb source/build/binary identity and cannot be relabeled as PR180-head runtime evidence."
+    }
+  },
+  "p8_007_observation_subgate": {
+    "implementation_and_control_admission": "passed for source 4d18dcdb",
+    "terminal_measurements_required": [
+      "C1",
+      "C4",
+      "C8",
+      "C16"
+    ],
+    "terminal_measurements_present_at_final_read": [],
+    "current_nonterminal_activity": "C8 original 900-operation mixed workload is in progress after a successful distinct release feature build",
+    "required_runtime_fields_not_yet_available": [
+      "terminal 900-operation count per C",
+      "source/feature/compiler/build/binary/PID identity per C",
+      "run window and baseline/endpoint snapshots per C",
+      "failed/in_flight/unfinished denominators per C",
+      "successful independent verify and retained seal per C"
+    ],
+    "satisfied": false,
+    "hard_dependency": "P8-006 remains incomplete; even a later successful four-C observation subgate cannot close P8-007 until P8-006 is complete."
+  },
+  "decision": {
+    "dispatch_or_retry": false,
+    "cancel": false,
+    "ref_changed": false,
+    "todo_closed": false,
+    "conclusion": "Material progress: admission and all engineering controls passed and C8 entered the real mixed workload; no C tier is terminal yet, so P8-007 remains open."
+  }
+}

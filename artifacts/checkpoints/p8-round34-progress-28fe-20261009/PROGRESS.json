@@ -1,0 +1,73 @@
+{
+  "schema": "codecortex.p8.round34.progress.v1",
+  "round": 34,
+  "recorded_at_utc": "2026-10-09T13:39:00Z",
+  "repository": "jyqj/codecortex",
+  "previous_round_commit": "b566f0bcab7a5c8736e27e7bddff4b60e9a8bd67",
+  "main": {
+    "sha": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+    "change_from_round33": "PR187 docs-only; docs/BENCHMARK.md",
+    "task_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "ledger": {
+      "total": 192,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    }
+  },
+  "original_todo": {
+    "newly_done_ids": [],
+    "newly_done_count": 0,
+    "cumulative_since_163_baseline": 0,
+    "target": 10,
+    "remaining": 29,
+    "priority_ids": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "priority_status": "all in_progress"
+  },
+  "reviews": {
+    "observer_blob": "46b202c87d6d2c04975bc28e4f8da3f008bd9f6a",
+    "scale_ledger_blob": "87057a7769c6c0b9d191e4328766c99d2b327735",
+    "pr_ci_blob": "54b70679757abdba72b7ccfed25c0e3efe9e010e"
+  },
+  "scale": {
+    "G3": {
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "run": 37910924354,
+      "status": "4/150; 100k rep0 in_progress"
+    },
+    "C8": {
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run": 37902429727,
+      "status": "4/150; 100k deadline_exceeded; aggregate failure; measure skipped"
+    },
+    "old275e": {
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run": 37896198208,
+      "status": "frozen 4/150; 100k deadline_exceeded; aggregate failure; measure skipped"
+    }
+  },
+  "decisions": [
+    "No task status mutation: original scale acceptance and hard dependencies remain open.",
+    "No workflow retry/cancel/dispatch, no budget/threshold/sample changes, no cross-source pooling.",
+    "PR180/184/178 remain open; PR181 remains closed. No safe merge or close at snapshot.",
+    "Evidence appended only to evidence branch; old product tree is not merged into main."
+  ],
+  "next": [
+    "Wait for observer C1/C4/C8/C16 terminal artifacts and independently verify all denominators and identities.",
+    "Wait for PR180 exact-head admission/25 checks; then integrate latest docs-only main and regenerate fresh binding before any merge.",
+    "Continue original G3 150-shard study without intervention; only terminal source-bound evidence may satisfy P8-005."
+  ]
+}

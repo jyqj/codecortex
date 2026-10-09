@@ -1,0 +1,100 @@
+{
+  "schema": "codecortex.p8.round34.integration-pr-review.v1",
+  "observed_at_utc": "2026-10-09T13:39:00Z",
+  "main": {
+    "sha": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+    "change_from_round33": "PR187 docs-only; docs/BENCHMARK.md",
+    "task_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "ledger": {
+      "total": 192,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    }
+  },
+  "pr180": {
+    "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+    "tree": "9755e717368ffb51bc084c3348c1715b00b34d0d",
+    "parents": [
+      "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "aae42c4a729ce60d591360dbbf4350b41e43bc9c",
+      "b356043c2c0c970d000e5f5e32f1dff69f88454f"
+    ],
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "mergeable_state": "unstable",
+    "relative_to_main": {
+      "ahead": 52,
+      "behind": 2,
+      "merge_base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75"
+    },
+    "workflow_snapshot": "7 current-head workflows / 25 checks queued",
+    "absorbs": {
+      "observer": true,
+      "pr184_three_unique_db_paths": true,
+      "public_api_fix_by_ancestry": {
+        "base": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+        "compare_status": "ahead",
+        "ahead_by": 57,
+        "behind_by": 0
+      }
+    },
+    "decision": "keep Draft/Open; do not merge until exact-head admission and CI are terminal, then rebase/integrate docs-only main and rebind fresh identity"
+  },
+  "observer": {
+    "run_id": 37930392164,
+    "head": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+    "admission": {
+      "job": 113819400505,
+      "conclusion": "success",
+      "artifact_id": 11617781499,
+      "artifact_bytes": 7220,
+      "artifact_sha256": "576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b",
+      "controls": [
+        "v15 source admission 1094 inputs",
+        "fmt success",
+        "default-off 1/0",
+        "feature-on cc-db 8/0",
+        "server 1/0",
+        "Python runtime 77/0"
+      ]
+    },
+    "mixed": {
+      "C1": "queued",
+      "C4": "queued",
+      "C8": "in_progress; release build success; 900-op workload active",
+      "C16": "queued"
+    },
+    "scope": "run evidence remains bound to 4d18, not PR180 H binary; P8-007 observation subgate remains open"
+  },
+  "pr184": {
+    "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "state": "open",
+    "draft": true,
+    "mergeable_state": "unstable",
+    "checks": {
+      "success": 8,
+      "in_progress": 4,
+      "queued": 13
+    },
+    "decision": "keep Open; product is carried as PR180 parent, but do not close until PR180 exact-head absorption/admission is verified terminal"
+  },
+  "pr178": {
+    "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "state": "open",
+    "draft": true,
+    "checks_summary": "31 success; 100k failure; aggregate failure; measure skipped",
+    "decision": "retain as fixed failed-study carrier; do not merge or close this round"
+  },
+  "pr181": {
+    "state": "closed/merged",
+    "decision": "no action"
+  },
+  "safe_actions": {
+    "merge": [],
+    "close": []
+  }
+}

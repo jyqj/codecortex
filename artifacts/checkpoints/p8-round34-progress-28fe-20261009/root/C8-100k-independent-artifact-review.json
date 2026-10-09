@@ -1,0 +1,86 @@
+{
+  "schema": "codecortex.p8.round34.c8-scale-failure-review.v1",
+  "observed_at_utc": "2026-10-09T13:39:00Z",
+  "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "run_id": 37902429727,
+  "successful_measurements": {
+    "shards": 4,
+    "required_shards": 150,
+    "composite_samples": 41,
+    "required_composite_samples": 1500
+  },
+  "job": {
+    "id": 113731945708,
+    "status": "completed",
+    "conclusion": "failure",
+    "failed_step": "Execute all phases for this registered single-repetition capacity slice",
+    "workflow_output": {
+      "status": "failed",
+      "error": "native shard failed",
+      "sample_count": null,
+      "process_exit_code": 1
+    }
+  },
+  "artifact": {
+    "id": 11617588539,
+    "name": "p8-scale-shard-100000-0-37902429727",
+    "zip_bytes": 5212266,
+    "zip_sha256": "f758ca519a6b5ed90bfe1040944ad32b1daad8248e44b8ea4c7d4840d4a43236",
+    "members": 12
+  },
+  "independent_unpack": {
+    "report": {
+      "status": "deadline_exceeded",
+      "exit_code": 3,
+      "wall_ms": 18019626,
+      "worker_exit_code": null,
+      "stderr_complete": false,
+      "summary": null,
+      "registered_repetitions": 30,
+      "executed_repetition_range": {
+        "start": 0,
+        "end": 1
+      },
+      "full_100k_certification": "not_run",
+      "release_certification": "not_run",
+      "raw_digest_declared": "c45ea74320426db61a7ef3204db9668451ec9ec3c22e25619bfac4004610db43"
+    },
+    "raw": {
+      "bytes": 20144893,
+      "sha256": "9bf309d05c2361e18edf41eb0e70208f9697e09630cdae35c2cac8d96976d65e",
+      "lines": 2017,
+      "last_complete_event": "scale-100000/repetition-0/batch_10/incremental-0 build_finished",
+      "last_event": "scale-100000/repetition-0/batch_10/full_control build_started"
+    },
+    "identity": {
+      "binary_sha256": "1a46a855c72ab77e01582a302bf1f369a24cc21ac5e9ffcd7a29d911f9ae464b",
+      "binary_blake3": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+      "worker_binary_unchanged": true,
+      "toolchain": "rustc 1.95.0",
+      "seed": 12648430,
+      "deadline_ms": 18000000,
+      "max_output_bytes": 536870912,
+      "dirty_budget": 200,
+      "max_resume_builds": 1024
+    }
+  },
+  "followup": {
+    "measure_job": {
+      "id": 113837306841,
+      "conclusion": "skipped"
+    },
+    "aggregate_job": {
+      "id": 113837305654,
+      "conclusion": "failure",
+      "error": "shard execution failed or is missing",
+      "exit_code": 1
+    },
+    "matrix_artifact": {
+      "id": 11619200069,
+      "zip_bytes": 258,
+      "zip_sha256": "2914d0b238c9ba2614532affd28bfe11132d7d0ce45b3f3b75d391f4132e9363",
+      "matrix_sha256": "a448432e14a0d40bc5a1a91833a94327692aed1cf7ee6732a3b3aa377a16f346"
+    }
+  },
+  "conclusion": "Negative terminal evidence only. Do not retry, change budget, count as success, or pool with G3/old275e. P8-005 remains in_progress."
+}

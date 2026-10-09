@@ -39,6 +39,8 @@ pub enum Profile {
 pub enum CapacityProfile {
     #[serde(rename = "scale_capacity_v1")]
     ScaleCapacityV1,
+    #[serde(rename = "scale_wide_dirty_v1")]
+    ScaleWideDirtyV1,
 }
 
 /// A disjoint slice of the registered repetition population. A successful
@@ -123,7 +125,7 @@ impl ScalePlan {
                 "invalid/duplicate scale, repetition, fanout, deadline or output bound",
             ));
         }
-        if self.capacity_profile.is_some()
+        if self.capacity_profile == Some(CapacityProfile::ScaleCapacityV1)
             && (self.profile != Profile::Release
                 || self.files.len() != 1
                 || self.dirty_budget != 200
@@ -132,6 +134,17 @@ impl ScalePlan {
         {
             return Err(invalid(
                 "scale_capacity_v1 requires release, one scale, one repetition per shard, dirty budget 200 and resume budget 1024; fanout keeps 8/128",
+            ));
+        }
+        if self.capacity_profile == Some(CapacityProfile::ScaleWideDirtyV1)
+            && (self.profile != Profile::Release
+                || self.files.len() != 1
+                || self.dirty_budget != 4096
+                || self.max_resume_builds != 1024
+                || self.shard.is_none_or(|s| s.count != self.repetitions))
+        {
+            return Err(invalid(
+                "scale_wide_dirty_v1 requires release, one scale, one repetition per shard, dirty budget 4096 and resume budget 1024; fanout keeps 8/128",
             ));
         }
         if self.profile == Profile::Release
@@ -159,9 +172,15 @@ impl ScalePlan {
 
     pub fn fanout_budgets(&self) -> (usize, usize) {
         match self.capacity_profile {
-            Some(CapacityProfile::ScaleCapacityV1) => (8, 128),
+            Some(CapacityProfile::ScaleCapacityV1 | CapacityProfile::ScaleWideDirtyV1) => (8, 128),
             None => (self.dirty_budget, self.max_resume_builds),
         }
+    }
+
+    // The work profile is in the plan. Both named profiles use the unchanged
+    // physical oracle limits; parity records this separate capacity identity.
+    fn oracle_capacity_profile(&self) -> Option<&'static str> {
+        self.capacity_profile.map(|_| "scale_capacity_v1")
     }
 }
 
@@ -588,11 +607,10 @@ fn parity(a: &Path, b: &Path, complete: bool, plan: &ScalePlan) -> Result<Value>
         })
     });
     if over {
-        let mut comparison = match plan.capacity_profile {
-            Some(CapacityProfile::ScaleCapacityV1) => {
-                oracle::compare_streaming_scale_capacity_v1(a, b)?
-            }
-            None => oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?,
+        let mut comparison = if plan.oracle_capacity_profile().is_some() {
+            oracle::compare_streaming_scale_capacity_v1(a, b)?
+        } else {
+            oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?
         };
         if !complete {
             comparison["status"] = json!("incomplete_not_certified");
@@ -633,7 +651,7 @@ fn parity(a: &Path, b: &Path, complete: bool, plan: &ScalePlan) -> Result<Value>
         json!({"status":if !complete{"incomplete_not_certified"}else if different.is_empty(){"equal"}else{"different"},
         "equal":complete&&different.is_empty(),"different_tables":different,"tables":table_evidence,
         "comparison":"complete unchanged oracle rows compared before hashing; only exported differing examples are bounded",
-        "incremental_counts":ac,"full_counts":bc,"capacity_profile":plan.capacity_profile}),
+        "incremental_counts":ac,"full_counts":bc,"capacity_profile":plan.oracle_capacity_profile()}),
     )
 }
 

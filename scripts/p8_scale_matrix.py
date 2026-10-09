@@ -39,10 +39,17 @@ MAX_LINE_BYTES = 64 * 1024 * 1024
 SCHEMA = "p8-scale-matrix-v1"
 DRIVER_FILES = ("scripts/p8_scale_matrix.py", "scripts/p7_build_identity.py")
 CAPACITY_PROFILE = "scale_capacity_v1"
+WIDE_DIRTY_PROFILE = "scale_wide_dirty_v1"
+CAPACITY_PROFILES = (CAPACITY_PROFILE, WIDE_DIRTY_PROFILE)
 STRATIFIED_ENVIRONMENT = "heterogeneous_stratified_coverage_v1"
 
 
-def capacity_contract():
+def capacity_contract(profile=CAPACITY_PROFILE):
+    require(profile in CAPACITY_PROFILES, "unknown capacity profile")
+    if profile == WIDE_DIRTY_PROFILE:
+        # The work configuration changes; the oracle's physical limits do not.
+        return capacity_contract() | {"id": WIDE_DIRTY_PROFILE,
+                "scale_dirty_budget": 4096, "oracle_capacity_profile": CAPACITY_PROFILE}
     return {"id": CAPACITY_PROFILE, "environment_policy": STRATIFIED_ENVIRONMENT,
             "scale_dirty_budget": 200, "scale_max_resume_builds": 1024,
             "fanout_dirty_budget": 8, "fanout_max_resume_builds": 128,
@@ -342,16 +349,18 @@ def registered_plan(scale, shard_index, shard_count, repetitions=30, seed=126484
     integer(shard_index, "shard index", 0, shard_count - 1)
     integer(deadline_ms, "deadline", 1, 86_400_000)
     integer(seed, "seed", 0, (1 << 64) - 1)
-    require(capacity_profile in (None, CAPACITY_PROFILE), "unknown capacity profile")
+    require(capacity_profile is None or capacity_profile in CAPACITY_PROFILES, "unknown capacity profile")
     plan = dict(schema_version=1, profile="release", files=[scale], seed=seed,
                 repetitions=repetitions, shard=dict(index=shard_index, count=shard_count),
                 skip_fanout=scale != SCALES[0], dirty_budget=8, max_resume_builds=128,
                 batch_sizes=list(BATCHES), fanouts=list(FANOUTS),
                 deadline_ms=deadline_ms, max_output_bytes=MAX_BYTES)
-    if capacity_profile == CAPACITY_PROFILE:
-        require(shard_count == repetitions and deadline_ms == capacity_contract()["deadline_ms"],
+    if capacity_profile in CAPACITY_PROFILES:
+        contract = capacity_contract(capacity_profile)
+        require(shard_count == repetitions and deadline_ms == contract["deadline_ms"],
                 "capacity profile requires one repetition per shard and its registered deadline")
-        plan.update(capacity_profile=capacity_profile, dirty_budget=200, max_resume_builds=1024)
+        plan.update(capacity_profile=capacity_profile, dirty_budget=contract["scale_dirty_budget"],
+                    max_resume_builds=contract["scale_max_resume_builds"])
     return plan
 
 
@@ -390,7 +399,7 @@ def run_shard(root, build_directory, output, plan):
         command.append("--skip-fanout")
     capacity = plan.get("capacity_profile")
     if capacity is not None:
-        require(capacity == CAPACITY_PROFILE, "unknown capacity profile")
+        require(capacity in CAPACITY_PROFILES, "unknown capacity profile")
         command.extend(("--capacity-profile", capacity))
     record = {"schema": SCHEMA, "kind": "shard", "status": "failed", "started_utc": utc(),
               "command": command, "plan": plan, "build_receipt_sha256": file_sha256(Path(build_directory) / "build.json"),
@@ -401,7 +410,7 @@ def run_shard(root, build_directory, output, plan):
     try:
         native_environment = None
         if capacity is not None:
-            record["capacity_contract"] = capacity_contract()
+            record["capacity_contract"] = capacity_contract(capacity)
             temporary_root = out.parent
             record["temporary_environment"] = {key: str(temporary_root) for key in ("TMPDIR", "TMP", "TEMP")}
             preflight = disk_preflight(temporary_root, plan)
@@ -511,7 +520,7 @@ def check_parity(parity, plan=None):
         require(all(parity[side]["tables"][row["table"]] == row[
                     "incremental_rows" if side == "incremental_counts" else "full_rows"] for row in tables),
                 "count/parity row inventory differs")
-    if plan is not None and plan.get("capacity_profile") == CAPACITY_PROFILE:
+    if plan is not None and plan.get("capacity_profile") in CAPACITY_PROFILES:
         require(parity.get("capacity_profile") == CAPACITY_PROFILE, "parity capacity profile differs")
         over = any(value > 100_000 for side in ("incremental_counts", "full_counts")
                    for value in parity[side]["tables"].values())
@@ -702,7 +711,7 @@ def inspect_raw(path, plan):
                         "fanout replay failed")
                 require(event.get("fixture_files") == fanout + 1 and set(case.get("initial", {})) ==
                         {"api.ts"} | {f"use_{i:03}.ts" for i in range(fanout)}, "fanout fixture file count differs")
-                fanout_dirty, fanout_resume = ((8, 128) if plan.get("capacity_profile") == CAPACITY_PROFILE
+                fanout_dirty, fanout_resume = ((8, 128) if plan.get("capacity_profile") in CAPACITY_PROFILES
                                                 else (plan["dirty_budget"], plan["max_resume_builds"]))
                 require(case.get("dirty_budget") == fanout_dirty and case.get("max_resume_builds") == fanout_resume,
                         "fanout closure budget differs")
@@ -769,8 +778,9 @@ def validate_shard(directory, build_record, binary, build_receipt_sha256):
                                plan["repetitions"], plan["seed"], plan["deadline_ms"], plan.get("capacity_profile"))
     require(exact_equal(plan, expected) and plan == read_json(directory / "registered-plan.json") and
             plan == read_json(directory / "native/plan.json"), "shard plan differs from fixed matrix protocol")
-    if plan.get("capacity_profile") == CAPACITY_PROFILE:
-        require(exact_equal(record.get("capacity_contract"), capacity_contract()), "registered capacity contract changed")
+    if plan.get("capacity_profile") in CAPACITY_PROFILES:
+        require(exact_equal(record.get("capacity_contract"), capacity_contract(plan["capacity_profile"])),
+                "registered capacity contract changed")
         preflight = read_json(directory / "disk-preflight.json")
         expected_minimum = plan["files"][0] * capacity_contract()["minimum_free_bytes_per_file"] + capacity_contract()["minimum_free_fixed_bytes"]
         require(preflight.get("schema") == "p8-scale-disk-preflight-v1" and preflight.get("passed") is True and
@@ -861,8 +871,8 @@ def summarize_group(name, samples):
 def combine(shards, repetitions=30, shard_count=6, capacity_profile=None):
     integer(repetitions, "aggregate repetitions", 30, 200)
     integer(shard_count, "aggregate shard count", 1, repetitions)
-    require(capacity_profile in (None, CAPACITY_PROFILE), "unknown capacity profile")
-    stratified = capacity_profile == CAPACITY_PROFILE
+    require(capacity_profile is None or capacity_profile in CAPACITY_PROFILES, "unknown capacity profile")
+    stratified = capacity_profile in CAPACITY_PROFILES
     if stratified:
         require(shard_count == repetitions, "capacity profile requires one repetition per shard")
     expected = {(scale, index) for scale in SCALES for index in range(shard_count)}
@@ -941,7 +951,7 @@ def combine(shards, repetitions=30, shard_count=6, capacity_profile=None):
             "resources_scope": "original single-worker snapshots; whole-process-tree peaks not certified",
             "release_certification": "not_run", "G8": "not_evaluated", "task_statuses_changed": False}
     if stratified:
-        result.update(capacity_contract=capacity_contract(), environment_policy=STRATIFIED_ENVIRONMENT,
+        result.update(capacity_contract=capacity_contract(capacity_profile), environment_policy=STRATIFIED_ENVIRONMENT,
                       environments=environments,
                       statistics_scope="all samples retained with host/CPU/kernel strata; N>=30 is global coverage only; per-stratum counts explicit; no pooled latency, same-environment effect, stable tail or quality inference")
     else:
@@ -983,14 +993,14 @@ def main():
     run_parser.add_argument("--repetitions", type=int, default=30)
     run_parser.add_argument("--seed", type=int, default=12648430)
     run_parser.add_argument("--deadline-ms", type=int, default=18_000_000)
-    run_parser.add_argument("--capacity-profile", choices=(CAPACITY_PROFILE,))
+    run_parser.add_argument("--capacity-profile", choices=CAPACITY_PROFILES)
     aggregate_parser = commands.add_parser("aggregate")
     aggregate_parser.add_argument("--build", type=Path, required=True)
     aggregate_parser.add_argument("--inputs", type=Path, nargs="+", required=True)
     aggregate_parser.add_argument("--output", type=Path, required=True)
     aggregate_parser.add_argument("--repetitions", type=int, default=30)
     aggregate_parser.add_argument("--shard-count", type=int, default=6)
-    aggregate_parser.add_argument("--capacity-profile", choices=(CAPACITY_PROFILE,))
+    aggregate_parser.add_argument("--capacity-profile", choices=CAPACITY_PROFILES)
     args = parser.parse_args()
     try:
         if args.mode == "build":

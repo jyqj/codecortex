@@ -18,6 +18,8 @@ enum Mode {
 enum Capacity {
     #[value(name = "scale_capacity_v1")]
     ScaleCapacityV1,
+    #[value(name = "scale_wide_dirty_v1")]
+    ScaleWideDirtyV1,
 }
 
 #[derive(Parser)]
@@ -28,7 +30,7 @@ enum Capacity {
 struct Cli {
     #[arg(long, value_enum, default_value = "smoke")]
     profile: Mode,
-    /// Opt into the registered 200/1024 scale capacity; separate fanout keeps 8/128.
+    /// Select a registered 200/1024 or 4096/1024 work profile; fanout keeps 8/128.
     #[arg(long, value_enum)]
     capacity_profile: Option<Capacity>,
     /// Comma-separated exact corpus sizes; 60 is the safe default.
@@ -105,6 +107,7 @@ fn run(cli: Cli) -> Result<i32> {
         },
         capacity_profile: cli.capacity_profile.map(|profile| match profile {
             Capacity::ScaleCapacityV1 => CapacityProfile::ScaleCapacityV1,
+            Capacity::ScaleWideDirtyV1 => CapacityProfile::ScaleWideDirtyV1,
         }),
         files: if cli.matrix {
             p8_scale::RELEASE_SCALES.to_vec()

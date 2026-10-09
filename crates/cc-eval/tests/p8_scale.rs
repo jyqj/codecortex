@@ -81,6 +81,105 @@ fn named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure() {
 }
 
 #[test]
+fn named_wide_dirty_profile_is_distinct_and_preserves_legacy_budgets() {
+    let mut plan = ScalePlan {
+        profile: Profile::Release,
+        capacity_profile: Some(CapacityProfile::ScaleWideDirtyV1),
+        files: vec![1000],
+        repetitions: 30,
+        shard: Some(ScaleShard {
+            index: 0,
+            count: 30,
+        }),
+        dirty_budget: 4096,
+        max_resume_builds: 1024,
+        deadline_ms: 18_000_000,
+        max_output_bytes: 512 * 1024 * 1024,
+        ..ScalePlan::default()
+    };
+    let encoded = serde_json::to_value(&plan).unwrap();
+    assert_eq!(encoded["capacity_profile"], "scale_wide_dirty_v1");
+    let decoded: ScalePlan = serde_json::from_value(encoded).unwrap();
+    assert_eq!(decoded.capacity_profile, plan.capacity_profile);
+    assert_eq!(decoded.dirty_budget, 4096);
+    assert_eq!(plan.fanout_budgets(), (8, 128));
+    if cfg!(debug_assertions) {
+        assert!(plan
+            .validate()
+            .unwrap_err()
+            .to_string()
+            .contains("release eval build"));
+    } else {
+        plan.validate().unwrap();
+        assert_eq!(plan.repetition_range().unwrap(), 0..1);
+    }
+    for budget in [200, 4095, 4097] {
+        plan.dirty_budget = budget;
+        assert!(plan
+            .validate()
+            .unwrap_err()
+            .to_string()
+            .contains("scale_wide_dirty_v1 requires"));
+    }
+    plan.dirty_budget = 4096;
+    plan.capacity_profile = Some(CapacityProfile::ScaleCapacityV1);
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_capacity_v1 requires"));
+    plan.capacity_profile = Some(CapacityProfile::ScaleWideDirtyV1);
+    plan.max_resume_builds = 1023;
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_wide_dirty_v1 requires"));
+    plan.max_resume_builds = 1024;
+    plan.shard = Some(ScaleShard { index: 0, count: 6 });
+    assert!(plan
+        .validate()
+        .unwrap_err()
+        .to_string()
+        .contains("scale_wide_dirty_v1 requires"));
+}
+
+#[test]
+fn wide_dirty_cli_rejects_cross_profile_budgets_before_starting_work() {
+    let root = tempfile::tempdir().unwrap();
+    for (profile, budget) in [("scale_wide_dirty_v1", "200"), ("scale_capacity_v1", "4096")] {
+        let output = root.path().join(profile);
+        let result = std::process::Command::new(binary())
+            .args([
+                "--profile",
+                "release",
+                "--capacity-profile",
+                profile,
+                "--files",
+                "1000",
+                "--repetitions",
+                "30",
+                "--shard-index",
+                "0",
+                "--shard-count",
+                "30",
+                "--dirty-budget",
+                budget,
+                "--max-resume-builds",
+                "1024",
+                "--output",
+            ])
+            .arg(&output)
+            .output()
+            .unwrap();
+        assert_eq!(result.status.code(), Some(2));
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert!(stderr.contains(&format!("{profile} requires")), "{stderr}");
+        assert!(!output.exists(), "invalid profile must not start a worker");
+    }
+}
+
+#[test]
 fn shards_partition_registered_repetitions_without_lowering_release_admission() {
     let mut plan = ScalePlan {
         repetitions: 31,

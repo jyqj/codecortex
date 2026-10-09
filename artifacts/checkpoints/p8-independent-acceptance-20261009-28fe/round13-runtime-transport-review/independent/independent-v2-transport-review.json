@@ -1,0 +1,898 @@
+{
+  "actual_restore_and_existing_output_controls": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/integration-validation/round13-runtime-delivery-v2/delivery/artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/restored-positive"
+      ],
+      "elapsed_seconds": 0.5340343860007124,
+      "exit_code": 0,
+      "name": "positive",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "exact_reviewed_logical_package_restored",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7edc2e5a7be8897a6e0f4821c60cf7919a80e8d072b11f42d6518efbd3237cb0"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/integration-validation/round13-runtime-delivery-v2/delivery/artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/restored-positive"
+      ],
+      "elapsed_seconds": 0.0547041849931702,
+      "exit_code": 1,
+      "name": "existing_positive_output",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "exact_reviewed_logical_package_restored",
+      "stderr_sha256": "abd93da82b7dd08716538cbbf720963b9c0f09cb23cf148eb2c5e60acf0339c8",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "additional_negative_controls": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-corrupt_segment/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-corrupt_segment/output"
+      ],
+      "elapsed_seconds": 0.06500164599856362,
+      "exit_code": 1,
+      "name": "corrupt_segment",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "failed",
+      "stderr_sha256": "9745ed3021c84cadd9bebcae781d103d0bca02612d74009b31207cd2a94ea9c7",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-truncated_segment/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-truncated_segment/output"
+      ],
+      "elapsed_seconds": 0.06708485400304198,
+      "exit_code": 1,
+      "name": "truncated_segment",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "failed",
+      "stderr_sha256": "43ee23a604a53905e2c319bf88c7e49997eec9a5389f834cf55b0621ef8d9cdb",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-missing_segment/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-missing_segment/output"
+      ],
+      "elapsed_seconds": 0.051296574994921684,
+      "exit_code": 1,
+      "name": "missing_segment",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "2b517dd396b01c45526d21d860c96622e47cf76d0966ef90db65216f39f566f2",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-reordered_bytes_with_valid_part_hashes/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-reordered_bytes_with_valid_part_hashes/output"
+      ],
+      "elapsed_seconds": 0.20765544098685496,
+      "exit_code": 1,
+      "name": "reordered_bytes_with_valid_part_hashes",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "failed",
+      "stderr_sha256": "9961063e55d6ef358a4e35f0caca44ed6086002b53c0de9122db4656aff3505c",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-duplicate_logical_path/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-duplicate_logical_path/output"
+      ],
+      "elapsed_seconds": 0.04400742499274202,
+      "exit_code": 1,
+      "name": "duplicate_logical_path",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "c1056cee9be073c94ebeda7ec0b7d506a5fcadcf653cdb880e3e47c01bc052b6",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-traversal_logical_path/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-traversal_logical_path/output"
+      ],
+      "elapsed_seconds": 0.03867714300577063,
+      "exit_code": 1,
+      "name": "traversal_logical_path",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "b27c2cec5e54144c833f4c2837d660e55ff65c0dcfaf1c9b07dc32776b2a2bea",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-symlink_segment/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-symlink_segment/output"
+      ],
+      "elapsed_seconds": 0.04156692500691861,
+      "exit_code": 1,
+      "name": "symlink_segment",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "922906a6f93bc1955d2e13372561a30c3e2816e4a117a49fe7d5d427854a557f",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-corrupt_payload/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-corrupt_payload/output"
+      ],
+      "elapsed_seconds": 0.04808008301188238,
+      "exit_code": 1,
+      "name": "corrupt_payload",
+      "output_exists": true,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "failed",
+      "stderr_sha256": "67de153c4f45fc8f465effb77fa6added51ac5bbc8cbeef793adb26d8d7c2887",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-segment_ordinal_gap/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-segment_ordinal_gap/output"
+      ],
+      "elapsed_seconds": 0.038778303991421126,
+      "exit_code": 1,
+      "name": "segment_ordinal_gap",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "c8d57ca592a0380f4f264cb07de4c237a9973527eff9bb600a6859c9be746ebb",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-existing_receipt/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-existing_receipt/output"
+      ],
+      "elapsed_seconds": 0.05075114200008102,
+      "exit_code": 1,
+      "name": "existing_receipt",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": true,
+      "receipt_status": "preexisting_non_json",
+      "stderr_sha256": "d6b330887a14ce456f0a8d15d2c814fcb293c90fae175e8941306aaafbc1bc52",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-existing_output_symlink/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-existing_output_symlink/output"
+      ],
+      "elapsed_seconds": 0.0829053909983486,
+      "exit_code": 1,
+      "name": "existing_output_symlink",
+      "output_exists": true,
+      "output_symlink": true,
+      "receipt_present": false,
+      "stderr_sha256": "adc072454a114a75f3dd08c0c2009de569a4c607ab64668d6fd7a98f5c1ad7ae",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-missing_output_parent/package/restore_originals.py",
+        "--output",
+        "/workspace/scratch/28fef0db5e01/runtime-review/round13-v2-transport-review/case-missing_output_parent/no-parent/output"
+      ],
+      "elapsed_seconds": 0.07640624299529009,
+      "exit_code": 1,
+      "name": "missing_output_parent",
+      "output_exists": false,
+      "output_symlink": false,
+      "receipt_present": false,
+      "stderr_sha256": "19f9b06a9fcd93b50e4aa4263114def9df58b67a81b291287a8fd7f1fa7adaab",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "all_positive_and_negative_restored_workdirs_deleted_after_checks": true,
+  "checks": [
+    {
+      "details": null,
+      "name": "fixed v2 receipt",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "exact fixed restorer",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "all106 physical files and receipt",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "physical package index exact105 nonself files",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "all90 fixed reviewed v1 logical identities",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "v1 independent proof and receipt retained",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "two original files fixed eleven bounded parts",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/INDEPENDENT-REVIEW.md",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/author-controls-replayed.log",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/expected-tree-independent.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/merge-multiple-false-alarm-correction.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/probes-final.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/independent-review/review-receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/root-readbacks/actual-commit-file-readback.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/root-readbacks/prepublication-official-observations.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload D0-wave001-publication/root-readbacks/published-branch-and-run.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "contiguous part ordinals F5-hour/11588677565-F5-soak.zip",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "parts reconstruct original whole SHA F5-hour/11588677565-F5-soak.zip",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/audit.stderr",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/audit.stdout",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/audit_F5_hour.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/concurrent-study-snapshot.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/download-receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/evidence-manifest.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/final-originals-custody-and-bridge.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/finalize.stderr",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/finalize.stdout",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/finalize_bindings.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/independent-cache-observations.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/independent-originals-report.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/byte-lengths.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/d0artifacts.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/d0jobs1.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/d0jobs2.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/d0run.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/f5artifacts.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/f5jobs.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-api/s599jobs.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/official-soak-job.log",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/review-helper-derivation.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/review_soak_logic.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/reviewer-execution-receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-build/build-receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-build/seal.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/full-product/process.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/parity.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/plan.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/product/process.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/report.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/seal.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/statistics-execution.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/statistics-replay.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-hour/small-originals/p8-runtime/statistics.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/F5-p8_runtime.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/M6-p8_runtime.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/api-byte-lengths.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/attempt1-parser-note.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/audit_static_bridge.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/code-scope-diff.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/conditional-success-bridge-review.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/definition-comparison.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/evidence-manifest.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/existing-control-readback.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/identical-native-1087-manifest.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/jobs-api.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/original-p8-runtime.yml",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/run-api.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/runtime-exact.diff",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload F5-to-M6-bridge/runtime-observer-comparison.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/audit.stderr",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/audit.stdout",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/audit_archives.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/evidence-manifest.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/execution-receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archive-review/independent-archive-review.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archives/archive-index.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archives/m6-completed-and-initial-failures.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "contiguous part ordinals M6-local/archives/m6-completed-and-initial-failures.tar.xz",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "parts reconstruct original whole SHA M6-local/archives/m6-completed-and-initial-failures.tar.xz",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archives/m6-unresolved-hour-observation.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/archives/m6-unresolved-hour-observation.tar.xz",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/prepare_original_archive.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/reproducible-cache-cleanup.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/reviews/backfill.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/reviews/build.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/reviews/four-mixed.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/reviews/observed-hour-resource-gaps.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/capture_observation.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/interruption-observation.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/original-execution-observation.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/receipt.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/soak-run.log",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/original-text/soak/runtime/plan.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/unresolved-hour-observation/raw-observed-prefix.jsonl.gz",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/wrappers/run_after_parent_preparation.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload M6-local/wrappers/run_exact_runtime.py",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload README.md",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload copied-originals-index.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "unchanged small payload package-index.json",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "88 exact ordinary payload files",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "actual restoration command exit0",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "all90 restored files exact SHA Git blob mode and no extras",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "existing completed output rejected without any modification",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection corrupt_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "copy failure retains explicit failed receipt corrupt_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection truncated_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "copy failure retains explicit failed receipt truncated_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection missing_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection reordered_bytes_with_valid_part_hashes",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "copy failure retains explicit failed receipt reordered_bytes_with_valid_part_hashes",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection duplicate_logical_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection traversal_logical_path",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection symlink_segment",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection corrupt_payload",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "copy failure retains explicit failed receipt corrupt_payload",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection segment_ordinal_gap",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection existing_receipt",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "preexisting receipt preserved existing_receipt",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection existing_output_symlink",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "negative rejection missing_output_parent",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "all106 original physical files still unchanged",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "fixed v2 receipt remained unchanged",
+      "passed": true
+    },
+    {
+      "details": null,
+      "name": "transport does not change acceptance scope",
+      "passed": true
+    }
+  ],
+  "checks_failed": 0,
+  "checks_passed": 123,
+  "finished_at": "2026-10-09T01:34:43.839051+00:00",
+  "kind": "non_author_actual_segment_restore_and_negative_controls",
+  "ledger_unchanged": {
+    "done": 163,
+    "new_original_completed": 0,
+    "remaining": 29,
+    "total": 192
+  },
+  "limits": [
+    "Transport only: no archive decompression, SQLite connection, original payload/native execution, benchmark run or TODO closure.",
+    "Original restorer is executed only as the requested transport tool. Its payload files are copied or concatenated, never executed.",
+    "Validation failures before output reservation reject nonzero without a new restore receipt. Mid-copy corruption/reordering retains an explicit failed receipt. Preexisting output or receipt is never overwritten.",
+    "Original v1 native/source/README conclusions remain exactly the approved90 logical bytes; physical segmentation adds no acceptance or changes to source identities.",
+    "This review approves frozen content and transfer behavior. Actual published Git tree/commit and remote part bytes still require normal readback."
+  ],
+  "logical_restored_bytes": 95282009,
+  "logical_restored_files": 90,
+  "max_segment_bytes": 8388608,
+  "original_physical_inputs_unchanged": true,
+  "physical_bytes": 95810650,
+  "physical_files": 106,
+  "restorer_sha256": "b590ea763f458d0090b6ac5fc8216784db1c6533f610aedd2b9e0628d7f1bf71",
+  "schema_version": 1,
+  "segments": 11,
+  "source_receipt_sha256": "efdaeabaf323c8aafb5c2885c3f880f15b92ef06d7230806b90da7a7c2d06ff8",
+  "started_at": "2026-10-09T01:34:41.453894+00:00",
+  "verdict": "APPROVE_v2_segment_transport_exact_v1_restoration"
+}

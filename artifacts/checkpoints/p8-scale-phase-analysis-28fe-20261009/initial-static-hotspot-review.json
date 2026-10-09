@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "status": "static_source_diagnosis_complete_no_new_performance_claim",
+  "created_utc": "2026-10-09 06:51:11 UTC",
+  "reviewer": "runtime_review (non-author of P59/source implementations)",
+  "repository": "jyqj/codecortex",
+  "fixed_sources": {
+    "candidate_commit": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205",
+    "candidate_tree": "7fa501c91e19fb8136e410e6e26e518c64ccb8f0",
+    "main_commit": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "main_tree": "80c65ea8478599fda94641357174dd0ea624a2cc",
+    "comparison": "Official Contents listings show all cc-db/src entries equal; cc-index/src direct files equal; indexer_phases differs only reconcile.rs (main 9617e0f241c624ce35db3c6db8e5eba568fb7594 -> P59 c8aed85c88cf2fbbbf691592fd1837ce6356818e). P59 project_model subtree has previously reviewed PR174 python inventory fixture changes; this diagnosis does not generalize subtree equality."
+  },
+  "scope": {
+    "source_readonly": true,
+    "product_execution": false,
+    "tests": false,
+    "new_measurement": false,
+    "remote_run": false,
+    "refs_modified": false,
+    "existing_p59_modified": false,
+    "no_database_open": true,
+    "artifact_elf_executed": false,
+    "outputs": "This report and one unreferenced optional source blob only.",
+    "performance_numbers": "No new per-stage or SQL timings measured. Peer acceptance_review owns original raw attribution."
+  },
+  "conclusion": [
+    "Yes: each original unscoped scale resume performs another complete source-tree metadata walk plus O(N) in-memory universe construction, even though at most 200 dependents are admitted in that invocation.",
+    "No: this does not imply a complete files/symbols SQLite load or full snapshot per resume. Validity-keyed file-state and resolver catalogs already avoid those loads; prepare_snapshot covers the current write_units.",
+    "The bounded dependency/surface queries explicitly enlarge their SQL prefix by completed.len and remove completed paths in Rust. Repeated resumes can therefore reread a growing completed prefix despite only emitting budget+1 new paths.",
+    "PR173, present in P59, removes redundant pending probes inside one prepare under a proven local window; it deliberately does not reuse that window across prepares or eliminate the growing-prefix cost.",
+    "Existing primary reverse access indexes are present. An imports covering-index enhancement and a frontier ownership-only move are finite optional candidates, not demonstrated fixes for 100k or substitutes for original workloads.",
+    "Do not skip scanning merely because the database has a pending frontier, or replace the original scale dispatch with changed_paths hints: that changes external-edit detection or the registered workload."
+  ],
+  "call_chain": [
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "lines": [
+        640,
+        643,
+        881,
+        895
+      ],
+      "fact": "Every initial incremental and each resume calls build(aa,false,...); build uses backend.build_index_report(full)."
+    },
+    {
+      "path": "crates/cc-eval/src/runner.rs",
+      "lines": [
+        129,
+        143
+      ],
+      "fact": "build_index_report sends only {full}; event-scoped changed_paths is a separate API and is not used by this original scale loop."
+    },
+    {
+      "path": "crates/cc-server/src/mcp.rs",
+      "lines": [
+        156,
+        166
+      ],
+      "fact": "Absent changed/removed lists become an empty BuildScope and then None."
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "lines": [
+        18,
+        35,
+        59,
+        88
+      ],
+      "fact": "run_split_build forwards scope unchanged to CodeIndex::prepare_build_scoped; stale prepared epoch retries the same original scope."
+    },
+    {
+      "path": "crates/cc-server/src/engine.rs",
+      "lines": [
+        463,
+        481
+      ],
+      "fact": "None remains None at Indexer::prepare_build_scoped."
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "lines": [
+        224,
+        243
+      ],
+      "fact": "Capture prepared index epoch, perform scan/diff and CapturedProject::capture; these are included in scan_diff_ms."
+    }
+  ],
+  "confirmed_hotspots": [
+    {
+      "id": "unscoped_scan_and_universe",
+      "evidence": [
+        {
+          "path": "crates/cc-index/src/indexer.rs",
+          "lines": [
+            464,
+            495,
+            513,
+            529
+          ],
+          "fact": "Only nonempty explicit scope selects scoped_scan_and_diff. Otherwise scan_with_manifest always runs, then full yielded_paths HashSet and diff over scanned entries; existing paths are iterated for removals."
+        },
+        {
+          "path": "crates/cc-index/src/scanner.rs",
+          "lines": [
+            300,
+            320,
+            353,
+            418
+          ],
+          "fact": "Parallel ignore walk; each regular file pays metadata() for size/mtime. One shared walk replaces historical multiple walks, so do not claim three independent full walks."
+        },
+        {
+          "path": "crates/cc-index/src/indexer.rs",
+          "lines": [
+            751,
+            801
+          ],
+          "fact": "Each scanned file is compared. Same size/mtime/current policies skips file bytes, so a metadata walk is not a claim of hashing every source file."
+        },
+        {
+          "path": "crates/cc-index/src/indexer.rs",
+          "lines": [
+            1024,
+            1045
+          ],
+          "fact": "build_actions_map clones every admitted path into a new map, with parsed files Add/Update and remaining files Skip."
+        },
+        {
+          "path": "crates/cc-index/src/build_plan.rs",
+          "lines": [
+            743,
+            768
+          ],
+          "fact": "DirtyClosed::compute builds that full actions map before bounded dirty propagation."
+        },
+        {
+          "path": "crates/cc-index/src/project_model/mod.rs",
+          "lines": [
+            125,
+            143,
+            264,
+            306,
+            389,
+            437
+          ],
+          "fact": "Every capture clones scanned_paths into BTreeSet/FileCatalog, derives ancestor sets and config/manifest probes; config parsing itself has a cache."
+        }
+      ],
+      "complexity": "For R unscoped resumes over N surviving files the walk/comparison and universe work is O(R*N), with ordered catalog insertion additionally dependent on sorting/collection implementation. This is a source-level bound, not elapsed attribution.",
+      "not_safe_shortcut": "Pending frontier/unchanged DB generation proves nothing about unindexed filesystem changes between separate index calls.",
+      "counterexample_to_unconditional_resume_fast_path": {
+        "setup": "Commit a partial dirty closure with some completed importers. Before the next ordinary index call, edit or remove a different provider, add a source file, or change .gitignore/tsconfig without writing the index DB.",
+        "expected": "The next original unscoped scan sees the new input, updates project-model evidence and rebases/clears completed where required.",
+        "unsafe_result": "A frontier-only fast path can miss the new invalidation or retain completed paths from the old basis. DB epoch need not move when source files are edited."
+      },
+      "recommendation": "Keep original unscoped scan semantics. A future full-walk-preserving optimization may reduce temporary path/catalog allocations, but no safe constant-time resume proof is present in this scope. Do not change the benchmark to scoped calls."
+    },
+    {
+      "id": "growing_completed_prefix",
+      "evidence": [
+        {
+          "path": "crates/cc-db/src/resolution_dependency_store.rs",
+          "lines": [
+            95,
+            150
+          ],
+          "fact": "cap=limit+1; probe_cap=cap+excluded.len; each (kind,keys batch) SELECT DISTINCT file_path ... ORDER BY file_path LIMIT probe_cap materializes String rows, then excluded is tested in Rust."
+        },
+        {
+          "path": "crates/cc-db/src/public_surface_store.rs",
+          "lines": [
+            44,
+            96
+          ],
+          "fact": "Same cap+excluded.len prefix for each of imports, symbol_refs and call_edges, with Rust exclusion; global BTreeSet retains the smallest cap distinct eligible paths."
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+          "lines": [
+            111,
+            155,
+            168,
+            204
+          ],
+          "fact": "State.completed is converted to exclusion collections and queries run afresh in each prepare. PR173 surface/dependency windows only serve that same prepare; changed seed basis or exceeded admission contract uses original fallback."
+        },
+        {
+          "path": "crates/cc-db/src/freshness_store.rs",
+          "lines": [
+            9,
+            45
+          ],
+          "fact": "Durable frontier includes complete payload/digest, loaded and deserialized on each resume and serialized for a new pending frontier."
+        },
+        {
+          "path": "crates/cc-model/src/freshness.rs",
+          "lines": [
+            44,
+            99
+          ],
+          "fact": "Frontier keeps full completed set under original MAX_FRONTIER_ENTRIES and MAX_FRONTIER_BYTES; storage validation is not optional."
+        }
+      ],
+      "complexity": "For a stable single-key fanout with completed paths forming an ordered prefix, returned rows can grow roughly with completed length on every resume; over N/B batches this can approach O(N^2/B) returned-prefix work per applicable query. Multiple keys, duplicate rows, sort work and early caps depend on actual distribution; no measured VM total asserted.",
+      "not_proven": "An SQL NOT IN/anti-join can reduce Rust row transfer but still inspect completed rows or build an exclusion set; it is not automatically an asymptotic SQLite improvement.",
+      "counterexample_to_max_completed_keyset": {
+        "dependents": [
+          "a.ts",
+          "c.ts",
+          "d.ts"
+        ],
+        "completed": [
+          "c.ts"
+        ],
+        "limit": 1,
+        "original_expected_including_witness": [
+          "a.ts",
+          "d.ts"
+        ],
+        "unsafe_filter": "file_path > max(completed) loses still-unprocessed a.ts. Completed is not required to be an ordered prefix of each individual dependency/surface query."
+      },
+      "further_counterexample": "A newly rebound dependency, new root/facade seed or external writer between prepares invalidates an old query window; reuse must not rely solely on the prior local window or seed-symbol token, which is not a proof of all dependency/import/reference tables.",
+      "recommendation": "Keep PR173's proven same-prepare window. Before any cross-prepare cursor/cache, establish exact query-basis validity and holes/late-write correctness; preserve budget+1 overflow witness, union ordering, all duplicate semantics, current transaction/epoch fence and durable complete set."
+    }
+  ],
+  "excluded_misdiagnoses": [
+    {
+      "path": "crates/cc-db/src/index_db.rs",
+      "lines": [
+        759,
+        783
+      ],
+      "fact": "get_file_state checks stored files_state aggregate and returns a shared Arc cache hit. SQL full load only on miss, with before/after token condition for warming."
+    },
+    {
+      "path": "crates/cc-db/src/file_state_cache.rs",
+      "lines": [
+        67,
+        95,
+        103,
+        158
+      ],
+      "fact": "Incremental writes carry the cache forward; when post token already matches, return before Arc::make_mut. Dirty-only units do not rewrite files rows. Do not assert every dirty-only resume clones the entire map."
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+      "lines": [
+        342,
+        406,
+        479,
+        491
+      ],
+      "fact": "Empty incremental batches skip persisted catalog; validated cross-build catalog is taken and delta-updated; full SQL seed load is fallback. Type catalog reuses prior contributions and hierarchy edges are batch-local."
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "lines": [
+        299,
+        309,
+        881,
+        898
+      ],
+      "fact": "prepare_snapshot sums/current route nodes/precompression over current write_units, not all DB rows."
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "lines": [
+        58,
+        72,
+        201,
+        202,
+        227,
+        262
+      ],
+      "fact": "public_surfaces package/file index and resolution_dependencies(kind,key,file_path), symbol_refs(target_file_path,file_path), call_edges(target_file_path,file_path) exist. imports has resolved_path single-column index."
+    }
+  ],
+  "optional_minimal_candidates": [
+    {
+      "id": "move_owned_frontier_instead_of_clone",
+      "priority": "low-risk allocation reduction; not demonstrated primary performance fix",
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "base_blob": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "candidate_blob": "ecc0c120109d87b9bfc81cd37205539913d61cc0",
+      "candidate_bytes": 33231,
+      "candidate_sha256": "7a2e61f49baa3ef7cb7931dfcfc3bdd0dc54f65d8360b479712df648b8ffb0b1",
+      "prepared_only": true,
+      "applied": false,
+      "compiled": false,
+      "performance_measured": false,
+      "readback_byte_exact": true,
+      "exact_replacements": [
+        {
+          "before": "        let mut state = previous\n            .clone()\n            .unwrap_or_else(|| ReconcileState::new(epoch));",
+          "after": "        let mut state = previous.unwrap_or_else(|| ReconcileState::new(epoch));",
+          "before_occurrences": 1
+        },
+        {
+          "before": "        let reconcile = if previous.is_some() || next.is_some() {",
+          "after": "        let reconcile = if resumed || next.is_some() {",
+          "before_occurrences": 1
+        }
+      ],
+      "reasoning": "previous has only these references plus resumed=previous.is_some(). That boolean is captured before the move. Removing the clone preserves the exact ReconcileState, rebase decisions, epoch, next payload and final update presence while avoiding one full duplicate of roots/propagated/completed/events per resume. Only allocation behavior changes; not an executed correctness proof.",
+      "relevant_existing_controls": "Keep and run original reconcile window/dirty propagation/resume/rebase/external epoch controls if adopted. No new workload/budget or new framework is required."
+    },
+    {
+      "id": "imports_covering_access_path",
+      "priority": "small query-path hypothesis; require plan/work evidence before adoption",
+      "paths": [
+        "crates/cc-db/src/sql/index_v1.sql",
+        "crates/cc-db/src/index_migrate.rs"
+      ],
+      "proposal_sql": "CREATE INDEX IF NOT EXISTS idx_imports_resolved_file ON imports(resolved_path,file_path);",
+      "reasoning": "Current imports positive-binding SELECT returns file_path by resolved_path and orders distinct file_path. Unlike refs/calls, its existing reverse index is not covering. A composite index can cover the single-target ordered lookup without changing query semantics; multi-target queries can still require DISTINCT/ORDER BY work.",
+      "rollout_boundary": "Fresh schema plus current-schema idempotent physical-index maintenance are both required. index_migrate.rs:59–70 does NOT rerun FULL_SCHEMA_SQL on an already current DB; adding only the schema line would miss reopen/current installations. Do not change semantic schema version, logical rows, epoch, incarnation, OR REPLACE or FTS rowids.",
+      "risks": "Extra index build/disk/write maintenance; full staging temporarily drops indexes and must later recreate the new one. This does not remove completed-prefix scans and is not promised to improve wall time.",
+      "meaningful_validation_design": [
+        "Compare exact old/new query output for duplicate imports, empty/NULL resolved paths, multiple target keys, non-prefix exclusions and overflow witness.",
+        "Inspect actual SQLite query plan and original SqlWork rows/fullscan/sort/VM metrics on representative fanout without changing the original production query or budget.",
+        "Prove same existing-schema open installs the index without row/epoch/incarnation changes; full/rebuild/incremental 15-table oracle equality remains the existing product requirement."
+      ]
+    }
+  ],
+  "timing_boundary": {
+    "available_original_fact": "Root's already received A23 50k rep0 worker summary has 4214047 ms, 9 stage measurements and 511 builds; this review did not reconsume its raw and does not apportion those milliseconds.",
+    "need_from_peer": "Original scan_diff_ms, parse_ms (includes dirty planning/reload), resolve_ms, write/postprocess/analysis, prepare_snapshot_us and dirty_plan.dependency_sql rows/VM/sort counts by resume and mutation.",
+    "do_not_sum_twice": "prepare_snapshot_us and full_staging_us are nested in prepare_us; scan_diff_ms/parse_ms/resolve_ms are components rather than extra wall work. SQL-work counters are operations, not durations.",
+    "performance_claim": false,
+    "original_budget_N_repetitions_unchanged": true
+  },
+  "source_files": [
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "git_blob": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "bytes": 60618,
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "git_blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "bytes": 76225,
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    {
+      "path": "crates/cc-index/src/scanner.rs",
+      "git_blob": "8e89915f736e799274d802be9ffdd22567c650c9",
+      "bytes": 42473,
+      "sha256": "e8c1791c6c0ff98dd55e94cda3f6168a5208d1d755702f904189327b99c92bc2"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "git_blob": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "bytes": 33276,
+      "sha256": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+      "git_blob": "675be9852afd8e78144836758cd696780cbb8a3d",
+      "bytes": 39961,
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/mod.rs",
+      "git_blob": "dfb98b5feaa0808fddd2dcad62bde27d076b7123",
+      "bytes": 22957,
+      "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923"
+    },
+    {
+      "path": "crates/cc-db/src/index_db.rs",
+      "git_blob": "58c30296ae0e635fe3ab0f383558c692f507e63b",
+      "bytes": 49499,
+      "sha256": "6202a556d78731b88757a08cdbc77f83112db17e3000fe2eaef9572a65915d4e"
+    },
+    {
+      "path": "crates/cc-db/src/file_state_cache.rs",
+      "git_blob": "709f81d988992be6a535ebf27db1b2ef5ed944b0",
+      "bytes": 12293,
+      "sha256": "48bd5f2e566f930cce6562cb5ca433f8b90d77685d324145e8b72c20f062670a"
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "git_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "bytes": 8537,
+      "sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650"
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "bytes": 10207,
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "git_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "bytes": 7941,
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+    },
+    {
+      "path": "crates/cc-db/src/freshness_store.rs",
+      "git_blob": "32ce4e36170affb76514afa534637bd656570662",
+      "bytes": 4142,
+      "sha256": "3057b87981457b51f07601df6414788cc0fbfe0439f23c5fb0a481e10d1a6efc"
+    },
+    {
+      "path": "crates/cc-model/src/freshness.rs",
+      "git_blob": null,
+      "bytes": 4937,
+      "sha256": "d932cfcf4d33a93554a624718265dbf0e308b1f84ebb1c9c43c828a4db289daf"
+    },
+    {
+      "path": "crates/cc-eval/src/runner.rs",
+      "git_blob": null,
+      "bytes": 21425,
+      "sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "git_blob": null,
+      "bytes": 46137,
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+    },
+    {
+      "path": "crates/cc-server/src/mcp.rs",
+      "git_blob": "9a018185e2b2e362a16641c29bf3a41c74ac90ef",
+      "bytes": 37424,
+      "sha256": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c"
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "git_blob": null,
+      "bytes": 13449,
+      "sha256": "624fd729b259d55ff6ac643d6e39afb71997d06dd5156115e0f270a61fb63f8c"
+    },
+    {
+      "path": "crates/cc-server/src/engine.rs",
+      "git_blob": "8c8bcf70a321875cd99252b50a9c2010bedaec19",
+      "bytes": 83012,
+      "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
+    }
+  ],
+  "limitations": [
+    "Static source review only; no Rust/Python/native/SQL control was run.",
+    "No big original ZIP downloaded, no original DB opened, no new scale dispatched.",
+    "A single read-only local pwd probe failed to return through exec; stopped waiting after the yielded cell. Subsequent review uses only fixed GitHub source reads. Unsupported guessed Contents paths and recursive tree requests yielded errors and were not treated as evidence.",
+    "PR173's existing independent validation is external to this review; new optional candidates have no dynamic acceptance.",
+    "No new TODO completion or release/platform/scale certification."
+  ],
+  "task_ledger": {
+    "total": 192,
+    "completed": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "schema": "p8_round23_final_RG_pin_installation_independent_review_v1",
+  "reviewer": "/root/recovery_audit",
+  "date_utc": "2026-10-09",
+  "verdict": "accepted_exact_pin_installation_only",
+  "unresolved_blockers": [],
+  "P": {
+    "commit": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205",
+    "tree": "7fa501c91e19fb8136e410e6e26e518c64ccb8f0"
+  },
+  "R": {
+    "commit": "c6c8030d359107c82f0f738d8ef270778b5f887d",
+    "tree": "f7f7e24770007a1bd190ad301435fa18d6caa972",
+    "parents": [
+      "59c2197ebbada4e8cb2091d2fc7a852aa28c9205"
+    ],
+    "changes": [
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/combination-map.json",
+        "blob": "2c957f172d845afa816a4728e0d59753b5225aef",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-review-details.json",
+        "blob": "ec3e883886d386db9ef4a2bfe9b99a6b9137365a",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-source-review.json",
+        "blob": "b9bbc0df4e654d2b1bea4dcaefdf2d1f740e56a3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/pr173-independent-engineering-review.json",
+        "blob": "4ac30eb335e2493e36a62c78e5288e408e1534f7",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/pr174-independent-engineering-review.json",
+        "blob": "893dc06179d2fe915eba01161920da3b7aa3e29e",
+        "status": "added"
+      }
+    ]
+  },
+  "G": {
+    "commit": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+    "tree": "2c492ccc4028468d4f11d51af678d75495492176",
+    "parents": [
+      "c6c8030d359107c82f0f738d8ef270778b5f887d"
+    ],
+    "changes": [
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "blob": "7eb53896011c10c9b0b4763e86d4c087ae93b133",
+        "status": "modified"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "blob": "43f2b01324023c0ded2b5ef3cca941a79f67d383",
+        "status": "modified"
+      }
+    ]
+  },
+  "canonical_review": {
+    "git_blob": "b9bbc0df4e654d2b1bea4dcaefdf2d1f740e56a3",
+    "bytes": 281618,
+    "sha256": "dbca5f73faa0a1910212010f2a2b6b43a47f80ca0d17938cd4133253721d3a37"
+  },
+  "supporting_actual_P_review": {
+    "git_blob": "ec3e883886d386db9ef4a2bfe9b99a6b9137365a",
+    "bytes": 488635,
+    "sha256": "59d93b9650269416abb05b0719be0d3f9110ccace0a7b21ba025b5388b53dea8"
+  },
+  "registry": {
+    "git_blob": "7eb53896011c10c9b0b4763e86d4c087ae93b133",
+    "bytes": 172335,
+    "sha256": "754442a8ff237eedaebac63aeeb1ae03f4baeb462b2ee1f8d84bada3cb56ee73",
+    "schema_version": 10,
+    "source_version": "p8-completion-source-20261009-v15",
+    "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "product_source": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205",
+    "review_source": "c6c8030d359107c82f0f738d8ef270778b5f887d",
+    "review_sha256": "dbca5f73faa0a1910212010f2a2b6b43a47f80ca0d17938cd4133253721d3a37",
+    "scope": "independently_reviewed_source_and_validation_inputs",
+    "runtime_and_quality_claims": "require_separate_execution_evidence",
+    "complete_count": 1089,
+    "delta_count": 44,
+    "validation_count": 139,
+    "all_maps_identical_to_canonical": true
+  },
+  "guard": {
+    "old_git_blob": "1b8b544b8967c516f8272d44e09acc4b6debba6d",
+    "git_blob": "43f2b01324023c0ded2b5ef3cca941a79f67d383",
+    "bytes": 11091,
+    "sha256": "c6fb999349d5cde1c6c27e2c1dc5b4923184b583c84e8d74810c69283576f911",
+    "exact_four_pin_changes": {
+      "PRODUCT": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205",
+      "REVIEW": "c6c8030d359107c82f0f738d8ef270778b5f887d",
+      "REVIEW_PATH": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-source-review.json",
+      "REGISTRY_SHA256": "754442a8ff237eedaebac63aeeb1ae03f4baeb462b2ee1f8d84bada3cb56ee73"
+    },
+    "all_other_bytes_identical": true
+  },
+  "independent_checks": [
+    {
+      "name": "R sole parent P",
+      "passed": true
+    },
+    {
+      "name": "G sole parent R",
+      "passed": true
+    },
+    {
+      "name": "R five exact additions only",
+      "passed": true
+    },
+    {
+      "name": "canonical and detailed exact installed OIDs",
+      "passed": true
+    },
+    {
+      "name": "G only two fixed path changes",
+      "passed": true
+    },
+    {
+      "name": "R root entries inherited except artifacts",
+      "passed": true
+    },
+    {
+      "name": "G root entries inherited except scripts",
+      "passed": true
+    },
+    {
+      "name": "registry actual bytes Git and SHA",
+      "passed": true
+    },
+    {
+      "name": "registry exact scalar identities and population",
+      "passed": true
+    },
+    {
+      "name": "registry exact complete_inputs",
+      "passed": true
+    },
+    {
+      "name": "registry exact validation_inputs",
+      "passed": true
+    },
+    {
+      "name": "registry exact delta",
+      "passed": true
+    },
+    {
+      "name": "full guard equals old bytes after exactly four pins",
+      "passed": true
+    }
+  ],
+  "original_manifest": {
+    "product": "1ea181a35018639494efc2b4d2f8067c14f03ef171e329e0c2f077013ec6e8ba",
+    "validation": "c5c79331d00c64ecc55d16cf89b9eafb5e28be20f8d573e7f8c5722cbe4590e3"
+  },
+  "scope_limits": [
+    "No repeated1089-body audit: actual P is already independently reviewed. This check binds exact R additions and final registry/four guard constants.",
+    "R only adds five archive blobs; G only replaces registry and four pins in the unchanged guard. Native and original139 validation inputs remain actual P bytes.",
+    "No actual G compile/test/source-proof/performance result is supplied by this installation review. The original final-source CI remains required.",
+    "PR174's earlier execution is a separate source and must not be relabeled as combined G.",
+    "No refs, PR changes, workflows or native/test commands were run by this reviewer."
+  ],
+  "task_status": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

@@ -1,0 +1,48 @@
+diff --git a/crates/cc-index/src/project_model/python_inventory.rs b/crates/cc-index/src/project_model/python_inventory.rs
+index 95b87a9780d41e86b88336e809882a1fcf1497f8..e8f3ccd2d5d24ac222186f6954d983d859b4ee18 100644
+--- a/crates/cc-index/src/project_model/python_inventory.rs
++++ b/crates/cc-index/src/project_model/python_inventory.rs
+@@ -1,5 +1,6 @@
+ //! Opt-in, complete Linux inventory and Python declaration admission.
+ //! No scanner filters, persistence, interpreter execution or atomic snapshot claim.
++#[cfg(target_os = "linux")]
+ use super::{config_cache::Loader, python};
+ use cc_model::{declaration_identity::*, module_inputs::*, project_model::ConfigInput};
+ use cc_parsers::python_identity::*;
+@@ -93,6 +94,7 @@ impl CapturedDeclarations {
+         &self.outcomes
+     }
+ }
++#[cfg(target_os = "linux")]
+ fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {
+     if actual > limit {
+         Err(CaptureRefusal::Budget(resource))
+@@ -100,6 +102,7 @@ fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {
+         Ok(())
+     }
+ }
++#[cfg(target_os = "linux")]
+ fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {
+     a.checked_add(b).ok_or(CaptureRefusal::Budget(resource))
+ }
+@@ -287,6 +290,7 @@ fn capture_inner(
+ // Only complete collection-root directives are supported. Selectors, include/
+ // exclude, namespace switches, Poetry package selectors and other setuptools
+ // settings are refused, even when the legacy provenance has no limitation.
++#[cfg(target_os = "linux")]
+ fn supported_document(doc: &ConfigDocument) -> Result<()> {
+     let ConfigDocument::Toml(v) = doc else {
+         return Err(CaptureRefusal::Configuration);
+@@ -328,10 +332,12 @@ fn supported_document(doc: &ConfigDocument) -> Result<()> {
+     }
+     Ok(())
+ }
++#[cfg(target_os = "linux")]
+ struct OutputMeter {
+     bytes: usize,
+     limit: usize,
+ }
++#[cfg(target_os = "linux")]
+ impl std::io::Write for OutputMeter {
+     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+         let n = self

@@ -1,0 +1,177 @@
+{
+  "controlled_bindings": {
+    "fresh_path_binding": {
+      "bytes": 2456,
+      "path": "review-ci/premerge-workspace/fresh-path-phase-observer/binding.json",
+      "sha256": "b2b7d34483009605e27878a228505869e281c5ec1f5b79da5fc367a5493bc3ba"
+    },
+    "no_source_or_retained_abi_mutation": true,
+    "same_compiled_observer_binary": true,
+    "same_helper_159_bytes": true,
+    "same_original_250ms_2s_limits": true,
+    "same_stdio_and_fresh_process_group_configuration": true,
+    "same_toolchain_and_child_environment": true
+  },
+  "existing_independent_deadline_negative": {
+    "lines": [
+      {
+        "line": 462,
+        "text": "#[test]"
+      },
+      {
+        "line": 463,
+        "text": "fn subprocess_deadline_preserves_report_and_rejects_output_reuse() {"
+      },
+      {
+        "line": 464,
+        "text": "    let temp = tempfile::tempdir().unwrap();"
+      },
+      {
+        "line": 465,
+        "text": "    let out = temp.path().join(\"deadline\");"
+      },
+      {
+        "line": 466,
+        "text": "    let plan = ScalePlan {"
+      },
+      {
+        "line": 467,
+        "text": "        deadline_ms: 1,"
+      },
+      {
+        "line": 468,
+        "text": "        ..ScalePlan::default()"
+      },
+      {
+        "line": 469,
+        "text": "    };"
+      },
+      {
+        "line": 470,
+        "text": "    let report = p8_scale::run_supervised(&plan, &out, binary()).unwrap();"
+      },
+      {
+        "line": 471,
+        "text": "    assert_eq!(report[\"exit_code\"], 3, \"{report}\");"
+      },
+      {
+        "line": 472,
+        "text": "    assert_eq!(report[\"status\"], \"deadline_exceeded\");"
+      },
+      {
+        "line": 473,
+        "text": "    let before = std::fs::read(out.join(\"report.json\")).unwrap();"
+      },
+      {
+        "line": 474,
+        "text": "    assert!(p8_scale::run_supervised(&plan, &out, binary()).is_err());"
+      },
+      {
+        "line": 475,
+        "text": "    assert_eq!(std::fs::read(out.join(\"report.json\")).unwrap(), before);"
+      },
+      {
+        "line": 476,
+        "text": "}"
+      }
+    ],
+    "source_path": "crates/cc-eval/tests/p8_scale.rs",
+    "source_sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+  },
+  "fresh_observation": {
+    "actual_native_exit_code": 3,
+    "cleanup": {
+      "captured_at": "2026-10-09T04:56:12.775352+00:00",
+      "no_diagnostic_cleanup_signal_sent": true,
+      "no_remaining_owned_sleep_at_snapshot": true,
+      "owned_group_or_helper_rows": [],
+      "process_group_exists": false,
+      "ps_exit_code": 0,
+      "worker_pid": 88308
+    },
+    "deadline_boundary": {
+      "elapsed_ns": 255934209,
+      "probe_return_ns": 255943542,
+      "stage": "deadline_boundary_try_wait",
+      "summary_exists": false,
+      "worker_exit_code": null,
+      "worker_exited": false
+    },
+    "every_poll_no_worker_exit_and_no_summary": true,
+    "job": "wc_job_gFGbqvxWDfeq-Emn",
+    "ordinary_polls": 21,
+    "receipt": {
+      "bytes": 7901,
+      "path": "review-ci/premerge-workspace/fresh-path-phase-observer/execution-receipt.json",
+      "sha256": "c352eae31348546648cb3b3608912ae334c32ec0def9348d3bc2a1a058cbba15"
+    },
+    "spawn_return_ns": 254209,
+    "stderr_bytes": 0,
+    "stderr_complete": true,
+    "total_elapsed_ns": 256264917,
+    "worker_pid": 88308
+  },
+  "merged_main_followup": {
+    "commit_reported_by_parent": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "pr": 167,
+    "scope": "All actual execution remains bound to immutable a23 product/source; no merge undone."
+  },
+  "minimal_reviewable_repair_design": {
+    "design": [
+      "Make helper readiness an explicit test fixture precondition before the existing timed assertion. Execute this exact helper once in a dedicated setup output directory, same child environment/stdin/stdout/stderr and fresh process group, with a separately documented bounded setup limit and no automatic retry.",
+      "Require actual normal exit0 plus a successful exact helper summary during setup. Always kill/wait only that fresh group to remove its sleep descendant and close stderr; retain stderr/report on setup failure. A setup timeout remains a visible failure and must not be ignored or counted as readiness.",
+      "After successful setup, run the existing original measured call with deadline_ms250 and the unchanged elapsed<2s, exit_code0, stderr_complete and release_certification assertions. Record/setup-scope the warmup so it cannot be misrepresented as fresh-launch coverage.",
+      "Keep the separate existing 1ms subprocess_deadline_preserves_report_and_rejects_output_reuse negative intact. It directly requires deadline_exceeded and retained report/output-reuse protection; readiness of the specific descendant fixture must not remove that budget-enforcement coverage."
+    ],
+    "required_validation_after_new_identity": [
+      "Review and preserve original 250ms/2s and 1ms negative assertions.",
+      "Run the revised descendant scenario once with isolated logs on this Mac plus the original p8_scale suite; preserve fixture setup evidence and no-descendant cleanup.",
+      "Complete the exact engineering cargo test --workspace and its doctests on the new reviewed identity; an isolated pass cannot close this gate.",
+      "Retain original Linux same-tree1.99 passes and original Mac1.95 failures separately; do not attach old a23 primary measurements to changed validation source identities."
+    ],
+    "scope": "Test fixture setup in a new reviewed source identity; keep production run_supervised and formal study workload/limits unchanged.",
+    "status": "proposal_only_not_implemented_or_verified",
+    "tradeoff": "The descendant test would explicitly exercise a ready executable path. Cold first-launch under250ms would no longer be an implicit requirement of that one scenario; if cold-launch behavior itself is a supported product contract, add a separately specified scenario rather than silently changing this expectation.",
+    "why_minimal": "This changes only the fixture precondition for a test whose own comment states it isolates supervision. It does not treat original failures as passes, change the production timer, relax 250ms/2s, or claim unmeasured first-launch success."
+  },
+  "no_further_execution_requested": true,
+  "observed_localization": [
+    "Fresh-path Command.spawn returned in 254209ns, well before 250ms; the spawn call itself did not consume the deadline in this observation.",
+    "Between spawn return and the original >=250ms boundary, no polled wait observed child exit and no summary existed. The extra boundary try_wait was still None at 255943542ns; it was not a case of the child already being observed completed merely hidden by original deadline-check ordering.",
+    "The unchanged cleanup pattern stopped the fresh process group at 256085917ns; total tracked work was 256264917ns, below the original 2s assertion. No owned process group or helper remained at the after-call snapshot.",
+    "The reused helper path with identical bytes completed its summary and normal exit by the 15381208ns observation. A path/launch-state-dependent difference is observed sequentially; attribution to any specific macOS security software, interpreter subsystem, or scheduler is not established.",
+    "Empty retained worker stderr supplies no concrete SDK, permission, shell syntax, or OS error. These diagnostics do not establish the exact point reached inside the shell."
+  ],
+  "original_semantics": {
+    "negative_test_unmet_precondition": "The stderr-holder negative assumes its worker shell exits normally after spawning an inherited-stderr descendant; for fresh paths here, no normal exit or summary is observed before 250ms, so it does not reach the intended normal-parent-exit/held-descendant condition.",
+    "prior_results_unchanged": [
+      "SDK27 original native linker failure",
+      "SDK15.4 full cargo test --workspace exit101",
+      "Exact original negative once exit101",
+      "Retained original cc_eval run_supervised observer once exit101",
+      "Reused-path direct diagnostic exit0 is not an original test pass"
+    ],
+    "supervisor_deadline_behavior": "The observed supervisor-style deadline/cleanup rejects a worker that has not exited within its original whole-child budget. No evidence here supports relaxing the product deadline or moving its start after spawn."
+  },
+  "recorded_at": "2026-10-09T04:57:51.000810+00:00",
+  "reused_path_observation": {
+    "actual_native_exit_code": 0,
+    "first_exit0_summary_observation_ns": 15381208,
+    "job": "wc_job_abjillXJG2tQ-0c4",
+    "receipt": {
+      "bytes": 5573,
+      "path": "review-ci/premerge-workspace/spawn-phase-observer/execution-receipt.json",
+      "sha256": "61ba34d04a6b3b36400e947a7453f7a9ac97c8f938b1ee37d7566db89a974553"
+    },
+    "spawn_return_ns": 310083,
+    "total_elapsed_ns": 30600250
+  },
+  "schema_version": 1,
+  "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "status": "fresh_vs_reused_path_difference_observed_underlying_platform_mechanism_unresolved",
+  "task_ledger": {
+    "changes": 0,
+    "done": 163,
+    "remaining": 29
+  }
+}

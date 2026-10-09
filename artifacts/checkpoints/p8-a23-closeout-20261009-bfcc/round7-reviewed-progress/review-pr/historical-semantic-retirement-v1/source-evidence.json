@@ -1,0 +1,2776 @@
+{
+  "schema_version": 1,
+  "evidence": [
+    {
+      "id": "main-plan-scope",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/plan.rs",
+      "git_blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+      "whole_file_bytes": 33423,
+      "whole_file_sha256": "98e9380818a6d4a9fbaec0077ed635335d852fc027a783ce32b20a394e88c9cc",
+      "lines": [
+        {
+          "line": 128,
+          "text": "        ranking.validate_retrieval()?;"
+        },
+        {
+          "line": 129,
+          "text": "        let dsl = crate::dsl::parse_search_dsl(&request.query);"
+        },
+        {
+          "line": 130,
+          "text": "        let mut request = request.clone();"
+        },
+        {
+          "line": 131,
+          "text": ""
+        },
+        {
+          "line": 132,
+          "text": "        let filters = crate::scope::normalize_request(&mut request, &dsl)?;"
+        },
+        {
+          "line": 133,
+          "text": "        let mut soft_hints = SoftHints::from(&request);"
+        },
+        {
+          "line": 134,
+          "text": ""
+        },
+        {
+          "line": 135,
+          "text": "        let query_text = augmented_query_text(&request);"
+        },
+        {
+          "line": 136,
+          "text": "        let lexical_query = compile_expanded_fts_query(&query_text);"
+        },
+        {
+          "line": 137,
+          "text": "        let top_k = if request.top_k == 0 {"
+        },
+        {
+          "line": 138,
+          "text": "            10"
+        },
+        {
+          "line": 139,
+          "text": "        } else {"
+        },
+        {
+          "line": 140,
+          "text": "            request.top_k"
+        },
+        {
+          "line": 141,
+          "text": "        };"
+        },
+        {
+          "line": 142,
+          "text": ""
+        },
+        {
+          "line": 143,
+          "text": "        let preselect_limit = request"
+        },
+        {
+          "line": 144,
+          "text": "            .file_preselect_limit"
+        },
+        {
+          "line": 145,
+          "text": "            .unwrap_or_else(|| default_preselect_limit(top_k, repo_tier));"
+        },
+        {
+          "line": 146,
+          "text": "        let preselect = crate::preselect::preselect("
+        },
+        {
+          "line": 147,
+          "text": "            db,"
+        },
+        {
+          "line": 148,
+          "text": "            &PreselectRequest {"
+        },
+        {
+          "line": 149,
+          "text": "                query: &query_text,"
+        },
+        {
+          "line": 150,
+          "text": "                path_prefix: request.path_prefix.as_deref(),"
+        },
+        {
+          "line": 151,
+          "text": "                boost_paths: request.boost_file_paths.as_deref(),"
+        },
+        {
+          "line": 152,
+          "text": "                recent_paths: request.recent_file_paths.as_deref(),"
+        },
+        {
+          "line": 153,
+          "text": "                pinned_paths: request.pinned_file_paths.as_deref(),"
+        },
+        {
+          "line": 154,
+          "text": "                overlay_paths: request.overlay_file_paths.as_deref(),"
+        },
+        {
+          "line": 155,
+          "text": "                explicit_file_paths: request.file_paths.as_deref(),"
+        },
+        {
+          "line": 156,
+          "text": "                limit: preselect_limit,"
+        },
+        {
+          "line": 157,
+          "text": "                ranking,"
+        },
+        {
+          "line": 158,
+          "text": "            },"
+        },
+        {
+          "line": 159,
+          "text": "        )?;"
+        },
+        {
+          "line": 160,
+          "text": "        control.check()?;"
+        },
+        {
+          "line": 161,
+          "text": "        // Preselection is a ranking hint, never a caller-owned hard constraint."
+        },
+        {
+          "line": 162,
+          "text": "        soft_hints.preselected_files = preselect.files.clone();"
+        },
+        {
+          "line": 163,
+          "text": "        let rerank_inputs = RerankInputs::from_hints(&soft_hints);"
+        },
+        {
+          "line": 164,
+          "text": "        let query_tokens = tokenize_codeish(&query_text);"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/plan.rs#L128"
+    },
+    {
+      "id": "main-scope-tests",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/engine_lane_tests.rs",
+      "git_blob": "2da259536f72ae5ec4e9f9fffa3bf2ebdf8ff0b7",
+      "whole_file_bytes": 51763,
+      "whole_file_sha256": "f6313e0a098f04be0692c9791927f0190d5cf6c3f3ae11a089372e584eb0e0a8",
+      "lines": [
+        {
+          "line": 73,
+          "text": ""
+        },
+        {
+          "line": 74,
+          "text": "#[test]"
+        },
+        {
+          "line": 75,
+          "text": "fn exact_symbol_lane_ignores_soft_preselect_and_exposes_lane_contract() {"
+        },
+        {
+          "line": 76,
+          "text": "    let (engine, _tmp) = engine_with("
+        },
+        {
+          "line": 77,
+          "text": "        SearchConfig {"
+        },
+        {
+          "line": 78,
+          "text": "            lexical_weight: 0.0,"
+        },
+        {
+          "line": 79,
+          "text": "            exact_symbol_weight: 1.0,"
+        },
+        {
+          "line": 80,
+          "text": "            path_weight: 0.0,"
+        },
+        {
+          "line": 81,
+          "text": "            grep_weight: 0.0,"
+        },
+        {
+          "line": 82,
+          "text": "            graph_weight: 0.0,"
+        },
+        {
+          "line": 83,
+          "text": "            ..Default::default()"
+        },
+        {
+          "line": 84,
+          "text": "        },"
+        },
+        {
+          "line": 85,
+          "text": "        Default::default(),"
+        },
+        {
+          "line": 86,
+          "text": "    );"
+        },
+        {
+          "line": 87,
+          "text": "    insert_graph_file("
+        },
+        {
+          "line": 88,
+          "text": "        &engine,"
+        },
+        {
+          "line": 89,
+          "text": "        \"src/target.rs\","
+        },
+        {
+          "line": 90,
+          "text": "        \"fn sought_symbol() {}\","
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/engine_lane_tests.rs#L73"
+    },
+    {
+      "id": "main-bm25-test",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/preselect.rs",
+      "git_blob": "383e8774d35d51d6406a669f5361eb34f6607c20",
+      "whole_file_bytes": 56042,
+      "whole_file_sha256": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639",
+      "lines": [
+        {
+          "line": 1083,
+          "text": "    /// blank query short-circuits."
+        },
+        {
+          "line": 1084,
+          "text": "    #[test]"
+        },
+        {
+          "line": 1085,
+          "text": "    fn bm25_bonus_is_bounded_and_monotonic() {"
+        },
+        {
+          "line": 1086,
+          "text": "        let scores = [-f64::MAX, -1000.0, -10.0, -2.0, -1.0, -1e-9, 0.0];"
+        },
+        {
+          "line": 1087,
+          "text": "        for pair in scores.windows(2) {"
+        },
+        {
+          "line": 1088,
+          "text": "            let better = bm25_relevance_bonus(pair[0]);"
+        },
+        {
+          "line": 1089,
+          "text": "            let worse = bm25_relevance_bonus(pair[1]);"
+        },
+        {
+          "line": 1090,
+          "text": "            assert!(better >= worse);"
+        },
+        {
+          "line": 1091,
+          "text": "            assert!((0.0..=1.0).contains(&better));"
+        },
+        {
+          "line": 1092,
+          "text": "        }"
+        },
+        {
+          "line": 1093,
+          "text": "        assert_eq!(bm25_relevance_bonus(f64::NAN), 0.0);"
+        },
+        {
+          "line": 1094,
+          "text": "        assert_eq!(bm25_relevance_bonus(f64::INFINITY), 0.0);"
+        },
+        {
+          "line": 1095,
+          "text": "    }"
+        },
+        {
+          "line": 1096,
+          "text": ""
+        },
+        {
+          "line": 1097,
+          "text": "    #[test]"
+        },
+        {
+          "line": 1098,
+          "text": "    fn fts_summary_layer_isolated() {"
+        },
+        {
+          "line": 1099,
+          "text": "        let (_tmp, db) = db_with_symbols();"
+        },
+        {
+          "line": 1100,
+          "text": "        let fixture = CtxFixture::new(&db, \"\");"
+        },
+        {
+          "line": 1101,
+          "text": "        assert!(FtsSummaryLayer.score(&fixture.ctx()).unwrap().is_empty());"
+        },
+        {
+          "line": 1102,
+          "text": "    }"
+        },
+        {
+          "line": 1103,
+          "text": ""
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/preselect.rs#L1083"
+    },
+    {
+      "id": "main-fusion-test",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/fusion.rs",
+      "git_blob": "41c7082cc8f9389cb0e2c3af5a6c438fc6a4c9c9",
+      "whole_file_bytes": 18839,
+      "whole_file_sha256": "70f8a9037e52c78f243fdf1282535f9b634aff29b3dfdc04e1f543d5c7cf7770",
+      "lines": [
+        {
+          "line": 237,
+          "text": ""
+        },
+        {
+          "line": 238,
+          "text": "    #[test]"
+        },
+        {
+          "line": 239,
+          "text": "    fn duplicate_lanes_cannot_cast_two_votes() {"
+        },
+        {
+          "line": 240,
+          "text": "        assert!(fuse_outcomes(&[one(\"same\"), one(\"same\")], 50).is_err());"
+        },
+        {
+          "line": 241,
+          "text": "    }"
+        },
+        {
+          "line": 242,
+          "text": "    #[test]"
+        },
+        {
+          "line": 243,
+          "text": "    fn raw_score_scale_does_not_change_rrf_and_trace_replays() {"
+        },
+        {
+          "line": 244,
+          "text": "        let first = one(\"first\");"
+        },
+        {
+          "line": 245,
+          "text": "        let mut second = one(\"second\");"
+        },
+        {
+          "line": 246,
+          "text": "        second.public.as_mut().unwrap().candidates[0].raw_score = -1e200;"
+        },
+        {
+          "line": 247,
+          "text": "        let result = fuse_outcomes(&[first, second], 50).unwrap();"
+        },
+        {
+          "line": 248,
+          "text": "        assert_eq!(result[\"source\"].total, 2.0 / 51.0);"
+        },
+        {
+          "line": 249,
+          "text": "        replay_fused(&result[\"source\"]).unwrap();"
+        },
+        {
+          "line": 250,
+          "text": "    }"
+        },
+        {
+          "line": 251,
+          "text": "    #[test]"
+        },
+        {
+          "line": 252,
+          "text": "    fn conflicting_document_spans_and_versions_are_rejected() {"
+        },
+        {
+          "line": 253,
+          "text": "        let mut span = one(\"second\");"
+        },
+        {
+          "line": 254,
+          "text": "        span.public.as_mut().unwrap().candidates[0].source_span.end += 1;"
+        },
+        {
+          "line": 255,
+          "text": "        assert!(fuse_outcomes(&[one(\"first\"), span], 50).is_err());"
+        },
+        {
+          "line": 256,
+          "text": "        let mut version = one(\"second\");"
+        },
+        {
+          "line": 257,
+          "text": "        let c = &mut version.public.as_mut().unwrap().candidates[0];"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/fusion.rs#L237"
+    },
+    {
+      "id": "main-analysis-inputs",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-index/src/indexer_phases/analysis.rs",
+      "git_blob": "683bede57d3adf768f8f15ab91668e6036e4f6fb",
+      "whole_file_bytes": 34265,
+      "whole_file_sha256": "239b49e3170bdc9a360fcdaaf406bb80e64d442f1df1c50e31b1fb648d0f363d",
+      "lines": [
+        {
+          "line": 46,
+          "text": "}"
+        },
+        {
+          "line": 47,
+          "text": ""
+        },
+        {
+          "line": 48,
+          "text": "/// Borrowed inputs to the post-write analysis stage. Keeping the scan basis"
+        },
+        {
+          "line": 49,
+          "text": "/// together avoids positional arguments drifting between bundled/staged builds."
+        },
+        {
+          "line": 50,
+          "text": "pub(crate) struct AnalysisInputs<'a> {"
+        },
+        {
+          "line": 51,
+          "text": "    pub full: bool,"
+        },
+        {
+          "line": 52,
+          "text": "    pub write_units: &'a [FileWriteUnit],"
+        },
+        {
+          "line": 53,
+          "text": "    pub route_nodes: &'a [RouteNodeRecord],"
+        },
+        {
+          "line": 54,
+          "text": "    pub walk_manifest: Option<&'a crate::scanner::WalkManifest>,"
+        },
+        {
+          "line": 55,
+          "text": "    pub scope_hints: Option<&'a crate::indexer::ScopeSignatureHints>,"
+        },
+        {
+          "line": 56,
+          "text": "}"
+        },
+        {
+          "line": 57,
+          "text": ""
+        },
+        {
+          "line": 58,
+          "text": "/// Phase 8-11 deltas: git co-change, infrastructure, ADR documents."
+        },
+        {
+          "line": 59,
+          "text": "pub(crate) struct AnalysisPlan {"
+        },
+        {
+          "line": 60,
+          "text": "    cochange: Option<CoChangeStage>,"
+        },
+        {
+          "line": 61,
+          "text": "    infra: Option<InfraStage>,"
+        },
+        {
+          "line": 62,
+          "text": "    /// ADR rescan behind a file-set signature gate; `None` when unchanged."
+        },
+        {
+          "line": 63,
+          "text": "    adr: Option<AdrStage>,"
+        },
+        {
+          "line": 64,
+          "text": "}"
+        },
+        {
+          "line": 65,
+          "text": ""
+        },
+        {
+          "line": 66,
+          "text": "impl Indexer {"
+        },
+        {
+          "line": 67,
+          "text": "    /// Phase 8-11 (compute half): git co-change, infrastructure, and ADR"
+        },
+        {
+          "line": 68,
+          "text": "    /// indexing. Reads git, the filesystem, and the read pool only — no index"
+        },
+        {
+          "line": 69,
+          "text": "    /// writes, so callers may run it without holding any index lock."
+        },
+        {
+          "line": 70,
+          "text": "    pub(crate) fn phase_analysis_compute("
+        },
+        {
+          "line": 71,
+          "text": "        &self,"
+        },
+        {
+          "line": 72,
+          "text": "        project_path: &Path,"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-index/src/indexer_phases/analysis.rs#L46"
+    },
+    {
+      "id": "main-dirty-policy",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-index/src/dirty_reload_policy.rs",
+      "git_blob": "a81e7be263b0a980e8d520ef310021ab74b587cd",
+      "whole_file_bytes": 18320,
+      "whole_file_sha256": "08e4045d3bcb8406832fa7553de73c3b49f3bb30d2ae36976fda394323a1f2ca",
+      "lines": [
+        {
+          "line": 144,
+          "text": "    let local_parser_target = |file: &str,"
+        },
+        {
+          "line": 145,
+          "text": "                               target_file: Option<&str>,"
+        },
+        {
+          "line": 146,
+          "text": "                               id: Option<&str>,"
+        },
+        {
+          "line": 147,
+          "text": "                               uid: Option<&str>,"
+        },
+        {
+          "line": 148,
+          "text": "                               strategy: &str| {"
+        },
+        {
+          "line": 149,
+          "text": "        strategy == \"parser_exact\""
+        },
+        {
+          "line": 150,
+          "text": "            && target_file == Some(file)"
+        },
+        {
+          "line": 151,
+          "text": "            && id"
+        },
+        {
+          "line": 152,
+          "text": "                .zip(uid)"
+        },
+        {
+          "line": 153,
+          "text": "                .is_some_and(|(id, uid)| local_identities.contains(&(file, id, uid)))"
+        },
+        {
+          "line": 154,
+          "text": "    };"
+        },
+        {
+          "line": 155,
+          "text": ""
+        },
+        {
+          "line": 156,
+          "text": "    // Clearing must cover the whole resolved-target state INCLUDING"
+        },
+        {
+          "line": 157,
+          "text": "    // `target_symbol_id`: phase 4c's re-resolution skip gate is"
+        },
+        {
+          "line": 158,
+          "text": "    // `target_symbol_id.is_some()` (see `resolve_outcome_with_context`), so"
+        },
+        {
+          "line": 159,
+          "text": "    // an edge that keeps its stored id is never re-resolved and would be"
+        },
+        {
+          "line": 160,
+          "text": "    // written back with the uid cleared to NULL — a silently dangling edge."
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-index/src/dirty_reload_policy.rs#L144"
+    },
+    {
+      "id": "pr3-symbol-projection",
+      "ref": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "path": "crates/cc-search/src/symbol_chunks.rs",
+      "git_blob": "43d1432d50a2f9b5014649bfc44f167217664c4e",
+      "whole_file_bytes": 1809,
+      "whole_file_sha256": "8b8ffda96f766437bff62bf6c88968e247fc2cb0437133a0e1b3a4619a9cc0a3",
+      "lines": [
+        {
+          "line": 1,
+          "text": "//! Symbol-to-source projection independent of graph retrieval and SQL."
+        },
+        {
+          "line": 2,
+          "text": "//!"
+        },
+        {
+          "line": 3,
+          "text": "//! A short symbol selects its smallest containing chunk. A split symbol has"
+        },
+        {
+          "line": 4,
+          "text": "//! no containing chunk: return intersecting pieces in source order instead"
+        },
+        {
+          "line": 5,
+          "text": "//! of silently losing a symbol already found in the graph."
+        },
+        {
+          "line": 6,
+          "text": ""
+        },
+        {
+          "line": 7,
+          "text": "pub(crate) fn project_symbol_chunks("
+        },
+        {
+          "line": 8,
+          "text": "    spans: &[(String, u32, u32)],"
+        },
+        {
+          "line": 9,
+          "text": "    start: u32,"
+        },
+        {
+          "line": 10,
+          "text": "    end: u32,"
+        },
+        {
+          "line": 11,
+          "text": ") -> Vec<&str> {"
+        },
+        {
+          "line": 12,
+          "text": "    if start > end {"
+        },
+        {
+          "line": 13,
+          "text": "        return Vec::new();"
+        },
+        {
+          "line": 14,
+          "text": "    }"
+        },
+        {
+          "line": 15,
+          "text": "    if let Some((id, _, _)) = spans"
+        },
+        {
+          "line": 16,
+          "text": "        .iter()"
+        },
+        {
+          "line": 17,
+          "text": "        .filter(|(_, cs, ce)| *cs <= start && *ce >= end)"
+        },
+        {
+          "line": 18,
+          "text": "        .min_by(|a, b| (a.2 - a.1).cmp(&(b.2 - b.1)).then_with(|| a.0.cmp(&b.0)))"
+        },
+        {
+          "line": 19,
+          "text": "    {"
+        },
+        {
+          "line": 20,
+          "text": "        return vec![id.as_str()];"
+        },
+        {
+          "line": 21,
+          "text": "    }"
+        },
+        {
+          "line": 22,
+          "text": "    let mut pieces: Vec<_> = spans"
+        },
+        {
+          "line": 23,
+          "text": "        .iter()"
+        },
+        {
+          "line": 24,
+          "text": "        .filter(|(_, cs, ce)| *cs <= *ce && *cs <= end && *ce >= start)"
+        },
+        {
+          "line": 25,
+          "text": "        .collect();"
+        },
+        {
+          "line": 26,
+          "text": "    pieces.sort_by(|a, b| {"
+        },
+        {
+          "line": 27,
+          "text": "        a.1.cmp(&b.1)"
+        },
+        {
+          "line": 28,
+          "text": "            .then_with(|| a.2.cmp(&b.2))"
+        },
+        {
+          "line": 29,
+          "text": "            .then_with(|| a.0.cmp(&b.0))"
+        },
+        {
+          "line": 30,
+          "text": "    });"
+        },
+        {
+          "line": 31,
+          "text": "    pieces.into_iter().map(|(id, _, _)| id.as_str()).collect()"
+        },
+        {
+          "line": 32,
+          "text": "}"
+        },
+        {
+          "line": 33,
+          "text": ""
+        },
+        {
+          "line": 34,
+          "text": "#[cfg(test)]"
+        },
+        {
+          "line": 35,
+          "text": "mod tests {"
+        },
+        {
+          "line": 36,
+          "text": "    use super::*;"
+        },
+        {
+          "line": 37,
+          "text": "    #[test]"
+        },
+        {
+          "line": 38,
+          "text": "    fn long_symbol_survives_chunk_boundaries() {"
+        },
+        {
+          "line": 39,
+          "text": "        let spans = vec![(\"second\".into(), 81, 160), (\"first\".into(), 1, 80)];"
+        },
+        {
+          "line": 40,
+          "text": "        assert_eq!(project_symbol_chunks(&spans, 1, 160), [\"first\", \"second\"]);"
+        },
+        {
+          "line": 41,
+          "text": "        assert_eq!(project_symbol_chunks(&spans, 79, 82), [\"first\", \"second\"]);"
+        },
+        {
+          "line": 42,
+          "text": "    }"
+        },
+        {
+          "line": 43,
+          "text": "    #[test]"
+        },
+        {
+          "line": 44,
+          "text": "    fn smallest_container_and_stable_ties() {"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/9619641903f0b9f397007ebbe85893ce8f6b5f97/crates/cc-search/src/symbol_chunks.rs#L1"
+    },
+    {
+      "id": "pr3-evidence-sufficiency",
+      "ref": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "path": "crates/cc-eval/src/quality.rs",
+      "git_blob": "5f0c1aa096e33419dcf035bc751314da40a35041",
+      "whole_file_bytes": 20726,
+      "whole_file_sha256": "29e56721fbcc81b93e17315907425bb086d43a47f7b6fee791b18ccabfc7118d",
+      "lines": [
+        {
+          "line": 269,
+          "text": "        .sum();"
+        },
+        {
+          "line": 270,
+          "text": "    m.ndcg_at_5 = if ideal > 0.0 { dcg / ideal } else { 0.0 };"
+        },
+        {
+          "line": 271,
+          "text": "    m.recall_at_5 = top5.len() as f64 / task.labels.len() as f64;"
+        },
+        {
+          "line": 272,
+          "text": "    m.evidence_sufficient = !task.required_groups.is_empty()"
+        },
+        {
+          "line": 273,
+          "text": "        && task"
+        },
+        {
+          "line": 274,
+          "text": "            .required_groups"
+        },
+        {
+          "line": 275,
+          "text": "            .iter()"
+        },
+        {
+          "line": 276,
+          "text": "            .all(|group| group.iter().any(|id| seen.contains(id)));"
+        },
+        {
+          "line": 277,
+          "text": "    m"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/9619641903f0b9f397007ebbe85893ce8f6b5f97/crates/cc-eval/src/quality.rs#L269"
+    },
+    {
+      "id": "main-graph-anchor-contract",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/lanes.rs",
+      "git_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+      "whole_file_bytes": 31442,
+      "whole_file_sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+      "lines": [
+        {
+          "line": 703,
+          "text": "    /// Core graph retrieval: seed symbols + 1-hop call-edge expansion,"
+        },
+        {
+          "line": 704,
+          "text": "    /// mapped to byte-verified declaration documents. A split symbol does"
+        },
+        {
+          "line": 705,
+          "text": "    /// not require a nonexistent whole-function chunk; an anchor does not"
+        },
+        {
+          "line": 706,
+          "text": "    /// claim that the whole function body was returned."
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/lanes.rs#L703"
+    },
+    {
+      "id": "main-graph-anchor-implementation",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/lanes.rs",
+      "git_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+      "whole_file_bytes": 31442,
+      "whole_file_sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+      "lines": [
+        {
+          "line": 768,
+          "text": "        let mut anchor_uids: Vec<&str> = candidates.iter().map(|(uid, _)| *uid).collect();"
+        },
+        {
+          "line": 769,
+          "text": "        anchor_uids.sort_unstable();"
+        },
+        {
+          "line": 770,
+          "text": "        anchor_uids.dedup();"
+        },
+        {
+          "line": 771,
+          "text": "        let anchors = db.retrieval().symbol_uid_anchor_chunks("
+        },
+        {
+          "line": 772,
+          "text": "            &anchor_uids,"
+        },
+        {
+          "line": 773,
+          "text": "            &plan.chunk_scope(),"
+        },
+        {
+          "line": 774,
+          "text": "            plan.control(),"
+        },
+        {
+          "line": 775,
+          "text": "        )?;"
+        },
+        {
+          "line": 776,
+          "text": "        for (uid, score) in candidates {"
+        },
+        {
+          "line": 777,
+          "text": "            plan.control().check()?;"
+        },
+        {
+          "line": 778,
+          "text": "            // Smallest-container order plus actual start_line/start_col byte"
+        },
+        {
+          "line": 779,
+          "text": "            // containment, without same-line sibling/name substitution."
+        },
+        {
+          "line": 780,
+          "text": "            let cid = anchors.get(uid).cloned();"
+        },
+        {
+          "line": 781,
+          "text": "            if let Some(cid) = cid {"
+        },
+        {
+          "line": 782,
+          "text": "                best_per_chunk"
+        },
+        {
+          "line": 783,
+          "text": "                    .entry(cid)"
+        },
+        {
+          "line": 784,
+          "text": "                    .and_modify(|s| *s = s.max(score))"
+        },
+        {
+          "line": 785,
+          "text": "                    .or_insert(score);"
+        },
+        {
+          "line": 786,
+          "text": "            } else {"
+        },
+        {
+          "line": 787,
+          "text": "                unmapped_source = true;"
+        },
+        {
+          "line": 788,
+          "text": "            }"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/lanes.rs#L768"
+    },
+    {
+      "id": "main-native-metrics",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-eval/src/benchmark/metrics.rs",
+      "git_blob": "fa0104a8ed385b7db87b3237ea27231c5745f32e",
+      "whole_file_bytes": 5469,
+      "whole_file_sha256": "b44093ea835e42643ce141e7a3c8c5d7a64c39f11bb299fb4b952259ffbc8516",
+      "lines": [
+        {
+          "line": 106,
+          "text": "pub fn native(hits: &[Hit], q: &Query) -> Scores {"
+        },
+        {
+          "line": 107,
+          "text": "    if q.no_answer {"
+        },
+        {
+          "line": 108,
+          "text": "        return Scores {"
+        },
+        {
+          "line": 109,
+          "text": "            no_answer_correct: Some(hits.is_empty()),"
+        },
+        {
+          "line": 110,
+          "text": "            ..Scores::default()"
+        },
+        {
+          "line": 111,
+          "text": "        };"
+        },
+        {
+          "line": 112,
+          "text": "    }"
+        },
+        {
+          "line": 113,
+          "text": "    let primary = |h: &Hit| {"
+        },
+        {
+          "line": 114,
+          "text": "        q.answers"
+        },
+        {
+          "line": 115,
+          "text": "            .iter()"
+        },
+        {
+          "line": 116,
+          "text": "            .any(|g| g.primary && g.alternatives.iter().any(|a| matches_answer(h, a)))"
+        },
+        {
+          "line": 117,
+          "text": "    };"
+        },
+        {
+          "line": 118,
+          "text": "    let top1 = hits.first().is_some_and(primary) as u8 as f64;"
+        },
+        {
+          "line": 119,
+          "text": "    let mut used = BTreeSet::new();"
+        },
+        {
+          "line": 120,
+          "text": "    let mut gains = Vec::new();"
+        },
+        {
+          "line": 121,
+          "text": "    let mut at5 = 0;"
+        },
+        {
+          "line": 122,
+          "text": "    let mut at10 = 0;"
+        },
+        {
+          "line": 123,
+          "text": "    let mut mrr = 0.0;"
+        },
+        {
+          "line": 124,
+          "text": "    for (i, h) in hits.iter().take(10).enumerate() {"
+        },
+        {
+          "line": 125,
+          "text": "        if mrr == 0.0 && primary(h) {"
+        },
+        {
+          "line": 126,
+          "text": "            mrr = 1.0 / (i + 1) as f64;"
+        },
+        {
+          "line": 127,
+          "text": "        }"
+        },
+        {
+          "line": 128,
+          "text": "        let best = q"
+        },
+        {
+          "line": 129,
+          "text": "            .answers"
+        },
+        {
+          "line": 130,
+          "text": "            .iter()"
+        },
+        {
+          "line": 131,
+          "text": "            .enumerate()"
+        },
+        {
+          "line": 132,
+          "text": "            .filter(|(j, g)| {"
+        },
+        {
+          "line": 133,
+          "text": "                !used.contains(j) && g.alternatives.iter().any(|a| matches_answer(h, a))"
+        },
+        {
+          "line": 134,
+          "text": "            })"
+        },
+        {
+          "line": 135,
+          "text": "            .max_by_key(|(j, g)| (g.grade, std::cmp::Reverse(*j)));"
+        },
+        {
+          "line": 136,
+          "text": "        if let Some((j, g)) = best {"
+        },
+        {
+          "line": 137,
+          "text": "            used.insert(j);"
+        },
+        {
+          "line": 138,
+          "text": "            gains.push(g.grade);"
+        },
+        {
+          "line": 139,
+          "text": "            at10 += 1;"
+        },
+        {
+          "line": 140,
+          "text": "            if i < 5 {"
+        },
+        {
+          "line": 141,
+          "text": "                at5 += 1;"
+        },
+        {
+          "line": 142,
+          "text": "            }"
+        },
+        {
+          "line": 143,
+          "text": "        } else {"
+        },
+        {
+          "line": 144,
+          "text": "            gains.push(0);"
+        },
+        {
+          "line": 145,
+          "text": "        }"
+        },
+        {
+          "line": 146,
+          "text": "    }"
+        },
+        {
+          "line": 147,
+          "text": "    let (span_precision, span_recall) = super::span_metrics::coverage(hits, q);"
+        },
+        {
+          "line": 148,
+          "text": "    Scores {"
+        },
+        {
+          "line": 149,
+          "text": "        top1,"
+        },
+        {
+          "line": 150,
+          "text": "        ndcg10: ndcg("
+        },
+        {
+          "line": 151,
+          "text": "            &gains,"
+        },
+        {
+          "line": 152,
+          "text": "            &q.answers.iter().map(|g| g.grade).collect::<Vec<_>>(),"
+        },
+        {
+          "line": 153,
+          "text": "        ),"
+        },
+        {
+          "line": 154,
+          "text": "        recall5: Some(at5 as f64 / q.answers.len() as f64),"
+        },
+        {
+          "line": 155,
+          "text": "        recall10: Some(at10 as f64 / q.answers.len() as f64),"
+        },
+        {
+          "line": 156,
+          "text": "        mrr10: Some(mrr),"
+        },
+        {
+          "line": 157,
+          "text": "        span_precision,"
+        },
+        {
+          "line": 158,
+          "text": "        span_recall,"
+        },
+        {
+          "line": 159,
+          "text": "        no_answer_correct: None,"
+        },
+        {
+          "line": 160,
+          "text": "    }"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-eval/src/benchmark/metrics.rs#L106"
+    },
+    {
+      "id": "main-chunk-facet-schema",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-eval/src/benchmark/ablation.rs",
+      "git_blob": "c1d6add3fb450fa3ba63cc9e037e48214b4d3bcc",
+      "whole_file_bytes": 47313,
+      "whole_file_sha256": "cc57dff94bb4f826f01aff6b29fa2287e367f7d47b5696c8a495dc6320587fab",
+      "lines": [
+        {
+          "line": 511,
+          "text": "#[derive(Debug, Clone, Serialize, Deserialize)]"
+        },
+        {
+          "line": 512,
+          "text": "#[serde(deny_unknown_fields)]"
+        },
+        {
+          "line": 513,
+          "text": "pub struct ChunkQualityQuery {"
+        },
+        {
+          "line": 514,
+          "text": "    pub id: String,"
+        },
+        {
+          "line": 515,
+          "text": "    pub query: String,"
+        },
+        {
+          "line": 516,
+          "text": "    pub expected_path: String,"
+        },
+        {
+          "line": 517,
+          "text": "    pub expected_symbol: Option<String>,"
+        },
+        {
+          "line": 518,
+          "text": "    pub required_facets: Vec<ChunkFacet>,"
+        },
+        {
+          "line": 519,
+          "text": "    pub min_facet_coverage: f64,"
+        },
+        {
+          "line": 520,
+          "text": "}"
+        },
+        {
+          "line": 521,
+          "text": ""
+        },
+        {
+          "line": 522,
+          "text": "#[derive(Debug, Clone, Serialize, Deserialize)]"
+        },
+        {
+          "line": 523,
+          "text": "#[serde(deny_unknown_fields)]"
+        },
+        {
+          "line": 524,
+          "text": "pub struct ChunkFacet {"
+        },
+        {
+          "line": 525,
+          "text": "    pub path: String,"
+        },
+        {
+          "line": 526,
+          "text": "    pub marker: String,"
+        },
+        {
+          "line": 527,
+          "text": "}"
+        },
+        {
+          "line": 528,
+          "text": ""
+        },
+        {
+          "line": 529,
+          "text": "#[derive(Debug, Clone, Serialize)]"
+        },
+        {
+          "line": 530,
+          "text": "struct ChunkCaseResult {"
+        },
+        {
+          "line": 531,
+          "text": "    id: String,"
+        },
+        {
+          "line": 532,
+          "text": "    top1_path: bool,"
+        },
+        {
+          "line": 533,
+          "text": "    reciprocal_rank: f64,"
+        },
+        {
+          "line": 534,
+          "text": "    symbol_top1: Option<bool>,"
+        },
+        {
+          "line": 535,
+          "text": "    facet_coverage: f64,"
+        },
+        {
+          "line": 536,
+          "text": "    evidence_valid: bool,"
+        },
+        {
+          "line": 537,
+          "text": "    duplication_rate: f64,"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-eval/src/benchmark/ablation.rs#L511"
+    },
+    {
+      "id": "main-chunk-facet-scoring",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-eval/src/benchmark/ablation.rs",
+      "git_blob": "c1d6add3fb450fa3ba63cc9e037e48214b4d3bcc",
+      "whole_file_bytes": 47313,
+      "whole_file_sha256": "cc57dff94bb4f826f01aff6b29fa2287e367f7d47b5696c8a495dc6320587fab",
+      "lines": [
+        {
+          "line": 817,
+          "text": "        let facet_hits = query"
+        },
+        {
+          "line": 818,
+          "text": "            .required_facets"
+        },
+        {
+          "line": 819,
+          "text": "            .iter()"
+        },
+        {
+          "line": 820,
+          "text": "            .filter(|facet| {"
+        },
+        {
+          "line": 821,
+          "text": "                hits.iter().any(|hit| {"
+        },
+        {
+          "line": 822,
+          "text": "                    hit.get(\"file_path\").and_then(Value::as_str) == Some(facet.path.as_str())"
+        },
+        {
+          "line": 823,
+          "text": "                        && hit"
+        },
+        {
+          "line": 824,
+          "text": "                            .get(\"text\")"
+        },
+        {
+          "line": 825,
+          "text": "                            .and_then(Value::as_str)"
+        },
+        {
+          "line": 826,
+          "text": "                            .is_some_and(|text| text.contains(&facet.marker))"
+        },
+        {
+          "line": 827,
+          "text": "                })"
+        },
+        {
+          "line": 828,
+          "text": "            })"
+        },
+        {
+          "line": 829,
+          "text": "            .count();"
+        },
+        {
+          "line": 830,
+          "text": "        let facet_coverage = facet_hits as f64 / query.required_facets.len() as f64;"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-eval/src/benchmark/ablation.rs#L817"
+    },
+    {
+      "id": "main-jsts-truth-tests",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-parsers/tests/jsts_call_truth.rs",
+      "git_blob": "0c66e2337077f72b897c24ee831f67706ba00bf9",
+      "whole_file_bytes": 2764,
+      "whole_file_sha256": "f444158fca2c0e62f7a9976670316495ad0e63df77be6db922fdf925204ef520",
+      "lines": [
+        {
+          "line": 8,
+          "text": "}"
+        },
+        {
+          "line": 9,
+          "text": "#[test]"
+        },
+        {
+          "line": 10,
+          "text": "fn declarations_comments_and_string_bodies_cannot_create_jsts_calls() {"
+        },
+        {
+          "line": 11,
+          "text": "    for language in [Language::JavaScript, Language::TypeScript] {"
+        },
+        {
+          "line": 12,
+          "text": "        let out=parse(\"function target(x) { return x; }\\nfunction caller(x) {\\n  // target(x)\\n  const text = 'target(x)';\\n  return x;\\n}\\n\",language);"
+        },
+        {
+          "line": 13,
+          "text": "        assert!(out.call_edges.is_empty(), \"{:?}\", out.call_edges);"
+        },
+        {
+          "line": 14,
+          "text": "        assert!("
+        },
+        {
+          "line": 15,
+          "text": "            !out.symbol_refs.iter().any(|r| r.symbol_name == \"target\"),"
+        },
+        {
+          "line": 16,
+          "text": "            \"{:?}\","
+        },
+        {
+          "line": 17,
+          "text": "            out.symbol_refs"
+        },
+        {
+          "line": 18,
+          "text": "        );"
+        },
+        {
+          "line": 19,
+          "text": "    }"
+        },
+        {
+          "line": 20,
+          "text": "}"
+        },
+        {
+          "line": 21,
+          "text": "#[test]"
+        },
+        {
+          "line": 22,
+          "text": "fn real_calls_are_preserved_without_duplicate_member_leaf_calls() {"
+        },
+        {
+          "line": 23,
+          "text": "    let out = parse("
+        },
+        {
+          "line": 24,
+          "text": "        \"function run(x) {\\n return target(\\n x\\n ) + obj.target(x);\\n}\\n\","
+        },
+        {
+          "line": 25,
+          "text": "        Language::TypeScript,"
+        },
+        {
+          "line": 26,
+          "text": "    );"
+        },
+        {
+          "line": 27,
+          "text": "    let mut calls: Vec<_> = out"
+        },
+        {
+          "line": 28,
+          "text": "        .call_edges"
+        },
+        {
+          "line": 29,
+          "text": "        .iter()"
+        },
+        {
+          "line": 30,
+          "text": "        .map(|c| c.callee_symbol.as_str())"
+        },
+        {
+          "line": 31,
+          "text": "        .collect();"
+        },
+        {
+          "line": 32,
+          "text": "    calls.sort();"
+        },
+        {
+          "line": 33,
+          "text": "    assert_eq!(calls, vec![\"obj.target\", \"target\"]);"
+        },
+        {
+          "line": 34,
+          "text": "    assert_eq!("
+        },
+        {
+          "line": 35,
+          "text": "        out.call_edges"
+        },
+        {
+          "line": 36,
+          "text": "            .iter()"
+        },
+        {
+          "line": 37,
+          "text": "            .map(|c| &c.edge_id)"
+        },
+        {
+          "line": 38,
+          "text": "            .collect::<std::collections::HashSet<_>>()"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-parsers/tests/jsts_call_truth.rs#L8"
+    },
+    {
+      "id": "main-python-truth-tests",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-parsers/tests/python_call_truth.rs",
+      "git_blob": "3741fbfc1fb3efeada6845ea48e35dbf120c2766",
+      "whole_file_bytes": 2413,
+      "whole_file_sha256": "000194f546b81a199de73a90dc4466a3f9fb20961c3382dbacb7c964c33b6783",
+      "lines": [
+        {
+          "line": 1,
+          "text": "//! Independent call-site truth, not merely full-vs-incremental agreement."
+        },
+        {
+          "line": 2,
+          "text": "use cc_model::Language;"
+        },
+        {
+          "line": 3,
+          "text": "use cc_parsers::ParserRegistry;"
+        },
+        {
+          "line": 4,
+          "text": "fn parse(s: &str) -> cc_model::ParseOutcome {"
+        },
+        {
+          "line": 5,
+          "text": "    ParserRegistry::new()"
+        },
+        {
+          "line": 6,
+          "text": "        .parse(\"a.py\", s, Language::Python)"
+        },
+        {
+          "line": 7,
+          "text": "        .unwrap()"
+        },
+        {
+          "line": 8,
+          "text": "}"
+        },
+        {
+          "line": 9,
+          "text": "#[test]"
+        },
+        {
+          "line": 10,
+          "text": "fn declarations_comments_and_strings_are_not_calls_or_references() {"
+        },
+        {
+          "line": 11,
+          "text": "    let o=parse(\"def target(x):\\n    return x\\n\\ndef caller(x):\\n    # target(x)\\n    marker = \\\"target(x)\\\"\\n    return x\\n\");"
+        },
+        {
+          "line": 12,
+          "text": "    assert!(o.call_edges.is_empty(), \"{:?}\", o.call_edges);"
+        },
+        {
+          "line": 13,
+          "text": "    assert!(!o.symbol_refs.iter().any(|r| r.symbol_name == \"target\"));"
+        },
+        {
+          "line": 14,
+          "text": "}"
+        },
+        {
+          "line": 15,
+          "text": "#[test]"
+        },
+        {
+          "line": 16,
+          "text": "fn multiline_recursion_and_formatted_string_expressions_are_real_calls() {"
+        },
+        {
+          "line": 17,
+          "text": "    let o=parse(\"def target(x):\\n    return target(\\n        x-1\\n    ) if x else 0\\n\\ndef caller(x):\\n    return f'value={target(x)}'\\n\");"
+        },
+        {
+          "line": 18,
+          "text": "    assert_eq!(o.call_edges.len(), 2, \"{:?}\", o.call_edges);"
+        },
+        {
+          "line": 19,
+          "text": "    assert_eq!(o.call_edges[0].line, 2);"
+        },
+        {
+          "line": 20,
+          "text": "    assert_eq!(o.call_edges[1].line, 7);"
+        },
+        {
+          "line": 21,
+          "text": "    assert!(o.call_edges.iter().all(|e| e.callee_symbol == \"target\"));"
+        },
+        {
+          "line": 22,
+          "text": "}"
+        },
+        {
+          "line": 23,
+          "text": "#[test]"
+        },
+        {
+          "line": 24,
+          "text": "fn nested_body_is_not_duplicated_as_a_call_of_its_outer_function() {"
+        },
+        {
+          "line": 25,
+          "text": "    let o=parse(\"def target():\\n    pass\\ndef outer():\\n    def inner():\\n        target()\\n    return inner\\n\");"
+        },
+        {
+          "line": 26,
+          "text": "    assert_eq!(o.call_edges.len(), 1, \"{:?}\", o.call_edges);"
+        },
+        {
+          "line": 27,
+          "text": "    assert_eq!(o.call_edges[0].caller_symbol.as_deref(), Some(\"inner\"));"
+        },
+        {
+          "line": 28,
+          "text": "}"
+        },
+        {
+          "line": 29,
+          "text": "#[test]"
+        },
+        {
+          "line": 30,
+          "text": "fn default_expression_belongs_to_outer_scope_and_dynamic_chains_have_unique_ids() {"
+        },
+        {
+          "line": 31,
+          "text": "    let o=parse(\"def make():\\n    pass\\ndef outer():\\n    def inner(x=make()):\\n        return x\\n    return make()()\\n\");"
+        },
+        {
+          "line": 32,
+          "text": "    assert_eq!(o.call_edges.len(), 3, \"{:?}\", o.call_edges);"
+        },
+        {
+          "line": 33,
+          "text": "    assert!(o"
+        },
+        {
+          "line": 34,
+          "text": "        .call_edges"
+        },
+        {
+          "line": 35,
+          "text": "        .iter()"
+        },
+        {
+          "line": 36,
+          "text": "        .all(|c| c.caller_symbol.as_deref() == Some(\"outer\")));"
+        },
+        {
+          "line": 37,
+          "text": "    let ids: std::collections::HashSet<_> = o.call_edges.iter().map(|c| &c.edge_id).collect();"
+        },
+        {
+          "line": 38,
+          "text": "    assert_eq!(ids.len(), 3);"
+        },
+        {
+          "line": 39,
+          "text": "    assert!(o"
+        },
+        {
+          "line": 40,
+          "text": "        .call_edges"
+        },
+        {
+          "line": 41,
+          "text": "        .iter()"
+        },
+        {
+          "line": 42,
+          "text": "        .any(|c| c.resolution_strategy == cc_model::resolution::PARSER_UNSUPPORTED_BINDING));"
+        },
+        {
+          "line": 43,
+          "text": "}"
+        },
+        {
+          "line": 44,
+          "text": ""
+        },
+        {
+          "line": 45,
+          "text": "#[test]"
+        },
+        {
+          "line": 46,
+          "text": "fn parameter_shadow_and_receiver_method_are_not_parser_exact_global_functions() {"
+        },
+        {
+          "line": 47,
+          "text": "    let o = parse("
+        },
+        {
+          "line": 48,
+          "text": "        \"def target(x):\\n    return x\\ndef use(target, obj):\\n    target(1)\\n    obj.target(2)\\n\","
+        },
+        {
+          "line": 49,
+          "text": "    );"
+        },
+        {
+          "line": 50,
+          "text": "    assert_eq!(o.call_edges.len(), 2);"
+        },
+        {
+          "line": 51,
+          "text": "    assert!("
+        },
+        {
+          "line": 52,
+          "text": "        o.call_edges.iter().all(|c| c.target_symbol_id.is_none()),"
+        },
+        {
+          "line": 53,
+          "text": "        \"{:?}\","
+        },
+        {
+          "line": 54,
+          "text": "        o.call_edges"
+        },
+        {
+          "line": 55,
+          "text": "    );"
+        },
+        {
+          "line": 56,
+          "text": "}"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-parsers/tests/python_call_truth.rs#L1"
+    },
+    {
+      "id": "main-resolution-dependencies",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "whole_file_bytes": 10207,
+      "whole_file_sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
+      "lines": [
+        {
+          "line": 1,
+          "text": "//! Resolver evidence shares the file transaction; reverse lookup uses indexed"
+        },
+        {
+          "line": 2,
+          "text": "//! kind/key pairs and a bounded unique file frontier, never independent writes."
+        },
+        {
+          "line": 3,
+          "text": "use crate::{"
+        },
+        {
+          "line": 4,
+          "text": "    index_db::{FileWriteUnit, IndexDb, ReadOps},"
+        },
+        {
+          "line": 5,
+          "text": "    sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE},"
+        },
+        {
+          "line": 6,
+          "text": "};"
+        },
+        {
+          "line": 7,
+          "text": "use cc_model::{"
+        },
+        {
+          "line": 8,
+          "text": "    package_surface::{PackageKey, PackageSurface},"
+        },
+        {
+          "line": 9,
+          "text": "    public_surface::PublicSurface,"
+        },
+        {
+          "line": 10,
+          "text": "    resolution::*,"
+        },
+        {
+          "line": 11,
+          "text": "    CcError, CcResult,"
+        },
+        {
+          "line": 12,
+          "text": "};"
+        },
+        {
+          "line": 13,
+          "text": "use rusqlite::Connection;"
+        },
+        {
+          "line": 14,
+          "text": "use std::collections::{BTreeMap, BTreeSet, HashMap};"
+        },
+        {
+          "line": 15,
+          "text": "pub(crate) fn replace_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {"
+        },
+        {
+          "line": 16,
+          "text": "    let mut m = file.outcome.resolution.clone();"
+        },
+        {
+          "line": 17,
+          "text": "    m.normalize();"
+        },
+        {
+          "line": 18,
+          "text": "    m.validate()"
+        },
+        {
+          "line": 19,
+          "text": "        .map_err(|e| CcError::InvalidParams(format!(\"{}: {e}\", file.rel_path)))?;"
+        },
+        {
+          "line": 20,
+          "text": "    let payload = serde_json::to_string(&m).map_err(db_err)?;"
+        },
+        {
+          "line": 21,
+          "text": "    if payload.len() > MAX_RESOLUTION_BYTES + 2 * 1024 * 1024 {"
+        },
+        {
+          "line": 22,
+          "text": "        return Err(CcError::InvalidParams("
+        },
+        {
+          "line": 23,
+          "text": "            \"resolution payload budget exceeded\".into(),"
+        },
+        {
+          "line": 24,
+          "text": "        ));"
+        },
+        {
+          "line": 25,
+          "text": "    }"
+        },
+        {
+          "line": 26,
+          "text": "    IndexDb::execute_cached("
+        },
+        {
+          "line": 27,
+          "text": "        conn,"
+        },
+        {
+          "line": 28,
+          "text": "        \"DELETE FROM resolution_dependencies WHERE file_path=?1\","
+        },
+        {
+          "line": 29,
+          "text": "        [&file.rel_path],"
+        },
+        {
+          "line": 30,
+          "text": "    )?;"
+        },
+        {
+          "line": 31,
+          "text": "    IndexDb::execute_cached(conn,\"INSERT OR REPLACE INTO resolution_manifests(file_path,version,payload,digest) VALUES(?1,?2,?3,?4)\",rusqlite::params![file.rel_path,m.version,payload,blake3::hash(payload.as_bytes()).to_hex().to_string()])?;"
+        },
+        {
+          "line": 32,
+          "text": "    let mut stmt = conn"
+        },
+        {
+          "line": 33,
+          "text": "        .prepare_cached(\"INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)\")"
+        },
+        {
+          "line": 34,
+          "text": "        .map_err(db_err)?;"
+        },
+        {
+          "line": 35,
+          "text": "    for d in &m.dependencies {"
+        },
+        {
+          "line": 36,
+          "text": "        stmt.execute(rusqlite::params![file.rel_path, d.kind.as_str(), d.key])"
+        },
+        {
+          "line": 37,
+          "text": "            .map_err(db_err)?;"
+        },
+        {
+          "line": 38,
+          "text": "    }"
+        },
+        {
+          "line": 39,
+          "text": "    Ok(())"
+        },
+        {
+          "line": 40,
+          "text": "}"
+        },
+        {
+          "line": 41,
+          "text": "impl ReadOps<'_> {"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-db/src/resolution_dependency_store.rs#L1"
+    },
+    {
+      "id": "main-resolution-write",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "git_blob": "1595240371f2d8833a14a63e9db43c62f2e6be95",
+      "whole_file_bytes": 54394,
+      "whole_file_sha256": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
+      "lines": [
+        {
+          "line": 198,
+          "text": "            let rel = file.rel_path.as_str();"
+        },
+        {
+          "line": 199,
+          "text": "            let outcome = &file.outcome;"
+        },
+        {
+          "line": 200,
+          "text": "            let communities = crate::community_carry::CommunityCarry::capture(tx, &[rel])?;"
+        },
+        {
+          "line": 201,
+          "text": ""
+        },
+        {
+          "line": 202,
+          "text": "            crate::resolution_dependency_store::replace_on(tx, file)?;"
+        },
+        {
+          "line": 203,
+          "text": ""
+        },
+        {
+          "line": 204,
+          "text": "            // Delete only the re-resolvable tables"
+        },
+        {
+          "line": 205,
+          "text": "            for table in &["
+        },
+        {
+          "line": 206,
+          "text": "                \"call_edges\","
+        },
+        {
+          "line": 207,
+          "text": "                \"symbol_refs\","
+        },
+        {
+          "line": 208,
+          "text": "                \"symbols\","
+        },
+        {
+          "line": 209,
+          "text": "                \"imports\","
+        },
+        {
+          "line": 210,
+          "text": "                \"semantic_edges\","
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-db/src/index_db_write_batch.rs#L198"
+    },
+    {
+      "id": "pr4-ablation-adr",
+      "ref": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "path": "docs/adr/0004-facts-dependencies-and-budget-evidence.md",
+      "git_blob": "ff2b94acd0e19f4ed370af9bd0fb9c4e738f7e86",
+      "whole_file_bytes": 4159,
+      "whole_file_sha256": "99e1a523efeb18b6ca8d4603aa9ed6060902bf4d87427b99fe977a3583f1816e",
+      "lines": [
+        {
+          "line": 32,
+          "text": "6. Grep 与 lexical/graph 一样只服从调用者 hard scope。预选只做排序先验。"
+        },
+        {
+          "line": 33,
+          "text": "   返回每 lane 扫描量、候选限制、预算耗尽与读取错误；空结果也带诊断。"
+        },
+        {
+          "line": 34,
+          "text": "   工作预算耗尽/读错误的结果不缓存。查询截断采用有界可解释的 token 优先级，"
+        },
+        {
+          "line": 35,
+          "text": "   而不是简单保留句首。保留人工排序默认值，不在回归夹具上伪装概率校准。"
+        },
+        {
+          "line": 36,
+          "text": "7. graph_features=false 是完整图消融（预选、lane、重排、富化）。零 lane 权重"
+        },
+        {
+          "line": 37,
+          "text": "   关闭候选贡献，不让零分候选在后续人工 boost 中复活。"
+        },
+        {
+          "line": 38,
+          "text": "8. 事实、定位、源码证据、增量一致性分别验收。源码证据按冻结源码逐行核验再做"
+        },
+        {
+          "line": 39,
+          "text": "   区间并集；真实 token 计数的 handler 成本与离线 normalized-prefix adapter"
+        },
+        {
+          "line": 40,
+          "text": "   分开。已返回名字/行号不代表正文已可见。"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/0466d490a169eb25d2c9070c65aae36060f2220b/docs/adr/0004-facts-dependencies-and-budget-evidence.md#L32"
+    },
+    {
+      "id": "pr4-graph-config",
+      "ref": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "path": "crates/cc-model/src/config.rs",
+      "git_blob": "ba42ee1d2ffe320d1db02beb9d0b992b702488e0",
+      "whole_file_bytes": 41244,
+      "whole_file_sha256": "49881ba15d8d7487923104fb56edb0c805ac6a2e23bd562d740b4f85b1eaf6d5",
+      "lines": [
+        {
+          "line": 171,
+          "text": "pub struct SearchConfig {"
+        },
+        {
+          "line": 172,
+          "text": "    /// Disable all graph search features (preselection, lane, rerank, enrichment)."
+        },
+        {
+          "line": 173,
+          "text": "    #[serde(default = \"default_true\")]"
+        },
+        {
+          "line": 174,
+          "text": "    pub graph_features: bool,"
+        },
+        {
+          "line": 175,
+          "text": "    /// Capture bounded stage locators for benchmark diagnostics (extra DB work)."
+        },
+        {
+          "line": 176,
+          "text": "    #[serde(default)]"
+        },
+        {
+          "line": 177,
+          "text": "    pub trace_candidates: bool,"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/0466d490a169eb25d2c9070c65aae36060f2220b/crates/cc-model/src/config.rs#L171"
+    },
+    {
+      "id": "pr4-graph-preselect",
+      "ref": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "path": "crates/cc-search/src/plan.rs",
+      "git_blob": "9a527fe57dfd9bc8d37dcc3898fae0f79a5998ba",
+      "whole_file_bytes": 28470,
+      "whole_file_sha256": "91e38432f0c0979b3cfd698ce468f7cd0faa4a41d4eafa728f159c8db823d7ba",
+      "lines": [
+        {
+          "line": 107,
+          "text": "            .unwrap_or_else(|| default_preselect_limit(top_k, repo_tier));"
+        },
+        {
+          "line": 108,
+          "text": "        let preselect = crate::preselect::preselect_with_graph("
+        },
+        {
+          "line": 109,
+          "text": "            db,"
+        },
+        {
+          "line": 110,
+          "text": "            &PreselectRequest {"
+        },
+        {
+          "line": 111,
+          "text": "                query: &query_text,"
+        },
+        {
+          "line": 112,
+          "text": "                path_prefix: request.path_prefix.as_deref(),"
+        },
+        {
+          "line": 113,
+          "text": "                boost_paths: request.boost_file_paths.as_deref(),"
+        },
+        {
+          "line": 114,
+          "text": "                recent_paths: request.recent_file_paths.as_deref(),"
+        },
+        {
+          "line": 115,
+          "text": "                pinned_paths: request.pinned_file_paths.as_deref(),"
+        },
+        {
+          "line": 116,
+          "text": "                overlay_paths: request.overlay_file_paths.as_deref(),"
+        },
+        {
+          "line": 117,
+          "text": "                explicit_file_paths: request.file_paths.as_deref(),"
+        },
+        {
+          "line": 118,
+          "text": "                limit: preselect_limit,"
+        },
+        {
+          "line": 119,
+          "text": "                ranking,"
+        },
+        {
+          "line": 120,
+          "text": "            },"
+        },
+        {
+          "line": 121,
+          "text": "            config.graph_features,"
+        },
+        {
+          "line": 122,
+          "text": "        )?;"
+        },
+        {
+          "line": 123,
+          "text": "        // Preserve caller scope. Heuristic preselection is a ranking/scan hint,"
+        },
+        {
+          "line": 124,
+          "text": "        // not authorization to exclude globally matching lexical/graph candidates."
+        },
+        {
+          "line": 125,
+          "text": ""
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/0466d490a169eb25d2c9070c65aae36060f2220b/crates/cc-search/src/plan.rs#L107"
+    },
+    {
+      "id": "pr4-zero-grep",
+      "ref": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "path": "crates/cc-search/src/lanes.rs",
+      "git_blob": "05851588517eb3c8adaa00493c779aeaf2e2bcf5",
+      "whole_file_bytes": 32776,
+      "whole_file_sha256": "3c6aebb5857bd2249c5b9549f3d899266dce939738dbff928d7e5e03013f84ad",
+      "lines": [
+        {
+          "line": 391,
+          "text": "impl RetrievalLane for GrepLane {"
+        },
+        {
+          "line": 392,
+          "text": "    fn lane_id(&self) -> &'static str {"
+        },
+        {
+          "line": 393,
+          "text": "        LANE_GREP"
+        },
+        {
+          "line": 394,
+          "text": "    }"
+        },
+        {
+          "line": 395,
+          "text": ""
+        },
+        {
+          "line": 396,
+          "text": "    fn weight(&self, config: &SearchConfig) -> f64 {"
+        },
+        {
+          "line": 397,
+          "text": "        config.grep_weight"
+        },
+        {
+          "line": 398,
+          "text": "    }"
+        },
+        {
+          "line": 399,
+          "text": ""
+        },
+        {
+          "line": 400,
+          "text": "    fn is_enabled(&self, context: &LaneContext<'_>) -> bool {"
+        },
+        {
+          "line": 401,
+          "text": "        context.plan.request().include_grep && context.config.grep_weight > 0.0"
+        },
+        {
+          "line": 402,
+          "text": "    }"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/0466d490a169eb25d2c9070c65aae36060f2220b/crates/cc-search/src/lanes.rs#L391"
+    },
+    {
+      "id": "main-zero-grep",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-search/src/plan.rs",
+      "git_blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+      "whole_file_bytes": 33423,
+      "whole_file_sha256": "98e9380818a6d4a9fbaec0077ed635335d852fc027a783ce32b20a394e88c9cc",
+      "lines": [
+        {
+          "line": 240,
+          "text": "    /// Execution eligibility is independent of fusion weight. Legacy grep can"
+        },
+        {
+          "line": 241,
+          "text": "    /// still supply candidates with zero RRF weight, but an empty hard scope"
+        },
+        {
+          "line": 242,
+          "text": "    /// performs no scan. Diagnostics and the lane use this one predicate."
+        },
+        {
+          "line": 243,
+          "text": "    pub(crate) fn grep_enabled(&self) -> bool {"
+        },
+        {
+          "line": 244,
+          "text": "        self.request.include_grep"
+        },
+        {
+          "line": 245,
+          "text": "            && !self.filters.is_empty()"
+        },
+        {
+          "line": 246,
+          "text": "            && !self.grep_query().trim().is_empty()"
+        },
+        {
+          "line": 247,
+          "text": "    }"
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/crates/cc-search/src/plan.rs#L240"
+    },
+    {
+      "id": "main-graph-config-search",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "git_argv": [
+        "grep",
+        "-n",
+        "-E",
+        "graph_features|no_graph|graph_enabled|disable_graph",
+        "7d5402a17cfdd06274e8204ec544bd4db104f872",
+        "--",
+        "crates/cc-model/src/config.rs",
+        "crates/cc-search/src",
+        "crates/cc-server/src"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "",
+      "interpretation": "Targeted name search only; absence is not a proof that no composition of other controls can perform an equivalent experiment."
+    },
+    {
+      "id": "main-corpus-custody",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p8-corpus-lock-review-20261008/README.md",
+      "git_blob": "384f8cb2bd84b265bd21c689659cc7bfd5b359c0",
+      "whole_file_bytes": 7262,
+      "whole_file_sha256": "81dbc67eac4e59e34a7510745084994ef384aa6b0797135e19d263adc588257f",
+      "lines": [
+        {
+          "line": 1,
+          "text": "# P8 corpus and compatibility evidence review — 2026-10-08"
+        },
+        {
+          "line": 2,
+          "text": ""
+        },
+        {
+          "line": 3,
+          "text": "## Result and scope"
+        },
+        {
+          "line": 4,
+          "text": ""
+        },
+        {
+          "line": 5,
+          "text": "The compatibility checker now binds retained measurements to the locked query"
+        },
+        {
+          "line": 6,
+          "text": "snapshot and the complete query-ID × repetition matrix. The previous checker"
+        },
+        {
+          "line": 7,
+          "text": "checked the number of queries and measured rows without binding the emitted"
+        },
+        {
+          "line": 8,
+          "text": "query text, gold, annotations or query identities to the input it had pinned."
+        },
+        {
+          "line": 9,
+          "text": "An equal-size replacement could therefore pass those structural checks."
+        },
+        {
+          "line": 10,
+          "text": ""
+        },
+        {
+          "line": 11,
+          "text": "`scripts/p8_compat.py` now retains parsed public DEV queries during input"
+        },
+        {
+          "line": 12,
+          "text": "inspection, compares every emitted query value against that snapshot, and"
+        },
+        {
+          "line": 13,
+          "text": "requires each requested ID and repetition exactly once. It also rejects shared"
+        },
+        {
+          "line": 14,
+          "text": "raw-response paths, a different backend adapter or measurement profile, and a"
+        },
+        {
+          "line": 15,
+          "text": "gate whose status or integer exit code conflicts with the process result. The"
+        },
+        {
+          "line": 16,
+          "text": "normalization only fills optional fields that cc-eval's existing serde schema"
+        },
+        {
+          "line": 17,
+          "text": "serializes as null or an empty annotations map. It preserves order and all"
+        },
+        {
+          "line": 18,
+          "text": "other values, including native answer groups, symbols, spans and primary flags."
+        },
+        {
+          "line": 19,
+          "text": ""
+        },
+        {
+          "line": 20,
+          "text": "No retrieval, ranking, importer, scorer, gold or custody policy was changed."
+        },
+        {
+          "line": 21,
+          "text": "`tasks.json` and generated TODO files were not edited. This is a completed"
+        },
+        {
+          "line": 22,
+          "text": "checker repair; **P8-002, P8-003 and P8-004 are not completed by this checkpoint**."
+        },
+        {
+          "line": 23,
+          "text": ""
+        },
+        {
+          "line": 24,
+          "text": "## Executed verification"
+        },
+        {
+          "line": 25,
+          "text": ""
+        },
+        {
+          "line": 26,
+          "text": "| Evidence | Observed result | Meaning |"
+        },
+        {
+          "line": 27,
+          "text": "|---|---|---|"
+        },
+        {
+          "line": 28,
+          "text": "| `before-fix-negative-tests.log` | The initial 13-case identity suite fails on the original checker | Reproduces the weak identity checks; assertion failures are not a count of separate TODOs |"
+        },
+        {
+          "line": 29,
+          "text": "| `after-fix-tests.log` | 63 tests pass, including 16 identity-matrix controls | Covers equal-denominator substitution, query/gold drift, unknown/duplicate/missing IDs, invalid repetitions, raw-response reuse, adapter/profile and gate drift; valid shuffled runs and optional serde defaults remain accepted |"
+        },
+        {
+          "line": 30,
+          "text": "| `retained-controls-check.json` | Four original public Express DEV runs pass the repaired structural checker: 774 retained requests | Two native/compat pairs, independently rebound to historical pinned query blobs; zero fresh retrieval requests and no rescoring |"
+        },
+        {
+          "line": 31,
+          "text": "| `corpus-audit.json` | `passed_local_audit`, process exit 0 | Rechecks fixed public DEV bytes, spans and coverage only |"
+        },
+        {
+          "line": 32,
+          "text": "| `leakage-audit.json` | `boundary_review_required`, process exit 1 | Both existing source-signature findings remain visible; no clean holdout or absence-of-overfitting claim |"
+        },
+        {
+          "line": 33,
+          "text": "| `external-input-probe.json` | GitHub repository, fixed tree and two metadata files read successfully | No external question body was read, counted or copied |"
+        },
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 35,
+          "text": "The retained compatibility evidence is the existing archive with SHA-256"
+        },
+        {
+          "line": 36,
+          "text": "`31366e8130b97d5ee092e17b48dda60505a17dde4f5401d490daee71cb9214a4`."
+        },
+        {
+          "line": 37,
+          "text": "Its original evaluator was built from"
+        },
+        {
+          "line": 38,
+          "text": "`78ae91eeae6edae6bea29c27f24b251773341c00`, with binary SHA-256"
+        },
+        {
+          "line": 39,
+          "text": "`1217b6249fc5527e05d9d6ae2abd1c7db37a7ea60d8e0024a33f4dce7b2865e2`."
+        },
+        {
+          "line": 40,
+          "text": "The original comparison remains `comparison_not_passed`, exit 1. These are"
+        },
+        {
+          "line": 41,
+          "text": "historical rg controls with zero reported mean Top-1/nDCG, not evidence of"
+        },
+        {
+          "line": 42,
+          "text": "current CodeCortex retrieval quality. Revalidation leaves the archive untouched."
+        },
+        {
+          "line": 43,
+          "text": ""
+        },
+        {
+          "line": 44,
+          "text": "The command receipts record the base Git HEAD and exact script/test hashes."
+        },
+        {
+          "line": 45,
+          "text": "At execution the repair was present as a worktree change on"
+        },
+        {
+          "line": 46,
+          "text": "`9f6684ac81fa82f2bc99903ff42fb532478c2aaf`; that base HEAD alone is not the"
+        },
+        {
+          "line": 47,
+          "text": "identity of the repaired script. The recorded file hashes bind the actual code."
+        },
+        {
+          "line": 48,
+          "text": ""
+        },
+        {
+          "line": 49,
+          "text": "## Original task acceptance gaps"
+        },
+        {
+          "line": 50,
+          "text": ""
+        },
+        {
+          "line": 51,
+          "text": "### P8-002 — real multi-repository native corpus"
+        },
+        {
+          "line": 52,
+          "text": ""
+        },
+        {
+          "line": 53,
+          "text": "The admitted historical snapshot contains 4 repositories, 301 native DEV rows,"
+        },
+        {
+          "line": 54,
+          "text": "256 compatibility rows, 100 source files and 476 verified source spans. Its 301"
+        },
+        {
+          "line": 55,
+          "text": "family labels reduce to 287 local components and 280 conservative global"
+        },
+        {
+          "line": 56,
+          "text": "correlation components. The historical review explicitly does not prove their"
+        },
+        {
+          "line": 57,
+          "text": "full semantic independence. This audit adds zero independent gold reviews and"
+        },
+        {
+          "line": 58,
+          "text": "cannot credit any family toward the formal 600-family acceptance target."
+        },
+        {
+          "line": 59,
+          "text": ""
+        },
+        {
+          "line": 60,
+          "text": "Rust/serde and the mixed JS/TS Vite monorepo are still absent from the admitted"
+        },
+        {
+          "line": 61,
+          "text": "corpus. The `file_exact_match` and `cross_language` categories are also absent."
+        },
+        {
+          "line": 62,
+          "text": "The user previously authorized public source repositories at fixed commits;"
+        },
+        {
+          "line": 63,
+          "text": "that source direction is already decided. Remaining work is actual source"
+        },
+        {
+          "line": 64,
+          "text": "admission, independent source/gold review, hard-negative and family-equivalence"
+        },
+        {
+          "line": 65,
+          "text": "review, and the full six-repository quality evidence. Source locks for the two"
+        },
+        {
+          "line": 66,
+          "text": "missing candidates remain:"
+        },
+        {
+          "line": 67,
+          "text": ""
+        },
+        {
+          "line": 68,
+          "text": "- `serde-rs/serde@6693a89cca77e0151437da1c7f890090b9ebf04c`"
+        },
+        {
+          "line": 69,
+          "text": "- `vitejs/vite@10033218d239c927cdc375970b5741cce408e81b`"
+        },
+        {
+          "line": 70,
+          "text": ""
+        },
+        {
+          "line": 71,
+          "text": "### P8-003 — cc-switch and Flask external compatibility suites"
+        },
+        {
+          "line": 72,
+          "text": ""
+        },
+        {
+          "line": 73,
+          "text": "The original target is `oce-ai/oce-benchmark@d4f10554a18e31599d1e46d5d56da6588d4aa86c`,"
+        },
+        {
+          "line": 74,
+          "text": "with `farion1231/cc-switch@40cac1a68edf8c9e7b3a89125cf40bb93a348404` and"
+        },
+        {
+          "line": 75,
+          "text": "`pallets/flask@22d924701a6ae2e4cd01e9a15bbaf3946094af65`. Both metadata files still"
+        },
+        {
+          "line": 76,
+          "text": "declare 100 questions. This is a declaration, not a verified body count."
+        },
+        {
+          "line": 77,
+          "text": ""
+        },
+        {
+          "line": 78,
+          "text": "The GitHub repository response reports `license: null`; its complete fixed"
+        },
+        {
+          "line": 79,
+          "text": "20-entry tree has no named LICENSE/COPYING file. This observation makes no legal"
+        },
+        {
+          "line": 80,
+          "text": "claim. The project's existing `09-BENCHMARK.md` section 1 requires externally"
+        },
+        {
+          "line": 81,
+          "text": "supplied benchmark input and a record of its permitted use, and forbids copying"
+        },
+        {
+          "line": 82,
+          "text": "the full third-party corpus into this repository by default. No such admitted"
+        },
+        {
+          "line": 83,
+          "text": "external input is present in the evidence reviewed here. The probe therefore"
+        },
+        {
+          "line": 84,
+          "text": "reads only metadata. Complete acceptance still needs the supplied input and use"
+        },
+        {
+          "line": 85,
+          "text": "record, fixed clean project checkouts and common source inventory, actual"
+        },
+        {
+          "line": 86,
+          "text": "question counting and review, and cc-eval validation/run/replay evidence. The"
+        },
+        {
+          "line": 87,
+          "text": "774 historical Express control requests satisfy none of those target counts."
+        },
+        {
+          "line": 88,
+          "text": ""
+        },
+        {
+          "line": 89,
+          "text": "### P8-004 — sealed holdout and overfitting checks"
+        },
+        {
+          "line": 90,
+          "text": ""
+        },
+        {
+          "line": 91,
+          "text": "The pinned custody decision remains `custody_blocked`: of 117 candidate IDs,"
+        },
+        {
+          "line": 92,
+          "text": "at least 72 are known to have been exposed, and **zero clean holdout IDs are"
+        },
+        {
+          "line": 93,
+          "text": "certified**. The other 45 IDs are not established clean: reader history, first"
+        },
+        {
+          "line": 94,
+          "text": "visibility and principal/ACL verification are unknown. A fresh developer copy"
+        },
+        {
+          "line": 95,
+          "text": "or a changed label cannot repair that provenance."
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/artifacts/checkpoints/p8-corpus-lock-review-20261008/README.md#L1"
+    },
+    {
+      "id": "main-final-open-corpus",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p7-final-acceptance-20261008/README.md",
+      "git_blob": "93af6edeb78db1432aa71caaf2e727ac0243ef6f",
+      "whole_file_bytes": 6679,
+      "whole_file_sha256": "c222b1a8cf85864f5544bcefdbb14d8db7e882b4c3feae2dca56be47434480e5",
+      "lines": [
+        {
+          "line": 35,
+          "text": "The complete successful main, closeout, engineering, mechanism and offline raw job logs are retained, including the actual complete independent audit log. All426 exported audit files were individually SHA256/UTF8 verified before integration. [raw-preservation-receipt.json](raw-preservation-receipt.json) additionally binds265 current original text members:55 closeout,26 engineering and184 mechanism. Existing offline/P8 full selected raw is already retained."
+        },
+        {
+          "line": 36,
+          "text": ""
+        },
+        {
+          "line": 37,
+          "text": "Large executable/cache/SQLite artifacts are not represented as permanent Git files. Their complete member inventories, exact hashes and actual build identities remain explicit in the receipts. The original GitHub ZIP retention expires2027-01-06. The archived source and raw evidence do not make a claim of hardware attestation."
+        },
+        {
+          "line": 38,
+          "text": ""
+        },
+        {
+          "line": 39,
+          "text": "## Exact remaining boundaries"
+        },
+        {
+          "line": 40,
+          "text": ""
+        },
+        {
+          "line": 41,
+          "text": "P7-018 remains blocked under the original D1+D2 decision. There are no live-provider benefit or currency claims. Crash response consumption/billing remains unknown/null. The actual fault paths and explicit counters are tested; exactly-once billing is not claimed."
+        },
+        {
+          "line": 42,
+          "text": ""
+        },
+        {
+          "line": 43,
+          "text": "Rows7 and13 retain the original on-demand conditions. A persistent historical GC counter table and a bound on the historical space-switch log have not been implemented and are not claimed. Current consumers, actual counters and explicit switch triggers satisfy the accepted present scope. Hot reload remains not_run."
+        },
+        {
+          "line": 44,
+          "text": ""
+        },
+        {
+          "line": 45,
+          "text": "Full V19 corpus/custody/facet/report/quality statistics and G8 release certification remain open. Four-arm fake input differences are mechanism observations, not clean-heldout semantic benefit. The P8 candidate runs the original single-question DEV baseline; its actual gate is baseline_recorded_not_quality_certified, release_certified=false and latest_updated=false."
+        },
+        {
+          "line": 46,
+          "text": ""
+        },
+        {
+          "line": 47,
+          "text": "The request for at least10 complete original TODOs is not satisfied by these7. Public DEV corpus expansion and external suite recovery are useful subsequent work, but do not count as completed tasks while their original corpus/clean-holdout prerequisites remain unmet."
+        },
+        {
+          "line": 48,
+          "text": ""
+        },
+        {
+          "line": 49,
+          "text": "## Preserved failed history"
+        },
+        {
+          "line": 50,
+          "text": ""
+        }
+      ],
+      "url": "https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/artifacts/checkpoints/p7-final-acceptance-20261008/README.md#L35"
+    }
+  ]
+}

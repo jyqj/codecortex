@@ -1,0 +1,58 @@
+{
+  "actual_native_job": {
+    "exit_code": 0,
+    "id": "wc_job_abjillXJG2tQ-0c4",
+    "meaning": "Direct diagnostic terminated successfully; no original test or workspace gate rerun."
+  },
+  "causal_limit": [
+    "This observation reused the exact persistent helper path executed once at 04:49. The original two tests and original-supervisor persistent observer each created a fresh executable helper path.",
+    "The reused-path observation completed quickly; it cannot retrospectively separate spawn latency versus child execution for any earlier failed run.",
+    "OS executable launch state/cache/identity may differ between new and reused paths; this is an inference/hypothesis, not a proved mechanism or repair.",
+    "The 250ms boundary was never reached in this observation, so no boundary try_wait result exists.",
+    "No stderr error ties the regression to SDK, permission, or shell syntax."
+  ],
+  "existing_failure_assessment_unchanged": {
+    "bytes": 9792,
+    "path": "review-ci/premerge-workspace/failure-assessment.json",
+    "sha256": "c85e9fd8ead80d0fea4446f1955806e93e7aed710d79fccf8d95e011167b7bf0"
+  },
+  "merged_main_followup": true,
+  "minimal_next_discriminating_observation_proposed": "Run the same already-compiled phase observer once with a newly written, byte-identical 159-byte helper at a new owned path, retaining the same original limits/environment/stdio/group. Compare its directly measured spawn/child phases with this reused-path reading. Requires parent continuation authorization; not yet executed.",
+  "preparation_failure": {
+    "kind": "ABI uniqueness assertion before compilation/helper execution",
+    "native_observation_count": 1,
+    "record": {
+      "bytes": 1697,
+      "path": "review-ci/premerge-workspace/spawn-phase-observer/preflight-failure-runner.json",
+      "sha256": "15530a981fd8257b0ce602c4d91f1845a68d3b02d7c9760dec9a8f68b34a766f"
+    },
+    "resolution": "Used exact original cc_eval serde_json dependency fingerprint to select a387a9474abb450c; preserved both original preparation script and one continuation script."
+  },
+  "receipt": {
+    "bytes": 5573,
+    "path": "review-ci/premerge-workspace/spawn-phase-observer/execution-receipt.json",
+    "sha256": "61ba34d04a6b3b36400e947a7453f7a9ac97c8f938b1ee37d7566db89a974553"
+  },
+  "recorded_at": "2026-10-09T04:54:55.551715+00:00",
+  "results": {
+    "250ms_boundary_reached": false,
+    "first_exit0_and_summary_observation_ns": 15381208,
+    "original_deadline_ms": 250,
+    "original_elapsed_limit_seconds": 2,
+    "owned_process_group_absent": true,
+    "spawn_return_ns": 310083,
+    "stderr_complete": true,
+    "summary_text": "{\"passed\":true}",
+    "total_observed_ns": 30600250
+  },
+  "schema_version": 1,
+  "source_fix": "None until cause established; frozen source and all prior failures remain unchanged.",
+  "source_sha": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+  "status": "phase_observation_completed_cause_unresolved",
+  "todo_ledger": {
+    "changes": 0,
+    "done": 163,
+    "remaining": 29
+  }
+}

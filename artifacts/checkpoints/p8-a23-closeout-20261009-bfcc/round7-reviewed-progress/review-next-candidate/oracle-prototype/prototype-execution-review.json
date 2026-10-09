@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T04:57:15.972460+00:00",
+  "status": "prototype_tests_passed_original_clippy_failed_not_promoted",
+  "parent_commit": "252e28744aa55a4b14414787f74e00783f87712f",
+  "parent_tree": "37c05bcf33071d8aee127a8b38cab278d090661c",
+  "worktree": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+  "branch": "task/p8-oracle-borrow-bfcc-20261009",
+  "head_moved": false,
+  "commit_or_push_performed": false,
+  "changed_files": [
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "mode": "100644",
+      "before_git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "before_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "after_git_blob": "bec879a78a26f7ab9386cbd7e6aed41088eb799c",
+      "after_sha256": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "after_bytes": 40672,
+      "full_code_archive": "review-next-candidate/oracle-prototype/source/crates/cc-eval/src/benchmark/oracle/streaming.rs"
+    }
+  ],
+  "patch": {
+    "path": "review-next-candidate/oracle-prototype/source.patch",
+    "bytes": 13075,
+    "sha256": "97794f433064e9af0a94791f7c3c62f716bd81a853629b3408068c9ac3edb7fc"
+  },
+  "boundary": "Only the cursor text extraction and immediate borrowed consumers change in production. Exact original owned reader and whole comparator remain cfg(test) references. No transaction/projection/table/duplicate/equality/digest/budget/protocol/workflow/guard/registry/task changes.",
+  "native_job": {
+    "id": "wc_job_LoXztu9tEMAuipzw",
+    "terminal": true,
+    "outer_exit_code": 0,
+    "outer_exit_scope": "orchestrator finished writing records, NOT validation pass; inner Clippy exited 101",
+    "automatic_passed_label_rejected_as_acceptance": true
+  },
+  "commands": [
+    {
+      "name": "toolchain-rustc",
+      "command": [
+        "/Users/jin/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "rustc",
+        "-Vv"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:47:15.807201+00:00",
+      "source_sha256_before": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 80686,
+      "finished_at": "2026-10-09T04:47:15.945046+00:00",
+      "source_sha256_after": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "stdout_sha256": "e61cba8ded8c60e985f759f74a221c4773649021477d00b44c7af411eb8c218c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "toolchain-cargo",
+      "command": [
+        "/Users/jin/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "-Vv"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:47:15.945669+00:00",
+      "source_sha256_before": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 80687,
+      "finished_at": "2026-10-09T04:47:15.988773+00:00",
+      "source_sha256_after": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "stdout_sha256": "afe113f2eacd7917f1c1c09efcddadc21b703d1c62ae2dd972dde37df5393699",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "sdk",
+      "command": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx15.4",
+        "--show-sdk-path"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:47:15.989272+00:00",
+      "source_sha256_before": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 80688,
+      "finished_at": "2026-10-09T04:47:16.002548+00:00",
+      "source_sha256_after": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "stdout_sha256": "8b94881261aef08ea3c74b912a3662015450dcc8a2d11d62b53f25fc6e0c2791",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "rustfmt",
+      "command": [
+        "/Users/jin/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "rustfmt",
+        "--edition",
+        "2021",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:47:16.003115+00:00",
+      "source_sha256_before": "8a834f45f7e7b00177abfcd166b401b5249ca47d1b143196339884f7a10387c1",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 80689,
+      "finished_at": "2026-10-09T04:47:16.961569+00:00",
+      "source_sha256_after": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "unit-oracle-release",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "--release",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "benchmark::oracle::streaming::tests",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:47:16.962257+00:00",
+      "source_sha256_before": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 80690,
+      "finished_at": "2026-10-09T04:50:34.323756+00:00",
+      "source_sha256_after": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "stdout_sha256": "710daf07f722423ad85e593d711bd91c9c357ccbff9e618708235a28da88a22e",
+      "stderr_sha256": "f19bb3ba1eec6220c9bd69064d49df0f56f6ba17f55cabf80826b8c732c2fcc8"
+    },
+    {
+      "name": "integration-oracle-release",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "--release",
+        "-p",
+        "cc-eval",
+        "--test",
+        "benchmark_oracle_streaming",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:50:34.324690+00:00",
+      "source_sha256_before": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 0,
+      "pid": 84962,
+      "finished_at": "2026-10-09T04:54:12.917390+00:00",
+      "source_sha256_after": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "stdout_sha256": "20ccf61eb8ae0f18c5913578022000604e019ee3232917a1f76bbd8bb5726e54",
+      "stderr_sha256": "a223e3c1862f99bc17395554a6576885c162a8402ca24ff1d866b103fe9799c6"
+    },
+    {
+      "name": "clippy-oracle-release",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--release",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--test",
+        "benchmark_oracle_streaming",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-oracle",
+      "started_at": "2026-10-09T04:54:12.918394+00:00",
+      "source_sha256_before": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "env_overrides": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin"
+      },
+      "status": "completed",
+      "exit_code": 101,
+      "pid": 87739,
+      "finished_at": "2026-10-09T04:54:31.766728+00:00",
+      "source_sha256_after": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c9aafda8ddade208a0ea130bdaa25284382473cef9092b82de8ba800cd02a254"
+    }
+  ],
+  "test_result": {
+    "streaming_units": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "original_controls": 6,
+      "new_controls": 3
+    },
+    "original_integration": {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    "unique_tests": 17,
+    "full_workspace_CI_claim": false
+  },
+  "clippy": {
+    "actual_exit_code": 101,
+    "status": "failed",
+    "file": "crates/cc-index/src/project_model/python_inventory.rs",
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+    "git_blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "worktree_equals_parent_bytes": true,
+    "errors": [
+      {
+        "line": 3,
+        "kind": "unused_imports",
+        "symbols": [
+          "config_cache::Loader",
+          "python"
+        ]
+      },
+      {
+        "line": 96,
+        "kind": "dead_code",
+        "symbol": "bound"
+      },
+      {
+        "line": 103,
+        "kind": "dead_code",
+        "symbol": "sum"
+      },
+      {
+        "line": 290,
+        "kind": "dead_code",
+        "symbol": "supported_document"
+      },
+      {
+        "line": 331,
+        "kind": "dead_code",
+        "symbol": "OutputMeter"
+      }
+    ],
+    "failed_gate_not_relaxed": true,
+    "outside_authorized_oracle_edit_scope": true,
+    "additional_platform_fix": "Read-only diagnosis only until root establishes separately authorized worktree."
+  },
+  "ab_ba": {
+    "report": "review-next-candidate/oracle-prototype/ab-ba-diagnostic-review.json",
+    "report_sha256": "1a0093c30723ba99798508a41b2b19727ec2fc13d4a8adbe9ac59660d10eb245",
+    "summary": {
+      "pairs": 30,
+      "owned_median_ns": 13022500.0,
+      "borrowed_median_ns": 12726917.0,
+      "paired_ratio_median": 0.9784354951406513,
+      "mean_relative_reduction": 0.024352286825786783,
+      "mean_reduction_paired_bootstrap_95_interval": [
+        0.00909154935552519,
+        0.040794052547561604
+      ],
+      "bootstrap_seed": 12648430,
+      "bootstrap_resamples": 10000,
+      "orders": {
+        "AB": {
+          "pairs": 15,
+          "median_ratio": 0.9731665281433165
+        },
+        "BA": {
+          "pairs": 15,
+          "median_ratio": 0.9934820586055723
+        }
+      }
+    },
+    "scope": "all original 30 alternating measured pairs and 2 warmup pairs, tiny complete-parity fixture; no formal speed claim"
+  },
+  "decision": {
+    "prototype_only": true,
+    "promote_to_new_P_R_G": false,
+    "trigger_large_measurement": false,
+    "reason": "Small 2-percent-scale observation with order sensitivity; original Clippy remains failed. Keep reviewable code and all results rather than promoting a speed claim.",
+    "task_complete": false,
+    "new_original_TODO_done": 0,
+    "done": 163,
+    "remaining": 29
+  },
+  "executables": [
+    {
+      "execution": "unit-oracle-release",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target/release/deps/cc_eval-a52245cf7b262525",
+      "bytes": 25220240,
+      "sha256": "023b81a1de99b7024a49052b23a78e4d7b7ec7738761960d249e8ddc04cb3837",
+      "archive_policy": "retained in isolated native target; not copied into small Git archive"
+    },
+    {
+      "execution": "integration-oracle-release",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/oracle-prototype-target/release/deps/benchmark_oracle_streaming-13bc650328d7ffcc",
+      "bytes": 2764736,
+      "sha256": "2680ce37dd97271ea35ace4d9d2f27f0c9468584637e613eded80f84558ca018",
+      "archive_policy": "retained in isolated native target; not copied into small Git archive"
+    }
+  ],
+  "independent_review": {
+    "reviewer": "/root/execution_recon",
+    "path": "review-next-candidate/oracle-prototype/independent-review.json",
+    "bytes": 13052,
+    "sha256": "9ee6e980cc4022327a101618e68a4c44c28e2c0d039ce17727d1a9201c2dfe5f",
+    "status": "complete",
+    "verdict": {
+      "source_correctness": "accepted_scoped_independent_review",
+      "observed_tests": "17 passed, zero failed and zero ignored in the two explicit commands",
+      "lint": "failed, exit 101",
+      "overall_validation": "not_passed",
+      "performance": "prototype_only; do not promote to formal candidate or expensive study",
+      "original_todo_credit": 0,
+      "remaining_original_todos": 29
+    },
+    "scope": "source semantics and actual original command outcomes; no performance, formal source admission or TODO credit"
+  }
+}

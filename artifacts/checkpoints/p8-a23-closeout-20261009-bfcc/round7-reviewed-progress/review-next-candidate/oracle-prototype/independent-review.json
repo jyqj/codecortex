@@ -1,0 +1,306 @@
+{
+  "schema": "p8-oracle-borrowed-cursor-independent-review-v1",
+  "reviewer": "/root/execution_recon",
+  "scope": "Single-file non-author source review and read-only verification of the author's original small unit diagnostic. This does not approve original scale acceptance, a new primary run, or TODO closure.",
+  "parent": "252e28744aa55a4b14414787f74e00783f87712f",
+  "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+  "source_sha256": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+  "source_bytes": 40672,
+  "verdict": "accepted_scoped_source_and_observed_unit_controls",
+  "source_findings": [
+    {
+      "scope": "Borrow lifetime",
+      "lines": [
+        212,
+        227,
+        340,
+        369
+      ],
+      "finding": "Each &str is tied to the mutable borrow of its own Rows cursor. The two SQLite statements and cursors stay live for the comparison loop. equal_rows, example and append_digest consume the borrowed views before either cursor advances on the next loop. There is no unsafe code, stored borrowed row, changed cursor order, or shared cursor between sides."
+    },
+    {
+      "scope": "Locked rusqlite error compatibility",
+      "lines": [
+        215,
+        225
+      ],
+      "finding": "The locked rusqlite0.40.1 archive's String FromSql implementation calls ValueRef::as_str then allocates String. Row::get maps InvalidType to InvalidColumnType with column0, actual column name and data type, and maps Utf8Error to Error::Utf8Error with column0. The proposed reader preserves these mappings, index validation and the unchanged Rows::next error path while eliminating only String allocation."
+    },
+    {
+      "scope": "Unchanged semantics",
+      "lines": [
+        229,
+        262,
+        320,
+        403
+      ],
+      "finding": "Sorted SQL, duplicate alignment, byte digests, numeric Value equality including signed zero, absent-side behavior, all fifteen tables, three examples,16KiB example omission and all row/scratch/canonical byte limits remain unchanged. Borrowed views are passed to the exact existing equality, example and digest helpers."
+    },
+    {
+      "scope": "Independent old reference",
+      "lines": [
+        411,
+        503
+      ],
+      "finding": "The retained cfg(test) owned reader is the original next_row. The complete old compare function is an exact parent copy after only renaming the function and its next_row calls. A machine comparison verified this; it does not call the new borrowed reader. Shared helpers are unchanged by this diff, so no newly changed helper is shared into both sides of the differential control."
+    },
+    {
+      "scope": "Controls",
+      "lines": [
+        522,
+        649
+      ],
+      "finding": "The seven complete-report cases cover empty sides, reordered duplicates, mixed SQL values, UTF-8/NUL/escaping, extra rows, mismatches, over16KiB example bodies, and signed-zero truth with distinct raw digests. Complete Value and serialized report bytes are compared against the old loop. Six negative reader cases cover Null,Integer,Real,Blob,invalid UTF-8 Text and a SQLite step error, checking Debug and Display equality. Two warmup plus30 alternating AB/BA pairs retain every outcome and compare complete reports."
+    }
+  ],
+  "source_blockers": [],
+  "test_gap_assessment": "No additional blocking case was identified for this narrow allocation/lifetime change. Existing original streaming budget, capacity, duplicate ordering and batching controls remain necessary and were included in the observed nine-test run. This review does not generalize the small synthetic fixture to100k behavior.",
+  "original_reference_verification": {
+    "exact_after_names_only": true,
+    "parent_function_sha256": "a100127d66053beee1edeb78f48df72ca020d5cd226dc3dc66a35208428a5819",
+    "normalized_owned_reference_sha256": "b57dfe89fc114677c6d398e87c1b3676bdc40cf0ee4a0c1b5d24b0ccaa478b05"
+  },
+  "dependency_provenance": {
+    "name": "rusqlite",
+    "version": "0.40.1",
+    "cargo_lock_and_actual_crate_sha256": "11438310b19e3109b6446c33d1ed5e889428cf2e278407bc7896bc4aaea43323",
+    "local_row_rs_matches_archive": true,
+    "row_rs_sha256": "ca0d543ee7004db58d365bdf45708aa59d9c81ef20e20b4da40ab3eea6aaa492",
+    "row_get_lines": [
+      285,
+      303
+    ],
+    "get_ref_lines": [
+      305,
+      325
+    ],
+    "local_from_sql_rs_matches_archive": true,
+    "from_sql_rs_sha256": "321815d30a5987df0b775975d70b06b46d258ac32b0b7a095b589063d18af087",
+    "string_from_sql_lines": [
+      201,
+      205
+    ],
+    "limitation": "Initial optional .cargo-checksum.json read was unavailable and failed before product execution. The stronger actual .crate SHA256 against Cargo.lock plus archive-member byte comparison was used instead."
+  },
+  "observed_unit_execution": {
+    "owner": "/root/todo_audit",
+    "native_job": "wc_job_LoXztu9tEMAuipzw",
+    "platform": "Mac aarch64; not Linux ELF",
+    "command": [
+      "/Users/jin/.cargo/bin/cargo",
+      "+1.95.0",
+      "test",
+      "--offline",
+      "--locked",
+      "--release",
+      "-p",
+      "cc-eval",
+      "--lib",
+      "benchmark::oracle::streaming::tests",
+      "--",
+      "--test-threads=1",
+      "--nocapture"
+    ],
+    "receipt": "review-next-candidate/oracle-prototype/attempt01/unit-oracle-release.json",
+    "receipt_sha256": "4caee45a538ee0b785f0df4705eaffb08f2900276405c6c4266fedeaabd02027",
+    "started_utc": "2026-10-09T04:47:16.962257+00:00",
+    "finished_utc": "2026-10-09T04:50:34.323756+00:00",
+    "exit_code": 0,
+    "passed": 9,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 56,
+    "stdout_bytes": 21407,
+    "stdout_sha256": "710daf07f722423ad85e593d711bd91c9c357ccbff9e618708235a28da88a22e",
+    "stderr_bytes": 7923,
+    "stderr_sha256": "f19bb3ba1eec6220c9bd69064d49df0f56f6ba17f55cabf80826b8c732c2fcc8",
+    "source_before_after_sha256": "5f40d072210f91b311b63f422b0df8fa2e55ad2436024681cae0286e4ed4ae05",
+    "new_tests": [
+      "benchmark::oracle::streaming::tests::borrowed_cursor_matches_complete_owned_outputs",
+      "benchmark::oracle::streaming::tests::borrowed_cursor_preserves_type_utf8_and_step_errors",
+      "benchmark::oracle::streaming::tests::borrowed_cursor_small_ab_ba_diagnostic"
+    ],
+    "recomputed_from_original_stdout": {
+      "warmup_pairs": 2,
+      "measured_pairs": 30,
+      "samples": 64,
+      "all_pairs_complete": true,
+      "single_report_digest": true,
+      "median_borrowed_div_owned": 0.9784354951406513,
+      "AB_median": 0.9731665281433165,
+      "BA_median": 0.9934820586055723,
+      "min_ratio": 0.8631597335841329,
+      "max_ratio": 1.0479746600567899
+    }
+  },
+  "performance_conclusion": "Prototype-only engineering observation. The roughly2.2% median ratio change on this small Mac release fixture, including order differences and pairs slower than reference, does not establish a material100k speedup or justify replacing/rerunning a primary. No formal scale/performance acceptance or original TODO credit.",
+  "not_observed_by_this_report": [
+    "Any formal fixed-source P/R/G execution for this prototype",
+    "100k or full150-scale execution of this prototype"
+  ],
+  "source_modified_by_reviewer": false,
+  "tests_started_by_reviewer": false,
+  "todo_credit": {
+    "new_done": 0,
+    "remaining": 29
+  },
+  "reviewed_utc": "2026-10-09T04:55:30.266427+00:00",
+  "tracked_diff_paths": [
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+  ],
+  "terminal_addendum_at": "2026-10-09T04:59:33.031641+00:00",
+  "terminal_execution_review": {
+    "receipts": [
+      {
+        "name": "unit-oracle-release",
+        "exit_code": 0,
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--offline",
+          "--locked",
+          "--release",
+          "-p",
+          "cc-eval",
+          "--lib",
+          "benchmark::oracle::streaming::tests",
+          "--",
+          "--test-threads=1",
+          "--nocapture"
+        ],
+        "started_at": "2026-10-09T04:47:16.962257+00:00",
+        "finished_at": "2026-10-09T04:50:34.323756+00:00",
+        "raw": [
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/unit-oracle-release.json",
+            "bytes": 1300,
+            "sha256": "4caee45a538ee0b785f0df4705eaffb08f2900276405c6c4266fedeaabd02027"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/unit-oracle-release.stdout",
+            "bytes": 21407,
+            "sha256": "710daf07f722423ad85e593d711bd91c9c357ccbff9e618708235a28da88a22e"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/unit-oracle-release.stderr",
+            "bytes": 7923,
+            "sha256": "f19bb3ba1eec6220c9bd69064d49df0f56f6ba17f55cabf80826b8c732c2fcc8"
+          }
+        ]
+      },
+      {
+        "name": "integration-oracle-release",
+        "exit_code": 0,
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--offline",
+          "--locked",
+          "--release",
+          "-p",
+          "cc-eval",
+          "--test",
+          "benchmark_oracle_streaming",
+          "--",
+          "--test-threads=1"
+        ],
+        "started_at": "2026-10-09T04:50:34.324690+00:00",
+        "finished_at": "2026-10-09T04:54:12.917390+00:00",
+        "raw": [
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/integration-oracle-release.json",
+            "bytes": 1280,
+            "sha256": "1f28fee5f338731873554f1bea84ba4ae7cdd381733b6b79409c532f68e0a4ab"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/integration-oracle-release.stdout",
+            "bytes": 723,
+            "sha256": "20ccf61eb8ae0f18c5913578022000604e019ee3232917a1f76bbd8bb5726e54"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/integration-oracle-release.stderr",
+            "bytes": 1696,
+            "sha256": "a223e3c1862f99bc17395554a6576885c162a8402ca24ff1d866b103fe9799c6"
+          }
+        ]
+      },
+      {
+        "name": "clippy-oracle-release",
+        "exit_code": 101,
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "clippy",
+          "--offline",
+          "--locked",
+          "--release",
+          "-p",
+          "cc-eval",
+          "--lib",
+          "--test",
+          "benchmark_oracle_streaming",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "started_at": "2026-10-09T04:54:12.918394+00:00",
+        "finished_at": "2026-10-09T04:54:31.766728+00:00",
+        "raw": [
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/clippy-oracle-release.json",
+            "bytes": 1294,
+            "sha256": "f4f279b7831f6f77b41cb8aa005d686adac0b9bea4465cef289d6f49cd45946d"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/clippy-oracle-release.stdout",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "review-next-candidate/oracle-prototype/attempt01/clippy-oracle-release.stderr",
+            "bytes": 6214,
+            "sha256": "c9aafda8ddade208a0ea130bdaa25284382473cef9092b82de8ba800cd02a254"
+          }
+        ]
+      }
+    ],
+    "unit": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    "integration": {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    "clippy": {
+      "exit_code": 101,
+      "accepted": false,
+      "five_errors": "unused config_cache::Loader and python imports; dead bound, sum, supported_document; unconstructed OutputMeter",
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "unchanged_from_parent": true,
+      "source_sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+      "scope_limit": "Failed dependency cc-index on native Mac; no claim that cc-eval Clippy completed or passed. No baseline rerun was performed."
+    },
+    "wrapper_exit_is_not_validation_status": true
+  },
+  "final_verdict": {
+    "source_correctness": "accepted_scoped_independent_review",
+    "observed_tests": "17 passed, zero failed and zero ignored in the two explicit commands",
+    "lint": "failed, exit 101",
+    "overall_validation": "not_passed",
+    "performance": "prototype_only; do not promote to formal candidate or expensive study",
+    "original_todo_credit": 0,
+    "remaining_original_todos": 29
+  },
+  "supersedes_partial_observation": "review-next-candidate/oracle-independent/oracle-borrowed-cursor-independent-review.json",
+  "historical_before_terminal_addendum_not_observed": [
+    "Author's integration-eight control terminal receipt",
+    "Author's Clippy terminal receipt",
+    "Any formal fixed-source P/R/G execution for this prototype",
+    "100k or full150-scale execution of this prototype"
+  ]
+}

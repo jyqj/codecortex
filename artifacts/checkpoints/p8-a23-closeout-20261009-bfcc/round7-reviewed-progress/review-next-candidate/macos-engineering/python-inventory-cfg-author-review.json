@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T05:03:04.000179+00:00",
+  "author": "/root/todo_audit",
+  "worktree": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos",
+  "parent_commit": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "branch": "task/p8-macos-engineering-bfcc-20261009",
+  "path": "crates/cc-index/src/project_model/python_inventory.rs",
+  "before": {
+    "bytes": 13123,
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+    "blob": "95b87a9780d41e86b88336e809882a1fcf1497f8"
+  },
+  "after": {
+    "bytes": 13291,
+    "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e"
+  },
+  "diff": {
+    "path": "review-next-candidate/macos-engineering/python-inventory-cfg.patch",
+    "bytes": 2073,
+    "sha256": "72bf414e4deb164ff0caeb2e8e20a278f114d7496a2da5be436714e53fa3d0a6",
+    "added_lines": 6,
+    "removed_lines": 0
+  },
+  "canonical_edit": {
+    "read_revision_before": 7928562570315659,
+    "read_revision_after": 7928562570315668,
+    "edits": 6
+  },
+  "exact_delta_check": "Constructed expected bytes from parent by inserting only six cfg(target_os = linux) lines at unique anchors; expected bytes equal current file",
+  "gated_items": [
+    "use super::{config_cache::Loader, python};",
+    "fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {",
+    "fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {",
+    "fn supported_document(doc: &ConfigDocument) -> Result<()> {",
+    "struct OutputMeter {",
+    "impl std::io::Write for OutputMeter {"
+  ],
+  "rationale": "Existing capture_inner Linux block and native module are sole users of these helpers. Native module already has target_os=linux; revalidation uses public capture API and no newly gated helper. Loader/python imports and three helper functions are otherwise unused on Mac; OutputMeter is unconstructed. Gate struct and impl together.",
+  "preserved": [
+    "Every original line and executable body unchanged",
+    "Linux path: six cfg predicates evaluate true; no change to behavior, budgets, io, or fail-closed checks",
+    "Non-Linux path: scope and owner checks followed by existing UnsupportedPlatform; public types and APIs retained",
+    "Existing Linux test module cfg unchanged",
+    "No Cargo feature flags, dependencies, lint allowances, control budgets, pins, registry, workflows or task status changed"
+  ],
+  "verification": {
+    "executed": [
+      "Exact Git parent and source before/after identity",
+      "Exact additive-only bytes proof",
+      "Read-only symbol reference audit"
+    ],
+    "not_executed": [
+      "Rust compilation",
+      "Clippy",
+      "tests"
+    ],
+    "pending_owner": "/root after combined two-file freeze",
+    "suggested_commands": [
+      [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--release",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--test",
+        "benchmark_oracle_streaming",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "project_model::python_inventory",
+        "--",
+        "--test-threads=1"
+      ]
+    ],
+    "linux_control_note": "The inventory tests are Linux-only; a Mac-filtered zero-test result must not be called Linux validation. Run the existing Linux inventory controls when root schedules the fixed-source CI or equivalent Linux check."
+  },
+  "source_frozen": true,
+  "commit_or_push_performed": false,
+  "other_worktree_path_owner": {
+    "crates/cc-eval/tests/p8_scale.rs": "/root/pr_triage"
+  },
+  "todo_credit": {
+    "new_done": 0,
+    "remaining": 29
+  }
+}

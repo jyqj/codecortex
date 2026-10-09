@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "scope": "Read-only semantic retirement review of historical PRs #3, #4 and #62; no remote mutations, no new workload/test execution, no TODO credit.",
+  "current_main": {
+    "sha": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+    "tree": "ad76a3b0a99c1f0bc1035e1815372ce8a3998282",
+    "parents": [
+      "b21cce4c8661589267ad5719f850accbec088d2f",
+      "255e3b27b8fa1d82d5ebfb95b946cec8ee97528f"
+    ],
+    "message": "docs(p8): preserve original acceptance and regression evidence (#171)\n\nMerge the independently reviewed artifact-only archive. Preserve all existing main paths and the original A23, failure, cancelled-run and Mac regression identities. Original scale remains incomplete; canonical TODO status is unchanged. This merge records byte custody and does not claim CI, Mac workspace, full-scale or release acceptance."
+  },
+  "reviewed_product_reference": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "decisions": [
+    {
+      "pr": 3,
+      "recommendation": "retain_pending_scoped_contract_disposition",
+      "retire_as_fully_adopted": false,
+      "original_intent": "Hard caller scope separate from heuristic preselection; reliable non-embedding retrieval/indexing; long-symbol projection; replayable independent quality evidence.",
+      "covered_examples": [
+        {
+          "capability": "Hard scope / soft preselection separation",
+          "references": [
+            "main-plan-scope",
+            "main-scope-tests"
+          ]
+        },
+        {
+          "capability": "Monotonic bounded BM25 bonus and one vote per retrieval lane",
+          "references": [
+            "main-bm25-test",
+            "main-fusion-test"
+          ]
+        },
+        {
+          "capability": "Immutable AnalysisInputs and retained parser-exact reload policy",
+          "references": [
+            "main-analysis-inputs",
+            "main-dirty-policy"
+          ]
+        }
+      ],
+      "unique_or_unresolved": [
+        {
+          "contract": "Old graph projection returns every intersecting chunk when no chunk contains the entire symbol.",
+          "old_references": [
+            "pr3-symbol-projection"
+          ],
+          "main_references": [
+            "main-graph-anchor-contract",
+            "main-graph-anchor-implementation"
+          ],
+          "assessment": "Current main deliberately uses one byte-verified declaration anchor per symbol and explicitly does not claim the whole body was returned. This covers split-symbol discovery through a different contract, but it does not implement the old all-intersections result set. Treat as an unresolved adoption/retirement decision, not evidence that main is broken.",
+          "next_action": "Either explicitly retire the all-body-chunks promise in favor of the current declaration-anchor contract, or open a narrow modern follow-up with the old split-boundary cases; do not reverse-merge the old branch."
+        },
+        {
+          "contract": "Old replay scorer has a named AND-of-OR evidence_sufficient boolean across required_groups.",
+          "old_references": [
+            "pr3-evidence-sufficiency"
+          ],
+          "main_references": [
+            "main-native-metrics",
+            "main-chunk-facet-schema",
+            "main-chunk-facet-scoring"
+          ],
+          "assessment": "Main has answer-group recall, alternatives, no-answer handling and a separate marker-based facet-coverage suite. Those are real successor capabilities, but this inspection does not establish equivalence to the old required_groups boolean and its historical replay population. File absence alone is not the reason for retention.",
+          "next_action": "Map or explicitly retire the old required-groups regression contract in the current scorer before claiming full semantic adoption."
+        }
+      ],
+      "merge_advice": "Keep as a historical source of the remaining contract decisions, or replace it with an explicit scoped successor before closing. No recommendation to merge this obsolete whole branch.",
+      "not_required": "The unrelated original 150-shard scale study is not a retirement prerequisite."
+    },
+    {
+      "pr": 4,
+      "recommendation": "retain_pending_scoped_contract_disposition",
+      "retire_as_fully_adopted": false,
+      "original_intent": "AST-backed JS/TS/Python facts, dependency-correct incremental invalidation, explicit graph/lane ablation and structured evidence diagnostics. This PR is stacked on #3 and only its additional scope is evaluated.",
+      "covered_examples": [
+        {
+          "capability": "AST truth regressions reject declarations/comments/string bodies as calls and preserve nested ownership/recursion/shadowing distinctions.",
+          "references": [
+            "main-jsts-truth-tests",
+            "main-python-truth-tests"
+          ]
+        },
+        {
+          "capability": "Separate persisted resolution dependencies and transaction-coupled replacement",
+          "references": [
+            "main-resolution-dependencies",
+            "main-resolution-write"
+          ]
+        }
+      ],
+      "unique_or_unresolved": [
+        {
+          "contract": "graph_features=false disables graph preselection, lane, reranking and enrichment.",
+          "old_references": [
+            "pr4-ablation-adr",
+            "pr4-graph-config",
+            "pr4-graph-preselect"
+          ],
+          "main_references": [
+            "main-graph-config-search"
+          ],
+          "assessment": "The old ADR and code define one end-to-end graph ablation control. Targeted main search did not find graph_features or a named equivalent all-graph disable control in the relevant config/search/server paths. Existing separate ablation/strategy tests are not automatically equivalent.",
+          "next_action": "Design/map a complete graph-feature ablation against current architecture or explicitly retire the old config promise; retain this obligation until the decision is recorded."
+        },
+        {
+          "contract": "A zero lane weight suppresses candidate production.",
+          "old_references": [
+            "pr4-zero-grep",
+            "pr4-ablation-adr"
+          ],
+          "main_references": [
+            "main-zero-grep"
+          ],
+          "assessment": "There is an explicit semantic disagreement: old grep eligibility requires grep_weight > 0, while current main documents eligibility independent of fusion weight and permits legacy grep candidates with zero RRF weight. This is not a path-renaming issue and is not, by itself, a main bug.",
+          "next_action": "Make a deliberate lane-control contract decision and preserve a narrow regression for the chosen behavior instead of merging the obsolete schema-8 branch."
+        }
+      ],
+      "merge_advice": "Keep pending a narrow successor/disposition for graph ablation and lane execution semantics. Most AST/dependency ideas have evolved in main; do not restore the entire old schema/implementation.",
+      "not_required": "No unrelated scale study prerequisite."
+    },
+    {
+      "pr": 62,
+      "recommendation": "close_as_superseded_historical_checkpoint_preserving_head_branch_history",
+      "retire_as_fully_adopted": false,
+      "original_intent": "The first 20-family Express author candidate checkpoint before common-protocol migration; not independent acceptance or a clean holdout corpus.",
+      "successor": {
+        "pr": 68,
+        "head_sha": "a739431b6595bb44e79130843e27e2cde2d34eb1",
+        "state": "open",
+        "reason": "Both current PR bodies expressly designate #68 as the authoritative 100-draft successor and state the first 20 are included rather than additive."
+      },
+      "covered_examples": [
+        {
+          "capability": "Identical seven Express handwritten source files and identical MIT license are retained by the current reviewed DEV source snapshot.",
+          "references": [
+            "express-source-identity"
+          ]
+        },
+        {
+          "capability": "The common-protocol public projection of the first 20 is present in current main: 12 native DEV IDs / 9 compat DEV IDs.",
+          "references": [
+            "express-dev-metadata"
+          ]
+        }
+      ],
+      "remaining_obligations": [
+        "The other eight first-block candidates were classified as would-be holdout and isolated; no claim that all 20 were independently accepted.",
+        "The old initial 14 DEV / 6 holdout split is not the adopted common protocol; do not merge it back.",
+        "Public exposure, component review and custody remain tracked by #68 and main corpus-lock/final-acceptance records. Closing #62 does not close #68, V19 or P8-002/003/004.",
+        "Current main has 70 native / 59 compat Express DEV rows; the successor body's historical 68 / 57 counts describe its own author checkpoint and are not current-main totals."
+      ],
+      "preservation": "Close without deleting the branch, rewriting head 336b962ffe7cb5d144273cfc2f45b0526ecba8bc, squashing or removing historical exposure/hash evidence.",
+      "suggested_close_reason": "This first-20 Express author checkpoint is superseded by #68. Main retains the identical seven-source-file MIT snapshot and the migrated first-block public DEV projection (12 native / 9 compat). The eight would-be holdout candidates and public-history custody limits remain unresolved in the successor/corpus records; this closure does not certify clean holdout or V19 completion.",
+      "not_required": "No performance measurement or original 150-shard completion prerequisite."
+    }
+  ],
+  "limitations": [
+    "This is a source/metadata review, not a new execution claim.",
+    "Existing historical run claims are preserved as historical and were not rerun.",
+    "Only public DEV metadata was used for ID coverage; no protected heldout question/gold bodies were inspected or copied into this report.",
+    "Nonempty diffs and absent old filenames are not treated as sufficient proof of nonadoption.",
+    "Current source, CI, measurements, canonical TODO ledger and remote PR state were not changed."
+  ],
+  "todo": {
+    "done": 163,
+    "remaining": 29,
+    "credit_from_this_review": 0
+  },
+  "main_refresh_proof": {
+    "prior_main": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "current_main": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+    "changed_paths": 443,
+    "all_changed_under": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/",
+    "nonartifact_mode_blob_maps_equal": true,
+    "nonartifact_paths": 1650,
+    "current_main_has_same_reviewed_product_and_validation_bytes": true
+  },
+  "observed_at_utc": "2026-10-09T05:21:48.246359+00:00",
+  "source_evidence_file": "source-evidence.json",
+  "express_evidence_file": "express-projection-metadata.json"
+}

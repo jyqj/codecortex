@@ -1,0 +1,18 @@
+diff --git a/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs b/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
+index f35c2cd2cb14e4c257d7ab4ec143be0497bd905b..4d3b82904f0b9415f1f901a4192f66525492cd02 100644
+--- a/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
++++ b/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
+@@ -8,8 +8,12 @@ use std::{
+     alloc::{GlobalAlloc, Layout, System},
+     cell::Cell,
+     io::Write,
+-    path::{Path, PathBuf},
++    path::PathBuf,
+     sync::atomic::{AtomicU64, Ordering},
++};
++#[cfg(target_os = "linux")]
++use std::{
++    path::Path,
+     time::{Duration, Instant},
+ };
+ 

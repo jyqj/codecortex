@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "reviewer": "execution_recon",
+  "observed_at": "2026-10-09T05:03:49.808121+00:00",
+  "worktree": "candidate-macos",
+  "parent": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "tracked_diff_only": [
+    "crates/cc-eval/tests/p8_scale.rs",
+    "crates/cc-index/src/project_model/python_inventory.rs"
+  ],
+  "source_inventory": [
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "before_bytes": 19815,
+      "before_sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d",
+      "after_bytes": 21068,
+      "after_sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "before_bytes": 13123,
+      "before_sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+      "after_bytes": 13291,
+      "after_sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "unchanged": true,
+      "bytes": 46139,
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "unchanged": true,
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    }
+  ],
+  "verdict": "accepted_scoped_source_review_pending_joint_execution",
+  "readiness_review": {
+    "exact_scope": "27 added lines inside subprocess_descendant_cannot_hold_stderr_past_worker_deadline; removing exactly that added block reconstructs all original file bytes.",
+    "contract": [
+      {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "original_lines": [
+          484,
+          485
+        ],
+        "meaning": "Scenario explicitly describes worker exits normally while descendant keeps stderr open."
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+        "lines": [
+          77,
+          77
+        ],
+        "meaning": "Production deadline covers spawn through stderr drain; own process-group cleanup and bounded nonblocking drain join. Production code unchanged."
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+        "lines": [
+          97,
+          97
+        ],
+        "meaning": "Integration coverage is deadline plus real post-exit stderr-holding descendants. No cold-helper-startup-under-250ms promise in this clause."
+      }
+    ],
+    "setup": "Exactly one original run_supervised call on exact original helper; separate fresh readiness output and explicit 2000ms setup limit; no retry or skipped failure.",
+    "ready_predicate": "Requires report exit0, worker_exit0, summary.passed true, stderr_complete true, fixture_cleanup.error null and release_certification not_run.",
+    "failure": "temp.keep before panic preserves all setup evidence. Same original supervisor closes only its own group and stderr; no process cleanup code added or bypassed.",
+    "measured_call": "Original 250ms plan, timer begins after setup, elapsed<2s, exit0, stderr_complete and release_not_run assertions identical. This now explicitly validates a ready fixture; no cold-start performance claim.",
+    "negative": "Separate 1ms deadline_exceeded and immutable report/output-reuse rejection test byte-for-byte unchanged.",
+    "observational_basis": "Parent fresh-vs-reused-assessment records fresh spawn return 254209ns but no summary/worker exit at255943542ns, while reused helper completed. This supports fixture distinction; no specific OS mechanism attributed.",
+    "remaining_limit": "A future workload regression that affects only cold execution is not covered by this ready-helper scenario; independent production 1ms deadline and source unchanged."
+  },
+  "cfg_review": {
+    "diff": "Six Linux cfg attributes only: Loader/python import, bound, sum, supported_document, OutputMeter and its Write impl.",
+    "linux_behavior": "All original bodies, bindings, budget and configuration rules byte-for-byte retained; attributes evaluate true on Linux exactly where sole callers already live.",
+    "non_linux_behavior": "capture_inner retains original authorization/owner prechecks then UnsupportedPlatform; no capture or refusal is bypassed. Helpers removed from non-Linux compilation were unused there.",
+    "callsite_check": "Existing capture block is cfg Linux, native module and tests already Linux; revalidation has no references to these helpers.",
+    "lint_scope": "Targets five observed Mac errors from frozen earlier run; source review does not establish new Clippy success."
+  },
+  "checks": {
+    "diff_check_exit": 0,
+    "no_tests_or_compilation_started_by_reviewer": true,
+    "code_not_modified_by_reviewer": true,
+    "source_execution_frozen_for_parent": true
+  },
+  "pending": "Root owns one jointly frozen actual compile/test/lint sequence and must retain every real command exit. Source acceptance is not execution acceptance.",
+  "todo_credit": 0,
+  "remaining_original_todos": 29
+}

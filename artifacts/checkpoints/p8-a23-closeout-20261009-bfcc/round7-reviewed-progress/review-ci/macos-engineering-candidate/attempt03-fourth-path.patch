@@ -1,0 +1,13 @@
+diff --git a/crates/cc-eval/src/benchmark/p8_scale.rs b/crates/cc-eval/src/benchmark/p8_scale.rs
+index 3f217d116e5fab8a1035cb643f0d74ea3c122568..1281d5340096699663308c92ce27978ae96ac84e 100644
+--- a/crates/cc-eval/src/benchmark/p8_scale.rs
++++ b/crates/cc-eval/src/benchmark/p8_scale.rs
+@@ -128,7 +128,7 @@ impl ScalePlan {
+                 || self.files.len() != 1
+                 || self.dirty_budget != 200
+                 || self.max_resume_builds != 1024
+-                || !self.shard.is_some_and(|s| s.count == self.repetitions))
++                || self.shard.is_none_or(|s| s.count != self.repetitions))
+         {
+             return Err(invalid(
+                 "scale_capacity_v1 requires release, one scale, one repetition per shard, dirty budget 200 and resume budget 1024; fanout keeps 8/128",

@@ -1,0 +1,300 @@
+diff --git a/crates/cc-eval/src/benchmark/oracle/streaming.rs b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+index 3c05342f976f534861347c098c3229ce988dfb61..bec879a78a26f7ab9386cbd7e6aed41088eb799c 100644
+--- a/crates/cc-eval/src/benchmark/oracle/streaming.rs
++++ b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+@@ -209,10 +209,20 @@ fn spool(
+     Ok(count)
+ }
+ 
+-fn next_row(rows: &mut rusqlite::Rows<'_>) -> Result<Option<String>> {
++fn next_row<'cursor>(rows: &'cursor mut rusqlite::Rows<'_>) -> Result<Option<&'cursor str>> {
++    // Each borrow ends before this cursor advances. Match Row::get::<String>
++    // from the locked rusqlite 0.40.1, including its UTF-8/type errors.
+     rows.next()
+         .map_err(db_error)?
+-        .map(|row| row.get::<_, String>(0).map_err(db_error))
++        .map(|row| match row.get_ref(0).map_err(db_error)? {
++            ValueRef::Text(bytes) => std::str::from_utf8(bytes)
++                .map_err(|error| db_error(rusqlite::Error::Utf8Error(0, error))),
++            value => Err(db_error(rusqlite::Error::InvalidColumnType(
++                0,
++                row.as_ref().column_name(0).map_err(db_error)?.into(),
++                value.data_type(),
++            ))),
++        })
+         .transpose()
+ }
+ 
+@@ -344,18 +354,18 @@ fn compare_with_validated_limits(
+             if av.is_none() && bv.is_none() {
+                 break;
+             }
+-            if !equal_rows(av.as_deref(), bv.as_deref())? {
++            if !equal_rows(av, bv)? {
+                 different_rows += 1;
+                 if examples.len() < 3 {
+                     examples.push(json!({
+                         "sorted_row": position,
+-                        "incremental": example(av.as_deref())?,
+-                        "full": example(bv.as_deref())?,
++                        "incremental": example(av)?,
++                        "full": example(bv)?,
+                     }));
+                 }
+             }
+-            append_digest(&mut ah, av.as_deref(), position);
+-            append_digest(&mut bh, bv.as_deref(), position);
++            append_digest(&mut ah, av, position);
++            append_digest(&mut bh, bv, position);
+             position += 1;
+         }
+         ah.update(b"]");
+@@ -397,6 +407,248 @@ fn compare_with_validated_limits(
+ mod tests {
+     use super::*;
+ 
++    // Exact original R252e owned paths, retained only as differential references.
++    fn owned_row_reference(rows: &mut rusqlite::Rows<'_>) -> Result<Option<String>> {
++        rows.next()
++            .map_err(db_error)?
++            .map(|row| row.get::<_, String>(0).map_err(db_error))
++            .transpose()
++    }
++
++    fn owned_comparison_reference(
++        a: &Path,
++        b: &Path,
++        limits: StreamingLimits,
++        capacity_profile: Option<&str>,
++    ) -> Result<Value> {
++        let a = snapshot(a)?;
++        let b = snapshot(b)?;
++        let directory = tempfile::tempdir()?;
++        let scratch_path = directory.path().join("canonical.sqlite3");
++        let mut scratch = open_scratch(&scratch_path, limits)?;
++        let mut tables = Vec::new();
++        let mut different = Vec::new();
++        let mut canonical_bytes = 0u64;
++        for table in TABLES {
++            scratch
++                .execute("DELETE FROM canonical_rows", [])
++                .map_err(db_error)?;
++            let ac = spool(&a, &mut scratch, table, 0, limits, &mut canonical_bytes)?;
++            let bc = spool(&b, &mut scratch, table, 1, limits, &mut canonical_bytes)?;
++            let mut astmt = scratch.prepare(SORTED_ROWS_SQL).map_err(db_error)?;
++            let mut bstmt = scratch.prepare(SORTED_ROWS_SQL).map_err(db_error)?;
++            let mut arows = astmt.query([0]).map_err(db_error)?;
++            let mut brows = bstmt.query([1]).map_err(db_error)?;
++            let mut ah = blake3::Hasher::new();
++            let mut bh = blake3::Hasher::new();
++            ah.update(b"[");
++            bh.update(b"[");
++            let mut position = 0u64;
++            let mut different_rows = 0u64;
++            let mut examples = Vec::new();
++            loop {
++                let av = owned_row_reference(&mut arows)?;
++                let bv = owned_row_reference(&mut brows)?;
++                if av.is_none() && bv.is_none() {
++                    break;
++                }
++                if !equal_rows(av.as_deref(), bv.as_deref())? {
++                    different_rows += 1;
++                    if examples.len() < 3 {
++                        examples.push(json!({
++                            "sorted_row": position,
++                            "incremental": example(av.as_deref())?,
++                            "full": example(bv.as_deref())?,
++                        }));
++                    }
++                }
++                append_digest(&mut ah, av.as_deref(), position);
++                append_digest(&mut bh, bv.as_deref(), position);
++                position += 1;
++            }
++            ah.update(b"]");
++            bh.update(b"]");
++            if different_rows != 0 {
++                different.push(*table);
++            }
++            tables.push(json!({
++                "table": table,
++                "equal": different_rows == 0,
++                "incremental_rows": ac,
++                "full_rows": bc,
++                "incremental_digest": ah.finalize().to_hex().to_string(),
++                "full_digest": bh.finalize().to_hex().to_string(),
++                "different_row_count": different_rows,
++                "difference_alignment": "sorted_row",
++                "different_row_examples": examples,
++            }));
++        }
++        Ok(json!({
++            "status": if different.is_empty() { "equal" } else { "different" },
++            "equal": different.is_empty(),
++            "different_tables": different,
++            "tables": tables,
++            "comparison": "complete shared canonical projection and Value equality; duplicate-preserving serialized disk order; every row compared before hashing",
++            "oracle_mode": "disk_backed_exact_v1",
++            "storage_layout": "without_rowid_value_ordinal_v1",
++            "capacity_profile": capacity_profile,
++            "limits": limits,
++            "canonical_bytes": canonical_bytes,
++            "scratch_peak_bytes": std::fs::metadata(&scratch_path)?.len(),
++            "sorting_cache_kib": 2048,
++            "difference_examples_per_table": 3,
++            "difference_example_body_limit_bytes": 16 * 1024,
++        }))
++    }
++
++    fn borrowed_fixture(values: &[rusqlite::types::Value]) -> tempfile::TempDir {
++        let root = tempfile::tempdir().unwrap();
++        std::fs::create_dir(root.path().join(".codecortex")).unwrap();
++        let db = Connection::open(root.path().join(".codecortex/index.sqlite3")).unwrap();
++        for table in TABLES {
++            db.execute_batch(&format!("CREATE TABLE \"{table}\"(name TEXT, value);"))
++                .unwrap();
++            let mut insert = db
++                .prepare(&format!("INSERT INTO \"{table}\" VALUES ('same',?1)"))
++                .unwrap();
++            for value in values {
++                insert.execute([value]).unwrap();
++            }
++        }
++        root
++    }
++
++    #[test]
++    fn borrowed_cursor_matches_complete_owned_outputs() {
++        use rusqlite::types::Value as S;
++        let values = vec![
++            S::Null,
++            S::Integer(1),
++            S::Real(1.0),
++            S::Text("é/中文\0\n\"".into()),
++            S::Blob(vec![0, 255, 128]),
++            S::Text("duplicate".into()),
++            S::Text("duplicate".into()),
++            S::Text("x".repeat(16 * 1024 + 1)),
++        ];
++        let mut reversed = values.clone();
++        reversed.reverse();
++        let mut tail = reversed.clone();
++        tail.push(S::Text("extra tail".into()));
++        let mut different = reversed.clone();
++        different[0] = S::Text("y".repeat(16 * 1024 + 1));
++        for (left, right, equal) in [
++            (vec![], vec![], true),
++            (values.clone(), reversed, true),
++            (values.clone(), tail, false),
++            (values.clone(), different, false),
++            (vec![], values.clone(), false),
++            (values, vec![], false),
++            (vec![S::Real(-0.0)], vec![S::Real(0.0)], true),
++        ] {
++            let a = borrowed_fixture(&left);
++            let b = borrowed_fixture(&right);
++            let actual = compare_streaming(a.path(), b.path(), StreamingLimits::default()).unwrap();
++            let expected =
++                owned_comparison_reference(a.path(), b.path(), StreamingLimits::default(), None)
++                    .unwrap();
++            assert_eq!(actual, expected);
++            assert_eq!(actual["equal"], equal);
++            assert_eq!(actual["tables"].as_array().unwrap().len(), TABLES.len());
++            assert_eq!(
++                serde_json::to_vec(&actual).unwrap(),
++                serde_json::to_vec(&expected).unwrap()
++            );
++        }
++        let a = borrowed_fixture(&[S::Real(-0.0)]);
++        let b = borrowed_fixture(&[S::Real(0.0)]);
++        let actual = compare_streaming(a.path(), b.path(), StreamingLimits::default()).unwrap();
++        assert_eq!(actual["equal"], true);
++        assert_ne!(
++            actual["tables"][0]["incremental_digest"],
++            actual["tables"][0]["full_digest"]
++        );
++    }
++
++    #[test]
++    fn borrowed_cursor_preserves_type_utf8_and_step_errors() {
++        let db = Connection::open_in_memory().unwrap();
++        for sql in [
++            "SELECT NULL AS observed",
++            "SELECT 7 AS observed",
++            "SELECT 1.25 AS observed",
++            "SELECT x'ff' AS observed",
++            "SELECT CAST(x'ff' AS TEXT) AS observed",
++            "SELECT abs(-9223372036854775808) AS observed",
++        ] {
++            let mut a = db.prepare(sql).unwrap();
++            let mut b = db.prepare(sql).unwrap();
++            let old = owned_row_reference(&mut a.query([]).unwrap()).unwrap_err();
++            let mut rows = b.query([]).unwrap();
++            let new = next_row(&mut rows).unwrap_err();
++            assert_eq!(format!("{old:?}"), format!("{new:?}"), "{sql}");
++            assert_eq!(old.to_string(), new.to_string(), "{sql}");
++        }
++    }
++
++    #[test]
++    fn borrowed_cursor_small_ab_ba_diagnostic() {
++        use rusqlite::types::Value as S;
++        let values: Vec<_> = (0..128)
++            .map(|i| match i % 8 {
++                0 => S::Null,
++                1 => S::Integer(i),
++                2 => S::Real(i as f64 / 4.0),
++                3 => S::Blob(vec![0, 255, 128]),
++                4 => S::Text("duplicate".into()),
++                5 => S::Text("é/中文\0\n\"".into()),
++                _ => S::Text(format!("{i:04}:{}", "x".repeat(2048))),
++            })
++            .collect();
++        let a = borrowed_fixture(&values);
++        let mut reverse = values.clone();
++        reverse.reverse();
++        let b = borrowed_fixture(&reverse);
++        let expected =
++            owned_comparison_reference(a.path(), b.path(), StreamingLimits::default(), None)
++                .unwrap();
++        let expected_bytes = serde_json::to_vec(&expected).unwrap();
++        let expected_hash = manifest::digest(&expected_bytes);
++        let mut samples = Vec::new();
++        for pair in 0usize..32 {
++            for owned in if pair % 2 == 0 {
++                [true, false]
++            } else {
++                [false, true]
++            } {
++                let started = std::time::Instant::now();
++                let actual = if owned {
++                    owned_comparison_reference(a.path(), b.path(), StreamingLimits::default(), None)
++                } else {
++                    compare_streaming(a.path(), b.path(), StreamingLimits::default())
++                }
++                .unwrap();
++                let elapsed_ns = started.elapsed().as_nanos();
++                assert_eq!(actual, expected);
++                assert_eq!(serde_json::to_vec(&actual).unwrap(), expected_bytes);
++                samples.push(json!({
++                    "pair":pair.saturating_sub(2),"warmup":pair < 2,
++                    "order":if pair % 2 == 0 {"AB"} else {"BA"},
++                    "implementation":if owned {"owned_reference"} else {"borrowed"},
++                    "elapsed_ns":elapsed_ns,"complete_report_digest":expected_hash,
++                    "tables":TABLES.len(),"rows_per_side_per_table":values.len()
++                }));
++            }
++        }
++        println!(
++            "P8_ORACLE_BORROW_AB_BA={}",
++            json!({
++                "scope":"small synthetic complete-parity diagnostic, not formal scale/performance acceptance",
++                "warmup_pairs":2,"measured_pairs":30,"samples":samples,"reference_report":expected
++            })
++        );
++    }
++
+     // Original single-row implementation, retained independently of batching.
+     fn reference_spool(
+         source: &Connection,

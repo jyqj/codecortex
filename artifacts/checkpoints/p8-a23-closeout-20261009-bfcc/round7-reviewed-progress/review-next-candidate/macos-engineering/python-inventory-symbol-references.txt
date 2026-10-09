@@ -1,0 +1,32 @@
+crates/cc-index/src/project_model/python_inventory.rs:4:use super::{config_cache::Loader, python};
+crates/cc-index/src/project_model/python_inventory.rs:98:fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {
+crates/cc-index/src/project_model/python_inventory.rs:106:fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {
+crates/cc-index/src/project_model/python_inventory.rs:144:        // Complete size admission precedes content allocation/hashing and Loader.
+crates/cc-index/src/project_model/python_inventory.rs:160:        // Reuse the actual bounded config Loader and provenance adapter, with no
+crates/cc-index/src/project_model/python_inventory.rs:170:        let mut loader = Loader::new(&anchor, &old);
+crates/cc-index/src/project_model/python_inventory.rs:184:        supported_document(doc)?;
+crates/cc-index/src/project_model/python_inventory.rs:185:        let project = python::build(
+crates/cc-index/src/project_model/python_inventory.rs:233:        bound(text, policies.capture.output_bytes, "output_bytes")?;
+crates/cc-index/src/project_model/python_inventory.rs:246:            count = sum(count, inputs.len(), "output_count")?;
+crates/cc-index/src/project_model/python_inventory.rs:247:            bound(count, policies.capture.output_count, "output_count")?;
+crates/cc-index/src/project_model/python_inventory.rs:248:            let mut meter = OutputMeter {
+crates/cc-index/src/project_model/python_inventory.rs:255:            text = sum(
+crates/cc-index/src/project_model/python_inventory.rs:260:            bound(text, policies.capture.output_bytes, "output_bytes")?;
+crates/cc-index/src/project_model/python_inventory.rs:268:                text = sum(text, usize::from(!values.is_empty()), "output_bytes")?;
+crates/cc-index/src/project_model/python_inventory.rs:269:                let mut meter = OutputMeter {
+crates/cc-index/src/project_model/python_inventory.rs:294:fn supported_document(doc: &ConfigDocument) -> Result<()> {
+crates/cc-index/src/project_model/python_inventory.rs:336:struct OutputMeter {
+crates/cc-index/src/project_model/python_inventory.rs:341:impl std::io::Write for OutputMeter {
+crates/cc-index/src/project_model/python_inventory/native.rs:146:    state.entries = sum(state.entries, 1, "entries")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:147:    bound(state.entries, state.limits.entries, "entries")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:169:        bound(
+crates/cc-index/src/project_model/python_inventory/native.rs:170:            sum(state.entries, 1, "entries")?,
+crates/cc-index/src/project_model/python_inventory/native.rs:174:        bound(depth + 1, state.limits.depth.min(256), "depth")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:179:        let length = sum(
+crates/cc-index/src/project_model/python_inventory/native.rs:184:        bound(length, state.limits.path_bytes.min(4096), "path_bytes")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:185:        state.paths = sum(state.paths, length, "total_path_bytes")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:186:        bound(
+crates/cc-index/src/project_model/python_inventory/native.rs:247:            bound(out.files.len() + 1, state.limits.files, "files")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:252:            bound(s.size, state.limits.file_bytes, "file_bytes")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:253:            state.bytes = sum(state.bytes, s.size, "total_bytes")?;
+crates/cc-index/src/project_model/python_inventory/native.rs:254:            bound(state.bytes, state.limits.total_bytes, "total_bytes")?;

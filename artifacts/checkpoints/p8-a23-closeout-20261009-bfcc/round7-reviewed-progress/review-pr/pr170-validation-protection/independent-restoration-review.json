@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "reviewer": "execution_recon",
+  "observed_at": "2026-10-09T05:06:49.019492+00:00",
+  "PR": 170,
+  "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+  "base": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "source_reference_a23": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "prior_G2": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+  "verdict": "accepted_scoped_validation_restoration_and_product_identity_only",
+  "validation": {
+    "count": 138,
+    "method": "Read actual Git objects, mode/type/blob equality G3=a23=M and recompute raw SHA256 against existing registered 138 manifest; cat-file payload Git SHA1 also recomputed.",
+    "input_manifest_sha256": "bde91e8f95342d12887a6b2bac8c1fa4a66b37cd870841175f0adea37ac0ee89",
+    "inventory": {
+      "path": "review-pr/pr170-validation-protection/138-validation-inputs.json",
+      "bytes": 40583,
+      "sha256": "f457a61e490ef0b7c8312e503164869f472895192fb5429a198b11babba8525c"
+    },
+    "all_equal": true,
+    "G2_differing_paths_now_restored": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
+      "scripts/p8_runtime.py",
+      "scripts/tests/test_p8_platform.py",
+      "scripts/tests/test_p8_recovery.py",
+      "scripts/tests/test_p8_runtime.py",
+      "scripts/tests/test_p8_runtime_cache.py",
+      "scripts/tests/test_p8_runtime_finalization.py"
+    ],
+    "three_production_protections_restored": [
+      "scripts/p8_cold_build.py",
+      "scripts/p8_rollback.py",
+      "scripts/p8_runtime.py"
+    ],
+    "associated_five_test_files_restored": [
+      "scripts/tests/test_p8_platform.py",
+      "scripts/tests/test_p8_recovery.py",
+      "scripts/tests/test_p8_runtime.py",
+      "scripts/tests/test_p8_runtime_cache.py",
+      "scripts/tests/test_p8_runtime_finalization.py"
+    ],
+    "no_old_G2_gap_claim_applies_to_G3": true
+  },
+  "v15": {
+    "only_changed_lines": [
+      "PRODUCT",
+      "REGISTRY_SHA256",
+      "REVIEW",
+      "REVIEW_PATH"
+    ],
+    "remaining_guard_bytes_identical": true,
+    "pins": {
+      "PRODUCT": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+      "REVIEW": "b0f0c0d00e38508e7e43b0e87d1215d7f6413969",
+      "REVIEW_PATH": "artifacts/checkpoints/p8-mainb21-snapshot-leaf-integration-20261009/independent-source-review.json",
+      "REGISTRY_SHA256": "ccd5ac1a81f50ca78e7179db7a8d83177d699e58d87c5781aa4f8ae4ee7f1b92"
+    },
+    "registry_bytes": 171477,
+    "registry_sha256": "ccd5ac1a81f50ca78e7179db7a8d83177d699e58d87c5781aa4f8ae4ee7f1b92",
+    "scope_limit": "Verified fixed digest matches registry bytes, not independently re-executed registry/whole original v15 CLI."
+  },
+  "product": {
+    "count": 1089,
+    "all_path_mode_type_blob_equal_G2": true,
+    "crates_tree": "c3ff36be7754af663fc575b71c283b9113e1607d",
+    "scope": "No new product semantic review needed for these byte-identical already-reviewed product inputs; own candidate actual CI/measurement still separate."
+  },
+  "tasks": {
+    "blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "identical_main": true,
+    "original_remaining": 29,
+    "new_credit": 0
+  },
+  "limitations": [
+    "Did not run tests, original CLI, or measurement for G3.",
+    "Did not merge, dispatch, change labels, comments, branches or source.",
+    "PR170 remains optional integration and adds no prerequisite to original a23 ten-task closeout."
+  ]
+}

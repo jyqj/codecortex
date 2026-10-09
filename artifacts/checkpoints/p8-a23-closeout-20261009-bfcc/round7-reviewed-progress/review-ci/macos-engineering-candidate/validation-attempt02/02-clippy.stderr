@@ -1,0 +1,19 @@
+    Checking cc-server v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-server)
+    Checking cc-semantic v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-semantic)
+    Checking cc-search v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-search)
+    Checking cc-index v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-index)
+    Checking cc-parsers v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-parsers)
+    Checking cc-eval v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-macos/crates/cc-eval)
+error: this boolean expression can be simplified
+   --> crates/cc-eval/src/benchmark/p8_scale.rs:131:20
+    |
+131 |                 || !self.shard.is_some_and(|s| s.count == self.repetitions))
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `self.shard.is_none_or(|s| s.count != self.repetitions)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: could not compile `cc-eval` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `cc-eval` (lib test) due to 1 previous error

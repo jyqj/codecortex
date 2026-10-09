@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "reviewer": "execution_recon",
+  "observed_at": "2026-10-09T05:05:15.312564+00:00",
+  "source_head": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+  "prior_path_filter_review": {
+    "path": "review-next-candidate/full-staging-fts/read-only-design-review.json",
+    "sha256": "0819037076c234083dd3cf82f9c46e71cd0fa4dfcf1d3a7d4e4228b8b9585900"
+  },
+  "scope": "read-only rowid-range full-snapshot design assessment; no implementation, SQL execution, benchmark or original acceptance credit",
+  "conclusion": "Rowid ranges eliminate the two concrete path-IN flaws and are a plausible narrow prototype for successful-result/fail-closed equivalence. Exact first-error ordering is not preserved by any simple deferred scheme and must not be claimed. No performance adoption or execution authorization is granted by this review.",
+  "observed_write_contract": [
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        837,
+        841
+      ],
+      "fact": "files uses plain INSERT with no explicit rowid, no REPLACE."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        965,
+        971
+      ],
+      "fact": "literal_index uses INSERT OR IGNORE without explicit rowid. Ignored conflicts do not create another base row."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        813,
+        1010
+      ],
+      "fact": "Complete per-file function has no DELETE of either table; REPLACE statements target other fact tables."
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "lines": [
+        121,
+        129
+      ],
+      "fact": "Chunk delete triggers remove chunk identity/document_manifest only."
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "lines": [
+        312,
+        350
+      ],
+      "fact": "literal FK references files; no reverse cascade from replaced symbol/edge rows to these bases. Files triggers modify file_paths_fts only. Neither base declares a user rowid alias nor WITHOUT ROWID."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "lines": [
+        271,
+        287
+      ],
+      "fact": "One transaction owns complete write_fn; error aborts staging and removes temp file before publication."
+    }
+  ],
+  "source_only_algorithm": {
+    "before": "Read coalesce(max(rowid),0) separately for files and literal_index immediately before each nonempty <=256-file window.",
+    "body": "Original file iteration and every base/leaf binder remain in order; set both internal snapshot flags true rather than calling public deferred helper that disables leaf batching. No per-row files/literal mirror in this body.",
+    "after": "Read current maxima if closed bounds desired, then two fixed INSERT INTO ... SELECT ... WHERE rowid > ? AND rowid <= ? statements, optionally explicit ORDER BY rowid for documented ascending mirror order.",
+    "survivors": "Original successful insert set for each base is exactly the rowid interval under monotonicity assumptions. Ignored duplicate literal ids produce no new row, even across windows; earlier winner never gets mirrored again.",
+    "cross_file_attribution": "The actually stored literal row is selected by rowid independently of literal.file_path, so a later literal referencing an earlier file is included.",
+    "cost": "With before+after reads: four scalar SELECTs plus two mirror statements per window. Base row B-tree persists while explicit secondary indexes are dropped; no path predicate over all older literals. Actual query plan and measured advantage remain unverified.",
+    "space": "Two/four i64 markers plus existing slice references; no cross-file leaf payload collection."
+  },
+  "monotonicity_limits": {
+    "official_sources": [
+      {
+        "url": "https://www.sqlite.org/autoinc.html",
+        "sections": "2 Background",
+        "claim": "Implicit rowid is max+1, starting1 when empty. Without deletions and without ever using signed-i64 maximum, generated rowids increase. At max i64 SQLite can select unused positive rowids randomly."
+      },
+      {
+        "url": "https://www.sqlite.org/rowidtable.html",
+        "sections": "1,2",
+        "claim": "rowid is the row-table B-tree access key; VACUUM may change implicit rowids."
+      }
+    ],
+    "current_path": "No DELETE/UPDATE-rowid/VACUUM of these two bases inside observed window, no concurrent writer on transaction-owned connection, no external callback within per-file contents. Other table REPLACE does not violate these two-base monotonicity.",
+    "freshness_caution": "build_rebuild_staging cleanup at80-83 ignores remove errors; SnapshotWriteTxn::new is public and accepts an arbitrary connection. Therefore fresh-empty cannot be elevated to a universally enforced API invariant. High-water markers work on ordinary preexisting rows too, but need overflow-safe fallback.",
+    "preserve_accepted_inputs": "If exposed through same public SnapshotWriteTxn seam, do not introduce a novel refusal for unusual preexisting rowids. Bound potential new base insert counts before window using checked arithmetic; if max+count can exceed i64 maximum, retain original per-row mirrors for that window. This is a proposed compatibility fallback, not existing implementation.",
+    "future_hooks": "Any new base DELETE/REPLACE, explicit rowid, VACUUM, extra statement/callback or trigger mutating these bases invalidates the proof. Keep helper private/crate-private and document/update tests at this seam."
+  },
+  "interface_reuse": {
+    "existing_public_helper": "insert_files_literal_fts_batch accepts paths and cannot represent a rowid range; do not broaden it into arbitrary SQL or change incremental callers.",
+    "minimal_internal_change": "Add a snapshot-only private/crate-private typed marker/range helper with literal fixed table SQL and i64 binds, reuse execute_cached and existing per-file internal body. SnapshotWriteTxn public signature and general IndexDb APIs remain unchanged."
+  },
+  "failure_and_observation": {
+    "unavoidable_order_change": "An FTS I/O/SQLITE_FULL/tokenizer/constraint failure formerly after file A now follows base/leaf writes of files A..window-end. Another error in a later base/identity statement may win instead. At most the transaction abort/publication guarantee is preserved; exact earliest error text/order is not equivalent.",
+    "same_connection_visibility": "No current production callback observes half-populated files/literal FTS inside write_file_data. A caller sees only return after all windows flush. A future hook or direct SQL observer inside that seam would be a new concern.",
+    "last_insert_rowid": "Every retained chunks mirror still reads immediately after its own chunks insert. Delayed files/literal inserts must not make any later identity logic rely on an earlier last_insert_rowid; existing inspected function's captures remain local.",
+    "publication": "Flush each window and final remainder before route/config/metadata/baseline; retain original transaction, same error propagation and no swap on any failure."
+  },
+  "minimal_falsifiers_not_executed": [
+    "Full actual staging adapter with dropped explicit indexes: EXPLAIN rowid SELECTs must show rowid range access rather than growing table scans.",
+    "0/1/255/256/257 files and zero/many literals; nonadjacent duplicate literal ids; late literal referencing a prior window file; cross-file uid/id collisions and duplicate file failures.",
+    "Compare all canonical/identity rows and all FTS rowid/content/MATCH results, plus chunks/file_paths mirrors, after reopen. Include a transaction rollback/error case before and during flush.",
+    "An arbitrary prepopulated seam connection with high/maximum rowid and planned insert-count overflow must retain original behavior through fallback or the seam must demonstrably be inaccessible there.",
+    "Small deterministic AB/BA under same staging adapter and fixed source before any formal performance study. Existing G2 stage timing does not show the proposed implementation is fast."
+  ],
+  "remaining_original_todos": 29,
+  "todo_credit": 0
+}

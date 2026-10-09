@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_candidate_design_review",
+  "reviewer": "execution_recon",
+  "observed_at": "2026-10-09T05:01:35.259930+00:00",
+  "head": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+  "product_P": "305bf145e2474000d7c7d806507117d65a4863ad",
+  "source_evidence": [
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "bytes": 7058,
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
+      "git_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "bytes": 56106,
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a",
+      "git_blob": "2758481da50748be45f9c35a35832d2f2bc9b851"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "bytes": 18869,
+      "sha256": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b",
+      "git_blob": "3dd9692abd16f2a36958c036dd54f0946c94f70d"
+    },
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "bytes": 21881,
+      "sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+      "git_blob": "681c500b4ddd203582e87a874d268be68db3c1fe"
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+    },
+    {
+      "path": "crates/cc-db/src/sql_util.rs",
+      "bytes": 1773,
+      "sha256": "762158a26d237b986b2b76a9bfd8edd895c5919e7e5c9ce491c003a9d62616c9",
+      "git_blob": "3b954059d7683e99f87fa5262fba3696ef3b6f71"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "bytes": 10132,
+      "sha256": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
+      "git_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883"
+    },
+    {
+      "path": "crates/cc-db/tests/incremental_write_bench.rs",
+      "bytes": 23035,
+      "sha256": "c44dd246f6a90ece521a2a831cb772bce59fa21f3240a0a44e13ea586a95810d",
+      "git_blob": "32831e7be29c8ddde6cb8163bd2929e45cf9d639"
+    }
+  ],
+  "verdict": "Do not directly transplant existing path-filter batch helper into every full-staging window; first resolve repeated unindexed literal selection and adversarial ownership semantics.",
+  "current_path": [
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": [
+        63,
+        77
+      ],
+      "fact": "Original file iteration, snapshot helper per file."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        803,
+        818
+      ],
+      "fact": "Snapshot entry uses defer_files_literal_fts=false, snapshot_leaf_batches=true; public deferred-FTS entry instead disables leaf batching."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        776,
+        799
+      ],
+      "fact": "Two INSERT SELECT mirrors per <=200 paths, selected by base file_path."
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "lines": [
+        102,
+        140
+      ],
+      "fact": "Main units complete before route, hierarchy, config units, metadata and graph-signature baseline."
+    }
+  ],
+  "sql_reduction": {
+    "normal_per_row": "F files plus L surviving literal rows cause F+L explicit mirror execute calls.",
+    "window_bound": "Existing helper IN_BATCH_SIZE=200. A 256-file window needs four mirror statements, not two; a <=200 window needs two.",
+    "retained_cost": "Both FTS indexes still receive every surviving row and tokenize all the same content. INSERT SELECT reduces API/bind/step crossings, not total logical rows or tokenization.",
+    "no_leaf_regression": "Calling existing insert_file_data_deferred_fts directly would turn snapshot_leaf_batches off; a new internal both-flags-true seam would be required."
+  },
+  "blocking_performance_risk": {
+    "source": "index_db_rebuild.rs 261-267 drops all explicit indexes before write_fn; direct_writer.rs 157-174 emits DROP for every schema CREATE [UNIQUE] INDEX; schema index_v1.sql 324 idx_literal_file is among them.",
+    "consequence": "literal_index retains literal_id PRIMARY KEY and rowid indexes but no file_path lookup index during full staging. Repeated WHERE file_path IN windows can scan the ever-growing literal table: O(total_literals * number_of_windows), approximately quadratic when densities stay fixed.",
+    "certainty": "Source fact proves the intended file_path index is removed; an actual EXPLAIN QUERY PLAN was NOT executed. The unindexed-scan complexity is a source-based risk/inference, not a measured query plan or timing.",
+    "files_mirror": "files.file_path is a PRIMARY KEY and its SQLite autoindex is not a schema CREATE INDEX statement; the analogous files SELECT is not affected by the explicit-index removal."
+  },
+  "semantic_review": {
+    "normal_valid_data": "Within the same transaction, source rows and assigned rowids survive unchanged; SELECT inherits literal OR IGNORE winners. Final flush before route/config/metadata keeps original publication/epoch boundary.",
+    "file_duplicates": "files INSERT has a PRIMARY KEY conflict; batching must not deduplicate/skipsucceed duplicate files. Original insertion order must remain; a duplicate still errors.",
+    "ownership_precondition": "Old literal per-row mirror uses the actually inserted literal.file_path, while batch helper only selects unit.rel_path. Literal file_path FK can reference an already-existing earlier file; there is no equality CHECK tying it to the current FileWriteUnit. A late literal attributed to a prior flushed path would be omitted by a current-window path filter. Existing normal parser convention does not prove equality for all accepted seam inputs; require adversarial case or a semantics-preserving rowid-based mirror.",
+    "cross_window_literal_id": "OR IGNORE cross-window duplicate ids must not remirror previously mirrored winners; selecting by fresh paths usually protects this but ownership mismatch makes that assumption insufficient.",
+    "errors": "Delaying FTS statement errors changes first-error order relative to later leaf/file constraints, triggers, allocation, I/O and SQLITE_FULL. Transaction rollback/publication remains fail-closed, but exact historical first-error string/order cannot be claimed for the naive scheme.",
+    "config_units": "Leave write_config_units unchanged and flush main units before it; parsed scanner paths are refs-only while unseen config paths get whole-row insertion.",
+    "budgets": "Borrow <=256 existing path string references only, no cross-file leaf payload accumulation; no registration/workload/deadline change."
+  },
+  "existing_measurement": {
+    "reference": "review-next-candidate/g2-original-diagnostics/existing-diagnostics-and-next-candidate-review.json",
+    "head": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "original_10k_native_ms": 488206,
+    "full_staging_us_sum": 151169497,
+    "full_staging_share": 0.3096,
+    "interpretation": "This stage includes schema/open/drop-index/write/recreate/restore as well as payload preparation; no FTS substage was emitted. It neither demonstrates FTS dominance nor measures/refutes this proposed full-staging change.",
+    "existing_microbenchmark": "incremental_write_bench.rs 310-328 probes deferred FTS on the incremental path. Such a fully indexed incremental measurement cannot establish full-staging speed with idx_literal_file dropped. No archived matching measured result was found in the inspected tracked artifacts text."
+  },
+  "next_low_cost_falsifiers_only_not_executed": [
+    "Use original full-staging schema/pragmas/drop-index setup for a small EXPLAIN QUERY PLAN of both SELECTs; inspect whether literal selection scans.",
+    "Compare original writer and an explicit candidate on identical tiny fixtures spanning window boundaries (0/1/199/200/201/255/256/257), varied literals, within/cross-window literal-id duplicates, literal paths referring to an already-created prior file, and repeated file conflicts.",
+    "Require complete canonical tables plus files/literal/chunks/file_paths FTS rowids+contents/MATCH results and precommit error/rollback/publication checks; canonical 15 tables alone may omit FTS mirrors.",
+    "Only after semantic parity, compare bounded small alternating AB/BA runs under the actual drop-index staging adapter with actual per-stage observation, before considering a new formal P/R/G."
+  ],
+  "alternative_design_options_not_approved": [
+    "Defer only files_fts while retaining per-literal original mirror calls: avoids the unindexed literal selector and cross-window ownership issue, but still changes files-FTS error scheduling and needs explicit controls.",
+    "A snapshot-only fresh-rowid-range mirror could avoid path scans and ownership mismatch, but requires an explicit proof of fresh-empty table, monotonic auto-rowids/no deletes or explicit rowids, OR IGNORE survivors and overflow/bound assumptions. It is a new design, not an automatic reuse of existing helper.",
+    "Retaining idx_literal_file during staging changes index-maintenance workload and expands scope; do not silently add an index and assume a win."
+  ],
+  "no_source_mutations": true,
+  "no_measurements_or_query_execution": true,
+  "original_todo_credit": 0,
+  "remaining_original_todos": 29
+}

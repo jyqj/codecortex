@@ -1,0 +1,57 @@
+{
+  "after_sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc",
+  "before_sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d",
+  "branch": "task/p8-macos-engineering-bfcc-20261009",
+  "change": "One explicitly separate 2s bounded fixture-readiness call to the unchanged original supervisor, dedicated output directory. Actual exit0, worker_exit0, successful summary, stderr completion, cleanup without error, release not_run all required. Failed readiness retains TempDir via keep and panics without retry. Existing timed call follows only a successful setup.",
+  "contract_evidence": [
+    {
+      "meaning": "Explicit normal worker exit before inherited descendant stderr drain; helper isolates supervision rather than indexing.",
+      "original_lines": [
+        484,
+        485
+      ],
+      "path": "crates/cc-eval/tests/p8_scale.rs"
+    },
+    {
+      "lines": [
+        77,
+        97
+      ],
+      "meaning": "Requires cleanup of the fresh group after normal exit and actual descendant-held stderr coverage. No 250ms cold helper launch guarantee for this scenario.",
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md"
+    }
+  ],
+  "git_diff_stat": " crates/cc-eval/tests/p8_scale.rs | 27 +++++++++++++++++++++++++++\n 1 file changed, 27 insertions(+)\n",
+  "head": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "independent_reviewer": "/root/execution_recon",
+  "invariants": {
+    "helper_literal_byte_identical": true,
+    "no_new_measurement_or_todo_credit": true,
+    "original_1ms_deadline_and_output_reuse_negative_byte_identical": true,
+    "original_250ms_timed_segment_byte_identical": true,
+    "production_supervisor_byte_identical": true,
+    "readiness_call_count": 1
+  },
+  "path": "crates/cc-eval/tests/p8_scale.rs",
+  "proposed_validation_after_freeze": [
+    "cargo fmt --all -- --check",
+    "cargo clippy --workspace --all-targets -- -D warnings",
+    "Run the changed original descendant scenario once and original 1ms deadline/output-reuse scenario; retain readiness report and no-descendant cleanup verification.",
+    "Run original p8_scale integration target and literal cargo test --workspace including doctests on the frozen new identity; preserve failures and ignored benchmark status.",
+    "Run required cc-eval integration_fixtures_and_corpus command. No ignored real-workspace performance benchmark."
+  ],
+  "recorded_at": "2026-10-09T05:00:50.074936+00:00",
+  "schema_version": 1,
+  "scope_note": "Only this test file modified by pr_triage. Other agents own disjoint files in the same candidate worktree; no commit/push or modification to frozen a23/P/R/G/raw evidence.",
+  "status": "implemented_pending_independent_review_and_frozen_source_execution",
+  "validation": {
+    "clippy_run": false,
+    "compiled": false,
+    "git_diff_check_exit_code": 0,
+    "reason": "Parent will freeze both disjoint candidate-macos edits before any build or original engineering commands.",
+    "rustfmt_run": false,
+    "stderr": "",
+    "stdout": "",
+    "tests_run": false
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "schema": "p8-pr175-runtime-statistics-independent-review-v1",
+  "reviewer": "/root/runtime_review",
+  "observed_at": "2026-10-09 06:42:16 UTC",
+  "verdict": "request_changes_actual_format_failure_no_semantic_gate_regression_found_statically",
+  "identities": {
+    "PR": 175,
+    "head": "9a52cd24337294e70281badc861bda7bdf0a9f0a",
+    "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "product": "bbe7a9e77f332448b610c54460b355c5936e8c2a",
+    "product_tree": "4a061990255eca685305655495443034d23e6b86",
+    "review": "4e4671482333c1762efa9c5ab9aeceadc0f3e295",
+    "head_tree": "fa6cd9511a9bebd7699eddd9c98d47438416005d",
+    "actual_CI_checkout": "71d5f8fe85da29df0f0be490aac50bed1c2bb727",
+    "CI_tree_equal_head": true,
+    "actual_P_R_G_parent_chain_verified": true,
+    "PR_files": 10,
+    "second_file_page_empty": true
+  },
+  "necessity": {
+    "original_task": "P8-017",
+    "original_acceptance": [
+      "运行路径只有一个事实与算法所有者，删除有回归证据",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "dependency": "P8-016",
+    "concrete_gap": "The active Python runtime previously recomputed three legacy nanosecond summaries using a second nearest-rank implementation after the already-required Rust replay. This patch removes that live duplicate and routes those legacy fields to the existing Rust nearest_rank owner.",
+    "not_full_task_completion": "Other cleanup scope, actual regressions and hard dependencies remain; this change does not close017 or become a new prerequisite for the oldA23 ten-task study."
+  },
+  "findings": [
+    {
+      "severity": "blocking_validation",
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "lines": [
+        451,
+        484
+      ],
+      "finding": "Actual ownCI cargo fmt --all -- --check returned1 on formatting of the two newly added Rust test methods. Clippy, test-target compilation, runtime Python controls, source-integrity/v15/history/facts/plan stages were all skipped.",
+      "actual_run": 37894025756,
+      "job": 113701134990,
+      "started": "2026-10-09T06:33:04Z",
+      "finished": "2026-10-09T06:33:09Z",
+      "minimum_resolution": "Apply only original rustfmt output to these test blocks, regenerate exact product/review/registry pins for the changed Rust bytes, then obtain this resulting candidate's original CI results. Do not label skipped controls passed or substituteMSRV/security."
+    }
+  ],
+  "quantile_semantics": {
+    "domain": "Existing Rustvalidate enforces plan1..10000operations, complete unique allterminal rows, read/build identity and nonreversedu64 timestamps before legacy_ns. This input domain was already enforced by the mandatory Rust replay in the old active driver.",
+    "algorithm": "Both old Python and new Rust use sort+ceil(n*p)-1 nearest-rank at0.5/0.95/0.99. Rust calls the preexisting nearest_rank without modifying it. The bounded runtime sample count has no usize/f64 rank precision concern; sample values never convert to float.",
+    "precision": "finished_ns-offered_ns remainsu64 nanoseconds; values are not converted to microseconds or multiplied back. Serdeu64/Pythonint retain submicrosecond values andu64MAX.",
+    "population": "all admitted terminal outcomes success/error/canceled/queue_rejected remain included; read and build are filtered only by original operation field, not success.",
+    "empty_groups": "n0 and p50/p95/p99/maximum null retained. Empty whole plans remain invalid under preexisting replayvalidate; no new empty-plan acceptance.",
+    "wire": "Legacy latency and latency_by_operation field names, scope string and tail_stability_claim=false remain identical in meaning. Ruststatistics output addslegacy_ns. Statistics file bytes/hashes intentionally change with this new executable/output; no historical byteequivalence is claimed.",
+    "existing_statistics": "The existing integer-microsecond distributions, quantile intervals, successful subsets, mutation strata, denominators and exit-code definitions are not changed.",
+    "gate": "RSS/resourcecoverage/cache/onehour/offeredterminal/ownedwriters/no-repair15tableendpoint gates and thresholds remain oldbytes except surrounding legacy field assignment. No success filtering or tail-quality claim is introduced."
+  },
+  "active_copy": {
+    "path": "scripts/p8_runtime.py",
+    "lines": [
+      787,
+      821
+    ],
+    "verification": "Original replay runs twice, requires byte-identical outputs, matching exact plan/raw/binarydigests and equal returncode0or1. New code reads statistics.json once, checks itsSHAagainst replay receipt, parses that samebytebuffer and copies legacy_ns. No second Python quantile function remains.",
+    "tamper": "Post-verification statistics file change rejects with exit2 before legacy latency fields. Missinglegacy_ns also fails through the existing exception path, not a fake zero/default.",
+    "compatibility": "New runtime and new statistics executable must be built/bound together through the existing buildreceipt. Old artifacts/binaries are not relabeled or upgraded. CLI arguments and original raw schema are unchanged; the existing verify-only hash path is not changed by this patch."
+  },
+  "new_controls": {
+    "Rust_statistics": 2,
+    "Rust_replay": 2,
+    "Python_added": 2,
+    "Python_removed_duplicate_algorithm_control": 1,
+    "expected_Python_suite_net_change": "+1 method relative to409 baseline, subject to actual discovery; not executed here",
+    "checks": "Empty/single/u64MAX/submicrosecond/nearest-rank20and100 boundaries; allfour outcome populations; empty readgroup; row-order invariance; active driver exactwire copy; SHAchange rejection. Original failed-outcome population control is migrated into Rust replay rather than silently dropped.",
+    "actual_execution": "No passing actual execution of these new tests established by current ownCI;MSRV check is not test execution."
+  },
+  "source_admission": {
+    "product_inputs": 1089,
+    "delta_paths": 41,
+    "validation_inputs": 138,
+    "new_validation_paths": 0,
+    "changed_native_paths": [
+      "crates/cc-eval/src/benchmark/statistics.rs",
+      "crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+    ],
+    "changed_validation_paths": [
+      "scripts/p8_runtime.py",
+      "scripts/tests/test_p8_runtime.py"
+    ],
+    "documentation_path": "docs/P8_RUNTIME_EVIDENCE.md",
+    "review_blob": "96be40b4dc2dd7faca2bc10c07d23f2b85e7e300",
+    "review_sha256": "fe7677709b105120e9a130c7943e1be30d28a3234a5b38d52758acf740637f99",
+    "registry_sha256": "e61b792289beca8ef42581d816f5fc1ae824788fe9cf9127ac555ba0e3f76aca",
+    "complete_delta_validation_maps_match_review_exact": true,
+    "all_four_changed_domain_blobs_independently_hashed_match": true,
+    "verifier_logic_unchanged_except_four_pins": true,
+    "comparison_to_main_registry": "Exactly2 native hash changes and2 validation hash changes; no added/removed domain path. Documentation is outside the original native/validation domain and separately in the five-path review; no new exclusion is invented.",
+    "limitation": "Static domain/pin composition checked; originalCLI proof did not execute in failedCI and was not rerun by reviewer.",
+    "format_fix_requires_new_bindings": true
+  },
+  "actual_CI": {
+    "run": 37894025756,
+    "conclusion": "failure",
+    "check": 113701134990,
+    "check_checkout": "71d5f8fe85da29df0f0be490aac50bed1c2bb727",
+    "check_tree": "fa6cd9511a9bebd7699eddd9c98d47438416005d",
+    "head_tree_same": true,
+    "compiler": "stable rustc1.99.0 b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+    "format_exit": 1,
+    "security": "success",
+    "MSRV": "success",
+    "later_check_steps": "skipped",
+    "full_original_log": {
+      "git_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+      "bytes": 42309,
+      "sha256": "175e41777d2dc3180943bbdea0eb36be259fc44ba0eeabe88a5a313854ceaec1",
+      "official_readback_exact": true
+    },
+    "other_workflows": "runtime queued, platform/lifecycle ongoing and failuregates success at single snapshot; none substituted for skipped source/test checks"
+  },
+  "minimal_prepared_format_fix": {
+    "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "original_blob": "3d76b95d6364d03298a17b6f25e1f295fd78818d",
+    "candidate_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+    "bytes": 20760,
+    "sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+    "basis": "Exactly four contiguous replacement groups from the original failed job's rustfmt old/new output. Eacholdspan matched once. Everything before #[cfg(test)] is byte-identical; no assertion/value was removed.",
+    "status": "prepared_unreferenced_only_not_applied_not_compiled_not_fmt_reexecuted",
+    "old_P_R_G_cannot_admit_this_new_blob": true
+  },
+  "integration": {
+    "current_base": "Independent source chain starts directly from fixedmain60e5 and is ahead3/behind0, so no dependency onPR173or174. Once fixed and original ownCI admitted it can be considered separately; presentlykeepopen.",
+    "frozen_combined_P": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205",
+    "combined_tree": "7fa501c91e19fb8136e410e6e26e518c64ccb8f0",
+    "product_test_doc_overlap": "No overlap between175's fiveimplementation/test/document paths and173+174's fiveRust paths or newworkflow. Three175archive paths are a separate namespace.",
+    "metadata_overlap": [
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ],
+    "future_combination": "Do not inject175 into frozenP59. Any later composite needs a newP/R/G; retain all139 validation inputs (including173workflow) while replacing the two175validation hashes. Product count remains1089 and existing combinedhistoricaldelta44paths; these2nativepaths are alreadyhistoricaldelta members.",
+    "no_A23_evidence_relabeling": true
+  },
+  "ready_to_post_review": "当前不能批准合入：固定9a52的ownCI37894025756/check113701134990已在cargo fmt --all -- --check真实exit1，新增Rust测试行451/484需采用rustfmt格式；之后Clippy、测试、P8/source/v15等均跳过。静态上本改动保留全部终态分母、nearest-rank和纳秒wire精度，未改变原统计/运行门，确实移除了Python重复owner。请修最小格式并据实际新字节更新P/R/registry/pins，保留本次失败，再取得该候选自己的原CI结果。MSRV/security成功及较早运行不能代替。未将本PR新增为A23十项验收前置。",
+  "actions": {
+    "PR_refs_modified": false,
+    "combined_P_modified": false,
+    "tests_or_native_executed": false,
+    "read_artifact_ELFs": false,
+    "new_workflows_started": false,
+    "created_unreferenced_original_log_format_candidate_and_review_blobs": true
+  },
+  "todos": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

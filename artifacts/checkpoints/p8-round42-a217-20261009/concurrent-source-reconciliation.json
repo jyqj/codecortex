@@ -1,0 +1,122 @@
+{
+  "schema": "codecortex-round42-concurrent-source-reconciliation-v1",
+  "created_at_utc": "2026-10-09 18:42:23 UTC",
+  "root_read_completed_before_clock_utc": "2026-10-09 18:39:02 UTC",
+  "previous_observed_head": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+  "new_observed_head": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+  "root_or_own_agents_moved_PR_ref": false,
+  "actual_chain": [
+    {
+      "sha": "ce9891e15a0a4fc085e5fa8a57a172d3df458c36",
+      "tree": "5fc7edc2dbf33bcf1a57e96ecf7c09b0cfaf6bba",
+      "sole_parent": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b"
+    },
+    {
+      "sha": "dfee431744820caab8436e8d201933d995e0f576",
+      "tree": "837f4a804b131340b2e81b9cadd57eb41ed20037",
+      "sole_parent": "ce9891e15a0a4fc085e5fa8a57a172d3df458c36"
+    },
+    {
+      "sha": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+      "tree": "6eefdaabb405d5758e7a4fda7afdf86a62a66269",
+      "sole_parent": "dfee431744820caab8436e8d201933d995e0f576"
+    }
+  ],
+  "compare": {
+    "status": "ahead",
+    "total_commits": 3,
+    "ahead_by": 3,
+    "behind_by": 0,
+    "files": [
+      {
+        "path": "artifacts/checkpoints/p8-G8-format-admission-bfcc-20261009/incremental-format-source-proof.json",
+        "status": "added",
+        "sha": "719b9142ed2ef0c13079b8a550f8e178204fa89c"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-G8-format-admission-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "sha": "541e6c461a877ae10e61b8ceba5b16f6e41515ce"
+      },
+      {
+        "path": "crates/cc-db/tests/p2c_freshness_store.rs",
+        "status": "modified",
+        "sha": "b39a73a31b87c260f2df2f284fcbeed869a59e8c"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "status": "modified",
+        "sha": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872"
+      },
+      {
+        "path": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "status": "modified",
+        "sha": "82fb62875823c983da2f5e16ad45c08fc2de9161"
+      },
+      {
+        "path": "crates/cc-index/src/project_model/mod.rs",
+        "status": "modified",
+        "sha": "b0dfb5fb2da857b4e7a164ad64ec3fab2bb79c71"
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "status": "modified",
+        "sha": "f5647b73a3de8bdfc131e6c8a307e86b97cbb4e0"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "status": "modified",
+        "sha": "088757bcba218cd9981e5c512f091c4cf5ce34ef"
+      }
+    ]
+  },
+  "entire_product_tree_equals_own_candidate": true,
+  "own_candidate": "8b29dd836d5e53f098ae0071c5b661f2b4475493",
+  "product_blobs": [
+    {
+      "path": "crates/cc-db/tests/p2c_freshness_store.rs",
+      "old_local_candidate_blob": "b39a73a31b87c260f2df2f284fcbeed869a59e8c",
+      "new_head_blob": "b39a73a31b87c260f2df2f284fcbeed869a59e8c",
+      "equal": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "old_local_candidate_blob": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872",
+      "new_head_blob": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872",
+      "equal": true
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+      "old_local_candidate_blob": "82fb62875823c983da2f5e16ad45c08fc2de9161",
+      "new_head_blob": "82fb62875823c983da2f5e16ad45c08fc2de9161",
+      "equal": true
+    },
+    {
+      "path": "crates/cc-index/src/project_model/mod.rs",
+      "old_local_candidate_blob": "b0dfb5fb2da857b4e7a164ad64ec3fab2bb79c71",
+      "new_head_blob": "b0dfb5fb2da857b4e7a164ad64ec3fab2bb79c71",
+      "equal": true
+    }
+  ],
+  "effect": "Stop duplicate R/G/FF work. Follow the actual52bef CI; do not add the unavailable historical phase1 peer as a new current-source gate.",
+  "normal_CI": {
+    "run": 37974288651,
+    "head": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+    "job_ids": [
+      113968501411,
+      113968501720,
+      113968501748
+    ],
+    "status_at_root_read": "all queued with job-level empty steps"
+  },
+  "original_full_study": {
+    "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "run": 37962416564,
+    "attempt": 1,
+    "unchanged": true
+  },
+  "original_TODOs": {
+    "new_done": 0,
+    "remaining": 29
+  }
+}

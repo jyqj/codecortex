@@ -1,0 +1,268 @@
+{
+  "schema": "codecortex-round42-status-v1",
+  "created_at_utc": "2026-10-09 18:42:23 UTC",
+  "scope": "New operational snapshot and exact online receipts; not a replacement for any earlier original record.",
+  "round": 42,
+  "round_started_at_utc": "2026-10-09 18:15:53 UTC",
+  "ledger": {
+    "source": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_done": 0,
+    "status_counts": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "next_task": "P8-005",
+    "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+    "targeted_tasks": [
+      {
+        "id": "P8-005",
+        "title": "完整规模1k到100k",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-004"
+        ]
+      },
+      {
+        "id": "P8-006",
+        "title": "增量规模与fanout曲线",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ]
+      },
+      {
+        "id": "P8-007",
+        "title": "多并发与混合负载",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-006"
+        ]
+      },
+      {
+        "id": "P8-008",
+        "title": "冷建/重开/热查分层",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-007"
+        ]
+      },
+      {
+        "id": "P8-009",
+        "title": "内存/磁盘/费用总账",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-008"
+        ]
+      },
+      {
+        "id": "P8-010",
+        "title": "长时soak与连续修改",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-009"
+        ]
+      },
+      {
+        "id": "P8-011",
+        "title": "端到端故障与恢复认证",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ]
+      },
+      {
+        "id": "P8-012",
+        "title": "MSRV与平台冷构建矩阵",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-011"
+        ]
+      },
+      {
+        "id": "P8-013",
+        "title": "指标/门槛与失败退出最终认证",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-012"
+        ]
+      },
+      {
+        "id": "P8-016",
+        "title": "数据库/配置/包回滚演练",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ]
+      }
+    ]
+  },
+  "accepted_original_intake": {
+    "cold": {
+      "source": "044c008c9459cfa61e7701db2eb868342c508a39",
+      "run_id": 37954851017,
+      "attempt": 1,
+      "shards": 16,
+      "required_shards": 150,
+      "samples": 16,
+      "required_samples": 150,
+      "last_successful_intake_ended_at_utc": "2026-10-09 18:17:43 UTC",
+      "accepted_repetitions": {
+        "1000": [
+          0
+        ],
+        "5000": [
+          0
+        ],
+        "10000": [
+          0
+        ],
+        "50000": [
+          0
+        ],
+        "100000": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      },
+      "published_custody": "9aba8f01e5f5766ac55f3ebed1ff21991dcb6cdb",
+      "published_original_zips": 26,
+      "local_original_zips": 41,
+      "pending_custody_original_zips": 15
+    },
+    "full": {
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "run_id": 37962416564,
+      "attempt": 1,
+      "shards": 3,
+      "required_shards": 150,
+      "samples": 32,
+      "required_samples": 1500,
+      "last_successful_intake_ended_at_utc": "2026-10-09 17:46:04 UTC",
+      "accepted_repetitions": {
+        "1000": [
+          0
+        ],
+        "5000": [
+          0
+        ],
+        "10000": [
+          0
+        ]
+      },
+      "published_custody": "153af77a0c81379302a680e5550d2f985537175c",
+      "published_original_zips": 8,
+      "local_original_zips": 9,
+      "pending_custody_original_zips": 1,
+      "new_cloud_50000_artifact": {
+        "id": 11637747431,
+        "size_in_bytes": 2965475,
+        "digest": "sha256:550071fc0989c07d3759f92e9fb9a5f47e969768712a1c5d44f6db08433315f6",
+        "job_completed_at": "2026-10-09T18:29:36Z",
+        "downloaded": false,
+        "original_intake_validated": false,
+        "counted": false
+      }
+    }
+  },
+  "pr193_repair": {
+    "historical_local_candidate": {
+      "product": "8b29dd836d5e53f098ae0071c5b661f2b4475493",
+      "product_tree": "5fc7edc2dbf33bcf1a57e96ecf7c09b0cfaf6bba",
+      "paths": 4,
+      "formatter_hunks": 9,
+      "phase1_independent_review": "passed; exact original local report unavailable while workspace is offline",
+      "phase2_independent_review": "passed_actual_product_complete_maps_and_scoped_core",
+      "core_git_blob": "04e211da296096e67d944a68c6254c8f61b5671a",
+      "peer_git_blob": "69399458314185633903b78c461996976676a803",
+      "own_R_created": false,
+      "own_G_created": false,
+      "original_v15_invocations": 0,
+      "original_task_plan_invocations": 0,
+      "branch_updated_by_this_team": false,
+      "publication_plan": "stopped; current concurrent product already has the identical complete tree",
+      "missing_phase1_is_gate_for_current_concurrent_chain": false
+    },
+    "current_concurrent_chain": {
+      "original_parent": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "product": "ce9891e15a0a4fc085e5fa8a57a172d3df458c36",
+      "product_tree": "5fc7edc2dbf33bcf1a57e96ecf7c09b0cfaf6bba",
+      "review": "dfee431744820caab8436e8d201933d995e0f576",
+      "review_tree": "837f4a804b131340b2e81b9cadd57eb41ed20037",
+      "guard": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+      "guard_tree": "6eefdaabb405d5758e7a4fda7afdf86a62a66269",
+      "actual_net_changed_paths": 8,
+      "product_tree_equal_to_historical_local_candidate": true,
+      "normal_CI_run": 37974288651,
+      "normal_CI_jobs": [
+        113968501411,
+        113968501720,
+        113968501748
+      ],
+      "new_native_and_original_Python_results": "not yet established; all current normal CI jobs queued at the readback completed before 18:39:02 UTC",
+      "source_binding_static_review": "Scale completed a separate actual 4/2/2 and full map/pin review; retain its exact scoped record",
+      "full_study_retriggered_by_this_team": false
+    },
+    "original_study": {
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "run": 37962416564,
+      "attempt": 1,
+      "still_separate_from_current_branch": true
+    }
+  },
+  "workspace_blocker": {
+    "observed_by_agents": "409 environment_offline / Environment is not connected",
+    "root_runner_health_result": "tunnel_client_not_seen; no Runner project/session was initialized",
+    "root_pending_custody_cell": {
+      "cell_id": "12",
+      "result": "terminated after no output",
+      "first_apply_patch_landing": "unknown; read before resuming",
+      "dependent_builder_result": "not observed",
+      "original_validator_or_native_invoked": false
+    },
+    "scope": "Local files, new original ZIP intake and custody construction cannot proceed in the disconnected workspace. The duplicate local formatter chain is stopped after concurrent publication of an identical product tree; its offline peer is not a new gate for that current chain."
+  },
+  "boundaries": {
+    "original_task_definitions_changed": false,
+    "original_dependencies_changed": false,
+    "N30_unchanged": true,
+    "worker_deadline_ms": 18000000,
+    "captured_output_limit_bytes": 536870912,
+    "job_timeout_minutes": 350,
+    "partial_aggregate_used": false,
+    "failed_original_studies_reclassified": false,
+    "studies_pooled": false,
+    "pr192_profile_study_triggered": false
+  },
+  "round41": {
+    "closed_at_utc": "2026-10-09 18:15:53 UTC",
+    "new_done": 0,
+    "remaining": 29
+  },
+  "round42": {
+    "new_done": 0,
+    "remaining": 29,
+    "goal_of_ten_original_completions_satisfied": false
+  }
+}

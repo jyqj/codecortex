@@ -1,6 +1,7 @@
 """Local Git/file counterexamples for P8 input locks and append-only archives."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import contextlib
 import hashlib
 import importlib.util
@@ -12,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from unittest import mock
 
@@ -527,6 +529,75 @@ class ReleaseEvidenceTests(unittest.TestCase):
         with self.assertRaises(P8.Invalid):
             self.archive(run_id="unrelated")
         self.assertEqual(json.loads(latest.read_text()), {"unrelated": True})
+
+    def test_first_latest_publication_preserves_a_concurrent_unrelated_file(self):
+        self.freeze()
+        self.prepare_evidence()
+        original = P8.write_json
+        unrelated = b'{"user_metadata": "keep exact bytes"}\n'
+
+        def publish_unrelated_after_temporary(target, value):
+            original(target, value)
+            if target.name.startswith(".latest-"):
+                (target.parent / "latest.json").write_bytes(unrelated)
+
+        with mock.patch.object(P8, "write_json", publish_unrelated_after_temporary):
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                code = P8.main([
+                    "archive", "--candidate", str(self.candidate),
+                    "--evidence", str(self.evidence), "--output-root", str(self.runs),
+                    "--run-id", "raced", "--update-latest",
+                ])
+        self.assertEqual(code, 2)
+        self.assertEqual((self.runs / "latest.json").read_bytes(), unrelated)
+        outputs = list(self.runs.glob("raced-*"))
+        self.assertEqual(len(outputs), 1)
+        P8.verify_archive(outputs[0])
+        self.assertEqual(list(self.runs.glob(".latest-*.tmp")), [])
+
+    def test_concurrent_first_publishers_leave_one_pointer_and_both_archives(self):
+        self.freeze()
+        self.prepare_evidence()
+        original = P8.write_json
+        barrier = threading.Barrier(2)
+
+        def synchronize_first_publishers(target, value):
+            original(target, value)
+            if target.name.startswith(".latest-"):
+                barrier.wait(timeout=15)
+
+        def publish(run_id):
+            try:
+                return self.archive(run_id=run_id)
+            except FileExistsError:
+                return None
+
+        with mock.patch.object(P8, "write_json", synchronize_first_publishers):
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                results = list(executor.map(publish, ("first", "second")))
+        successful = [result for result in results if result is not None]
+        self.assertEqual(len(successful), 1)
+        output, result, code = successful[0]
+        self.assertEqual(code, 0)
+        self.assertTrue(result["latest_updated"])
+        self.assertEqual(json.loads((self.runs / "latest.json").read_text())["run"], output.name)
+        for run_id in ("first", "second"):
+            outputs = list(self.runs.glob(run_id + "-*"))
+            self.assertEqual(len(outputs), 1)
+            P8.verify_archive(outputs[0])
+        self.assertEqual(list(self.runs.glob(".latest-*.tmp")), [])
+
+    def test_existing_owned_latest_still_advances_to_a_later_archive(self):
+        self.freeze()
+        self.prepare_evidence()
+        first, _, _ = self.archive(run_id="first")
+        second, result, code = self.archive(run_id="second")
+        self.assertEqual(code, 0)
+        self.assertTrue(result["latest_updated"])
+        latest = json.loads((self.runs / "latest.json").read_text())
+        self.assertEqual(latest["run"], second.name)
+        P8.verify_archive(first)
+        P8.verify_archive(second, latest["archive_sha256"])
 
     def test_cli_success_invalid_and_failed_gate_exit_codes(self):
         args = self.freeze_args()

@@ -56,6 +56,7 @@ impl Indexer {
     pub(super) fn plan_dirty_reconciliation(
         &self,
         actions: &mut HashMap<String, FileAction>,
+        scanned_paths: &HashSet<String>,
         units: &[FileWriteUnit],
         removed: &[String],
         roots: Vec<String>,
@@ -154,7 +155,13 @@ impl Indexer {
                 result.dedup();
                 Ok(result)
             },
-            |path| matches!(actions.get(path), Some(FileAction::Skip)),
+            |path| match actions.get(path) {
+                // Explicit actions take precedence over the scan inventory.
+                // A scanned-but-unparsed path historically had a dense Skip
+                // entry, including unreadable/parse-failed scanned inputs.
+                Some(action) => matches!(action, FileAction::Skip),
+                None => scanned_paths.contains(path),
+            },
             |paths, changed| {
                 self.promoted_export_surfaces_changed(paths, changed, &mut target_cache)
             },
@@ -204,10 +211,10 @@ impl Indexer {
         };
         // Keep an unadmitted persisted dependent conservative, never silently ready.
         let pending_surface = pending_surface
-            || state
-                .roots
-                .iter()
-                .any(|p| !state.completed.contains(p) && actions.contains_key(p));
+            || state.roots.iter().any(|p| {
+                !state.completed.contains(p)
+                    && (actions.contains_key(p) || scanned_paths.contains(p))
+            });
         let pending = pending_dependency || pending_surface;
         let status = if !self.dirty_propagation {
             DirtyPropagationStatus::Disabled
@@ -239,9 +246,9 @@ impl Indexer {
         };
         explanation.selected_dependents = closure.promoted.len();
         for path in &closure.promoted {
-            if let Some(action) = actions.get_mut(path) {
-                *action = FileAction::DirtyResolveOnly;
-            }
+            // The closure admitted this path from an explicit or implicit
+            // Skip. Materialize only the promoted override for reload/write.
+            actions.insert(path.clone(), FileAction::DirtyResolveOnly);
         }
         Ok(DirtyPropagationOutcome {
             marked: closure.promoted.len(),
@@ -416,7 +423,7 @@ mod surface_window_tests {
     use cc_model::{
         config::IndexingConfig, public_surface::PublicSurface, ImportRecord, Language, ParseOutcome,
     };
-    use std::collections::{BTreeSet, HashMap};
+    use std::collections::{BTreeSet, HashMap, HashSet};
     use std::sync::Arc;
 
     fn unit(path: &str, targets: &[&str]) -> FileWriteUnit {
@@ -444,6 +451,168 @@ mod surface_window_tests {
             mtime: 1.0,
             size: 1,
             outcome,
+        }
+    }
+
+    #[test]
+    fn sparse_actions_match_dense_reference_with_real_frontier_history() {
+        use cc_model::freshness::{ChangeKind, ReconcileState, ReconcileUpdate};
+        use cc_model::resolution::{DependencyKind, ResolutionDependency};
+
+        for history in ["initial", "resume", "rebase"] {
+            let directory = tempfile::tempdir().unwrap();
+            let db = Arc::new(
+                IndexDb::open_with_read_pool_size(&directory.path().join("index.db"), 1)
+                    .unwrap()
+                    .0,
+            );
+            let root = unit("api.py", &[]);
+            let mut facade = unit("b.py", &["api.py"]);
+            facade.outcome.public_surface = PublicSurface::default();
+            db.writes()
+                .replace_files_batch(&[
+                    root.clone(),
+                    facade,
+                    unit("c.py", &["b.py"]),
+                    unit("d_unparsed.py", &["api.py"]),
+                    unit("removed.py", &["api.py"]),
+                    unit("unadmitted.py", &["api.py"]),
+                    unit("plain.py", &[]),
+                ])
+                .unwrap();
+            if history != "initial" {
+                let epoch = db.reads().generation().unwrap().index_epoch;
+                let mut state = ReconcileState::new(epoch);
+                state.roots.insert("api.py".into());
+                state.propagated.insert("b.py".into());
+                state.completed.insert("b.py".into());
+                db.writes()
+                    .write_reconciled_batch(
+                        &[],
+                        std::slice::from_ref(&root),
+                        &[],
+                        &[],
+                        &[],
+                        &PrecompressedChunks::new(),
+                        Some(&ReconcileUpdate {
+                            expected_index_epoch: epoch,
+                            next: Some(state),
+                        }),
+                    )
+                    .unwrap();
+            }
+            let existing = db.reads().get_file_state().unwrap();
+            let epoch = db.reads().generation().unwrap().index_epoch;
+            // d_unparsed was admitted by the scanner but yielded no parsed
+            // unit (the same boundary used by read/parse failures). The
+            // persisted unadmitted path is deliberately outside this scan.
+            // Off-event importers b/c remain admitted in a scoped build.
+            let scanned: HashSet<String> = [
+                "api.py",
+                "b.py",
+                "c.py",
+                "d_unparsed.py",
+                "fresh.py",
+                "plain.py",
+            ]
+            .into_iter()
+            .map(str::to_owned)
+            .collect();
+            let parsed = if history == "resume" {
+                vec![]
+            } else {
+                vec![root.clone(), unit("fresh.py", &[])]
+            };
+            for budget in [0, 1, 2, 16] {
+                let config = IndexingConfig {
+                    dirty_propagation: true,
+                    dirty_propagation_max_files: budget,
+                    ..Default::default()
+                };
+                let indexer = Indexer::new(db.clone(), directory.path(), &config);
+                let mut dense = indexer.build_actions_map(&parsed, &existing, &scanned);
+                let mut sparse = indexer.build_write_actions(&parsed, &existing);
+                assert_eq!(sparse.len(), parsed.len());
+                let roots = if history == "resume" {
+                    vec![]
+                } else {
+                    vec!["api.py".into()]
+                };
+                let events = if history == "rebase" {
+                    BTreeSet::from([ResolutionDependency::new(
+                        DependencyKind::ModuleConfig,
+                        "tsconfig.json",
+                    )])
+                } else {
+                    BTreeSet::new()
+                };
+                let reasons = if history == "rebase" {
+                    BTreeSet::from([ChangeKind::Configuration])
+                } else {
+                    BTreeSet::new()
+                };
+                let removed = ["removed.py".into()];
+                let reference = indexer
+                    .plan_dirty_reconciliation(
+                        &mut dense,
+                        &HashSet::new(),
+                        &parsed,
+                        &removed,
+                        roots.clone(),
+                        events.clone(),
+                        reasons.clone(),
+                        epoch,
+                    )
+                    .unwrap();
+                let candidate = indexer
+                    .plan_dirty_reconciliation(
+                        &mut sparse,
+                        &scanned,
+                        &parsed,
+                        &removed,
+                        roots,
+                        events,
+                        reasons,
+                        epoch,
+                    )
+                    .unwrap();
+                assert_eq!(candidate.marked, reference.marked, "{history}/{budget}");
+                assert_eq!(candidate.status, reference.status, "{history}/{budget}");
+                assert_eq!(candidate.explanation, reference.explanation);
+                assert_eq!(
+                    candidate
+                        .reconcile
+                        .as_ref()
+                        .map(|r| (&r.next, r.expected_index_epoch)),
+                    reference
+                        .reconcile
+                        .as_ref()
+                        .map(|r| (&r.next, r.expected_index_epoch)),
+                    "identical durable frontier, not merely equal promotion counts"
+                );
+                for (path, old_action) in &dense {
+                    let new_action = sparse.get(path).unwrap_or(&FileAction::Skip);
+                    assert_eq!(
+                        std::mem::discriminant(new_action),
+                        std::mem::discriminant(old_action),
+                        "{history}/{budget}/{path}"
+                    );
+                }
+                assert_eq!(sparse.len(), parsed.len() + candidate.marked);
+                assert!(!sparse.contains_key("removed.py"));
+                assert!(!sparse.contains_key("unadmitted.py"));
+                if history != "resume" {
+                    assert!(matches!(sparse["fresh.py"], FileAction::Add));
+                }
+                if budget == 16 {
+                    assert!(matches!(
+                        sparse["d_unparsed.py"],
+                        FileAction::DirtyResolveOnly
+                    ));
+                    assert!(matches!(sparse["c.py"], FileAction::DirtyResolveOnly));
+                }
+                assert_eq!(db.reads().generation().unwrap().index_epoch, epoch);
+            }
         }
     }
 
@@ -673,6 +842,7 @@ mod surface_window_tests {
             let outcome = indexer
                 .plan_dirty_reconciliation(
                     &mut actions,
+                    &HashSet::new(),
                     std::slice::from_ref(&root),
                     &[],
                     vec!["api.py".into()],
@@ -730,6 +900,7 @@ mod surface_window_tests {
         let outcome = indexer
             .plan_dirty_reconciliation(
                 &mut actions,
+                &HashSet::new(),
                 &[root],
                 &[],
                 vec!["a.py".into()],
@@ -780,6 +951,7 @@ mod surface_window_tests {
         let outcome = indexer
             .plan_dirty_reconciliation(
                 &mut actions,
+                &HashSet::new(),
                 &[root],
                 &[],
                 vec!["api.py".into()],

@@ -1,5 +1,11 @@
 {
-  "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "acceptance_limits": [
+    "Source and validation-input review only; original task, quality, full-scale and release acceptance require separate evidence.",
+    "Archive publication acceptance concerns first-create no-clobber; existing-owned pointer updates retain their previous replacement behavior.",
+    "Installer acceptance concerns exact configuration ownership and failure/no-op preservation.",
+    "Sparse action acceptance concerns functional representation; no full-build performance or resource-cap change is claimed."
+  ],
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
   "complete_inputs": {
     "Cargo.lock": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6",
     "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
@@ -1098,7 +1104,10 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "delta": {
+  "independent_reviewers": [
+    "pr_audit"
+  ],
+  "paths": {
     "Cargo.lock": {
       "before_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
       "sha256": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6"
@@ -1400,14 +1409,11 @@
       "sha256": "fb04955343af3a611a13edda0a1e21dc0d2d76e1ef910136d37610b81867401c"
     }
   },
-  "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "306c53bf600fcd0614bbb50d7409acfce69c3972",
-  "review_sha256": "0a366a085c4fe6288dff3763f7cdd5c04814e28fc17b6fa6ff5bb05ebbfbff37",
-  "review_source": "5f911c78af7d305476ad83286d602ee6c19b7aa5",
-  "runtime_and_quality_claims": "require_separate_execution_evidence",
-  "schema_version": 10,
+  "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source_version": "p8-completion-source-20261009-v15",
+  "source": "306c53bf600fcd0614bbb50d7409acfce69c3972",
+  "source_tree": "477e080395ea5ff9a0b285ba206ff854dd583d0a",
+  "unresolved_blockers": [],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
@@ -1551,5 +1557,12 @@
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
     "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
-  }
+  },
+  "validation_summary": {
+    "execution_identity": "Existing executions retain their original source identity; byte equivalence is not a new execution.",
+    "local_default_regression": "two_environment_related_failures_not_waived",
+    "standard_exact_head_ci": "required",
+    "targeted_component_regressions": "passed_on_recorded_reviewed_sources"
+  },
+  "verdict": "accepted_scoped"
 }

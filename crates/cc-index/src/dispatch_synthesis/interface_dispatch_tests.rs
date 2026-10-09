@@ -163,8 +163,7 @@ fn malformed_calls_are_not_hidden_by_empty_implements_or_later_errors() {
     let expected = db
         .symbol_graph_reads()
         .dispatch_call_edges_excluding_synthesized(&["interface_dispatch"])
-        .err()
-        .expect("negative line must fail typed call decoding")
+        .expect_err("negative line must fail typed call decoding")
         .to_string();
     let actual = compute_interface_dispatch_synthesis(&db, &SynthesisConfig::default(), &[])
         .err()
@@ -184,8 +183,7 @@ fn malformed_symbols_are_not_hidden_by_empty_implements() {
     let expected = db
         .symbol_graph_reads()
         .symbol_dispatch_rows()
-        .err()
-        .expect("BLOB container must fail typed symbol decoding")
+        .expect_err("BLOB container must fail typed symbol decoding")
         .to_string();
     let actual = compute_interface_dispatch_synthesis(&db, &SynthesisConfig::default(), &[])
         .err()
@@ -208,8 +206,7 @@ fn malformed_implements_and_query_errors_propagate_after_the_original_guards() {
         let expected = db
             .edge_reads()
             .semantic_uid_pairs_by_relation("implements")
-            .err()
-            .expect("malformed implements input must fail")
+            .expect_err("malformed implements input must fail")
             .to_string();
         let actual = compute_interface_dispatch_synthesis(&db, &SynthesisConfig::default(), &[])
             .err()

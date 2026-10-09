@@ -102,7 +102,10 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
         let same_source_row = table(&same_source, name);
         assert_eq!(same_source_row["incremental_rows"], row["incremental_rows"]);
         assert_eq!(same_source_row["full_rows"], row["incremental_rows"]);
-        assert_eq!(same_source_row["incremental_digest"], row["incremental_digest"]);
+        assert_eq!(
+            same_source_row["incremental_digest"],
+            row["incremental_digest"]
+        );
         assert_eq!(same_source_row["full_digest"], row["incremental_digest"]);
         assert_eq!(row["incremental_rows"], legacy_a[*name].len());
         assert_eq!(row["full_rows"], legacy_b[*name].len());

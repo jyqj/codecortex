@@ -1,0 +1,26 @@
+--- /workspace/scratch/a217aaae3bde/original-173-runtime/helpers-275e-v1/review_e_lifecycle_original.py
++++ /workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_lifecycle_original.py
+@@ -10,7 +10,7 @@
+ from lifecycle_cargo_audit import verify_original_cargo
+ assert len(sys.argv)==6, 'manifest artifact-root exact-head exact-checkout review-output-root required'
+ base=pathlib.Path(sys.argv[5]).resolve(strict=True);repo=pathlib.Path(sys.argv[4]).resolve(strict=True);head=sys.argv[3]
+-assert head==HEAD, 'helper frozen for exact fixed 173 execution only'
++assert head==HEAD, 'helper frozen for exact fixed C3ff execution only'
+ assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip()==head, 'frozen checkout HEAD differs'
+ assert len(head)==40 and all(x in '0123456789abcdef' for x in head)
+ manifest=json.loads(pathlib.Path(sys.argv[1]).read_text());aid=manifest['artifact_id']
+@@ -36,12 +36,12 @@
+ assert r['sample_counts']=={'expected':1230,'recorded':1230}
+ assert r['product']['source']['source_commit']==head
+ assert r['product']['source']['source_tree']==subprocess.check_output(['git','rev-parse',head+'^{tree}'],cwd=repo,text=True).strip()
+-assert r['product']['source']['input_count']==1089 and r['product']['source']['manifest_sha256']==PRODUCT_MANIFEST
++assert r['product']['source']['input_count']==1092 and r['product']['source']['manifest_sha256']==PRODUCT_MANIFEST
+ product=json.loads((root/'product/build-receipt.json').read_text());inputs=json.loads((root/'product/source-inputs.json').read_text())
+ assert product['source_before']==product['source_after']==r['product']['source']
+ assert h(root/'product/build-receipt.json')==r['product']['receipt_sha256']
+ assert h(root/'product/source-inputs.json')==r['product']['source']['manifest_sha256']
+-assert len(inputs)==1089 and set(inputs)==set(subprocess.check_output(['git','ls-tree','-r','--name-only',head,'--','Cargo.toml','Cargo.lock','crates'],cwd=repo,text=True).splitlines())
++assert len(inputs)==1092 and set(inputs)==set(subprocess.check_output(['git','ls-tree','-r','--name-only',head,'--','Cargo.toml','Cargo.lock','crates'],cwd=repo,text=True).splitlines())
+ assert all(hashlib.sha256(blob(n)).hexdigest()==v for n,v in inputs.items())
+ assert h(root/'product/codecortex')==r['product']['binary_sha256']==product['binary_sha256']
+ assert product['build_exit_code']==0 and product['build_profile']=='release' and product['cargo_target_initially_absent']

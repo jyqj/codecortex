@@ -1,0 +1,161 @@
+{
+  "schema": "P8-007-010-original-attribution-contract-scoped-review-v1",
+  "created_at": "2026-10-09T09:46:03.246409+00:00",
+  "reviewer": "/root/pr_audit",
+  "assessment": "original_contract_scope_only_no_native_or_raw_replay",
+  "original_commit": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "current_candidate": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "external_report": {
+    "source": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+    "original_text_bytes": 37046,
+    "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982",
+    "captured_tool_response_path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/external-181-downstream-review-tool-capture.json",
+    "treated_as_authority": false
+  },
+  "bindings": [
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "original_commit": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "original_git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "original_bytes": 20488,
+      "original_sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "whole_bytes_equal_current_C": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "original_commit": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "original_git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "original_bytes": 10172,
+      "original_sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "whole_bytes_equal_current_C": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "original_commit": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "original_git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "original_bytes": 14819,
+      "original_sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "whole_bytes_equal_current_C": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "original_commit": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "original_git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "original_bytes": 802282,
+      "original_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "whole_bytes_equal_current_C": true
+    }
+  ],
+  "literal_anchors": [
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 175,
+      "literal": "并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 173,
+      "literal": "冷 OS cache 仅在明确且可复现的受控 runner 上测；没有清理就不要标 cold disk。常规 profile 不用 sudo 清缓存。release build 测性能，debug/test build 的结果单独标签。每种 query profile 预热后采集全部样本，禁止 best-of；起始建议每层至少 30 个重复，正式尾延迟 profile 至少 200 个同类样本并报告 N/CI，不能因样本小仍声称稳定 p99。各数值是设计下限，可在 P0 资源评估后锁定。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "line": 177,
+      "literal": "资源分 client runner、CodeCortex 子进程树、LSP/模型服务、OCE 外部容器。缺权限时 reported unavailable，不填 0。macOS RSS 单位与 Linux 不同；ru_maxrss 是高水位，不是瞬时 RSS，采样函数必须有平台测试。记录 peak sampling interval、index/FTS/cache/向量占用、读写字节、model requests/tokens/cache hits/重复费用不确定次数。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "line": 42,
+      "literal": "| V20 | 性能/资源/成本 | 1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用 | L3/L5 |"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "line": 122,
+      "literal": "每阶段报告 touched/parsed/resolved/written/reconciled 数量，catalog cache hit/compaction、FTS 扫描/解压、SQL calls、候选筛选、预算拒绝和向量复用统计。索引报告是用户触发的返回证据，不引入持续产品遥测数据库。benchmark 独立采集资源与原始结果，见 09-BENCHMARK.md。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "line": 126,
+      "literal": "一个能力完成必须同时具备：行为规格、实际模型/持久化/编排/MCP 接线、正负回归、旧功能回归、性能/质量对照、配置与文档、故障恢复/回滚、当前目标 SHA 的证据。写了 trait 或新增目录不算完成。任何为性能保留的近似都必须有 capability、precision/recall 及作用范围，不把“更快”兑换成未声明的错误。"
+    }
+  ],
+  "task_definitions": [
+    {
+      "pointer": "/tasks/166",
+      "original_definition": {
+        "id": "P8-007",
+        "title": "多并发与混合负载",
+        "depends_on": [
+          "P8-006"
+        ],
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "deliverables": [
+          "多并发与混合负载的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V11",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md"
+      },
+      "definition_equal_current_C": true
+    },
+    {
+      "pointer": "/tasks/169",
+      "original_definition": {
+        "id": "P8-010",
+        "title": "长时soak与连续修改",
+        "depends_on": [
+          "P8-009"
+        ],
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "deliverables": [
+          "长时soak与连续修改的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+        ],
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ],
+        "contracts_doc": "02-CONTRACTS.md",
+        "benchmark_doc": "09-BENCHMARK.md"
+      },
+      "definition_equal_current_C": true
+    }
+  ],
+  "findings": {
+    "applicability_P8_007": "The original task explicitly references09-BENCHMARK.md and V11/V20; section9 line175 matches its C1/4/8/16 mixed workload and offered-load scope. DB lock wait and worker contention collection are original requirements, not new conditions introduced by PR181 or only optional future G8 work. V20 summary is not an exhaustive replacement for the linked benchmark specification.",
+    "queue_service_qualification": "The original says queue+service+end-to-end and separately requires load-generator offered load and queuing. It does not literally say backend, per-request internal span or every lock/component. A specified backend instrumentation format, unique request ID, complete call-stack attribution, continuous telemetry, or separate distribution for every component would be implementation choices, not independently mandatory original gates. Actual recorded phase boundaries must be inspected before judging coverage. Client call duration must not be relabelled as separately measured internal server service/lock wait.",
+    "DB_lock_and_contention_qualification": "Generic client admission queue or external RPC duration does not by itself identify DB lock wait or worker contention. Some concrete contemporaneous observation of those named phenomena and its scope is needed for a complete007 claim; this review does not prescribe a new threshold, timing unit or diagnostic architecture. Whether existing product counters/traces/probes collectively meet it is reserved for runtime peer actual-evidence review.",
+    "not_run_boundary": "If original required observation is truly missing, scoped passing samples remain valid but incomplete for the full007 requirement; missing observations cannot be reconstructed as measured by renaming fields, putting zero in unknowns or completing only scale dependencies. The task explicitly keeps unevidenced items not_run/blocked.",
+    "applicability_P8_010": "The010 own literal requires continuous edits/deletes/branch changes/catalog compaction/cache-worker reuse, bounded memory/queues and full endpoint parity. Line175 specifically describes the multi-concurrency mixed profile. It does not independently require a second four-concurrency one-hour suite or duplication of every mixed attribution measure in the one-hour profile. Real007 incompleteness propagates through007→008→009→010 hard dependencies; it does not negate already accepted010 boundedness/parity observations.",
+    "unavailable_not_escape": "Section9 line177 permits honest unavailable where resource access lacks permission, not fictitious zero. It does not automatically waive instrumentation that was not collected, nor does a null by itself complete a required measurement. Preserve exact reason/scope.",
+    "external_report_assessment": "The external report identifies a legitimate original007 attribution scope to check. Its backend qualifier and treating010 as intrinsically requiring the entire mixed-profile attribution should be narrowed as above; its factual claims about173/C raw absence are not independently accepted in this contract-only review."
+  },
+  "decision": "original007_requirement_confirmed_with_no_new_backend_format_or010_workload_gate; actual coverage awaits runtime evidence mapping",
+  "source_or_workflow_changes": false,
+  "native_tests_or_replays": false,
+  "formal_task_completion": false,
+  "ledger": {
+    "done": 163,
+    "remaining": 29
+  },
+  "next_authorized_step": "Combine this literal scope with runtime peer original raw/code mapping; leave current C source/workflows/measurement protocol frozen and preserve all existing source-specific samples."
+}

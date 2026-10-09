@@ -1,0 +1,16 @@
+{
+  "actual_outer_error": "AssertionError at check_new_bindings.py line34",
+  "actual_outer_exit": 1,
+  "cause_from_unchanged_backfill_source": "backfill reads the supplied JSON manifest before its HEAD assertion; this harness passed a nonexistent path. The expected source-check error was therefore not reached.",
+  "child_stderr_for_failing_case": "not_retained_by_v1_wrapper",
+  "correction": "Use a newly created empty synthetic JSON manifest, retain every subprocess stdout/stderr before asserting its result. No reader predicate changes.",
+  "frozen_helpers_changed": false,
+  "native_executed": false,
+  "original_zip_opened": false,
+  "retained_completed_cli_cases": [
+    "runtime wrong-head",
+    "runtime wrong-checkout"
+  ],
+  "scope": "synthetic control harness setup failure; no original artifact/native acceptance",
+  "script_sha256": "83eae212937c2832d107181c145a93e049002ee690b1581f54314b57c994197c"
+}

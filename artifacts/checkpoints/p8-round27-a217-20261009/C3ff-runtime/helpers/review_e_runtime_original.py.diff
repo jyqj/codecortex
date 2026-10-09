@@ -1,0 +1,41 @@
+--- /workspace/scratch/a217aaae3bde/original-173-runtime/helpers-275e-v1/review_e_runtime_original.py
++++ /workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py
+@@ -5,7 +5,7 @@
+ 
+ repo=pathlib.Path(sys.argv[4]).resolve(strict=True)
+ head=sys.argv[3]
+-assert head==HEAD, 'helper frozen for exact fixed 173 execution only'
++assert head==HEAD, 'helper frozen for exact fixed C3ff execution only'
+ assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip()==head, 'frozen checkout HEAD differs'
+ assert len(head)==40 and all(x in '0123456789abcdef' for x in head)
+ def blob(path):return subprocess.check_output(['git','show',head+':'+path],cwd=repo)
+@@ -33,9 +33,9 @@
+  plan=json.loads((m/'plan.json').read_text());r=json.loads((m/'report.json').read_text());build=json.loads((b/'build-receipt.json').read_text());stats=json.loads((m/'statistics.json').read_text());parity=json.loads((m/'parity.json').read_text())
+  n=3601 if plan['profile']=='soak' else 900
+  assert plan['concurrency']==c and plan['operations']==n and plan['files']==1000 and plan['offer_interval_ms']==(1000 if plan['profile']=='soak' else 500)
+- assert plan['source']['source_commit']==head and len(plan['source']['inputs'])==1089
++ assert plan['source']['source_commit']==head and len(plan['source']['inputs'])==1092
+  assert plan['source']['source_tree']==subprocess.check_output(['git','rev-parse',head+'^{tree}'],cwd=repo,text=True).strip()
+- assert plan['source']['input_count']==1089 and plan['source']['manifest_sha256']==hashlib.sha256(owner.json_bytes(plan['source']['inputs'])).hexdigest()
++ assert plan['source']['input_count']==1092 and plan['source']['manifest_sha256']==hashlib.sha256(owner.json_bytes(plan['source']['inputs'])).hexdigest()
+  assert plan['source']['manifest_sha256']==PRODUCT_MANIFEST, 'combined product manifest differs'
+  assert set(plan['source']['inputs'])==set(subprocess.check_output(['git','ls-tree','-r','--name-only',head,'--','Cargo.toml','Cargo.lock','crates'],cwd=repo,text=True).splitlines())
+  assert all(hashlib.sha256(g(name)).hexdigest()==digest for name,digest in plan['source']['inputs'].items())
+@@ -83,6 +83,8 @@
+  for name,a in plan['retained_build_evidence'].items():
+   assert h(m/'build-evidence'/name)==a['sha256']==h(b/name)
+  assert h(m/'statistics.json')==h(m/'statistics-replay.json')==r['statistics']['sha256']
++ assert r['latency']==stats['legacy_ns']['latency'], 'runtime legacy ns overall copy differs from bound Rust statistics'
++ assert r['latency_by_operation']==stats['legacy_ns']['latency_by_operation'], 'runtime legacy ns operation copy differs from bound Rust statistics'
+  assert stats['recorded_samples']==stats['expected_samples']==n and stats['missing_samples']==stats['unexpected_samples']==0
+  raw,raw_offsets,raw_event_counts=load_runtime_rows(m/'raw.jsonl');ops=[x for x in raw if x['kind']=='operation'];assert len(ops)==n and {x['id'] for x in ops}==set(range(n))
+  assert collections.Counter(x['operation'] for x in ops)=={'read':n-(n+2)//3,'build':(n+2)//3} and all(x['status']=='success' for x in ops)
+@@ -155,7 +157,7 @@
+  cache_audit=audit_cache(runtime,m,plan,r,raw,raw_offsets) if plan['profile']=='soak' else None
+  for x in [b,m]:owner.verify_output(x)
+  assert zipfile.stat().st_size==size and h(zipfile)==sha, 'original ZIP changed during audit'
+- summary={'head':plan['source']['source_commit'],'workflow_run':metadata['run_id'],'artifact_id':artifact_id,'zip_sha256':sha,'zip_bytes':size,'verdict':'accepted_scoped_original_'+head[:8]+'_runtime_observation','configured_concurrency':c,'actual_concurrency':r['actual_concurrency'],'offered':n,'outcomes':r['outcomes'],'terminal_ids_complete_unique':True,'source_inputs':1089,'observer_files':9,'sealed_artifact_counts':seals,'retained_build_metadata_matches_full_sealed_build':True,'product_sha256':r['product_sha256'],'oracle_sha256':r['oracle_sha256'],'statistics_sha256':plan['statistics_sha256'],'report_sha256':h(m/'report.json'),'statistics_independent_replay_byte_identical':True,'no_repair_oracle_replay_all15tables_identical':True,'observed_work_ns':r['observed_work_ns'],'profile':plan['profile'],'rss':r['rss'],'resource_time_coverage':r['resource_time_coverage'],'catalog_compactions':r['observed_catalog_compactions'],'branch_switches':r['real_branch_switches'],'latency_by_operation':r['latency_by_operation'],'soak_and_queue_independent_checks':intervals,'scope_limits':['fixed offered concurrency cap; actual overlap and maxima reported honestly','original executed HEAD preserved; not a later-head claim','descriptive empirical latency only; no performance improvement or stable p99 claim','default profile semantic backfill excluded; separate seeded original-worker run required']}
++ summary={'head':plan['source']['source_commit'],'workflow_run':metadata['run_id'],'artifact_id':artifact_id,'zip_sha256':sha,'zip_bytes':size,'verdict':'accepted_scoped_original_'+head[:8]+'_runtime_observation','configured_concurrency':c,'actual_concurrency':r['actual_concurrency'],'offered':n,'outcomes':r['outcomes'],'terminal_ids_complete_unique':True,'source_inputs':1092,'observer_files':9,'sealed_artifact_counts':seals,'retained_build_metadata_matches_full_sealed_build':True,'product_sha256':r['product_sha256'],'oracle_sha256':r['oracle_sha256'],'statistics_sha256':plan['statistics_sha256'],'report_sha256':h(m/'report.json'),'statistics_independent_replay_byte_identical':True,'no_repair_oracle_replay_all15tables_identical':True,'observed_work_ns':r['observed_work_ns'],'profile':plan['profile'],'rss':r['rss'],'resource_time_coverage':r['resource_time_coverage'],'catalog_compactions':r['observed_catalog_compactions'],'branch_switches':r['real_branch_switches'],'latency_by_operation':r['latency_by_operation'],'soak_and_queue_independent_checks':intervals,'scope_limits':['fixed offered concurrency cap; actual overlap and maxima reported honestly','original executed HEAD preserved; not a later-head claim','descriptive empirical latency only; no performance improvement or stable p99 claim','default profile semantic backfill excluded; separate seeded original-worker run required']}
+  summary.update(cache_audit=cache_audit,raw_event_counts=raw_event_counts,status='accepted_scoped',unresolved_blockers=[],owned_cleanup=cleanup,parity_exit_code=0,artifact_seal_status='sealed',helper=dict(path=str(pathlib.Path(__file__).resolve()),sha256=h(pathlib.Path(__file__))))
+  (out/'independent-review.json').write_text(json.dumps(summary,indent=2,sort_keys=True)+'\n');all_reviews.append(summary);print(json.dumps({k:v for k,v in summary.items() if k!='latency_by_operation'}),flush=True)
+ (base/('runtime-'+head[:8]+'-independent-'+str(artifacts[0][1])+'.json')).write_text(json.dumps(all_reviews,indent=2,sort_keys=True)+'\n')

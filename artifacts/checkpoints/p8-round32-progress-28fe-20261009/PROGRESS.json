@@ -1,0 +1,133 @@
+{
+  "schema": "codecortex.p8.round32.progress.v1",
+  "round": 32,
+  "recorded_date_utc": "2026-10-09",
+  "repository": "jyqj/codecortex",
+  "previous_round_commit": "d8570a93cd0dca0825f1ea1b96e3a17bfaeb61da",
+  "main": {
+    "commit": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "tree": "1e8439b342fa7f1136ee640b17c5f493b2b512ab",
+    "source": "PR #186 normal merge",
+    "task_blob": "959a25ba851ff88f286bab0fa14167878129b1dd"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed_this_round": 0,
+    "newly_completed_ids": [],
+    "cumulative_from_163_baseline": 0,
+    "target_minimum": 10
+  },
+  "ledger_delta_from_main_b941": {
+    "definitions_ids_order_dependencies_acceptance_subgates_statuses": "unchanged",
+    "only_task_change": "P8-017 evidence and implementation_notes appended by PR #186; still in_progress",
+    "original_target_status": "P8-005..P8-013 and P8-016 all in_progress"
+  },
+  "dependency_gate": {
+    "P8_005": "P8-004 done, but fixed full-scale study open",
+    "P8_006": "blocked by incomplete P8-005",
+    "downstream": "P8-007<-006<-005; P8-008<-007; P8-009<-008; P8-010<-009; P8-011<-007+010; P8-012<-011; P8-013<-012; P8-016<-012+013",
+    "closable_target_ids": []
+  },
+  "pr180": {
+    "state": "open draft",
+    "head": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+    "mergeable_state": "dirty",
+    "current_product_candidate": "bb290be2deaf4334863e09dbf47fe4ccc9625f2b",
+    "candidate_tree": "4dbe8ee3d09701c8563f42695b483ae104da0a2a",
+    "independent_review": "51d5ed91e14ddb13eccb93ebd28311a3235075cc",
+    "bound_guard": "d7f21ab52ee2068c45ab5f7781e9e1db57f613de",
+    "candidate_checks": 0,
+    "source_status": "default-off DB acquisition observer and PR184 three Rust cleanup files are source-reviewed and bound",
+    "integration_blocker": "candidate lineage is based on main b941 and lacks current main4ef PR186 three product files plus its docs/tasks/artifacts; old/current pins cannot be copied as final bindings",
+    "decision": "do not move PR180 until owner creates a fresh product/review/guard over fixed candidate plus main4ef preservation and required execution evidence"
+  },
+  "db_acquisition_observation": {
+    "design_result": "narrow source review accepted",
+    "default_off": "original Mutex<Connection> and read_conn behavior retained; observer module/statics/clock absent",
+    "feature_on_metrics": [
+      "writer_mutex_acquire",
+      "read_pool_lock_acquire",
+      "read_connection_checkout"
+    ],
+    "semantics": "preserves LockResult/poison behavior; measures actual acquisition/checkout paths; process-global counters with terminal denominator and drained in-flight accounting",
+    "window": "baseline after cold build; endpoint after futures and sampler drain; 900 terminal mixed operations; sealed identity and independent endpoint oracle required",
+    "scope_limits": [
+      "not full-backend tracing",
+      "not pure SQLite blocked-wait isolation",
+      "not an extra hour soak",
+      "not a new 150-shard study",
+      "must not mix with default latency distributions"
+    ],
+    "native_run": {
+      "run_id": 37919399759,
+      "source": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+      "conclusion": "fmt failure; all later default-off/feature-on tests and four-C measurement skipped",
+      "four_c_measurements": 0
+    },
+    "mac_engineering": "P1 owner evidence reports 60 Rust + 77 Python passed, fmt 0, default/feature strict Clippy 0; this is not four-C mixed measurement evidence",
+    "remaining_evidence": "C1/C4/C8/C16 on fixed final source, each 900 ops/1000 files/500ms, with actual count/failed/in_flight/unfinished/source/feature/compiler/build/binary/PID/window/receipt/seal identities"
+  },
+  "fixed_scale_studies": [
+    {
+      "name": "G3",
+      "run_id": 37910924354,
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "accepted_measurement_jobs": 4,
+      "total_required": 150,
+      "job_100k": "in_progress",
+      "later_jobs_materialized": 0
+    },
+    {
+      "name": "C8",
+      "run_id": 37902429727,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "accepted_measurement_jobs": 4,
+      "total_required": 150,
+      "job_100k": "in_progress",
+      "later_jobs_materialized": 0
+    },
+    {
+      "name": "old275e",
+      "run_id": 37896198208,
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "accepted_measurement_jobs": 4,
+      "total_required": 150,
+      "job_100k": "in_progress",
+      "later_jobs_materialized": 0
+    }
+  ],
+  "scale_decision": "No dispatch, retry, cancellation, budget change, or cross-source pooling. P8-005 and P8-006 remain incomplete.",
+  "current_pr_management": {
+    "open_prs": [
+      184,
+      180,
+      178,
+      137,
+      127,
+      65,
+      4,
+      3
+    ],
+    "pr184": {
+      "head": "ae033369f015c416cd7995709c1853497773cf6a",
+      "decision": "keep open; new check set is not terminal; three Rust files are already in P1 but its independent artifacts/history remain separately preserved"
+    },
+    "pr181": "merged externally in prior round; no repeated action",
+    "pr186": "merged externally this round; only P8-017 engineering evidence, not an original target completion"
+  },
+  "evidence_reviews": {
+    "pr180_incremental_blob": "8a6e1f1f85465a63745896baff213de1efafa67e",
+    "db_and_ledger_blob": "73a3f1509d31f8c3266ae71e8016806aa3b27866"
+  },
+  "prohibited_inferences": [
+    "Engineering tests, source review, PR merges and evidence archives are not original TODO completion.",
+    "G1 checks cannot be transferred to P1 or a future main4ef integration.",
+    "Four-C observation design and Mac engineering controls cannot replace actual mixed acquisition-window measurements.",
+    "Four accepted shards from different source studies cannot be pooled."
+  ]
+}

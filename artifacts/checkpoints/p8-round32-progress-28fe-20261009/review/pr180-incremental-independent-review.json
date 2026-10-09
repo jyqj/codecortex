@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "review": "round32-pr180-current-owner-integration-review",
+  "repository": "jyqj/codecortex",
+  "source_observed_through": "2026-10-09T12:04:57Z",
+  "refs": {
+    "main": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "pr180_head": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+    "pr180_head_ref": "integrate/p8-snapshot-oracle-28fe-20261009",
+    "bfcc_staging": "bb290be2deaf4334863e09dbf47fe4ccc9625f2b",
+    "m31": "d3595b43c652179f3edbf31fa4834efbaa1577a3"
+  },
+  "pr180": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable": false,
+    "mergeable_state": "dirty",
+    "head_tree": "7a87a8e335de5c09d041b01f8802973ea96cd595",
+    "action": "do_not_move_owner_ref_while_new_product_review_and_binding_are_in_progress"
+  },
+  "bfcc_product_candidate": {
+    "commit": "bb290be2deaf4334863e09dbf47fe4ccc9625f2b",
+    "tree": "4dbe8ee3d09701c8563f42695b483ae104da0a2a",
+    "parent": "3ced45d1f4bbfc38eeab3fbe1a1ef17eae26721a",
+    "composition_parent": {
+      "commit": "3ced45d1f4bbfc38eeab3fbe1a1ef17eae26721a",
+      "tree": "de9e502692569dec1f0e6629575145ec10c837d5",
+      "parents": [
+        "e5640904298febdf8dc951e0baddb2819f930c0b",
+        "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+        "b7154d585527cdc4cd7fb86d1e9828bed3d37088"
+      ]
+    },
+    "main181_history": {
+      "h2": "e5640904298febdf8dc951e0baddb2819f930c0b",
+      "h2_tree": "73b93b60865daf5d9b6b02afa8974688c64191a4",
+      "h2_parents": [
+        "399a71a4c11e7041ce9946fba4d3f72200c47155",
+        "b9412406e11422d7cf914458a8bfbbd58cf94eaa"
+      ],
+      "result": "actual b941 main181 parent and the previously reviewed six docs plus 242 artifacts are in the candidate ancestry; direct M31 ancestry is unnecessary"
+    },
+    "public_api_fix_blobs": {
+      "crates/cc-db/src/index_db_write_batch.rs": "34c1e5e5188910482fcf80863008620d30fa73b1",
+      "crates/cc-db/src/snapshot_write_txn.rs": "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+      "crates/cc-db/tests/p2b_resolution_store.rs": "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+      "result": "all three exactly equal reviewed product c92eb5ac7ece70d1f62271d7e2dacac513c285b5"
+    },
+    "inherited_v15_binding": {
+      "registry_blob": "88752a99aee8b433abe6c8e108945773bee156f2",
+      "guard_blob": "800ac91360d3fad25e9e6d67ea906c274153341c",
+      "guard_identity_constants": {
+        "PRODUCT": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+        "REVIEW": "f89d5feec91ae611d52614b8fe217bcd7fd5cf64",
+        "REVIEW_PATH": "artifacts/checkpoints/p8-public-api-merge-bfcc-20261009/independent-source-review.json",
+        "REGISTRY_SHA256": "0213598a1f442e12618d5259dd36029eabff972de9f4224582e2cf0741086968"
+      },
+      "registry_counts": {
+        "complete_inputs": 1093,
+        "delta": 59,
+        "validation_inputs": 139
+      },
+      "disposition": "these inherited pins intentionally bind c92/f89, not bb290; bb290 is a product candidate and still requires its new independent R/G before PR180 can move"
+    },
+    "delta_from_h2": {
+      "files": 91,
+      "added": 79,
+      "modified": 12,
+      "artifacts": 73,
+      "nonartifact": 18,
+      "content": "default-off DB acquisition observation plus PR184 three-file canonical physical-index cleanup, one workflow, documentation, tests and composition records"
+    },
+    "check_runs": 0
+  },
+  "current_main_delta_not_yet_in_bfcc": {
+    "main_commit": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "main_tree": "1e8439b342fa7f1136ee640b17c5f493b2b512ab",
+    "parents": [
+      "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+      "2709862877c5c133acf291e9e1cf61a632718d19"
+    ],
+    "compare_b941_to_main": {
+      "files": 71,
+      "product_files": 3
+    },
+    "product_blob_mismatch": {
+      "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json": {
+        "bfcc": "96216fdb7dff3fc635820fef921cbe0a249c8047",
+        "main": "c979369c3a6e3d2ef6e16f1848648d8096465756"
+      },
+      "crates/cc-search/src/lanes.rs": {
+        "bfcc": "9069edd85e1e76144930fcc03f073441138693c7",
+        "main": "f760ca52ec32547215092a5c700d4cb977a9669d"
+      },
+      "crates/cc-search/src/query_policy.rs": {
+        "bfcc": "d7642807baaab53c565d7e8f91568d1addbcd5b9",
+        "main": "79873db31d8d93a86f1537b930038f2437b99594"
+      }
+    },
+    "tasks_blob": {
+      "bfcc": "435f27d39b8244468f62601063d4375d23bbfd79",
+      "main": "959a25ba851ff88f286bab0fa14167878129b1dd"
+    },
+    "safe_next_composition": "owner should combine fixed bb290 with fixed main4ef while keeping bb290's 18 nonartifact product paths and importing the three main product blobs plus main docs/task evidence and artifact namespaces; do not copy either side's stale registry/guard as a final binding. Review and bind the resulting full product."
+  },
+  "pr180_ci": {
+    "total": 25,
+    "success": 4,
+    "in_progress": 1,
+    "queued": 20,
+    "failures": 0,
+    "successes": [
+      {
+        "name": "engineering",
+        "job": 113784268795,
+        "completed_at": "2026-10-09T11:42:38Z",
+        "actual_checkout": "a189a055 PR test merge of G1 into main55"
+      },
+      {
+        "name": "lifecycle",
+        "job": 113784272055,
+        "completed_at": "2026-10-09T12:03:04Z",
+        "actual_checkout": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+        "sealed_files": 2381
+      },
+      {
+        "name": "offline (default)",
+        "job": 113784269201,
+        "completed_at": "2026-10-09T12:03:11Z",
+        "actual_checkout": "1d39f382d4e08e702a55693c9c614fa477bf7e0c"
+      },
+      {
+        "name": "gate_controls",
+        "job": 113784268493,
+        "completed_at": "2026-10-09T12:04:57Z",
+        "actual_checkout": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+        "status": "passed_original_failure_gates"
+      }
+    ],
+    "disposition": "partial success only; not a full CI terminal and not transferable to bb290 or future current-main composition"
+  },
+  "original_tasks": {
+    "main_tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed_this_review": [],
+    "cumulative_newly_completed_since_163_baseline": 0
+  },
+  "decision": {
+    "safe_to_move_pr180": false,
+    "reasons": [
+      "owner is actively producing a new independent review and binding for bb290",
+      "bb290 has zero GitHub check runs and its inherited v15 pins bind c92/f89 rather than the combined product",
+      "current main4ef adds three product files and associated docs/tasks/artifacts not yet present in bb290",
+      "PR180 head CI is partial and source-specific"
+    ]
+  }
+}

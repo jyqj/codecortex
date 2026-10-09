@@ -1,0 +1,177 @@
+{
+  "schema": "M2-LP-readonly-Cargo-text-reconstruction-v1",
+  "created_utc": "2026-10-09T11:07:30.200667+00:00",
+  "scope": "Fresh readonly text reconstruction from the same immutable Git inputs. Its output is byte-bound to the earlier design record; this is not labeled as that earlier invocation original stdout. No product/validator workload, Rust toolchain, commit/tree/ref or source checkout mutation.",
+  "prior_design": {
+    "path": "/workspace/scratch/a217aaae3bde/scale-pr180-C-review/future-M2-LP-composition-design.json",
+    "bytes": 10685,
+    "sha256": "52ffdcec3c43a6b88787c264fb19caf496d58614b8ae92f4ccc5bd42e1ebb9f9"
+  },
+  "input_bindings": [
+    {
+      "role": "M2",
+      "commit": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+      "path": "crates/cc-server/Cargo.toml",
+      "git_blob": "cffa60193db9dd5903f408f4ee46ad981be41bf3",
+      "bytes": 1610,
+      "sha256": "4b316a3dc3e35c0d1b3b3423025223c28ef4b35fa86b61096f142c53ff6a47b5"
+    },
+    {
+      "role": "base_C",
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "crates/cc-server/Cargo.toml",
+      "git_blob": "b43687e2190c7a814675483998d7186fa49e5f8b",
+      "bytes": 1433,
+      "sha256": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949"
+    },
+    {
+      "role": "LP",
+      "commit": "48be21414e3e04cb542615157eef25fbffae4a17",
+      "path": "crates/cc-server/Cargo.toml",
+      "git_blob": "b9d61547fa3be800f8f9cfa56280a553cfe360dd",
+      "bytes": 1491,
+      "sha256": "8438b1863748a482f69c8796128a397364380a462bd7fd18b9f1415b0e7c1a38"
+    }
+  ],
+  "command_template": [
+    "git",
+    "merge-file",
+    "-p",
+    "M2-Cargo-copy",
+    "base-C-Cargo-copy",
+    "LP-Cargo-copy"
+  ],
+  "returncode": 0,
+  "stderr_utf8": "",
+  "stdout_utf8": "[package]\nname = \"cc-server\"\nversion.workspace = true\nedition.workspace = true\n\n[lib]\nname = \"cc_server\"\npath = \"src/lib.rs\"\n\n[[bin]]\nname = \"codecortex\"\npath = \"src/main.rs\"\n\n[dependencies]\ncc-model = { path = \"../cc-model\" }\ncc-db = { path = \"../cc-db\" }\ncc-index = { path = \"../cc-index\" }\ncc-search = { path = \"../cc-search\" }\nclap.workspace = true\ntokio.workspace = true\ntracing.workspace = true\ntracing-subscriber.workspace = true\nserde.workspace = true\nserde_json.workspace = true\n# Preserve user TOML formatting when updating the Codex CLI installer entry.\n# This version is already present in the workspace lockfile through cc-index.\ntoml_edit = \"0.22.27\"\nrmcp.workspace = true\ntokio-util = { version = \"0.7\", features = [\"rt\"] }\ndirs.workspace = true\nnotify.workspace = true\nregex.workspace = true\nchrono.workspace = true\nlru.workspace = true\n# Optional semantic persistence seam (P6-002). Declared but unwired by\n# default: the `semantic` feature is enabled explicitly; the default build\n# neither compiles cc-semantic into cc-server nor creates any cache path.\ncc-semantic = { path = \"../cc-semantic\", optional = true }\nreqwest = { version = \"0.12.28\", default-features = false, features = [\"blocking\", \"rustls-tls\"], optional = true }\n\n[features]\nsemantic = [\"dep:cc-semantic\"]\nsemantic-http = [\"semantic\", \"dep:reqwest\"]\np8-db-lock-observation = [\"cc-db/p8-db-lock-observation\"]\n\n[dev-dependencies]\nrmcp = { workspace = true, features = [\"client\", \"transport-child-process\"] }\n# Tests seed the index DB with raw SQL through their own connections;\n# production code reads exclusively through cc-db's typed facets.\nrusqlite.workspace = true\ntempfile = \"3\"\n",
+  "stdout_bytes": 1668,
+  "stdout_sha256": "7808969f63a3da11106471fea722f715a91b48f35086473df756b25c8576f742",
+  "computed_unwritten_Git_blob": "9380ca451c1bf518bec036fa6caa3cc5daad1d5a",
+  "TOML_parsed": {
+    "package": {
+      "name": "cc-server",
+      "version": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      }
+    },
+    "lib": {
+      "name": "cc_server",
+      "path": "src/lib.rs"
+    },
+    "bin": [
+      {
+        "name": "codecortex",
+        "path": "src/main.rs"
+      }
+    ],
+    "dependencies": {
+      "cc-model": {
+        "path": "../cc-model"
+      },
+      "cc-db": {
+        "path": "../cc-db"
+      },
+      "cc-index": {
+        "path": "../cc-index"
+      },
+      "cc-search": {
+        "path": "../cc-search"
+      },
+      "clap": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true
+      },
+      "tracing": {
+        "workspace": true
+      },
+      "tracing-subscriber": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true
+      },
+      "serde_json": {
+        "workspace": true
+      },
+      "toml_edit": "0.22.27",
+      "rmcp": {
+        "workspace": true
+      },
+      "tokio-util": {
+        "version": "0.7",
+        "features": [
+          "rt"
+        ]
+      },
+      "dirs": {
+        "workspace": true
+      },
+      "notify": {
+        "workspace": true
+      },
+      "regex": {
+        "workspace": true
+      },
+      "chrono": {
+        "workspace": true
+      },
+      "lru": {
+        "workspace": true
+      },
+      "cc-semantic": {
+        "path": "../cc-semantic",
+        "optional": true
+      },
+      "reqwest": {
+        "version": "0.12.28",
+        "default-features": false,
+        "features": [
+          "blocking",
+          "rustls-tls"
+        ],
+        "optional": true
+      }
+    },
+    "features": {
+      "semantic": [
+        "dep:cc-semantic"
+      ],
+      "semantic-http": [
+        "semantic",
+        "dep:reqwest"
+      ],
+      "p8-db-lock-observation": [
+        "cc-db/p8-db-lock-observation"
+      ]
+    },
+    "dev-dependencies": {
+      "rmcp": {
+        "workspace": true,
+        "features": [
+          "client",
+          "transport-child-process"
+        ]
+      },
+      "rusqlite": {
+        "workspace": true
+      },
+      "tempfile": "3"
+    }
+  },
+  "exact_expected_map_summary": {
+    "product_count": 1095,
+    "validation_count": 142,
+    "product_manifest_sha256_if_exact_composition": "fc1c63482d9d914d29fb3f12435aa77786ca6dadc7cb230a0afb2811b959c826",
+    "validation_manifest_sha256": "193a32e4d3723dabc6866fb4379cde1fd9d9179e0f047ac3c3609ff69ca10e8e",
+    "method": "Two independent map compositions agree: admitted M2 full map plus actual LP changed bytes, and admitted LP full map plus exact seven M2 product inputs, with the actual three-way Cargo text substituted. No full unchanged-blob reread.",
+    "limitation": "Expected maps for this exact text composition only, not a published/admitted source. Future actual product, review and guard must be bound and checked on their own exact Git objects."
+  },
+  "future_actual_composed_source_admission": "not_run",
+  "formal_completion": false,
+  "remaining_todos": 29
+}

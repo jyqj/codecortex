@@ -1,0 +1,158 @@
+{
+  "schema": "p8-round29-closeout-v1",
+  "round": 29,
+  "closed_at": "2026-10-09T11:08:55Z",
+  "accounting": {
+    "original_total": 192,
+    "original_done": 163,
+    "newly_completed_this_round": 0,
+    "newly_completed_this_session": 0,
+    "remaining": 29,
+    "target_ids": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "acceptance_definitions_dependencies_and_statuses_unchanged": true
+  },
+  "sources": {
+    "original_C": {
+      "head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "product_count": 1092,
+      "validation_count": 139
+    },
+    "diagnostic_LG": {
+      "head": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+      "branch": "task/p8-db-lock-observation-a217-20261009",
+      "product_count": 1094,
+      "validation_count": 142,
+      "original_v15_exit_code": 0,
+      "original_v15_execution_seconds": 220.633998,
+      "workflow_run": 37919399759,
+      "admission_job": 113783411293,
+      "actual_ci_status_at_cutoff": "queued",
+      "actual_rust_or_native_result": false
+    },
+    "external_PR180": {
+      "head": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+      "main": "55aa2bcf355441585bcf980e1d6f4fab8eebe59d",
+      "state": "open_draft",
+      "product_count": 1093,
+      "validation_count": 139,
+      "actual_ci_status_at_prior_observation": "queued",
+      "independent_new_product_changes": true,
+      "task_differences": "12 evidence suffix appends and P8-017/P8-018 implementation_notes suffix appends; original prefixes, definitions, dependencies, acceptance subgates and statuses preserved",
+      "future_M2_LP_composition": "read-only design only; no product tree, commit or ref created"
+    }
+  },
+  "accepted_this_round": {
+    "C_scale": {
+      "run_id": 37910924354,
+      "attempt": 1,
+      "accepted_shards": 4,
+      "required_shards": 150,
+      "accepted_samples": 41,
+      "required_samples": 1500,
+      "new_artifact": 11611019227,
+      "new_scale": "50000",
+      "new_samples": 9,
+      "native_wall_ms": 3285848,
+      "original_native_deadline_ms": 18000000,
+      "original_output_budget_bytes": 536870912,
+      "original_helper_unchanged": true,
+      "full_study_complete": false,
+      "remaining_preflight_job": 113760872142,
+      "automatic_measurement_jobs_after_all_five_preflight_success": 145
+    },
+    "C_backfill": {
+      "artifact_id": 11610619483,
+      "review_exit_code": 0,
+      "requests": 768,
+      "seeds": 3,
+      "conditions": 2,
+      "concurrency_levels": 4,
+      "requests_per_cell": 32,
+      "actual_lock_wait_interval_credit": false
+    },
+    "C_recovery": {
+      "artifact_id": 11611995300,
+      "preflight_exit_code": 0,
+      "rollback_review_exit_code": 0,
+      "recovery_011_review_exit_code": 0,
+      "zip_members": 499,
+      "sealed_members": 495,
+      "rollback_schema_sequence": [
+        25,
+        24,
+        25
+      ],
+      "scope": "original dev correctness, recovery, backup and controlled loopback checks; original not_run limitations retained"
+    },
+    "C_platform": {
+      "accepted_cells": 5,
+      "required_cells": 8,
+      "new_cell": "linux-stable-semantic",
+      "artifact_ids": [
+        11612296390,
+        11612451345
+      ],
+      "original_review_exit_code": 0,
+      "collector_complete": false
+    },
+    "C_P7_closeout": {
+      "run_id": 37908825794,
+      "successful_jobs": 4,
+      "total_jobs": 4,
+      "new_job": 113748747578,
+      "new_job_original_log_sha256": "0df0c2f91b388bc96b14d3bec88fe2199a13bbfc3a935fc1d90efe157bc3bb16",
+      "live_quality_or_release_credit": false
+    }
+  },
+  "new_preparation": {
+    "LG_raw_intake_helpers": "scoped independent review passed; no native/raw artifact acceptance",
+    "future_M2_LP": "read-only Cargo and domain composition design; actual composed source regressions remain pending"
+  },
+  "artifact_bundle": {
+    "file": "round29-public-evidence.tar.gz",
+    "bytes": 284259,
+    "sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+    "git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+    "member_paths": 107,
+    "unique_source_files": 106,
+    "payload_bytes": 1554607,
+    "duplicate_source_reason": "The same unchanged C recovery helper peer review is referenced in both platform and runtime scopes.",
+    "complete_member_byte_hash_mode_readback": true,
+    "original_sources_unchanged": true,
+    "raw_github_artifact_zips_published": false,
+    "private_capture_files_published": false
+  },
+  "provenance": {
+    "prior_evidence_commit": "1f7e6816f1656b330cafc88f1a34a40d0d4c6086",
+    "PR180_metadata_update": "existing external body preserved with additive round28 evidence section; exact body and head readback retained in bundle",
+    "original_task_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "original_definition_projection_sha256": "7445d280ab1e71861139fb7b54abe16c7f2ae60bee360ab60ce368f27277acb7"
+  },
+  "preservation": {
+    "recovery_mode_anomaly": "One extracted prior-product binary had unchanged bytes but unexpectedly mode 0644 instead of preflight 0444. Original failed precheck retained; cause unknown; anomalous file and ancestors preserved. Only 498 other fully rechecked reconstructable derived files were reclaimed.",
+    "lifecycle_unknown_derived_paths": "untouched",
+    "original_zip_files_and_frozen_helpers": "preserved",
+    "native_workflows_retried_or_cancelled": false,
+    "acceptance_budgets_reduced": false
+  },
+  "open_requirements": [
+    "Original C complete 150-shard / 1500-sample study under original budgets",
+    "Remaining C platform cells and original collector",
+    "Remaining C mixed runtime and one-hour soak artifact acceptance",
+    "LG actual controls, feature native matrix and counter measurements",
+    "Fresh composition and source-specific validation before any current PR head completion claim",
+    "Original dependency and acceptance gates for all ten target TODOs"
+  ]
+}
+

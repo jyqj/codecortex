@@ -1,0 +1,447 @@
+{
+  "scope": "read-only original P8-005..016 remaining-evidence map; not acceptance",
+  "current_main": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "main_tree": "6b1b51003bdabea63c5e0122912be4ff3a4bd117",
+  "tasks_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+  "task_count": 192,
+  "states": {
+    "done": 163,
+    "blocked": 1,
+    "in_progress": 16,
+    "todo": 12
+  },
+  "remaining": 29,
+  "formal_task_completion": false,
+  "task_definition_bytes_equal_fixed_173": true,
+  "main_vs_173_root_differences": [
+    {
+      "path": "CONTRIBUTING.md",
+      "from": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+      "to": "e70d34871f78f394578a6e4273df75dd92afa35f"
+    },
+    {
+      "path": "artifacts",
+      "from": "682b5deafe7b0640ce12a407454aedc7f61a62d5",
+      "to": "cf7415574072aa19b07419e0cb0172bb9744ee1c"
+    },
+    {
+      "path": "docs",
+      "from": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+      "to": "90aa5d9f12a0eb3305a5602db168337b315a8e31"
+    }
+  ],
+  "applicability": "173 original execution remains275e, not relabeled main; crates/Cargo/scripts/.github/tests roots identical to main, documentation/artifact differences retained. Final admission still needs exact selected source and evidence scope.",
+  "target_ten": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "rows": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "definition": {
+        "steps": [
+          "固定seed与release构建测1k/5k/10k/50k/100k",
+          "同时报chunk/edge/vector"
+        ],
+        "acceptance": [
+          "不存在只报文件数或把不同工作量直接算倍数",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-004"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "deliverables": [
+          "完整规模1k到100k的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "原规模run37896198208的build+1k/5k/10k原jobs success；原b107 intake实际4CLI exit0且scale独审，3/150片、32/1500样本已accepted；50k/100k仍原native。",
+      "remaining": "完整原30重复、50组、150片/1500样本与原combine/CIaggregate仍缺；现3/150、32/1500。原005 acceptance_subgates全部作为历史原样保留。",
+      "parallel_preparation": "保留原intake新init与3片完整接受；只核后续实际产出的原ZIP，不重启native、不借旧E/599；完整field/count/phase/15table材料继续索引。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "definition": {
+        "steps": [
+          "测no-op/body/API/config/batch和超预算闭包",
+          "输出各phase计数"
+        ],
+        "acceptance": [
+          "时间可归因且闭包完成后full parity，未完成有显式status",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "validations": [
+          "V07",
+          "V20"
+        ],
+        "deliverables": [
+          "增量规模与fanout曲线的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "与005同一原规模矩阵，现原b107接受1k14+5k9+10k9共32样本；五fanout仅在1k片，50k/100k仍原native。",
+      "remaining": "待全矩阵原phase计数/原IndexReport、闭包完成状态、完整15表parity/SQL事实、分层host与时间口径复核；依赖005未闭合。",
+      "parallel_preparation": "复用005逐片核验同时提取phase counters与原timings；不额外声称逐stage public-search，不用pooled causal speedup或稳定tail替代原统计。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "definition": {
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-006"
+        ],
+        "validations": [
+          "V11",
+          "V20"
+        ],
+        "deliverables": [
+          "多并发与混合负载的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173 runtime run37890757030六jobs success；四C原ZIP11598875346/11598690899/11598815621/11598543621，backfill11597519732已在官方目录。",
+      "remaining": "这些173原件尚未独立admitted；须同源receipt/seal/完整终态分母、offered/queue/timeout/tail/Rust原stats及终点oracle，backfill实际768 requests；依赖006未闭合。",
+      "parallel_preparation": "准备固定275e+1089/593cf source/9 observers的原helper适用性与5件intake；配置C与实测峰分开，fake provider边界保留；不重复已有负载。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "definition": {
+        "steps": [
+          "分离OS cache、process cold、result-cache hit与uncached warm",
+          "采全部样本"
+        ],
+        "acceptance": [
+          "无best-of，sample N/分布/CI齐全",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-007"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "deliverables": [
+          "冷建/重开/热查分层的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173 lifecycle run37890757049已success，原ZIP11597589468可用；旧E实际接受仅历史。",
+      "remaining": "待本source lifecycle分层原件、全部N/分布/原CI与actual evaluator重放；process cold/reopen/result cache/uncached warm身份完整，OS cache未控则明确unknown；依赖007。",
+      "parallel_preparation": "一次lifecycle原件验收与009共享，准备原产品/evaluator收据/7observer/全输入与path映射，不把unknown强行测成0或新增drop-cache门。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "definition": {
+        "steps": [
+          "分别client/server/process-tree和artifact/FTS大小",
+          "成本reported/estimated分栏"
+        ],
+        "acceptance": [
+          "单位和归属正确，不把unavailable填0或把runner当server",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-008"
+        ],
+        "validations": [
+          "V20"
+        ],
+        "deliverables": [
+          "内存/磁盘/费用总账的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "与008同一个新lifecycle ZIP；173 runtime的真实资源/磁盘原件也可提供交叉范围。",
+      "remaining": "待实际client/server/process-tree归属、RSS采样有限窗口、artifact/FTS磁盘、reported/estimated费用字段重放；unknown/null与重叠保留；依赖008。",
+      "parallel_preparation": "与008同次审核资源与费用原fields；无真实paid-cost时保持null，不把loopback零网络解释成付费0。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "definition": {
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-009"
+        ],
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ],
+        "deliverables": [
+          "长时soak与连续修改的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173 soak ZIP11600492680已产；官方原step05:59:04–06:59:09=3605s、随后verify success，仅进度与执行收据，尚未raw admitted。",
+      "remaining": "待raw实际>=3600s/3601 offered points、全终态、四quarter缓存实际复用/代际和串行隔离作用域、worker/branch/catalog/edit/delete、queue/RSS趋势及原15表+公开终点parity；依赖009。",
+      "parallel_preparation": "直接复验既有hour原件，不另启动hour；完整失败分母和真实4RPC compound-read口径不变，旧296全0 cache gap仍保留。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "definition": {
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ],
+        "deliverables": [
+          "端到端故障与恢复认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173平台run37890757129原recovery11597639035 available，job success；无275e原ZIP独审。",
+      "remaining": "待实际kill/断网/坏cache/DB busy/换库、没有假ready/删除复活、费用影响与所有原raw/故障test结果；P7-020已done但007/010未闭合。",
+      "parallel_preparation": "一份完整recovery ZIP同时覆盖016，复用原validator/SQLite只读/真实stdio；fake loopback不宣称liveprovider或任意掉电认证。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "definition": {
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-011"
+        ],
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "deliverables": [
+          "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173八cell+八raw+collector完整18件元数据与3原logs已核；collector真实8/0/0。",
+      "remaining": "待16ZIP+collector原协议核验、同源CI/MSRV/stdio ignored与SDK真实/unknown绑定；原Mac fresh-helper负证未处置；011未闭合。",
+      "parallel_preparation": "按已保存5b1ea9合同事实进行；不新增8workspace，不把177当范围决策，不借178 warm-helper，当前不缩平台范围。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "definition": {
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-012"
+        ],
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ],
+        "deliverables": [
+          "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "173 gates run37890756917 success，原ZIP11598517678 available。",
+      "remaining": "待原6 nonignored tests与6真实CLI失败重放：quality/perf failed与insufficient/zero inconclusive非零，lock/policy invalid非零，原raw不覆写；依赖012。",
+      "parallel_preparation": "准备原build/source/binary/seal和6failures清单；只重放原验收程序，不制造新评分器/门槛，不把故意失败当CI测量失败。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-014",
+      "title": "可选LLM评审旁证流程",
+      "definition": {
+        "steps": [
+          "冻结judge prompt/model并盲化系统名",
+          "复核争议答案/证据充分性"
+        ],
+        "acceptance": [
+          "不替代确定性gold，提示注入文本只作数据，费用需授权",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-013"
+        ],
+        "validations": [
+          "V19"
+        ],
+        "deliverables": [
+          "可选LLM评审旁证流程的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "原prepare/reconcile离线收据558e1394及18控制存在，实际judge_execution=not_run；属于原10目标之外。",
+      "remaining": "013未闭合；尚无实际授权judge判断/模型revision执行来源/人工争议复核。原可选性与费用授权条件保留，不能把离线schema控当真实judge完成。",
+      "parallel_preparation": "仅可并行整理冻结prompt/model/盲化映射/注入作为数据/争议流程和证据包模板；不启动模型/收费，不给原10新增judge前置门。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-015",
+      "title": "真实语义效果发布认证",
+      "definition": {
+        "steps": [
+          "在已授权live条件复跑holdout与费用/错误分布",
+          "核对模型revision"
+        ],
+        "acceptance": [
+          "缺live证据只发布已验证的能力范围，不伪造M4-semantic通过",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P8-013",
+          "P7-018"
+        ],
+        "validations": [
+          "V15",
+          "V19",
+          "V20"
+        ],
+        "deliverables": [
+          "真实语义效果发布认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V15, V19, V20 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "原离线收据39019178明确blocked，24结构控制通过；real_semantic_provider_execution=not_run；属于原10目标之外。",
+      "remaining": "013及blocked的P7-018依赖；真实授权live holdout、模型revision、请求/错误/费用分布与独立来源/确定性评分原门尚缺。",
+      "parallel_preparation": "可并行完整性清单与授权/预算字段的离线核对；无新live请求，不宣称M4-semantic，不用fake代替真实效果，也不新增到原10前置链。",
+      "status_action": "no_change"
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "definition": {
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ],
+        "deliverables": [
+          "数据库/配置/包回滚演练的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+        ]
+      },
+      "existing_evidence": "与011共享173原recovery11597639035；旧E已接受实际版本pair/隔离仅历史。",
+      "remaining": "待275e原25→24→25+backup恢复、源码/config保持、disable后local可用、active cache unknown-format拒读与原测试；依赖P7-020(done)、012/013未闭合。",
+      "parallel_preparation": "与011一次核验，原limited/not_run不改写；用实际active-cache与原Rust证据逐项补充，不要求将来源revision冒称已发布版本。",
+      "status_action": "no_change"
+    }
+  ],
+  "original_005_acceptance_subgates": {
+    "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+    "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+    "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+    "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+    "strict_paired_causal_performance": "not_established",
+    "whole_tree_memory_peak": "unknown"
+  },
+  "all_173_non_scale_originals_are_metadata_available_not_raw_admitted": true,
+  "parallel_priority": [
+    "Original scale intake init+3shards accepted; continue only later original outputs and keep original native50k/100k untouched.",
+    "Once root authorizes exact fixed-source evidence view/materialization: runtime4C+backfill+soak; lifecycle/resources once; recovery/rollback once; platform8pairs+collector; six intentional gate failures.",
+    "Prepare immutable task-by-task append drafts and benchmarks custody locators while dependencies remainopen; no task done or release approval until original gates close."
+  ],
+  "future_combined_source_boundary": "Root alone constructs any combined P. New Rust/DB/observer bytes do not inherit oldE/173 native acceptance; fixed-source helper preparation can be reused only after exact new source/observer admission, without changing thresholds or original algorithms.",
+  "as_of_scale_update": "2026-10-09 08:04 UTC independent intake review; original final receipt 08:00:35.114461Z",
+  "scale_admission_update": {
+    "run": 37896198208,
+    "intake_run": 37899894487,
+    "actual_original_helper": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee",
+    "accepted_shards": 3,
+    "required_shards": 150,
+    "accepted_samples": 32,
+    "required_samples": 1500,
+    "by_scale": {
+      "1000": 14,
+      "5000": 9,
+      "10000": 9
+    },
+    "whole_original_job_log_blob": "6b8063540af939dc632fa347f5951100c6e46d47",
+    "bytes": 115120,
+    "source_inputs": 1089,
+    "source_manifest": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+    "four_original_cli_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "combine": "not_run",
+    "native_measurement_restarted": false,
+    "reviewer": "scale_closeout",
+    "note": "Incoming independently verified result; this agent did not duplicate that complete log review."
+  }
+}

@@ -1,0 +1,767 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "captured_at": "2026-10-09T07:26:11.428Z",
+  "status": "accepted_scoped",
+  "scope": "Completed original CI jobs at PR175 C2; source identity, regression controls, source guard, historical task definitions and original log custody. This is not complete runtime/study acceptance or TODO completion.",
+  "identity": {
+    "repository": "jyqj/codecortex",
+    "pull_request": 175,
+    "workflow_run": 37895459464,
+    "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "actual_checkout": "79989b25dc90e067d2f85b605780cfe93aa6c60c",
+    "actual_parents": [
+      "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "840fa2e0a26ab60c138747a4309aba5df506edc1"
+    ],
+    "actual_tree": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+    "actual_tree_equals_head_tree": true,
+    "identity_rule": "Logs retain their actual test-merge checkout; full-tree equality does not relabel the executed SHA."
+  },
+  "official_jobs": [
+    {
+      "id": 113705685045,
+      "name": "msrv",
+      "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T06:51:23Z",
+      "completed_at": "2026-10-09T06:52:55Z",
+      "all_non_skipped_steps_success": true
+    },
+    {
+      "id": 113705685283,
+      "name": "security",
+      "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T06:57:51Z",
+      "completed_at": "2026-10-09T07:01:25Z",
+      "all_non_skipped_steps_success": true
+    },
+    {
+      "id": 113705685289,
+      "name": "check",
+      "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T06:53:57Z",
+      "completed_at": "2026-10-09T07:18:31Z",
+      "all_non_skipped_steps_success": true
+    }
+  ],
+  "original_logs": [
+    {
+      "job_id": 113705685045,
+      "blob": "e863ff77e95ae13acc12c60fdf2a44476f53193a",
+      "bytes": 39041,
+      "sha256": "7e80d66f3f9ec97b638c122a7cd45e2ab60652264be5fa5a935097a14d41d4c3",
+      "original_official_logs_endpoint": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113705685045/logs",
+      "created_blob_readback_byte_equal": true
+    },
+    {
+      "job_id": 113705685283,
+      "blob": "9c8e98b2096914871458d9bd9adfc7714d05a8ca",
+      "bytes": 64634,
+      "sha256": "62bfbc53c001b877ac50df660e20938df4720c5c1f35a7d63c3ac1e0d42c2d76",
+      "original_official_logs_endpoint": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113705685283/logs",
+      "created_blob_readback_byte_equal": true
+    },
+    {
+      "job_id": 113705685289,
+      "blob": "2dec65c3ee571802fc3245113481e26b1f96de8e",
+      "bytes": 1067053,
+      "sha256": "8af56f0137b3fea332dad94a6938c2c79e55adb2ea09c9e1d18234349618efed",
+      "original_official_logs_endpoint": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113705685289/logs",
+      "created_blob_readback_byte_equal": true
+    }
+  ],
+  "new_controls": [
+    {
+      "name": "preserves_empty_single_and_submicrosecond_wire_values",
+      "actual_ok_lines": [
+        1215,
+        7202
+      ],
+      "occurrences": 2
+    },
+    {
+      "name": "preserves_nearest_rank_boundaries_without_rounding_to_microseconds",
+      "actual_ok_lines": [
+        1216,
+        7203
+      ],
+      "occurrences": 2
+    },
+    {
+      "name": "legacy_ns_keeps_every_terminal_outcome_and_original_precision",
+      "actual_ok_lines": [
+        1276,
+        7263
+      ],
+      "occurrences": 2
+    },
+    {
+      "name": "legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan",
+      "actual_ok_lines": [
+        1274,
+        7261
+      ],
+      "occurrences": 2
+    },
+    {
+      "name": "test_active_driver_copies_exact_nanosecond_replay_wire",
+      "actual_ok_lines": [
+        5566
+      ],
+      "occurrences": 1
+    },
+    {
+      "name": "test_legacy_copy_rejects_bytes_changed_after_statistics_verification",
+      "actual_ok_lines": [
+        5571
+      ],
+      "occurrences": 1
+    }
+  ],
+  "original_success_control": {
+    "name": "test_equal_oracle_retains_successful_observation",
+    "before_blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+    "after_blob": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+    "method_byte_equal": true,
+    "method": "    def test_equal_oracle_retains_successful_observation(self):\n        _, report = self.run_control(0)\n        self.assertEqual(report[\"status\"], \"passed_observation\")\n        self.assertEqual(report[\"exit_code\"], 0)\n        self.assertEqual(report[\"failures\"], [])\n        self.assertEqual(report[\"outcomes\"], {\"success\": 60})",
+    "log_line": 5568
+  },
+  "regression": {
+    "rust_result_occurrence_totals": {
+      "groups": 418,
+      "passed": 3283,
+      "failed": 0,
+      "ignored": 132,
+      "measured": 0,
+      "filtered": 1948
+    },
+    "counting_limit": "These are original log invocation/result occurrences, not unique tests. Rust new controls run twice; four unique Rust controls plus two Python controls.",
+    "ignored_line_count": 132,
+    "ignored_preservation": "Every original ignored name/reason remains in the complete check log. Ignored tests are not credited as executed; some names also execute in later selected invocations.",
+    "workspace_commands": [
+      "cargo test --workspace --all-targets --locked --no-run",
+      "cargo test --workspace --all-targets --exclude cc-semantic --locked"
+    ],
+    "workspace_scope": "The original workflow explicitly excludes cc-semantic in the early workspace invocation and runs its own later semantic scope. No broader unfiltered claim is made.",
+    "p8_python": {
+      "test_count": 410,
+      "passed": true,
+      "result_lines": [
+        5690,
+        5691,
+        5692
+      ]
+    },
+    "resource_harness_python": {
+      "test_count": 46,
+      "passed": true,
+      "result_lines": [
+        5274,
+        5275,
+        5276
+      ]
+    },
+    "source_integrity_python": {
+      "test_count": 181,
+      "passed": true,
+      "result_lines": [
+        5902,
+        5903,
+        5904
+      ]
+    },
+    "optional_http_contract": {
+      "passed": 14,
+      "failed": 0,
+      "ignored": 2,
+      "result_line": 7294,
+      "scope": "Original optional HTTP contract tests; no separate performance acceptance is inferred."
+    }
+  },
+  "original_guards": {
+    "facts": {
+      "line": 5695,
+      "result": {
+        "errors": [],
+        "facts": {
+          "base_tables": [
+            "document_manifest",
+            "metadata",
+            "files",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
+            "resolution_frontier",
+            "chunks",
+            "chunk_symbol_identity",
+            "symbols",
+            "imports",
+            "symbol_refs",
+            "call_edges",
+            "test_edges",
+            "routes",
+            "literal_index",
+            "communities",
+            "frameworks",
+            "data_flow_edges",
+            "co_change_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "infra_nodes",
+            "infra_edges",
+            "dispatch_sites",
+            "runtime_evidence",
+            "adr",
+            "semantic_manifest",
+            "semantic_outbox",
+            "semantic_spaces"
+          ],
+          "capability_spec": "retrieval-capabilities-v2",
+          "database_schema": 25,
+          "declared_msrv": "1.95",
+          "default_network": false,
+          "default_product_features": [],
+          "defaults": {
+            "auto_index": {
+              "enabled": true,
+              "file_limit": 50000,
+              "idle_timeout_secs": 60
+            },
+            "query": {
+              "deadline_ms": 30000,
+              "lane_timeout_ms": 20000,
+              "semantic_timeout_ms": 5000,
+              "semantic_top_k": 24,
+              "strategy": "local"
+            },
+            "semantic": {
+              "allow_http": false,
+              "allow_query_network": false,
+              "enabled": false,
+              "gc_min_retention_secs": 3600,
+              "network_opt_in": false,
+              "reembed_budget_max": null,
+              "worker_lease_secs": 600
+            }
+          },
+          "fts5_tables": [
+            "chunks_fts",
+            "symbols_fts",
+            "literal_fts",
+            "files_fts",
+            "file_paths_fts"
+          ],
+          "mcp_tools": [
+            "status",
+            "index",
+            "search",
+            "context",
+            "node",
+            "explore",
+            "trace",
+            "relations",
+            "impact",
+            "architecture",
+            "files",
+            "graph_query",
+            "ingest_traces",
+            "adr"
+          ],
+          "project_model_version": 3,
+          "runtime_executes_indexed_code": false,
+          "schema_policy": "rebuild_on_mismatch",
+          "workspace_crates": [
+            "cc-model",
+            "cc-db",
+            "cc-parsers",
+            "cc-index",
+            "cc-search",
+            "cc-server",
+            "cc-eval",
+            "cc-semantic"
+          ]
+        },
+        "input_sha256": {
+          "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+          "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+          "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+          "crates/cc-model/src/config.rs": "8cc67bb9b7cb3c08efa90c1e0a16acf9d45608e062d525bf6767914f38f5508c",
+          "crates/cc-model/src/query.rs": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa",
+          "crates/cc-server/Cargo.toml": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+          "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+          "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+          "docs/internals/MODULE_CAPABILITIES.json": "d33b363897ff7f1d2dcdb55ee35182f597396e8dd862b00b58451530997dc9dc"
+        },
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "status": "passed"
+      }
+    },
+    "v15": {
+      "line": 5905,
+      "result": {
+        "schema_version": 10,
+        "source_version": "p8-completion-source-20261009-v15",
+        "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "98173d7bf3a4709d0309907ec85ff5674c23c921",
+        "review_source": "13610caf2904f7656fa45ccbf20f61a313b708b8",
+        "scope": "independently_reviewed_source_and_validation_inputs",
+        "runtime_and_quality_claims": "require_separate_execution_evidence",
+        "status": "passed",
+        "complete_inputs": 1089,
+        "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+      }
+    },
+    "historical_v2": {
+      "line": 5915,
+      "result": {
+        "V19": "open",
+        "current_plan_check": "passed",
+        "current_task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "e3_imported_files": 58,
+        "e3_inputs": 708,
+        "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+        "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+        "evidence_content_acceptance": "not_granted_by_this_verifier",
+        "fault_runtime_tests": "not_run",
+        "full_P7": "open",
+        "legacy_files_unchanged": 9,
+        "packing_evidence_files": 246,
+        "packing_inputs": 731,
+        "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+        "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+        "quality_and_100k": "not_inherited",
+        "schema_version": 2,
+        "scope": "historical_integrity_and_current_task_definitions_only",
+        "state_changes_since_baseline": [
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-013"
+          },
+          {
+            "baseline": "in_progress",
+            "current": "done",
+            "task_id": "P7-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "blocked",
+            "task_id": "P7-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-020"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-001"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-002"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-003"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-004"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-005"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-006"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-007"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-008"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-009"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-010"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-013"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-020"
+          }
+        ],
+        "status": "passed",
+        "task_count": 192,
+        "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+        "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+        "verifier_version": "historical-integrations-v2"
+      }
+    },
+    "exit_evidence": "All corresponding original official job steps completed success under the original shell; no separate fabricated numeric exit-code field is introduced. The original successful guard stdout is present."
+  },
+  "msrv": {
+    "rustc": "1.95.0 (59807616e 2026-04-14)",
+    "commands": [
+      "cargo check --workspace --all-targets --locked",
+      "cargo check -p cc-eval --all-targets --features eval-http --locked"
+    ],
+    "official_job_success": true
+  },
+  "security": {
+    "dependency_count": 338,
+    "advisory_count": 1295,
+    "database_commit": "550efd3d587a29b2e2c2b21b17a440da4fede999",
+    "ignore": [],
+    "vulnerabilities_found": false,
+    "vulnerability_count": 0,
+    "warnings": {},
+    "log_line": 854,
+    "official_job_success": true
+  },
+  "failure_history": {
+    "prior_C1_formatter_failure_retained": true,
+    "original_failure_log_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+    "old_failure_is_not_rewritten": true
+  },
+  "workflow_readiness": {
+    "official_runs_total": 7,
+    "all_pages_complete": true,
+    "current_job_summary": [
+      {
+        "run": 37895459427,
+        "total": 1,
+        "jobs": [
+          {
+            "id": 113705684288,
+            "name": "engineering",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459498,
+        "total": 1,
+        "jobs": [
+          {
+            "id": 113705684818,
+            "name": "gate_controls",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459475,
+        "total": 9,
+        "jobs": [
+          {
+            "id": 113705696329,
+            "name": "actual recovery and rollback matrix",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705696670,
+            "name": "cold macos / 1.95 / semantic",
+            "status": "in_progress",
+            "conclusion": null,
+            "active": [
+              "Fresh target build and real product stdio smoke"
+            ]
+          },
+          {
+            "id": 113705696714,
+            "name": "cold linux / stable / default",
+            "status": "queued",
+            "conclusion": null,
+            "active": []
+          },
+          {
+            "id": 113705696747,
+            "name": "cold linux / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "active": []
+          },
+          {
+            "id": 113705696761,
+            "name": "cold macos / stable / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705696835,
+            "name": "cold linux / 1.95 / default",
+            "status": "queued",
+            "conclusion": null,
+            "active": []
+          },
+          {
+            "id": 113705696840,
+            "name": "cold macos / stable / default",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705696895,
+            "name": "cold linux / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "active": []
+          },
+          {
+            "id": 113705696965,
+            "name": "cold macos / 1.95 / default",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459543,
+        "total": 6,
+        "jobs": [
+          {
+            "id": 113705684989,
+            "name": "fake_backfill",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685275,
+            "name": "mixed (16)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685305,
+            "name": "mixed (1)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685316,
+            "name": "soak",
+            "status": "in_progress",
+            "conclusion": null,
+            "active": [
+              "One-hour actual stdio session with Git switches and catalog churn"
+            ]
+          },
+          {
+            "id": 113705685325,
+            "name": "mixed (4)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685326,
+            "name": "mixed (8)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459412,
+        "total": 4,
+        "jobs": [
+          {
+            "id": 113705684135,
+            "name": "closeout",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705684399,
+            "name": "offline (default)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705684420,
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705684424,
+            "name": "offline (semantic)",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459466,
+        "total": 1,
+        "jobs": [
+          {
+            "id": 113705685055,
+            "name": "lifecycle",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      },
+      {
+        "run": 37895459464,
+        "total": 3,
+        "jobs": [
+          {
+            "id": 113705685045,
+            "name": "msrv",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685283,
+            "name": "security",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          },
+          {
+            "id": 113705685289,
+            "name": "check",
+            "status": "completed",
+            "conclusion": "success",
+            "active": []
+          }
+        ]
+      }
+    ],
+    "overall_workflows_complete": false,
+    "remaining": "Runtime soak and platform cells/collector still require actual completion; raw acceptance remains separate."
+  },
+  "boundaries": {
+    "local_native_executions": 0,
+    "local_files_written": 0,
+    "logs_are_unchanged_original_text": true,
+    "only_delegated_unreferenced_blobs_created": true,
+    "formal_todo_completion": false,
+    "done": 163,
+    "remaining": 29,
+    "unresolved_CI_scope_blockers": []
+  }
+}

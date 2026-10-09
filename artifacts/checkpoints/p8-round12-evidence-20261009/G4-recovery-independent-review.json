@@ -1,0 +1,333 @@
+{
+  "TODO_closed": 0,
+  "artifact_id": 11588128186,
+  "checks": {
+    "active_faults": [
+      {
+        "cases": [
+          "active_provider_network_disconnect",
+          "active_semantic_cache_corruption",
+          "active_cache_reader_rejects_unknown_format",
+          "concurrent_database_replacement"
+        ],
+        "event_counts": {
+          "database_read_only": 2,
+          "http_disconnect": 1,
+          "http_request": 6,
+          "http_response": 5,
+          "mcp_request": 42,
+          "mcp_response": 42,
+          "product_exit": 2,
+          "spawn": 2
+        },
+        "events": 102,
+        "paid_cost": null,
+        "provider_requests": 6,
+        "seed": 223
+      },
+      {
+        "cases": [
+          "active_provider_network_disconnect",
+          "active_semantic_cache_corruption",
+          "active_cache_reader_rejects_unknown_format",
+          "concurrent_database_replacement"
+        ],
+        "event_counts": {
+          "database_read_only": 2,
+          "http_disconnect": 1,
+          "http_request": 6,
+          "http_response": 5,
+          "mcp_request": 42,
+          "mcp_response": 42,
+          "product_exit": 2,
+          "spawn": 2
+        },
+        "events": 102,
+        "paid_cost": null,
+        "provider_requests": 6,
+        "seed": 227
+      },
+      {
+        "cases": [
+          "active_provider_network_disconnect",
+          "active_semantic_cache_corruption",
+          "active_cache_reader_rejects_unknown_format",
+          "concurrent_database_replacement"
+        ],
+        "event_counts": {
+          "database_read_only": 2,
+          "http_disconnect": 1,
+          "http_request": 6,
+          "http_response": 5,
+          "mcp_request": 42,
+          "mcp_response": 42,
+          "product_exit": 2,
+          "spawn": 2
+        },
+        "events": 102,
+        "paid_cost": null,
+        "provider_requests": 6,
+        "seed": 229
+      }
+    ],
+    "actual_version_pair": {
+      "original_backup_restore": true,
+      "released_version_pair": false,
+      "schema_sequence": [
+        25,
+        24,
+        25,
+        25
+      ],
+      "sessions": [
+        {
+          "exit": 0,
+          "expected_schema": 25,
+          "rpc_requests": 5,
+          "session": "01-current-build"
+        },
+        {
+          "exit": 0,
+          "expected_schema": 24,
+          "rpc_requests": 5,
+          "session": "02-previous-opens-current"
+        },
+        {
+          "exit": 0,
+          "expected_schema": 25,
+          "rpc_requests": 5,
+          "session": "03-current-restored"
+        },
+        {
+          "exit": 0,
+          "expected_schema": 25,
+          "rpc_requests": 5,
+          "session": "04-original-backup-restored"
+        }
+      ],
+      "source_unchanged": true
+    },
+    "binding": {
+      "full_sealed_members": 495,
+      "historical_inputs": 704,
+      "observer_inputs": 7,
+      "observer_manifest_sha256": "c15ac4fca637564bdd4e2a1f9fbef36be6aaea009deff9a70238ec4b94414ddd",
+      "source_inputs": 1087,
+      "source_manifest_sha256": "517ff2f445357534232a56aadd8bef93f30987ce6127bd55b0c01cb9a0b15268"
+    },
+    "independent-crash-raw": {
+      "cases": 15,
+      "points": [
+        "uncommitted",
+        "claimed",
+        "response",
+        "artifact",
+        "published"
+      ],
+      "results_sha256": "8241baff65f99ce98354b21c50b3aecbd92191c1b297457e6a3f2725b97cf4cf",
+      "seeds": [
+        101,
+        211,
+        307
+      ]
+    },
+    "local_scope": {
+      "full_matrix_supplements_local_not_run": true,
+      "not_run_in_local_profile": [
+        "transaction_internal_crash_points",
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "concurrent_database_replacement"
+      ],
+      "passed": [
+        "kill_restart",
+        "database_busy",
+        "deleted_source"
+      ]
+    },
+    "nested_receipt_seals": true,
+    "original_fault_tests": [
+      {
+        "executable_sha256": "0272a620bc2989feb1bfe7f523f4cb7ea07cf7bad7ade9f9047d7c7a0f45cba2",
+        "exit": 0,
+        "test": "isolated_sigkill_reopen_replay_preparation"
+      },
+      {
+        "executable_sha256": "e36b5bd1bf9e4a3a5cf35b9e517427ece8834d7caf22b940d439097b27dcbbd0",
+        "exit": 0,
+        "test": "independently_observed_sigkill_boundaries"
+      },
+      {
+        "executable_sha256": "3bb78ecc761d407e0eadb94f14180fe2feeda4c318c45bdab65ccec42cb378a9",
+        "exit": 0,
+        "test": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database"
+      },
+      {
+        "executable_sha256": "3bb78ecc761d407e0eadb94f14180fe2feeda4c318c45bdab65ccec42cb378a9",
+        "exit": 0,
+        "test": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation"
+      },
+      {
+        "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+        "exit": 0,
+        "test": "meta_tampering_is_detected_as_corrupt"
+      },
+      {
+        "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+        "exit": 0,
+        "test": "different_spaces_never_cross_hit"
+      },
+      {
+        "executable_sha256": "bf29289acac1112adfc9954ea6def5d6a97d1ddef432cda3dc87ad4652e00797",
+        "exit": 0,
+        "test": "namespaces_are_isolated"
+      }
+    ],
+    "p7-crash-raw": {
+      "cases": 12,
+      "points": [
+        "uncommitted",
+        "claimed",
+        "artifact",
+        "published"
+      ],
+      "results_sha256": "adabf7421800bccf20836a3d1b80a1c425372bc4481f6d2335b5819cbec1c502",
+      "seeds": [
+        17,
+        29,
+        43
+      ]
+    },
+    "product_builds": [
+      {
+        "bytes": 67157920,
+        "folder": "product-default",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 0,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "sha256": "ca81d540a3fcbc9a72119f6aa99f4106dbeb25695d0b11a195960b648b60cf6f",
+        "source_commit": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+        "wall_seconds": 55.457646048
+      },
+      {
+        "bytes": 69230816,
+        "folder": "product-semantic",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 0,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "sha256": "946953868648e9bebdd9eaa9269747401e45efb32d0ac327f465089a79d09e9b",
+        "source_commit": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+        "wall_seconds": 6.630573541000018
+      },
+      {
+        "bytes": 78821944,
+        "folder": "product-semantic-http",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 0,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "sha256": "708625ffb4304564566d3be18bc39179c98c6e068a2af94d5bedb883c13b69ed",
+        "source_commit": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+        "wall_seconds": 29.837286282999997
+      },
+      {
+        "bytes": 66413456,
+        "folder": "product-previous",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 0,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6",
+        "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+        "wall_seconds": 54.90140493299998
+      }
+    ],
+    "retained_databases": [
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "actual-version-pair/backups/current-original.sqlite3",
+        "schema": 25,
+        "sha256": "f37b5d0a4130f545f08ed406e4fe88e9a87c8e93413db2c649796b1b45713bd6"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "actual-version-pair/backups/previous-rebuilt.sqlite3",
+        "schema": 24,
+        "sha256": "e088c4efe8c103562abf3df8eb5ce54d2c3e7df0a12b9178b28781b8365566af"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "actual-version-pair/backups/current-rebuilt.sqlite3",
+        "schema": 25,
+        "sha256": "48c6f9bc9bfa5b9399b9abb16a1d16c962c1f3c55921add0c3f28c4d79e90e10"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "actual-version-pair/fixture/.codecortex/index.sqlite3",
+        "schema": 25,
+        "sha256": "a28105047de955792c19313e27e591e6bfc501a5c2e7cfe9c79769ada872c6f7"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "rollback/backups/index-old.sqlite3",
+        "schema": 25,
+        "sha256": "6f5adca647a5896b9fc7dbd5ffb1ff7ead13bec81685406381aab4954a3cfde3"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "rollback/backups/index-future.sqlite3",
+        "schema": 1025,
+        "sha256": "5d23d24d50db0d1534dd941ccb53f8837d2d30c3d6801c9162c06b8474f2f4a2"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "rollback/backups/index-rebuilt.sqlite3",
+        "schema": 25,
+        "sha256": "f2e3e02da8ccbb39e9bc8dba205b838c7995e52f7791b94c617057fca9d549a6"
+      },
+      {
+        "indexed_files": 2,
+        "integrity": "ok",
+        "path": "rollback/fixture/.codecortex/index.sqlite3",
+        "schema": 25,
+        "sha256": "8b8cccfb5500176defdb4848af1b3aa0229b77a51e0f17774193f65500e81480"
+      }
+    ],
+    "source_after_equal": true
+  },
+  "job_id": 113576446835,
+  "limitations": [
+    "Actual retained products use dev profile; cannot replace G8 full release-profile validation.",
+    "Actual unmodified public source revision 277/schema24 is not a tagged release; original task text does not require a tagged release pair.",
+    "The actual pair sequence is G25 -> old24 -> G25 -> original G25 backup; 24 is established from the old binary source and actual rebuild, not a fabricated preceding run.",
+    "Paid-provider cost remains null; all enabled network faults use owned loopback fake provider. No paid/live or physical-device/power-loss claim.",
+    "P8-011 dependencies P7-020/P8-007/P8-010 and P8-016 dependencies P7-020/P8-012/P8-013 remain separate; old-functional full CI and G8 are not certified by this artifact.",
+    "No product or Cargo was executed by this independent review; large binaries were streamed from retained ZIP for exact SHA and size, not omitted."
+  ],
+  "reviewer": "scale_engineering",
+  "run_id": 37854847808,
+  "source_commit": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+  "status": "accepted_scoped_raw_evidence",
+  "task_closure": false
+}

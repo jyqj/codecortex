@@ -1,0 +1,13 @@
+# Fixed original platform readback: entrypoint correction
+
+The first readback is run 37883820893 / attempt 1 at commit 7494b6e439b11a60d0277c24d2b3fdd9d985e3d4. Its runtime group passed and was independently reviewed. Its platform group failed at the retained CLI Cargo provenance check. The complete first logs, extracted execution object, result artifact locators and runtime review are preserved under ../first-execution/.
+
+The first platform execution received all 11 exact original ZIPs, verified CRC, complete compressed-stream EOF, fixed byte sizes and SHA256, and preserved all original bytes. Source identity, eight original platform builds, original recovery events and the 14 copied databases passed their readback groups. failure_gates remained failed, so the overall run remained failure. The result ZIP is artifact 11595850188 (513394037 bytes; SHA256 a629b9043439150047e8bb994c05664d79a77c2e2a251d9548804ad4c1731bfc). The official ZIP payload is retained by Actions; its locator is not a claim that this checkpoint stores those ZIP bytes in Git.
+
+The readback module incorrectly required the cc-eval Cargo target source to be crates/cc-eval/src/main.rs. Fixed A23 has no such entrypoint. Its actual executable source is crates/cc-eval/src/bin/cc-eval.rs, Git blob 73c4666b05611b2e7b6578412f8f7dc4365e7d4c, with main at line 457. The one-line correction changes only that source-path literal. All target, manifest, executable, binary hash, first original Cargo row membership and subsequent gate requirements remain unchanged. Their eventual success is not assumed.
+
+The new workflow uses the single-use branch audit/p8-a23-original-readback-28fe-a2-20261009 and runs only the platform group. Source A23, transport v4, protocol, all original reviewer dependencies and all native experiment definitions remain fixed. This is another read of fixed existing data, with no native compilation, performance measurement, product CLI, Docker or fault execution. The already accepted runtime group is not repeated. The first branch and first failed execution remain immutable.
+
+platform-execution-from-log.json is the JSON object extracted from the complete official log with a final newline; it is not represented as the byte-for-byte pretty JSON file inside the result ZIP. The complete log is the original textual evidence. The prior executed platform module is retained under ../history/platform-v2-first-executed.py.
+
+This amendment is preparation only. Actual second execution must satisfy every remaining check. Original TODO state remains 192 total, 163 done, 29 remaining, with 0 newly closed.

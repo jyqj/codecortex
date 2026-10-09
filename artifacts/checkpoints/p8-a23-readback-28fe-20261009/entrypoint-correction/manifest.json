@@ -1,0 +1,63 @@
+{
+  "schema": "a23-original-platform-readback-entrypoint-correction-v1",
+  "repository": "jyqj/codecortex",
+  "prepared_utc": "2026-10-09 04:45:12 UTC",
+  "status": "prepared_not_yet_executed",
+  "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "first_execution": {
+    "run_id": 37883820893,
+    "run_attempt": 1,
+    "head": "7494b6e439b11a60d0277c24d2b3fdd9d985e3d4",
+    "overall": "failure",
+    "runtime": "success_with_independent_readback_review",
+    "platform": "failure_retained_cli_cargo_provenance_differs",
+    "platform_job": 113669245095,
+    "platform_original_log_blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+    "platform_log_sha256": "ac722ecea200854fb432515b4f8efa86f287840da71d51213c12d315b6fd32c8"
+  },
+  "correction": {
+    "file": "controller/platform_readback.py",
+    "before_blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb",
+    "after_blob": "8172dfcd77d994cbd33889670d4185ca08c93943",
+    "exact_one_line_change": {
+      "before": "ORIGINAL_ROOT + \"/crates/cc-eval/src/main.rs\"",
+      "after": "ORIGINAL_ROOT + \"/crates/cc-eval/src/bin/cc-eval.rs\""
+    },
+    "actual_source_entrypoint_blob": "73c4666b05611b2e7b6578412f8f7dc4365e7d4c",
+    "other_cargo_provenance_fields": "All original requirements remain unchanged; this correction does not assume those fields pass. Actual original report and first Cargo build log are still checked by the revised execution."
+  },
+  "workflow": {
+    "blob": "6104ce7363b6765d1a41fcfdbf048dd6b274e6e2",
+    "branch": "audit/p8-a23-original-readback-28fe-a2-20261009",
+    "groups": [
+      "platform"
+    ],
+    "changes": [
+      "name",
+      "single-use push branch",
+      "max-parallel 2 to 1",
+      "runtime/platform matrix to platform only"
+    ]
+  },
+  "unchanged": [
+    "Original A23 source and source manifest",
+    "receive.py v4 and its 11 transport controls",
+    "protocol.json and all 18 fixed input identities",
+    "runtime_readback.py",
+    "All original reviewer scripts and fixed data dependencies",
+    "Original native experiment definitions, budgets, sample sizes and TODO dependencies"
+  ],
+  "bounds": {
+    "native_executions": 0,
+    "new_measurements": 0,
+    "new_fault_or_cli_executions": 0,
+    "runtime_group_rerun": false,
+    "first_run_overwritten": false
+  },
+  "original_tasks": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

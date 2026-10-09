@@ -1,8 +1,8 @@
-name: Fixed A23 original artifact readback
+name: Fixed A23 original platform readback after entrypoint correction
 
 on:
   push:
-    branches: [audit/p8-a23-original-readback-28fe-20261009]
+    branches: [audit/p8-a23-original-readback-28fe-a2-20261009]
 
 permissions:
   contents: read
@@ -18,9 +18,9 @@ jobs:
     timeout-minutes: 45
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
-        group: [runtime, platform]
+        group: [platform]
     steps:
       - name: Obtain the immutable readback controller
         uses: actions/checkout@v4

@@ -1070,7 +1070,7 @@ class Readback:
         require(build["reason"] == "compiler-artifact" and build["target"]["name"] == "cc-eval"
                 and build["target"]["kind"] == ["bin"]
                 and build["manifest_path"] == ORIGINAL_ROOT + "/crates/cc-eval/Cargo.toml"
-                and build["target"]["src_path"] == ORIGINAL_ROOT + "/crates/cc-eval/src/bin/cc-eval.rs"
+                and build["target"]["src_path"] == ORIGINAL_ROOT + "/crates/cc-eval/src/main.rs"
                 and build["executable"] == cli["path"]
                 == "/home/runner/work/_temp/p8-gates-target/debug/cc-eval",
                 "retained CLI Cargo provenance differs")

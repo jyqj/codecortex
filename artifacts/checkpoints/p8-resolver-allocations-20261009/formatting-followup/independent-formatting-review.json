@@ -1,0 +1,132 @@
+{
+  "schema": "pr179-formatter-only-independent-review-v1",
+  "reviewer": "/root/runtime_closeout",
+  "decision": "accepted_scoped_static",
+  "source_execution": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+  "actual_original_checkout": "cf6d027ae81fde426ae4454abf62ef68f7723857",
+  "scope": "Only the three original rustfmt-requested test-layout changes in two resolver files; no re-review or performance acceptance of the resolver optimization.",
+  "original_failure": {
+    "run_id": 37896625594,
+    "job_id": 113709327167,
+    "command": "cargo fmt --all -- --check",
+    "actual_logged_exit_code": 1,
+    "command_log_line": 454,
+    "error_log_line": 502,
+    "all_original_log_bytes_read": true,
+    "preserved": true
+  },
+  "inputs": [
+    {
+      "name": "catalog_old",
+      "git_blob": "dbff4adaa41f1254844c2a692bd19bf3bdfb4967",
+      "bytes": 39439,
+      "sha256": "5959b1837e310b124ffc67ec4e27206af76b3b1af0dc0a7bb32bc63a1693252c"
+    },
+    {
+      "name": "catalog_new",
+      "git_blob": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "bytes": 39427,
+      "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be"
+    },
+    {
+      "name": "helpers_old",
+      "git_blob": "97ebe8747c4f82a92e7ca630508f9093321f5f26",
+      "bytes": 15073,
+      "sha256": "38c48943f2180e517ff11499e59960c62fbeffa50f54377577f01b0807aedda4"
+    },
+    {
+      "name": "helpers_new",
+      "git_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "bytes": 15113,
+      "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88"
+    },
+    {
+      "name": "log",
+      "git_blob": "9f345794222c578345d36dbe5f2091b6560f961e",
+      "bytes": 38796,
+      "sha256": "2af980744ee7016fd23bf6f92cfd158138496b2ac2f89af269beca1444a862b5"
+    },
+    {
+      "name": "author",
+      "git_blob": "2a649d99106110d862874dcb060bae3c10185c27",
+      "bytes": 6273,
+      "sha256": "af18dce7a2bc900a29045a23925d9332b42ca52542de7524b83d803099cfd159"
+    }
+  ],
+  "official_source_binding": {
+    "method": "Independent fixed-ref fetch_file for both paths at C3 and actual original merge checkout; complete returned bytes equal the reviewed old blobs.",
+    "old_blob_identity_matches_both_fixed_refs": true
+  },
+  "checks": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "exact_reported_replacements_reproduce_new_file": true,
+      "production_prefix_bytes_identical": true,
+      "old_test_module_start_line": 490,
+      "new_test_module_start_line": 490,
+      "hunks": [
+        {
+          "line": 863,
+          "exact_before_matches": 1,
+          "before_lines": 8,
+          "after_lines": 7
+        }
+      ]
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "exact_reported_replacements_reproduce_new_file": true,
+      "production_prefix_bytes_identical": true,
+      "old_test_module_start_line": 317,
+      "new_test_module_start_line": 317,
+      "hunks": [
+        {
+          "line": 368,
+          "exact_before_matches": 1,
+          "before_lines": 11,
+          "after_lines": 7
+        },
+        {
+          "line": 444,
+          "exact_before_matches": 1,
+          "before_lines": 7,
+          "after_lines": 13
+        }
+      ]
+    }
+  ],
+  "raw_formatter_match": {
+    "method": "Independently removed timestamp prefixes from the complete original job log, parsed all Diff in hunks, and reconstructed before/after text from context/-/+ lines.",
+    "actual_hunk_count": 3,
+    "each_original_hunk_has_one_match": true,
+    "each_before_and_after_equals_author_record": true,
+    "applying_only_these_hunks_reproduces_each_entire_new_blob": true,
+    "all_bytes_outside_three_hunks_unchanged": true
+  },
+  "semantic_scope": {
+    "catalog": "Only collapse removed = HashSet::from(...) onto one line. Same symbols[0] and symbols[17], clones, HashSet, removal call and every assertion.",
+    "helpers_signature": "Only collapse legacy_candidates signature; entries/candidates/file parameter names, types, order, Vec<usize> return and reference algorithm body unchanged. Optional trailing parameter comma removed.",
+    "helpers_fixture": "Only expand the same ordered array of five strings: empty, src/pkg/query.py, src/pkg/a.ts, elsewhere/x.py, slash. Optional trailing array comma added. The exhaustive sequence lengths 0..=4, generated candidates and assertions are unchanged.",
+    "production_prefixes": "Byte-identical before first #[cfg(test)]: catalog test section starts at line490, helpers at line317. All three changes occur after these boundaries.",
+    "test_names_and_assertions_unchanged": true,
+    "reference_algorithm_bodies_unchanged": true,
+    "fixture_values_and_order_unchanged": true,
+    "thresholds_and_ignore_flags_unchanged": true,
+    "extra_source_changes": false
+  },
+  "execution_limits": {
+    "rustfmt_rerun": "not_run",
+    "compilation": "not_run",
+    "tests": "not_run",
+    "native_measurements": "not_run",
+    "local_executor_probe": false,
+    "whole_resolver_performance_review": false,
+    "new_CI_success_claim": false,
+    "old_failure_relabelled": false
+  },
+  "unresolved_blockers_in_formatter_only_scope": [],
+  "formal_task_completion": false,
+  "task_status_action": "no_change",
+  "done": 163,
+  "remaining": 29
+}

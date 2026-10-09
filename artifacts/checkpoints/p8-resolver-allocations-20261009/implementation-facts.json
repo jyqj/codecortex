@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "author": "/root/pr_audit",
+  "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "status": "source_candidate_prepared_for_independent_review_and_normal_CI",
+  "failure_attribution": "E100k underlying failure remains unknown; no root-cause or performance success claim",
+  "findings": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "lines": [
+        467,
+        483
+      ],
+      "proof": "For every symbol, old code creates a HashSet for one mandatory and two optional string keys, then repeats file_path clone/hash once per distinct key.",
+      "change": "Deduplicate the bounded three keys using equality, look up the file map once, retain identical per-key index append order.",
+      "cost": "Removes one temporary set per symbol and up to two repeated file-key clone/hash operations; still O(number of symbols)."
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "lines": [
+        86,
+        93,
+        148,
+        164
+      ],
+      "proof": "Old prefix helper collects both segment streams to Vec. Original import_distance_candidates computes this distance twice per candidate, once to select the maximum and again to filter.",
+      "change": "Lazy split/zip comparison, one distance per candidate, keep all current maximum ties, then invoke unchanged stable_candidates.",
+      "cost": "Two distance traversals become one, four temporary segment Vec constructions per candidate become zero; stable ordering and existing identity dedup remain unchanged. Worst-case candidate storage remains O(C)."
+    },
+    {
+      "path": "crates/cc-index/src/resolver/resolve_core.rs",
+      "lines": [
+        92,
+        110
+      ],
+      "proof": "scope_for_line collects matching scopes and sorts them by (span,start,scope_id), but returns only the first.",
+      "change": "Not changed in this candidate. A future min_by using the exact comparator could remove allocation and sorting; no bound or semantic alteration is proposed here.",
+      "cost": "Potential O(K log K) to O(K) over matches, with the same scope scan; benefit unmeasured."
+    }
+  ],
+  "files": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "mode": "100644",
+      "before_blob": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+      "after_blob": "dbff4adaa41f1254844c2a692bd19bf3bdfb4967",
+      "bytes": 39439,
+      "sha256": "5959b1837e310b124ffc67ec4e27206af76b3b1af0dc0a7bb32bc63a1693252c",
+      "already_in_historical_delta": true,
+      "before_sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "mode": "100644",
+      "before_blob": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+      "after_blob": "97ebe8747c4f82a92e7ca630508f9093321f5f26",
+      "bytes": 15073,
+      "sha256": "38c48943f2180e517ff11499e59960c62fbeffa50f54377577f01b0807aedda4",
+      "already_in_historical_delta": false,
+      "before_sha256": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0"
+    }
+  ],
+  "tests": [
+    "export_registration_matches_legacy_for_alias_collisions",
+    "export_registration_matches_legacy_after_remove_and_readd",
+    "streamed_prefix_matches_original_path_segment_semantics",
+    "one_pass_distance_preserves_original_ties_duplicates_and_order"
+  ],
+  "test_scope": "Original algorithms retained as test-only reference; cover empty/Unicode/default alias collisions, append order, remove/readd tombstones, path empty segments/trailing slash/extensions, repeated candidates, same UID different qname, ties, original winner result.",
+  "execution": {
+    "rustfmt": "not_run",
+    "compile": "not_run",
+    "tests": "not_run",
+    "benchmark": "not_run"
+  },
+  "invariants": {
+    "runtime_contract_unchanged": true,
+    "workflows_unchanged": true,
+    "scale_workload_and_thresholds_unchanged": true,
+    "original_failed_artifacts_unchanged": true,
+    "todo_status_unchanged": true
+  },
+  "formal_todo_completion": false,
+  "done": 163,
+  "remaining": 29,
+  "prepared_at": "2026-10-09 06:55:00 UTC",
+  "role": "implementation_author_factual_record_not_self_approval",
+  "integration_parent": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "integration_parent_tree": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+  "baseline_equality": {
+    "main60_cc_index_tree": "f3ed38ef43c4f9035eb3036110299f95c593c656",
+    "C2_cc_index_tree": "f3ed38ef43c4f9035eb3036110299f95c593c656",
+    "mode": "040000",
+    "whole_cc_index_equal": true,
+    "meaning": "Both candidate before blobs remain exact on C2; no patch rebase or alternate source replacement is needed."
+  },
+  "composition": {
+    "baseline_product_inputs": 1089,
+    "baseline_validation_inputs": 138,
+    "baseline_source_delta_paths": 41,
+    "candidate_product_inputs": 1089,
+    "candidate_validation_inputs": 138,
+    "candidate_source_delta_paths": 42,
+    "catalog_existing_delta_updated": true,
+    "helpers_new_delta_path": true,
+    "validation_file_changes": 0,
+    "workflow_changes": 0,
+    "trust_root_changes": "not prepared by this author; normal exact reviewed-source pins must be supplied by root"
+  },
+  "controls": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "line": 847,
+      "name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_for_alias_collisions"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "line": 864,
+      "name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_after_remove_and_readd"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "line": 407,
+      "name": "resolver::helpers::import_distance_regression_tests::streamed_prefix_matches_original_path_segment_semantics"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "line": 438,
+      "name": "resolver::helpers::import_distance_regression_tests::one_pass_distance_preserves_original_ties_duplicates_and_order"
+    }
+  ],
+  "control_execution_plan": {
+    "target": "cc-index lib",
+    "existing_ci": "cargo test --workspace includes these non-ignored lib controls; no new workflow proposed",
+    "required_evidence": "Actual formatter, compile and named test results at the eventual exact source must be recorded; current static review is not execution."
+  },
+  "formatting": {
+    "rustfmt": "not_run",
+    "obvious_over_100_column_new_code_lines": 0,
+    "uncertain_manual_layout_locations": [
+      "catalog.rs:866-867 let removed line wrap",
+      "catalog.rs:883-890 nested legacy_exports/live.chain layout"
+    ],
+    "action": "Keep candidate bytes frozen; use original cargo fmt --check. If formatter requests changes, preserve its original log and apply its exact diff under a separately reviewed source."
+  },
+  "remote_actions": {
+    "performed": "create_blob for these two authorized candidates, followed by byte-identical official GET readback",
+    "tree_commit_ref_pr_or_ci_created": false
+  },
+  "persistence": "This record is staged only as an unreferenced immutable blob on explicit root authorization; no local executor was used."
+}

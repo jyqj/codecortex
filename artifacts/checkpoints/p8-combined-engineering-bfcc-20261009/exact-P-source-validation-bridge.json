@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "verdict": "accepted_exact_actual_P_composition_and_execution_byte_bridge",
+  "P": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "tree": "621708a7c830da0bcc88f0ab3ea6df83e615e378",
+  "sole_parent": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "changes": {
+    "crates/cc-db/src/index_db_write_batch.rs": "M",
+    "crates/cc-index/src/project_model/python_inventory.rs": "M",
+    "crates/cc-eval/tests/benchmark_adapters.rs": "M",
+    "crates/cc-eval/tests/p8_scale.rs": "M",
+    "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": "M",
+    "crates/cc-db/src/snapshot_write_txn.rs": "M",
+    "crates/cc-db/src/index_db_snapshot_insert.rs": "M",
+    "crates/cc-db/src/snapshot_fts_tests.rs": "A",
+    "crates/cc-index/src/indexer_phases/snapshot.rs": "M"
+  },
+  "all_other_parent_paths_mode_blob_unchanged": true,
+  "product_count": 1090,
+  "validation_count": 139,
+  "historical_delta_count": 46,
+  "full_actual_P_map": {
+    "path": "review-next-candidate/combined-P-9d13-independent-review/actual-P-complete-product-validation-inputs.json",
+    "bytes": 351293,
+    "sha256": "eb91b9d620d705a73f683b1d4772152769c40d5a2298d7aed8b6ae61c14d6dd9"
+  },
+  "all_1232_frozen_execution_inputs_match_committed_P_mode_blob": true,
+  "all_four_original_command_receipts_and_stream_hashes_verified": true,
+  "commands": [
+    {
+      "name": "fmt",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:31:23.398165+00:00",
+      "finished_at": "2026-10-09T06:31:24.917076+00:00"
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:31:25.095338+00:00",
+      "finished_at": "2026-10-09T06:31:45.141110+00:00"
+    },
+    {
+      "name": "workspace-tests",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:31:45.327642+00:00",
+      "finished_at": "2026-10-09T06:40:54.972796+00:00"
+    },
+    {
+      "name": "final-fixture",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "-p",
+        "cc-eval",
+        "--",
+        "integration_fixtures_and_corpus"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-10-09T06:40:55.206643+00:00",
+      "finished_at": "2026-10-09T06:40:58.538881+00:00"
+    }
+  ],
+  "workspace_counts": {
+    "passed": 2727,
+    "failed": 0,
+    "ignored": 73,
+    "measured": 0,
+    "filtered": 0
+  },
+  "actual_execution_identity": "G173 checkout plus nine frozen uncommitted files, then committed as P with exact full mode/blob/hash equality. Not direct-P checkout execution.",
+  "cache": "APFS cp -cR clone of completed Round9 target/dependency cache into isolated Round10 target; not a cold build. Original target remains frozen.",
+  "source_assertions": "Actual-P/BASE delta regenerated independently with uniform before_sha256/sha256 objects; no draft delta values used.",
+  "prior_draft_correction": "pending-P v1 auxiliary delta mixed old objects/new strings. v1 retained, v2 normalized before commit; current exact-P map regenerated from Git again. Product/validation maps, source and engineering execution never changed."
+}

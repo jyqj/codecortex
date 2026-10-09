@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "author": "/root/pr_audit",
+  "scope": "Implementation facts for original formatter-directed test layout repair; this is not independent self-approval or new CI execution.",
+  "captured_at": "2026-10-09T07:29:54.147Z",
+  "repository": "jyqj/codecortex",
+  "pull_request": 179,
+  "source_execution": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+  "actual_original_checkout": "cf6d027ae81fde426ae4454abf62ef68f7723857",
+  "actual_original_checkout_tree": "338ab093c92e4ae464afa72b4a36b32ad71423a0",
+  "actual_original_checkout_parents": [
+    "840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "26888651b9eedcd1f784463ce54f9cef46b703ee"
+  ],
+  "original_failure": {
+    "run_id": 37896625594,
+    "job_id": 113709327167,
+    "job_completed_at": "2026-10-09T07:26:08Z",
+    "step": "Format check",
+    "command": "cargo fmt --all -- --check",
+    "exit_code": 1,
+    "log_blob": "9f345794222c578345d36dbe5f2091b6560f961e",
+    "log_bytes": 38796,
+    "log_sha256": "2af980744ee7016fd23bf6f92cfd158138496b2ac2f89af269beca1444a862b5",
+    "full_original_log_get_readback_byte_equal": true,
+    "original_failed_state_preserved": true
+  },
+  "method": "Parsed all three before/after hunks directly from the complete official job log after removing only its timestamp prefix. Each original hunk had exactly one match in its actual head blob. Applied only those exact replacements in memory; full production prefixes before #[cfg(test)] were byte-identical.",
+  "files": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "mode": "100644",
+      "base_execution": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+      "before_blob": "dbff4adaa41f1254844c2a692bd19bf3bdfb4967",
+      "before_bytes": 39439,
+      "before_sha256": "5959b1837e310b124ffc67ec4e27206af76b3b1af0dc0a7bb32bc63a1693252c",
+      "after_bytes": 39427,
+      "after_sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be",
+      "production_prefix_byte_identical": true,
+      "changes": [
+        {
+          "original_formatter_location": 863,
+          "before": "    #[test]\n    fn export_registration_matches_legacy_after_remove_and_readd() {\n        let symbols = export_variants();\n        let removed =\n            HashSet::from([symbols[0].file_path.clone(), symbols[17].file_path.clone()]);\n        let mut catalog = SymbolCatalog::new();\n        catalog.add_symbols(&symbols);\n        catalog.remove_files(&removed);",
+          "after": "    #[test]\n    fn export_registration_matches_legacy_after_remove_and_readd() {\n        let symbols = export_variants();\n        let removed = HashSet::from([symbols[0].file_path.clone(), symbols[17].file_path.clone()]);\n        let mut catalog = SymbolCatalog::new();\n        catalog.add_symbols(&symbols);\n        catalog.remove_files(&removed);"
+        }
+      ],
+      "after_blob": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "created_blob_get_readback_byte_equal": true
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "mode": "100644",
+      "base_execution": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+      "before_blob": "97ebe8747c4f82a92e7ca630508f9093321f5f26",
+      "before_bytes": 15073,
+      "before_sha256": "38c48943f2180e517ff11499e59960c62fbeffa50f54377577f01b0807aedda4",
+      "after_bytes": 15113,
+      "after_sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88",
+      "production_prefix_byte_identical": true,
+      "changes": [
+        {
+          "original_formatter_location": 368,
+          "before": "        a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()\n    }\n\n    fn legacy_candidates(\n        entries: &[CatalogEntry],\n        candidates: &[usize],\n        file: &str,\n    ) -> Vec<usize> {\n        let max = candidates\n            .iter()\n            .map(|&idx| legacy_prefix(&entries[idx].file_path, file))",
+          "after": "        a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()\n    }\n\n    fn legacy_candidates(entries: &[CatalogEntry], candidates: &[usize], file: &str) -> Vec<usize> {\n        let max = candidates\n            .iter()\n            .map(|&idx| legacy_prefix(&entries[idx].file_path, file))"
+        },
+        {
+          "original_formatter_location": 444,
+          "before": "            entry(\"src/pkg/a.py\", \"a\", \"A\"),\n            entry(\"src/pkg/a.py\", \"a\", \"OtherQName\"),\n        ];\n        for file in [\"\", \"src/pkg/query.py\", \"src/pkg/a.ts\", \"elsewhere/x.py\", \"/\"] {\n            // Exhaust all input sequences of length 0..=4, including repeated\n            // indices, different identities, duplicate rows and tied distances.\n            for len in 0..=4 {",
+          "after": "            entry(\"src/pkg/a.py\", \"a\", \"A\"),\n            entry(\"src/pkg/a.py\", \"a\", \"OtherQName\"),\n        ];\n        for file in [\n            \"\",\n            \"src/pkg/query.py\",\n            \"src/pkg/a.ts\",\n            \"elsewhere/x.py\",\n            \"/\",\n        ] {\n            // Exhaust all input sequences of length 0..=4, including repeated\n            // indices, different identities, duplicate rows and tied distances.\n            for len in 0..=4 {"
+        }
+      ],
+      "after_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "created_blob_get_readback_byte_equal": true
+    }
+  ],
+  "semantic_limits": {
+    "production_logic_unchanged": true,
+    "test_names_and_assertions_unchanged": true,
+    "reference_algorithms_unchanged": true,
+    "fixture_values_and_order_unchanged": true,
+    "changes_only": "One line-wrap collapse in the removed-file fixture; one reference function signature collapse; one array literal layout expansion plus optional trailing comma.",
+    "rustfmt_rerun": "not_run",
+    "new_tests": "not_run",
+    "new_compilation": "not_run",
+    "speedup_claim": "none",
+    "prior_msrv": "Original PR179 MSRV success is retained only at its original source and does not relabel this new candidate.",
+    "native_measurements": "not_run"
+  },
+  "authorization": {
+    "only_unreferenced_blobs_created": true,
+    "no_tree_commit_ref_pr_or_ci_operation": true
+  },
+  "formal_todo_completion": false,
+  "done": 163,
+  "remaining": 29
+}

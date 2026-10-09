@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "status": "all_original_engineering_commands_succeeded_and_source_equivalent_product_P_committed",
+  "P": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "execution_identity": {
+    "head_G173": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "working_tree": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+    "status": "",
+    "donor_P": "e963d5b424217f507e980fa66b987109d5d89e1d",
+    "scope": "Eight modified and one added product/test path, canonical editor transplant; actual tests ran before P commit; exact post-execution bridge, no push/R/G/study"
+  },
+  "source_proof": {
+    "product_count": 1090,
+    "validation_count": 139,
+    "additional_binding_count": 3,
+    "all_1232_inputs_checked_before_and_after_every_command": true,
+    "final_full_map_equal": true,
+    "canonical_product_sha256": "470d526e7b067ac84a68a2596909a8a895d95a357092a9f20c1ec82676dee217",
+    "canonical_validation_sha256": "31d94a7feb50959ac6bea93b062da3e05c3c995d4de5f199f1a277015adac256",
+    "historical_delta_count": 46,
+    "historical_delta_evidence": "actual-historical-product-delta.json"
+  },
+  "execution": {
+    "job": "wc_job_61EyqQxF1Kv0GBtZ",
+    "controller_sha256": "9dccb5103680ce9eee562270dd361a4eb69cd01cc222b79e46db430e791a9da9",
+    "platform": {
+      "platform": "macOS-26.6.2-arm64-arm-64bit",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+      "CARGO_BUILD_JOBS": "4",
+      "test_threads": "default; RUST_TEST_THREADS unset; no harness --test-threads",
+      "parent": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "source_input_count": 1232,
+      "source_input_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+      "rustc_verbose": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+    },
+    "target_clone": {
+      "started_at": "2026-10-09T06:30:51.747614+00:00",
+      "argv": [
+        "/bin/cp",
+        "-cR",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/fts-integration-1.95-sdk154-round9",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10"
+      ],
+      "free_bytes_before": 388582514688,
+      "source_target": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/fts-integration-1.95-sdk154-round9",
+      "destination_target": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+      "source_stat_before": {
+        "inode": 72410420,
+        "mtime_ns": 1791526390070713548
+      },
+      "purpose": "APFS clone of terminal Round9 dependencies; Cargo makes normal fresh fingerprint/recompile decisions; no source target command writes",
+      "exit_code": 0,
+      "finished_at": "2026-10-09T06:31:00.663138+00:00",
+      "free_bytes_after": 388609126400,
+      "source_stat_after": {
+        "inode": 72410420,
+        "mtime_ns": 1791526390070713548
+      },
+      "destination_exists": true
+    },
+    "commands": [
+      {
+        "name": "fmt",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "status": "completed",
+        "started_at": "2026-10-09T06:31:23.398165+00:00",
+        "source_before_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_input_count": 1232,
+        "environment": {
+          "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+          "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+          "CARGO_BUILD_JOBS": "4"
+        },
+        "test_threads": "default",
+        "skip_ignore_filter_override": false,
+        "pid": 77235,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T06:31:24.917076+00:00",
+        "source_after_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_unchanged": true,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "status": "completed",
+        "started_at": "2026-10-09T06:31:25.095338+00:00",
+        "source_before_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_input_count": 1232,
+        "environment": {
+          "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+          "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+          "CARGO_BUILD_JOBS": "4"
+        },
+        "test_threads": "default",
+        "skip_ignore_filter_override": false,
+        "pid": 77412,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T06:31:45.141110+00:00",
+        "source_after_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_unchanged": true,
+        "stdout": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 1183,
+          "sha256": "1a5afa5010749c7d1e6656882e5b834bef1f687d7577e645a900cbba41ce5ba7"
+        }
+      },
+      {
+        "name": "workspace-tests",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--workspace"
+        ],
+        "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "status": "completed",
+        "started_at": "2026-10-09T06:31:45.327642+00:00",
+        "source_before_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_input_count": 1232,
+        "environment": {
+          "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+          "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+          "CARGO_BUILD_JOBS": "4"
+        },
+        "test_threads": "default",
+        "skip_ignore_filter_override": false,
+        "pid": 79950,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T06:40:54.972796+00:00",
+        "source_after_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_unchanged": true,
+        "stdout": {
+          "bytes": 239750,
+          "sha256": "9deeebd18822deaef0e2902fa7b2da8f197f30133d4b6b4af7650cda4efea3ce"
+        },
+        "stderr": {
+          "bytes": 138059,
+          "sha256": "824d91607a0604b84ec7783cc33d80cd9b28ab5b3f6a25e4614b5e2c7e59e957"
+        }
+      },
+      {
+        "name": "final-fixture",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "-p",
+          "cc-eval",
+          "--",
+          "integration_fixtures_and_corpus"
+        ],
+        "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "status": "completed",
+        "started_at": "2026-10-09T06:40:55.206643+00:00",
+        "source_before_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_input_count": 1232,
+        "environment": {
+          "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+          "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+          "CARGO_BUILD_JOBS": "4"
+        },
+        "test_threads": "default",
+        "skip_ignore_filter_override": false,
+        "pid": 28475,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T06:40:58.538881+00:00",
+        "source_after_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "source_unchanged": true,
+        "stdout": {
+          "bytes": 10125,
+          "sha256": "153cf655f01c2fa5d9ff793c071ff708212c1f6b9a6c3b6b949955d7d36e3173"
+        },
+        "stderr": {
+          "bytes": 17040,
+          "sha256": "e773ab4329752de111aecd866d8156ee13708161ab80c5a2299b7c3c5b46e747"
+        }
+      }
+    ]
+  },
+  "workspace": {
+    "harness_summary_groups": 218,
+    "counts": {
+      "passed": 2727,
+      "failed": 0,
+      "ignored": 73,
+      "measured": 0,
+      "filtered": 0
+    },
+    "new_FTS_correctness_controls": {
+      "windows_preserve_all_rows_fts_search_and_cross_path_survivors": "test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok",
+      "checked_capacity_and_near_maximum_rowids_use_original_fallback": "test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok",
+      "public_entry_preserves_partial_state_when_caller_commits_after_error": "test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok",
+      "autocommit_keeps_original_partial_failure_and_immediate_mirrors": "test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok",
+      "noncanonical_or_temp_schema_falls_back_without_losing_mirrors": "test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok",
+      "late_failure_rolls_back_flushed_windows_and_preserves_live_generation": "test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok",
+      "private_fts_flush_full_error_abandons_actual_rebuild_without_publication": "test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok",
+      "max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control": "test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok",
+      "rowid_range_uses_primary_key_and_reduces_mirror_statement_runs": "test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok"
+    },
+    "normal_default_test_threads": true,
+    "new_skip_or_ignore": false,
+    "timing_experiment_or_formal_scale": false
+  },
+  "finalfixture": {
+    "counts": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 474
+    },
+    "note": "Repeated confirmation already counted in workspace; do not add to unique passed count"
+  },
+  "independent_source_review": {
+    "path": "review-next-candidate/combined-engineering-round10-independent/source-review.pending-P.v2.json",
+    "bytes": 10431,
+    "sha256": "2b31a5472024e5cf865616d725e3b66112abbeaab7b7aa98c30e58c861fc5935",
+    "scope": "Non-author source review, exact complete product/validation and semantic adoption; not substitute execution evidence"
+  },
+  "limits": [
+    "Source validation and ordinary engineering tests only; original TODO count remains 29 and no new original TODO credit.",
+    "No new formal primary samples, benchmark timing, full-scale or release certification.",
+    "Earlier prototype AB/BA timings belong to their exact frozen old source and are not assigned to this combination.",
+    "Original a23 failed primary and strict aggregate failure remain immutable; this candidate does not replace them.",
+    "New rebuild API requires owner Err propagation and no publication; Rust type does not enforce rollback and DirectWriter journal OFF does not promise physical rollback.",
+    "FTS window bounds file count, not statement-internal FTS buffer or whole-process peak memory."
+  ],
+  "tree": "621708a7c830da0bcc88f0ab3ea6df83e615e378",
+  "post_execution_commit_bridge": {
+    "schema": "combined-round10-product-commit-source-bridge-v1",
+    "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+    "tree": "621708a7c830da0bcc88f0ab3ea6df83e615e378",
+    "parents": [
+      "275e8799d4947d297329073eaa3ca675d3fd0777"
+    ],
+    "branch": "task/p8-combined-engineering-bfcc-20261009",
+    "changed_paths": {
+      "crates/cc-eval/tests/p8_scale.rs": "M",
+      "crates/cc-index/src/project_model/python_inventory.rs": "M",
+      "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": "M",
+      "crates/cc-eval/tests/benchmark_adapters.rs": "M",
+      "crates/cc-db/src/index_db_snapshot_insert.rs": "M",
+      "crates/cc-db/src/index_db_write_batch.rs": "M",
+      "crates/cc-db/src/snapshot_write_txn.rs": "M",
+      "crates/cc-index/src/indexer_phases/snapshot.rs": "M",
+      "crates/cc-db/src/snapshot_fts_tests.rs": "A"
+    },
+    "working_tree_clean": true,
+    "only_nine_product_test_paths_committed": true,
+    "all_other_Git_paths_modes_and_blobs_identical_to_parent": true,
+    "complete_product_inputs_verified": 1090,
+    "ordinary_validation_inputs_verified": 139,
+    "full_input_map_sha256": "ef3050d8f250541a50ae13c7b1defecb843112ae36f42672580ce638b8fca41d",
+    "all_committed_modes_blobs_equal_execution_snapshot": true,
+    "actual_test_identity": "G173 275e8799 parent checkout plus these nine uncommitted source files, then exact identity bridge; not re-labelled as direct P checkout execution",
+    "per_command_inventory": "1232 captured inputs: all 1090 product, all 139 ordinary validation, and 3 live binding inputs before and after each of the original four commands.",
+    "raw_validation_receipts": "../attempt01",
+    "remote_push": false,
+    "R_G_bindings_created": false,
+    "new_original_todos_completed": 0
+  }
+}

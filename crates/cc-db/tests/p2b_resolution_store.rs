@@ -206,7 +206,10 @@ fn original_dependency_query(
     let probe = cap.saturating_add(excluded.len());
     let mut grouped: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for event in events {
-        grouped.entry(event.kind.as_str()).or_default().push(&event.key);
+        grouped
+            .entry(event.kind.as_str())
+            .or_default()
+            .push(&event.key);
     }
     let mut result = BTreeSet::new();
     let mut work = cc_model::retrieval_cost::SqlWork::default();
@@ -221,7 +224,11 @@ fn original_dependency_query(
                 batch.len() + 2
             );
             let mut args = vec![rusqlite::types::Value::Text(kind.into())];
-            args.extend(batch.iter().map(|key| rusqlite::types::Value::Text((*key).into())));
+            args.extend(
+                batch
+                    .iter()
+                    .map(|key| rusqlite::types::Value::Text((*key).into())),
+            );
             args.push((probe.min(i64::MAX as usize) as i64).into());
             let mut statement = conn.prepare(&sql).unwrap();
             let mut yielded = 0;
@@ -243,9 +250,24 @@ fn original_dependency_query(
             work.merge(cc_model::retrieval_cost::SqlWork {
                 statements: 1,
                 rows: yielded,
-                vm_steps: Some(statement.get_status(StatementStatus::VmStep).try_into().unwrap()),
-                fullscan_steps: Some(statement.get_status(StatementStatus::FullscanStep).try_into().unwrap()),
-                sorts: Some(statement.get_status(StatementStatus::Sort).try_into().unwrap()),
+                vm_steps: Some(
+                    statement
+                        .get_status(StatementStatus::VmStep)
+                        .try_into()
+                        .unwrap(),
+                ),
+                fullscan_steps: Some(
+                    statement
+                        .get_status(StatementStatus::FullscanStep)
+                        .try_into()
+                        .unwrap(),
+                ),
+                sorts: Some(
+                    statement
+                        .get_status(StatementStatus::Sort)
+                        .try_into()
+                        .unwrap(),
+                ),
             });
         }
     }
@@ -260,8 +282,12 @@ fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness()
     let mut units: Vec<_> = (0..220)
         .map(|i| {
             let mut file = unit(&format!("f{i:04}.py"));
-            file.outcome.resolution.dependency(DependencyKind::NameBucket, format!("key-{i:04}"));
-            file.outcome.resolution.dependency(DependencyKind::MissingPath, "seed.py");
+            file.outcome
+                .resolution
+                .dependency(DependencyKind::NameBucket, format!("key-{i:04}"));
+            file.outcome
+                .resolution
+                .dependency(DependencyKind::MissingPath, "seed.py");
             file
         })
         .collect();
@@ -277,7 +303,11 @@ fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness()
         .collect();
     let all_paths: Vec<_> = units.iter().map(|file| file.rel_path.clone()).collect();
     let mut scattered: Vec<_> = all_paths.iter().step_by(2).cloned().collect();
-    scattered.extend(["f0001.py\0suffix".into(), "not-present.py".into(), "f0000.py".into()]);
+    scattered.extend([
+        "f0001.py\0suffix".into(),
+        "not-present.py".into(),
+        "f0000.py".into(),
+    ]);
     for excluded in [Vec::new(), scattered, all_paths.clone()] {
         let excluded_set: BTreeSet<_> = excluded.iter().cloned().collect();
         for limit in [0, 1, 3, 200, usize::MAX] {
@@ -290,10 +320,16 @@ fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness()
                 .take(limit.saturating_add(1))
                 .collect();
             let reference = original_dependency_query(&path, &events, limit, &excluded);
-            let actual = db.reads().resolution_dependents_with_work(&events, limit, &excluded).unwrap();
+            let actual = db
+                .reads()
+                .resolution_dependents_with_work(&events, limit, &excluded)
+                .unwrap();
             eprintln!(
                 "dependency_exclusion_case excluded={} limit={} original={:?} candidate={:?}",
-                excluded_set.len(), limit, reference.1, actual.1
+                excluded_set.len(),
+                limit,
+                reference.1,
+                actual.1
             );
             assert_eq!(reference.0, expected);
             assert_eq!(actual.0, expected);
@@ -305,10 +341,22 @@ fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness()
         }
     }
     // The embedded NUL must not turn this exclusion into the real f0001.py.
-    let excluded: Vec<_> = all_paths.iter().filter(|p| p.as_str() != "f0001.py").cloned()
-        .chain(["f0001.py\0suffix".into()]).collect();
-    assert_eq!(db.reads().resolution_dependents(&events, 0, &excluded).unwrap(), vec!["f0001.py"]);
-    let empty = db.reads().resolution_dependents_with_work(&BTreeSet::new(), 0, &excluded).unwrap();
+    let excluded: Vec<_> = all_paths
+        .iter()
+        .filter(|p| p.as_str() != "f0001.py")
+        .cloned()
+        .chain(["f0001.py\0suffix".into()])
+        .collect();
+    assert_eq!(
+        db.reads()
+            .resolution_dependents(&events, 0, &excluded)
+            .unwrap(),
+        vec!["f0001.py"]
+    );
+    let empty = db
+        .reads()
+        .resolution_dependents_with_work(&BTreeSet::new(), 0, &excluded)
+        .unwrap();
     assert!(empty.0.is_empty());
     assert_eq!(empty.1.statements, 0);
     assert_eq!(db.reads().generation().unwrap(), generation);
@@ -322,19 +370,36 @@ fn dependency_exclusion_avoids_returning_completed_prefix_and_reduces_dense_case
     let files: Vec<_> = (0..600).map(|i| unit(&format!("f{i:04}.py"))).collect();
     db.writes().replace_files_batch(&files).unwrap();
     let excluded: Vec<_> = files[..580].iter().map(|file| file.rel_path.clone()).collect();
-    let events = BTreeSet::from([ResolutionDependency::new(DependencyKind::NameBucket, "missing")]);
+    let events = BTreeSet::from([ResolutionDependency::new(
+        DependencyKind::NameBucket,
+        "missing",
+    )]);
     let reference = original_dependency_query(&path, &events, 9, &excluded);
-    let actual = db.reads().resolution_dependents_with_work(&events, 9, &excluded).unwrap();
+    let actual = db
+        .reads()
+        .resolution_dependents_with_work(&events, 9, &excluded)
+        .unwrap();
     eprintln!(
         "dependency_exclusion_dense_prefix original={:?} candidate={:?}",
         reference.1, actual.1
     );
     assert_eq!(actual.0, reference.0);
-    assert_eq!(actual.0, files[580..590].iter().map(|file| file.rel_path.clone()).collect::<Vec<_>>());
+    assert_eq!(
+        actual.0,
+        files[580..590]
+            .iter()
+            .map(|file| file.rel_path.clone())
+            .collect::<Vec<_>>()
+    );
     assert_eq!(reference.1.rows, 590);
     assert_eq!(actual.1.rows, 10);
     assert_eq!(actual.1.statements, reference.1.statements);
-    assert!(actual.1.vm_steps.unwrap() < reference.1.vm_steps.unwrap(), "dense completed-prefix case only: {:?} vs {:?}", actual.1, reference.1);
+    assert!(
+        actual.1.vm_steps.unwrap() < reference.1.vm_steps.unwrap(),
+        "dense completed-prefix case only: {:?} vs {:?}",
+        actual.1,
+        reference.1
+    );
     assert_eq!(actual.1.fullscan_steps, reference.1.fullscan_steps);
     assert_eq!(actual.1.sorts, reference.1.sorts);
 }

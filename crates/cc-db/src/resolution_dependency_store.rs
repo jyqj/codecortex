@@ -151,9 +151,9 @@ impl ReadOps<'_> {
                     .collect::<Vec<_>>()
                     .join(",");
                 let sql = if excluded_json.is_some() {
-                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) AND file_path NOT IN (SELECT value FROM json_each(?{})) ORDER BY file_path LIMIT ?{}",batch.len()+2,batch.len()+3)
+                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) AND file_path NOT IN (SELECT value FROM json_each(?{})) ORDER BY file_path LIMIT ?{}", batch.len() + 2, batch.len() + 3)
                 } else {
-                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}",batch.len()+2)
+                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}", batch.len() + 2)
                 };
                 let mut args: Vec<rusqlite::types::Value> =
                     vec![rusqlite::types::Value::Text(kind.into())];

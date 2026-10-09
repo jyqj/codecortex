@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "round": 21,
+  "status": "closed",
+  "closed_at_utc": "2026-10-09 16:56:16 UTC",
+  "next_round": 22,
+  "original_tasks": {
+    "total": 192,
+    "done_before": 163,
+    "done_after": 163,
+    "remaining": 29,
+    "newly_completed_this_round": 0,
+    "cumulative_newly_completed": 0,
+    "target_minimum_new_completions": 10
+  },
+  "implementation": {
+    "product": "44e6248106335b5f0625e53de38f76d26aeeadcf",
+    "review": "cb57d6e39f446e68ed5bd5bce26a7a76d1a26e5c",
+    "guard": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "tree": "d8891f547c92044fd40b63165d6ef54cb6de8bab",
+    "pull_request": 193,
+    "branch": "perf/p8-payload-cell-witness-bfcc-20261009",
+    "product_files_changed": 6,
+    "source_review": "accepted_scoped",
+    "source_maps": {
+      "product": 1095,
+      "base_delta": 75,
+      "validation": 142
+    },
+    "rust_at_publication": "not_run",
+    "ordinary_ci_run": 37962259107
+  },
+  "pr180": {
+    "merged": true,
+    "merged_at": "2026-10-09T16:42:18Z",
+    "merge_commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+    "tree_unchanged_from_head": true,
+    "merge_executed_by_this_root": false,
+    "root_marked_ready": true,
+    "last_complete_check_observation": "25 success, 1 soak in_progress at 16:35 UTC; main/closeout original logs independently read"
+  },
+  "selected_acceptance_paths": [
+    {
+      "task": "P8-005",
+      "study": "independent cold_only_v1",
+      "source": "044c008c9459cfa61e7701db2eb868342c508a39",
+      "run": 37954851017,
+      "attempt": 1,
+      "required_complete_population": 150,
+      "last_official_rep0_job_success_counts": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "last_scope": "100k rep0 still running; later 145 not created; no complete acceptance"
+    },
+    {
+      "task": "P8-006",
+      "study": "original sequential scale_capacity_v1",
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "run": 37962416564,
+      "attempt": 1,
+      "created_at": "2026-10-09T16:54:05Z",
+      "trigger": "one new p8-scale-run label on PR193",
+      "event": "pull_request",
+      "required_shards": 150,
+      "required_composite_samples": 1500,
+      "initial_build_job": 113928317071,
+      "initial_status": "queued",
+      "completed_measurements": 0
+    }
+  ],
+  "not_selected": {
+    "fresh_profile_PR192": "not started by this work; distinct fresh-history 1350-cell alternative, not a joint extra acceptance gate",
+    "PR190_and_PR191": "not included; retained source/CI/performance limitations"
+  },
+  "preserved_failures": "Original sequential C3ff/Gc8 failures and partial populations remain immutable, separate from cold and new G8B studies. P7/v1 review and both complete finite diagnostic byte archives are preserved as distinct artifact leaves in R8.",
+  "next_round_work": [
+    "Handle PR193's actual original CI results and related regressions",
+    "Receive the existing cold and new G8B studies under their own frozen producers and identities",
+    "Accept each original task only when its own evidence and hard dependencies are complete; first possible count change is P8-005 to 28 remaining",
+    "Continue independent review and preserve raw results without duplicate study requirements"
+  ]
+}

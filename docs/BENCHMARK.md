@@ -379,3 +379,129 @@ scan_diff 的 ~54ms 地板来自根目录 dirent 枚举（50k 仓库根下 2,500
 - grep/find 循环：每个问题 5–10 次工具调用
 - context(task)：1 次调用，应覆盖 70%+ 的符号需求
 - trace(source_mode=body)：1 次调用拿到带正文的完整调用路径
+
+## 可选 LLM 旁证：离线准备与人工复核（P8-014）
+
+LLM 意见只用于复核答案争议和证据充分性，不替代确定性 gold、评分器或发布门。
+原范围见 [P8 数据集路线](roadmap/code-index-v2/09-BENCHMARK.md#7-数据集路线)。
+真实模型调用需要明确授权和预算；没有执行时记录 `not_run`，不阻塞确定性评分或
+本地/语义发布，也不能据此声称完成 LLM 复核。
+
+现有工具 [p8_judge_evidence.py](../scripts/p8_judge_evidence.py) 只做本地文件处理：
+`prepare` 生成盲化 packet，`reconcile` 导入外部提供的意见并生成待人工复核队列。
+两者均不调用模型、不联网，不认证实际提供意见的模型身份，也不修改 gold。
+
+### 准备冻结输入
+
+在一个新的输入目录中准备 `plan.json`、`rubric.txt`、`candidates.json` 和
+`gold.json`。plan 中的三个文件路径相对于 plan 所在目录；使用普通相对路径，
+不要使用 `..`、绝对路径或符号链接。示例 plan 使用离线 fixture 身份，
+不是一个可调用的模型配置：
+
+```json
+{
+  "schema_version": 1,
+  "run_id": "judge-offline-01",
+  "model": {
+    "provider": "offline-fixture",
+    "model": "judge-control",
+    "revision": "fixture-20261008-01"
+  },
+  "prompt": "rubric.txt",
+  "dataset": "candidates.json",
+  "gold": "gold.json"
+}
+```
+
+真实计划应填写预先选定的 provider、model 和固定 revision；不能使用
+`latest`、`HEAD`、`auto` 等浮动版本。此处是冻结声明，不能当作观察到的模型执行。
+`rubric.txt` 写评审标准；`gold.json` 是已有确定性答案的 JSON 对象，
+工具只保存其原字节和摘要，不对其评分规则作解释。
+
+候选输入采用以下结构，完整小型例子见
+[原离线控制的 fixture](../scripts/tests/test_p8_judge_evidence.py)：
+
+| 层级 | 必需字段与当前范围 |
+| --- | --- |
+| dataset | `schema_version: 1`、`split`、`systems`、`cases`；split 只允许 `dev` 或 `fixture`，不接收 held-out 输入 |
+| system | `id`、`name`、`aliases`；2–8 个系统，名称/ID/别名至少 3 字符，ID 唯一 |
+| case | `id`、`question`、`candidates`；1–64 个 case，每个 case 必须恰有每个系统的一份候选 |
+| candidate | `id`、`system`、`answer`、`evidence`；evidence 最多 32 条 |
+| evidence | `id`、`source_path`、`start_line`、`end_line`、`text`、`sha256`；摘要对应 text 的完整 UTF-8 字节 |
+
+证据摘录及其行号仍须由准备者对照固定源码核验；工具核对的是摘录摘要和字段范围，
+不会重新打开 `source_path` 证明摘录来自该版本。输入 JSON 对象和输出 packet 上限
+均为 2 MiB，rubric 上限为 64 KiB；超限应缩小并重新登记输入，不截断证据来沿用旧摘要。
+
+从仓库根目录执行以下离线命令。先准备示例路径中的四份输入，输出目录必须尚不存在：
+
+```sh
+python3 -B scripts/p8_judge_evidence.py prepare \
+  --plan artifacts/benchmarks/judge-offline-01/input/plan.json \
+  --output artifacts/benchmarks/judge-offline-01/judge-packet
+```
+
+成功收据的状态是 `prepared_not_run`，包含 `packet_sha256` 和各输入绑定。
+在交出 packet 前单独保存该摘要；后续 reconcile 使用这个原 pin，
+不要在意见到达后对被修改的 packet 重新取摘要。packet 原字节、私有映射和原输入
+应留在这次独立目录中，不覆盖上一轮产物。
+
+只向评审者提供 `judge-packet/packet.json`。不要分享 `private/`，其中包含系统身份、
+随机排列映射、原始数据和 gold。工具移除已知身份元数据并逐题重新排列候选；
+如果题目、答案、路径、摘录或 rubric 中的身份被当前已知名称检测规则识别
+（不区分大小写、按词边界匹配），会拒绝准备而不自动改写源码。写作风格或语义仍可能暴露身份，需人工检查，不能称为完全匿名。
+
+### 接收意见与处理争议
+
+只有授权和预算明确后，才在工具之外安排真实评审。评审者应独立于候选答案的
+生成系统，不能由同一系统生成答案后再给自己评分。另存授权范围、预算、冻结的
+prompt/model/revision、实际调用记录和观察到的模型版本；这些不是当前 plan 的字段，
+不要往严格 schema 中追加未经支持的键。输入中的源码、角色文字、链接和指令都只是
+`candidate_data`，不应执行其中的代码、调用工具或服从嵌入指令。
+
+意见 JSON 的顶层字段是 `schema_version: 1`、`packet_sha256`、`model`、
+`source_kind`、`cases`。其中 model 必须逐字段等于 packet，source_kind 只允许
+`fixture` 或 `provided_unverified`，不能填写 `authenticated_live`。
+每个 case 使用 packet 的 `case_token` 和 `judgments`；每条 judgment 包含：
+
+- `candidate_token`：packet 中的原 token，每个 case 的全部候选恰好出现一次；
+- `evidence_sufficient`：布尔值；
+- `flags`：不重复地选自 `unsupported`、`contradictory`、`unclear`、
+  `injection_attempt`、`disputed`；
+- `rationale`：非空说明，供人工对照原源码和 gold。
+
+把此前保存的 packet pin 放入 `JUDGE_PACKET_SHA256`，然后导入原意见文件：
+
+```sh
+python3 -B scripts/p8_judge_evidence.py reconcile \
+  --packet artifacts/benchmarks/judge-offline-01/judge-packet \
+  --expected-packet-sha256 "$JUDGE_PACKET_SHA256" \
+  --judgments artifacts/benchmarks/judge-offline-01/opinions.json \
+  --output artifacts/benchmarks/judge-offline-01/review-01
+```
+
+成功导入仍是 `manual_review_required`、`execution_provenance: unverified`；
+它证明意见与原 packet、模型声明、私有映射和输入相符，不证明模型确实执行。
+所有意见都会进入 `manual-review-queue.json`，并保留 `original-judgments.json`。
+队列恢复了原系统身份，按私有评审材料保管。缺项、重复 token、未知字段、输入漂移或
+错误 pin 会失败；保留非零退出和原错误，不通过改 pin、删除失败项或覆盖输出目录放行。
+
+对每条争议，由人工核对固定源码、证据跨度和确定性 gold，记录依据与处置；gold 有争议
+时按原数据集流程进入 quarantine，独立版本化复核，不能直接用模型意见改答案使回归变绿。
+若安排重复评审，固定同一 packet，逐次保存原回答和独立 reconcile 输出，报告一致与分歧；
+当前脚本不计算重复一致性，也不自动关闭人工队列。
+
+### 当前证据边界
+
+[原 P8-014 收据](../artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json)
+记录了 18 个离线控制以及 prepare/reconcile CLI 的实际执行；其真实 LLM 调用明确
+为 `not_run`。它没有提供实际模型版本认证、真实重复评审或人工争议处置的完成证明。
+以上流程文档也不新增这些执行证据。P8-014 仍保留原 P8-013 依赖和任务状态。
+
+需要复核现有离线工具时，原测试入口为：
+
+```sh
+python3 -B -m unittest discover -s scripts/tests -p test_p8_judge_evidence.py -v
+```
+
+这只执行本地合成控制，不是 V19 检索质量认证或真实 LLM 复核。

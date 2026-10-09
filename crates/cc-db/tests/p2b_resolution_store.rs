@@ -188,6 +188,156 @@ fn bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches()
         paths[10..14]
     );
 }
+// Keep the original H reverse-query algorithm as an independent reference for
+// both the exact frontier and SQLite's own statement counters. This connection
+// is read-only; it does not alter the fixture or the production read lease.
+fn original_dependency_query(
+    path: &std::path::Path,
+    events: &BTreeSet<ResolutionDependency>,
+    limit: usize,
+    excluded: &[String],
+) -> (Vec<String>, cc_model::retrieval_cost::SqlWork) {
+    use rusqlite::{Connection, OpenFlags, StatementStatus};
+    use std::collections::BTreeMap;
+
+    let conn = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+    let cap = limit.saturating_add(1);
+    let excluded: BTreeSet<&str> = excluded.iter().map(String::as_str).collect();
+    let probe = cap.saturating_add(excluded.len());
+    let mut grouped: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    for event in events {
+        grouped.entry(event.kind.as_str()).or_default().push(&event.key);
+    }
+    let mut result = BTreeSet::new();
+    let mut work = cc_model::retrieval_cost::SqlWork::default();
+    for (kind, keys) in grouped {
+        for batch in keys.chunks(198) {
+            let placeholders = (2..batch.len() + 2)
+                .map(|i| format!("?{i}"))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}",
+                batch.len() + 2
+            );
+            let mut args = vec![rusqlite::types::Value::Text(kind.into())];
+            args.extend(batch.iter().map(|key| rusqlite::types::Value::Text((*key).into())));
+            args.push((probe.min(i64::MAX as usize) as i64).into());
+            let mut statement = conn.prepare(&sql).unwrap();
+            let mut yielded = 0;
+            {
+                let rows = statement
+                    .query_map(rusqlite::params_from_iter(args), |row| row.get::<_, String>(0))
+                    .unwrap();
+                for row in rows {
+                    let path = row.unwrap();
+                    yielded += 1;
+                    if !excluded.contains(path.as_str()) {
+                        result.insert(path);
+                        if result.len() > cap {
+                            result.pop_last();
+                        }
+                    }
+                }
+            }
+            work.merge(cc_model::retrieval_cost::SqlWork {
+                statements: 1,
+                rows: yielded,
+                vm_steps: Some(statement.get_status(StatementStatus::VmStep).try_into().unwrap()),
+                fullscan_steps: Some(statement.get_status(StatementStatus::FullscanStep).try_into().unwrap()),
+                sorts: Some(statement.get_status(StatementStatus::Sort).try_into().unwrap()),
+            });
+        }
+    }
+    (result.into_iter().collect(), work)
+}
+
+#[test]
+fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("db");
+    let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+    let mut units: Vec<_> = (0..220)
+        .map(|i| {
+            let mut file = unit(&format!("f{i:04}.py"));
+            file.outcome.resolution.dependency(DependencyKind::NameBucket, format!("key-{i:04}"));
+            file.outcome.resolution.dependency(DependencyKind::MissingPath, "seed.py");
+            file
+        })
+        .collect();
+    units.extend(["quote\".py", "back\\slash.py", "é.py", "e\u{301}.py", "😀.py"].map(unit));
+    db.writes().replace_files_batch(&units).unwrap();
+    let generation = db.reads().generation().unwrap();
+    let events: BTreeSet<_> = (0..410)
+        .map(|i| ResolutionDependency::new(DependencyKind::NameBucket, format!("key-{i:04}")))
+        .chain([
+            ResolutionDependency::new(DependencyKind::NameBucket, "missing"),
+            ResolutionDependency::new(DependencyKind::MissingPath, "seed.py"),
+        ])
+        .collect();
+    let all_paths: Vec<_> = units.iter().map(|file| file.rel_path.clone()).collect();
+    let mut scattered: Vec<_> = all_paths.iter().step_by(2).cloned().collect();
+    scattered.extend(["f0001.py\0suffix".into(), "not-present.py".into(), "f0000.py".into()]);
+    for excluded in [Vec::new(), scattered, all_paths.clone()] {
+        let excluded_set: BTreeSet<_> = excluded.iter().cloned().collect();
+        for limit in [0, 1, 3, 200, usize::MAX] {
+            let expected: Vec<_> = all_paths
+                .iter()
+                .filter(|path| !excluded_set.contains(*path))
+                .cloned()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .take(limit.saturating_add(1))
+                .collect();
+            let reference = original_dependency_query(&path, &events, limit, &excluded);
+            let actual = db.reads().resolution_dependents_with_work(&events, limit, &excluded).unwrap();
+            eprintln!(
+                "dependency_exclusion_case excluded={} limit={} original={:?} candidate={:?}",
+                excluded_set.len(), limit, reference.1, actual.1
+            );
+            assert_eq!(reference.0, expected);
+            assert_eq!(actual.0, expected);
+            if excluded.is_empty() {
+                assert_eq!(actual.1.rows, reference.1.rows);
+                assert_eq!(actual.1.statements, reference.1.statements);
+                assert_eq!(actual.1.vm_steps, reference.1.vm_steps);
+            }
+        }
+    }
+    // The embedded NUL must not turn this exclusion into the real f0001.py.
+    let excluded: Vec<_> = all_paths.iter().filter(|p| p.as_str() != "f0001.py").cloned()
+        .chain(["f0001.py\0suffix".into()]).collect();
+    assert_eq!(db.reads().resolution_dependents(&events, 0, &excluded).unwrap(), vec!["f0001.py"]);
+    let empty = db.reads().resolution_dependents_with_work(&BTreeSet::new(), 0, &excluded).unwrap();
+    assert!(empty.0.is_empty());
+    assert_eq!(empty.1.statements, 0);
+    assert_eq!(db.reads().generation().unwrap(), generation);
+}
+
+#[test]
+fn dependency_exclusion_avoids_returning_completed_prefix_and_reduces_dense_case_sql_work() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("db");
+    let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+    let files: Vec<_> = (0..600).map(|i| unit(&format!("f{i:04}.py"))).collect();
+    db.writes().replace_files_batch(&files).unwrap();
+    let excluded: Vec<_> = files[..580].iter().map(|file| file.rel_path.clone()).collect();
+    let events = BTreeSet::from([ResolutionDependency::new(DependencyKind::NameBucket, "missing")]);
+    let reference = original_dependency_query(&path, &events, 9, &excluded);
+    let actual = db.reads().resolution_dependents_with_work(&events, 9, &excluded).unwrap();
+    eprintln!(
+        "dependency_exclusion_dense_prefix original={:?} candidate={:?}",
+        reference.1, actual.1
+    );
+    assert_eq!(actual.0, reference.0);
+    assert_eq!(actual.0, files[580..590].iter().map(|file| file.rel_path.clone()).collect::<Vec<_>>());
+    assert_eq!(reference.1.rows, 590);
+    assert_eq!(actual.1.rows, 10);
+    assert_eq!(actual.1.statements, reference.1.statements);
+    assert!(actual.1.vm_steps.unwrap() < reference.1.vm_steps.unwrap(), "dense completed-prefix case only: {:?} vs {:?}", actual.1, reference.1);
+    assert_eq!(actual.1.fullscan_steps, reference.1.fullscan_steps);
+    assert_eq!(actual.1.sorts, reference.1.sorts);
+}
 #[test]
 fn package_aggregate_tracks_files_and_test_visibility() {
     let d = tempfile::tempdir().unwrap();

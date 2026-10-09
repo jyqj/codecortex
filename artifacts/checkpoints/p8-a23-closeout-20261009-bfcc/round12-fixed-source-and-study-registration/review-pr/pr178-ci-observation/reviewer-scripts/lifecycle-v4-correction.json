@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "at": "2026-10-09T07:46:35.685020+00:00",
+  "source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "artifact_id": 11601537047,
+  "prior_script": "review-pr/pr178-ci-observation/reviewer-scripts/lifecycle-independent-review-v3.py",
+  "prior_script_sha256": "1c3a6f7917a19c247e64268b43f1336dbdd6b439bebd4e8340a1e5f5fa9174a2",
+  "prior_report": "review-pr/pr178-ci-observation/raw-review/lifecycle-11601537047-review-v3.json",
+  "prior_report_sha256": "1f42714551ee9216c958bccb2581e716a8993adf9f37dce8f5c0d6de7adffa3a",
+  "prior_result": "review_failed: physical_disk_total_no_fts_double_count; prior reviewer process exit0 is not pass",
+  "cause": "Reviewer v3 retained a23-specific absolute128901120B physical total across a changed G9f product. Original workload does not require this cross-source constant. Actual retained90 unique physical files and raw ledger total129024000B matched each other.",
+  "changes": [
+    "Remove only old source-specific128901120 equality; retain unique90 storage IDs, each physical file actual size, and dynamic sum equals raw original ledger; no FTS logical bytes double counted.",
+    "Write new v4 report; preserve original v3 script/report/stdout/receipt.",
+    "Exit1 on reviewer errors instead of printing review_failed with process0."
+  ],
+  "new_script": "review-pr/pr178-ci-observation/reviewer-scripts/lifecycle-independent-review-v4.py",
+  "new_script_sha256": "34a2c2f51719ca048c61aae1143ad5ee791fab781b137c7e1f6c737e5468c02c",
+  "original_source_validator_and_raw_unmodified": true,
+  "no_primary_samples_or_TODO_credit": true
+}

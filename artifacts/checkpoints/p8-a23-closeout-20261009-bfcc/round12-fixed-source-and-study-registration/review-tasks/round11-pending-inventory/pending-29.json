@@ -1,0 +1,971 @@
+{
+  "schema": "original-pending-tasks-readonly-inventory-v1",
+  "recorded_at": "2026-10-09T07:36:38.743736+00:00",
+  "github_main_at_read": "ee9a8e90237773502210f66bc284a1787d1ff203",
+  "state_authority": "tasks.json; 05-TODO.md and marked entry-point progress blocks are derived",
+  "tasks_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+  "task_count": 192,
+  "status_counts": {
+    "done": 163,
+    "blocked": 1,
+    "in_progress": 16,
+    "todo": 12
+  },
+  "remaining_count": 29,
+  "count_rule": "Count distinct original task IDs with status != done; in_progress/blocked/todo remain uncompleted. No internal work steps counted.",
+  "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+  "hard_dependency_ready_ids": [
+    "P7-018",
+    "P8-005"
+  ],
+  "currently_authorized_dependency_ready_non_live": [
+    "P8-005"
+  ],
+  "pending_tasks_transitively_depend_on_scale_005": 27,
+  "scope": "Read only original task ledger and derived TODO. Keypoints summarize original requirements still awaiting full task acceptance, not a claim that all component evidence is absent or that this session source-specific artifacts failed.",
+  "all_rows_common_requirement": "Relevant existing regressions must pass; absent evidence remains not_run/blocked rather than done.",
+  "parallel_preparation_without_task_closeout": [
+    {
+      "ids": [
+        "P8-017"
+      ],
+      "scope": "Read-only ownership/debt inventory and minimal deletion proposals; no deletion before separate implementation authorization and regression review."
+    },
+    {
+      "ids": [
+        "P8-018"
+      ],
+      "scope": "Source/doc fact and installation-contract drift review; do not replace actual cross-platform installation evidence."
+    },
+    {
+      "ids": [
+        "P8-019"
+      ],
+      "scope": "Verify archive/source/checksum/raw coverage and deterministic report recomputation using existing evidence; preserve failed originals."
+    },
+    {
+      "ids": [
+        "P8-020"
+      ],
+      "scope": "Maintain local/semantic gap and rollback mapping from actual source-specific evidence; no release approval or task completion before dependencies."
+    }
+  ],
+  "constraints": [
+    "P7-018 remains blocked by recorded original D1 absence of paid live-provider authorization; no live execution requested here.",
+    "All P9 entry branches depend on P8-020 and therefore full original scale through its hard dependencies. Deferred is not done and cannot inflate completion count.",
+    "P8-014 optional judge does not block deterministic/local release; P8-020 conditional P8-015 is only for M4-semantic.",
+    "No original task, dependency, acceptance, status, executable source, run or count was modified."
+  ],
+  "rows": [
+    {
+      "id": "P7-018",
+      "title": "受授权的真实provider小集认证",
+      "original_status": "blocked",
+      "hard_dependencies": [
+        "P7-017"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [],
+      "hard_dependency_transitively_contains_scale_005": false,
+      "original_steps": [
+        "选公开固定输入显式批准费用",
+        "验证真实返回、用量和partial behavior"
+      ],
+      "original_acceptance": [
+        "live与fake分栏；无授权则blocked/deferred而不假称通过",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V15",
+        "V19",
+        "V20"
+      ],
+      "original_conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "明确的真实provider授权与费用预算；固定公开输入的真实返回/用量/partial，live与fake分栏（当前原D1未授权）。",
+      "derived_todo_line": 2177
+    },
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-004"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [],
+      "hard_dependency_transitively_contains_scale_005": false,
+      "original_steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "original_acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": {
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      },
+      "acceptance_closeout_keypoints": "固定seed、release的1k/5k/10k/50k/100k完整规模；chunk/edge/vector和同工作量证据；原full-scale子门仍open。",
+      "derived_todo_line": 2330
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-005"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "original_acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V07",
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "no-op/body/API/config/batch与超预算fanout闭包；phase计数可归因、闭包后full parity、incomplete显式。",
+      "derived_todo_line": 2346
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-006"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-006"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "original_acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V11",
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "C1/4/8/16 read/build/backfill混合；offered/排队/timeout/尾部完整，无死锁饥饿。",
+      "derived_todo_line": 2361
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-007"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-007"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "original_acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "OS/process/result-cache/uncached warm分层，全部样本与N/分布/CI，无best-of。",
+      "derived_todo_line": 2375
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-008"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-008"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "original_acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "client/server/process-tree内存、artifact/FTS磁盘、reported/estimated费用分开；unavailable不填0。",
+      "derived_todo_line": 2389
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-009"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-009"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "original_acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "持续编辑/删除/切分支/压实及cache/worker复用；资源/队列有界与终点完整对账。",
+      "derived_todo_line": 2403
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-007",
+        "P8-010"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "original_acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "kill/断网/缓存损坏/DB忙/换库恢复；原故障工件保留，无假ready/删除复活并说明费用。",
+      "derived_todo_line": 2417
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-011"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-011"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "original_acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V01",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "Linux/macOS×MSRV/stable×default/semantic八格全新target；冷构建、SDK或明确发布平台范围。",
+      "derived_todo_line": 2429
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-012"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-012"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "original_acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "quality/perf/lock故障注入；红线非零且保留raw，inconclusive不可自动passed。",
+      "derived_todo_line": 2444
+    },
+    {
+      "id": "P8-014",
+      "title": "可选LLM评审旁证流程",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-013"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "冻结judge prompt/model并盲化系统名",
+        "复核争议答案/证据充分性"
+      ],
+      "original_acceptance": [
+        "不替代确定性gold，提示注入文本只作数据，费用需授权",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V19"
+      ],
+      "original_conditional": "可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "明确授权/预算后的固定prompt/model、盲化LLM旁证；不得代替gold，未执行不阻塞确定性/local范围。",
+      "derived_todo_line": 2458
+    },
+    {
+      "id": "P8-015",
+      "title": "真实语义效果发布认证",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-013",
+        "P7-018"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-013",
+        "P7-018"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "在已授权live条件复跑holdout与费用/错误分布",
+        "核对模型revision"
+      ],
+      "original_acceptance": [
+        "缺live证据只发布已验证的能力范围，不伪造M4-semantic通过",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V15",
+        "V19",
+        "V20"
+      ],
+      "original_conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "已授权真实live的holdout、费用/错误分布、model revision；缺证据不能声称semantic认证。",
+      "derived_todo_line": 2471
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-012",
+        "P8-013"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "original_acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "旧binary/新schema受控重建、cache版本隔离、disable语义回退实测；不误读向量或丢源码。",
+      "derived_todo_line": 2484
+    },
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-016"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-016"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "清临时旧branch/重复评分器/多份schema来源",
+        "保留必要外部wire兼容"
+      ],
+      "original_acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V18",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "清临时旧branch/重复评分器/多份schema来源，保留必要wire兼容；删除有回归、唯一事实/算法所有者。",
+      "derived_todo_line": 2498
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-017"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-017"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "从schema/capabilities生成可核查事实",
+        "更新安装/故障/默认离线说明"
+      ],
+      "original_acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V18",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "schema/capabilities可核查事实与安装/故障/默认离线契约同步；实现/设计分开且不漂移。",
+      "derived_todo_line": 2512
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-018"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-018"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "归档精确binary/checksum/manifest/raw/gates",
+        "latest只指向run"
+      ],
+      "original_acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "精确binary/checksum/manifest/raw/gates完整归档，报告可重算；latest指向run、历史不可覆盖。",
+      "derived_todo_line": 2526
+    },
+    {
+      "id": "P8-020",
+      "title": "P8发布评审与遗留关闭",
+      "original_status": "in_progress",
+      "hard_dependencies": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P8-015",
+          "when": "M4-semantic release; not required for M4-local"
+        }
+      ],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "G8按local/semantic能力分别审核",
+        "汇总风险、回滚和后续决策"
+      ],
+      "original_acceptance": [
+        "本次选择发布范围内blocker为0，其他证据不足明确列出",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V18",
+        "V19",
+        "V20",
+        "V21"
+      ],
+      "original_conditional": null,
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "所选local/semantic范围G8独审与风险/回滚收口，范围内blocker为0；semantic另需015。",
+      "derived_todo_line": 2540
+    },
+    {
+      "id": "P9-001",
+      "title": "ANN收益与选型决策",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P8-020"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-020"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "依据exact延迟/内存与doc规模比较候选backend",
+        "记录不选理由"
+      ],
+      "original_acceptance": [
+        "没有实测压力不先引入服务/依赖，决定可为deferred",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "基于exact实测延迟/内存/规模的ANN收益与选型；无压力不先引入依赖，可有证据地deferred。",
+      "derived_todo_line": 2557
+    },
+    {
+      "id": "P9-002",
+      "title": "ANN适配与过滤更新闭环",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-001"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-001"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "仅在选型通过后实现适配",
+        "验证过滤recall、insert/delete/tombstone"
+      ],
+      "original_acceptance": [
+        "不牺牲hard scope/版本正确性，近似不足有声明",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V16",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "选型通过后的ANN适配、filter recall、insert/delete/tombstone；hard scope/版本正确性。",
+      "derived_todo_line": 2570
+    },
+    {
+      "id": "P9-003",
+      "title": "ANN量化和规模认证",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-002"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-002"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "量化独立实验不更改exact oracle",
+        "测不同filter selectivity和cold加载"
+      ],
+      "original_acceptance": [
+        "与exact比较质量/资源/更新成本全报，不能只比unfiltered topk",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "独立量化、filter selectivity/cold加载，与exact完整比质量/资源/更新成本。",
+      "derived_todo_line": 2583
+    },
+    {
+      "id": "P9-004",
+      "title": "ANN决策收口",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-003"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-003"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "保留一种选定生产backend及exact",
+        "清试验依赖"
+      ],
+      "original_acceptance": [
+        "收益门未过恢复exact，未落地不标完成",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V21",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "仅保留选定backend+exact并清试验依赖；收益不足回exact，未落地不算实现完成。",
+      "derived_todo_line": 2596
+    },
+    {
+      "id": "P9-005",
+      "title": "LSP按需生命周期",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P8-020"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-020"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "参考Astrolabe pool的lazy/cooldown/idle/RSS/inflight generation",
+        "不默认全仓启动"
+      ],
+      "original_acceptance": [
+        "没有LSP仍全功能local可用，回收不打断健康请求",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "LSP lazy/cooldown/idle/RSS/inflight生命周期；无LSP仍local可用，回收不打断健康请求。",
+      "derived_todo_line": 2609
+    },
+    {
+      "id": "P9-006",
+      "title": "LSP源码快照和冲突表达",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-005"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-005"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "绑定document version/workspace",
+        "静态与LSP冲突并列记录"
+      ],
+      "original_acceptance": [
+        "不以LSP observation无条件覆盖持久化结构事实",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V09",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "LSP绑定document version/workspace；冲突并列，不无条件覆盖持久化事实。",
+      "derived_todo_line": 2622
+    },
+    {
+      "id": "P9-007",
+      "title": "LSP精度/内存收益认证",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-006"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-006"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "固定server版本，对歧义样本测精度、启动/idle成本与失败降级"
+      ],
+      "original_acceptance": [
+        "缓存/外部进程内存全计，收益不足可不开启",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V20",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "固定server版本的精度/启动/idle/失败降级收益，缓存与外部进程内存完整计入。",
+      "derived_todo_line": 2635
+    },
+    {
+      "id": "P9-008",
+      "title": "LSP工具面和安装边界收口",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-007"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-007"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "避免工具爆炸，优先precision选项",
+        "不自动下载执行未知server"
+      ],
+      "original_acceptance": [
+        "行为有明确capability/许可/配置，缺失可诊断",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V18",
+        "V21",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "有限工具面、precision选项、capability/许可/配置/缺失诊断；不自动执行未知server。",
+      "derived_todo_line": 2648
+    },
+    {
+      "id": "P9-009",
+      "title": "可选rerank端口与降级",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P8-020"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P8-020"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "限定候选/预算，保留原始相关性证据",
+        "错误回本地确定性排序"
+      ],
+      "original_acceptance": [
+        "模型不能捏造新文件/边，取消和fallback有状态",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V11",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "候选/预算边界和原证据保留，取消/fallback状态及确定性本地回退；不捏造文件/边。",
+      "derived_todo_line": 2661
+    },
+    {
+      "id": "P9-010",
+      "title": "rerank盲测与费用消融",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-009"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-009"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "固定候选池/模型/prompt，重复配对/holdout",
+        "source注入只当数据"
+      ],
+      "original_acceptance": [
+        "收益CI/成本/latency全报，不用单次分数启用默认模型",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V19",
+        "V20",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "固定候选/model/prompt的重复配对holdout；报告收益CI/费用/latency，注入文本只作数据。",
+      "derived_todo_line": 2674
+    },
+    {
+      "id": "P9-011",
+      "title": "按需查询分解收益决策",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-010"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-010"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "只对复杂任务测分解/facet召回",
+        "保持scope和总deadline"
+      ],
+      "original_acceptance": [
+        "不为每个查询调用LLM，收益不足维持原路径",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V19",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "复杂任务分解/facet召回收益决策，保留scope/总deadline；收益不足维持原路径。",
+      "derived_todo_line": 2687
+    },
+    {
+      "id": "P9-012",
+      "title": "P9可选增强逐项结项",
+      "original_status": "todo",
+      "hard_dependencies": [
+        "P9-001",
+        "P9-002",
+        "P9-003",
+        "P9-004",
+        "P9-005",
+        "P9-006",
+        "P9-007",
+        "P9-008",
+        "P9-009",
+        "P9-010",
+        "P9-011"
+      ],
+      "conditional_dependencies": [],
+      "uncompleted_direct_hard_dependencies": [
+        "P9-001",
+        "P9-002",
+        "P9-003",
+        "P9-004",
+        "P9-005",
+        "P9-006",
+        "P9-007",
+        "P9-008",
+        "P9-009",
+        "P9-010",
+        "P9-011"
+      ],
+      "hard_dependency_transitively_contains_scale_005": true,
+      "original_steps": [
+        "分别记录ANN/LSP/rerank启用或deferred",
+        "删除未选试验债务"
+      ],
+      "original_acceptance": [
+        "不将未选功能算实现完成，不阻断已通过主线发行",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "original_validations": [
+        "V21",
+        "V22"
+      ],
+      "original_conditional": "本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。",
+      "original_acceptance_subgates": null,
+      "acceptance_closeout_keypoints": "ANN/LSP/rerank逐项启用或有证据deferred，清未选债务；未选功能不算实现done。",
+      "derived_todo_line": 2700
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+--- intake_once.py
++++ intake_once.v2.py
+@@ -36,7 +36,11 @@
+                   stderr=stderr.decode("utf-8", "replace"))
+     with output.open("xb") as f:
+         f.write(stdout)
++    stderr_path = output.with_name(output.name + ".stderr")
++    with stderr_path.open("xb") as f:
++        f.write(stderr)
+     record["response_sha256"] = sha(output)
++    record["stderr_raw"] = {"path": stderr_path.name, "bytes": len(stderr), "sha256": sha(stderr_path)}
+     if timed_out or child.returncode != 0:
+         raise RuntimeError("GitHub GET failed; original response and integer exit retained")
+     return json.loads(stdout)
+@@ -66,6 +70,9 @@
+     seen = set()
+     for member in z.infolist():
+         name = member.filename
++        original_name = member.orig_filename
++        if "\x00" in original_name or original_name != name:
++            raise ValueError("NUL-truncated or changed archive member name")
+         p = PurePosixPath(name)
+         normalized = p.as_posix().rstrip("/")
+         if not name or "\\" in name or p.is_absolute() or ".." in p.parts or normalized in ("", "."):
+@@ -139,6 +146,22 @@
+               "run_status": run["status"], "run_conclusion": run.get("conclusion"), **totals,
+               "measurement_or_todo_credit": False})
+ 
++def verify_zip_identity(original, meta, out):
++    digest = sha(original)
++    expected = meta.get("digest")
++    verified = bool(expected and expected == "sha256:" + digest)
++    actual_size = original.stat().st_size
++    official_size = meta.get("size_in_bytes")
++    size_matches = type(official_size) is int and official_size >= 0 and actual_size == official_size
++    write_new(out / "zip-receipt.json", {"bytes": actual_size, "sha256": digest,
++              "github_digest": expected, "github_digest_matches": verified,
++              "api_size_in_bytes": official_size, "size_matches_api": size_matches})
++    if not size_matches:
++        raise ValueError("ZIP size differs from official metadata; original retained, not extracted")
++    if expected and not verified:
++        raise ValueError("ZIP digest mismatch; original bytes retained, not extracted")
++    return digest, verified
++
+ def receive(binding, artifact_id, out, calls):
+     run = api(f"/repos/{REPO}/actions/runs/{binding['run_id']}", out / "run-before.json", calls)
+     verify_run(run, binding)
+@@ -170,15 +193,7 @@
+         raise RuntimeError("Original ZIP transfer failed; partial bytes preserved without automatic retry")
+     original = out / "original.zip"
+     part.rename(original)
+-    digest = sha(original)
+-    expected = meta.get("digest")
+-    verified = bool(expected and expected == "sha256:" + digest)
+-    write_new(out / "zip-receipt.json", {"bytes": original.stat().st_size, "sha256": digest,
+-              "github_digest": expected, "github_digest_matches": verified,
+-              "api_size_in_bytes": meta["size_in_bytes"],
+-              "size_matches_api": original.stat().st_size == meta["size_in_bytes"]})
+-    if expected and not verified:
+-        raise ValueError("ZIP digest mismatch; original bytes retained, not extracted")
++    digest, verified = verify_zip_identity(original, meta, out)
+     members = extract_original(original, out / "extracted")
+     write_new(out / "members.json", {"members": members, "total_uncompressed_bytes": sum(x.get("bytes", 0) for x in members)})
+     after = api(f"/repos/{REPO}/actions/runs/{binding['run_id']}", out / "run-after.json", calls)
+@@ -218,7 +233,8 @@
+             receipt["status"] = "observation_recorded"
+         else:
+             receipt.update(receive(b, args.artifact_id, out, receipt["calls"]))
+-            receipt["status"] = "transport_received"
++            receipt["status"] = ("transport_received" if receipt["github_digest_verified"]
++                                 else "transport_received_digest_unavailable")
+     except Exception as error:
+         receipt.update(status="failed_retained", error=repr(error))
+         code = 1

@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "status": "accepted_source_observers_products_and_original_fault_test_execution",
+  "source_commit": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "source_tree": "9003d1383b4dbf148ac3aca30d00b5e8c06aaf48",
+  "input_count": 1090,
+  "artifact_id": 11601251523,
+  "original_zip_digest": "sha256:e101aafed2830206821abcb5d9dfeb7430f78ee4930b610aae45e37d5b386365",
+  "evidence_files": 495,
+  "source_observer_inputs": 7,
+  "products": {
+    "default": {
+      "source_commit": "9f7b16f0758eb79f306cf44605b84550f02de441",
+      "source_input_count": 1090,
+      "binary_sha256": "c63b8701e7d4d8c09c924c3b94ad55f9c38c1ddad854cdb39d7f870b9ef2cba3",
+      "binary_bytes": 67279056,
+      "features": [],
+      "build_exit_code": 0,
+      "cold_build_claim": false
+    },
+    "previous-default": {
+      "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "source_input_count": 704,
+      "binary_sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6",
+      "binary_bytes": 66413456,
+      "features": [],
+      "build_exit_code": 0,
+      "cold_build_claim": false
+    },
+    "semantic": {
+      "source_commit": "9f7b16f0758eb79f306cf44605b84550f02de441",
+      "source_input_count": 1090,
+      "binary_sha256": "f1fbcd15ce0854fa80949af046d3dcf847b1f92570ecdd900d6050a334b44c27",
+      "binary_bytes": 69351656,
+      "features": [
+        "semantic"
+      ],
+      "build_exit_code": 0,
+      "cold_build_claim": false
+    },
+    "semantic-http": {
+      "source_commit": "9f7b16f0758eb79f306cf44605b84550f02de441",
+      "source_input_count": 1090,
+      "binary_sha256": "e747fce59df14ea3b924d45200c7333a596d39313f5fd92d4305d91b4204e742",
+      "binary_bytes": 78940680,
+      "features": [
+        "semantic",
+        "semantic-http"
+      ],
+      "build_exit_code": 0,
+      "cold_build_claim": false
+    }
+  },
+  "original_tests": [
+    {
+      "test_name": "isolated_sigkill_reopen_replay_preparation",
+      "package": "cc-semantic",
+      "target": "p7_crash_preparation",
+      "test_binary_sha256": "0226a6766aae87a9a69c589baacec5d341eb6a110e459c930829177e70df48bf",
+      "cargo_fresh": false,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "548053b5382ea32e4d5fc29b68f03658bdc8d640a268cbcccfe47dab7d3ead6f"
+    },
+    {
+      "test_name": "independently_observed_sigkill_boundaries",
+      "package": "cc-semantic",
+      "target": "crash_independent_review",
+      "test_binary_sha256": "a4999371a6a6ed5caa461d969c853684f32f9bb75c19a8309b7364e71c0dafa2",
+      "cargo_fresh": false,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "e387b32ae9b52cdefd02166064d75f8dd1463a967995aa766d44484824fe5c74"
+    },
+    {
+      "test_name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+      "package": "cc-db",
+      "target": null,
+      "test_binary_sha256": "5b4b1175e91b044d63c8109f80807d1fb7948b282180ee56c46550468fdaf0ef",
+      "cargo_fresh": false,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "70a873c33c9ca4b354cbec74cd19c8ea2c56408404f8c39acb1a1cd1d9c967ef"
+    },
+    {
+      "test_name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+      "package": "cc-db",
+      "target": null,
+      "test_binary_sha256": "5b4b1175e91b044d63c8109f80807d1fb7948b282180ee56c46550468fdaf0ef",
+      "cargo_fresh": true,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "932b79bf49cb631faa4eec9c6208c8282529632e97ea0381d2e8b34a032d4ce0"
+    },
+    {
+      "test_name": "meta_tampering_is_detected_as_corrupt",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "test_binary_sha256": "cc8012e0a7ddfc8af50055beb9b2a141043238dbd98859f58898a4b4a6f88b55",
+      "cargo_fresh": false,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "20627d1e1d7ecbd143c7e0f7875928c0701103c7ac275fc4b180a4e9f2856747"
+    },
+    {
+      "test_name": "different_spaces_never_cross_hit",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "test_binary_sha256": "cc8012e0a7ddfc8af50055beb9b2a141043238dbd98859f58898a4b4a6f88b55",
+      "cargo_fresh": true,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "a58e3b6cd56c924805c24168400c5370cb96931b97b924e214dfb695b3eac00c"
+    },
+    {
+      "test_name": "namespaces_are_isolated",
+      "package": "cc-semantic",
+      "target": "artifact_cache",
+      "test_binary_sha256": "cc8012e0a7ddfc8af50055beb9b2a141043238dbd98859f58898a4b4a6f88b55",
+      "cargo_fresh": true,
+      "actual_test_exit_code": 0,
+      "stdout_sha256": "38cc2880797f7d021e03dc277c5922f0f4041f8eb443ed2936c155eafa775305"
+    }
+  ],
+  "remaining_scope": [
+    "Independent raw RPC/HTTP semantic event checks",
+    "Immutable DB/config/rollback snapshot checks"
+  ],
+  "limitations": [
+    "public source revisions and controlled schema injection are not a released-package pair",
+    "no power-loss, physical-device failure or real paid provider claim",
+    "global manifest readiness and per-query artifact coverage are verified separately"
+  ],
+  "todo_status_change": false
+}

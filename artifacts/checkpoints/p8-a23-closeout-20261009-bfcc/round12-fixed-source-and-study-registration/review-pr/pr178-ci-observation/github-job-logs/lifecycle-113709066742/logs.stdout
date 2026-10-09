@@ -1,0 +1,1218 @@
+﻿2026-10-09T07:12:32.4184738Z Current runner version: '2.337.0'
+2026-10-09T07:12:32.4210054Z ##[group]Runner Image Provisioner
+2026-10-09T07:12:32.4211397Z Hosted Compute Agent
+2026-10-09T07:12:32.4212460Z Version: 20261002.596
+2026-10-09T07:12:32.4213355Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T07:12:32.4214134Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T07:12:32.4214932Z Worker ID: {16539af9-fd66-4802-a616-c17deae03e25}
+2026-10-09T07:12:32.4215659Z Region: eastus2
+2026-10-09T07:12:32.4216243Z Cloud: Azure
+2026-10-09T07:12:32.4216855Z ##[endgroup]
+2026-10-09T07:12:32.4218550Z ##[group]Operating System
+2026-10-09T07:12:32.4219344Z Ubuntu
+2026-10-09T07:12:32.4219902Z 24.04.5
+2026-10-09T07:12:32.4220476Z LTS
+2026-10-09T07:12:32.4221062Z ##[endgroup]
+2026-10-09T07:12:32.4221643Z ##[group]Runner Image
+2026-10-09T07:12:32.4222330Z Image: ubuntu-24.04
+2026-10-09T07:12:32.4222925Z Version: 20261004.327.1
+2026-10-09T07:12:32.4224283Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T07:12:32.4225916Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T07:12:32.4226973Z ##[endgroup]
+2026-10-09T07:12:32.4228345Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T07:12:32.4230697Z Contents: read
+2026-10-09T07:12:32.4231337Z Metadata: read
+2026-10-09T07:12:32.4231920Z ##[endgroup]
+2026-10-09T07:12:32.4234104Z Secret source: Actions
+2026-10-09T07:12:32.4235068Z Cache mode: write
+2026-10-09T07:12:32.4236154Z Prepare workflow directory
+2026-10-09T07:12:32.4613223Z Prepare all required actions
+2026-10-09T07:12:32.4660324Z Getting action download info
+2026-10-09T07:12:32.6911416Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T07:12:32.7721103Z Download action repository 'dtolnay/rust-toolchain@1.95.0' (SHA:1d64bbcee8ef0c191a54710c227fd268a0d5014b)
+2026-10-09T07:12:32.9063839Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T07:12:33.1504959Z Complete job name: lifecycle
+2026-10-09T07:12:33.2274611Z ##[group]Run actions/checkout@v4
+2026-10-09T07:12:33.2275496Z with:
+2026-10-09T07:12:33.2276000Z   ref: 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:12:33.2276612Z   fetch-depth: 0
+2026-10-09T07:12:33.2277078Z   repository: jyqj/codecortex
+2026-10-09T07:12:33.2281074Z   token: ***
+2026-10-09T07:12:33.2281516Z   ssh-strict: true
+2026-10-09T07:12:33.2281965Z   ssh-user: git
+2026-10-09T07:12:33.2282412Z   persist-credentials: true
+2026-10-09T07:12:33.2282904Z   clean: true
+2026-10-09T07:12:33.2283354Z   sparse-checkout-cone-mode: true
+2026-10-09T07:12:33.2283878Z   fetch-tags: false
+2026-10-09T07:12:33.2284329Z   show-progress: true
+2026-10-09T07:12:33.2284776Z   lfs: false
+2026-10-09T07:12:33.2285190Z   submodules: false
+2026-10-09T07:12:33.2285653Z   set-safe-directory: true
+2026-10-09T07:12:33.2286168Z   allow-unsafe-pr-checkout: false
+2026-10-09T07:12:33.2286949Z env:
+2026-10-09T07:12:33.2287395Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:12:33.2287870Z   RUSTC_WRAPPER: 
+2026-10-09T07:12:33.2288523Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:12:33.2289016Z ##[endgroup]
+2026-10-09T07:12:33.3281555Z Syncing repository: jyqj/codecortex
+2026-10-09T07:12:33.3283701Z ##[group]Getting Git version info
+2026-10-09T07:12:33.3284493Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:12:33.3285531Z [command]/usr/bin/git version
+2026-10-09T07:12:33.3345707Z git version 2.55.0
+2026-10-09T07:12:33.3366916Z ##[endgroup]
+2026-10-09T07:12:33.3381411Z Temporarily overriding HOME='/home/runner/work/_temp/22982045-756b-4d7f-bb75-c6ab169dce16' before making global git config changes
+2026-10-09T07:12:33.3383385Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:12:33.3386198Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:12:33.3432251Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:12:33.3436385Z ##[group]Initializing the repository
+2026-10-09T07:12:33.3440475Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T07:12:33.3547459Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T07:12:33.3549257Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T07:12:33.3550255Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T07:12:33.3551042Z hint: call:
+2026-10-09T07:12:33.3551714Z hint:
+2026-10-09T07:12:33.3552695Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T07:12:33.3553564Z hint:
+2026-10-09T07:12:33.3554688Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T07:12:33.3556516Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T07:12:33.3558166Z hint:
+2026-10-09T07:12:33.3559021Z hint: 	git branch -m <name>
+2026-10-09T07:12:33.3560030Z hint:
+2026-10-09T07:12:33.3561302Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T07:12:33.3563356Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T07:12:33.3566360Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T07:12:33.3609544Z ##[endgroup]
+2026-10-09T07:12:33.3610904Z ##[group]Disabling automatic garbage collection
+2026-10-09T07:12:33.3613511Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T07:12:33.3643804Z ##[endgroup]
+2026-10-09T07:12:33.3645158Z ##[group]Setting up auth
+2026-10-09T07:12:33.3651159Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:12:33.3683010Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:12:33.4016777Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:12:33.4048535Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:12:33.4272480Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:12:33.4309025Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:12:33.4543305Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T07:12:33.4579796Z ##[endgroup]
+2026-10-09T07:12:33.4581221Z ##[group]Fetching the repository
+2026-10-09T07:12:33.4589776Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-09T07:13:02.4275628Z From https://github.com/jyqj/codecortex
+2026-10-09T07:13:02.4277892Z  * [new branch]        audit/p8-a23-original-readback-28fe-20261009 -> origin/audit/p8-a23-original-readback-28fe-20261009
+2026-10-09T07:13:02.4280357Z  * [new branch]        audit/p8-a23-original-readback-28fe-a2-20261009 -> origin/audit/p8-a23-original-readback-28fe-a2-20261009
+2026-10-09T07:13:02.4282200Z  * [new branch]        audit/p8-mac-diag-readback-28fe-20261009 -> origin/audit/p8-mac-diag-readback-28fe-20261009
+2026-10-09T07:13:02.4283572Z  * [new branch]        audit/p8-scale-100k-terminal-28fe-20261009 -> origin/audit/p8-scale-100k-terminal-28fe-20261009
+2026-10-09T07:13:02.4285041Z  * [new branch]        audit/public-dev-kind-review-20261003 -> origin/audit/public-dev-kind-review-20261003
+2026-10-09T07:13:02.4286648Z  * [new branch]        audit/public-dev-pygo-v2-independent-20261003 -> origin/audit/public-dev-pygo-v2-independent-20261003
+2026-10-09T07:13:02.4288215Z  * [new branch]        audit/v19-development-baseline -> origin/audit/v19-development-baseline
+2026-10-09T07:13:02.4289702Z  * [new branch]        audit/v19-four-repo-dev-admission -> origin/audit/v19-four-repo-dev-admission
+2026-10-09T07:13:02.4290875Z  * [new branch]        audit/v19-gin-dev-admission -> origin/audit/v19-gin-dev-admission
+2026-10-09T07:13:02.4291978Z  * [new branch]        audit/v19-global-protocol -> origin/audit/v19-global-protocol
+2026-10-09T07:13:02.4293166Z  * [new branch]        audit/v19-public-corpus-readiness -> origin/audit/v19-public-corpus-readiness
+2026-10-09T07:13:02.4294431Z  * [new branch]        audit/v19-public-index-failure-diagnosis -> origin/audit/v19-public-index-failure-diagnosis
+2026-10-09T07:13:02.4295623Z  * [new branch]        audit/v19-two-repo-admission -> origin/audit/v19-two-repo-admission
+2026-10-09T07:13:02.4297064Z  * [new branch]        audit/v24-failure-triage-20261003 -> origin/audit/v24-failure-triage-20261003
+2026-10-09T07:13:02.4298580Z  * [new branch]        backfill-phase-costs-v2-20261003 -> origin/backfill-phase-costs-v2-20261003
+2026-10-09T07:13:02.4299881Z  * [new branch]        candidate/integrate-gate-parallel-retry-20261003 -> origin/candidate/integrate-gate-parallel-retry-20261003
+2026-10-09T07:13:02.4301588Z  * [new branch]        candidate/integrate-startup-gate-parallel-retry-20261003 -> origin/candidate/integrate-startup-gate-parallel-retry-20261003
+2026-10-09T07:13:02.4302878Z  * [new branch]        candidate/pr123-attempt-pipeline -> origin/candidate/pr123-attempt-pipeline
+2026-10-09T07:13:02.4304404Z  * [new branch]        capability-snapshot-optimization-20261003 -> origin/capability-snapshot-optimization-20261003
+2026-10-09T07:13:02.4305641Z  * [new branch]        cloud/cc-search-budget-diagnostic -> origin/cloud/cc-search-budget-diagnostic
+2026-10-09T07:13:02.4306961Z  * [new branch]        codecortex-source-registry-v6-20261006-r1 -> origin/codecortex-source-registry-v6-20261006-r1
+2026-10-09T07:13:02.4308631Z  * [new branch]        codex/bounded-db-publication -> origin/codex/bounded-db-publication
+2026-10-09T07:13:02.4310333Z  * [new branch]        codex/cloud-cache-key-review -> origin/codex/cloud-cache-key-review
+2026-10-09T07:13:02.4311768Z  * [new branch]        codex/cloud-cross-build-validation -> origin/codex/cloud-cross-build-validation
+2026-10-09T07:13:02.4313189Z  * [new branch]        codex/cloud-dependency-security -> origin/codex/cloud-dependency-security
+2026-10-09T07:13:02.4314712Z  * [new branch]        codex/cloud-express-dev-review -> origin/codex/cloud-express-dev-review
+2026-10-09T07:13:02.4316149Z  * [new branch]        codex/cloud-express-repair-review -> origin/codex/cloud-express-repair-review
+2026-10-09T07:13:02.4317524Z  * [new branch]        codex/cloud-gin-dev-review -> origin/codex/cloud-gin-dev-review
+2026-10-09T07:13:02.4319558Z  * [new branch]        codex/cloud-gin-repair-review -> origin/codex/cloud-gin-repair-review
+2026-10-09T07:13:02.4321185Z  * [new branch]        codex/cloud-index-fix-integration -> origin/codex/cloud-index-fix-integration
+2026-10-09T07:13:02.4322809Z  * [new branch]        codex/cloud-p0-corpus-lock-repair -> origin/codex/cloud-p0-corpus-lock-repair
+2026-10-09T07:13:02.4324114Z  * [new branch]        codex/cloud-p0-gold-bounded-audit -> origin/codex/cloud-p0-gold-bounded-audit
+2026-10-09T07:13:02.4325386Z  * [new branch]        codex/cloud-p7-014-integration -> origin/codex/cloud-p7-014-integration
+2026-10-09T07:13:02.4326629Z  * [new branch]        codex/cloud-p7-014-lifecycle -> origin/codex/cloud-p7-014-lifecycle
+2026-10-09T07:13:02.4327836Z  * [new branch]        codex/cloud-p7-baseline-diagnosis -> origin/codex/cloud-p7-baseline-diagnosis
+2026-10-09T07:13:02.4329057Z  * [new branch]        codex/cloud-p7-cache-identity-review -> origin/codex/cloud-p7-cache-identity-review
+2026-10-09T07:13:02.4329839Z  * [new branch]        codex/cloud-p7-contention-validation -> origin/codex/cloud-p7-contention-validation
+2026-10-09T07:13:02.4330863Z  * [new branch]        codex/cloud-p7-crash-preparation -> origin/codex/cloud-p7-crash-preparation
+2026-10-09T07:13:02.4332071Z  * [new branch]        codex/cloud-p7-empty-test-independent-review -> origin/codex/cloud-p7-empty-test-independent-review
+2026-10-09T07:13:02.4332917Z  * [new branch]        codex/cloud-p7-empty-test-population -> origin/codex/cloud-p7-empty-test-population
+2026-10-09T07:13:02.4333728Z  * [new branch]        codex/cloud-p7-fixture-marker-publication -> origin/codex/cloud-p7-fixture-marker-publication
+2026-10-09T07:13:02.4334498Z  * [new branch]        codex/cloud-p7-formal-gate-scope -> origin/codex/cloud-p7-formal-gate-scope
+2026-10-09T07:13:02.4335123Z  * [new branch]        codex/cloud-p7-integration -> origin/codex/cloud-p7-integration
+2026-10-09T07:13:02.4335768Z  * [new branch]        codex/cloud-p7-integration-format -> origin/codex/cloud-p7-integration-format
+2026-10-09T07:13:02.4336663Z  * [new branch]        codex/cloud-p7-integration-review-base -> origin/codex/cloud-p7-integration-review-base
+2026-10-09T07:13:02.4337909Z  * [new branch]        codex/cloud-p7-lifecycle-fences -> origin/codex/cloud-p7-lifecycle-fences
+2026-10-09T07:13:02.4338929Z  * [new branch]        codex/cloud-p7-model-transition -> origin/codex/cloud-p7-model-transition
+2026-10-09T07:13:02.4339647Z  * [new branch]        codex/cloud-p7-query-encoding-service -> origin/codex/cloud-p7-query-encoding-service
+2026-10-09T07:13:02.4340429Z  * [new branch]        codex/cloud-p7-query-optin-integration -> origin/codex/cloud-p7-query-optin-integration
+2026-10-09T07:13:02.4341149Z  * [new branch]        codex/cloud-p7-query-production -> origin/codex/cloud-p7-query-production
+2026-10-09T07:13:02.4341844Z  * [new branch]        codex/cloud-p7-recovery-integration -> origin/codex/cloud-p7-recovery-integration
+2026-10-09T07:13:02.4342662Z  * [new branch]        codex/cloud-p7-recovery-lifecycle-review-base -> origin/codex/cloud-p7-recovery-lifecycle-review-base
+2026-10-09T07:13:02.4343614Z  * [new branch]        codex/cloud-p7-recovery-query-cache-review-base -> origin/codex/cloud-p7-recovery-query-cache-review-base
+2026-10-09T07:13:02.4344872Z  * [new branch]        codex/cloud-p7-recovery-retry-review-base -> origin/codex/cloud-p7-recovery-retry-review-base
+2026-10-09T07:13:02.4345721Z  * [new branch]        codex/cloud-p7-recovery-worker-review-base -> origin/codex/cloud-p7-recovery-worker-review-base
+2026-10-09T07:13:02.4346535Z  * [new branch]        codex/cloud-p7-release-resource-large -> origin/codex/cloud-p7-release-resource-large
+2026-10-09T07:13:02.4347291Z  * [new branch]        codex/cloud-p7-release-resource-small -> origin/codex/cloud-p7-release-resource-small
+2026-10-09T07:13:02.4348409Z  * [new branch]        codex/cloud-p7-resource-hotspot-diagnostic -> origin/codex/cloud-p7-resource-hotspot-diagnostic
+2026-10-09T07:13:02.4349215Z  * [new branch]        codex/cloud-p7-resource-prepared -> origin/codex/cloud-p7-resource-prepared
+2026-10-09T07:13:02.4350097Z  * [new branch]        codex/cloud-p7-resource-review-intake -> origin/codex/cloud-p7-resource-review-intake
+2026-10-09T07:13:02.4350873Z  * [new branch]        codex/cloud-p7-seed-bind-limit -> origin/codex/cloud-p7-seed-bind-limit
+2026-10-09T07:13:02.4351585Z  * [new branch]        codex/cloud-p7-staging-gc-prepared -> origin/codex/cloud-p7-staging-gc-prepared
+2026-10-09T07:13:02.4352265Z  * [new branch]        codex/cloud-p7-test-isolation -> origin/codex/cloud-p7-test-isolation
+2026-10-09T07:13:02.4352917Z  * [new branch]        codex/cloud-p7-v05-public-scope -> origin/codex/cloud-p7-v05-public-scope
+2026-10-09T07:13:02.4353625Z  * [new branch]        codex/cloud-p7-v11-cache-consumption -> origin/codex/cloud-p7-v11-cache-consumption
+2026-10-09T07:13:02.4354360Z  * [new branch]        codex/cloud-p7-v11-cache-key-matrix -> origin/codex/cloud-p7-v11-cache-key-matrix
+2026-10-09T07:13:02.4355132Z  * [new branch]        codex/cloud-p7-v11-generation-contract -> origin/codex/cloud-p7-v11-generation-contract
+2026-10-09T07:13:02.4355940Z  * [new branch]        codex/cloud-p7-v11-generation-snapshot-fix -> origin/codex/cloud-p7-v11-generation-snapshot-fix
+2026-10-09T07:13:02.4356899Z  * [new branch]        codex/cloud-p7-v16-offline-oracle -> origin/codex/cloud-p7-v16-offline-oracle
+2026-10-09T07:13:02.4357610Z  * [new branch]        codex/cloud-p7-v18-fault-contract -> origin/codex/cloud-p7-v18-fault-contract
+2026-10-09T07:13:02.4358759Z  * [new branch]        codex/cloud-p7-v18-integration -> origin/codex/cloud-p7-v18-integration
+2026-10-09T07:13:02.4359756Z  * [new branch]        codex/cloud-p7-v19-current-local -> origin/codex/cloud-p7-v19-current-local
+2026-10-09T07:13:02.4360458Z  * [new branch]        codex/cloud-semantic-chunk-lints -> origin/codex/cloud-semantic-chunk-lints
+2026-10-09T07:13:02.4361184Z  * [new branch]        codex/cloud-semantic-http-transport -> origin/codex/cloud-semantic-http-transport
+2026-10-09T07:13:02.4361980Z  * [new branch]        codex/cloud-semantic-provider-factory -> origin/codex/cloud-semantic-provider-factory
+2026-10-09T07:13:02.4362703Z  * [new branch]        codex/cloud-semantic-test-lints -> origin/codex/cloud-semantic-test-lints
+2026-10-09T07:13:02.4363401Z  * [new branch]        codex/cloud-typescript-dev-review -> origin/codex/cloud-typescript-dev-review
+2026-10-09T07:13:02.4364164Z  * [new branch]        codex/cloud-typescript-remaining-review -> origin/codex/cloud-typescript-remaining-review
+2026-10-09T07:13:02.4364930Z  * [new branch]        codex/cloud-v11-consumption-review -> origin/codex/cloud-v11-consumption-review
+2026-10-09T07:13:02.4365766Z  * [new branch]        codex/cloud-v16-cache-read-bounds -> origin/codex/cloud-v16-cache-read-bounds
+2026-10-09T07:13:02.4366481Z  * [new branch]        codex/cloud-v16-resource-validation -> origin/codex/cloud-v16-resource-validation
+2026-10-09T07:13:02.4367182Z  * [new branch]        codex/cloud-verified-chunk-qname -> origin/codex/cloud-verified-chunk-qname
+2026-10-09T07:13:02.4368156Z  * [new branch]        codex/native-adapter-diagnostic-20261003 -> origin/codex/native-adapter-diagnostic-20261003
+2026-10-09T07:13:02.4368937Z  * [new branch]        codex/packing-scope-v1-20261003 -> origin/codex/packing-scope-v1-20261003
+2026-10-09T07:13:02.4369751Z  * [new branch]        codex/python-root-provenance -> origin/codex/python-root-provenance
+2026-10-09T07:13:02.4370422Z  * [new branch]        codex/qname-packing-100k-20261004 -> origin/codex/qname-packing-100k-20261004
+2026-10-09T07:13:02.4371042Z  * [new branch]        corpus/v19-express-100  -> origin/corpus/v19-express-100
+2026-10-09T07:13:02.4371586Z  * [new branch]        corpus/v19-express-author -> origin/corpus/v19-express-author
+2026-10-09T07:13:02.4372228Z  * [new branch]        corpus/v19-express-dev-review-fixes -> origin/corpus/v19-express-dev-review-fixes
+2026-10-09T07:13:02.4372936Z  * [new branch]        corpus/v19-express-dev-supplement -> origin/corpus/v19-express-dev-supplement
+2026-10-09T07:13:02.4373546Z  * [new branch]        corpus/v19-gin-author   -> origin/corpus/v19-gin-author
+2026-10-09T07:13:02.4374090Z  * [new branch]        corpus/v19-requests-author -> origin/corpus/v19-requests-author
+2026-10-09T07:13:02.4374739Z  * [new branch]        corpus/v19-requests-dev-extension -> origin/corpus/v19-requests-dev-extension
+2026-10-09T07:13:02.4375417Z  * [new branch]        corpus/v19-requests-f0022-scope -> origin/corpus/v19-requests-f0022-scope
+2026-10-09T07:13:02.4376031Z  * [new branch]        corpus/v19-requests-license -> origin/corpus/v19-requests-license
+2026-10-09T07:13:02.4376631Z  * [new branch]        corpus/v19-typescript-author -> origin/corpus/v19-typescript-author
+2026-10-09T07:13:02.4377314Z  * [new branch]        cursor/deep-index-optimization-1dab -> origin/cursor/deep-index-optimization-1dab
+2026-10-09T07:13:02.4378436Z  * [new branch]        design/batched-cache-durability-20261003 -> origin/design/batched-cache-durability-20261003
+2026-10-09T07:13:02.4379324Z  * [new branch]        dev-corpus-lock-reconcile-20261003 -> origin/dev-corpus-lock-reconcile-20261003
+2026-10-09T07:13:02.4380022Z  * [new branch]        dev-paired-requests-20261004 -> origin/dev-paired-requests-20261004
+2026-10-09T07:13:02.4380867Z  * [new branch]        diag/cache-put-costs-20261003 -> origin/diag/cache-put-costs-20261003
+2026-10-09T07:13:02.4381592Z  * [new branch]        diag/p5e-fixed-boundary-review-20261003 -> origin/diag/p5e-fixed-boundary-review-20261003
+2026-10-09T07:13:02.4382338Z  * [new branch]        diag/p5e-stage-receipts-20261003 -> origin/diag/p5e-stage-receipts-20261003
+2026-10-09T07:13:02.4383066Z  * [new branch]        diagnose/p8-mac-supervisor-28fe-20261009 -> origin/diagnose/p8-mac-supervisor-28fe-20261009
+2026-10-09T07:13:02.4383879Z  * [new branch]        diagnostics/gin-native-regression-20261004 -> origin/diagnostics/gin-native-regression-20261004
+2026-10-09T07:13:02.4384696Z  * [new branch]        diagnostics/requests-native-zero-20261004 -> origin/diagnostics/requests-native-zero-20261004
+2026-10-09T07:13:02.4385487Z  * [new branch]        dot/cpp-cvref-fts-v28-20261006-e7745566 -> origin/dot/cpp-cvref-fts-v28-20261006-e7745566
+2026-10-09T07:13:02.4386327Z  * [new branch]        dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55 -> origin/dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55
+2026-10-09T07:13:02.4387828Z  * [new branch]        eval/public-dev-declaration-kind-v2-admission -> origin/eval/public-dev-declaration-kind-v2-admission
+2026-10-09T07:13:02.4389331Z  * [new branch]        evidence/baseline-cloud-20261003-build-blocked -> origin/evidence/baseline-cloud-20261003-build-blocked
+2026-10-09T07:13:02.4390391Z  * [new branch]        evidence/candidate-100k-gate-20261003 -> origin/evidence/candidate-100k-gate-20261003
+2026-10-09T07:13:02.4391199Z  * [new branch]        evidence/independent-100k-release-20261003 -> origin/evidence/independent-100k-release-20261003
+2026-10-09T07:13:02.4392025Z  * [new branch]        evidence/localwidth4-100k-paired-20261003 -> origin/evidence/localwidth4-100k-paired-20261003
+2026-10-09T07:13:02.4392886Z  * [new branch]        evidence/p8-round19-pr-management-28fe-20261009 -> origin/evidence/p8-round19-pr-management-28fe-20261009
+2026-10-09T07:13:02.4394351Z  * [new branch]        evidence/parallel-startup-100k-paired-20261003 -> origin/evidence/parallel-startup-100k-paired-20261003
+2026-10-09T07:13:02.4395341Z  * [new branch]        evidence/public-dev-current-group-js-20261003 -> origin/evidence/public-dev-current-group-js-20261003
+2026-10-09T07:13:02.4396229Z  * [new branch]        evidence/public-dev-paired-express-20261004 -> origin/evidence/public-dev-paired-express-20261004
+2026-10-09T07:13:02.4397056Z  * [new branch]        evidence/public-dev-paired-gin-20261004 -> origin/evidence/public-dev-paired-gin-20261004
+2026-10-09T07:13:02.4398070Z  * [new branch]        evidence/public-dev-paired-typescript-20261004 -> origin/evidence/public-dev-paired-typescript-20261004
+2026-10-09T07:13:02.4399426Z  * [new branch]        feat/declaration-identity-resource-contract-20261004 -> origin/feat/declaration-identity-resource-contract-20261004
+2026-10-09T07:13:02.4400342Z  * [new branch]        feat/final-validation-work-20261007 -> origin/feat/final-validation-work-20261007
+2026-10-09T07:13:02.4401157Z  * [new branch]        feat/p7-engineering-reviewed-union-20261007 -> origin/feat/p7-engineering-reviewed-union-20261007
+2026-10-09T07:13:02.4401944Z  * [new branch]        feat/p7-gc-unlink-reviewed-20261007 -> origin/feat/p7-gc-unlink-reviewed-20261007
+2026-10-09T07:13:02.4402813Z  * [new branch]        feat/p7-semantic-coverage-retention-reviewed-20261007 -> origin/feat/p7-semantic-coverage-retention-reviewed-20261007
+2026-10-09T07:13:02.4403752Z  * [new branch]        feat/p7-strategy-ablation-reviewed-20261007 -> origin/feat/p7-strategy-ablation-reviewed-20261007
+2026-10-09T07:13:02.4404599Z  * [new branch]        feat/python-capture-revalidation-20261007 -> origin/feat/python-capture-revalidation-20261007
+2026-10-09T07:13:02.4405355Z  * [new branch]        feat/python-declaration-adapter -> origin/feat/python-declaration-adapter
+2026-10-09T07:13:02.4406052Z  * [new branch]        fifo-100k-paired-decision-20261003 -> origin/fifo-100k-paired-decision-20261003
+2026-10-09T07:13:02.4406858Z  * [new branch]        fix/ci-schema-v25-contract -> origin/fix/ci-schema-v25-contract
+2026-10-09T07:13:02.4407542Z  * [new branch]        fix/contextual-member-ranking-20261004 -> origin/fix/contextual-member-ranking-20261004
+2026-10-09T07:13:02.4408393Z  * [new branch]        fix/cpp-boundary-declarator -> origin/fix/cpp-boundary-declarator
+2026-10-09T07:13:02.4409147Z  * [new branch]        fix/cpp-namespace-function-identity-20261005 -> origin/fix/cpp-namespace-function-identity-20261005
+2026-10-09T07:13:02.4410041Z  * [new branch]        fix/cpp-namespace-source-registry-v5-20261005 -> origin/fix/cpp-namespace-source-registry-v5-20261005
+2026-10-09T07:13:02.4410835Z  * [new branch]        fix/direct-writer-schema-20261003 -> origin/fix/direct-writer-schema-20261003
+2026-10-09T07:13:02.4411477Z  * [new branch]        fix/go-nested-call-identity -> origin/fix/go-nested-call-identity
+2026-10-09T07:13:02.4412123Z  * [new branch]        fix/hydration-fence-completeness -> origin/fix/hydration-fence-completeness
+2026-10-09T07:13:02.4412808Z  * [new branch]        fix/mcp-startup-project-errors -> origin/fix/mcp-startup-project-errors
+2026-10-09T07:13:02.4413529Z  * [new branch]        fix/member-source-registry-v4-20261005 -> origin/fix/member-source-registry-v4-20261005
+2026-10-09T07:13:02.4414327Z  * [new branch]        fix/nonembedding-facts-and-benchmark-v3 -> origin/fix/nonembedding-facts-and-benchmark-v3
+2026-10-09T07:13:02.4415129Z  * [new branch]        fix/nonembedding-facts-quality-20260906 -> origin/fix/nonembedding-facts-quality-20260906
+2026-10-09T07:13:02.4415930Z  * [new branch]        fix/nonembedding-facts-verified-20260906 -> origin/fix/nonembedding-facts-verified-20260906
+2026-10-09T07:13:02.4416641Z  * [new branch]        fix/p7-011-language-coverage -> origin/fix/p7-011-language-coverage
+2026-10-09T07:13:02.4417241Z  * [new branch]        fix/p7-013-cancellable-exact -> origin/fix/p7-013-cancellable-exact
+2026-10-09T07:13:02.4417830Z  * [new branch]        fix/p7-017-ci-build-receipt -> origin/fix/p7-017-ci-build-receipt
+2026-10-09T07:13:02.4418828Z  * [new branch]        fix/p7-ci-architecture-guards -> origin/fix/p7-ci-architecture-guards
+2026-10-09T07:13:02.4419484Z  * [new branch]        fix/p7-linux-process-sampler -> origin/fix/p7-linux-process-sampler
+2026-10-09T07:13:02.4420175Z  * [new branch]        fix/parallel-retry-progress-20261003 -> origin/fix/parallel-retry-progress-20261003
+2026-10-09T07:13:02.4421329Z  * [new branch]        fix/pr126-harness-observation -> origin/fix/pr126-harness-observation
+2026-10-09T07:13:02.4421986Z  * [new branch]        fix/python-declaration-kind -> origin/fix/python-declaration-kind
+2026-10-09T07:13:02.4422580Z  * [new branch]        fix/query-target-controls -> origin/fix/query-target-controls
+2026-10-09T07:13:02.4423236Z  * [new branch]        fix/schema-contract-cleanup-20261003 -> origin/fix/schema-contract-cleanup-20261003
+2026-10-09T07:13:02.4424022Z  * [new branch]        fix/semantic-http-ci-regression-20261003 -> origin/fix/semantic-http-ci-regression-20261003
+2026-10-09T07:13:02.4424881Z  * [new branch]        fix/shared-provider-gate-20261003 -> origin/fix/shared-provider-gate-20261003
+2026-10-09T07:13:02.4425913Z  * [new branch]        fix/type-atom-identifier-regression -> origin/fix/type-atom-identifier-regression
+2026-10-09T07:13:02.4426644Z  * [new branch]        fix/v19-requests-type-dependency -> origin/fix/v19-requests-type-dependency
+2026-10-09T07:13:02.4427293Z  * [new branch]        harness/reusable-100k-driver -> origin/harness/reusable-100k-driver
+2026-10-09T07:13:02.4428191Z  * [new branch]        independent-capability-v2-review-20261003 -> origin/independent-capability-v2-review-20261003
+2026-10-09T07:13:02.4429043Z  * [new branch]        independent-go-call-fix-review-20261003 -> origin/independent-go-call-fix-review-20261003
+2026-10-09T07:13:02.4429821Z  * [new branch]        independent-v2-100k-release-20261003 -> origin/independent-v2-100k-release-20261003
+2026-10-09T07:13:02.4430754Z  * [new branch]        integrate/p8-surface-mac-28fe-20261009 -> origin/integrate/p8-surface-mac-28fe-20261009
+2026-10-09T07:13:02.4431726Z  * [new branch]        integration/bounded-groundwork-20261004 -> origin/integration/bounded-groundwork-20261004
+2026-10-09T07:13:02.4432457Z  * [new branch]        integration/ci-contract-20261003 -> origin/integration/ci-contract-20261003
+2026-10-09T07:13:02.4433186Z  * [new branch]        integration/localwidth4-fixed-e3-20261003 -> origin/integration/localwidth4-fixed-e3-20261003
+2026-10-09T07:13:02.4433967Z  * [new branch]        integration/packing-evidence-20261003 -> origin/integration/packing-evidence-20261003
+2026-10-09T07:13:02.4434752Z  * [new branch]        integration/python-inventory-capture-v2 -> origin/integration/python-inventory-capture-v2
+2026-10-09T07:13:02.4435591Z  * [new branch]        integration/python-resource-contract-20261004 -> origin/integration/python-resource-contract-20261004
+2026-10-09T07:13:02.4436446Z  * [new branch]        integration/query-owner-context-v3-20261004 -> origin/integration/query-owner-context-v3-20261004
+2026-10-09T07:13:02.4437086Z  * [new branch]        main                    -> origin/main
+2026-10-09T07:13:02.4437765Z  * [new branch]        opt/code-index-benchmark-v2-20260906 -> origin/opt/code-index-benchmark-v2-20260906
+2026-10-09T07:13:02.4439203Z  * [new branch]        opt/python-inventory-capture -> origin/opt/python-inventory-capture
+2026-10-09T07:13:02.4440024Z  * [new branch]        perf/backfill-cost-breakdown-20261003 -> origin/perf/backfill-cost-breakdown-20261003
+2026-10-09T07:13:02.4440970Z  * [new branch]        perf/bounded-parallel-backfill-20261003 -> origin/perf/bounded-parallel-backfill-20261003
+2026-10-09T07:13:02.4442276Z  * [new branch]        perf/fifo-claim-index-20261003 -> origin/perf/fifo-claim-index-20261003
+2026-10-09T07:13:02.4443592Z  * [new branch]        prototype/source-declaration-identity-v1 -> origin/prototype/source-declaration-identity-v1
+2026-10-09T07:13:02.4444984Z  * [new branch]        public-dev-current-group-pygo-20261003 -> origin/public-dev-current-group-pygo-20261003
+2026-10-09T07:13:02.4446149Z  * [new branch]        public-dev-declaration-kind-v2-candidate-20261003 -> origin/public-dev-declaration-kind-v2-candidate-20261003
+2026-10-09T07:13:02.4448193Z  * [new branch]        review/context-owner-closing-qualifiers-20261004 -> origin/review/context-owner-closing-qualifiers-20261004
+2026-10-09T07:13:02.4449217Z  * [new branch]        review/context-owner-comparison-guard-20261004 -> origin/review/context-owner-comparison-guard-20261004
+2026-10-09T07:13:02.4450121Z  * [new branch]        review/context-owner-lexical-spans-20261004 -> origin/review/context-owner-lexical-spans-20261004
+2026-10-09T07:13:02.4451024Z  * [new branch]        review/context-owner-source-boundaries-20261004 -> origin/review/context-owner-source-boundaries-20261004
+2026-10-09T07:13:02.4451965Z  * [new branch]        review/declaration-identity-independent-20261004 -> origin/review/declaration-identity-independent-20261004
+2026-10-09T07:13:02.4452866Z  * [new branch]        review/declaration-resource-independent -> origin/review/declaration-resource-independent
+2026-10-09T07:13:02.4453728Z  * [new branch]        review/independent-closing-qualifiers-20261004 -> origin/review/independent-closing-qualifiers-20261004
+2026-10-09T07:13:02.4454618Z  * [new branch]        review/independent-comparison-guard-20261004 -> origin/review/independent-comparison-guard-20261004
+2026-10-09T07:13:02.4455468Z  * [new branch]        review/independent-direct-writer-20261003 -> origin/review/independent-direct-writer-20261003
+2026-10-09T07:13:02.4456315Z  * [new branch]        review/independent-e3-runtime-cache-20261003 -> origin/review/independent-e3-runtime-cache-20261003
+2026-10-09T07:13:02.4457134Z  * [new branch]        review/independent-fifo-claim-20261003 -> origin/review/independent-fifo-claim-20261003
+2026-10-09T07:13:02.4458060Z  * [new branch]        review/independent-lexical-spans-20261004 -> origin/review/independent-lexical-spans-20261004
+2026-10-09T07:13:02.4459202Z  * [new branch]        review/independent-parallel-drain-20261003 -> origin/review/independent-parallel-drain-20261003
+2026-10-09T07:13:02.4460045Z  * [new branch]        review/independent-requests-fix-20261003 -> origin/review/independent-requests-fix-20261003
+2026-10-09T07:13:02.4460871Z  * [new branch]        review/independent-retry-liveness-20261003 -> origin/review/independent-retry-liveness-20261003
+2026-10-09T07:13:02.4461745Z  * [new branch]        review/independent-source-boundaries-20261004 -> origin/review/independent-source-boundaries-20261004
+2026-10-09T07:13:02.4462638Z  * [new branch]        review/independent-v24-migration-20261003 -> origin/review/independent-v24-migration-20261003
+2026-10-09T07:13:02.4463400Z  * [new branch]        review/manual-v24-evidence-20261003 -> origin/review/manual-v24-evidence-20261003
+2026-10-09T07:13:02.4464061Z  * [new branch]        review/p7-crash-independent -> origin/review/p7-crash-independent
+2026-10-09T07:13:02.4464666Z  * [new branch]        review/p7-gc-unlink-20261007 -> origin/review/p7-gc-unlink-20261007
+2026-10-09T07:13:02.4465428Z  * [new branch]        review/p7-semantic-coverage-retention-20261007 -> origin/review/p7-semantic-coverage-retention-20261007
+2026-10-09T07:13:02.4466218Z  * [new branch]        review/p7-staging-gc-independent -> origin/review/p7-staging-gc-independent
+2026-10-09T07:13:02.4466926Z  * [new branch]        review/p7-strategy-ablation-20261007 -> origin/review/p7-strategy-ablation-20261007
+2026-10-09T07:13:02.4467678Z  * [new branch]        review/p7-worker-contention-20261007 -> origin/review/p7-worker-contention-20261007
+2026-10-09T07:13:02.4468539Z  * [new branch]        review/p8-leaf-on-a23-28fe-20261009 -> origin/review/p8-leaf-on-a23-28fe-20261009
+2026-10-09T07:13:02.4469249Z  * [new branch]        review/pr127-independent-20261003 -> origin/review/pr127-independent-20261003
+2026-10-09T07:13:02.4469943Z  * [new branch]        review/public-v19-requests-delta -> origin/review/public-v19-requests-delta
+2026-10-09T07:13:02.4470743Z  * [new branch]        review/public-v19-requests-dev -> origin/review/public-v19-requests-dev
+2026-10-09T07:13:02.4471455Z  * [new branch]        review/public-v19-requests-remaining -> origin/review/public-v19-requests-remaining
+2026-10-09T07:13:02.4472196Z  * [new branch]        review/python-identity-independent -> origin/review/python-identity-independent
+2026-10-09T07:13:02.4472948Z  * [new branch]        review/python-identity-r1-independent -> origin/review/python-identity-r1-independent
+2026-10-09T07:13:02.4473776Z  * [new branch]        review/python-inventory-independent-20261004 -> origin/review/python-inventory-independent-20261004
+2026-10-09T07:13:02.4474638Z  * [new branch]        review/python-inventory-p2-delta-20261004 -> origin/review/python-inventory-p2-delta-20261004
+2026-10-09T07:13:02.4475500Z  * [new branch]        review/python-provenance-independent-20261004 -> origin/review/python-provenance-independent-20261004
+2026-10-09T07:13:02.4476219Z  * [new branch]        review/qname-db-20261003 -> origin/review/qname-db-20261003
+2026-10-09T07:13:02.4476862Z  * [new branch]        review/qname-parser-public-20261003 -> origin/review/qname-parser-public-20261003
+2026-10-09T07:13:02.4477603Z  * [new branch]        review/query-owner-hint-20261004-0741 -> origin/review/query-owner-hint-20261004-0741
+2026-10-09T07:13:02.4478783Z  * [new branch]        review/query-owner-hint-independent-evidence-20261004 -> origin/review/query-owner-hint-independent-evidence-20261004
+2026-10-09T07:13:02.4479725Z  * [new branch]        review/query-target-independent-20261004 -> origin/review/query-target-independent-20261004
+2026-10-09T07:13:02.4480484Z  * [new branch]        review/resolver-bind-independent -> origin/review/resolver-bind-independent
+2026-10-09T07:13:02.4481271Z  * [new branch]        review/validation-work-metadata-fix-20261007 -> origin/review/validation-work-metadata-fix-20261007
+2026-10-09T07:13:02.4482136Z  * [new branch]        review/validation-work-packing-fix-20261007 -> origin/review/validation-work-packing-fix-20261007
+2026-10-09T07:13:02.4483110Z  * [new branch]        task/archive-evidence-104-28fe-20261008 -> origin/task/archive-evidence-104-28fe-20261008
+2026-10-09T07:13:02.4483955Z  * [new branch]        task/archive-evidence-105-108-124-28fe-20261008 -> origin/task/archive-evidence-105-108-124-28fe-20261008
+2026-10-09T07:13:02.4484827Z  * [new branch]        task/archive-evidence-batch9-28fe-20261008 -> origin/task/archive-evidence-batch9-28fe-20261008
+2026-10-09T07:13:02.4485568Z  * [new branch]        task/archive-path-a217-20261008 -> origin/task/archive-path-a217-20261008
+2026-10-09T07:13:02.4486246Z  * [new branch]        task/p8-a23-closeout-bfcc-20261009 -> origin/task/p8-a23-closeout-bfcc-20261009
+2026-10-09T07:13:02.4486936Z  * [new branch]        task/p8-a23-snapshot-bfcc-20261009 -> origin/task/p8-a23-snapshot-bfcc-20261009
+2026-10-09T07:13:02.4487677Z  * [new branch]        task/p8-a23-soak-wire-reception-20261009 -> origin/task/p8-a23-soak-wire-reception-20261009
+2026-10-09T07:13:02.4488616Z  * [new branch]        task/p8-bounded-zip-controls-20261009 -> origin/task/p8-bounded-zip-controls-20261009
+2026-10-09T07:13:02.4489424Z  * [new branch]        task/p8-combined-engineering-bfcc-20261009 -> origin/task/p8-combined-engineering-bfcc-20261009
+2026-10-09T07:13:02.4490164Z  * [new branch]        task/p8-complete-a217-20261009 -> origin/task/p8-complete-a217-20261009
+2026-10-09T07:13:02.4490782Z  * [new branch]        task/p8-completion-20261009 -> origin/task/p8-completion-20261009
+2026-10-09T07:13:02.4491417Z  * [new branch]        task/p8-d0-recovery-28fe-20261009 -> origin/task/p8-d0-recovery-28fe-20261009
+2026-10-09T07:13:02.4492156Z  * [new branch]        task/p8-d0-recovery-wave002-28fe-20261009 -> origin/task/p8-d0-recovery-wave002-28fe-20261009
+2026-10-09T07:13:02.4492960Z  * [new branch]        task/p8-evidence-checkpoint-a217-20261008 -> origin/task/p8-evidence-checkpoint-a217-20261008
+2026-10-09T07:13:02.4493869Z  * [new branch]        task/p8-evidence-delivery-a217-20261009 -> origin/task/p8-evidence-delivery-a217-20261009
+2026-10-09T07:13:02.4494723Z  * [new branch]        task/p8-failed-runtime-originals-28fe-20261009 -> origin/task/p8-failed-runtime-originals-28fe-20261009
+2026-10-09T07:13:02.4495501Z  * [new branch]        task/p8-fixed-d0-scale-20261008 -> origin/task/p8-fixed-d0-scale-20261008
+2026-10-09T07:13:02.4496209Z  * [new branch]        task/p8-full-delivery-intake-20261009 -> origin/task/p8-full-delivery-intake-20261009
+2026-10-09T07:13:02.4496995Z  * [new branch]        task/p8-full-delivery-intake-fix-20261009 -> origin/task/p8-full-delivery-intake-fix-20261009
+2026-10-09T07:13:02.4497795Z  * [new branch]        task/p8-g2-platform-reception-20261009 -> origin/task/p8-g2-platform-reception-20261009
+2026-10-09T07:13:02.4498815Z  * [new branch]        task/p8-g4-platform-reception-20261009 -> origin/task/p8-g4-platform-reception-20261009
+2026-10-09T07:13:02.4499577Z  * [new branch]        task/p8-g4-runtime-reception-20261009 -> origin/task/p8-g4-runtime-reception-20261009
+2026-10-09T07:13:02.4500364Z  * [new branch]        task/p8-g4-runtime-reception-fix-20261009 -> origin/task/p8-g4-runtime-reception-fix-20261009
+2026-10-09T07:13:02.4501217Z  * [new branch]        task/p8-independent-acceptance-28fe-20261009 -> origin/task/p8-independent-acceptance-28fe-20261009
+2026-10-09T07:13:02.4501965Z  * [new branch]        task/p8-local-G-1k-20261008 -> origin/task/p8-local-G-1k-20261008
+2026-10-09T07:13:02.4502711Z  * [new branch]        task/p8-mac-supervisor-diagnostic-a217-20261009 -> origin/task/p8-mac-supervisor-diagnostic-a217-20261009
+2026-10-09T07:13:02.4503556Z  * [new branch]        task/p8-macos-integration-bfcc-20261009 -> origin/task/p8-macos-integration-bfcc-20261009
+2026-10-09T07:13:02.4504432Z  * [new branch]        task/p8-mainb21-snapshot-leaf-integration-20261009 -> origin/task/p8-mainb21-snapshot-leaf-integration-20261009
+2026-10-09T07:13:02.4505341Z  * [new branch]        task/p8-platform-evidence-docs-a217-20261009 -> origin/task/p8-platform-evidence-docs-a217-20261009
+2026-10-09T07:13:02.4506335Z  * [new branch]        task/p8-prefix-window-engineering-20261009 -> origin/task/p8-prefix-window-engineering-20261009
+2026-10-09T07:13:02.4507172Z  * [new branch]        task/p8-resolver-allocations-a217-20261009 -> origin/task/p8-resolver-allocations-a217-20261009
+2026-10-09T07:13:02.4508060Z  * [new branch]        task/p8-round10-evidence-20261008 -> origin/task/p8-round10-evidence-20261008
+2026-10-09T07:13:02.4508749Z  * [new branch]        task/p8-round11-evidence-20261008 -> origin/task/p8-round11-evidence-20261008
+2026-10-09T07:13:02.4509420Z  * [new branch]        task/p8-round12-evidence-20261009 -> origin/task/p8-round12-evidence-20261009
+2026-10-09T07:13:02.4510080Z  * [new branch]        task/p8-round13-evidence-20261009 -> origin/task/p8-round13-evidence-20261009
+2026-10-09T07:13:02.4510739Z  * [new branch]        task/p8-round14-evidence-20261009 -> origin/task/p8-round14-evidence-20261009
+2026-10-09T07:13:02.4511419Z  * [new branch]        task/p8-round15-evidence-20261009 -> origin/task/p8-round15-evidence-20261009
+2026-10-09T07:13:02.4512081Z  * [new branch]        task/p8-round16-evidence-20261009 -> origin/task/p8-round16-evidence-20261009
+2026-10-09T07:13:02.4512744Z  * [new branch]        task/p8-round17-evidence-20261009 -> origin/task/p8-round17-evidence-20261009
+2026-10-09T07:13:02.4513410Z  * [new branch]        task/p8-round18-evidence-20261009 -> origin/task/p8-round18-evidence-20261009
+2026-10-09T07:13:02.4514166Z  * [new branch]        task/p8-round19-scale-registration-20261009 -> origin/task/p8-round19-scale-registration-20261009
+2026-10-09T07:13:02.4514917Z  * [new branch]        task/p8-round6-evidence-20261009 -> origin/task/p8-round6-evidence-20261009
+2026-10-09T07:13:02.4515635Z  * [new branch]        task/p8-round7-checkpoint-bfcc-20261009 -> origin/task/p8-round7-checkpoint-bfcc-20261009
+2026-10-09T07:13:02.4516355Z  * [new branch]        task/p8-round8-evidence-20261008 -> origin/task/p8-round8-evidence-20261008
+2026-10-09T07:13:02.4517257Z  * [new branch]        task/p8-runtime-finalization-controls-20261009 -> origin/task/p8-runtime-finalization-controls-20261009
+2026-10-09T07:13:02.4518425Z  * [new branch]        task/p8-runtime-statistics-owner-a217-20261009 -> origin/task/p8-runtime-statistics-owner-a217-20261009
+2026-10-09T07:13:02.4519284Z  * [new branch]        task/p8-scale-cache-a217-20261009 -> origin/task/p8-scale-cache-a217-20261009
+2026-10-09T07:13:02.4520055Z  * [new branch]        task/p8-snapshot-leaf-engineering-20261009 -> origin/task/p8-snapshot-leaf-engineering-20261009
+2026-10-09T07:13:02.4520930Z  * [new branch]        task/p8-snapshot-leaf-engineering-fix-20261009 -> origin/task/p8-snapshot-leaf-engineering-fix-20261009
+2026-10-09T07:13:02.4521805Z  * [new branch]        task/p8-staging-cache-engineering-20261008 -> origin/task/p8-staging-cache-engineering-20261008
+2026-10-09T07:13:02.4522628Z  * [new branch]        task/p8-surface-window-controls-20261009 -> origin/task/p8-surface-window-controls-20261009
+2026-10-09T07:13:02.4523424Z  * [new branch]        test/p7-014-fence-independent-recheck -> origin/test/p7-014-fence-independent-recheck
+2026-10-09T07:13:02.4524171Z  * [new branch]        test/p7-014-final-independent-review -> origin/test/p7-014-final-independent-review
+2026-10-09T07:13:02.4524823Z  * [new branch]        test/p7-017-offline-default -> origin/test/p7-017-offline-default
+2026-10-09T07:13:02.4525395Z  * [new branch]        test/p7-acceptance-matrix -> origin/test/p7-acceptance-matrix
+2026-10-09T07:13:02.4526116Z  * [new branch]        test/p7-cache-allocation-independent-review -> origin/test/p7-cache-allocation-independent-review
+2026-10-09T07:13:02.4526869Z  * [new branch]        test/p7-gate-lifecycle-review -> origin/test/p7-gate-lifecycle-review
+2026-10-09T07:13:02.4527455Z  * [new branch]        test/p7-partial-budget  -> origin/test/p7-partial-budget
+2026-10-09T07:13:02.4528271Z  * [new branch]        test/p7-production-fairness-model-review -> origin/test/p7-production-fairness-model-review
+2026-10-09T07:13:02.4529271Z  * [new branch]        test/p7-query-encoding-independent-review -> origin/test/p7-query-encoding-independent-review
+2026-10-09T07:13:02.4530016Z  * [new branch]        test/p7-query-network-contract -> origin/test/p7-query-network-contract
+2026-10-09T07:13:02.4530687Z  * [new branch]        test/p7-query-public-independent -> origin/test/p7-query-public-independent
+2026-10-09T07:13:02.4531424Z  * [new branch]        test/p7-query-public-independent-final -> origin/test/p7-query-public-independent-final
+2026-10-09T07:13:02.4532166Z  * [new branch]        test/p7-status-fence-independent -> origin/test/p7-status-fence-independent
+2026-10-09T07:13:02.4532850Z  * [new branch]        test/p7-v05-v11-independent-review -> origin/test/p7-v05-v11-independent-review
+2026-10-09T07:13:02.4533569Z  * [new branch]        test/p7-v16-oracle-independent-review -> origin/test/p7-v16-oracle-independent-review
+2026-10-09T07:13:02.4534265Z  * [new branch]        test/p7-v18-parameter-contract -> origin/test/p7-v18-parameter-contract
+2026-10-09T07:13:02.4534862Z  * [new branch]        test/p7-v19-offline     -> origin/test/p7-v19-offline
+2026-10-09T07:13:02.4535545Z  * [new branch]        test/p7-worker-contention-reviewed-20261007 -> origin/test/p7-worker-contention-reviewed-20261007
+2026-10-09T07:13:02.4536414Z  * [new branch]        test/p8-mac-original-supervisor-28fe-20261009 -> origin/test/p8-mac-original-supervisor-28fe-20261009
+2026-10-09T07:13:02.4537170Z  * [new branch]        work/p7-audit-996727-20261008 -> origin/work/p7-audit-996727-20261008
+2026-10-09T07:13:02.4537735Z  * [new branch]        work/p7-round2-20261007 -> origin/work/p7-round2-20261007
+2026-10-09T07:13:02.4538557Z  * [new branch]        work/p7-round2-final-20261007 -> origin/work/p7-round2-final-20261007
+2026-10-09T07:13:02.4539265Z  * [new branch]        work/p8-corpus-holdout-031390-20261008 -> origin/work/p8-corpus-holdout-031390-20261008
+2026-10-09T07:13:02.4540160Z  * [new branch]        work/p8-corpus-register-996727-20261008 -> origin/work/p8-corpus-register-996727-20261008
+2026-10-09T07:13:02.4540930Z  * [new branch]        work/p8-corpus-replay-996727-20261008 -> origin/work/p8-corpus-replay-996727-20261008
+2026-10-09T07:13:02.4541690Z  * [new branch]        work/p8-current-readback-996727-20261008 -> origin/work/p8-current-readback-996727-20261008
+2026-10-09T07:13:02.4542534Z  * [new branch]        work/p8-final-preseal-readback-996727-20261008 -> origin/work/p8-final-preseal-readback-996727-20261008
+2026-10-09T07:13:02.4543340Z  * [new branch]        work/p8-joint-corpus-996727-20261008 -> origin/work/p8-joint-corpus-996727-20261008
+2026-10-09T07:13:02.4544140Z  * [new branch]        work/p8-joint-release-readback-996727-20261008 -> origin/work/p8-joint-release-readback-996727-20261008
+2026-10-09T07:13:02.4544912Z  * [new branch]        work/p8-local-ten-todos-20261007 -> origin/work/p8-local-ten-todos-20261007
+2026-10-09T07:13:02.4545631Z  * [new branch]        work/p8-native-external-996727-20261008 -> origin/work/p8-native-external-996727-20261008
+2026-10-09T07:13:02.4546328Z  * [new branch]        work/p8-next-source-ebacee -> origin/work/p8-next-source-ebacee
+2026-10-09T07:13:02.4546891Z  * [new branch]        work/p8-next-ten-ebacee -> origin/work/p8-next-ten-ebacee
+2026-10-09T07:13:02.4547540Z  * [new branch]        work/p8-output-readback-996727-20261008 -> origin/work/p8-output-readback-996727-20261008
+2026-10-09T07:13:02.4548441Z  * [new branch]        work/p8-product-build-996727-20261008 -> origin/work/p8-product-build-996727-20261008
+2026-10-09T07:13:02.4549202Z  * [new branch]        work/p8-product-format-996727-20261008 -> origin/work/p8-product-format-996727-20261008
+2026-10-09T07:13:02.4549976Z  * [new branch]        work/p8-profile-contract-996727-20261008 -> origin/work/p8-profile-contract-996727-20261008
+2026-10-09T07:13:02.4550762Z  * [new branch]        work/p8-public-readback-996727-20261008 -> origin/work/p8-public-readback-996727-20261008
+2026-10-09T07:13:02.4551664Z  * [new branch]        work/p8-public-recovery-996727-20261008 -> origin/work/p8-public-recovery-996727-20261008
+2026-10-09T07:13:02.4552455Z  * [new branch]        work/p8-recovery-evidence-996727-20261008 -> origin/work/p8-recovery-evidence-996727-20261008
+2026-10-09T07:13:02.4553246Z  * [new branch]        work/p8-release-external-996727-20261008 -> origin/work/p8-release-external-996727-20261008
+2026-10-09T07:13:02.4554025Z  * [new branch]        work/p8-release-readback-996727-20261008 -> origin/work/p8-release-readback-996727-20261008
+2026-10-09T07:13:02.4554753Z  * [new branch]        work/p8-rust-probe-996727-20261008 -> origin/work/p8-rust-probe-996727-20261008
+2026-10-09T07:13:02.4555352Z  * [new branch]        work/p8-scale-031390    -> origin/work/p8-scale-031390
+2026-10-09T07:13:02.4556081Z  * [new branch]        work/p8-temporal-evidence-readback-996727-20261008 -> origin/work/p8-temporal-evidence-readback-996727-20261008
+2026-10-09T07:13:02.4556960Z  * [new branch]        work/p8-temporal-execute-996727-20261008 -> origin/work/p8-temporal-execute-996727-20261008
+2026-10-09T07:13:02.4557806Z  * [new branch]        work/p8-temporal-final-evidence-996727-20261008 -> origin/work/p8-temporal-final-evidence-996727-20261008
+2026-10-09T07:13:02.4558981Z  * [new branch]        work/p8-temporal-frozen-logic-996727-20261008 -> origin/work/p8-temporal-frozen-logic-996727-20261008
+2026-10-09T07:13:02.4559827Z  * [new branch]        work/p8-temporal-holdout-996727-20261008 -> origin/work/p8-temporal-holdout-996727-20261008
+2026-10-09T07:13:02.4560659Z  * [new branch]        work/p8-temporal-prepare-data-996727-20261008 -> origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-09T07:13:02.4561476Z  * [new branch]        work/p8-temporal-preseal-996727-20261008 -> origin/work/p8-temporal-preseal-996727-20261008
+2026-10-09T07:13:02.4562296Z  * [new branch]        work/p8-temporal-readback-996727-20261008 -> origin/work/p8-temporal-readback-996727-20261008
+2026-10-09T07:13:02.4563277Z  * [new branch]        work/p8-temporal-readback-tools-996727-20261008 -> origin/work/p8-temporal-readback-tools-996727-20261008
+2026-10-09T07:13:02.4564126Z  * [new branch]        work/p8-temporal-replay-996727-20261008 -> origin/work/p8-temporal-replay-996727-20261008
+2026-10-09T07:13:02.4564975Z  * [new branch]        work/p8-temporal-service-controls-996727-20261008 -> origin/work/p8-temporal-service-controls-996727-20261008
+2026-10-09T07:13:02.4565943Z  * [new branch]        work/p8-text-admission-counterexample-996727-20261008 -> origin/work/p8-text-admission-counterexample-996727-20261008
+2026-10-09T07:13:02.4566833Z  * [new branch]        work/pr157-final-review-996727-20261008 -> origin/work/pr157-final-review-996727-20261008
+2026-10-09T07:13:02.4567525Z  * [new branch]        work/ptv2-permit-37769636440 -> origin/work/ptv2-permit-37769636440
+2026-10-09T07:13:02.4568285Z  * [new branch]        work/todo-close-996727-20261008 -> origin/work/todo-close-996727-20261008
+2026-10-09T07:13:02.4569592Z [command]/usr/bin/git rev-parse --verify --quiet 9f7b16f0758eb79f306cf44605b84550f02de441^{object}
+2026-10-09T07:13:02.4570131Z 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:13:02.4570957Z ##[endgroup]
+2026-10-09T07:13:02.4571386Z ##[group]Determining the checkout info
+2026-10-09T07:13:02.4571912Z ##[endgroup]
+2026-10-09T07:13:02.4572198Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T07:13:02.4572983Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T07:13:02.4573952Z ##[group]Checking out the ref
+2026-10-09T07:13:02.4574425Z [command]/usr/bin/git checkout --progress --force 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:13:03.5400461Z Updating files:  49% (11079/22596)
+2026-10-09T07:13:03.5753488Z Updating files:  50% (11298/22596)
+2026-10-09T07:13:03.6003287Z Updating files:  51% (11524/22596)
+2026-10-09T07:13:03.6440294Z Updating files:  52% (11750/22596)
+2026-10-09T07:13:03.6845004Z Updating files:  53% (11976/22596)
+2026-10-09T07:13:03.7055315Z Updating files:  54% (12202/22596)
+2026-10-09T07:13:03.7191430Z Updating files:  55% (12428/22596)
+2026-10-09T07:13:03.7294386Z Updating files:  56% (12654/22596)
+2026-10-09T07:13:03.7592921Z Updating files:  57% (12880/22596)
+2026-10-09T07:13:03.7724570Z Updating files:  58% (13106/22596)
+2026-10-09T07:13:03.7822119Z Updating files:  59% (13332/22596)
+2026-10-09T07:13:03.7941232Z Updating files:  60% (13558/22596)
+2026-10-09T07:13:03.8035390Z Updating files:  61% (13784/22596)
+2026-10-09T07:13:03.8137197Z Updating files:  62% (14010/22596)
+2026-10-09T07:13:03.8236004Z Updating files:  63% (14236/22596)
+2026-10-09T07:13:03.8334466Z Updating files:  64% (14462/22596)
+2026-10-09T07:13:03.8424075Z Updating files:  65% (14688/22596)
+2026-10-09T07:13:03.8515191Z Updating files:  66% (14914/22596)
+2026-10-09T07:13:03.8627386Z Updating files:  67% (15140/22596)
+2026-10-09T07:13:03.8761590Z Updating files:  68% (15366/22596)
+2026-10-09T07:13:03.8953197Z Updating files:  69% (15592/22596)
+2026-10-09T07:13:03.9439464Z Updating files:  70% (15818/22596)
+2026-10-09T07:13:03.9734847Z Updating files:  71% (16044/22596)
+2026-10-09T07:13:04.0362438Z Updating files:  72% (16270/22596)
+2026-10-09T07:13:04.0969303Z Updating files:  73% (16496/22596)
+2026-10-09T07:13:04.3304613Z Updating files:  74% (16722/22596)
+2026-10-09T07:13:04.3888977Z Updating files:  75% (16947/22596)
+2026-10-09T07:13:04.4078687Z Updating files:  76% (17173/22596)
+2026-10-09T07:13:04.4372936Z Updating files:  77% (17399/22596)
+2026-10-09T07:13:04.4649317Z Updating files:  78% (17625/22596)
+2026-10-09T07:13:04.4720152Z Updating files:  79% (17851/22596)
+2026-10-09T07:13:04.4965573Z Updating files:  79% (17871/22596)
+2026-10-09T07:13:04.5195468Z Updating files:  80% (18077/22596)
+2026-10-09T07:13:04.5352566Z Updating files:  81% (18303/22596)
+2026-10-09T07:13:04.5535913Z Updating files:  82% (18529/22596)
+2026-10-09T07:13:04.6269402Z Updating files:  83% (18755/22596)
+2026-10-09T07:13:04.7143917Z Updating files:  84% (18981/22596)
+2026-10-09T07:13:04.7851306Z Updating files:  85% (19207/22596)
+2026-10-09T07:13:04.9114451Z Updating files:  86% (19433/22596)
+2026-10-09T07:13:04.9625614Z Updating files:  87% (19659/22596)
+2026-10-09T07:13:04.9794210Z Updating files:  88% (19885/22596)
+2026-10-09T07:13:04.9893641Z Updating files:  89% (20111/22596)
+2026-10-09T07:13:05.0090270Z Updating files:  90% (20337/22596)
+2026-10-09T07:13:05.0428119Z Updating files:  91% (20563/22596)
+2026-10-09T07:13:05.4902409Z Updating files:  92% (20789/22596)
+2026-10-09T07:13:05.6833658Z Updating files:  92% (20936/22596)
+2026-10-09T07:13:05.7060344Z Updating files:  93% (21015/22596)
+2026-10-09T07:13:05.7227874Z Updating files:  94% (21241/22596)
+2026-10-09T07:13:05.7414359Z Updating files:  95% (21467/22596)
+2026-10-09T07:13:05.7617857Z Updating files:  96% (21693/22596)
+2026-10-09T07:13:05.7841957Z Updating files:  97% (21919/22596)
+2026-10-09T07:13:05.8043555Z Updating files:  98% (22145/22596)
+2026-10-09T07:13:05.8292514Z Updating files:  99% (22371/22596)
+2026-10-09T07:13:05.8293245Z Updating files: 100% (22596/22596)
+2026-10-09T07:13:05.8293784Z Updating files: 100% (22596/22596), done.
+2026-10-09T07:13:05.8557346Z Note: switching to '9f7b16f0758eb79f306cf44605b84550f02de441'.
+2026-10-09T07:13:05.8557810Z 
+2026-10-09T07:13:05.8558401Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T07:13:05.8559357Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T07:13:05.8560211Z state without impacting any branches by switching back to a branch.
+2026-10-09T07:13:05.8560734Z 
+2026-10-09T07:13:05.8561096Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T07:13:05.8561903Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T07:13:05.8562356Z 
+2026-10-09T07:13:05.8562528Z   git switch -c <new-branch-name>
+2026-10-09T07:13:05.8562819Z 
+2026-10-09T07:13:05.8562978Z Or undo this operation with:
+2026-10-09T07:13:05.8563244Z 
+2026-10-09T07:13:05.8563377Z   git switch -
+2026-10-09T07:13:05.8563815Z 
+2026-10-09T07:13:05.8564192Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T07:13:05.8564724Z 
+2026-10-09T07:13:05.8565153Z HEAD is now at 9f7b16f0 chore(p8): bind independently reviewed combined engineering source
+2026-10-09T07:13:05.8709022Z ##[endgroup]
+2026-10-09T07:13:05.8751037Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T07:13:05.8775008Z 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:13:05.9114599Z ##[group]Run dtolnay/rust-toolchain@1.95.0
+2026-10-09T07:13:05.9114913Z with:
+2026-10-09T07:13:05.9115096Z env:
+2026-10-09T07:13:05.9115279Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:05.9115496Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:05.9115706Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:05.9115942Z ##[endgroup]
+2026-10-09T07:13:05.9176900Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-09T07:13:05.9233069Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T07:13:05.9233470Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T07:13:05.9234032Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T07:13:05.9234615Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T07:13:05.9234917Z [36;1m  exit 1[0m
+2026-10-09T07:13:05.9235256Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T07:13:05.9235703Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-09T07:13:05.9236230Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:05.9236735Z [36;1m  else[0m
+2026-10-09T07:13:05.9237136Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:05.9237590Z [36;1m  fi[0m
+2026-10-09T07:13:05.9237900Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T07:13:05.9238672Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:05.9239149Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T07:13:05.9239743Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:05.9261099Z [36;1melse[0m
+2026-10-09T07:13:05.9261344Z [36;1m  delimiter=EOF[0m
+2026-10-09T07:13:05.9261685Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T07:13:05.9262210Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:05.9262630Z [36;1mfi[0m
+2026-10-09T07:13:05.9531243Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:05.9531633Z env:
+2026-10-09T07:13:05.9531842Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:05.9532088Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:05.9532324Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:05.9532592Z   toolchain: 1.95.0
+2026-10-09T07:13:05.9532813Z ##[endgroup]
+2026-10-09T07:13:05.9661862Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=48]
+2026-10-09T07:13:05.9666152Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-09T07:13:05.9697481Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T07:13:05.9698236Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T07:13:05.9752320Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:05.9752686Z env:
+2026-10-09T07:13:05.9752881Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:05.9753104Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:05.9753317Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:05.9753553Z ##[endgroup]
+2026-10-09T07:13:05.9833746Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=16]
+2026-10-09T07:13:05.9836079Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-09T07:13:05.9863663Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T07:13:05.9864038Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T07:13:05.9864964Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T07:13:05.9865701Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T07:13:05.9865974Z [36;1mfi[0m
+2026-10-09T07:13:05.9920654Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:05.9920984Z env:
+2026-10-09T07:13:05.9921170Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:05.9921382Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:05.9921591Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:05.9921835Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:05.9922072Z ##[endgroup]
+2026-10-09T07:13:06.0006165Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=16]
+2026-10-09T07:13:06.0008600Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-09T07:13:06.0015098Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T07:13:06.0027135Z ##[start-action display=rustup toolchain install 1.95.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-09T07:13:06.0048273Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T07:13:06.0048989Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T07:13:06.0049451Z [36;1mflags=()[0m
+2026-10-09T07:13:06.0049744Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T07:13:06.0050195Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T07:13:06.0050733Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T07:13:06.0051191Z [36;1mlog=$(mktemp)[0m
+2026-10-09T07:13:06.0051426Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T07:13:06.0051693Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T07:13:06.0052336Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T07:13:06.0052947Z [36;1m    break[0m
+2026-10-09T07:13:06.0053150Z [36;1m  else[0m
+2026-10-09T07:13:06.0053345Z [36;1m    status=$?[0m
+2026-10-09T07:13:06.0053559Z [36;1m  fi[0m
+2026-10-09T07:13:06.0053857Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T07:13:06.0054448Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T07:13:06.0054932Z [36;1m    exit "$status"[0m
+2026-10-09T07:13:06.0055162Z [36;1m  fi[0m
+2026-10-09T07:13:06.0055534Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T07:13:06.0055989Z [36;1m  sleep 30[0m
+2026-10-09T07:13:06.0056195Z [36;1mdone[0m
+2026-10-09T07:13:06.0111026Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:06.0111386Z env:
+2026-10-09T07:13:06.0111580Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:06.0111803Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:06.0112024Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:06.0112294Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:06.0112551Z   toolchain: 1.95.0
+2026-10-09T07:13:06.0112756Z   targets: 
+2026-10-09T07:13:06.0112944Z   components: 
+2026-10-09T07:13:06.0113152Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T07:13:06.0113396Z ##[endgroup]
+2026-10-09T07:13:06.0578615Z info: syncing channel updates for 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:13:06.3656615Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:13:06.3657346Z info: downloading 3 components
+2026-10-09T07:13:13.6528996Z 
+2026-10-09T07:13:13.6612723Z   1.95.0-x86_64-unknown-linux-gnu installed - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:13:13.6613355Z 
+2026-10-09T07:13:13.6695151Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=7666]
+2026-10-09T07:13:13.6705740Z ##[start-action display=rustup default 1.95.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-09T07:13:13.6732774Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T07:13:13.6733179Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T07:13:13.6796337Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.6796678Z env:
+2026-10-09T07:13:13.6796872Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.6797096Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.6797324Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.6797574Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.6797824Z   toolchain: 1.95.0
+2026-10-09T07:13:13.6798344Z ##[endgroup]
+2026-10-09T07:13:13.6918507Z info: using existing install for 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:13:13.6923852Z info: default toolchain set to 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:13:13.6924139Z 
+2026-10-09T07:13:13.6988730Z   1.95.0-x86_64-unknown-linux-gnu unchanged - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:13:13.6989160Z 
+2026-10-09T07:13:13.7005115Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=29]
+2026-10-09T07:13:13.7009344Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-09T07:13:13.7033682Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T07:13:13.7034538Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T07:13:13.7035349Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T07:13:13.7036198Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:13:13.7097894Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.7098556Z env:
+2026-10-09T07:13:13.7098750Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.7098963Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.7099177Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.7099430Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.7099671Z   toolchain: 1.95.0
+2026-10-09T07:13:13.7099880Z ##[endgroup]
+2026-10-09T07:13:13.7429194Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=41]
+2026-10-09T07:13:13.7432094Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-09T07:13:13.7457249Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T07:13:13.7457633Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T07:13:13.7458268Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T07:13:13.7458630Z [36;1mfi[0m
+2026-10-09T07:13:13.7524485Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.7524836Z env:
+2026-10-09T07:13:13.7525031Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.7525250Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.7525463Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.7525706Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.7525965Z ##[endgroup]
+2026-10-09T07:13:13.7611817Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=17]
+2026-10-09T07:13:13.7613947Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-09T07:13:13.7637083Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T07:13:13.7637447Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T07:13:13.7637779Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T07:13:13.7638399Z [36;1mfi[0m
+2026-10-09T07:13:13.7697171Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.7697524Z env:
+2026-10-09T07:13:13.7697715Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.7698234Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.7698465Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.7698716Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.7698965Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:13.7699175Z ##[endgroup]
+2026-10-09T07:13:13.7783325Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=16]
+2026-10-09T07:13:13.7787445Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-09T07:13:13.7868646Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T07:13:13.7869159Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T07:13:13.7869886Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T07:13:13.7870631Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T07:13:13.7871217Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:13:13.7871762Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T07:13:13.7872283Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T07:13:13.7872871Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:13:13.7873386Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T07:13:13.7873735Z [36;1m  fi[0m
+2026-10-09T07:13:13.7873924Z [36;1mfi[0m
+2026-10-09T07:13:13.7934757Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.7935101Z env:
+2026-10-09T07:13:13.7935301Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.7935524Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.7935737Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.7935989Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.7936246Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:13.7936457Z   CARGO_TERM_COLOR: always
+2026-10-09T07:13:13.7936675Z   toolchain: 1.95.0
+2026-10-09T07:13:13.7936884Z ##[endgroup]
+2026-10-09T07:13:13.8244884Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=45]
+2026-10-09T07:13:13.8249702Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-09T07:13:13.8274285Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T07:13:13.8275050Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T07:13:13.8275677Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T07:13:13.8276166Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T07:13:13.8276476Z [36;1mfi[0m
+2026-10-09T07:13:13.8342121Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.8342466Z env:
+2026-10-09T07:13:13.8342687Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.8342910Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.8343118Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.8343382Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.8343633Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:13.8343851Z   CARGO_TERM_COLOR: always
+2026-10-09T07:13:13.8344083Z   toolchain: 1.95.0
+2026-10-09T07:13:13.8344287Z ##[endgroup]
+2026-10-09T07:13:13.8553805Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=30]
+2026-10-09T07:13:13.8559113Z ##[start-action display=rustc +1.95.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-09T07:13:13.8582428Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T07:13:13.8582933Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T07:13:13.8646080Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:13.8646421Z env:
+2026-10-09T07:13:13.8646613Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.8646830Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.8647056Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.8647300Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.8647546Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:13.8648145Z   CARGO_TERM_COLOR: always
+2026-10-09T07:13:13.8648422Z   toolchain: 1.95.0
+2026-10-09T07:13:13.8648630Z ##[endgroup]
+2026-10-09T07:13:13.8827234Z rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:13:13.8828191Z binary: rustc
+2026-10-09T07:13:13.8828782Z commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+2026-10-09T07:13:13.8829233Z commit-date: 2026-04-14
+2026-10-09T07:13:13.8829521Z host: x86_64-unknown-linux-gnu
+2026-10-09T07:13:13.8829803Z release: 1.95.0
+2026-10-09T07:13:13.8830107Z LLVM version: 22.1.2
+2026-10-09T07:13:13.8844275Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=28]
+2026-10-09T07:13:13.8908263Z ##[group]Run cargo fetch --locked
+2026-10-09T07:13:13.8908605Z [36;1mcargo fetch --locked[0m
+2026-10-09T07:13:13.8971792Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:13:13.8972047Z env:
+2026-10-09T07:13:13.8972239Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:13.8972458Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:13.8972676Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:13.8972923Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:13.8973171Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:13.8973388Z   CARGO_TERM_COLOR: always
+2026-10-09T07:13:13.8973609Z ##[endgroup]
+2026-10-09T07:13:13.9283437Z [1m[92m    Updating[0m crates.io index
+2026-10-09T07:13:14.6534078Z [1m[92m Downloading[0m crates ...
+2026-10-09T07:13:14.7726395Z [1m[92m  Downloaded[0m valuable v0.1.1
+2026-10-09T07:13:14.7761288Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-10-09T07:13:14.7784417Z [1m[92m  Downloaded[0m tracing-log v0.2.0
+2026-10-09T07:13:14.7807540Z [1m[92m  Downloaded[0m toml_datetime v0.6.11
+2026-10-09T07:13:14.7832199Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+2026-10-09T07:13:14.7856759Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+2026-10-09T07:13:14.7876480Z [1m[92m  Downloaded[0m fastrand v2.3.0
+2026-10-09T07:13:14.7901719Z [1m[92m  Downloaded[0m generic-array v0.14.7
+2026-10-09T07:13:14.7928791Z [1m[92m  Downloaded[0m windows-threading v0.2.1
+2026-10-09T07:13:14.7947882Z [1m[92m  Downloaded[0m utf8_iter v1.0.4
+2026-10-09T07:13:14.7969955Z [1m[92m  Downloaded[0m pastey v0.2.1
+2026-10-09T07:13:14.7993783Z [1m[92m  Downloaded[0m tokio-stream v0.1.18
+2026-10-09T07:13:14.8055961Z [1m[92m  Downloaded[0m windows-result v0.4.1
+2026-10-09T07:13:14.8077741Z [1m[92m  Downloaded[0m typenum v1.20.1
+2026-10-09T07:13:14.8128267Z [1m[92m  Downloaded[0m darling_macro v0.23.0
+2026-10-09T07:13:14.8143529Z [1m[92m  Downloaded[0m allocator-api2 v0.2.21
+2026-10-09T07:13:14.8185028Z [1m[92m  Downloaded[0m iana-time-zone v0.1.65
+2026-10-09T07:13:14.8236290Z [1m[92m  Downloaded[0m futures-io v0.3.32
+2026-10-09T07:13:14.8256807Z [1m[92m  Downloaded[0m rmcp-macros v2.2.0
+2026-10-09T07:13:14.8293746Z [1m[92m  Downloaded[0m cc v1.2.58
+2026-10-09T07:13:14.8353565Z [1m[92m  Downloaded[0m windows-numerics v0.3.1
+2026-10-09T07:13:14.8376826Z [1m[92m  Downloaded[0m form_urlencoded v1.2.2
+2026-10-09T07:13:14.8409689Z [1m[92m  Downloaded[0m tower-layer v0.3.3
+2026-10-09T07:13:14.8427668Z [1m[92m  Downloaded[0m wit-bindgen-rust-macro v0.51.0
+2026-10-09T07:13:14.8446513Z [1m[92m  Downloaded[0m potential_utf v0.1.6
+2026-10-09T07:13:14.8479650Z [1m[92m  Downloaded[0m subtle v2.6.1
+2026-10-09T07:13:14.8508875Z [1m[92m  Downloaded[0m serde_urlencoded v0.7.1
+2026-10-09T07:13:14.8567238Z [1m[92m  Downloaded[0m http-body v1.1.0
+2026-10-09T07:13:14.8584807Z [1m[92m  Downloaded[0m r-efi v6.0.0
+2026-10-09T07:13:14.8674657Z [1m[92m  Downloaded[0m lru-slab v0.1.3
+2026-10-09T07:13:14.8688820Z [1m[92m  Downloaded[0m anstyle-wincon v3.0.11
+2026-10-09T07:13:14.8743083Z [1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+2026-10-09T07:13:14.8768338Z [1m[92m  Downloaded[0m windows-targets v0.53.5
+2026-10-09T07:13:14.8805689Z [1m[92m  Downloaded[0m notify v8.2.0
+2026-10-09T07:13:14.8849966Z [1m[92m  Downloaded[0m rand_pcg v0.10.2
+2026-10-09T07:13:14.8894402Z [1m[92m  Downloaded[0m windows-targets v0.48.5
+2026-10-09T07:13:14.8920772Z [1m[92m  Downloaded[0m inotify v0.11.5
+2026-10-09T07:13:14.8962996Z [1m[92m  Downloaded[0m dirs v5.0.1
+2026-10-09T07:13:14.8989599Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+2026-10-09T07:13:14.9033701Z [1m[92m  Downloaded[0m tree-sitter-language v0.1.7
+2026-10-09T07:13:14.9078053Z [1m[92m  Downloaded[0m ignore v0.4.25
+2026-10-09T07:13:14.9114149Z [1m[92m  Downloaded[0m crossbeam-deque v0.8.6
+2026-10-09T07:13:14.9144345Z [1m[92m  Downloaded[0m globset v0.4.18
+2026-10-09T07:13:14.9179509Z [1m[92m  Downloaded[0m clap_derive v4.6.0
+2026-10-09T07:13:14.9218731Z [1m[92m  Downloaded[0m either v1.15.0
+2026-10-09T07:13:14.9260821Z [1m[92m  Downloaded[0m hashbrown v0.17.1
+2026-10-09T07:13:14.9337499Z [1m[92m  Downloaded[0m process-wrap v9.1.0
+2026-10-09T07:13:14.9423805Z [1m[92m  Downloaded[0m streaming-iterator v0.1.9
+2026-10-09T07:13:14.9447415Z [1m[92m  Downloaded[0m icu_properties_data v2.3.0
+2026-10-09T07:13:14.9573913Z [1m[92m  Downloaded[0m clap_builder v4.6.0
+2026-10-09T07:13:14.9655351Z [1m[92m  Downloaded[0m hyper v1.11.1
+2026-10-09T07:13:14.9747488Z [1m[92m  Downloaded[0m windows_aarch64_msvc v0.53.1
+2026-10-09T07:13:14.9886456Z [1m[92m  Downloaded[0m webpki-roots v1.0.9
+2026-10-09T07:13:14.9934771Z [1m[92m  Downloaded[0m chrono v0.4.44
+2026-10-09T07:13:15.0012120Z [1m[92m  Downloaded[0m vcpkg v0.2.15
+2026-10-09T07:13:15.0557585Z [1m[92m  Downloaded[0m rmcp v2.2.0
+2026-10-09T07:13:15.0708868Z [1m[92m  Downloaded[0m syn v3.0.6
+2026-10-09T07:13:15.0826142Z [1m[92m  Downloaded[0m nix v0.31.2
+2026-10-09T07:13:15.0957002Z [1m[92m  Downloaded[0m windows-sys v0.61.2
+2026-10-09T07:13:15.1592475Z [1m[92m  Downloaded[0m rusqlite v0.40.1
+2026-10-09T07:13:15.1668890Z [1m[92m  Downloaded[0m bstr v1.12.1
+2026-10-09T07:13:15.1760782Z [1m[92m  Downloaded[0m rustls v0.23.45
+2026-10-09T07:13:15.1888335Z [1m[92m  Downloaded[0m windows_x86_64_gnullvm v0.52.6
+2026-10-09T07:13:15.1970704Z [1m[92m  Downloaded[0m windows_x86_64_gnullvm v0.48.5
+2026-10-09T07:13:15.2053002Z [1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+2026-10-09T07:13:15.2671244Z [1m[92m  Downloaded[0m windows_i686_gnullvm v0.52.6
+2026-10-09T07:13:15.2759595Z [1m[92m  Downloaded[0m rayon v1.11.0
+2026-10-09T07:13:15.2867340Z [1m[92m  Downloaded[0m windows_aarch64_gnullvm v0.53.1
+2026-10-09T07:13:15.2987052Z [1m[92m  Downloaded[0m icu_normalizer v2.3.0
+2026-10-09T07:13:15.3091783Z [1m[92m  Downloaded[0m windows_aarch64_gnullvm v0.48.5
+2026-10-09T07:13:15.3175049Z [1m[92m  Downloaded[0m windows_i686_msvc v0.48.5
+2026-10-09T07:13:15.3319692Z [1m[92m  Downloaded[0m rayon-core v1.13.0
+2026-10-09T07:13:15.3376017Z [1m[92m  Downloaded[0m windows-sys v0.60.2
+2026-10-09T07:13:15.4024101Z [1m[92m  Downloaded[0m windows_x86_64_msvc v0.48.5
+2026-10-09T07:13:15.4140537Z [1m[92m  Downloaded[0m windows_aarch64_gnullvm v0.52.6
+2026-10-09T07:13:15.4222377Z [1m[92m  Downloaded[0m web-sys v0.3.93
+2026-10-09T07:13:15.5375418Z [1m[92m  Downloaded[0m ring v0.17.14
+2026-10-09T07:13:15.5791455Z [1m[92m  Downloaded[0m idna v1.1.0
+2026-10-09T07:13:15.5831504Z [1m[92m  Downloaded[0m reqwest v0.12.28
+2026-10-09T07:13:15.5894026Z [1m[92m  Downloaded[0m quinn v0.11.12
+2026-10-09T07:13:15.5932996Z [1m[92m  Downloaded[0m blake3 v1.8.4
+2026-10-09T07:13:15.6018991Z [1m[92m  Downloaded[0m rustls-webpki v0.103.15
+2026-10-09T07:13:15.6054253Z [1m[92m  Downloaded[0m windows_x86_64_gnu v0.48.5
+2026-10-09T07:13:15.6228973Z [1m[92m  Downloaded[0m windows_x86_64_gnullvm v0.53.1
+2026-10-09T07:13:15.6343045Z [1m[92m  Downloaded[0m tree-sitter-javascript v0.23.1
+2026-10-09T07:13:15.6398452Z [1m[92m  Downloaded[0m windows_i686_gnu v0.48.5
+2026-10-09T07:13:15.6577356Z [1m[92m  Downloaded[0m windows_x86_64_msvc v0.53.1
+2026-10-09T07:13:15.6695911Z [1m[92m  Downloaded[0m tree-sitter v0.24.7
+2026-10-09T07:13:15.6756225Z [1m[92m  Downloaded[0m windows_i686_gnullvm v0.53.1
+2026-10-09T07:13:15.6881111Z [1m[92m  Downloaded[0m windows_x86_64_gnu v0.53.1
+2026-10-09T07:13:15.7063357Z [1m[92m  Downloaded[0m windows_i686_msvc v0.53.1
+2026-10-09T07:13:15.7190137Z [1m[92m  Downloaded[0m windows_i686_gnu v0.53.1
+2026-10-09T07:13:15.7380744Z [1m[92m  Downloaded[0m tree-sitter-typescript v0.23.2
+2026-10-09T07:13:15.7622963Z [1m[92m  Downloaded[0m windows_aarch64_msvc v0.48.5
+2026-10-09T07:13:15.7731309Z [1m[92m  Downloaded[0m tree-sitter-cpp v0.23.4
+2026-10-09T07:13:15.7967037Z [1m[92m  Downloaded[0m windows_i686_msvc v0.52.6
+2026-10-09T07:13:15.8087702Z [1m[92m  Downloaded[0m tree-sitter-go v0.23.4
+2026-10-09T07:13:15.8125399Z [1m[92m  Downloaded[0m tree-sitter-java v0.23.5
+2026-10-09T07:13:15.8176953Z [1m[92m  Downloaded[0m windows_i686_gnu v0.52.6
+2026-10-09T07:13:15.8362084Z [1m[92m  Downloaded[0m windows_x86_64_msvc v0.52.6
+2026-10-09T07:13:15.8475229Z [1m[92m  Downloaded[0m tree-sitter-python v0.23.6
+2026-10-09T07:13:15.8547727Z [1m[92m  Downloaded[0m zstd-sys v2.0.16+zstd.1.5.7
+2026-10-09T07:13:15.8709257Z [1m[92m  Downloaded[0m tree-sitter-c v0.23.4
+2026-10-09T07:13:15.8777281Z [1m[92m  Downloaded[0m windows_x86_64_gnu v0.52.6
+2026-10-09T07:13:15.8951315Z [1m[92m  Downloaded[0m windows-sys v0.48.0
+2026-10-09T07:13:15.9716958Z [1m[92m  Downloaded[0m icu_collections v2.3.0
+2026-10-09T07:13:15.9779526Z [1m[92m  Downloaded[0m icu_properties v2.3.0
+2026-10-09T07:13:15.9810860Z [1m[92m  Downloaded[0m schemars v1.2.1
+2026-10-09T07:13:15.9990098Z [1m[92m  Downloaded[0m clap v4.6.0
+2026-10-09T07:13:16.0085580Z [1m[92m  Downloaded[0m tinyvec v1.13.3
+2026-10-09T07:13:16.0121105Z [1m[92m  Downloaded[0m zerotrie v0.2.5
+2026-10-09T07:13:16.0160437Z [1m[92m  Downloaded[0m url v2.5.8
+2026-10-09T07:13:16.0187706Z [1m[92m  Downloaded[0m darling_core v0.23.0
+2026-10-09T07:13:16.0246118Z [1m[92m  Downloaded[0m crossbeam-epoch v0.9.20
+2026-10-09T07:13:16.0272032Z [1m[92m  Downloaded[0m arrayref v0.3.9
+2026-10-09T07:13:16.0285948Z [1m[92m  Downloaded[0m lru v0.18.2
+2026-10-09T07:13:16.0300017Z [1m[92m  Downloaded[0m tokio-util v0.7.18
+2026-10-09T07:13:16.0382741Z [1m[92m  Downloaded[0m uuid v1.23.0
+2026-10-09T07:13:16.1486705Z [1m[92m  Downloaded[0m zstd-safe v7.2.4
+2026-10-09T07:13:16.1504614Z [1m[92m  Downloaded[0m tree-sitter-rust v0.23.3
+2026-10-09T07:13:16.1606474Z [1m[92m  Downloaded[0m zstd v0.13.3
+2026-10-09T07:13:16.1636539Z [1m[92m  Downloaded[0m icu_normalizer_data v2.3.0
+2026-10-09T07:13:16.1659340Z [1m[92m  Downloaded[0m icu_locale_core v2.3.0
+2026-10-09T07:13:16.1730796Z [1m[92m  Downloaded[0m scheduled-thread-pool v0.2.7
+2026-10-09T07:13:16.1743051Z [1m[92m  Downloaded[0m r2d2 v0.8.10
+2026-10-09T07:13:16.1758016Z [1m[92m  Downloaded[0m constant_time_eq v0.4.2
+2026-10-09T07:13:16.1779352Z [1m[92m  Downloaded[0m libredox v0.1.15
+2026-10-09T07:13:16.1789446Z [1m[92m  Downloaded[0m thiserror v1.0.69
+2026-10-09T07:13:16.1847584Z [1m[92m  Downloaded[0m redox_users v0.4.6
+2026-10-09T07:13:16.1862157Z [1m[92m  Downloaded[0m zerovec v0.11.8
+2026-10-09T07:13:16.1923175Z [1m[92m  Downloaded[0m base64 v0.22.1
+2026-10-09T07:13:16.1962321Z [1m[92m  Downloaded[0m r-efi v5.3.0
+2026-10-09T07:13:16.2012083Z [1m[92m  Downloaded[0m tokio v1.50.0
+2026-10-09T07:13:16.2441940Z [1m[92m  Downloaded[0m option-ext v0.2.0
+2026-10-09T07:13:16.2451359Z [1m[92m  Downloaded[0m anstyle-parse v1.0.0
+2026-10-09T07:13:16.2467781Z [1m[92m  Downloaded[0m anstyle v1.0.14
+2026-10-09T07:13:16.2483217Z [1m[92m  Downloaded[0m getrandom v0.2.17
+2026-10-09T07:13:16.2514300Z [1m[92m  Downloaded[0m windows_aarch64_msvc v0.52.6
+2026-10-09T07:13:16.2627430Z [1m[92m  Downloaded[0m icu_provider v2.3.1
+2026-10-09T07:13:16.2654354Z [1m[92m  Downloaded[0m num-traits v0.2.19
+2026-10-09T07:13:16.2680802Z [1m[92m  Downloaded[0m libc v0.2.183
+2026-10-09T07:13:16.3072586Z [1m[92m  Downloaded[0m r2d2_sqlite v0.35.0
+2026-10-09T07:13:16.3086453Z [1m[92m  Downloaded[0m arrayvec v0.7.6
+2026-10-09T07:13:16.3107299Z [1m[92m  Downloaded[0m thiserror-impl v1.0.69
+2026-10-09T07:13:16.3122250Z [1m[92m  Downloaded[0m dirs-sys v0.4.1
+2026-10-09T07:13:16.3140495Z [1m[92m  Downloaded[0m bitflags v1.3.2
+2026-10-09T07:13:16.3176392Z [1m[92m  Downloaded[0m futures v0.3.32
+2026-10-09T07:13:16.3226035Z [1m[92m  Downloaded[0m getrandom v0.3.4
+2026-10-09T07:13:16.3261718Z [1m[92m  Downloaded[0m windows-core v0.62.2
+2026-10-09T07:13:16.3291837Z [1m[92m  Downloaded[0m fsevent-sys v4.1.0
+2026-10-09T07:13:16.3301122Z [1m[92m  Downloaded[0m notify-types v2.1.0
+2026-10-09T07:13:16.3336776Z [1m[92m  Downloaded[0m regex v1.12.3
+2026-10-09T07:13:16.3396257Z [1m[92m  Downloaded[0m base64 v0.23.1
+2026-10-09T07:13:16.3440375Z [1m[92m  Downloaded[0m darling v0.23.0
+2026-10-09T07:13:16.3496019Z [1m[92m  Downloaded[0m regex-automata v0.4.14
+2026-10-09T07:13:16.3633082Z [1m[92m  Downloaded[0m kqueue v1.1.1
+2026-10-09T07:13:16.3654418Z [1m[92m  Downloaded[0m walkdir v2.5.0
+2026-10-09T07:13:16.3673337Z [1m[92m  Downloaded[0m anstyle-query v1.1.5
+2026-10-09T07:13:16.3685485Z [1m[92m  Downloaded[0m clap_lex v1.0.0
+2026-10-09T07:13:16.3696802Z [1m[92m  Downloaded[0m try-lock v0.2.5
+2026-10-09T07:13:16.3707640Z [1m[92m  Downloaded[0m want v0.3.1
+2026-10-09T07:13:16.3717592Z [1m[92m  Downloaded[0m writeable v0.6.4
+2026-10-09T07:13:16.3739767Z [1m[92m  Downloaded[0m yoke v0.8.3
+2026-10-09T07:13:16.3759297Z [1m[92m  Downloaded[0m rustls-pki-types v1.15.1
+2026-10-09T07:13:16.3785783Z [1m[92m  Downloaded[0m core-foundation-sys v0.8.7
+2026-10-09T07:13:16.3819582Z [1m[92m  Downloaded[0m inotify-sys v0.1.8
+2026-10-09T07:13:16.3831566Z [1m[92m  Downloaded[0m kqueue-sys v1.0.4
+2026-10-09T07:13:16.3846487Z [1m[92m  Downloaded[0m same-file v1.0.6
+2026-10-09T07:13:16.3860688Z [1m[92m  Downloaded[0m winapi-util v0.1.11
+2026-10-09T07:13:16.3876402Z [1m[92m  Downloaded[0m hyper-util v0.1.21
+2026-10-09T07:13:16.3942852Z [1m[92m  Downloaded[0m rustix v1.1.4
+2026-10-09T07:13:16.4212441Z [1m[92m  Downloaded[0m regex-syntax v0.8.10
+2026-10-09T07:13:16.4278239Z [1m[92m  Downloaded[0m quinn-proto v0.11.18
+2026-10-09T07:13:16.4350799Z [1m[92m  Downloaded[0m quinn-udp v0.5.15
+2026-10-09T07:13:16.4369704Z [1m[92m  Downloaded[0m rustc-hash v2.1.3
+2026-10-09T07:13:16.4383624Z [1m[92m  Downloaded[0m tokio-rustls v0.26.5
+2026-10-09T07:13:16.4401189Z [1m[92m  Downloaded[0m litemap v0.8.3
+2026-10-09T07:13:16.4424807Z [1m[92m  Downloaded[0m hashlink v0.12.1
+2026-10-09T07:13:16.4445423Z [1m[92m  Downloaded[0m wasmparser v0.244.0
+2026-10-09T07:13:16.4524301Z [1m[92m  Downloaded[0m wit-component v0.244.0
+2026-10-09T07:13:16.5090606Z [1m[92m  Downloaded[0m tracing v0.1.44
+2026-10-09T07:13:16.5242825Z [1m[92m  Downloaded[0m windows-sys v0.52.0
+2026-10-09T07:13:16.5872787Z [1m[92m  Downloaded[0m rand v0.10.3
+2026-10-09T07:13:16.5913703Z [1m[92m  Downloaded[0m tinystr v0.8.4
+2026-10-09T07:13:16.5934474Z [1m[92m  Downloaded[0m synstructure v0.14.0
+2026-10-09T07:13:16.5944966Z [1m[92m  Downloaded[0m idna_adapter v1.2.2
+2026-10-09T07:13:16.5954923Z [1m[92m  Downloaded[0m web-time v1.1.0
+2026-10-09T07:13:16.5973432Z [1m[92m  Downloaded[0m zeroize v1.9.0
+2026-10-09T07:13:16.5989231Z [1m[92m  Downloaded[0m async-trait v0.1.89
+2026-10-09T07:13:16.6028234Z [1m[92m  Downloaded[0m schemars_derive v1.2.1
+2026-10-09T07:13:16.6047809Z [1m[92m  Downloaded[0m futures-util v0.3.32
+2026-10-09T07:13:16.6180024Z [1m[92m  Downloaded[0m serde_json v1.0.149
+2026-10-09T07:13:16.6251882Z [1m[92m  Downloaded[0m hashbrown v0.15.5
+2026-10-09T07:13:16.6299425Z [1m[92m  Downloaded[0m winnow v0.7.15
+2026-10-09T07:13:16.6393917Z [1m[92m  Downloaded[0m aho-corasick v1.1.4
+2026-10-09T07:13:16.6446900Z [1m[92m  Downloaded[0m once_cell_polyfill v1.70.2
+2026-10-09T07:13:16.6457830Z [1m[92m  Downloaded[0m colorchoice v1.0.5
+2026-10-09T07:13:16.6468059Z [1m[92m  Downloaded[0m http-body-util v0.1.5
+2026-10-09T07:13:16.6488152Z [1m[92m  Downloaded[0m httparse v1.10.1
+2026-10-09T07:13:16.6514391Z [1m[92m  Downloaded[0m http v1.5.0
+2026-10-09T07:13:16.6551591Z [1m[92m  Downloaded[0m tower-http v0.6.11
+2026-10-09T07:13:16.6645868Z [1m[92m  Downloaded[0m iana-time-zone-haiku v0.1.2
+2026-10-09T07:13:16.6655921Z [1m[92m  Downloaded[0m ref-cast v1.0.25
+2026-10-09T07:13:16.6685488Z [1m[92m  Downloaded[0m wasip2 v1.0.2+wasi-0.2.9
+2026-10-09T07:13:16.6724587Z [1m[92m  Downloaded[0m wasip3 v0.4.0+wasi-0.3.0-rc-2026-01-06
+2026-10-09T07:13:16.6761507Z [1m[92m  Downloaded[0m hashbrown v0.16.1
+2026-10-09T07:13:16.6811383Z [1m[92m  Downloaded[0m syn v2.0.117
+2026-10-09T07:13:16.6923055Z [1m[92m  Downloaded[0m anstream v1.0.0
+2026-10-09T07:13:16.6943450Z [1m[92m  Downloaded[0m tower v0.5.3
+2026-10-09T07:13:16.7045203Z [1m[92m  Downloaded[0m displaydoc v0.2.7
+2026-10-09T07:13:16.7065767Z [1m[92m  Downloaded[0m zerovec-derive v0.11.6
+2026-10-09T07:13:16.7083523Z [1m[92m  Downloaded[0m pkg-config v0.3.32
+2026-10-09T07:13:16.7101656Z [1m[92m  Downloaded[0m rsqlite-vfs v0.1.1
+2026-10-09T07:13:16.7112127Z [1m[92m  Downloaded[0m jobserver v0.1.34
+2026-10-09T07:13:16.7132607Z [1m[92m  Downloaded[0m js-sys v0.3.93
+2026-10-09T07:13:16.7163139Z [1m[92m  Downloaded[0m bumpalo v3.20.2
+2026-10-09T07:13:16.7188545Z [1m[92m  Downloaded[0m mio v1.2.0
+2026-10-09T07:13:16.7248461Z [1m[92m  Downloaded[0m utf8parse v0.2.2
+2026-10-09T07:13:16.7259738Z [1m[92m  Downloaded[0m hyper-rustls v0.27.10
+2026-10-09T07:13:16.7274917Z [1m[92m  Downloaded[0m atomic-waker v1.1.2
+2026-10-09T07:13:16.7287195Z [1m[92m  Downloaded[0m ipnet v2.12.2
+2026-10-09T07:13:16.7304232Z [1m[92m  Downloaded[0m chacha20 v0.10.2
+2026-10-09T07:13:16.7330288Z [1m[92m  Downloaded[0m ryu v1.0.23
+2026-10-09T07:13:16.7365652Z [1m[92m  Downloaded[0m prettyplease v0.2.37
+2026-10-09T07:13:16.7402792Z [1m[92m  Downloaded[0m wit-bindgen-rust v0.51.0
+2026-10-09T07:13:16.7425269Z [1m[92m  Downloaded[0m wit-bindgen v0.51.0
+2026-10-09T07:13:16.7458872Z [1m[92m  Downloaded[0m wasm-bindgen v0.2.116
+2026-10-09T07:13:16.7485281Z [1m[92m  Downloaded[0m bytes v1.11.1
+2026-10-09T07:13:16.7529152Z [1m[92m  Downloaded[0m parking_lot v0.12.5
+2026-10-09T07:13:16.7554304Z [1m[92m  Downloaded[0m socket2 v0.6.3
+2026-10-09T07:13:16.7572639Z [1m[92m  Downloaded[0m indexmap v2.13.0
+2026-10-09T07:13:16.7615868Z [1m[92m  Downloaded[0m serde v1.0.228
+2026-10-09T07:13:16.7650703Z [1m[92m  Downloaded[0m toml_edit v0.22.27
+2026-10-09T07:13:16.7694703Z [1m[92m  Downloaded[0m memchr v2.8.0
+2026-10-09T07:13:16.7750246Z [1m[92m  Downloaded[0m sharded-slab v0.1.7
+2026-10-09T07:13:16.7783053Z [1m[92m  Downloaded[0m proc-macro2 v1.0.106
+2026-10-09T07:13:16.7812148Z [1m[92m  Downloaded[0m cpufeatures v0.3.0
+2026-10-09T07:13:16.7826613Z [1m[92m  Downloaded[0m windows-targets v0.52.6
+2026-10-09T07:13:16.7836256Z [1m[92m  Downloaded[0m untrusted v0.9.0
+2026-10-09T07:13:16.7853593Z [1m[92m  Downloaded[0m fallible-iterator v0.3.0
+2026-10-09T07:13:16.7866035Z [1m[92m  Downloaded[0m find-msvc-tools v0.1.9
+2026-10-09T07:13:16.7884047Z [1m[92m  Downloaded[0m getrandom v0.4.2
+2026-10-09T07:13:16.7922622Z [1m[92m  Downloaded[0m wasm-encoder v0.244.0
+2026-10-09T07:13:16.7962603Z [1m[92m  Downloaded[0m wit-parser v0.244.0
+2026-10-09T07:13:16.8337572Z [1m[92m  Downloaded[0m wasm-bindgen-macro-support v0.2.116
+2026-10-09T07:13:16.8356144Z [1m[92m  Downloaded[0m serde_derive v1.0.228
+2026-10-09T07:13:16.8386424Z [1m[92m  Downloaded[0m smallvec v1.15.1
+2026-10-09T07:13:16.8408140Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-10-09T07:13:16.8439249Z [1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+2026-10-09T07:13:16.8458787Z [1m[92m  Downloaded[0m futures-executor v0.3.32
+2026-10-09T07:13:16.8472081Z [1m[92m  Downloaded[0m windows-future v0.3.2
+2026-10-09T07:13:16.8491730Z [1m[92m  Downloaded[0m futures-channel v0.3.32
+2026-10-09T07:13:16.8516533Z [1m[92m  Downloaded[0m slab v0.4.12
+2026-10-09T07:13:16.8534985Z [1m[92m  Downloaded[0m wit-bindgen-core v0.51.0
+2026-10-09T07:13:16.8554602Z [1m[92m  Downloaded[0m anyhow v1.0.103
+2026-10-09T07:13:16.8610076Z [1m[92m  Downloaded[0m foldhash v0.1.5
+2026-10-09T07:13:16.8626084Z [1m[92m  Downloaded[0m semver v1.0.27
+2026-10-09T07:13:16.8654189Z [1m[92m  Downloaded[0m tempfile v3.27.0
+2026-10-09T07:13:16.8680833Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
+2026-10-09T07:13:16.8695237Z [1m[92m  Downloaded[0m bitflags v2.11.0
+2026-10-09T07:13:16.8739938Z [1m[92m  Downloaded[0m parking_lot_core v0.9.12
+2026-10-09T07:13:16.8761069Z [1m[92m  Downloaded[0m toml v0.8.23
+2026-10-09T07:13:16.8785931Z [1m[92m  Downloaded[0m thread_local v1.1.9
+2026-10-09T07:13:16.8802883Z [1m[92m  Downloaded[0m pin-project-lite v0.2.17
+2026-10-09T07:13:16.8939003Z [1m[92m  Downloaded[0m tracing-subscriber v0.3.23
+2026-10-09T07:13:16.9026365Z [1m[92m  Downloaded[0m fallible-streaming-iterator v0.1.9
+2026-10-09T07:13:16.9035940Z [1m[92m  Downloaded[0m zmij v1.0.21
+2026-10-09T07:13:16.9054249Z [1m[92m  Downloaded[0m quote v1.0.45
+2026-10-09T07:13:16.9081396Z [1m[92m  Downloaded[0m sync_wrapper v1.0.2
+2026-10-09T07:13:16.9090776Z [1m[92m  Downloaded[0m tower-service v0.3.3
+2026-10-09T07:13:16.9098566Z [1m[92m  Downloaded[0m zerofrom v0.1.8
+2026-10-09T07:13:16.9109523Z [1m[92m  Downloaded[0m percent-encoding v2.3.2
+2026-10-09T07:13:16.9118431Z [1m[92m  Downloaded[0m windows-collections v0.3.2
+2026-10-09T07:13:16.9129822Z [1m[92m  Downloaded[0m rand_core v0.10.0
+2026-10-09T07:13:16.9146366Z [1m[92m  Downloaded[0m wasm-metadata v0.244.0
+2026-10-09T07:13:16.9170136Z [1m[92m  Downloaded[0m rustversion v1.0.22
+2026-10-09T07:13:16.9198339Z [1m[92m  Downloaded[0m thiserror v2.0.18
+2026-10-09T07:13:16.9263255Z [1m[92m  Downloaded[0m wasi v0.11.1+wasi-snapshot-preview1
+2026-10-09T07:13:16.9279189Z [1m[92m  Downloaded[0m tokio-macros v2.6.1
+2026-10-09T07:13:16.9289850Z [1m[92m  Downloaded[0m foldhash v0.2.0
+2026-10-09T07:13:16.9302328Z [1m[92m  Downloaded[0m nu-ansi-term v0.50.3
+2026-10-09T07:13:16.9327316Z [1m[92m  Downloaded[0m yoke-derive v0.8.4
+2026-10-09T07:13:16.9339180Z [1m[92m  Downloaded[0m zerofrom-derive v0.1.8
+2026-10-09T07:13:16.9349487Z [1m[92m  Downloaded[0m wasm-bindgen-futures v0.4.66
+2026-10-09T07:13:16.9359103Z [1m[92m  Downloaded[0m windows-interface v0.59.3
+2026-10-09T07:13:16.9369287Z [1m[92m  Downloaded[0m futures-core v0.3.32
+2026-10-09T07:13:16.9383894Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-10-09T07:13:16.9399319Z [1m[92m  Downloaded[0m wasm-bindgen-shared v0.2.116
+2026-10-09T07:13:16.9410606Z [1m[92m  Downloaded[0m windows-implement v0.60.2
+2026-10-09T07:13:16.9421757Z [1m[92m  Downloaded[0m dyn-clone v1.0.20
+2026-10-09T07:13:16.9440105Z [1m[92m  Downloaded[0m futures-sink v0.3.32
+2026-10-09T07:13:16.9448860Z [1m[92m  Downloaded[0m futures-task v0.3.32
+2026-10-09T07:13:16.9462548Z [1m[92m  Downloaded[0m unicode-xid v0.2.6
+2026-10-09T07:13:16.9477472Z [1m[92m  Downloaded[0m matchers v0.2.0
+2026-10-09T07:13:16.9488545Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+2026-10-09T07:13:16.9502862Z [1m[92m  Downloaded[0m ident_case v1.0.1
+2026-10-09T07:13:16.9513084Z [1m[92m  Downloaded[0m strsim v0.11.1
+2026-10-09T07:13:16.9526536Z [1m[92m  Downloaded[0m android_system_properties v0.1.5
+2026-10-09T07:13:16.9538986Z [1m[92m  Downloaded[0m ref-cast-impl v1.0.25
+2026-10-09T07:13:16.9547746Z [1m[92m  Downloaded[0m leb128fmt v0.1.0
+2026-10-09T07:13:16.9558717Z [1m[92m  Downloaded[0m id-arena v2.3.0
+2026-10-09T07:13:16.9572790Z [1m[92m  Downloaded[0m wasm-bindgen-macro v0.2.116
+2026-10-09T07:13:16.9582383Z [1m[92m  Downloaded[0m scopeguard v1.2.0
+2026-10-09T07:13:16.9597530Z [1m[92m  Downloaded[0m toml_write v0.1.2
+2026-10-09T07:13:16.9628906Z [1m[92m  Downloaded[0m windows-link v0.2.1
+2026-10-09T07:13:16.9629987Z [1m[92m  Downloaded[0m serde_derive_internals v0.29.1
+2026-10-09T07:13:16.9635782Z [1m[92m  Downloaded[0m futures-macro v0.3.32
+2026-10-09T07:13:16.9648504Z [1m[92m  Downloaded[0m lock_api v0.4.14
+2026-10-09T07:13:16.9661542Z [1m[92m  Downloaded[0m redox_syscall v0.5.18
+2026-10-09T07:13:16.9688158Z [1m[92m  Downloaded[0m signal-hook-registry v1.4.8
+2026-10-09T07:13:16.9700096Z [1m[92m  Downloaded[0m serde_spanned v0.6.9
+2026-10-09T07:13:16.9710671Z [1m[92m  Downloaded[0m autocfg v1.5.0
+2026-10-09T07:13:16.9730573Z [1m[92m  Downloaded[0m equivalent v1.0.2
+2026-10-09T07:13:16.9742447Z [1m[92m  Downloaded[0m shlex v1.3.0
+2026-10-09T07:13:16.9754814Z [1m[92m  Downloaded[0m heck v0.5.0
+2026-10-09T07:13:16.9768226Z [1m[92m  Downloaded[0m errno v0.3.14
+2026-10-09T07:13:16.9783807Z [1m[92m  Downloaded[0m serde_core v1.0.228
+2026-10-09T07:13:16.9811653Z [1m[92m  Downloaded[0m digest v0.10.7
+2026-10-09T07:13:16.9830422Z [1m[92m  Downloaded[0m cfg_aliases v0.2.1
+2026-10-09T07:13:16.9840973Z [1m[92m  Downloaded[0m windows-strings v0.5.1
+2026-10-09T07:13:16.9857067Z [1m[92m  Downloaded[0m sha2 v0.10.9
+2026-10-09T07:13:16.9889483Z [1m[92m  Downloaded[0m libsqlite3-sys v0.38.1
+2026-10-09T07:13:17.0482044Z [1m[92m  Downloaded[0m lazy_static v1.5.0
+2026-10-09T07:13:17.0499814Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+2026-10-09T07:13:17.0509493Z [1m[92m  Downloaded[0m log v0.4.29
+2026-10-09T07:13:17.0533643Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-10-09T07:13:17.0559450Z [1m[92m  Downloaded[0m tracing-core v0.1.36
+2026-10-09T07:13:17.0585492Z [1m[92m  Downloaded[0m tracing-attributes v0.1.31
+2026-10-09T07:13:17.0620928Z [1m[92m  Downloaded[0m sqlite-wasm-rs v0.5.5
+2026-10-09T07:13:17.1415670Z [1m[92m  Downloaded[0m windows v0.62.2
+2026-10-09T07:13:17.7928644Z ##[group]Run set -euo pipefail
+2026-10-09T07:13:17.7929023Z [36;1mset -euo pipefail[0m
+2026-10-09T07:13:17.7929321Z [36;1mmkdir -p "$RUNNER_TEMP/p8-lifecycle"[0m
+2026-10-09T07:13:17.7929832Z [36;1mpython3 scripts/p7_stdio_build_receipt.py --package-kind default --offline --release \[0m
+2026-10-09T07:13:17.7930375Z [36;1m  --output-dir "$RUNNER_TEMP/p8-lifecycle/product"[0m
+2026-10-09T07:13:17.7990783Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:13:17.7991125Z env:
+2026-10-09T07:13:17.7991317Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:13:17.7991533Z   RUSTC_WRAPPER: 
+2026-10-09T07:13:17.7991745Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:13:17.7991991Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:13:17.7992243Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:13:17.7992461Z   CARGO_TERM_COLOR: always
+2026-10-09T07:13:17.7992682Z ##[endgroup]
+2026-10-09T07:17:04.0236851Z {"binary": "/home/runner/work/_temp/p8-lifecycle/product/codecortex", "receipt": "/home/runner/work/_temp/p8-lifecycle/product/build-receipt.json", "package_kind": "default", "features": [], "sha256": "f692024fb5a09c414b091e4dcb1af55cefeb9aadb291c8384c04858be95057ff", "source_commit": "9f7b16f0758eb79f306cf44605b84550f02de441", "source_inputs": 1090, "profile": "release"}
+2026-10-09T07:17:04.0344869Z ##[group]Run set -euo pipefail
+2026-10-09T07:17:04.0345247Z [36;1mset -euo pipefail[0m
+2026-10-09T07:17:04.0345646Z [36;1mcargo build --offline --locked --release -p cc-eval --bin p8-measurements \[0m
+2026-10-09T07:17:04.0346201Z [36;1m  --target-dir "$RUNNER_TEMP/p8-lifecycle/product/cargo-target" \[0m
+2026-10-09T07:17:04.0346642Z [36;1m  --message-format=json-render-diagnostics \[0m
+2026-10-09T07:17:04.0347010Z [36;1m  > "$RUNNER_TEMP/p8-lifecycle/replay-build.jsonl" \[0m
+2026-10-09T07:17:04.0347388Z [36;1m  2> "$RUNNER_TEMP/p8-lifecycle/replay-build.stderr"[0m
+2026-10-09T07:17:04.0347712Z [36;1mpython3 - <<'PY'[0m
+2026-10-09T07:17:04.0348212Z [36;1mimport json, os, pathlib, shutil, sys[0m
+2026-10-09T07:17:04.0348714Z [36;1msys.path.insert(0, 'scripts')[0m
+2026-10-09T07:17:04.0349143Z [36;1mfrom p7_build_identity import file_sha256, source_snapshot, verify_release_profile[0m
+2026-10-09T07:17:04.0349715Z [36;1mroot = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-lifecycle'[0m
+2026-10-09T07:17:04.0350276Z [36;1mrows = [json.loads(line) for line in (root / 'replay-build.jsonl').read_text().splitlines()][0m
+2026-10-09T07:17:04.0350852Z [36;1martifacts = [row for row in rows if row.get('reason') == 'compiler-artifact'[0m
+2026-10-09T07:17:04.0351339Z [36;1m             and row.get('target', {}).get('name') == 'p8-measurements'[0m
+2026-10-09T07:17:04.0351747Z [36;1m             and row.get('target', {}).get('kind') == ['bin']][0m
+2026-10-09T07:17:04.0352188Z [36;1massert len(artifacts) == 1 and any(row.get('reason') == 'build-finished'[0m
+2026-10-09T07:17:04.0352654Z [36;1m                                  and row.get('success') is True for row in rows)[0m
+2026-10-09T07:17:04.0353031Z [36;1martifact = artifacts[0][0m
+2026-10-09T07:17:04.0353348Z [36;1mverify_release_profile(artifact['profile'])[0m
+2026-10-09T07:17:04.0353697Z [36;1mafter = source_snapshot(pathlib.Path.cwd())[0m
+2026-10-09T07:17:04.0354124Z [36;1mproduct = json.loads((root / 'product/build-receipt.json').read_text())[0m
+2026-10-09T07:17:04.0354657Z [36;1massert {k:v for k,v in after.items() if k != 'inputs'} == product['source_after'][0m
+2026-10-09T07:17:04.0355186Z [36;1mproduced = pathlib.Path(artifact['executable']).resolve(strict=True)[0m
+2026-10-09T07:17:04.0355689Z [36;1massert (root / 'product/cargo-target').resolve() in produced.parents[0m
+2026-10-09T07:17:04.0356092Z [36;1msource_sha256 = file_sha256(produced)[0m
+2026-10-09T07:17:04.0356400Z [36;1mbinary = root / 'p8-measurements'[0m
+2026-10-09T07:17:04.0356691Z [36;1mshutil.copy2(produced, binary)[0m
+2026-10-09T07:17:04.0356996Z [36;1massert file_sha256(binary) == source_sha256[0m
+2026-10-09T07:17:04.0357426Z [36;1mcommand = ['cargo', 'build', '--offline', '--locked', '--release', '-p', 'cc-eval',[0m
+2026-10-09T07:17:04.0358198Z [36;1m           '--bin', 'p8-measurements', '--target-dir', str(root / 'product/cargo-target'),[0m
+2026-10-09T07:17:04.0358710Z [36;1m           '--message-format=json-render-diagnostics'][0m
+2026-10-09T07:17:04.0359102Z [36;1mreceipt = {'schema_version': 1, 'build_exit_code': 0,[0m
+2026-10-09T07:17:04.0359599Z [36;1m           'source_before': product['source_before'], 'source_after': product['source_after'],[0m
+2026-10-09T07:17:04.0360102Z [36;1m           'artifact': artifact, 'build_command': command,[0m
+2026-10-09T07:17:04.0360515Z [36;1m           'copy_source': {'path': str(produced), 'sha256': source_sha256},[0m
+2026-10-09T07:17:04.0360914Z [36;1m           'binary_sha256': file_sha256(binary),[0m
+2026-10-09T07:17:04.0361421Z [36;1m           'build_stdout': {'name': 'replay-build.jsonl', 'sha256': file_sha256(root / 'replay-build.jsonl')},[0m
+2026-10-09T07:17:04.0362118Z [36;1m           'build_stderr': {'name': 'replay-build.stderr', 'sha256': file_sha256(root / 'replay-build.stderr')},[0m
+2026-10-09T07:17:04.0362791Z [36;1m           'scope': 'actual release replay build and exact retained binary; not a performance gate'}[0m
+2026-10-09T07:17:04.0363641Z [36;1m(root / 'replay-build-receipt.json').write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n')[0m
+2026-10-09T07:17:04.0364131Z [36;1mPY[0m
+2026-10-09T07:17:04.0423549Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:17:04.0423895Z env:
+2026-10-09T07:17:04.0424085Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:17:04.0424299Z   RUSTC_WRAPPER: 
+2026-10-09T07:17:04.0424506Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:17:04.0424747Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:17:04.0424991Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:17:04.0425204Z   CARGO_TERM_COLOR: always
+2026-10-09T07:17:04.0425424Z ##[endgroup]
+2026-10-09T07:19:19.0362996Z ##[group]Run set -euo pipefail
+2026-10-09T07:19:19.0363339Z [36;1mset -euo pipefail[0m
+2026-10-09T07:19:19.0363795Z [36;1mpython3 scripts/p8_lifecycle.py \[0m
+2026-10-09T07:19:19.0364181Z [36;1m  --binary "$RUNNER_TEMP/p8-lifecycle/product/codecortex" \[0m
+2026-10-09T07:19:19.0364687Z [36;1m  --build-receipt "$RUNNER_TEMP/p8-lifecycle/product/build-receipt.json" \[0m
+2026-10-09T07:19:19.0365195Z [36;1m  --evaluator "$RUNNER_TEMP/p8-lifecycle/p8-measurements" \[0m
+2026-10-09T07:19:19.0365725Z [36;1m  --evaluator-build-receipt "$RUNNER_TEMP/p8-lifecycle/replay-build-receipt.json" \[0m
+2026-10-09T07:19:19.0366303Z [36;1m  --profile release --cold-samples 30 --query-samples 400 --files 32 \[0m
+2026-10-09T07:19:19.0366789Z [36;1m  --run-timeout-seconds 3600 --artifact-budget-bytes 536870912 \[0m
+2026-10-09T07:19:19.0367232Z [36;1m  --output-dir "$RUNNER_TEMP/p8-lifecycle/measurement"[0m
+2026-10-09T07:19:19.0367807Z [36;1mpython3 scripts/p8_lifecycle.py verify --output-dir "$RUNNER_TEMP/p8-lifecycle/measurement"[0m
+2026-10-09T07:19:19.0427262Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:19:19.0427614Z env:
+2026-10-09T07:19:19.0427803Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:19:19.0428294Z   RUSTC_WRAPPER: 
+2026-10-09T07:19:19.0428520Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:19:19.0428771Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:19:19.0429027Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:19:19.0429250Z   CARGO_TERM_COLOR: always
+2026-10-09T07:19:19.0429469Z ##[endgroup]
+2026-10-09T07:21:03.0287543Z {"status": "complete_observation", "exit_code": 0, "output": "/home/runner/work/_temp/p8-lifecycle/measurement"}
+2026-10-09T07:21:03.6291054Z {"status": "sealed_raw_verified", "files": 2381, "receipt_sha256": "6c0c6e21150216d4b46b5872047c6d6cf6a31d4a8f122bf5a07b70fde45c376c"}
+2026-10-09T07:21:03.6434521Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T07:21:03.6434834Z with:
+2026-10-09T07:21:03.6435121Z   name: p8-lifecycle-9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:21:03.6435704Z   path: /home/runner/work/_temp/p8-lifecycle
+!/home/runner/work/_temp/p8-lifecycle/product/cargo-target/**
+
+2026-10-09T07:21:03.6436227Z   include-hidden-files: true
+2026-10-09T07:21:03.6436492Z   retention-days: 21
+2026-10-09T07:21:03.6436714Z   if-no-files-found: error
+2026-10-09T07:21:03.6436946Z   compression-level: 6
+2026-10-09T07:21:03.6437159Z   overwrite: false
+2026-10-09T07:21:03.6437351Z env:
+2026-10-09T07:21:03.6437529Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:21:03.6437737Z   RUSTC_WRAPPER: 
+2026-10-09T07:21:03.6438207Z   RUSTC_WORKSPACE_WRAPPER: 
+2026-10-09T07:21:03.6438479Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:21:03.6438738Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:21:03.6438955Z   CARGO_TERM_COLOR: always
+2026-10-09T07:21:03.6439179Z ##[endgroup]
+2026-10-09T07:21:03.8114688Z (node:17719) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T07:21:03.8115586Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T07:21:04.4407367Z With the provided path, there will be 2391 files uploaded
+2026-10-09T07:21:04.4413789Z Artifact name is valid!
+2026-10-09T07:21:04.4414348Z Root directory input is valid!
+2026-10-09T07:21:04.6897025Z Beginning upload of artifact content to blob storage
+2026-10-09T07:21:05.8761067Z (node:17719) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T07:21:06.1894448Z Uploaded bytes 8388608
+2026-10-09T07:21:07.1417611Z Uploaded bytes 16777216
+2026-10-09T07:21:08.7811788Z Uploaded bytes 25165824
+2026-10-09T07:21:10.0934977Z Uploaded bytes 33554432
+2026-10-09T07:21:11.1146286Z Uploaded bytes 41943040
+2026-10-09T07:21:11.6984059Z Uploaded bytes 49220701
+2026-10-09T07:21:11.7184035Z Finished uploading artifact content to blob storage!
+2026-10-09T07:21:11.7187888Z SHA256 digest of uploaded artifact zip is ce8fa5b4e19321a1ff3dc2d738ffa5347b405ccd2e515063223157b564d5c157
+2026-10-09T07:21:11.7190789Z Finalizing artifact upload
+2026-10-09T07:21:11.9505583Z Artifact p8-lifecycle-9f7b16f0758eb79f306cf44605b84550f02de441.zip successfully finalized. Artifact ID 11601537047
+2026-10-09T07:21:11.9507552Z Artifact p8-lifecycle-9f7b16f0758eb79f306cf44605b84550f02de441 has been successfully uploaded! Final size is 49220701 bytes. Artifact ID is 11601537047
+2026-10-09T07:21:11.9514935Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37896539337/artifacts/11601537047
+2026-10-09T07:21:11.9819521Z Post job cleanup.
+2026-10-09T07:21:12.0633575Z [command]/usr/bin/git version
+2026-10-09T07:21:12.0671179Z git version 2.55.0
+2026-10-09T07:21:12.0709961Z Temporarily overriding HOME='/home/runner/work/_temp/b65cfbce-588c-4b9b-b776-4ace29df02e4' before making global git config changes
+2026-10-09T07:21:12.0711344Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:21:12.0716053Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:21:12.0752823Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:21:12.0789870Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:21:12.1028457Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:21:12.1051239Z http.https://github.com/.extraheader
+2026-10-09T07:21:12.1061588Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T07:21:12.1094609Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:21:12.1333115Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:21:12.1363784Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:21:12.1733320Z Cleaning up orphan processes
+2026-10-09T07:21:12.2031930Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

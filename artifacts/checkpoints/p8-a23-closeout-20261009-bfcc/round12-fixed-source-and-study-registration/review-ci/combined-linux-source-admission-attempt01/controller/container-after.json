@@ -1,0 +1,285 @@
+{
+  "AppArmorProfile": "",
+  "Args": [
+    "/observer/controller.py"
+  ],
+  "Config": {
+    "AttachStderr": true,
+    "AttachStdin": false,
+    "AttachStdout": true,
+    "Cmd": [
+      "/usr/local/bin/python3",
+      "/observer/controller.py"
+    ],
+    "Domainname": "",
+    "Entrypoint": null,
+    "Env": [
+      "GIT_OPTIONAL_LOCKS=0",
+      "GIT_NO_LAZY_FETCH=1",
+      "GIT_CONFIG_GLOBAL=/dev/null",
+      "GIT_CONFIG_NOSYSTEM=1",
+      "GIT_CONFIG_COUNT=1",
+      "GIT_CONFIG_VALUE_0=/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+      "TMPDIR=/output/tmp",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "GIT_TERMINAL_PROMPT=0",
+      "GIT_CONFIG_KEY_0=safe.directory",
+      "TMP=/output/tmp",
+      "TEMP=/output/tmp",
+      "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LANG=C.UTF-8",
+      "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+      "PYTHON_VERSION=3.12.15",
+      "PYTHON_SHA256=c2c4321961fab0fb999d66e0cecf521c2ab3994c7992873ea99e306c1094fd5a"
+    ],
+    "Hostname": "p8-v15-source-verifier",
+    "Image": "docker.io/library/python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "Labels": {},
+    "OnBuild": null,
+    "OpenStdin": false,
+    "StdinOnce": false,
+    "StopTimeout": 1,
+    "Tty": false,
+    "User": "",
+    "Volumes": null,
+    "WorkingDir": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined"
+  },
+  "Created": "2026-10-09T07:01:39.199396093Z",
+  "Driver": "overlayfs",
+  "ExecIDs": null,
+  "GraphDriver": {
+    "Data": null,
+    "Name": "overlayfs"
+  },
+  "HostConfig": {
+    "AutoRemove": false,
+    "Binds": null,
+    "BlkioDeviceReadBps": [],
+    "BlkioDeviceReadIOps": [],
+    "BlkioDeviceWriteBps": [],
+    "BlkioDeviceWriteIOps": [],
+    "BlkioWeight": 0,
+    "BlkioWeightDevice": [],
+    "CapAdd": null,
+    "CapDrop": [
+      "ALL"
+    ],
+    "Cgroup": "",
+    "CgroupParent": "",
+    "CgroupnsMode": "private",
+    "ConsoleSize": [
+      0,
+      0
+    ],
+    "ContainerIDFile": "",
+    "CpuCount": 0,
+    "CpuPercent": 0,
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "CpuRealtimePeriod": 0,
+    "CpuRealtimeRuntime": 0,
+    "CpuShares": 0,
+    "CpusetCpus": "",
+    "CpusetMems": "",
+    "DeviceCgroupRules": null,
+    "DeviceRequests": null,
+    "Devices": [],
+    "Dns": [],
+    "DnsOptions": [],
+    "DnsSearch": [],
+    "ExtraHosts": null,
+    "GroupAdd": null,
+    "IOMaximumBandwidth": 0,
+    "IOMaximumIOps": 0,
+    "IpcMode": "private",
+    "Isolation": "",
+    "Links": null,
+    "LogConfig": {
+      "Config": {},
+      "Type": "json-file"
+    },
+    "MaskedPaths": [
+      "/proc/asound",
+      "/proc/acpi",
+      "/proc/interrupts",
+      "/proc/kcore",
+      "/proc/keys",
+      "/proc/latency_stats",
+      "/proc/timer_list",
+      "/proc/timer_stats",
+      "/proc/sched_debug",
+      "/proc/scsi",
+      "/sys/firmware",
+      "/sys/devices/virtual/powercap"
+    ],
+    "Memory": 2147483648,
+    "MemoryReservation": 0,
+    "MemorySwap": 4294967296,
+    "MemorySwappiness": null,
+    "Mounts": [
+      {
+        "ReadOnly": true,
+        "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "Target": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+        "Type": "bind"
+      },
+      {
+        "ReadOnly": true,
+        "Source": "/Users/jin/Desktop/codecortex-rust/.git",
+        "Target": "/Users/jin/Desktop/codecortex-rust/.git",
+        "Type": "bind"
+      },
+      {
+        "ReadOnly": true,
+        "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/observer",
+        "Target": "/observer",
+        "Type": "bind"
+      },
+      {
+        "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/output",
+        "Target": "/output",
+        "Type": "bind"
+      }
+    ],
+    "NanoCpus": 2000000000,
+    "NetworkMode": "none",
+    "OomKillDisable": null,
+    "OomScoreAdj": 0,
+    "PidMode": "",
+    "PidsLimit": 128,
+    "PortBindings": {},
+    "Privileged": false,
+    "PublishAllPorts": false,
+    "ReadonlyPaths": [
+      "/proc/bus",
+      "/proc/fs",
+      "/proc/irq",
+      "/proc/sys",
+      "/proc/sysrq-trigger"
+    ],
+    "ReadonlyRootfs": true,
+    "RestartPolicy": {
+      "MaximumRetryCount": 0,
+      "Name": "no"
+    },
+    "Runtime": "runc",
+    "SecurityOpt": [
+      "no-new-privileges"
+    ],
+    "ShmSize": 67108864,
+    "Tmpfs": {
+      "/tmp": "rw,noexec,nosuid,size=64m"
+    },
+    "UTSMode": "",
+    "Ulimits": [],
+    "UsernsMode": "",
+    "VolumeDriver": "",
+    "VolumesFrom": null
+  },
+  "HostnamePath": "/var/lib/docker/containers/d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675/hostname",
+  "HostsPath": "/var/lib/docker/containers/d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675/hosts",
+  "Id": "d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675",
+  "Image": "sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+  "ImageManifestDescriptor": {
+    "digest": "sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    },
+    "size": 2319
+  },
+  "LogPath": "/var/lib/docker/containers/d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675/d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675-json.log",
+  "MountLabel": "",
+  "Mounts": [
+    {
+      "Destination": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/Users/jin/Desktop/codecortex-rust/.git",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/.git",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/observer",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/observer",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/output",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": true,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/output",
+      "Type": "bind"
+    }
+  ],
+  "Name": "/p8-v15-combined-bfcc-9f7b16f0758e-attempt01",
+  "NetworkSettings": {
+    "Bridge": "",
+    "EndpointID": "",
+    "Gateway": "",
+    "GlobalIPv6Address": "",
+    "GlobalIPv6PrefixLen": 0,
+    "HairpinMode": false,
+    "IPAddress": "",
+    "IPPrefixLen": 0,
+    "IPv6Gateway": "",
+    "LinkLocalIPv6Address": "",
+    "LinkLocalIPv6PrefixLen": 0,
+    "MacAddress": "",
+    "Networks": {
+      "none": {
+        "Aliases": null,
+        "DNSNames": null,
+        "DriverOpts": null,
+        "EndpointID": "",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "GwPriority": 0,
+        "IPAMConfig": null,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "Links": null,
+        "MacAddress": "",
+        "NetworkID": "4a352b80f1ce0f999a9007bb1b2119c16c57f2e6aab02c14920e49ed41e554bb"
+      }
+    },
+    "Ports": {},
+    "SandboxID": "",
+    "SandboxKey": "",
+    "SecondaryIPAddresses": null,
+    "SecondaryIPv6Addresses": null
+  },
+  "Path": "/usr/local/bin/python3",
+  "Platform": "linux",
+  "ProcessLabel": "",
+  "ResolvConfPath": "/var/lib/docker/containers/d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675/resolv.conf",
+  "RestartCount": 0,
+  "State": {
+    "Dead": false,
+    "Error": "",
+    "ExitCode": 0,
+    "FinishedAt": "2026-10-09T07:36:34.929565632Z",
+    "OOMKilled": false,
+    "Paused": false,
+    "Pid": 0,
+    "Restarting": false,
+    "Running": false,
+    "StartedAt": "2026-10-09T07:01:39.297329968Z",
+    "Status": "exited"
+  }
+}

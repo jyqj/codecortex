@@ -1,0 +1,23 @@
+--- review-runtime/soak-stdio-binding-review.py
++++ review-pr/pr178-ci-observation/reviewer-scripts/soak-stdio-binding-review-v3.py
+@@ -1,7 +1,7 @@
+ from pathlib import Path
+ import sys,json,hashlib,collections,datetime
+ sys.dont_write_bytecode=True
+-aid=int(sys.argv[1]);root=Path.cwd();base=root/'raw'/str(aid)/'extracted/p8-runtime';review=root/'review-runtime'
++aid=int(sys.argv[1]);root=Path.cwd();base=root/'raw-pr178-9f7b16f'/str(aid)/'extracted/p8-runtime';review=root/'review-pr/pr178-ci-observation/raw-review'
+ read=lambda p:json.loads(p.read_text())
+ key=lambda value:hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+ errors=[];checks=collections.Counter()
+@@ -9,9 +9,9 @@
+  checks[name]+=1
+  if not value and len(errors)<100:errors.append(name)
+ original=read(base/'report.json');plan=read(base/'plan.json')
+-prior=read(review/('runtime-'+str(aid)+'-review-v2.json'))
++prior=read(review/('runtime-'+str(aid)+'-review-v3.json'))
+ check(prior['review_status']=='raw_and_receipt_review_passed' and prior['errors']==[],'primary_independent_original_gate_review')
+-check(plan['profile']=='soak' and plan['operations']==3601 and prior['source_sha']=='a23bb72d3c954f385b99fe81ce9189885c208557','fixed_original_source_and_soak_profile')
++check(plan['profile']=='soak' and plan['operations']==3601 and prior['source_sha']=='9f7b16f0758eb79f306cf44605b84550f02de441','fixed_original_source_and_soak_profile')
+ raw=[json.loads(x) for x in (base/'raw.jsonl').open()]
+ ops=[x for x in raw if x['kind']=='operation']
+ reads=sorted([x for x in ops if x['operation']=='read'],key=lambda x:x['call_started_ns'])

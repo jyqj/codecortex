@@ -1,0 +1,24 @@
+{
+  "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "source_scope": "independent root review of the exact five implementation/test/document patches and the required nearest_rank, row validation, replay and active driver context; not a full P/R/G or execution acceptance",
+  "findings": [
+    "LegacyLatencyNs calls the existing nearest_rank over sorted original u64 nanoseconds; no microsecond reverse-conversion, empty groups remain null.",
+    "Runtime replay validates complete terminal rows and monotonic timing before subtracting finished_ns-offered_ns; all success/error/canceled/queue_rejected outcomes remain in the legacy population.",
+    "Python consumes the just-verified immutable statistics bytes and checks their SHA-256 immediately before copying legacy fields; it removes its duplicate latency_summary calculation.",
+    "The removed direct Python calculation test is covered by the added Rust all-terminal and precision controls; active-copy and post-verification tamper controls exercise the driver connection.",
+    "Original microsecond distributions and successful-attempt subset/CI logic are unchanged; new documentation does not grant tail stability or release claims."
+  ],
+  "actual_current_checks": {
+    "at": "2026-10-09T07:31:09Z",
+    "created": 25,
+    "success": 21,
+    "pending": 4,
+    "failed": 0
+  },
+  "integration_limit": "Current source bindings differ from the accepted #173 / frozen #178 source line. Keep this unique PR open; integrate only with a separately reviewed exact product/validation map and preserve original executions.",
+  "todo": {
+    "done": 163,
+    "remaining": 29,
+    "new_completed": 0
+  }
+}

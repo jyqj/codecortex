@@ -1,0 +1,859 @@
+{
+  "blockers": [],
+  "diagnostic_controller_source_identity": {
+    "bytes": 15883,
+    "commit": "b17535f5e762bf8afbea9978ccf02f7070ba6940",
+    "lines_read": "Full controller source (296 content lines plus final newline); no holdout content",
+    "path": "artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009/run_diagnostic.py",
+    "sha256": "be25d30eae5a3b59837b87845d9969867aa366a8453068fea6ce90cdad8b8455"
+  },
+  "diagnostic_workflow": "name: P8 Mac supervisor diagnostic\n\non: [create]\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: p8-mac-supervisor-diagnostic-${{ github.ref }}\n  cancel-in-progress: false\n\nenv:\n  PYTHONDONTWRITEBYTECODE: \"1\"\n  DIAG_SOURCE: a23bb72d3c954f385b99fe81ce9189885c208557\n\njobs:\n  source_admission:\n    if: github.event.ref_type == 'branch' && github.event.ref == 'task/p8-mac-supervisor-diagnostic-a217-20261009'\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.sha }}\n          fetch-depth: 0\n          persist-credentials: false\n      - name: Verify all fixed product and validation inputs with the unchanged v15 implementation\n        shell: bash\n        run: |\n          set -euo pipefail\n          mkdir \"$RUNNER_TEMP/mac-source-admission\"\n          git rev-parse HEAD > \"$RUNNER_TEMP/mac-source-admission/execution-head.txt\"\n          set +e\n          python3 -B scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 > \"$RUNNER_TEMP/mac-source-admission/stdout.log\" 2> \"$RUNNER_TEMP/mac-source-admission/stderr.log\"\n          result=$?\n          set -e\n          echo \"$result\" > \"$RUNNER_TEMP/mac-source-admission/exit-code.txt\"\n          exit \"$result\"\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: mac-diagnostic-source-admission-${{ github.sha }}\n          path: ${{ runner.temp }}/mac-source-admission\n          if-no-files-found: error\n\n  diagnose:\n    needs: source_admission\n    runs-on: macos-15\n    timeout-minutes: 35\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.sha }}\n          path: admission\n          fetch-depth: 0\n          persist-credentials: false\n      - uses: actions/checkout@v4\n        with:\n          ref: a23bb72d3c954f385b99fe81ce9189885c208557\n          path: source-e\n          persist-credentials: false\n      - uses: dtolnay/rust-toolchain@1.95.0\n      - name: Bind the two reviewed diagnostic sources and execute one observation pair\n        shell: bash\n        run: |\n          set -euo pipefail\n          python3 -B - <<'PY'\n          import hashlib\n          from pathlib import Path\n          root = Path(\"admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009\")\n          expected = {\n              \"observer.rs\": \"b0f4c7c3b2aa9454b147bdc9ac36eebe6c08cec881d34b26d3784e04c01c3533\",\n              \"run_diagnostic.py\": \"be25d30eae5a3b59837b87845d9969867aa366a8453068fea6ce90cdad8b8455\",\n          }\n          for name, digest in expected.items():\n              path = root / name\n              assert path.is_file() and not path.is_symlink()\n              assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, name\n          PY\n          python3 -B admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009/run_diagnostic.py --source \"$GITHUB_WORKSPACE/source-e\" --observer \"$GITHUB_WORKSPACE/admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009/observer.rs\" --output \"$RUNNER_TEMP/p8-mac-supervisor-diagnostic\" --execution-sha \"${{ github.sha }}\"\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: mac-supervisor-diagnostic-${{ github.sha }}\n          path: ${{ runner.temp }}/p8-mac-supervisor-diagnostic\n          include-hidden-files: true\n          if-no-files-found: error\n",
+  "documents": [
+    {
+      "bytes": 3565,
+      "neighboring_context": [
+        {
+          "line": 64,
+          "text": "  --target-dir target/p0-validation \\"
+        },
+        {
+          "line": 65,
+          "text": "  --evidence-dir artifacts/benchmarks/a-new-validation-run \\"
+        },
+        {
+          "line": 66,
+          "text": "  --product-binary /path/to/exact/codecortex"
+        },
+        {
+          "line": 67,
+          "text": "```"
+        },
+        {
+          "line": 68,
+          "text": ""
+        },
+        {
+          "line": 69,
+          "text": "该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。"
+        },
+        {
+          "line": 70,
+          "text": ""
+        },
+        {
+          "line": 71,
+          "text": "记录平台结论时同时注明源码、实际 OS/架构、Rust 工具链与所选 SDK；没有采集的 SDK"
+        },
+        {
+          "line": 72,
+          "text": "版本写明 unknown，不从构建成功推断。新 target 的产品冷构建、完整 workspace 测试、"
+        },
+        {
+          "line": 73,
+          "text": "单个测试和独立诊断各自保留命令、退出码与前置条件；使用预先执行过的 helper 时明确"
+        },
+        {
+          "line": 74,
+          "text": "记录准备步骤，不能据此重标首次执行 helper 的旧失败。已知范围见"
+        },
+        {
+          "line": 75,
+          "text": "[平台证据边界](docs/BENCHMARK.md#p8-平台证据边界2026-10-09)。"
+        },
+        {
+          "line": 76,
+          "text": ""
+        },
+        {
+          "line": 77,
+          "text": "## 文档约定"
+        },
+        {
+          "line": 78,
+          "text": ""
+        },
+        {
+          "line": 79,
+          "text": "- 文档语言为简体中文；代码标识符、命令、日志、错误信息保留原文。"
+        },
+        {
+          "line": 80,
+          "text": "  `docs/benchmarks/` 下的报告由测试生成（英文），不手工编辑。"
+        }
+      ],
+      "path": "CONTRIBUTING.md",
+      "reviewed_added_lines": [
+        71,
+        75
+      ],
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780"
+    },
+    {
+      "bytes": 23611,
+      "neighboring_context": [
+        {
+          "line": 9,
+          "text": "文档的 schema/表数/工具数/关键默认值由"
+        },
+        {
+          "line": 10,
+          "text": "[P8-FACTS](roadmap/code-index-v2/P8-FACTS.md) 生成并检查。"
+        },
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "这些是本地工程能力和验证入口；完整 release profile、holdout、100k、受控尾延迟、"
+        },
+        {
+          "line": 13,
+          "text": "真实 provider 收益及 G8 需各自当前候选证据。普通 baseline 或 comparison 的退出码 0"
+        },
+        {
+          "line": 14,
+          "text": "不能自动提升为发行认证。下方 legacy 观测、目标值和历史性能结论保持各自原测量范围。"
+        },
+        {
+          "line": 15,
+          "text": ""
+        },
+        {
+          "line": 16,
+          "text": "### P8 平台证据边界（2026-10-09）"
+        },
+        {
+          "line": 17,
+          "text": ""
+        },
+        {
+          "line": 18,
+          "text": "固定源码 `a23bb72d3c954f385b99fe81ce9189885c208557` 的"
+        },
+        {
+          "line": 19,
+          "text": "[八格平台执行](https://github.com/jyqj/codecortex/actions/runs/37871838952)"
+        },
+        {
+          "line": 20,
+          "text": "覆盖 Linux/macOS × Rust 1.95.0/stable × default/semantic：每格使用新 target，"
+        },
+        {
+          "line": 21,
+          "text": "执行 release 产品构建和 stdio smoke。这证明受测组合的构建与所执行协议；"
+        },
+        {
+          "line": 22,
+          "text": "原回执没有记录 macOS SDK 版本，不能据此认证任意 SDK，也不等于 workspace"
+        },
+        {
+          "line": 23,
+          "text": "回归、安装/卸载或完整发行验证。"
+        },
+        {
+          "line": 24,
+          "text": ""
+        },
+        {
+          "line": 25,
+          "text": "同一源码在 macOS 26.6.2、Rust 1.95.0、SDK 15.4 的"
+        },
+        {
+          "line": 26,
+          "text": "[原 workspace 执行](https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json)"
+        },
+        {
+          "line": 27,
+          "text": "保留 exit 101；`subprocess_descendant_cannot_hold_stderr_past_worker_deadline`"
+        },
+        {
+          "line": 28,
+          "text": "失败后的原 binary 单项执行也失败。这是未闭合的工程回归，不能由冷构建成功抵消。"
+        },
+        {
+          "line": 29,
+          "text": ""
+        },
+        {
+          "line": 30,
+          "text": "[后续 hosted macOS 15 诊断](https://github.com/jyqj/codecortex/actions/runs/37892853323)"
+        },
+        {
+          "line": 31,
+          "text": "使用未修改的该源码，仅运行原单项测试和独立 observer；工作流状态成功，原 artifact"
+        },
+        {
+          "line": 32,
+          "text": "尚待独立复核。它不代表 macOS 26.6.2 或完整 workspace 已通过，也不回写旧失败。"
+        },
+        {
+          "line": 33,
+          "text": "准备好 helper 后的测试与首次执行新 helper 的测试应分别记录前置条件；二者的通过"
+        },
+        {
+          "line": 34,
+          "text": "不能互换。当前平台范围和未完成项仍由各固定源码的原件与任务台账决定。"
+        },
+        {
+          "line": 35,
+          "text": ""
+        },
+        {
+          "line": 36,
+          "text": "## P2-D：连续变更、独立真值与成本"
+        },
+        {
+          "line": 37,
+          "text": ""
+        },
+        {
+          "line": 38,
+          "text": "`cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。"
+        },
+        {
+          "line": 39,
+          "text": ""
+        }
+      ],
+      "path": "docs/BENCHMARK.md",
+      "reviewed_added_lines": [
+        16,
+        34
+      ],
+      "sha256": "ca9c3c64dbcb3e8ced649ffd217e29da29de261f4308c4be9625121744927c90"
+    }
+  ],
+  "files": [
+    {
+      "additions": 6,
+      "deletions": 0,
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+      "patch": "@@ -68,6 +68,12 @@ python3 scripts/p0-validation.py \\\n \n 该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。\n \n+记录平台结论时同时注明源码、实际 OS/架构、Rust 工具链与所选 SDK；没有采集的 SDK\n+版本写明 unknown，不从构建成功推断。新 target 的产品冷构建、完整 workspace 测试、\n+单个测试和独立诊断各自保留命令、退出码与前置条件；使用预先执行过的 helper 时明确\n+记录准备步骤，不能据此重标首次执行 helper 的旧失败。已知范围见\n+[平台证据边界](docs/BENCHMARK.md#p8-平台证据边界2026-10-09)。\n+\n ## 文档约定\n \n - 文档语言为简体中文；代码标识符、命令、日志、错误信息保留原文。",
+      "path": "CONTRIBUTING.md",
+      "status": "modified"
+    },
+    {
+      "additions": 20,
+      "deletions": 0,
+      "git_blob": "03b976a8e4ae4849c347afdb2826e8abb9db2df5",
+      "patch": "@@ -13,6 +13,26 @@\n 真实 provider 收益及 G8 需各自当前候选证据。普通 baseline 或 comparison 的退出码 0\n 不能自动提升为发行认证。下方 legacy 观测、目标值和历史性能结论保持各自原测量范围。\n \n+### P8 平台证据边界（2026-10-09）\n+\n+固定源码 `a23bb72d3c954f385b99fe81ce9189885c208557` 的\n+[八格平台执行](https://github.com/jyqj/codecortex/actions/runs/37871838952)\n+覆盖 Linux/macOS × Rust 1.95.0/stable × default/semantic：每格使用新 target，\n+执行 release 产品构建和 stdio smoke。这证明受测组合的构建与所执行协议；\n+原回执没有记录 macOS SDK 版本，不能据此认证任意 SDK，也不等于 workspace\n+回归、安装/卸载或完整发行验证。\n+\n+同一源码在 macOS 26.6.2、Rust 1.95.0、SDK 15.4 的\n+[原 workspace 执行](https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json)\n+保留 exit 101；`subprocess_descendant_cannot_hold_stderr_past_worker_deadline`\n+失败后的原 binary 单项执行也失败。这是未闭合的工程回归，不能由冷构建成功抵消。\n+\n+[后续 hosted macOS 15 诊断](https://github.com/jyqj/codecortex/actions/runs/37892853323)\n+使用未修改的该源码，仅运行原单项测试和独立 observer；工作流状态成功，原 artifact\n+尚待独立复核。它不代表 macOS 26.6.2 或完整 workspace 已通过，也不回写旧失败。\n+准备好 helper 后的测试与首次执行新 helper 的测试应分别记录前置条件；二者的通过\n+不能互换。当前平台范围和未完成项仍由各固定源码的原件与任务台账决定。\n+\n ## P2-D：连续变更、独立真值与成本\n \n `cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。",
+      "path": "docs/BENCHMARK.md",
+      "status": "modified"
+    }
+  ],
+  "findings": [
+    {
+      "assessment": "Supported by original all-eight collector and eight copied original receipt hashes. Each target_initially_absent=true, build exit0, release profile. Dependency cache is explicitly reused/nonhermetic in receipts; doc says new target, not dependency/network/OS cold. No cache-less or hermetic claim.",
+      "claim": "All eight fixed-a23 platform cells use a new target for release product build and real stdio smoke."
+    },
+    {
+      "assessment": "Independently read all eight copied original receipt JSON bodies; no SDK field/text. Four macOS receipt hashes match prior original artifact audits. Missing SDK is unknown, not invented or inferred from build success.",
+      "claim": "Original platform receipts did not record macOS SDK version."
+    },
+    {
+      "assessment": "Original workspace receipt actual101, stdout names specified test FAILED; original isolated receipt actual101 and original stdout0passed/1failed/11filtered. Source/binary unchanged receipts retained. Original toolchain explicitly SDK15.4/Rust1.95, original preflight records Mac OS26.6.2. This is a source-scoped historical unresolved result; it does not assert later distinct Mac-fixed candidates failed.",
+      "claim": "Exact a23 Mac26.6.2 Rust1.95 SDK15.4 workspace failed, and original binary exact test also failed."
+    },
+    {
+      "assessment": "Public workflow run head is diagnostic wrapper b17535f, but workflow's second checkout pins a23 into source-e. Controller binds E=a23/tree58147, 1087product/138validation before and after, only original exact test plus standalone observer. Actual jobs success. Original ZIP was not independently accepted here; wording correctly limits claim to status.",
+      "claim": "Hosted macOS15 diagnostic uses unchanged a23; workflow succeeded, artifact remains unreviewed."
+    },
+    {
+      "assessment": "Consistent with original fresh-vs-reused observer and fixture repair design. Added lines do not change250ms/2s or1ms budgets, tests, primary samples, acceptance thresholds or release gates.",
+      "claim": "Prepared helper versus fresh helper executions must keep separate preconditions; neither rewrites old failures."
+    },
+    {
+      "assessment": "Explicit a23 paragraph plus dated heading and last sentence preserves source scope. No assertion a23 is current main; no TODO marked complete; links are fixed source/run. Existing adjacent docs keep release/holdout/100k gates separate. CONTRIBUTING adds reporting clarity, no new execution prerequisite.",
+      "claim": "Current platform scope and incomplete work follow fixed-source originals and ledger."
+    }
+  ],
+  "g2_observation": {
+    "head": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "job_id": 113654983347,
+    "native_step7_since": "2026-10-09T03:29:05Z",
+    "new_credit": 0,
+    "observed_at_utc": "2026-10-09T07:11Z",
+    "run_id": 37877604259,
+    "status": "in_progress"
+  },
+  "github": {
+    "observed_checks_snapshot_at_utc": "2026-10-09T07:09Z",
+    "observed_checks_summary": "18 visible jobs: 4 success, 1 in_progress, 13 queued; platform collector not yet created. Queued workflow status is not evidence of no active jobs. No failed current-head job at this snapshot.",
+    "pr": {
+      "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "draft": false,
+      "head": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "number": 177,
+      "state": "open"
+    },
+    "protection": {
+      "gh_required_checks_result": "exit1: no required checks reported on the task/p8-platform-evidence-docs-a217-20261009 branch",
+      "limitation": "No private administrator protection detail read. Visible branch/rulesets and authenticated gh required-check view agree.",
+      "main_commit": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "protected": false,
+      "protection": {
+        "enabled": false,
+        "required_status_checks": {
+          "checks": [],
+          "contexts": [],
+          "enforcement_level": "off"
+        }
+      },
+      "rulesets": []
+    },
+    "reference_runs": [
+      {
+        "conclusion": "success",
+        "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "id": 37871838952,
+        "purpose": "Eight platform cold-target product builds and original collector"
+      },
+      {
+        "conclusion": "success",
+        "head": "b17535f5e762bf8afbea9978ccf02f7070ba6940",
+        "id": 37892853323,
+        "product_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "purpose": "HostedmacOS15 original isolated test and separate observer; raw independent intake pending"
+      }
+    ],
+    "runs": [
+      {
+        "conclusion": null,
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "id": 37896189205,
+        "jobs": [
+          {
+            "completed_at": "2026-10-09T07:02:59Z",
+            "conclusion": "success",
+            "id": 113707954971,
+            "name": "actual recovery and rollback matrix",
+            "started_at": "2026-10-09T06:58:00Z",
+            "status": "completed"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955275,
+            "name": "cold linux / stable / semantic",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955303,
+            "name": "cold macos / stable / default",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": "2026-10-09T07:08:29Z",
+            "conclusion": "success",
+            "id": 113707955313,
+            "name": "cold macos / stable / semantic",
+            "started_at": "2026-10-09T07:01:52Z",
+            "status": "completed"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955350,
+            "name": "cold linux / 1.95 / semantic",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955359,
+            "name": "cold macos / 1.95 / default",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955384,
+            "name": "cold linux / 1.95 / default",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955576,
+            "name": "cold macos / 1.95 / semantic",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955640,
+            "name": "cold linux / stable / default",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          }
+        ],
+        "name": "P8 platform cold builds",
+        "status": "queued"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "id": 37896189209,
+        "jobs": [
+          {
+            "completed_at": "2026-10-09T07:09:14Z",
+            "conclusion": "success",
+            "id": 113707954982,
+            "name": "security",
+            "started_at": "2026-10-09T07:06:05Z",
+            "status": "completed"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955228,
+            "name": "msrv",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955284,
+            "name": "check",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          }
+        ],
+        "name": "CI",
+        "status": "queued"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "id": 37896189170,
+        "jobs": [
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707954904,
+            "name": "mechanism",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955134,
+            "name": "offline (default)",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955209,
+            "name": "closeout",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          },
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955246,
+            "name": "offline (semantic)",
+            "started_at": "2026-10-09T06:56:20Z",
+            "status": "queued"
+          }
+        ],
+        "name": "P7 closeout evidence",
+        "status": "queued"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "id": 37896189238,
+        "jobs": [
+          {
+            "completed_at": null,
+            "conclusion": null,
+            "id": 113707955627,
+            "name": "lifecycle",
+            "started_at": "2026-10-09T07:04:50Z",
+            "status": "in_progress"
+          }
+        ],
+        "name": "P8 lifecycle and resource observations",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+        "id": 37896189134,
+        "jobs": [
+          {
+            "completed_at": "2026-10-09T07:07:43Z",
+            "conclusion": "success",
+            "id": 113707954884,
+            "name": "engineering",
+            "started_at": "2026-10-09T07:04:35Z",
+            "status": "completed"
+          }
+        ],
+        "name": "P7 engineering regressions",
+        "status": "completed"
+      }
+    ]
+  },
+  "limitations": [
+    "Documentation review only, no current combined or historical source performance credit.",
+    "No original diagnostic ZIP intake performed. Workflow status is not substituted for independent raw review.",
+    "No assertion of universal SDK compatibility or fresh-helper cold-launch under250ms.",
+    "No remote mutation or new execution."
+  ],
+  "local_evidence": [
+    {
+      "bytes": 27135,
+      "path": "review-platform/platform-eight-cell-collector-audit.json",
+      "sha256": "4aa43978287f8eefb1a9aafa276f432cce01c402d9266a89abeecfa174da725f"
+    },
+    {
+      "bytes": 46643,
+      "path": "review-platform/independent-acceptance.json",
+      "sha256": "a3a53aa51475e1de2b8ba7036240e723e34ce1cfe08a3383dded043f104085e7"
+    },
+    {
+      "bytes": 1715,
+      "path": "review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json",
+      "sha256": "572dc73ddb6c6a9e878190f958d7d222e0c77786c895dd5b84c3e1c9b658a3fc"
+    },
+    {
+      "bytes": 3916,
+      "path": "review-ci/premerge-workspace/attempt02-sdk154/toolchain.json",
+      "sha256": "dbf96d009bf7e3763c6dfb4b7072a381e142ed1a2db55adbbe51344f1877dfbe"
+    },
+    {
+      "bytes": 1273,
+      "path": "review-ci/premerge-workspace/isolated-negative-once/execution-receipt.json",
+      "sha256": "86aea9a64753f4f179800a8f09d0ae0a4dac68dc7395d7041449b51c214f4d16"
+    },
+    {
+      "bytes": 283,
+      "path": "review-ci/premerge-workspace/isolated-negative-once/stdout.log",
+      "sha256": "57ef4cdb5cd08a05ff985def9038f97ef0607e3dc4e657a555361f2a23b5a675"
+    },
+    {
+      "bytes": 1253,
+      "path": "review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+      "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b"
+    },
+    {
+      "bytes": 9899,
+      "path": "review-ci/premerge-workspace/preflight.json",
+      "sha256": "eee995b35b35eef402529fd38eae2b0c815532837f19f4f498641a03e1eb8c09"
+    },
+    {
+      "bytes": 9162,
+      "path": "review-ci/premerge-workspace/fresh-path-phase-observer/fresh-vs-reused-assessment.json",
+      "sha256": "2b64caa6a714607c2ae10d5bfb429d85db938f50a767f8d930d141a1055dcaa0"
+    }
+  ],
+  "merge_recommendation": "No documentation blocker at the reviewed head. Repository exposes no required checks; ordinary observed PR checks are still incomplete. Root may decide engineering merge only after applying its existing checks policy. This review is not all-checks-passed or TODO completion.",
+  "new_todo_completed": 0,
+  "original_cells": [
+    {
+      "build_exit_code": 0,
+      "bytes": 9328,
+      "cell": {
+        "package": "default",
+        "platform": "linux",
+        "toolchain": "1.95"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/home/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/linux-1.95-default/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "3e983c02e19b708d0b8c8b9713d5e0a3e154fca7a03b684674d3c4a32a43905f",
+      "stdio_smoke": {
+        "binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a",
+        "logs_sha256": {
+          "local.json": "407086f0faab143ea4408a1897c7268bdd7216d6c76e10d886f1657f52f93e7c",
+          "process.json": "af5c595361691e235b66c4e2872cfea5074295a295d90550ad624a19354a454b",
+          "product-stderr.log": "d0625fe34d42987c2a52c22a660da1f850414feeb6c1853646157c5ff00040c1",
+          "rpc.jsonl": "c564c9ce8705258c97913f67b28e11c118a47c4817803e79b9133c32b50123a9"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9391,
+      "cell": {
+        "package": "semantic",
+        "platform": "linux",
+        "toolchain": "1.95"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/home/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/linux-1.95-semantic/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "fbe1adeaf18c926eabe54e2d56b9d73dd948e4f5a9ef7377054f0539d68eb77d",
+      "stdio_smoke": {
+        "binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c",
+        "logs_sha256": {
+          "local.json": "6b1f2b1e31e6456a561614309c715028544a2d3fb6c39f6dd290d334318b088e",
+          "process.json": "9df2645fd7cf649cd46514791ef527731cc0732959bdeeaacb077ceb36e9430b",
+          "product-stderr.log": "f4c4538ec757abf285430ffa441259d81f9859d2675ac92bc17f1ba11d103bd2",
+          "rpc.jsonl": "346290ffe97a23c11c4a67268e8083d7e1d6db8aa77f93d7328ffc85bcaf19ef"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9337,
+      "cell": {
+        "package": "default",
+        "platform": "linux",
+        "toolchain": "stable"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/home/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/linux-stable-default/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "1036a44ba264327924608e8b9448720a7233994849a87b845f148fb4ba9bc4d4",
+      "stdio_smoke": {
+        "binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404",
+        "logs_sha256": {
+          "local.json": "88ecf097d3e0796779355d8e2e5318710944ee9f5a9e23248ed4808fa9a9476f",
+          "process.json": "c7f4ac2556610b1c70a8994af9241f4c9da96d94f28787a173dba873e4a9d73b",
+          "product-stderr.log": "d90de605f3963071dabcee99dbe17aa5b23594655a24b14af4a5428d755c19a0",
+          "rpc.jsonl": "947f6e09dbab0d99a742c53c6dc41487b83d644bd232a1236d3029bb27e89489"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9399,
+      "cell": {
+        "package": "semantic",
+        "platform": "linux",
+        "toolchain": "stable"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/home/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/linux-stable-semantic/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "ced16f9e902ac69c478c8853b765b1aca68ac7ec267b592079be7a78df8a0245",
+      "stdio_smoke": {
+        "binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66",
+        "logs_sha256": {
+          "local.json": "7263486c1e3e4c9a134018dee68a77671a87ed493115bc4326ad7f067c8ff54a",
+          "process.json": "6c12aaf3f4e9a9d5826143cff110db6c3c30b55ab385261d8091fc994d94f756",
+          "product-stderr.log": "6aea7e2e9e4bad7dcd7975237cc5130b41dce3b81a659de2376ae5f2aefec6a0",
+          "rpc.jsonl": "af27bf7a0f8b5f2b8153db4219651c30399d93616befbc71498b3a030f9e4552"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9287,
+      "cell": {
+        "package": "default",
+        "platform": "macos",
+        "toolchain": "1.95"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/Users/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/macos-1.95-default/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "802d124a21ce135a1b545f04654d82c2cfa5dc2b2469d258e4d10315de994704",
+      "stdio_smoke": {
+        "binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f",
+        "logs_sha256": {
+          "local.json": "2046014a3ddb25c4bd85469e71a3d172229f043883aff6e703928994d2ce697e",
+          "process.json": "64701f397baae17559de7e9ee30781d2f35040185d420475e5da277f619d826b",
+          "product-stderr.log": "a5b01776a6e353a0d2944da23d55ce7fb058f83227d4f8277afab3ab2cc30e5e",
+          "rpc.jsonl": "ed14ea0058141f3140f63a2f2b0465785da3442b5fa84d25a3e321a6682406bc"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9354,
+      "cell": {
+        "package": "semantic",
+        "platform": "macos",
+        "toolchain": "1.95"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/Users/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/macos-1.95-semantic/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "41de4702aa623a6639abe12971aa9e516802910203b2de24c4347c60a6cae2fd",
+      "stdio_smoke": {
+        "binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68",
+        "logs_sha256": {
+          "local.json": "31f6725c5dab08e188f6df59006c4e6dacdc94c79e6c8271df9ad6b807028f18",
+          "process.json": "3795e81453abf03f9432ed4e343d45517c6dfd63231f6bf4703a6075dd5f34c8",
+          "product-stderr.log": "726c9a89bde5a31e01561f4859fd92116f59ad4782877fabef62a1a7f31a042f",
+          "rpc.jsonl": "ac1326250f0e874c061cf46f73ce4f226b4a4abd14fa485eddb102ebdc7e673b"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9306,
+      "cell": {
+        "package": "default",
+        "platform": "macos",
+        "toolchain": "stable"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/Users/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/macos-stable-default/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "36656bf1ac70fa86620140ea28d27d478bcf519c66cbbad361bccbc892a82345",
+      "stdio_smoke": {
+        "binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150",
+        "logs_sha256": {
+          "local.json": "5430c5747eb1e2462971bd0d225f1fa7a4826415c21a304dd14759875e30c31c",
+          "process.json": "f00299134aabf735668bc00208e1af4eed3f0f1632930fad068bd68b41352f75",
+          "product-stderr.log": "d5c4a4c6e2b7cae53ac998dac7b994e7d7d7f50823e7977f39eba2f93f1e6ea5",
+          "rpc.jsonl": "f7e14cb869da9873cc275827e9e50dae653cd57d484d525b074d229a9bb2c2b5"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    },
+    {
+      "build_exit_code": 0,
+      "bytes": 9368,
+      "cell": {
+        "package": "semantic",
+        "platform": "macos",
+        "toolchain": "stable"
+      },
+      "dependency_cache": {
+        "hermetic": false,
+        "network": "Cargo --offline",
+        "path": "/Users/runner/.cargo",
+        "reused": true
+      },
+      "path": "review-platform/collector-input-copies/macos-stable-semantic/receipt.json",
+      "profile": "release",
+      "sdk_recorded": false,
+      "sha256": "5bda5a038a92330d6e3671ec4c8d2ccb5e178d084d6b2a3a470e10379cd38138",
+      "stdio_smoke": {
+        "binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f",
+        "logs_sha256": {
+          "local.json": "d7b1c755a91ac4e4591bfc7ba81d493f290b3e448a68dd74fbf224c08f3fe446",
+          "process.json": "2aaaf8ed9d469c278c56dff1e6132d6079f1027a1aca914f45b5504269bc0255",
+          "product-stderr.log": "b4e4ae1d062840242d4e5562c5f3e17deac74a6a05c638ba150914b2eed57b7f",
+          "rpc.jsonl": "255e1c685bb5b9f3fd360de7cc3c835c0b63a443a787d8b2521de77257fef00d"
+        },
+        "scope": "real stdio initialize, fourteen tools, full index, disabled semantic status, local symbol search and clean EOF; no external provider",
+        "source_files": {
+          "Cargo.toml": "e7bd83b600662e331f1df9e1da46059c45fbb3177914a8b63a88ebe9fd201f81",
+          "src/lib.rs": "a96eddc0ec5920fe5ae3301b019d24f9f3f542f4aa05c60cebc1e208d6802d5f"
+        },
+        "status": "passed"
+      },
+      "target_initially_absent": true
+    }
+  ],
+  "recorded_at_utc": "2026-10-09T07:14:29.617089+00:00",
+  "remaining_todo": 29,
+  "reviewed_base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "reviewed_head": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+  "reviewer": "execution_recon (non-author)",
+  "schema_version": 1,
+  "scope": "Only the 26 added lines in the two confirmed documentation paths, their neighboring context, and the exact evidence they reference. No source/test/workflow modifications, no holdout/gold inspection, no execution or merge.",
+  "verdict": "accepted_documentation_source_scope"
+}

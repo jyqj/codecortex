@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "accepted_scoped_observer_template_pending_exact_future_G_binding_and_execution",
+  "reviewer": "execution_recon",
+  "non_author": true,
+  "files": [
+    {
+      "path": "review-next-candidate/linux-v15-execution-preparation/observer-template/observer.py",
+      "bytes": 9304,
+      "sha256": "11fee8917b294bfa7b47e0b31c8b3d1fea8d935fdb5296f319f284d241620c45"
+    },
+    {
+      "path": "review-next-candidate/linux-v15-execution-preparation/observer-template/launch.py",
+      "bytes": 8432,
+      "sha256": "54f855b8e090e48f18a15a9ef27203a4a756d5d9f1a3b9e0057e53234025caa5"
+    },
+    {
+      "path": "review-next-candidate/linux-v15-execution-preparation/observer-template/binding.template.json",
+      "bytes": 271,
+      "sha256": "8f9dfb2fc605d8b4bcfd38f240a092195101378646b8648b8f9408704cff59b4"
+    }
+  ],
+  "findings": [
+    {
+      "topic": "original child result versus observer result",
+      "lines": "observer.py:149-177,178-191;launch.py:124-148",
+      "conclusion": "Original CLI child integer return is recorded immediately at165-167 before after-snapshot and hashes; later observer failures preserve child_exit_code and mark not_passed. Host separately records Docker attach/container/observer/original child outcomes. Passed requires all actual exits0,not timed_out,complete equal source and clean expected head."
+    },
+    {
+      "topic": "actual mount and network policy",
+      "lines": "launch.py:68-103;observer.py:112-124",
+      "conclusion": "Source and shared common Git are bound at identical absolute paths RO, observer RO and separate output RW; host inspects exact bind destinations/sources/RW and actual NetworkMode none before start. Container verifies ST_RDONLY for source/Git/observer and writable output. No interface-name heuristic."
+    },
+    {
+      "topic": "no implicit fetch/pull or source modifications",
+      "lines": "launch.py:31-46,60-81;observer.py:105-110",
+      "conclusion": "Host/container GIT_NO_LAZY_FETCH=1,terminal prompt disabled,optional locks disabled, Docker --pull=never; PYTHONDONTWRITEBYTECODE=1. Missing partial-clone object is allowed to fail proof, never silently fetch. No checkouts/config edits/guard imports in host preflight."
+    },
+    {
+      "topic": "original guard and exact identity",
+      "lines": "observer.py:20-21,125-147;launch.py:36-46",
+      "conclusion": "Original CLI argv is unchanged: /usr/local/bin/python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15. The observer binds actual G/tree,P,R,guard/registry/review hashes and four pins,requires G parent R and R parent P,complete product/validation mode/blob and clean head. No monkeypatch or replacement validator."
+    },
+    {
+      "topic": "historical temporary files",
+      "lines": "launch.py:66,72;observer.py:110-111;v15_historical_context.py:164;v14_historical_context.py:163",
+      "conclusion": "TMPDIR/TMP/TEMP point to writable /output/tmp. Original v15/v14 history helpers use tempfile.TemporaryDirectory without overriding dir,so their Python temporary roots use this output mount,not the unrelated64MiB /tmp tmpfs. No source guard budget changed."
+    }
+  ],
+  "limitations": [
+    "Only read-only source review of these template bytes; no template execution,AST check,container start,source CLI or measurement by this reviewer.",
+    "binding.template.json is intentionally null. Exact future G/P/R/path/hash/image/platform/execution directory binding still must be inspected when concretely populated.",
+    "Image manifest and local image-ID equality are author-observed preparation evidence; this review does not independently claim a fresh Docker inspect or actual container platform.",
+    "The outer1h timeout,2GiB/2CPU container limits and abrupt observer/container loss can yield not_passed/unknown. A wrapper exit or Docker status alone is never original-CLI success.",
+    "Output binding must remain an independent new evidence directory outside source/commonGit; concrete future binding is not yet available.",
+    "No product/Rust/performance/scale/181-suite/holdout/TODO credit and no source/target modifications."
+  ],
+  "blockers": [],
+  "generated_at": "2026-10-09T06:53:24.909483+00:00"
+}

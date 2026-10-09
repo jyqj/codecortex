@@ -1,0 +1,39 @@
+--- review-runtime/backfill-independent-review.py
++++ review-pr/pr178-ci-observation/reviewer-scripts/backfill-independent-review-v3.py
+@@ -1,10 +1,11 @@
+ from pathlib import Path
+ import sys,json,hashlib,collections,datetime,math
+ sys.dont_write_bytecode=True
+-root=Path.cwd();source=(root/'source').resolve();sys.path.insert(0,str(source/'scripts'))
++artifact_id=int(sys.argv[1]);expected_zip=sys.argv[2]
++root=Path.cwd();source=(root/'candidate-combined').resolve();sys.path.insert(0,str(source/'scripts'))
+ from p7_build_identity import source_snapshot
+ from p8_runtime_build import observer_snapshot,verify_output
+-base=root/'raw/11591821446/extracted';read=lambda p:json.loads(p.read_text())
++base=root/'raw-pr178-9f7b16f'/str(artifact_id)/'extracted';read=lambda p:json.loads(p.read_text())
+ def sha(p):
+  h=hashlib.sha256()
+  with p.open('rb') as f:
+@@ -14,11 +15,11 @@
+ def check(ok,name):
+  checks[name]+=1
+  if not ok and len(errors)<100:errors.append(name)
+-check(sha(root/'raw/11591821446/original.zip')=='24fa1251fa006d23df2f801a7d5ba7eb420223c4a7dbd0cce7ab8fdcf6b36e15','github_archive_digest')
++check(sha(root/'raw-pr178-9f7b16f'/str(artifact_id)/'original.zip')==expected_zip,'github_archive_digest')
+ seal=verify_output(base);checks['original_inventory_verifier']=1
+ snap=source_snapshot(source);observer=observer_snapshot(source)
+ check(snap==r['source_before']==r['source_after']==r['source_final']==read(base/'source-before.json')==read(base/'source-after.json'),'all_exact_source_snapshots')
+-check(snap['source_commit']=='a23bb72d3c954f385b99fe81ce9189885c208557','exact_a23_source')
++check(snap['source_commit']=='9f7b16f0758eb79f306cf44605b84550f02de441','exact_G9f_source')
+ check(observer==r['observer_before']==r['observer_after']==r['observer_final'],'all_original_observer_snapshots')
+ for path,item in observer['files'].items():check(sha(base/'observer-source'/path)==item['sha256'],'retained_observer_copy')
+ for path,digest in r['files'].items():check(sha(base/path)==digest,'receipt_file_digest')
+@@ -68,6 +69,6 @@
+  seed_summaries.append({'seed':seed,'old_held_input_publications':s['old_held_input_publications'],'new_provider_calls':s['new_provider_calls'],'final_queue':s['queue_final'],'max_provider_active':s['old_provider']['maximum_active'],'write_delete_us':s['write_delete_us'],'switch_and_drain_us':s['switch_and_drain_us']})
+ check(total==768,'all_768_requests')
+ check(r['paid_provider_requests']==0 and r['task_complete'] is False and r['release_approval'] is False,'fake_provider_scope_preserved')
+-out={'reviewed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'artifact_id':11591821446,'run_id':37871838957,'source_sha':snap['source_commit'],'source_input_count':snap['input_count'],'observer_count':len(observer['files']),'review_status':'raw_and_receipt_review_passed' if not errors else 'review_failed','errors':errors,'checks':dict(checks),'requests':total,'cells':cells,'seeds':seed_summaries,'resource_observations':resources,'seal_file_count':len(seal['artifact_inventory']),'execution_elapsed_ns':r['execution_elapsed_ns'],'executable_sha256':r['executable_sha256'],'scope':'Original released Linux integration test executed once with the original worker and fake provider. Mac reused original source/observer/inventory verifiers, independently reconstructed all request populations/quantiles and original gate facts. No primary rerun, no external provider certification, no standalone task completion or new tail-performance SLA. Original Linux compiler binaries were not re-executed on macOS.'}
+-dest=root/'review-runtime';dest.mkdir(exist_ok=True);path=dest/'backfill-11591821446-review.json';path.write_text(json.dumps(out,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
++out={'reviewed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'artifact_id':artifact_id,'run_id':37896539291,'source_sha':snap['source_commit'],'source_input_count':snap['input_count'],'observer_count':len(observer['files']),'review_status':'raw_and_receipt_review_passed' if not errors else 'review_failed','errors':errors,'checks':dict(checks),'requests':total,'cells':cells,'seeds':seed_summaries,'resource_observations':resources,'seal_file_count':len(seal['artifact_inventory']),'execution_elapsed_ns':r['execution_elapsed_ns'],'executable_sha256':r['executable_sha256'],'scope':'Original released Linux integration test executed once with the original worker and fake provider. Mac reused original source/observer/inventory verifiers, independently reconstructed all request populations/quantiles and original gate facts. No primary rerun, no external provider certification, no standalone task completion or new tail-performance SLA. Original Linux compiler binaries were not re-executed on macOS.'}
++dest=root/'review-pr/pr178-ci-observation/raw-review';dest.mkdir(exist_ok=True);path=dest/('backfill-'+str(artifact_id)+'-review-v3.json');path.write_text(json.dumps(out,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
+ print(json.dumps({k:out[k] for k in ['review_status','errors','requests','source_input_count','observer_count','seal_file_count','seeds']},ensure_ascii=False));print(str(path))

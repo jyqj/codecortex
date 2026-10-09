@@ -1,0 +1,41 @@
+--- review-runtime/runtime-independent-review-v2.py
++++ review-pr/pr178-ci-observation/reviewer-scripts/runtime-independent-review-v3.py
+@@ -2,11 +2,11 @@
+ import sys,json,hashlib,collections,datetime,math,subprocess
+ sys.dont_write_bytecode=True
+ artifact_id=int(sys.argv[1]);expected_zip=sys.argv[2];expected_profile=sys.argv[3];expected_c=int(sys.argv[4])
+-root=Path.cwd();source=(root/'source').resolve();sys.path.insert(0,str(source/'scripts'))
++root=Path.cwd();source=(root/'candidate-combined').resolve();sys.path.insert(0,str(source/'scripts'))
+ from p7_build_identity import source_snapshot
+ from p8_runtime_build import verify_output,observer_snapshot
+ from p8_runtime import rss_trend,sample_coverage,latency_summary,require_stable_symbol,soak_cache_summary,COMPACTION_EVENT
+-base=root/'raw'/str(artifact_id)/'extracted';build=base/'p8-build';m=base/'p8-runtime'
++base=root/'raw-pr178-9f7b16f'/str(artifact_id)/'extracted';build=base/'p8-build';m=base/'p8-runtime'
+ read=lambda p:json.loads(p.read_text())
+ def sha(p):
+  h=hashlib.sha256()
+@@ -19,12 +19,12 @@
+  checks[name]+=1
+  if not ok and len(errors)<100:errors.append(name)
+ r=read(m/'report.json');plan=read(m/'plan.json');b=read(build/'build-receipt.json');stats=read(m/'statistics.json');parity=read(m/'parity.json')
+-check(sha(root/'raw'/str(artifact_id)/'original.zip')==expected_zip,'github_archive_digest')
++check(sha(root/'raw-pr178-9f7b16f'/str(artifact_id)/'original.zip')==expected_zip,'github_archive_digest')
+ runtime_seal=verify_output(m);build_seal=verify_output(build);checks['original_inventory_verifier']=2
+ cli=subprocess.run([sys.executable,'-B',str(source/'scripts/p8_runtime.py'),'verify','--output',str(m),'--build-output',str(build)],capture_output=True,text=True,timeout=60)
+ check(cli.returncode==0,'original_runtime_verify_cli')
+ snap=source_snapshot(source);observer=observer_snapshot(source)
+-check(snap['source_commit']=='a23bb72d3c954f385b99fe81ce9189885c208557','exact_a23_source')
++check(snap['source_commit']=='9f7b16f0758eb79f306cf44605b84550f02de441','exact_G9f_source')
+ check(snap==b['source_before']==b['source_after']==plan['source']==plan['build_identity']['source']==r['final_build_verification']['source'],'all_exact_source_snapshots')
+ check(observer==b['observer_before']==b['observer_after']==plan['build_identity']['observer']==r['final_build_verification']['observer'],'all_observer_snapshots')
+ check(plan['build_identity']==r['final_build_verification'],'original_before_after_build_verification')
+@@ -165,7 +165,7 @@
+  check(soak==r['cache_reuse'] and soak['passed'] is True,'original_soak_cache_validator')
+  check(r['observed_work_ns']>=3600000000000 and r['rss']['passed'] is True and coverage['passed'] is True and r['real_branch_switches']>=2 and r['observed_catalog_compactions']>0,'original_complete_long_soak_gates')
+ check(r['task_complete'] is False and r['release_approval'] is False and r['semantic_backfill']=='not_run_in_default_product_profile','scope_and_dependency_boundaries')
+-out={'reviewed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'artifact_id':artifact_id,'run_id':37871838957,'source_sha':snap['source_commit'],'profile':expected_profile,'configured_concurrency':expected_c,'review_status':'raw_and_receipt_review_passed' if not errors else 'review_failed','errors':errors,'checks':dict(checks),'original_verify_cli':{'exit_code':cli.returncode,'stdout':cli.stdout,'stderr':cli.stderr},'source_input_count':snap['input_count'],'observer_count':len(observer['files']),'seal_file_count':len(runtime_seal['artifact_inventory']),'build_seal_file_count':len(build_seal['artifact_inventory']),'raw_kind_counts':dict(kinds),'resource_availability':dict(resource_availability),'runtime_process_tree_scope':'not collected by this runtime profile; lifecycle owns separate stage tree observations; never zero filled','outcomes':dict(counts),'actual_concurrency':r['actual_concurrency'],'independent_call_interval_maximum':maximum,'independent_call_interval_read_build_overlap':overlap,'observed_work_ns':r['observed_work_ns'],'branch_switches':r['real_branch_switches'],'catalog_compactions':r['observed_catalog_compactions'],'resource_time_coverage':coverage,'rss':r['rss'],'latency':r['latency'],'statistics_groups':group_summary,'parity_tables':[{'table':x['table'],'rows':x['full_rows'],'equal':x['equal'],'digest':x['full_digest']} for x in tables],'stdio_counts':rpc_summaries,'soak_cache_replay':soak,'scope':'Original a23 Linux product/oracle/statistics primary observations retained. Mac reran original Python source/observer/seal/runtime verify/RSS/coverage/latency/public-symbol/soak-cache verifiers and independently reconstructed every sample timing, original IID intervals, exact stdio payload associations and no-extra-index denominator. Original Rust Linux ELF binaries and original Linux compiler paths were not executed on macOS. Original native statistics double replay and original native 15-table oracle are bound by their bytes and receipts. No new primary run, task closure or performance improvement claim.'}
+-dest=root/'review-runtime';dest.mkdir(exist_ok=True);path=dest/('runtime-'+str(artifact_id)+'-review-v2.json');path.write_text(json.dumps(out,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
++out={'reviewed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'artifact_id':artifact_id,'run_id':37896539291,'source_sha':snap['source_commit'],'profile':expected_profile,'configured_concurrency':expected_c,'review_status':'raw_and_receipt_review_passed' if not errors else 'review_failed','errors':errors,'checks':dict(checks),'original_verify_cli':{'exit_code':cli.returncode,'stdout':cli.stdout,'stderr':cli.stderr},'source_input_count':snap['input_count'],'observer_count':len(observer['files']),'seal_file_count':len(runtime_seal['artifact_inventory']),'build_seal_file_count':len(build_seal['artifact_inventory']),'raw_kind_counts':dict(kinds),'resource_availability':dict(resource_availability),'runtime_process_tree_scope':'not collected by this runtime profile; lifecycle owns separate stage tree observations; never zero filled','outcomes':dict(counts),'actual_concurrency':r['actual_concurrency'],'independent_call_interval_maximum':maximum,'independent_call_interval_read_build_overlap':overlap,'observed_work_ns':r['observed_work_ns'],'branch_switches':r['real_branch_switches'],'catalog_compactions':r['observed_catalog_compactions'],'resource_time_coverage':coverage,'rss':r['rss'],'latency':r['latency'],'statistics_groups':group_summary,'parity_tables':[{'table':x['table'],'rows':x['full_rows'],'equal':x['equal'],'digest':x['full_digest']} for x in tables],'stdio_counts':rpc_summaries,'soak_cache_replay':soak,'scope':'Original G9f Linux product/oracle/statistics primary observations retained. Mac reran original Python source/observer/seal/runtime verify/RSS/coverage/latency/public-symbol/soak-cache verifiers and independently reconstructed every sample timing, original IID intervals, exact stdio payload associations and no-extra-index denominator. Original Rust Linux ELF binaries and original Linux compiler paths were not executed on macOS. Original native statistics double replay and original native 15-table oracle are bound by their bytes and receipts. No new primary run, task closure or performance improvement claim.'}
++dest=root/'review-pr/pr178-ci-observation/raw-review';dest.mkdir(exist_ok=True);path=dest/('runtime-'+str(artifact_id)+'-review-v3.json');path.write_text(json.dumps(out,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
+ print(json.dumps({k:out[k] for k in ['review_status','errors','profile','configured_concurrency','outcomes','raw_kind_counts','resource_availability','actual_concurrency','independent_call_interval_maximum','independent_call_interval_read_build_overlap','stdio_counts','source_input_count','observer_count','seal_file_count','build_seal_file_count']},ensure_ascii=False));print(str(path))
+ sys.exit(1 if errors else 0)

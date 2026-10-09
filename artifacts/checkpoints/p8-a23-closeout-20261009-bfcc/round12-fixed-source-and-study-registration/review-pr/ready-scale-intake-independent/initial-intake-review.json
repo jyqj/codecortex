@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T07:50:45.280118+00:00",
+  "reviewer": "/root/pr_triage",
+  "source": {
+    "path": "review-next-candidate/ready-signal-full-scale-study/intake_once.py",
+    "bytes": 12124,
+    "sha256": "cddb36564347f581e0d1874094796668c575eaf55f2bb84cd1327437c189b6a4"
+  },
+  "verdict": "transport_receiver_changes_requested",
+  "scope": "Static transport/evidence-preservation review only. No API, download, measurement or synthetic control was executed by this reviewer. Not a new formal dispatch or source gate.",
+  "accepted_properties": [
+    "Finite observe pagination bounded to10pages, snapshot non-atomic explicitly recorded; no polling sleep, dispatch, rerun or automatic retry.",
+    "Pending/null G/run cannot execute; exact run ID/head/attempt1/event/branch/workflow and artifact run/head/name are checked.",
+    "Fresh attempt directory and xb/x writes preserve prior and failed partial bytes; download child real integer exit/timing retained.",
+    "Absolute/traversal/noncanonical/duplicate/symlink/special/encrypted members rejected. Regular members read through zipfile CRC and hashed, originalZIP digest checked and rechecked after extraction.",
+    "Transport receipt explicitly leaves raw validate_build/validate_shard/aggregate pending and grants no measurement/TODO credit; paginated observed items are not counted as accepted primary samples."
+  ],
+  "findings": [
+    {
+      "id": "T1",
+      "severity": "blocker_for_transport_received_claim",
+      "lines": [
+        176,
+        182
+      ],
+      "finding": "size_matches_api is recorded but never enforced. A ZIP with an official size mismatch may reach transport_received, including when official digest is absent.",
+      "minimal_change": "Write original zip receipt first, then reject size mismatch before extraction, retaining bytes/receipt and actual failure."
+    },
+    {
+      "id": "T2",
+      "severity": "evidence_preservation_gap",
+      "lines": [
+        35,
+        39
+      ],
+      "finding": "Metadata API stderr survives only via UTF-8 replacement decoding embedded in JSON. Exact raw stderr bytes cannot be reconstructed.",
+      "minimal_change": "Save raw stderr with xb beside raw stdout, and include both byte lengths/hashes and actual integer exit."
+    },
+    {
+      "id": "T3",
+      "severity": "archive_name_integrity_gap",
+      "lines": [
+        68,
+        75
+      ],
+      "finding": "Member validation reads ZipInfo.filename; Python zipfile may truncate this at embedded NUL. Use orig_filename to reject NUL before canonical path checks so recorded name cannot silently differ from archived name.",
+      "minimal_change": "Reject NUL in member.orig_filename, reject unexpected orig_filename/filename mismatch, optionally reject Windows drive prefix for portable extraction."
+    }
+  ],
+  "non_blocking_notes": [
+    "GitHub digest absent is honestly github_digest_verified=false, so do not promote transport_received to digest-verified evidence.",
+    "API pagination can duplicate/miss live items across pages; snapshot_is_not_atomic already records this. Final semantic collector must establish exact150 distinct required shards/1500records.",
+    "Extracted executable mode is not restored, but original external_attr and extracted_mode are recorded. Any later ELF replay setup must separately record mode handling.",
+    "Explicit --attempt permits a new preserved transport directory; it must remain root-authorized and never replace or retry original primary workload."
+  ],
+  "provided_synthetic_controls": {
+    "path": "review-next-candidate/ready-signal-full-scale-study/receiver-preparation-controls.json",
+    "bytes": 1700,
+    "sha256": "85febd3d73498a4c677a57cd11c5808aa8e806c0608dc2986e19848d75c65e0a",
+    "reported_passed": 9,
+    "reported_failed": 0,
+    "scope": "Author-provided existing synthetic records; no independent execution by this reviewer. Current9 omit size mismatch and embedded NUL controls."
+  },
+  "product_P": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+  "frozen_product_and_G_thin_review_unchanged": true,
+  "remaining_todo": 29
+}

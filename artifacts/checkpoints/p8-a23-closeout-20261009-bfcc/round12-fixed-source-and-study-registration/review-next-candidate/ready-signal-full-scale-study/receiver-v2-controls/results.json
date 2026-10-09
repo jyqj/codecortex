@@ -1,0 +1,89 @@
+{
+  "scope": "Synthetic transport controls only. GH executable replaced only in this test module by an owned fixture that never contacts a network. No source/validator/measurement command modified or run.",
+  "receiver_sha256": "61f4ae48bc84dbc9f90862a80d06a8268ec4aa93f83c75582b716bc32f4c3369",
+  "passed": 17,
+  "failed": 0,
+  "controls": [
+    {
+      "name": "pending_binding_cannot_execute",
+      "passed": true,
+      "error": "A real public pushed G binding is required; pending template cannot execute"
+    },
+    {
+      "name": "exact_run_binding_accepted",
+      "passed": true
+    },
+    {
+      "name": "wrong_head_rejected",
+      "passed": true,
+      "error": "Run identity/attempt/event differs; preserve metadata, no credit"
+    },
+    {
+      "name": "second_attempt_rejected",
+      "passed": true,
+      "error": "Run identity/attempt/event differs; preserve metadata, no credit"
+    },
+    {
+      "name": "safe_zip_exact_bytes_crc_hash_and_original_unchanged",
+      "passed": true
+    },
+    {
+      "name": "parent_traversal_rejected",
+      "passed": true,
+      "error": "Unsafe archive member path"
+    },
+    {
+      "name": "absolute_path_rejected",
+      "passed": true,
+      "error": "Unsafe archive member path"
+    },
+    {
+      "name": "duplicate_member_rejected",
+      "passed": true,
+      "error": "Noncanonical or duplicate archive member path"
+    },
+    {
+      "name": "symlink_rejected",
+      "passed": true,
+      "error": "Archive special files/symlinks are not extracted"
+    },
+    {
+      "name": "NUL_orig_filename_rejected",
+      "passed": true,
+      "error": "NUL-truncated or changed archive member name"
+    },
+    {
+      "name": "size_and_digest_agree",
+      "passed": true
+    },
+    {
+      "name": "size_mismatch_even_with_matching_digest",
+      "passed": true,
+      "error": "ZIP size differs from official metadata; original retained, not extracted"
+    },
+    {
+      "name": "size_mismatch_without_digest",
+      "passed": true,
+      "error": "ZIP size differs from official metadata; original retained, not extracted"
+    },
+    {
+      "name": "digest_mismatch_with_matching_size",
+      "passed": true,
+      "error": "ZIP digest mismatch; original bytes retained, not extracted"
+    },
+    {
+      "name": "missing_digest_is_explicitly_unverified",
+      "passed": true
+    },
+    {
+      "name": "API_stderr_original_nonUTF8_NUL_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "API_failure_preserves_actual_exit7",
+      "passed": true,
+      "error": "GitHub GET failed; original response and integer exit retained"
+    }
+  ],
+  "preparation_script_completed_without_exception": true
+}

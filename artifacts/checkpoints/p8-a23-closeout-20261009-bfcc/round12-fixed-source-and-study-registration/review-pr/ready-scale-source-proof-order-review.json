@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T07:51:52.406977+00:00",
+  "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "scope": "Original fixed-source dispatch/proof ordering and existing CI command coverage; no workflow execution or formal acceptance gate added.",
+  "conclusion": "The original p8-scale entry/build/source_snapshot requires fixed reviewed source and matching native build/run/replay identity; it does not require same-G selected-v15 to have terminated before workflow_dispatch. Running original scale and original CI in parallel does not waive final source proof.",
+  "evidence": [
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "path": "scripts/p7_build_identity.py",
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914"
+    }
+  ],
+  "protocol_refs": [
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "lines": [
+        18,
+        37
+      ],
+      "fact": "Workflow dispatch or original label entry checks out fixed source and invokes original matrix build. No CI result/selected-v15 dependency."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": [
+        256,
+        327,
+        418,
+        423
+      ],
+      "fact": "Build source_before/source_after, compiler/native binary/helper-driver identities and run/replay fixed commit equality enforce binding. No upstream selected-v15 completed-state lookup."
+    },
+    {
+      "path": "scripts/p7_build_identity.py",
+      "lines": [
+        27,
+        32
+      ],
+      "fact": "source_snapshot rejects dirty/missing/extra/symlink product inputs and hashes bytes. It does not certify approved behavior or a completed prior CI lane."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        122,
+        147,
+        184,
+        187,
+        261,
+        281
+      ],
+      "fact": "Fixed source/build/receipts, exact N150 with five rep0 shards before145, N30 and original budgets retained. No predispatch selected-v15 serial rule."
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "lines": [
+        45,
+        55
+      ],
+      "fact": "Original CI runs unittest discover tests/source_integrity then selected-v15 original CLI. The source-integrity population was181 on inherited unchanged validation domain; actual new CI output must confirm count and exit."
+    }
+  ],
+  "acceptance_conditions": [
+    "Root dispatches one new fixed G/build study; no replacement/relabel of failed a23 or G9f records.",
+    "Final source acceptance still requires original source proof to succeed for the actual checked-out product/validation/binding inputs.",
+    "A PR merge checkout may be used only after its actual product1090/validation139/binding bytes and modes are proved equal to new G; repository SHA must remain truthfully the executed merge checkout.",
+    "If original new CI actually executes181/selected-v15 successfully with exact inputs, no additional duplicate manual local181/CLI is needed."
+  ],
+  "prior_coverage_locator": {
+    "run_job": 113690916080,
+    "path": "review-pr/pr173-source-scope-integration-risk/ci-original/check-job-113690916080.log",
+    "lines": [
+      5207,
+      5894,
+      5896,
+      5897
+    ],
+    "scope": "Historical G173 CI proves command coverage only. Its1089 product CLI success is not new1090 G acceptance."
+  },
+  "original_budgets_unchanged": true,
+  "current_new_G_CI_or_scale_execution_claim": "none in this report",
+  "new_todo_completed": 0,
+  "remaining_todo": 29
+}

@@ -1,0 +1,225 @@
+{
+  "schema": "p8-ready-signal-source-specific-study-registration-v1",
+  "status": "actual_G_frozen_public_ref_confirmation_and_run_pending",
+  "created_at": "2026-10-09T07:48:15.708707+00:00",
+  "repository": "jyqj/codecortex",
+  "product_P": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+  "product_tree": "9af6748b46abd7a98fb20b2d0a4d4da4dcee56c8",
+  "review_R": "a9706a90a72226cb59c3bfd374ef9c1e3d66cbcb",
+  "source_G": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "source_G_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+  "run_id": null,
+  "run_attempt": 1,
+  "branch": "task/p8-combined-engineering-bfcc-20261009",
+  "event": "workflow_dispatch",
+  "dispatch_owner": "root",
+  "dispatch_inputs": {},
+  "dispatch_request_sent": false,
+  "public_G_before_dispatch_receipt": null,
+  "source_product_count": 1090,
+  "source_validation_count": 139,
+  "historical_delta_count": 47,
+  "workflow": ".github/workflows/p8-scale.yml",
+  "original_workflow_and_protocol": [
+    {
+      "repository_path": ".github/workflows/p8-scale.yml",
+      "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "unchanged_from_a23": true,
+      "path": "review-next-candidate/ready-signal-full-scale-study/protocol-snapshot/.github/workflows/p8-scale.yml",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    {
+      "repository_path": "scripts/p8_scale_matrix.py",
+      "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "unchanged_from_a23": true,
+      "path": "review-next-candidate/ready-signal-full-scale-study/protocol-snapshot/scripts/p8_scale_matrix.py",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "repository_path": "scripts/p8_runner_capacity.py",
+      "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "unchanged_from_a23": true,
+      "path": "review-next-candidate/ready-signal-full-scale-study/protocol-snapshot/scripts/p8_runner_capacity.py",
+      "bytes": 11164,
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    {
+      "repository_path": "scripts/p7_build_identity.py",
+      "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "unchanged_from_a23": true,
+      "path": "review-next-candidate/ready-signal-full-scale-study/protocol-snapshot/scripts/p7_build_identity.py",
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    {
+      "repository_path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "product_commit": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "unchanged_from_a23": true,
+      "path": "review-next-candidate/ready-signal-full-scale-study/protocol-snapshot/docs/roadmap/code-index-v2/P8-SCALE.md",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    }
+  ],
+  "plan_generator": "Unmodified original p8_scale_matrix.registered_plan; pure plan construction only",
+  "plans": {
+    "path": "review-next-candidate/ready-signal-full-scale-study/planned-shards.json",
+    "bytes": 113781,
+    "sha256": "5fd88f469e74ee9942e39a98960b7938e8a0002f2b9e36d1e16c9b7f0085323c"
+  },
+  "capacity_contract": {
+    "id": "scale_capacity_v1",
+    "environment_policy": "heterogeneous_stratified_coverage_v1",
+    "scale_dirty_budget": 200,
+    "scale_max_resume_builds": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_max_resume_builds": 128,
+    "oracle_limits": {
+      "max_rows_per_table": 5000000,
+      "max_canonical_bytes": 17179869184,
+      "max_scratch_bytes": 8589934592,
+      "max_row_bytes": 1048576
+    },
+    "sorting_cache_kib": 2048,
+    "storage_layout": "without_rowid_value_ordinal_v1",
+    "one_repetition_per_shard": true,
+    "deadline_ms": 18000000,
+    "max_output_bytes": 536870912,
+    "minimum_free_bytes_per_file": 262144,
+    "minimum_free_fixed_bytes": 4294967296,
+    "disk_requirement_scope": "preregistered capacity estimate, not an observed peak or sufficiency proof"
+  },
+  "scales": [
+    1000,
+    5000,
+    10000,
+    50000,
+    100000
+  ],
+  "seed": 12648430,
+  "repetitions_per_scale": 30,
+  "shards_per_scale": 30,
+  "repetitions_per_shard": 1,
+  "phase_sample_counts": {
+    "main_phases": 9,
+    "main_samples": 1350,
+    "fanout_population_scale": 1000,
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "fanout_samples": 150,
+    "total": 1500
+  },
+  "phase_order": {
+    "build": 1,
+    "original_rep0_count": 5,
+    "rep0_scales_in_workflow_order": [
+      100000,
+      50000,
+      10000,
+      5000,
+      1000
+    ],
+    "rep0_samples": 50,
+    "remaining145_only_after_all5_pass": true,
+    "remaining_shards": [
+      1,
+      29
+    ],
+    "aggregate_original_strict": true,
+    "total_measurement_shards": 150
+  },
+  "original_workflow_limits": {
+    "build_job_minutes": 45,
+    "preflight_job_minutes": 350,
+    "measure_job_minutes": 350,
+    "aggregate_job_minutes": 30,
+    "preflight_max_parallel": 5,
+    "measure_max_parallel": 10,
+    "native_deadline_ms": 18000000,
+    "outer_native_timeout_seconds": 18120,
+    "max_output_bytes": 536870912
+  },
+  "artifact_names": {
+    "build": "p8-scale-build-<run-id>",
+    "capacity": "p8-scale-capacity-<scale>-<shard>-<run-id>",
+    "shard": "p8-scale-shard-<scale>-<shard>-<run-id>",
+    "aggregate": "p8-scale-matrix-<run-id>"
+  },
+  "strict_acceptance": [
+    "Original Linux build/binary/source receipt belongs exact actualG and is newly built, never relabeled from oldG.",
+    "All150 original shards with eachscale repetitions0..29, all9phases and1k-only5fanouts; full original15table parity and independent truths.",
+    "Unmodified validate_build/validate_shard/aggregate; no missing/duplicate/failed primary accepted or substituted.",
+    "Retain all failed/not_run/partial originals and every explicit transport attempt; no automatic workflow rerun or primary replacement.",
+    "Original heterogeneous_stratified_coverage_v1 policy, not pooled same-host tail/causal speedup. Allowed unknown/not_established are not new gates.",
+    "Formal TODO closure still requires original task map and other current-G original workflow evidence, not this transport registration alone."
+  ],
+  "separate_old_studies": {
+    "a23_failed_run": 37872522779,
+    "G2_engineering_diagnostic_run": 37877604259,
+    "external_G173_run": 37896198208,
+    "no_mutation_or_credit_transfer": true
+  },
+  "original_ten_todos": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "task_credit": 0,
+  "remaining_todos": 29,
+  "intake": {
+    "program": {
+      "path": "review-next-candidate/ready-signal-full-scale-study/intake_once.v2.py",
+      "bytes": 13036,
+      "sha256": "61f4ae48bc84dbc9f90862a80d06a8268ec4aa93f83c75582b716bc32f4c3369"
+    },
+    "single_observation_or_one_artifact_per_invocation": true,
+    "GET_only": true,
+    "no_sleep_or_auto_retry": true,
+    "observation_at_most10_pages_per_collection": true,
+    "zip_request_timeout_seconds": 120,
+    "api_request_timeout_seconds": 60,
+    "failed_bytes_retained": true,
+    "source_root_read_only_by_design": true,
+    "transport_success_not_semantic_acceptance": true,
+    "independent_review": {
+      "path": "review-pr/ready-scale-intake-independent/v2-intake-review.json",
+      "bytes": 2730,
+      "sha256": "4a701007b1c119a387074b941b4d827b4ead9680f8f7e9de8da42364beb65c60"
+    },
+    "synthetic_controls_execution": {
+      "path": "review-next-candidate/ready-signal-full-scale-study/receiver-v2-controls-execution.json",
+      "bytes": 806,
+      "sha256": "1cebf49f9bb62bf07de0f5b911900b87b840089138d2012954dc0382b437c087"
+    },
+    "v1_history": "Original intake_once.py and initial9 controls retained; v1 blocked T1/T2/T3 and must not be used for real intake. v2 closes all3 with17 synthetic controls."
+  },
+  "gates_not_added": [
+    "No new sequential requirement that local v15CLI finish before dispatch. NewG original CI source tests/CLI may run in parallel under original protocol.",
+    "No 1k or100k diagnostic replacement of originalrep0."
+  ],
+  "registration_updated_at": "2026-10-09T07:55:45.683585+00:00",
+  "actual_G_local_protocol_binding": {
+    "path": "review-next-candidate/ready-signal-full-scale-study/actual-G-local-protocol-binding.json",
+    "bytes": 2165,
+    "sha256": "9057163ecb600b3c08d1ad9f3eddf8ad23708609c55cc4e113fe71700009917f"
+  },
+  "plans_identity_note": "The planned-shards envelope was generated while G/run were null and is retained byte-for-byte as preparation history. All150 original registered_plan payloads are identity-neutral; this actual-G registration supplies real source identity. Per-shard source/binary binding is produced by original workflow."
+}

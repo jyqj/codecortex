@@ -1,0 +1,61 @@
+{
+  "argv": [
+    "/usr/local/bin/docker",
+    "exec",
+    "d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675",
+    "/usr/local/bin/python3",
+    "-c",
+    "import os,json,time,datetime\nfrom pathlib import Path\nroot=49\nppids={}\nfor p in Path('/proc').iterdir():\n if p.name.isdigit():\n  try:\n   status=(p/'status').read_text()\n   ppid=int(next(x.split()[1] for x in status.splitlines() if x.startswith('PPid:')))\n   ppids[int(p.name)]=ppid\n  except (OSError,StopIteration,ValueError):pass\nwanted={root}\nwhile True:\n added={p for p,parent in ppids.items() if parent in wanted}-wanted\n if not added:break\n wanted.update(added)\nprocs=[]\nfor pid in sorted(wanted):\n p=Path('/proc')/str(pid);entry={'pid':pid}\n try:\n  stat=(p/'stat').read_text();v=stat[stat.rfind(')')+2:].split()\n  entry.update(stat_raw=stat,state=v[0],ppid=int(v[1]),pgrp=int(v[2]),utime_ticks=int(v[11]),stime_ticks=int(v[12]),cutime_ticks=int(v[13]),cstime_ticks=int(v[14]),starttime_ticks=int(v[19]),rss_pages=int(v[21]))\n  entry['cmdline']=(p/'cmdline').read_bytes().replace(bytes([0]),b' ').decode('utf-8','backslashreplace')\n  for name in ['status','io','wchan','schedstat']:\n   try:entry[name]=(p/name).read_text()\n   except OSError as e:entry[name+'_read_error']=str(e)\n except OSError as e:entry['read_error']=str(e)\n procs.append(entry)\nprint(json.dumps({'observed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'clock_ticks_per_second':os.sysconf('SC_CLK_TCK'),'page_size':os.sysconf('SC_PAGE_SIZE'),'uptime_seconds':float(Path('/proc/uptime').read_text().split()[0]),'root_pid':root,'processes':procs}))\n"
+  ],
+  "started_at": "2026-10-09T07:36:18.716514+00:00",
+  "finished_at": "2026-10-09T07:36:18.963551+00:00",
+  "exit_code": 0,
+  "scope": "Read-only /proc observation of existing original-v15 child49 and currently live descendants; no source proof rerun or benchmark.",
+  "stdout_sha256": "9708c42f057d29fa0f9e868ba4728659288aef603e0466fad29d3bc6922a973f",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "observation": {
+    "observed_at": "2026-10-09T07:36:18.944387+00:00",
+    "clock_ticks_per_second": 100,
+    "page_size": 4096,
+    "uptime_seconds": 308021.32,
+    "root_pid": 49,
+    "processes": [
+      {
+        "pid": 49,
+        "stat_raw": "49 (python3) S 1 49 49 0 -1 4194560 11313849 46709947 0 614278 2184 11096 139673 25984 20 0 1 0 30595206 745197568 110763 18446744073709551615 140737488510976 140737488974984 281473998790432 0 0 0 0 16781312 1042 1 0 0 17 3 0 0 0 0 0 140737489010688 140737490079968 140738120650752 281473998793925 281473998794081 281473998794081 281473998794721 0\n",
+        "state": "S",
+        "ppid": 1,
+        "pgrp": 49,
+        "utime_ticks": 2184,
+        "stime_ticks": 11096,
+        "cutime_ticks": 139673,
+        "cstime_ticks": 25984,
+        "starttime_ticks": 30595206,
+        "rss_pages": 110763,
+        "cmdline": "/usr/local/bin/python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 ",
+        "status": "Name:\tpython3\nUmask:\t0022\nState:\tS (sleeping)\nTgid:\t49\nNgid:\t0\nPid:\t49\nPPid:\t1\nTracerPid:\t0\nUid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nFDSize:\t64\nGroups:\t0 \nNStgid:\t49\nNSpid:\t49\nNSpgid:\t49\nNSsid:\t49\nKthread:\t0\nVmPeak:\t  786156 kB\nVmSize:\t  727732 kB\nVmLck:\t       0 kB\nVmPin:\t       0 kB\nVmHWM:\t  501204 kB\nVmRSS:\t  443052 kB\nRssAnon:\t  431632 kB\nRssFile:\t   11420 kB\nRssShmem:\t       0 kB\nVmData:\t  710348 kB\nVmStk:\t     132 kB\nVmExe:\t     456 kB\nVmLib:\t    9068 kB\nVmPTE:\t     964 kB\nVmSwap:\t       0 kB\nHugetlbPages:\t       0 kB\nCoreDumping:\t0\nTHP_enabled:\t1\nuntag_mask:\t0xffffffffffffff\nThreads:\t1\nSigQ:\t0/31321\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000000\nSigBlk:\t0000000000000000\nSigIgn:\t0000000001001000\nSigCgt:\t0000000000000412\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t0000000000000000\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t1\nSpeculation_Store_Bypass:\tvulnerable\nSpeculationIndirectBranch:\tunknown\nCpus_allowed:\tffff\nCpus_allowed_list:\t0-15\nMems_allowed:\t1\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t275516\nnonvoluntary_ctxt_switches:\t15571\n",
+        "io": "rchar: 4986213323\nwchar: 1858658995\nsyscr: 2072480\nsyscw: 123686\nread_bytes: 0\nwrite_bytes: 340050059\ncancelled_write_bytes: 0\n",
+        "wchan": "pipe_read",
+        "schedstat": "132807123237 3152468503 291087\n"
+      },
+      {
+        "pid": 45382,
+        "stat_raw": "45382 (git) R 49 49 49 0 -1 4194304 768 0 49 0 2 0 0 0 20 0 1 0 30802126 301826048 2083 18446744073709551615 140737488510976 140737488974984 281474563784832 0 0 0 0 0 1040 0 0 0 17 0 0 0 0 0 0 140737489010688 140737490079968 140738184744960 281474563788022 281474563788139 281474563788139 281474563788779 0\n",
+        "state": "R",
+        "ppid": 49,
+        "pgrp": 49,
+        "utime_ticks": 2,
+        "stime_ticks": 0,
+        "cutime_ticks": 0,
+        "cstime_ticks": 0,
+        "starttime_ticks": 30802126,
+        "rss_pages": 2083,
+        "cmdline": "git show 9d13cb30dd618bc5d106186711c1d98e01b47995:scripts/verify_current_source.py ",
+        "status": "Name:\tgit\nUmask:\t0022\nState:\tR (running)\nTgid:\t45382\nNgid:\t0\nPid:\t45382\nPPid:\t49\nTracerPid:\t0\nUid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nFDSize:\t64\nGroups:\t0 \nNStgid:\t45382\nNSpid:\t45382\nNSpgid:\t49\nNSsid:\t49\nKthread:\t0\nVmPeak:\t  294756 kB\nVmSize:\t  294752 kB\nVmLck:\t       0 kB\nVmPin:\t       0 kB\nVmHWM:\t    8332 kB\nVmRSS:\t    8332 kB\nRssAnon:\t    3044 kB\nRssFile:\t    5288 kB\nRssShmem:\t       0 kB\nVmData:\t  285076 kB\nVmStk:\t     132 kB\nVmExe:\t     456 kB\nVmLib:\t    5032 kB\nVmPTE:\t     112 kB\nVmSwap:\t       0 kB\nHugetlbPages:\t       0 kB\nCoreDumping:\t0\nTHP_enabled:\t1\nuntag_mask:\t0xffffffffffffff\nThreads:\t1\nSigQ:\t0/31321\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000000\nSigBlk:\t0000000000000000\nSigIgn:\t0000000000000000\nSigCgt:\t0000000000000410\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t0000000000000000\nCapAmb:\t0000000000000000\nNoNewPrivs:\t1\nSeccomp:\t2\nSeccomp_filters:\t1\nSpeculation_Store_Bypass:\tvulnerable\nSpeculationIndirectBranch:\tunknown\nCpus_allowed:\tffff\nCpus_allowed_list:\t0-15\nMems_allowed:\t1\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t270\nnonvoluntary_ctxt_switches:\t55\n",
+        "io": "rchar: 11806\nwchar: 0\nsyscr: 38\nsyscw: 0\nread_bytes: 0\nwrite_bytes: 0\ncancelled_write_bytes: 0\n",
+        "wchan": "0",
+        "schedstat": "30716368 19059875 326\n"
+      }
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "verdict": "accepted_scoped_original_Linux_v15_execution",
+  "reviewer": "execution_recon (non-author of this observer execution)",
+  "reviewed_at": "2026-10-09T07:39:42.303060+00:00",
+  "head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "product": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "review": "6f11ae6904fd8d08fec4b4abd83f510cedcba6c8",
+  "tree": "9003d1383b4dbf148ac3aca30d00b5e8c06aaf48",
+  "actual_child_exit": 0,
+  "actual_child_pid": 49,
+  "child_started_at": "2026-10-09T07:01:49.545657+00:00",
+  "child_finished_at": "2026-10-09T07:36:21.359752+00:00",
+  "command": [
+    "/usr/local/bin/python3",
+    "scripts/verify_reviewed_source_v15.py",
+    "--source-version",
+    "p8-completion-source-20261009-v15"
+  ],
+  "source_before_after_exact_bytes_equal": true,
+  "source_input_count": 1235,
+  "product_count": 1090,
+  "validation_count": 139,
+  "original_binding_count": 3,
+  "extra_ledger_review_paths": 3,
+  "native_container_and_docker_attach_exits0": true,
+  "postchecks_passed_separately": true,
+  "child_status_not_inferred_from_wrapper": true,
+  "binding": {
+    "path": "review-next-candidate/linux-v15-execution-preparation/combined-G-binding.json",
+    "bytes": 1236,
+    "sha256": "f098830d19cc769d1979aba56ae6146ee55249b522e49b665284b0c015e46fc3"
+  },
+  "artifacts": [
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/receipt.json",
+      "bytes": 1213,
+      "sha256": "86d489d9a70e5f9782da6502015f069e591e6750cd7f6fd8a0d910efc01de6b7"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/runtime.json",
+      "bytes": 470,
+      "sha256": "7f7c545614cee8fa222ef3745a0c0f01887819206a87e5ce5f67ee3b6cc4186f"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/original-v15.stdout",
+      "bytes": 572,
+      "sha256": "c00b3419ee40038d9d3da3a44391be807130a871dc8aac63e6045bcf4ef4e586"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/original-v15.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/source-before.json",
+      "bytes": 320388,
+      "sha256": "421b364824cbcd915b3beca976f582dba71e0de046f090ca297a53e35abb3b73"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/output/source-after.json",
+      "bytes": 320388,
+      "sha256": "421b364824cbcd915b3beca976f582dba71e0de046f090ca297a53e35abb3b73"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/controller/execution-receipt.json",
+      "bytes": 813,
+      "sha256": "b1974685ede371fd6bf11a285c9b1a1da50486ccbf546044e968b82b6d51d084"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/controller/create-command.json",
+      "bytes": 2295,
+      "sha256": "9fd07e44baf74d0a9ce6749b29513920a0085ec399527ec78fd8f9b906a91d80"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/controller/container-before.json",
+      "bytes": 7869,
+      "sha256": "fc46f6c1975cbe82d5312c8153cb0fd07865b20d372c92631f8e0924f4a35cd7"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/controller/image-inspect.json",
+      "bytes": 2402,
+      "sha256": "5934da7b29ce74a79bdc902b46d02638089b7cc93ca4612cc629e2647e060963"
+    },
+    {
+      "path": "review-ci/combined-linux-source-admission-attempt01/observer/controller.py",
+      "bytes": 9304,
+      "sha256": "11fee8917b294bfa7b47e0b31c8b3d1fea8d935fdb5296f319f284d241620c45"
+    }
+  ],
+  "runtime": {
+    "executable": "/usr/local/bin/python3",
+    "git": "git version 2.47.3",
+    "git_readonly": true,
+    "machine": "x86_64",
+    "network_policy": "Host controller must assert Docker NetworkMode none before start; no interface-name heuristic.",
+    "observer_readonly": true,
+    "optimize": 0,
+    "output_readonly": false,
+    "platform": "Linux-6.10.14-linuxkit-x86_64-with-glibc2.41",
+    "python": "3.12.15 (main, Oct  6 2026, 04:38:21) [GCC 14.2.0]",
+    "source_readonly": true
+  },
+  "actual_container_id": "d5972e6cd724b564660dc60895b04624cc86bda5eba418aa591fa0927a09d675",
+  "actual_image": "docker.io/library/python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+  "actual_mounts": [
+    {
+      "Destination": "/Users/jin/Desktop/codecortex-rust/.git",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/.git",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/observer",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/observer",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/output",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": true,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/review-ci/combined-linux-source-admission-attempt01/output",
+      "Type": "bind"
+    },
+    {
+      "Destination": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+      "Mode": "",
+      "Propagation": "rprivate",
+      "RW": false,
+      "Source": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined",
+      "Type": "bind"
+    }
+  ],
+  "actual_network_mode": "none",
+  "template_equivalence": {
+    "observer_sha256": "11fee8917b294bfa7b47e0b31c8b3d1fea8d935fdb5296f319f284d241620c45",
+    "prior_independent_template_review": "review-next-candidate/linux-v15-execution-preparation/observer-template-independent-review.json",
+    "original_guard_argv_unchanged": true,
+    "source_and_common_git_readonly": true,
+    "lazy_fetch_disabled_and_network_none": true,
+    "history_TMPDIR_is_output_tmp_not_64MiB_tmp": true
+  },
+  "original_stdout": {
+    "schema_version": 10,
+    "source_version": "p8-completion-source-20261009-v15",
+    "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "product_source": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+    "review_source": "6f11ae6904fd8d08fec4b4abd83f510cedcba6c8",
+    "scope": "independently_reviewed_source_and_validation_inputs",
+    "runtime_and_quality_claims": "require_separate_execution_evidence",
+    "status": "passed",
+    "complete_inputs": 1090,
+    "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+  },
+  "limitations": [
+    "Source admission only; no181-suite, performance, runtime, release or TODO completion credit.",
+    "This pass belongs exact old G9f/P9d13/R6f11. It is not transferred to ready-signal P35a7 or a later G.",
+    "Actual Linux amd64 container onMachost; not native GitHub Linux runner timing evidence.",
+    "Initial host preparation138count assertion failed before Docker/CLI, retained by author separately; this review does not call that an original CLI retry.",
+    "No source/guard/registry/template or original output changed by this independent review."
+  ],
+  "new_todo_completed": 0,
+  "remaining_todo": 29
+}

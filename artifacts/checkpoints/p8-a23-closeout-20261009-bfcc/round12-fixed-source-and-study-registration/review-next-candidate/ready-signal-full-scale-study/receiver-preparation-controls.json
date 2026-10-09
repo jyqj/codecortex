@@ -1,0 +1,58 @@
+{
+  "scope": "Synthetic receiver integrity controls only. No GitHub API, original ZIP, child benchmark, build or CLI executed.",
+  "passed": 9,
+  "failed": 0,
+  "controls": [
+    {
+      "name": "pending_binding_cannot_execute",
+      "passed": true,
+      "error": "A real public pushed G binding is required; pending template cannot execute"
+    },
+    {
+      "name": "exact_run_binding_accepted",
+      "passed": true
+    },
+    {
+      "name": "wrong_head_rejected",
+      "passed": true,
+      "error": "Run identity/attempt/event differs; preserve metadata, no credit"
+    },
+    {
+      "name": "second_attempt_rejected",
+      "passed": true,
+      "error": "Run identity/attempt/event differs; preserve metadata, no credit"
+    },
+    {
+      "name": "safe_zip_exact_bytes_crc_hash_and_original_unchanged",
+      "passed": true
+    },
+    {
+      "name": "parent_traversal_rejected",
+      "passed": true,
+      "error": "Unsafe archive member path"
+    },
+    {
+      "name": "absolute_path_rejected",
+      "passed": true,
+      "error": "Unsafe archive member path"
+    },
+    {
+      "name": "duplicate_member_rejected",
+      "passed": true,
+      "error": "Noncanonical or duplicate archive member path"
+    },
+    {
+      "name": "symlink_rejected",
+      "passed": true,
+      "error": "Archive special files/symlinks are not extracted"
+    }
+  ],
+  "receiver": {
+    "path": "review-next-candidate/ready-signal-full-scale-study/intake_once.py",
+    "bytes": 12124,
+    "sha256": "cddb36564347f581e0d1874094796668c575eaf55f2bb84cd1327437c189b6a4"
+  },
+  "original_pure_plans": 150,
+  "no_measurement_or_todo_credit": true,
+  "preparation_script_completed_without_exception": true
+}

@@ -1,0 +1,352 @@
+name: Fixed original A23 Mac supervisor test
+on:
+  push:
+    branches: [test/p8-mac-original-supervisor-28fe-20261009]
+permissions:
+  contents: read
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  GIT_OPTIONAL_LOCKS: '0'
+  CARGO_TERM_COLOR: never
+jobs:
+  original_case:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Preserve execution intent before checkout and toolchain setup
+        id: initialize
+        run: |
+          python3 -B - <<'PY'
+          import datetime, json, os, pathlib, platform
+          prefix = "p8-mac-original-supervisor-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"]
+          temporary = pathlib.Path(os.environ["RUNNER_TEMP"])
+          owned = {key: str(temporary / (prefix + "-" + suffix)) for key, suffix in (
+              ("P8_EVIDENCE", "evidence"), ("CARGO_HOME", "cargo"), ("RUSTUP_HOME", "rustup"),
+              ("CARGO_TARGET_DIR", "target"), ("TMPDIR", "tmp"))}
+          root = pathlib.Path(owned["P8_EVIDENCE"])
+          for path in owned.values():
+              pathlib.Path(path).mkdir()
+          os.environ.update(owned)
+          with pathlib.Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:
+              for key, value in owned.items():
+                  stream.write(key + "=" + value + "\n")
+          record = {
+              "schema": "p8-original-mac-supervisor-start-v1", "status": "initialized_not_executed",
+              "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "controller_commit": os.environ["GITHUB_SHA"], "repository": os.environ["GITHUB_REPOSITORY"],
+              "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "fixed_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+              "original_test": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+              "scope": "One unchanged original test once on this actual macOS host; no general Mac regression or TODO acceptance",
+              "actual_host": platform.platform(),
+              "environment": {key: os.environ.get(key) for key in (
+                  "RUNNER_OS", "RUNNER_ARCH", "RUNNER_ENVIRONMENT", "ImageOS", "ImageVersion",
+                  "SDKROOT", "DEVELOPER_DIR", "MACOSX_DEPLOYMENT_TARGET", "CARGO_HOME", "RUSTUP_HOME", "CARGO_TARGET_DIR", "TMPDIR")},
+              "test_timeout_policy": "Original 250ms worker and less-than-2s test assertions remain unchanged; workflow limit only contains setup/execution",
+              "source_changed": False, "todo_completed": 0, "todo_remaining": 29,
+          }
+          with (root / "workflow-start.json").open("x", encoding="utf-8") as stream:
+              json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          print(json.dumps({"kind": "workflow_start", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+          if os.environ["GITHUB_RUN_ATTEMPT"] != "1":
+              raise RuntimeError("registered original-test observation admits only workflow attempt 1")
+          if os.environ["GITHUB_REPOSITORY"] != "jyqj/codecortex":
+              raise RuntimeError("unexpected repository")
+          PY
+      - name: Checkout the unchanged complete A23 source
+        id: original
+        timeout-minutes: 15
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          path: original
+      - name: Install fixed Rust 1.95.0 in the owned toolchain directory
+        id: toolchain
+        timeout-minutes: 15
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - name: Record actual host SDK and fixed compiler without changing the SDK
+        id: environment
+        run: |
+          python3 -B - <<'PY'
+          import json, os, pathlib, platform, subprocess, sys, time
+          root = pathlib.Path(os.environ["P8_EVIDENCE"])
+          record = {"schema": "p8-original-mac-supervisor-environment-v1", "platform": platform.platform(),
+                    "commands": [], "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "passed": False}
+          commands = [
+              ("rustc-version", ["rustc", "+1.95.0", "-Vv"]),
+              ("cargo-version", ["cargo", "+1.95.0", "-V"]),
+              ("sdk-path", ["xcrun", "--show-sdk-path"]),
+              ("sdk-version", ["xcrun", "--show-sdk-version"]),
+              ("xcode-selection", ["xcode-select", "-p"]),
+              ("host-version", ["sw_vers"]),
+          ]
+          try:
+              for label, argv in commands:
+                  result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+                  for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):
+                      with (root / (label + "." + suffix)).open("xb") as stream:
+                          stream.write(raw)
+                  record["commands"].append({"label": label, "argv": argv, "exit_code": result.returncode,
+                                             "stdout": result.stdout.decode("utf-8", "replace"),
+                                             "stderr": result.stderr.decode("utf-8", "replace")})
+              # SDK query failures stay observed facts; they do not substitute SDKs or sources.
+              rust = record["commands"][0]
+              cargo = record["commands"][1]
+              record["passed"] = rust["exit_code"] == 0 and "release: 1.95.0" in rust["stdout"].splitlines() and cargo["exit_code"] == 0 and cargo["stdout"].startswith("cargo 1.95.0 ")
+          except Exception as error:
+              record["error"] = {"class": type(error).__name__, "message": str(error)}
+          finally:
+              with (root / "environment.json").open("x", encoding="utf-8") as stream:
+                  json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+                  stream.write("\n")
+              print(json.dumps({"kind": "actual_environment", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+          sys.exit(0 if record["passed"] else 2)
+          PY
+      - name: Verify original source HEAD tree blobs and clean state before the test
+        id: before
+        env:
+          P8_SNAPSHOT_PHASE: before
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, json, os, pathlib, stat, subprocess, sys, time
+          root = pathlib.Path(os.environ["P8_EVIDENCE"])
+          source = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"
+          phase = os.environ["P8_SNAPSHOT_PHASE"]
+          expected_head = "a23bb72d3c954f385b99fe81ce9189885c208557"
+          expected_tree = "58147c952505c44da1f41eb4b9c31643f2303b96"
+          expected = {
+              "crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"},
+              "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"},
+          }
+          def identity(raw):
+              return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                      "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+          def git(args, label):
+              result = subprocess.run(["git"] + args, cwd=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+              for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):
+                  with (root / (phase + "-" + label + "." + suffix)).open("xb") as stream:
+                      stream.write(raw)
+              if result.returncode:
+                  raise RuntimeError("source Git observation failed: " + label)
+              return result.stdout
+          record = {"schema": "p8-original-mac-supervisor-source-v1", "phase": phase, "expected_head": expected_head,
+                    "expected_tree": expected_tree, "expected_files": expected, "files": {}, "passed": False,
+                    "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "errors": []}
+          try:
+              record["head"] = git(["rev-parse", "HEAD"], "head").decode().strip()
+              record["tree"] = git(["rev-parse", "HEAD^{tree}"], "tree").decode().strip()
+              status = git(["status", "--porcelain=v1", "--untracked-files=all"], "status")
+              record["clean"] = status == b""
+              for index, (name, wanted) in enumerate(expected.items()):
+                  path = source / name
+                  if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode):
+                      raise ValueError("original source is not a regular file")
+                  raw = path.read_bytes()
+                  actual = identity(raw)
+                  original = git(["show", "HEAD:" + name], "blob-" + str(index))
+                  record["files"][name] = {"actual": actual, "expected": wanted, "git_bytes_equal": raw == original}
+              record["passed"] = record["head"] == expected_head and record["tree"] == expected_tree and record["clean"] and all(
+                  row["actual"] == row["expected"] and row["git_bytes_equal"] for row in record["files"].values()) and len(record["files"]) == 2
+              if phase == "after":
+                  before = json.loads((root / "source-before.json").read_bytes())
+                  record["before_after_equal"] = before["passed"] and before["head"] == record["head"] and before["tree"] == record["tree"] and before["files"] == record["files"]
+                  record["passed"] = record["passed"] and record["before_after_equal"]
+          except Exception as error:
+              record["errors"].append({"class": type(error).__name__, "message": str(error)})
+          with (root / ("source-" + phase + ".json")).open("x", encoding="utf-8") as stream:
+              json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          print(json.dumps({"kind": "source_snapshot", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+          sys.exit(0 if record["passed"] else 2)
+          PY
+      - name: Execute exactly the unchanged original supervisor regression once
+        id: test
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, json, os, pathlib, re, stat, subprocess, sys, time
+          root = pathlib.Path(os.environ["P8_EVIDENCE"])
+          source = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"
+          target = pathlib.Path(os.environ["CARGO_TARGET_DIR"]).resolve(strict=True)
+          name = "subprocess_descendant_cannot_hold_stderr_past_worker_deadline"
+          argv = ["cargo", "+1.95.0", "test", "--locked", "-p", "cc-eval", "--test", "p8_scale", name, "--", "--exact", "--nocapture"]
+          record = {"schema": "p8-original-mac-supervisor-execution-v1", "argv": argv, "cwd": str(source),
+                    "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "status": "starting",
+                    "cargo_exit_code": None, "exact_original_case_passed": False, "test_binary": None,
+                    "scope": "Only this unchanged original test on this actual host/environment; no full-workspace or platform certification",
+                    "errors": []}
+          with (root / "test-start.json").open("x", encoding="utf-8") as stream:
+              json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          start = time.monotonic()
+          try:
+              # These original streams are written directly throughout the one Cargo invocation.
+              with (root / "cargo.stdout").open("xb") as stdout, (root / "cargo.stderr").open("xb") as stderr:
+                  result = subprocess.run(argv, cwd=source, stdout=stdout, stderr=stderr, check=False)
+              record["cargo_exit_code"] = result.returncode
+              record["status"] = "returned"
+              out = (root / "cargo.stdout").read_bytes()
+              err = (root / "cargo.stderr").read_bytes()
+              text, error_text = out.decode("utf-8", "replace"), err.decode("utf-8", "replace")
+              matches = re.findall(r"(?m)^\s*Running tests/p8_scale\.rs \((.+)\)\s*$", error_text)
+              if len(matches) == 1:
+                  binary = pathlib.Path(matches[0])
+                  if not binary.is_absolute():
+                      binary = source / binary
+                  if binary.is_symlink() or not stat.S_ISREG(binary.stat().st_mode):
+                      raise ValueError("actual test executable is not a regular file")
+                  binary = binary.resolve(strict=True)
+                  if target not in binary.parents:
+                      raise ValueError("actual test executable is outside the owned target")
+                  info = binary.stat()
+                  sha = hashlib.sha256()
+                  git = hashlib.sha1(b"blob " + str(info.st_size).encode() + b"\0")
+                  with binary.open("rb") as stream:
+                      for block in iter(lambda: stream.read(1024 * 1024), b""):
+                          sha.update(block)
+                          git.update(block)
+                  record["test_binary"] = {"actual_path": str(binary), "bytes": info.st_size,
+                                          "sha256": sha.hexdigest(), "git_blob": git.hexdigest(),
+                                          "mode": stat.S_IMODE(info.st_mode), "source": "unique actual Cargo Running line"}
+              elif result.returncode == 0:
+                  record["errors"].append({"class": "IdentityError", "message": "successful Cargo output did not identify exactly one p8_scale executable"})
+              record["original_output_assertions"] = {
+                  "running_exactly_one": len(re.findall(r"(?m)^running 1 test\s*$", text)) == 1,
+                  "exact_named_test_ok": len(re.findall(r"(?m)^test " + re.escape(name) + r" \.\.\. ok\s*$", text)) == 1,
+                  "one_passed_no_ignored": len(re.findall(r"(?m)^test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; \d+ filtered out; finished in .+$", text)) == 1,
+              }
+              record["exact_original_case_passed"] = result.returncode == 0 and record["test_binary"] is not None and all(record["original_output_assertions"].values()) and not record["errors"]
+          except Exception as error:
+              record["status"] = "execution_or_identity_error"
+              record["errors"].append({"class": type(error).__name__, "message": str(error)})
+          finally:
+              record["elapsed_seconds_including_build"] = time.monotonic() - start
+              record["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+              record["workflow_step_exit_code"] = 0 if record["exact_original_case_passed"] else (record["cargo_exit_code"] if type(record["cargo_exit_code"]) is int and record["cargo_exit_code"] > 0 else 2)
+              for suffix in ("stdout", "stderr"):
+                  path = root / ("cargo." + suffix)
+                  if path.is_file():
+                      raw = path.read_bytes()
+                      record["cargo_" + suffix] = {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+              with (root / "test-receipt.json").open("x", encoding="utf-8") as stream:
+                  json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+                  stream.write("\n")
+              print(json.dumps({"kind": "original_test_receipt", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+              for suffix in ("stdout", "stderr"):
+                  path = root / ("cargo." + suffix)
+                  if path.is_file():
+                      print(json.dumps({"kind": "complete_original_cargo_" + suffix, "raw_utf8": path.read_bytes().decode("utf-8", "replace")}, sort_keys=True, allow_nan=False), flush=True)
+          sys.exit(record["workflow_step_exit_code"])
+          PY
+      - name: Preserve and verify original source identity after success or failure
+        id: after
+        if: always() && steps.original.outcome == 'success'
+        env:
+          P8_SNAPSHOT_PHASE: after
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, json, os, pathlib, stat, subprocess, sys, time
+          root = pathlib.Path(os.environ["P8_EVIDENCE"])
+          source = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "original"
+          phase = os.environ["P8_SNAPSHOT_PHASE"]
+          expected_head = "a23bb72d3c954f385b99fe81ce9189885c208557"
+          expected_tree = "58147c952505c44da1f41eb4b9c31643f2303b96"
+          expected = {
+              "crates/cc-eval/src/benchmark/p8_scale.rs": {"bytes": 46139, "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568", "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"},
+              "crates/cc-eval/tests/p8_scale.rs": {"bytes": 19815, "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e", "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"},
+          }
+          def identity(raw):
+              return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                      "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+          def git(args, label):
+              result = subprocess.run(["git"] + args, cwd=source, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+              for suffix, raw in (("stdout", result.stdout), ("stderr", result.stderr)):
+                  with (root / (phase + "-" + label + "." + suffix)).open("xb") as stream:
+                      stream.write(raw)
+              if result.returncode:
+                  raise RuntimeError("source Git observation failed: " + label)
+              return result.stdout
+          record = {"schema": "p8-original-mac-supervisor-source-v1", "phase": phase, "expected_head": expected_head,
+                    "expected_tree": expected_tree, "expected_files": expected, "files": {}, "passed": False,
+                    "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "errors": []}
+          try:
+              record["head"] = git(["rev-parse", "HEAD"], "head").decode().strip()
+              record["tree"] = git(["rev-parse", "HEAD^{tree}"], "tree").decode().strip()
+              status = git(["status", "--porcelain=v1", "--untracked-files=all"], "status")
+              record["clean"] = status == b""
+              for index, (name, wanted) in enumerate(expected.items()):
+                  path = source / name
+                  if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode):
+                      raise ValueError("original source is not a regular file")
+                  raw = path.read_bytes()
+                  actual = identity(raw)
+                  original = git(["show", "HEAD:" + name], "blob-" + str(index))
+                  record["files"][name] = {"actual": actual, "expected": wanted, "git_bytes_equal": raw == original}
+              record["passed"] = record["head"] == expected_head and record["tree"] == expected_tree and record["clean"] and all(
+                  row["actual"] == row["expected"] and row["git_bytes_equal"] for row in record["files"].values()) and len(record["files"]) == 2
+              if phase == "after":
+                  before = json.loads((root / "source-before.json").read_bytes())
+                  record["before_after_equal"] = before["passed"] and before["head"] == record["head"] and before["tree"] == record["tree"] and before["files"] == record["files"]
+                  record["passed"] = record["passed"] and record["before_after_equal"]
+          except Exception as error:
+              record["errors"].append({"class": type(error).__name__, "message": str(error)})
+          with (root / ("source-" + phase + ".json")).open("x", encoding="utf-8") as stream:
+              json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          print(json.dumps({"kind": "source_snapshot", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+          sys.exit(0 if record["passed"] else 2)
+          PY
+      - name: Preserve actual workflow outcomes and original evidence inventory
+        if: always()
+        env:
+          P8_INITIALIZE: ${{ steps.initialize.outcome }}
+          P8_CHECKOUT: ${{ steps.original.outcome }}
+          P8_TOOLCHAIN: ${{ steps.toolchain.outcome }}
+          P8_ENVIRONMENT: ${{ steps.environment.outcome }}
+          P8_BEFORE: ${{ steps.before.outcome }}
+          P8_TEST: ${{ steps.test.outcome }}
+          P8_AFTER: ${{ steps.after.outcome }}
+          P8_JOB: ${{ job.status }}
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, json, os, pathlib, time
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("p8-mac-original-supervisor-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"] + "-evidence")
+          if root.is_symlink():
+              raise RuntimeError("evidence directory is a symlink")
+          root.mkdir(exist_ok=True)
+          record = {"schema": "p8-original-mac-supervisor-workflow-terminal-v1",
+                    "observed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                    "controller_commit": os.environ["GITHUB_SHA"], "run_id": os.environ["GITHUB_RUN_ID"],
+                    "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                    "stage_outcomes": {key: os.environ.get(key) for key in (
+                        "P8_INITIALIZE", "P8_CHECKOUT", "P8_TOOLCHAIN", "P8_ENVIRONMENT", "P8_BEFORE", "P8_TEST", "P8_AFTER", "P8_JOB")},
+                    "scope": "One original test observation, no full Mac workspace claim or TODO completion",
+                    "todo_completed": 0, "todo_remaining": 29}
+          with (root / "workflow-terminal.json").open("x", encoding="utf-8") as stream:
+              json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          files = []
+          for path in sorted(root.iterdir()):
+              if path.is_symlink() or not path.is_file():
+                  raise RuntimeError("unexpected evidence object")
+              raw = path.read_bytes()
+              files.append({"path": path.name, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()})
+          with (root / "output-manifest.json").open("x", encoding="utf-8") as stream:
+              json.dump({"files": files, "scope": "Regular evidence files; target/cache intentionally separate"}, stream, indent=2, sort_keys=True, allow_nan=False)
+              stream.write("\n")
+          print(json.dumps({"kind": "workflow_terminal", "value": record}, sort_keys=True, allow_nan=False), flush=True)
+          PY
+      - name: Retain every available original receipt and Cargo stream including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-mac-original-supervisor-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-mac-original-supervisor-${{ github.run_id }}-attempt${{ github.run_attempt }}-evidence
+          include-hidden-files: true
+          if-no-files-found: error

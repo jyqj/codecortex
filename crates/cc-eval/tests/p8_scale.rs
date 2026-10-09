@@ -3,7 +3,7 @@
 use cc_eval::benchmark::{
     mutation_case,
     p8_scale::{
-        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope,
+        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,
         RELEASE_SCALES,
     },
 };
@@ -679,4 +679,104 @@ fn real_cold_scope_finishes_both_fresh_builds_and_all_fifteen_tables() {
         assert_eq!(row["report"]["parse_errors"], json!([]));
         assert!(row.get("process_snapshot").is_some());
     }
+}
+
+fn isolated_smoke(profile: &str, fanout: Option<usize>) -> ScalePlan {
+    ScalePlan {
+        stage_scope: Some(StageScope::ProfileIsolatedV1),
+        profile_study: Some(ProfileStudy {
+            run_id: "12345".into(),
+            run_attempt: 1,
+            mutation_profile: profile.into(),
+            fanout,
+        }),
+        files: if fanout.is_some() { vec![1000] } else { vec![60] },
+        shard: Some(ScaleShard { index: 0, count: 1 }),
+        skip_fanout: fanout.is_none(),
+        dirty_budget: 8,
+        max_resume_builds: 128,
+        fanouts: vec![1, 4, 16, 64, 128],
+        ..ScalePlan::default()
+    }
+}
+
+#[test]
+fn isolated_profile_wire_cannot_select_another_protocol_or_omit_its_identity() {
+    let old = serde_json::to_value(ScalePlan::default()).unwrap();
+    assert!(old.get("profile_study").is_none());
+    assert!(old.get("stage_scope").is_none());
+    let mut plan = isolated_smoke("body", None);
+    plan.validate().unwrap();
+    let wire = serde_json::to_value(&plan).unwrap();
+    let decoded: ScalePlan = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(serde_json::to_value(decoded).unwrap(), wire);
+    plan.profile_study.as_mut().unwrap().mutation_profile = "cold".into();
+    assert!(plan.validate().is_err());
+    plan = isolated_smoke("body", None);
+    plan.cold_study = Some(ColdStudy { run_id: "12345".into(), run_attempt: 1 });
+    assert!(plan.validate().is_err());
+    plan.cold_study = None;
+    plan.stage_scope = None;
+    assert!(plan.validate().is_err());
+    plan = isolated_smoke("fanout", Some(16));
+    plan.validate().unwrap();
+    plan.skip_fanout = true;
+    assert!(plan.validate().is_err());
+}
+
+#[test]
+fn isolated_fresh_batch_keeps_original_target_and_both_full_parity_checkpoints() {
+    let temp = tempfile::tempdir().unwrap();
+    let out = temp.path().join("fresh-batch");
+    let plan = isolated_smoke("batch_1", None);
+    let report = p8_scale::run_supervised(&plan, &out, binary()).unwrap();
+    assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["summary"]["stage_scope"], "profile_isolated_v1");
+    assert_eq!(report["summary"]["sample_count"], 2);
+    let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+    assert_eq!(rows[0]["plan"], serde_json::to_value(&plan).unwrap());
+    let initial = rows.iter().find(|row| row["event"] == "cold_parity").unwrap();
+    let stages: Vec<_> = rows.iter().filter(|row| row["event"] == "stage_finished").collect();
+    assert_eq!(stages.len(), 1);
+    assert!(stages[0]["label"].as_str().unwrap().ends_with("/batch_1"));
+    assert_eq!(initial["independent_config_fact"], stages[0]["independent_config_fact"]);
+    for point in [initial, stages[0]] {
+        assert_eq!(point["parity"]["equal"], true);
+        assert_eq!(point["parity"]["tables"].as_array().unwrap().len(), 15);
+        assert_eq!(point["independent_config_fact"]["passed"], true);
+    }
+    let mutations: Vec<_> = rows.iter().filter(|row| row["event"] == "mutation").collect();
+    assert_eq!(mutations.len(), 1);
+    assert_eq!(mutations[0]["operations"].as_array().unwrap().len(), 1);
+    assert_eq!(rows.iter().filter(|row| row["event"] == "build_finished" && row["full"] == true).count(), 3);
+    assert!(rows.iter().all(|row| row["event"] != "fanout_started"));
+}
+
+#[test]
+fn isolated_fanout_retains_actual_initial_and_final_tables_without_a_scale_corpus() {
+    let temp = tempfile::tempdir().unwrap();
+    let out = temp.path().join("fanout");
+    let plan = isolated_smoke("fanout", Some(16));
+    let report = p8_scale::run_supervised(&plan, &out, binary()).unwrap();
+    assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["summary"]["sample_count"], 1);
+    let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+    assert_eq!(rows.len(), 3);
+    assert_eq!(rows[1]["event"], "fanout_started");
+    assert_eq!(rows[1]["case"]["initial"].as_object().unwrap().len(), 17);
+    assert_eq!(rows[1]["case"]["dirty_budget"], 8);
+    assert_eq!(rows[1]["case"]["max_resume_builds"], 128);
+    assert_eq!(rows[2]["first_build_incomplete"], true);
+    let result = &rows[2]["result"];
+    let initial = &result["initial_evidence"];
+    assert_eq!(initial["equal"], true);
+    assert_eq!(initial["tables"].as_array().unwrap().len(), 15);
+    assert_eq!(initial["incremental"], initial["full"]);
+    assert_eq!(initial["incremental"]["files"].as_array().unwrap().len(), 17);
+    let point = &result["checkpoints"][0];
+    assert_eq!(point["incremental"], point["full"]);
+    assert_eq!(point["truth"].as_array().unwrap().len(), 16);
+    assert_eq!(point["full_report"]["resolution_freshness"]["complete"], true);
 }

@@ -393,10 +393,15 @@ def run_shard(root, build_directory, output, plan):
         require(capacity == CAPACITY_PROFILE, "unknown capacity profile")
         command.extend(("--capacity-profile", capacity))
     if "stage_scope" in plan:
-        require(plan["stage_scope"] == "cold_only_v1", "unknown explicit stage scope")
+        require(plan["stage_scope"] in ("cold_only_v1", "profile_isolated_v1"), "unknown explicit stage scope")
+        study = plan["cold_study"] if plan["stage_scope"] == "cold_only_v1" else plan["profile_study"]
         command.extend(("--stage-scope", plan["stage_scope"],
-                        "--study-run-id", plan["cold_study"]["run_id"],
-                        "--study-attempt", str(plan["cold_study"]["run_attempt"])))
+                        "--study-run-id", study["run_id"],
+                        "--study-attempt", str(study["run_attempt"])))
+        if plan["stage_scope"] == "profile_isolated_v1":
+            command.extend(("--mutation-profile", study["mutation_profile"]))
+            if study["fanout"] is not None:
+                command.extend(("--profile-fanout", str(study["fanout"])))
     record = {"schema": SCHEMA, "kind": "shard", "status": "failed", "started_utc": utc(),
               "command": command, "plan": plan, "build_receipt_sha256": file_sha256(Path(build_directory) / "build.json"),
               "source_commit": built["source_commit"], "source_manifest_sha256": built["source_manifest_sha256"],
@@ -551,15 +556,26 @@ def compact_build(event, started):
 
 
 def inspect_raw(path, plan, *, cold_only=False):
-    """Replay the complete event population, retaining bounded summaries."""
-    require(type(cold_only) is bool and plan.get("stage_scope") ==
-            ("cold_only_v1" if cold_only else None), "raw stage protocol differs")
+    # Existing public full/cold callers cannot opt into a partial profile.
+    return _inspect_raw(path, plan, cold_only=cold_only)
+
+
+def _inspect_raw(path, plan, *, cold_only=False, isolated_profile=None):
+    """Shared complete-record checks; new scope is selected only by its driver."""
+    require(type(cold_only) is bool and not (cold_only and isolated_profile is not None), "mixed raw protocols")
+    scope = "profile_isolated_v1" if isolated_profile is not None else "cold_only_v1" if cold_only else None
+    require(plan.get("stage_scope") == scope, "raw stage protocol differs")
+    if isolated_profile is not None:
+        require(isolated_profile in ("no_op", "body", "api", "config", "batch_1", "batch_10", "batch_100", "batch_1000", "fanout")
+                and plan["profile_study"]["mutation_profile"] == isolated_profile, "raw isolated profile differs")
     require(not cold_only or plan["skip_fanout"] is True, "cold-only protocol contains fanout")
     scale, reps = plan["files"][0], set(repetition_range(plan))
     stages = ("no_op", "body", "api", "config") + tuple(f"batch_{n}" for n in plan["batch_sizes"])
-    if cold_only:
+    if cold_only or isolated_profile == "fanout":
         stages = ()
-    expected_samples = {f"scale-{scale}/repetition-{r}" for r in reps}
+    elif isolated_profile is not None:
+        stages = (isolated_profile,)
+    expected_samples = set() if isolated_profile == "fanout" else {f"scale-{scale}/repetition-{r}" for r in reps}
     inputs, starts, builds, mutations, cold, finished = {}, {}, {}, {}, {}, {}
     used_builds, fanout_started, fanout_finished, measurements = set(), {}, {}, []
     engine = None
@@ -679,7 +695,8 @@ def inspect_raw(path, plan, *, cold_only=False):
                         "incomplete closure cannot certify full parity")
                 require(all(builds[key]["complete"] is False for key in labels[:-1]), "unexpected resume after completed closure")
                 check_parity(event.get("parity", {}), plan)
-                check_fact(event.get("independent_config_fact"), inputs[sample]["config"], stage == "config" or stage.startswith("batch_"))
+                check_fact(event.get("independent_config_fact"), inputs[sample]["config"],
+                           stage == "config" or (isolated_profile is None and stage.startswith("batch_")))
                 if stage == "no_op":
                     require(all(builds[labels[0]][key] == 0 for key in ("files_added", "files_updated", "files_removed")),
                             "no-op changed indexed files")
@@ -755,10 +772,16 @@ def inspect_raw(path, plan, *, cold_only=False):
     expected_stages = {sample + "/" + stage for sample in expected_samples for stage in stages}
     require(set(mutations) == set(finished) == expected_stages, "missing registered mutation stages")
     require(set(starts) == set(builds) == used_builds, "missing, incomplete or unconsumed native builds")
-    expected_fanouts = set() if plan["skip_fanout"] else {(fanout, rep) for fanout in plan["fanouts"] for rep in reps}
+    selected_fanouts = [plan["profile_study"]["fanout"]] if isolated_profile == "fanout" else plan["fanouts"]
+    expected_fanouts = set() if plan["skip_fanout"] else {(fanout, rep) for fanout in selected_fanouts for rep in reps}
     require(set(fanout_started) == set(fanout_finished) == expected_fanouts, "missing registered fanout samples")
-    require(len({record["digest"] for record in inputs.values()}) == 1, "same-seed input digest changed across repetitions")
-    return dict(engine=engine, input_digest=next(iter(inputs.values()))["digest"], measurements=measurements)
+    if isolated_profile == "fanout":
+        require(len(fanout_started) == 1, "isolated fanout requires exactly one fixture")
+        input_digest = hashlib.sha256(json_bytes(next(iter(fanout_started.values()))["initial"])).hexdigest()
+    else:
+        require(len({record["digest"] for record in inputs.values()}) == 1, "same-seed input digest changed across repetitions")
+        input_digest = next(iter(inputs.values()))["digest"]
+    return dict(engine=engine, input_digest=input_digest, measurements=measurements)
 
 
 def validate_shard(directory, build_record, binary, build_receipt_sha256):

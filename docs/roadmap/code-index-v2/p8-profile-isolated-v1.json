@@ -1,0 +1,95 @@
+{
+  "schema": "p8-isolated-profile-study-v1",
+  "stage_scope": "profile_isolated_v1",
+  "registration_state": "candidate_not_executed",
+  "base_source_commit": "10ec828beb94200ec679302c45115760ebd55ee9",
+  "original_contract_inputs": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob_sha1": "959a25ba851ff88f286bab0fa14167878129b1dd",
+      "sha256": "d51f61a920d887d375e95ca529509d0750233ea22477e40f7d43b3caa985c495"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob_sha1": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "git_blob_sha1": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    }
+  ],
+  "task": "P8-006",
+  "run_binding": "actual future source+binary+driver manifest+run_id+run_attempt; all fixed before samples",
+  "mutation_profiles": [
+    "no_op",
+    "body",
+    "api",
+    "config",
+    "batch_1",
+    "batch_10",
+    "batch_100",
+    "batch_1000"
+  ],
+  "scales": [
+    1000,
+    5000,
+    10000,
+    50000,
+    100000
+  ],
+  "fanouts": [
+    1,
+    4,
+    16,
+    64,
+    128
+  ],
+  "fanout_actual_files": "fanout+1; files=1000 is only original capacity-reservation transport field",
+  "repetitions": 30,
+  "mutation_slots": 1200,
+  "fanout_slots": 150,
+  "setup_pairs_separately_retained": 1200,
+  "seed": 12648430,
+  "worker_deadline_ms": 18000000,
+  "worker_max_output_bytes": 536870912,
+  "main_dirty_budget": 200,
+  "main_max_resume_builds": 1024,
+  "fanout_dirty_budget": 8,
+  "fanout_max_resume_builds": 128,
+  "max_parallel": 10,
+  "job_timeout_minutes": 350,
+  "total_allowance_worker_hours": 6750,
+  "old_full_study_allowance_worker_hours": 750,
+  "budget_difference": "9x aggregate worker time allowance, not equivalent re-sharding of scale_capacity_v1; each worker still includes all setup and parity under original 5h",
+  "history_difference": "independent fresh A/B per selected profile, not the original sequential warm/history distribution; OS page cache retained",
+  "main_cell": [
+    "fresh A/B generate same seed and original config augmentation",
+    "two full builds with no parse errors",
+    "initial complete 15-table parity and target0 config witness",
+    "one registered mutation applied to both trees",
+    "incremental + up to1024 resumes preserving partial status",
+    "actual full-control rebuild",
+    "final complete 15-table parity and config witness target1 only for config, target0 for all other fresh profiles"
+  ],
+  "fanout_cell": [
+    "original actual N+1 input/independent call-edge assertions",
+    "two original full builds and initial15-table canonical comparison with original reports retained",
+    "original API mutation plus dirty8/resume128",
+    "actual full rebuild and final15-table canonical comparison",
+    "actual first-build-incomplete observation retained; aggregate requires original over-budget coverage"
+  ],
+  "negative_cases": [
+    "missing/duplicate/extra slot",
+    "mixed source/binary/driver/build/run/attempt",
+    "old full/cold scope or failed prefix reuse",
+    "changed workload/budget or missing original tables/counts/reports",
+    "incomplete native terminal or closure",
+    "failed or truncated original evidence"
+  ],
+  "task_statuses_changed": false,
+  "release_certification": "not_run",
+  "prior_studies_unchanged": true,
+  "original_registration_parent": "044c008c9459cfa61e7701db2eb868342c508a39"
+}

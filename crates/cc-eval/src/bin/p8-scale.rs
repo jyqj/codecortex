@@ -1,7 +1,7 @@
 //! Development-only local P8 measurements. Never certifies a release.
 use cc_eval::benchmark::{
     invalid,
-    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope},
+    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},
     Result,
 };
 use clap::{Parser, ValueEnum};
@@ -24,6 +24,8 @@ enum Capacity {
 enum Stages {
     #[value(name = "cold_only_v1")]
     ColdOnlyV1,
+    #[value(name = "profile_isolated_v1")]
+    ProfileIsolatedV1,
 }
 
 #[derive(Parser)]
@@ -44,6 +46,11 @@ struct Cli {
     study_run_id: Option<String>,
     #[arg(long, requires_all = ["study_run_id", "stage_scope"])]
     study_attempt: Option<u32>,
+    /// One independent profile; only valid with profile_isolated_v1.
+    #[arg(long, requires_all = ["study_run_id", "study_attempt", "stage_scope"])]
+    mutation_profile: Option<String>,
+    #[arg(long, requires = "mutation_profile")]
+    profile_fanout: Option<usize>,
     /// Comma-separated exact corpus sizes; 60 is the safe default.
     #[arg(long, value_delimiter = ',', conflicts_with = "matrix")]
     files: Vec<usize>,
@@ -110,6 +117,12 @@ fn run(cli: Cli) -> Result<i32> {
         let plan: ScalePlan = serde_json::from_slice(&std::fs::read(path)?)?;
         return p8_scale::run_worker(&plan, &output);
     }
+    let identity = cli.study_run_id.zip(cli.study_attempt);
+    if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))
+        || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some("fanout"))
+    {
+        return Err(invalid("profile selection requires its explicit isolated scope"));
+    }
     let plan = ScalePlan {
         schema_version: 1,
         profile: match cli.profile {
@@ -121,13 +134,16 @@ fn run(cli: Cli) -> Result<i32> {
         }),
         stage_scope: cli.stage_scope.map(|scope| match scope {
             Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,
+            Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,
         }),
-        cold_study: cli
-            .study_run_id
-            .zip(cli.study_attempt)
-            .map(|(run_id, run_attempt)| ColdStudy {
+        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),
+        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+            .map(|(run_id, run_attempt)| ProfileStudy {
                 run_id,
                 run_attempt,
+                mutation_profile: cli.mutation_profile.unwrap_or_default(),
+                fanout: cli.profile_fanout,
             }),
         files: if cli.matrix {
             p8_scale::RELEASE_SCALES.to_vec()

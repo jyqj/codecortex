@@ -108,6 +108,16 @@ fn build(index: &mut CodeIndex, full: bool) -> Result<cc_index::IndexReport> {
 /// Each replay starts from two fresh disposable projects. No ambient corpus,
 /// source mutation, network, or answer data is passed into the product.
 pub fn evaluate(case: &MutationCase) -> Result<Value> {
+    evaluate_internal(case, false)
+}
+
+/// Additional retained observations for the separately registered isolated
+/// profile study. The ordinary replay's wire format and decisions are unchanged.
+pub fn evaluate_with_initial_evidence(case: &MutationCase) -> Result<Value> {
+    evaluate_internal(case, true)
+}
+
+fn evaluate_internal(case: &MutationCase, retain_initial: bool) -> Result<Value> {
     case.validate()?;
     let a = tempfile::tempdir()?;
     let b = tempfile::tempdir()?;
@@ -125,12 +135,39 @@ pub fn evaluate(case: &MutationCase) -> Result<Value> {
         |p: &Path| CodeIndex::new(Some(p)).map_err(|e| super::BenchError::Protocol(e.to_string()));
     let mut inc = open(a.path())?;
     let mut full = open(b.path())?;
-    build(&mut inc, true)?;
-    build(&mut full, true)?;
-    let initial_equal = oracle::canonical(a.path())? == oracle::canonical(b.path())?;
-    if !initial_equal {
-        return Err(invalid("initial independent rebuilds disagree"));
-    }
+    let initial_evidence = if retain_initial {
+        let initial_incremental_report = build(&mut inc, true)?;
+        let initial_full_report = build(&mut full, true)?;
+        let initial_incremental = oracle::canonical(a.path())?;
+        let initial_full = oracle::canonical(b.path())?;
+        let initial_equal = initial_incremental == initial_full;
+        if !initial_equal {
+            return Err(invalid("initial independent rebuilds disagree"));
+        }
+        let evidence = json!({
+            "incremental": initial_incremental, "full": initial_full,
+            "incremental_report": initial_incremental_report, "full_report": initial_full_report,
+            "process_snapshot": super::sampler::process_snapshot(std::process::id()),
+            "resource_scope": "single worker snapshot, not peak or process-tree proof",
+            "tables": oracle::tables(), "equal": initial_equal,
+            "runtime_config": {"auto_index":{"enabled":false},"indexing":{
+                "dirty_propagation_max_files":case.dirty_budget,"db_read_pool_size":1}},
+        });
+        if evidence["incremental_report"]["resolution_freshness"]["complete"] != true
+            || evidence["full_report"]["resolution_freshness"]["complete"] != true
+        {
+            return Err(invalid("isolated fanout initial full builds are incomplete"));
+        }
+        Some(evidence)
+    } else {
+        build(&mut inc, true)?;
+        build(&mut full, true)?;
+        let initial_equal = oracle::canonical(a.path())? == oracle::canonical(b.path())?;
+        if !initial_equal {
+            return Err(invalid("initial independent rebuilds disagree"));
+        }
+        None
+    };
     let mut columns = BTreeMap::new();
     for assertion in case.stages.iter().flat_map(|s| &s.assertions) {
         if !columns.contains_key(&assertion.table) {
@@ -166,7 +203,17 @@ pub fn evaluate(case: &MutationCase) -> Result<Value> {
                 reports.push(json!(build(&mut inc, false)?));
             }
         }
-        build(&mut full, true)?;
+        let full_report = if retain_initial {
+            Some(json!(build(&mut full, true)?))
+        } else {
+            build(&mut full, true)?;
+            None
+        };
+        if full_report.as_ref().is_some_and(|report| {
+            report["resolution_freshness"]["complete"] != true
+        }) {
+            return Err(invalid("isolated fanout final full build is incomplete"));
+        }
         let ca = oracle::canonical(a.path())?;
         let cb = oracle::canonical(b.path())?;
         let complete = reports.last().unwrap()["resolution_freshness"]["complete"] == true;
@@ -203,14 +250,21 @@ pub fn evaluate(case: &MutationCase) -> Result<Value> {
         }
         checkpoints.push(json!({"stage":n,"status":if complete{"compared"}else{"incomplete_not_certified"},"settle_required":stage.settle,"different_tables":differences,"truth":truth,"reports":reports,
             "incremental":ca,"full":cb}));
+        if retain_initial {
+            let checkpoint = checkpoints.last_mut().unwrap();
+            checkpoint["full_report"] = full_report.unwrap();
+            checkpoint["process_snapshot"] = json!(super::sampler::process_snapshot(std::process::id()));
+        }
         if failure.is_some() {
             break;
         }
     }
-    Ok(
-        json!({"schema_version":1,"evidence_layer":"actual_parser_sqlite_with_independent_fact_assertions","name":case.name,
-        "passed":failure.is_none(),"failure_signature":failure,"checkpoints":checkpoints,"tables":oracle::tables()}),
-    )
+    let mut result = json!({"schema_version":1,"evidence_layer":"actual_parser_sqlite_with_independent_fact_assertions","name":case.name,
+        "passed":failure.is_none(),"failure_signature":failure,"checkpoints":checkpoints,"tables":oracle::tables()});
+    if let Some(initial) = initial_evidence {
+        result["initial_evidence"] = initial;
+    }
+    Ok(result)
 }
 
 /// Deterministic 1-minimal stage-deletion search, subject to a strict evaluation

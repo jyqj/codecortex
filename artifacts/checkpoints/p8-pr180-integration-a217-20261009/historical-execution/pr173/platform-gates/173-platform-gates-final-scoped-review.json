@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09T08:23:17.021470+00:00",
+  "assessment": "accepted_scoped_original_173_platform_and_failure_gates",
+  "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+  "source_inputs": 1089,
+  "product_canonical_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+  "platform_row_manifest_sha256": "86458d021bc2f16f1998b7a99afb566a6d2820cfc75e9e81b3f7a2f213e6d044",
+  "platform": {
+    "run_id": 37890757129,
+    "cell_pair_count": 8,
+    "strict_portable_v2": true,
+    "original_collect_cells_replayed": true,
+    "collector_artifact": 11598629392,
+    "original_collector_equivalent_after_declared_source_root_only_relocation_and_verified_cli_envelope": true,
+    "compiler_versions": [
+      "1.95.0",
+      "1.99.0"
+    ],
+    "profile": [
+      "release"
+    ],
+    "smoke_requests_per_cell": 5
+  },
+  "gates": {
+    "run_id": 37890756917,
+    "job_id": 113690916001,
+    "artifact_id": 11598517678,
+    "original_nonignored_tests": 6,
+    "retained_cli_compare_replays": 6,
+    "additional_overwrite_refusal": 1,
+    "all_original_expected_failure_exit_codes_preserved": true
+  },
+  "originals": {
+    "zip_count": 18,
+    "zip_bytes": 171261019,
+    "member_count": 674,
+    "member_bytes": 579352128,
+    "all_files_and_archives_rehashed_after_review": true,
+    "all_original_bytes_unchanged": true
+  },
+  "helper_peer": {
+    "reviewer": "/root/scale_closeout",
+    "assessment": "accepted_scoped_static",
+    "platform_sha256": "4100388e4fefc3065e5e8775d33a03aae5a6aeadd2219567b3d0cc62919546a5",
+    "gates_sha256": "ad75449ea1d24f6f21cede70a5fb4e4a376cdd9acb30cb81a7ae11747743a84b",
+    "predicate_counts": [
+      27,
+      73
+    ],
+    "peer_did_not_execute_native": true
+  },
+  "evidence": {
+    "platform-review/platform-173-cell-review.json": {
+      "bytes": 11443,
+      "sha256": "e19402ce19440b3bb9f2b67ef31abb76dff1e072b8d660915af02a9c6454e8e2"
+    },
+    "platform-collector-original-equivalence.json": {
+      "bytes": 1386,
+      "sha256": "74424d1fa1febe59c4d152ab42c5c2fbb2a3076a60808b21b2adf95a987e786a"
+    },
+    "gates-review/review.json": {
+      "bytes": 12028,
+      "sha256": "07755a634a7b17839f57851125eb72bf996be59c5532b1d7425fb096df79bf46"
+    },
+    "platform-execution-receipt.json": {
+      "bytes": 769,
+      "sha256": "c6c8ac675388758520bcf705a5b7ea5aa021237f3140cfdff0d40430d356cb49"
+    },
+    "gates-execution-receipt.json": {
+      "bytes": 567,
+      "sha256": "c75f102fe0246e60e272c054afd8156b8a32c55e6f347ec0680c01dfa31b6331"
+    },
+    "zip-intake-verification.json": {
+      "bytes": 137138,
+      "sha256": "f83cf39e229726e59f9ace9424959544a249a7ce62de242801fea300841740de"
+    },
+    "original-materialization-receipt.json": {
+      "bytes": 205821,
+      "sha256": "228f1c9b708eca39444e5fd78f4582a22cc796c11dac55c5e0e416f6a75e1491"
+    },
+    "review-helper-preparation.json": {
+      "bytes": 4912,
+      "sha256": "2fd2d791aed9019d584277b324e4b98ba01f2373540fcf724e0b2492bc2a3778"
+    },
+    "helper-provenance/public-container-provenance.json": {
+      "bytes": 2091,
+      "sha256": "ea6c9cca07a6aca99453169dc1552c535521f58e017d0d60b90cfcfe2896e6e9"
+    },
+    "platform-jobs-official-original.json": {
+      "bytes": 24913,
+      "sha256": "71f752cdadae8a787f4d34a96e618016a705c526cbc135ad31a9d5739a6f3167"
+    },
+    "gates-jobs-official-original.json": {
+      "bytes": 2356,
+      "sha256": "4fd98457e1cea39be7ba89b1ce257f89318e3246ddc1f85f12d4a29ed1833323"
+    }
+  },
+  "scope_limits": [
+    "Only original275e evidence is accepted; no E/599/296 sample or source identity is relabelled.",
+    "Cold-build/stdio success does not certify Mac workspace regression. The known fresh-helper250ms Mac negative remains separate and is not repaired by these receipts.",
+    "Exact OS SDK version is not certified; retained compiler and host identities and actual cold/stdio executions define this scope.",
+    "Synthetic gate control success is failure-protocol evidence, not measured product quality or speed.",
+    "Recovery original artifact11597639035 is owned by runtime_closeout and excluded from this review.",
+    "No Cargo/compiler, scale, soak, new fault test or product workload was run; only originalcollector and retained cc-eval compare over copied original synthetic fixtures."
+  ],
+  "task_state": {
+    "P8_012": "cold_matrix_scope_accepted_related_regression_and_hard_dependencies_pending",
+    "P8_013": "failure_gate_scope_accepted_hard_dependency_P8_012_pending",
+    "formal_completion": false,
+    "done": 163,
+    "remaining": 29
+  }
+}

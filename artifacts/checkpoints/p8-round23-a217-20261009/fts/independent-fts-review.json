@@ -1,0 +1,181 @@
+{
+  "schema": "p8-pr178-fts-scoped-independent-review-v1",
+  "decision": "accepted_scoped",
+  "scope": "Five FTS source/test paths, full-rebuild caller and failure-publication boundary, original archived nine-control execution evidence; not whole PR admission or native scale acceptance.",
+  "fixed_head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "product": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "review": "6f11ae6904fd8d08fec4b4abd83f510cedcba6c8",
+  "head_tree": "9003d1383b4dbf148ac3aca30d00b5e8c06aaf48",
+  "crates_tree": "848227417e8c55be6a87b389d4b2c4ee32db71b4",
+  "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "official_scope_checks": {
+    "pr_files_pages": [
+      100,
+      10
+    ],
+    "complete_crates_recursive_entries": 1297,
+    "truncated": false,
+    "five_source_bytes_git_blob_modes_sizes_match_official_tree": true,
+    "five_match_archived_execution_input_rows": true
+  },
+  "files": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "mode": "100644",
+      "bytes": 18581,
+      "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+      "git_blob": "c4eee424e815aafce896379387fb894d99d490e6"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "mode": "100644",
+      "bytes": 56514,
+      "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+      "git_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "mode": "100644",
+      "bytes": 22068,
+      "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+      "git_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "mode": "100644",
+      "bytes": 9084,
+      "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+      "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "mode": "100644",
+      "bytes": 10144,
+      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+      "git_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483"
+    }
+  ],
+  "supporting_unchanged_source": [
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "bytes": 18869,
+      "sha256": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b",
+      "git_blob": "3dd9692abd16f2a36958c036dd54f0946c94f70d"
+    },
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "bytes": 21881,
+      "sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+      "git_blob": "681c500b4ddd203582e87a874d268be68db3c1fe"
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+    }
+  ],
+  "exact_delta_checks": [
+    "Removing the one added method restores snapshot_write_txn.rs to base bytes, including the original public write_file_data.",
+    "Removing the added deferred wrapper restores index_db_write_batch.rs to base bytes; original insert_file_data_impl and its per-table order are unchanged.",
+    "Reverting the single production call restores indexer_phases/snapshot.rs to base bytes.",
+    "Existing leaf batching value_bytes through dispatch_sites and all pre-existing leaf tests are byte-identical to base; only new FTS helper, new test module and documentation were added."
+  ],
+  "findings": {
+    "actual_full_rebuild_trigger": "Unchanged p8_scale.rs:897 executes build(true) for each full_control; unchanged build_plan.rs:319-336 stages any full mode through write_full_snapshot_build_staging. Shared snapshot contents now opts in at line111. The WAL staging owner creates FULL_SCHEMA_SQL, drops only secondary indexes, and invokes the closure inside an actual transaction, matching the canonical fast-path requirements. This affects nonempty formal full controls regardless of the fixture's zero test-file population. Actual speedup is not established by this static call trace.",
+    "schema_gate": "Autocommit and any TEMP object retain the original path. The complete ordered main.sqlite_schema type/name/tbl_name/sql set, excluding indexes only, must equal a fresh schema instantiated using this linked SQLite library. Unexpected tables, views, triggers and changed FK/schema definitions fall back. Reference/schema query failures propagate, never silently authorize the fast path.",
+    "survivors_and_order": "Each maximum-256-file window records actual files and literal_index rowid maxima. The base file INSERT and literal INSERT OR IGNORE remain unchanged and retain their original ordering. Flush copies actual new base rows in (before,after] ordered by rowid, so ignored duplicates are not mirrored and cross-window literals belonging to an earlier file are retained. All attempted literal rows count conservatively toward capacity. Checked count conversion/addition and after<i64::MAX avoid SQLite's random-rowid allocation path; otherwise the unchanged per-row path is used.",
+    "fts_scope": "Only files_fts and literal_fts are delayed. files/path trigger, symbols/FTS trigger, chunks and uncompressed chunks_fts, document/identity writes and all leaf binders stay in their original positions. Configuration units, metadata and final graph-signature baseline remain after the completed mirror windows.",
+    "failure_boundary": "Any base-write or flush error exits the new method immediately. It does not own or roll back the borrowed transaction. The unchanged WAL temp owner propagates write_fn failure, closes/removes the failed temp database and cannot return a generation floor. The unchanged rebuild protocol calls swap only after build succeeds. In the DirectWriter OFF path, write_fn? also prevents commit/recreate/restore/swap, but this is abandonment and non-publication, NOT a physical rollback guarantee for the failed temp file. Public write_file_data remains available with its original partial-state semantics.",
+    "resource_and_performance_scope": "Window bound is 256 files, not a byte bound or SQLite RSS bound. No new row-vector copy is introduced; base write units already exist. Two FTS INSERT SELECT calls replace per-file/per-literal mirror executions, with rowid ranges and MAX tail lookup; total FTS token work still occurs. Statement-count controls establish fewer statement runs, not measured 100k speedup or the cause of old E failures."
+  },
+  "control_source": [
+    "windows_preserve_all_rows_fts_search_and_cross_path_survivors",
+    "checked_capacity_and_near_maximum_rowids_use_original_fallback",
+    "public_entry_preserves_partial_state_when_caller_commits_after_error",
+    "autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+    "noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+    "late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+    "private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+    "max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+    "rowid_range_uses_primary_key_and_reduces_mirror_statement_runs"
+  ],
+  "control_coverage": [
+    "0/1/199/200/255/256/257/513 file windows; all logical tables plus physical rowids compared except unchanged wall-clock files.indexed_at; FTS MATCH/foreign-key checks and before/after commit comparison.",
+    "Within-outcome and cross-window literal collisions retain first survivor; an old-file path can acquire a new literal in a later window.",
+    "Checked overflow/i64 maximum fallback, duplicate-file and missing-FK late failure.",
+    "Unchanged public API partial commit after error; autocommit immediate mirror behavior.",
+    "Extra trigger, TEMP trigger/table, changed table/FK schema conservatively fall back.",
+    "Real WAL temp-rebuild owner preserves live generation and reopened database after a late error.",
+    "Private flush SQLITE_FULL injection inside actual temp-rebuild owner; explicitly not public end-to-end fault injection or DirectWriter physical rollback proof.",
+    "MAX rowid executed FullscanStep=0 with real SUM scan control; rowid query plan and 257+257 versus 2+2 FTS statement runs."
+  ],
+  "archived_execution": {
+    "identity": "G173 275e8799d4947d297329073eaa3ca675d3fd0777 checkout plus the frozen nine uncommitted files, later committed and byte-bridged to P; not relabelled as a direct G178/P checkout execution.",
+    "manifest_path": "artifacts/checkpoints/p8-combined-engineering-bfcc-20261009/review-next-candidate/combined-engineering-round10/attempt01/frozen-product-validation-inputs.json",
+    "manifest_git_blob": "c6a2537911c1e498a23e30bee6468c64807d04a2",
+    "manifest_input_count": 1232,
+    "five_fts_entries_independently_matched": true,
+    "whole_1232_bridge_independently_reaudited_here": false,
+    "receipt_path": "artifacts/checkpoints/p8-combined-engineering-bfcc-20261009/review-next-candidate/combined-engineering-round10/attempt01/workspace-tests.json",
+    "receipt_git_blob": "997b71f30e6ebc30d38bf18674430b7fbf83911b",
+    "command": [
+      "/Users/jin/.cargo/bin/cargo",
+      "+1.95.0",
+      "test",
+      "--workspace"
+    ],
+    "actual_exit_code": 0,
+    "source_before_after_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+    "sdkroot": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "target_scope": "Recorded separate APFS-cloned ordinary engineering target; no private fresh/cold claim.",
+    "stdout": {
+      "path": "artifacts/checkpoints/p8-combined-engineering-bfcc-20261009/review-next-candidate/combined-engineering-round10/attempt01/workspace-tests.stdout",
+      "git_blob": "a667b49e9bb807e0ecb66b09ac1c6ec35bbaca29",
+      "bytes": 239750,
+      "sha256": "9deeebd18822deaef0e2902fa7b2da8f197f30133d4b6b4af7650cda4efea3ce",
+      "receipt_hash_match": true
+    },
+    "stderr": {
+      "path": "artifacts/checkpoints/p8-combined-engineering-bfcc-20261009/review-next-candidate/combined-engineering-round10/attempt01/workspace-tests.stderr",
+      "git_blob": "3c3092faa03eaa8e5985099891c5782dbb7d98fe",
+      "bytes": 138059,
+      "sha256": "824d91607a0604b84ec7783cc33d80cd9b28ab5b3f6a25e4614b5e2c7e59e957",
+      "receipt_hash_match": true
+    },
+    "nine_named_controls_all_ok": true,
+    "independently_summed_workspace": {
+      "passed": 2727,
+      "failed": 0,
+      "ignored": 73,
+      "harnesses": 218
+    },
+    "original_ignored_count_preserved": 73,
+    "max_rowid_stderr_observation": {
+      "tables": [
+        "files",
+        "literal_index"
+      ],
+      "rows": [
+        0,
+        1,
+        257
+      ],
+      "all_max_fullscan_steps": 0,
+      "sum_fullscan_steps_at_257": 256,
+      "timing_measurement": false
+    }
+  },
+  "limitations": [
+    "No local compilation, tests, native workloads, file writes or remote mutations performed by this reviewer.",
+    "Old E/599/296 evidence receives zero new-source native credit; current scale studies are not restarted or weakened.",
+    "Mac prepared-helper change retains its changed precondition; no claim that the original E cold-start negative was fixed.",
+    "Whole-source admission, source guard and current normal CI remain separate duties; this scope does not approve merge unconditionally.",
+    "Original full 150/150 shards and 1500/1500 samples, combine/aggregate and all original task dependencies remain required."
+  ],
+  "unresolved_implementation_blockers_in_reviewed_fts_scope": [],
+  "formal_task_completion": false,
+  "task_status_action": "no_change",
+  "done": 163,
+  "remaining": 29
+}

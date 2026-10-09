@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "status": "accepted_scoped_original_ci_and_soak_log",
+  "captured_at": "2026-10-09T07:59:12.796Z",
+  "source": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "scope": "All original seven C2 workflow statuses and full original soak job log. The report fields below are read from the actual original CLI log, not independently recalculated from the ZIP.",
+  "original_log": {
+    "job_id": 113705685316,
+    "run_id": 37895459543,
+    "actual_checkout": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "checkout_line": 180,
+    "git_blob": "425fbdf38332bc04494711755240e7d7f571d621",
+    "bytes": 285046,
+    "sha256": "cbd27d19e32c7511188a9b3ebee101755c9c72c8a3654458168152aadf04ecaa",
+    "created_then_get_byte_equal": true,
+    "report_lines": {
+      "start": 871,
+      "end": 2397
+    },
+    "original_verify_line": 2409,
+    "original_verify": {
+      "status": "sealed_artifacts_verified",
+      "files": 2110,
+      "observation_status": "passed_observation",
+      "observation_exit_code": 0
+    },
+    "successful_upload_lines": [
+      2444,
+      2446,
+      2447
+    ]
+  },
+  "logged_observation": {
+    "status": "passed_observation",
+    "exit_code": 0,
+    "task_complete": false,
+    "profile": "soak",
+    "offered": 3601,
+    "outcomes": {
+      "success": 3601
+    },
+    "execution_environment": {
+      "system": "Linux",
+      "release": "6.17.0-1022-azure",
+      "machine": "x86_64",
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "reported_logical_cpus": 4,
+      "runner_affinity_cpus": 4,
+      "cgroup_cpu_quota": null,
+      "cgroup_cpu_quota_status": "not_observed; logical or affinity counts are not a quota claim"
+    },
+    "observed_work_ns": 3600047242969,
+    "actual_concurrency": {
+      "read": 0,
+      "build": 0,
+      "maximum": 1,
+      "read_build_overlap": false
+    },
+    "observer_concurrency_scope": "one separate status RPC; excluded from workload C and latency",
+    "real_branch_switches": 200,
+    "observed_catalog_compactions": 25,
+    "rss": {
+      "status": "observed",
+      "observed": 3594,
+      "warmed_median_bytes": 107208704,
+      "tail_median_bytes": 131223552,
+      "allowed_bytes": 167565312,
+      "sampled_peak_bytes": 135913472,
+      "passed": true,
+      "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB"
+    },
+    "resource_time_coverage": {
+      "passed": true,
+      "observed_samples": 3594,
+      "first_ns": 619018752,
+      "last_ns": 3599761378811,
+      "work_start_ns": 619094412,
+      "work_end_ns": 3600666339022,
+      "maximum_gap_ns": 1113070665,
+      "allowed_maximum_gap_ns": 5000000000,
+      "method": "monotonic sample starts including work start and end gaps"
+    },
+    "cache_reuse": {
+      "protocol": "symbol_plus_local_hybrid_cache_v1",
+      "passed": true,
+      "expected_offered_reads": 2400,
+      "recorded_offered_reads": 2400,
+      "validated_reads": 2400,
+      "observed": {
+        "miss": 1000,
+        "invalidations": 999,
+        "hit": 1400
+      },
+      "request_counts": {
+        "before_status": {
+          "success": 2400
+        },
+        "symbol": {
+          "success": 2400
+        },
+        "hybrid": {
+          "success": 2400
+        },
+        "after_status": {
+          "success": 2400
+        }
+      },
+      "status_request_counts": {
+        "success": 4800
+      },
+      "expected_requests_per_role": 2400,
+      "errors": [],
+      "time_quarters": [
+        {
+          "reads": 600,
+          "hits": 350,
+          "misses": 250,
+          "invalidations": 249,
+          "mutations": {
+            "bounded_symbol_churn": 50,
+            "add": 50,
+            "rename": 50,
+            "delete": 50,
+            "real_git_branch_switch": 50,
+            "restore_api": 50
+          }
+        },
+        {
+          "reads": 600,
+          "hits": 350,
+          "misses": 250,
+          "invalidations": 250,
+          "mutations": {
+            "bounded_symbol_churn": 50,
+            "add": 50,
+            "rename": 50,
+            "delete": 50,
+            "real_git_branch_switch": 50,
+            "restore_api": 50
+          }
+        },
+        {
+          "reads": 600,
+          "hits": 350,
+          "misses": 250,
+          "invalidations": 250,
+          "mutations": {
+            "bounded_symbol_churn": 51,
+            "add": 50,
+            "rename": 50,
+            "delete": 50,
+            "real_git_branch_switch": 50,
+            "restore_api": 50
+          }
+        },
+        {
+          "reads": 600,
+          "hits": 350,
+          "misses": 250,
+          "invalidations": 250,
+          "mutations": {
+            "add": 50,
+            "rename": 50,
+            "delete": 50,
+            "real_git_branch_switch": 50,
+            "restore_api": 50,
+            "bounded_symbol_churn": 50
+          }
+        }
+      ],
+      "preceding_mutation_coverage": {
+        "bounded_symbol_churn": 400,
+        "add": 400,
+        "rename": 400,
+        "delete": 400,
+        "real_git_branch_switch": 400,
+        "restore_api": 400
+      },
+      "quarter_time_basis": "actual hybrid RPC completion and actual mutation operation completion; never offered time",
+      "quarter_mutation_scope": "successful completed builds; every failure remains in original outcomes/statistics",
+      "temporal_cache_coverage": true,
+      "denominator": "one offered compound read; symbol+hybrid+two status RPCs and all their time/failures included; no extra latency samples",
+      "comparison_scope": "not directly comparable to the previous symbol-only read protocol",
+      "isolation": "soak read/build share original write admission lock; wait remains measured; mixed unchanged"
+    },
+    "owned_cleanup": {
+      "unfinished_work": 0,
+      "sampler_stopped": true,
+      "product_stopped": true,
+      "comparison_product_stopped": true,
+      "product_construction_pending": false,
+      "comparison_product_construction_pending": false
+    },
+    "statistics": {
+      "path": "statistics.json",
+      "sha256": "73a14f5973831a5f132c427044654117f04c9dc4533b0cac8e3c5441b5e34b05",
+      "replay_path": "statistics-replay.json",
+      "replay_identical": true,
+      "exit_code": 0,
+      "status": "all_original_terminal_outcomes_successful"
+    },
+    "parity_exit_code": 0,
+    "parity_sha256": "21a9e366e2b0460f4be8c3e33e2ae5cf0e1cb4c98d11c82fe0fb9900c42624f8",
+    "artifact_seal_status": "sealed",
+    "semantic_backfill": "not_run_in_default_product_profile",
+    "release_approval": false
+  },
+  "official_final_index": {
+    "git_blob": "1b274f0c261a2a1f7af1aa9b9d100911b04c87d0",
+    "bytes": 205865,
+    "sha256": "99f56333ca46da2d0285b3edb1bcfa08cd5c7479a4ed83d981b7655ede5606d7",
+    "created_then_get_byte_equal": true,
+    "workflow_runs": 7,
+    "jobs": 26,
+    "artifacts": 31,
+    "all_pages_complete": true,
+    "all_jobs_completed_success": true,
+    "all_head_sources_equal_C2": true
+  },
+  "soak_original_artifact": {
+    "id": 11601908376,
+    "name": "p8-soak-840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "bytes": 51021106,
+    "sha256": "45aa288dab60bdd6120fd698497fdaa2c661df8512272f62d3818b5c149fd977",
+    "official_metadata_and_log_upload_match": true,
+    "artifact_body_downloaded_or_independently_replayed_here": false
+  },
+  "limits": {
+    "soak_actual_workload_peak_is_one": true,
+    "serial_cache_protocol_not_a_concurrency_four_claim": true,
+    "observed_RSS_samples_are_not_continuous_whole_tree_peak": true,
+    "statistics_replay_and_parity_are_original_logged_results_not_my_new_replay": true,
+    "raw_ZIP_replay": "not_run_by_this_review",
+    "existing_C1_and_C3_format_failures": "retained under their exact original sources",
+    "CI_and_P7_default_checkout": "Original source-specific logs retain testmerge79989 where used; explicit P8 checkout is C2. They are not relabeled to later main.",
+    "current_main": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "main_guard_conflict": "Original seven workflows passing does not resolve the new main guard conflict or approve merging unreviewed combined source.",
+    "merged": false,
+    "formal_todo_completion": false,
+    "done": 163,
+    "remaining": 29,
+    "local_native_runs": 0
+  }
+}

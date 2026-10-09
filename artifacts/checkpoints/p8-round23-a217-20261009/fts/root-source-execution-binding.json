@@ -1,0 +1,257 @@
+{
+  "source_review": {
+    "verdict": "accepted_scoped",
+    "source": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+    "execution": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "complete_product": 1090,
+    "validation": 139,
+    "delta": 46,
+    "five_new_fts_files_reviewed": true,
+    "nine_transplanted_files_actual_P": true,
+    "original_engineering_four_commands_exit0": true,
+    "new_G_CI": "pending_at_last_read",
+    "native_scale_acceptance": false,
+    "old_cold_mac_failure_closed": false,
+    "original_task_closure": false,
+    "proof_keys": [
+      "root-r23-fts-root-execution-bridge",
+      "root-r23-fts-final-binding-proof"
+    ],
+    "recorded_at": "2026-10-09T07:25:43.594Z"
+  },
+  "actual_execution": {
+    "captured_at": "2026-10-09T07:17:47.331Z",
+    "scope": "Original archived execution byte bridge only; not direct G178 execution or full-scale acceptance",
+    "frozen_count": 1232,
+    "frozen_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+    "groups": {
+      "product": {
+        "before_count": 1090,
+        "p_count": 1090,
+        "mismatches": []
+      },
+      "validation": {
+        "before_count": 139,
+        "p_count": 139,
+        "mismatches": []
+      }
+    },
+    "stdout_sha256": "9deeebd18822deaef0e2902fa7b2da8f197f30133d4b6b4af7650cda4efea3ce",
+    "stderr_sha256": "824d91607a0604b84ec7783cc33d80cd9b28ab5b3f6a25e4614b5e2c7e59e957",
+    "summary_count": 218,
+    "totals": {
+      "passed": 2727,
+      "failed": 0,
+      "ignored": 73,
+      "measured": 0,
+      "filtered": 0
+    },
+    "controls": [
+      {
+        "name": "windows_preserve_all_rows_fts_search_and_cross_path_survivors",
+        "matches": [
+          {
+            "line": 204,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok"
+          }
+        ]
+      },
+      {
+        "name": "checked_capacity_and_near_maximum_rowids_use_original_fallback",
+        "matches": [
+          {
+            "line": 152,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok"
+          }
+        ]
+      },
+      {
+        "name": "public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "matches": [
+          {
+            "line": 154,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok"
+          }
+        ]
+      },
+      {
+        "name": "autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+        "matches": [
+          {
+            "line": 149,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok"
+          }
+        ]
+      },
+      {
+        "name": "noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+        "matches": [
+          {
+            "line": 201,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok"
+          }
+        ]
+      },
+      {
+        "name": "late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+        "matches": [
+          {
+            "line": 203,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok"
+          }
+        ]
+      },
+      {
+        "name": "private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+        "matches": [
+          {
+            "line": 160,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok"
+          }
+        ]
+      },
+      {
+        "name": "max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+        "matches": [
+          {
+            "line": 176,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok"
+          }
+        ]
+      },
+      {
+        "name": "rowid_range_uses_primary_key_and_reduces_mirror_statement_runs",
+        "matches": [
+          {
+            "line": 202,
+            "text": "test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok"
+          }
+        ]
+      }
+    ],
+    "mac_test": [
+      "test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+    ],
+    "max_rowid_controls": [
+      "P8_FTS_MAX_ROWID_CONTROL={\"observations\":[{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":0,\"rows\":0,\"sum_fullscan_steps\":0,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":0,\"rows\":0,\"sum_fullscan_steps\":0,\"table\":\"literal_index\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":1,\"rows\":1,\"sum_fullscan_steps\":0,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":1,\"rows\":1,\"sum_fullscan_steps\":0,\"table\":\"literal_index\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":257,\"rows\":257,\"sum_fullscan_steps\":256,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":257,\"rows\":257,\"sum_fullscan_steps\":256,\"table\":\"literal_index\"}],\"timing_measurement\":false}"
+    ],
+    "actual_p_tree_proof": {
+      "product_commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "tree": "621708a7c830da0bcc88f0ab3ea6df83e615e378",
+      "actual_nontruncated_trees": [
+        "root",
+        "crates",
+        "scripts",
+        "github",
+        "tests"
+      ],
+      "product_count": 1090,
+      "validation_count": 139,
+      "git_oid_mode_size_mismatches": [],
+      "registry_hash_mismatches": [],
+      "scope": "Actual immutable P Git tree verified against all product/validation execution frozen inventory entries."
+    },
+    "other_original_commands": [
+      {
+        "name": "fmt",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "before": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "after": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "log_mismatches": [],
+        "started_at": "2026-10-09T06:31:23.398165+00:00",
+        "finished_at": "2026-10-09T06:31:24.917076+00:00"
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "before": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "after": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "log_mismatches": [],
+        "started_at": "2026-10-09T06:31:25.095338+00:00",
+        "finished_at": "2026-10-09T06:31:45.141110+00:00"
+      },
+      {
+        "name": "final-fixture",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "-p",
+          "cc-eval",
+          "--",
+          "integration_fixtures_and_corpus"
+        ],
+        "exit_code": 0,
+        "before": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "after": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+        "log_mismatches": [],
+        "started_at": "2026-10-09T06:40:55.206643+00:00",
+        "finished_at": "2026-10-09T06:40:58.538881+00:00"
+      }
+    ],
+    "fixture": {
+      "totals": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 474
+      },
+      "groups": 89,
+      "actual_matching_lines": [
+        "test tests::integration_fixtures_and_corpus ... ok"
+      ]
+    },
+    "platform": {
+      "platform": "macOS-26.6.2-arm64-arm-64bit",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/combined-1.95-sdk154-round10",
+      "CARGO_BUILD_JOBS": "4",
+      "test_threads": "default; RUST_TEST_THREADS unset; no harness --test-threads",
+      "parent": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "source_input_count": 1232,
+      "source_input_digest": "96a937af40e48d2e0151d5fff41257d512b1627f7af6c0529ac7839fde279f1c",
+      "rustc_verbose": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+    }
+  },
+  "final_binding": {
+    "review_hash_pinned": true,
+    "review_map_mismatches": [],
+    "r_changes": 89,
+    "r_only_new_scoped_archives": true,
+    "unresolved_blockers": [],
+    "scope_limits": [
+      "Exact source and validation acceptance; no new-G original-v15 execution is claimed before R/G installation.",
+      "Actual engineering ran G173 plus nine frozen uncommitted files, then exact-byte bridged to P; never relabel as direct P checkout.",
+      "APFS cloned existing cache; not cold build or a new performance sample.",
+      "No full150/N30 scale acceptance, quality/live-provider gate, original TODO or release certification. Failed a23 study is retained and cannot be completed by replacement samples.",
+      "The139th historical fixedcontrols workflow remains bound to original1089 manifest/branch; old ZIP does not certify1090 combination. Current six Rust surface controls were observed in new original workspace command.",
+      "73 original ignored cases remain ignored; they are not passes."
+    ],
+    "preserved_contracts": [
+      "Exact-seed surface-window reuse remains local to one prepare, with original fallback/budget/candidate order and unconditional epoch fence.",
+      "Legacy408-byte write_file_data API retained; deferred FTS opt-in only at shared rebuild caller with propagate-error/abandon staging/no-publication contract.",
+      "Canonical schema gate, rowid overflow fallback,8 prior FTS correctness/failure controls and new non-timing MAX fullscan control retained.",
+      "Four exact Mac fixes retained, including original250ms/2s/1ms negative assertions and one bounded readiness setup.",
+      "Original study N150/N30/5h and scale200/1024/fanout8/128 budgets unchanged; all139 validation input modes/blobs equal G173."
+    ]
+  }
+}

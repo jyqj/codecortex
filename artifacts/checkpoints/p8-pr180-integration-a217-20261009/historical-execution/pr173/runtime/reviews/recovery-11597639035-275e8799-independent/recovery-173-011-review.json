@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "reviewer": "runtime_closeout",
+  "created_at_utc": "2026-10-09T08:27:39.821694+00:00",
+  "assessment": "accepted_scoped_original_P8_011_recovery_execution",
+  "execution_source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "artifact_id": 11597639035,
+  "source_build_and_P8_016_review": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/reviews/recovery-11597639035-275e8799-independent/recovery-173-review.json",
+    "sha256": "2278de885b57c9662bd5be8dbf3ec02ad77ec46123e570ee70de7fd04df574e8"
+  },
+  "full_recovery_json_sha256": "0697d4ec8e08084dabe02d951cd04a12a96829ecd3fd5c42fd415d78f6ef30b3",
+  "full_manifest_files": 495,
+  "original_files_unchanged": true,
+  "local_cases": [
+    {
+      "id": "kill_restart",
+      "status": "passed",
+      "final_authored_source_rehashed": true,
+      "original_rpc_values_matched": true
+    },
+    {
+      "id": "database_busy",
+      "status": "passed",
+      "final_authored_source_rehashed": true,
+      "original_rpc_values_matched": true
+    },
+    {
+      "id": "deleted_source",
+      "status": "passed",
+      "final_authored_source_rehashed": true,
+      "original_rpc_values_matched": true
+    }
+  ],
+  "local_sessions": [
+    {
+      "session": "database_busy/lock-window",
+      "requests": 9,
+      "responses": 9,
+      "exit_code": 0,
+      "raw_wire_verified": true
+    },
+    {
+      "session": "deleted_source/reopen-without-index",
+      "requests": 5,
+      "responses": 5,
+      "exit_code": 0,
+      "raw_wire_verified": true
+    },
+    {
+      "session": "deleted_source/warm-before-delete",
+      "requests": 11,
+      "responses": 11,
+      "exit_code": 0,
+      "raw_wire_verified": true
+    },
+    {
+      "session": "kill_restart/after-restart",
+      "requests": 7,
+      "responses": 7,
+      "exit_code": 0,
+      "raw_wire_verified": true
+    },
+    {
+      "session": "kill_restart/before-kill",
+      "requests": 7,
+      "responses": 6,
+      "exit_code": -9,
+      "raw_wire_verified": true
+    }
+  ],
+  "active_seeds": [
+    {
+      "seed": 223,
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "sessions": [
+        {
+          "session": "active-faults",
+          "requests": 36,
+          "responses": 36,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        },
+        {
+          "session": "replacement-reopened",
+          "requests": 8,
+          "responses": 8,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        }
+      ],
+      "provider_requests": 6,
+      "actual_paid_cost": null,
+      "loopback_only": true,
+      "final_database_integrity": "ok",
+      "stale_semantic_manifest_versions": 0,
+      "raw_responses_matched": true
+    },
+    {
+      "seed": 227,
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "sessions": [
+        {
+          "session": "active-faults",
+          "requests": 34,
+          "responses": 34,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        },
+        {
+          "session": "replacement-reopened",
+          "requests": 8,
+          "responses": 8,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        }
+      ],
+      "provider_requests": 6,
+      "actual_paid_cost": null,
+      "loopback_only": true,
+      "final_database_integrity": "ok",
+      "stale_semantic_manifest_versions": 0,
+      "raw_responses_matched": true
+    },
+    {
+      "seed": 229,
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "sessions": [
+        {
+          "session": "active-faults",
+          "requests": 35,
+          "responses": 35,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        },
+        {
+          "session": "replacement-reopened",
+          "requests": 8,
+          "responses": 8,
+          "exit_code": 0,
+          "strict_utf8_json": true,
+          "no_missing_or_duplicate_ids": true
+        }
+      ],
+      "provider_requests": 6,
+      "actual_paid_cost": null,
+      "loopback_only": true,
+      "final_database_integrity": "ok",
+      "stale_semantic_manifest_versions": 0,
+      "raw_responses_matched": true
+    }
+  ],
+  "internal_crash_test_mapping": [
+    {
+      "case": "fault-test-00",
+      "name": "isolated_sigkill_reopen_replay_preparation",
+      "package": "cc-semantic",
+      "target": "p7_crash_preparation",
+      "executable_sha256": "bc15dc71073980e15c21d72bbcd5e9be5deb5bca46173158c40f7c376759cb4a",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-00/fault-test",
+        "--exact",
+        "isolated_sigkill_reopen_replay_preparation",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest isolated_sigkill_reopen_replay_preparation ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 18.86s"
+    },
+    {
+      "case": "fault-test-01",
+      "name": "independently_observed_sigkill_boundaries",
+      "package": "cc-semantic",
+      "target": "crash_independent_review",
+      "executable_sha256": "5a70d6af0d02502150210f9c97233bd2627d395c40baaea0975bb565f7f3e767",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-01/fault-test",
+        "--exact",
+        "independently_observed_sigkill_boundaries",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest independently_observed_sigkill_boundaries ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 45.91s"
+    },
+    {
+      "case": "fault-test-02",
+      "name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+      "package": "cc-db",
+      "target": null,
+      "executable_sha256": "637a44b302464f6d2ef34fa9376604c135bb0999de84e599a79bab3439324dde",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-02/fault-test",
+        "--exact",
+        "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.78s"
+    },
+    {
+      "case": "fault-test-03",
+      "name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+      "package": "cc-db",
+      "target": null,
+      "executable_sha256": "637a44b302464f6d2ef34fa9376604c135bb0999de84e599a79bab3439324dde",
+      "command": [
+        "/home/runner/work/_temp/p8-full-recovery/fault-test-03/fault-test",
+        "--exact",
+        "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "stdout": "running 1 test\ntest index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.13s"
+    }
+  ],
+  "limited_nested_not_run_records_preserved": true,
+  "unresolved_blockers_in_reviewed_scope": [],
+  "hard_dependencies": {
+    "P8-011": [
+      "P7-020",
+      "P8-007",
+      "P8-010"
+    ],
+    "P8-016": [
+      "P7-020",
+      "P8-012",
+      "P8-013"
+    ]
+  },
+  "task_completion_certified": false,
+  "remaining_todos_unchanged": 29,
+  "limits": [
+    "No new fault execution, product compilation, or writable SQLite operation performed.",
+    "SIGKILL local boundary is a stopped pending request; internal transaction/rename boundaries are covered by the four separately retained Rust tests, not inferred from that local SIGKILL.",
+    "Owned loopback HTTP is controlled provider evidence; paid cost remains null and no live-provider/release certification is claimed.",
+    "Source/config preservation applies to the version rollback scenarios; recovery fixture source edits are intentionally prescribed and final authored bytes are checked.",
+    "Original hard dependencies and full platform/CI regression prerequisites remain independently required."
+  ]
+}

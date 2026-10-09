@@ -10,7 +10,6 @@ from collections import Counter
 from concurrent.futures import CancelledError, ThreadPoolExecutor, wait
 import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import platform
@@ -413,17 +412,6 @@ def sample_coverage(samples, start_ns, end_ns, maximum_gap_ns=5_000_000_000):
                 method="monotonic sample starts including work start and end gaps")
 
 
-def latency_summary(rows):
-    values = sorted(r["finished_ns"] - r["offered_ns"] for r in rows
-                    if r.get("finished_ns") is not None)
-    def quantile(p):
-        return values[max(0, math.ceil(len(values) * p) - 1)] if values else None
-    return dict(n=len(values), p50_ns=quantile(.5), p95_ns=quantile(.95),
-                p99_ns=quantile(.99), maximum_ns=max(values) if values else None,
-                scope="all_offered_terminal_outcomes_including_rejections_and_failures",
-                tail_stability_claim=False)
-
-
 def verify_build(root, binary, receipt_path, oracle=None, statistics=None):
     receipt = json.loads(receipt_path.read_text())
     binaries = {"codecortex": binary,
@@ -797,6 +785,10 @@ def run(args):
                 "owned product writers did not stop before raw replay")
         raw.close()
         statistics_result = replay_statistics(statistics, out)
+        statistics_bytes = (out / "statistics.json").read_bytes()
+        require(hashlib.sha256(statistics_bytes).hexdigest() == statistics_result["sha256"],
+                "statistics bytes changed before legacy nanosecond summary copy")
+        legacy_ns = json.loads(statistics_bytes)["legacy_ns"]
         statuses = {name: sum(r["status"] == name for r in rows) for name in sorted({r["status"] for r in rows})}
         ids = [r["id"] for r in rows]
         require(sorted(ids) == list(range(args.operations)), "offered/terminal denominator differs")
@@ -825,9 +817,8 @@ def run(args):
                       real_branch_switches=switches, observed_catalog_compactions=compactions,
                       rss=trend, resource_time_coverage=coverage,
                       observer_concurrency_scope=plan["observer_concurrency_scope"],
-                      latency=latency_summary(rows),
-                      latency_by_operation={kind: latency_summary([r for r in rows if r["operation"] == kind])
-                                            for kind in ("read", "build")}, failures=failures,
+                      latency=legacy_ns["latency"],
+                      latency_by_operation=legacy_ns["latency_by_operation"], failures=failures,
                       statistics=statistics_result,
                       parity_exit_code=result.returncode,
                       parity_sha256=digest(out / "parity.json"), product_sha256=digest(binary),

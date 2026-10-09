@@ -709,4 +709,191 @@ mod projection_tests {
             }
         }
     }
+
+    #[test]
+    #[ignore = "explicit finite release cost observation; no timing acceptance threshold"]
+    fn borrowed_serialization_equal_lifetime_release_cost_probe() {
+        use rusqlite::types::Value as SqlValue;
+        use std::time::Instant;
+
+        fn collect(
+            statement: &mut rusqlite::Statement<'_>,
+            projection: &mut RowProjection<'_>,
+            borrowed: bool,
+        ) -> (Vec<String>, u128) {
+            let started = Instant::now();
+            let mut rows = statement.query([]).unwrap();
+            let mut output = Vec::new();
+            while let Some(row) = rows.next().unwrap() {
+                output.push(if borrowed {
+                    projection.serialize_row(row).unwrap()
+                } else {
+                    original_serialize_row(projection, row).unwrap()
+                });
+            }
+            (output, started.elapsed().as_nanos())
+        }
+
+        // The output Vec never crosses this function boundary. Both sides
+        // retain only the same immutable reference while their timer runs.
+        fn observe_side(
+            statement: &mut rusqlite::Statement<'_>,
+            projection: &mut RowProjection<'_>,
+            borrowed: bool,
+            reference: &[String],
+            reference_digest: &str,
+        ) -> (u128, String, usize) {
+            let (output, elapsed_ns) = collect(statement, projection, borrowed);
+            assert_eq!(output.as_slice(), reference);
+            assert_eq!(output.len(), 256);
+            let canonical_bytes = output.iter().map(String::len).sum();
+            let digest = manifest::digest(&serde_json::to_vec(&output).unwrap());
+            assert_eq!(digest, reference_digest);
+            drop(output);
+            (elapsed_ns, digest, canonical_bytes)
+        }
+
+        let cases = [
+            (
+                "multiple_text",
+                vec![
+                    SqlValue::Text("é/中文\n\"\\".repeat(512)),
+                    SqlValue::Text("manifest-payload".repeat(256)),
+                    SqlValue::Text("qualified::name".repeat(128)),
+                    SqlValue::Text("path/to/source.rs".repeat(128)),
+                    SqlValue::Integer(17),
+                    SqlValue::Null,
+                ],
+            ),
+            (
+                "short_fields",
+                vec![
+                    SqlValue::Text("a".into()),
+                    SqlValue::Text("bc".into()),
+                    SqlValue::Integer(i64::MIN),
+                    SqlValue::Integer(i64::MAX),
+                    SqlValue::Real(-0.0),
+                    SqlValue::Real(1.25),
+                ],
+            ),
+            (
+                "blob",
+                vec![
+                    SqlValue::Blob([0, 255, 128, 1].repeat(1024)),
+                    SqlValue::Blob(Vec::new()),
+                    SqlValue::Text("blob-name".into()),
+                    SqlValue::Integer(4),
+                    SqlValue::Null,
+                    SqlValue::Real(0.0),
+                ],
+            ),
+            ("empty_text", vec![SqlValue::Text(String::new()); 6]),
+            ("null", vec![SqlValue::Null; 6]),
+        ];
+        let cols: Vec<String> = ["z", "a", "payload", "path", "ordinal", "empty"]
+            .into_iter()
+            .map(String::from)
+            .collect();
+        for (case, values) in cases {
+            let conn = Connection::open_in_memory().unwrap();
+            conn.execute_batch("CREATE TABLE sample(c0,c1,c2,c3,c4,c5)")
+                .unwrap();
+            for _ in 0..256 {
+                conn.execute(
+                    "INSERT INTO sample VALUES(?1,?2,?3,?4,?5,?6)",
+                    rusqlite::params_from_iter(&values),
+                )
+                .unwrap();
+            }
+            let mut statement = conn
+                .prepare("SELECT c0,c1,c2,c3,c4,c5 FROM sample ORDER BY rowid")
+                .unwrap();
+            let mut original = RowProjection::new(&cols);
+            let mut borrowed = RowProjection::new(&cols);
+            // Independent protocol: build one immutable complete reference
+            // outside all measured rounds. Preserve the original baseline's
+            // reusable Map and the same SQLite input/SELECT for both sides.
+            let (reference, _) = collect(&mut statement, &mut original, false);
+            assert_eq!(reference.len(), 256);
+            let reference_digest = manifest::digest(&serde_json::to_vec(&reference).unwrap());
+            let reference_bytes = reference.iter().map(String::len).sum::<usize>();
+            for is_borrowed in [false, true] {
+                let projection = if is_borrowed {
+                    &mut borrowed
+                } else {
+                    &mut original
+                };
+                let _ = observe_side(
+                    &mut statement,
+                    projection,
+                    is_borrowed,
+                    &reference,
+                    &reference_digest,
+                );
+            }
+            for round in 0..20 {
+                // Each completed side verifies full bytes, hashes and drops
+                // its output before the next side enters collect's timer.
+                let (original_result, borrowed_result) = if round % 2 == 0 {
+                    let original_result = observe_side(
+                        &mut statement,
+                        &mut original,
+                        false,
+                        &reference,
+                        &reference_digest,
+                    );
+                    let borrowed_result = observe_side(
+                        &mut statement,
+                        &mut borrowed,
+                        true,
+                        &reference,
+                        &reference_digest,
+                    );
+                    (original_result, borrowed_result)
+                } else {
+                    let borrowed_result = observe_side(
+                        &mut statement,
+                        &mut borrowed,
+                        true,
+                        &reference,
+                        &reference_digest,
+                    );
+                    let original_result = observe_side(
+                        &mut statement,
+                        &mut original,
+                        false,
+                        &reference,
+                        &reference_digest,
+                    );
+                    (original_result, borrowed_result)
+                };
+                let (original_ns, original_digest, original_bytes) = original_result;
+                let (borrowed_ns, borrowed_digest, borrowed_bytes) = borrowed_result;
+                assert_eq!(original_bytes, reference_bytes);
+                assert_eq!(borrowed_bytes, reference_bytes);
+                println!(
+                    "{}",
+                    json!({
+                        "schema": "p8-oracle-serialization-equal-lifetime-cost-v1",
+                        "case": case,
+                        "round": round,
+                        "first": if round % 2 == 0 { "original" } else { "borrowed" },
+                        "rows": reference.len(),
+                        "canonical_bytes": reference_bytes,
+                        "original_ns": original_ns.to_string(),
+                        "borrowed_ns": borrowed_ns.to_string(),
+                        "reference_digest": reference_digest,
+                        "original_digest": original_digest,
+                        "borrowed_digest": borrowed_digest,
+                        "timing_scope": "same SQLite SELECT traversal plus row serialization and output retention; verification, hash and output drop excluded",
+                        "output_lifetime": "one immutable shared reference; each side output verified, hashed and dropped before next side timing",
+                        "order_limit": "alternating order retained; allocator and cache history not reset or claimed eliminated",
+                        "timing_threshold": null,
+                        "original_row_projection_source_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+                        "comparison_protocol": "independent equal-lifetime observation; not a rerun or correction of the v1 retained-pair probe"
+                    })
+                );
+            }
+        }
+    }
 }

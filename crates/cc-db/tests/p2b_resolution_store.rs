@@ -234,7 +234,9 @@ fn original_dependency_query(
             let mut yielded = 0;
             {
                 let rows = statement
-                    .query_map(rusqlite::params_from_iter(args), |row| row.get::<_, String>(0))
+                    .query_map(rusqlite::params_from_iter(args), |row| {
+                        row.get::<_, String>(0)
+                    })
                     .unwrap();
                 for row in rows {
                     let path = row.unwrap();
@@ -291,7 +293,16 @@ fn dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness()
             file
         })
         .collect();
-    units.extend(["quote\".py", "back\\slash.py", "é.py", "e\u{301}.py", "😀.py"].map(unit));
+    units.extend(
+        [
+            "quote\".py",
+            "back\\slash.py",
+            "é.py",
+            "e\u{301}.py",
+            "😀.py",
+        ]
+        .map(unit),
+    );
     db.writes().replace_files_batch(&units).unwrap();
     let generation = db.reads().generation().unwrap();
     let events: BTreeSet<_> = (0..410)
@@ -369,7 +380,10 @@ fn dependency_exclusion_avoids_returning_completed_prefix_and_reduces_dense_case
     let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
     let files: Vec<_> = (0..600).map(|i| unit(&format!("f{i:04}.py"))).collect();
     db.writes().replace_files_batch(&files).unwrap();
-    let excluded: Vec<_> = files[..580].iter().map(|file| file.rel_path.clone()).collect();
+    let excluded: Vec<_> = files[..580]
+        .iter()
+        .map(|file| file.rel_path.clone())
+        .collect();
     let events = BTreeSet::from([ResolutionDependency::new(
         DependencyKind::NameBucket,
         "missing",

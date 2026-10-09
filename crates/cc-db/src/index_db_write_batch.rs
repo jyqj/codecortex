@@ -741,7 +741,7 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, false)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false, false)
     }
 
     /// [`Self::insert_file_data_precompressed`] minus the per-row `files_fts`
@@ -760,7 +760,7 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, true)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, true, false)
     }
 
     /// Mirror freshly inserted `files` / `literal_index` rows into their FTS
@@ -800,11 +800,22 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Full-snapshot-only leaf batching. Public/config/incremental entry points
+    /// retain the original per-row path; only SnapshotWriteTxn calls this seam.
+    pub(crate) fn insert_snapshot_file_data_precompressed(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false, true)
+    }
+
     fn insert_file_data_impl(
         conn: &Connection,
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
         defer_files_literal_fts: bool,
+        snapshot_leaf_batches: bool,
     ) -> CcResult<()> {
         let outcome = &file.outcome;
         let now = chrono::Utc::now().to_rfc3339();
@@ -877,12 +888,16 @@ impl IndexDb {
         crate::document_store::insert_on(conn, file)?;
 
         // symbols
-        for s in &outcome.symbols {
-            Self::execute_cached(
-                conn,
-                "INSERT OR REPLACE INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25)",
-                rusqlite::params![s.symbol_id, s.file_path, s.name, s.kind.as_str(), s.container, s.start_line, s.end_line, s.start_col, s.end_col, s.signature, s.doc, s.parser_tier.as_str(), s.parser_confidence, s.qname, s.parent_symbol_id, s.export_name, s.is_default_export as i32, s.symbol_uid, s.framework_role, s.receiver_type, s.param_types, s.return_type, s.param_count, s.base_types, s.implements],
-            )?;
+        if snapshot_leaf_batches && outcome.symbols.len() >= 8 {
+            crate::index_db_snapshot_insert::symbols(conn, &outcome.symbols)?;
+        } else {
+            for s in &outcome.symbols {
+                Self::execute_cached(
+                    conn,
+                    "INSERT OR REPLACE INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25)",
+                    rusqlite::params![s.symbol_id, s.file_path, s.name, s.kind.as_str(), s.container, s.start_line, s.end_line, s.start_col, s.end_col, s.signature, s.doc, s.parser_tier.as_str(), s.parser_confidence, s.qname, s.parent_symbol_id, s.export_name, s.is_default_export as i32, s.symbol_uid, s.framework_role, s.receiver_type, s.param_types, s.return_type, s.param_count, s.base_types, s.implements],
+                )?;
+            }
         }
 
         crate::symbol_identity_store::insert_on(conn, file)?;
@@ -895,13 +910,21 @@ impl IndexDb {
         }
 
         // symbol_refs
-        Self::insert_symbol_refs_on(conn, &outcome.symbol_refs)?;
+        if snapshot_leaf_batches && outcome.symbol_refs.len() >= 8 {
+            crate::index_db_snapshot_insert::symbol_refs(conn, &outcome.symbol_refs)?;
+        } else {
+            Self::insert_symbol_refs_on(conn, &outcome.symbol_refs)?;
+        }
 
         // call_edges
-        for e in &outcome.call_edges {
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
-                rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
-            )?;
+        if snapshot_leaf_batches && outcome.call_edges.len() >= 8 {
+            crate::index_db_snapshot_insert::call_edges(conn, &outcome.call_edges)?;
+        } else {
+            for e in &outcome.call_edges {
+                Self::execute_cached(conn, "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
+                    rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
+                )?;
+            }
         }
 
         // test_edges
@@ -912,10 +935,14 @@ impl IndexDb {
         }
 
         // route_edges
-        for r in &outcome.route_edges {
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
-                rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str(), r.resolution_strategy, r.resolution_confidence],
-            )?;
+        if snapshot_leaf_batches && outcome.route_edges.len() >= 8 {
+            crate::index_db_snapshot_insert::route_edges(conn, &outcome.route_edges)?;
+        } else {
+            for r in &outcome.route_edges {
+                Self::execute_cached(conn, "INSERT OR REPLACE INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
+                    rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str(), r.resolution_strategy, r.resolution_confidence],
+                )?;
+            }
         }
 
         // http_call_edges
@@ -945,12 +972,16 @@ impl IndexDb {
         }
 
         // semantic_edges
-        for se in &outcome.semantic_edges {
-            Self::execute_cached(
-                conn,
-                "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
-                rusqlite::params![se.edge_id, se.file_path, se.source_symbol, se.source_symbol_uid, se.target_symbol, se.target_symbol_uid, se.relation_kind.as_str(), se.line, se.confidence, se.parser_tier.as_str()],
-            )?;
+        if snapshot_leaf_batches && outcome.semantic_edges.len() >= 8 {
+            crate::index_db_snapshot_insert::semantic_edges(conn, &outcome.semantic_edges)?;
+        } else {
+            for se in &outcome.semantic_edges {
+                Self::execute_cached(
+                    conn,
+                    "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                    rusqlite::params![se.edge_id, se.file_path, se.source_symbol, se.source_symbol_uid, se.target_symbol, se.target_symbol_uid, se.relation_kind.as_str(), se.line, se.confidence, se.parser_tier.as_str()],
+                )?;
+            }
         }
 
         // data_flow_edges
@@ -963,12 +994,16 @@ impl IndexDb {
         }
 
         // dispatch_sites
-        for ds in &outcome.dispatch_sites {
-            Self::execute_cached(
-                conn,
-                "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
-                rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
-            )?;
+        if snapshot_leaf_batches && outcome.dispatch_sites.len() >= 8 {
+            crate::index_db_snapshot_insert::dispatch_sites(conn, &outcome.dispatch_sites)?;
+        } else {
+            for ds in &outcome.dispatch_sites {
+                Self::execute_cached(
+                    conn,
+                    "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+                    rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
+                )?;
+            }
         }
 
         Ok(())

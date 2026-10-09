@@ -1,0 +1,95 @@
+{
+  "base": "b2a17adc188338c48b95d01761836916e5d0fcdb",
+  "changed_shared_validator": "Original public full validate_shard uses same plan/raw callbacks; shared internal immutable receipt checks reused. Native raw loop only explicit cold scope chooses no mutation/fanout stages. Original full workflow/support tests/capacity helper unchanged.",
+  "execution": {
+    "Python_synthetic_protocol_controls": "final execution pending; earlier 48 shared/new and subsequent 11 cold controls passed",
+    "Rust_fmt_compile_tests": "not_run; local Rust toolchain unavailable",
+    "native_measurements": "not_run"
+  },
+  "files": [
+    {
+      "before_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "bytes": 49766,
+      "git_blob": "a06674b47d75c2d1a01425b01d07f508abd05a2a",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "4ffa91a36ef7f8338d8572b39c3896ec0da1393e7351f352d2f0b0bc50ffd10a",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90",
+      "bytes": 5591,
+      "git_blob": "e812809e33c54d49a59930b57fd2b87ccd12cfe3",
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "sha256": "95e8080eaa0c4b11ca1fbfbb423e217426fe5ccade77035ff3037f0b91dcc0d4",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a",
+      "bytes": 24788,
+      "git_blob": "64fd186c65d5f854b7d02a84462313190fbbb176",
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "sha256": "3b4f7df5e83d00975abd1df14880f7a8af553d3b3372abef9c59ed69722671e6",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "bytes": 66114,
+      "git_blob": "2054142a6936de0a7432d688352b69c655fc4fd7",
+      "path": "scripts/p8_scale_matrix.py",
+      "sha256": "4a035c0a82add61abecf215cea63c07adc7b01ec92355cebe7de3a6009016810",
+      "status": "modified"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 17701,
+      "git_blob": "2bc491ebdf340f044eab8f6f57d63b41f9c1eb78",
+      "path": "scripts/p8_cold_matrix.py",
+      "sha256": "2c1fb1b19ea3a06db8d0a712cd20f4bd3a5c9d3fda259117c3161f7194460d57",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 14560,
+      "git_blob": "684402b7a9ddc45db372c1c0a3f7a68c06bb3780",
+      "path": "scripts/tests/test_p8_cold_matrix.py",
+      "sha256": "74bf7ce56c6e8982f502814ee935e58daaf3f4f2cb79f8abac69cf42baab14d1",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 8819,
+      "git_blob": "12af60f35e1555cfde812b3b6f7f63bf94cba9b8",
+      "path": ".github/workflows/p8-cold.yml",
+      "sha256": "6103586e6ad83a962b548a8685e00096ab7862cd6e788d951a2097daebce3da6",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 3242,
+      "git_blob": "92d80d764a1081efd5bf2cb2d3f98f07293fc54b",
+      "path": "docs/roadmap/code-index-v2/P8-COLD-ONLY.md",
+      "sha256": "406973c90ad9cc80dba18a08c80be65d6a22e68d36839cea67a1796bd36287f4",
+      "status": "added"
+    }
+  ],
+  "frozen_utc": "2026-10-09T15:16:00.748140+00:00",
+  "protocol": {
+    "cold_pair_samples": 150,
+    "job_timeout_minutes": 350,
+    "max_output_bytes": 536870912,
+    "max_parallel_measure": 10,
+    "native_deadline_ms": 18000000,
+    "repetitions_per_scale": 30,
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "stage_scope": "cold_only_v1",
+    "tables": 15
+  },
+  "schema": "cold-only-independent-candidate-v1",
+  "scope": "separate explicit P8-005 cold study; old full study/default plan retained; no ref or dispatch"
+}

@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "round": 38,
+  "snapshot_at": "2026-10-09T17:53:07Z",
+  "repository": "jyqj/codecortex",
+  "main": {
+    "commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29
+  },
+  "target": {
+    "baseline_done": 163,
+    "required_new_done": 10,
+    "cumulative_new_done": 0
+  },
+  "round_new_original_todos": [],
+  "priority_ids": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "main_ci": {
+    "total": 18,
+    "success": 16,
+    "queued": 2,
+    "in_progress": 0,
+    "failed": 0,
+    "queued_jobs": [
+      {
+        "id": 113923615747,
+        "name": "cold linux / stable / default",
+        "run_id": 37961034716
+      },
+      {
+        "id": 113923615721,
+        "name": "cold linux / stable / semantic",
+        "run_id": 37961034716
+      }
+    ]
+  },
+  "fixed_scale_run": {
+    "id": 37910924354,
+    "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "status": "completed_failure",
+    "successful_shards": 4,
+    "failed_shards": 1,
+    "unmaterialized_shards": 145,
+    "reason": "100k deadline_exceeded; aggregate failed; measure skipped"
+  },
+  "pr_decisions": {
+    "188": {
+      "state": "open_ready_hold",
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "reason": "green checks do not overcome paired performance regressions"
+    },
+    "192": {
+      "state": "draft_not_dispatched",
+      "head": "e7f8e913861f32e6745bcd56794601133b621c34",
+      "reason": "new 1350-cell study is not an existing-run continuation or product fix"
+    },
+    "193": {
+      "state": "draft_hold",
+      "head": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "review_comment": "https://github.com/jyqj/codecortex/pull/193#issuecomment-6086310660",
+      "reason": "resource/output contract deltas and representative performance evidence missing"
+    }
+  },
+  "decisions": {
+    "scope_less_scan": "no safe cache/skip patch without a complete mutation watermark",
+    "oracle_witness": "strict equality witness is not a false-equal path, but candidate is not admissible under the frozen resource/output contract",
+    "benchmark_changes": false,
+    "new_scale_dispatch": false,
+    "task_state_changes": false
+  }
+}

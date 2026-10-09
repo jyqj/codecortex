@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "decided_at": "2026-10-09T17:53:07Z",
+  "root_review": {
+    "p8_scale_call": "build_index_report(false) with no changed_paths on initial and resume builds",
+    "scanner": "scope-less manual build enters parallel full scan_with_manifest on every call",
+    "why_not_skip": [
+      "fresh public MCP call is a new filesystem observation boundary",
+      "durable ReconcileState covers observed resolution debt only",
+      "empty/missing scope is not a no-change certificate",
+      "auto-index-disabled watcher cannot supply a complete watermark",
+      "root/directory mtimes do not certify content stability"
+    ],
+    "rejected_shortcuts": [
+      "reuse old WalkManifest",
+      "treat empty scope as no changes",
+      "change fixed benchmark to scoped calls",
+      "increase B or reduce resume/stages",
+      "hide all resumes inside one public build"
+    ],
+    "minimum_future_design": "identity-bound per-project MutationJournal with platform event watermark, conservative fallback, and stage-3 acknowledgement"
+  },
+  "pr193_review": {
+    "false_equal_found": false,
+    "witness_sufficient_when": [
+      "ordinary stored tables",
+      "same projected columns",
+      "strict per-cell SQLite type and value equality",
+      "same count",
+      "both EOFs"
+    ],
+    "admission_blockers": [
+      "two-spool scratch limit failure behavior changes",
+      "public table JSON gains equal_input_order_witness",
+      "representative fixed-stage witness hit rate absent",
+      "mixed adverse-order diagnostics"
+    ],
+    "action": "keep Draft/HOLD; no ref update or study dispatch"
+  },
+  "original_todo_credit": 0
+}

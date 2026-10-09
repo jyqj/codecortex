@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-09T17:00:00Z",
+  "base": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+  "pr": 193,
+  "head": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+  "product": "44e6248106335b5f0625e53de38f76d26aeeadcf",
+  "source_blobs": {
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "b5eff557bed7d775490bc02c48a4678e0dd0f865",
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": "bc91a811b9845dadb07c73143a85dd82eb0ad8f8"
+  },
+  "scope": "Independent read-only review of the oracle witness only; no ref update, workflow dispatch, retry, cancellation, or scale claim.",
+  "semantic_assessment": {
+    "sufficient_witness": true,
+    "reasoning": [
+      "Witness admission requires ordinary stored tables, identical projected column layouts, complete B validation/accounting, exact row counts and both EOFs.",
+      "Pointwise raw SQLite type/value equality is stricter than canonical Value equality: integer/real, blob/text, different real bit patterns and different layouts fall back.",
+      "Signed zero bit differences fall back, retaining original serialized ordering, Value equality and distinct digests.",
+      "Successful witness still iterates the sorted A canonical stream, compares each row with the proven-identical B alias before feeding both hashers.",
+      "Failed witness discards speculative byte accounting and invokes the unchanged full B spool."
+    ],
+    "no_static_false_equal_found": true
+  },
+  "strict_contract_blockers": [
+    {
+      "id": "scratch_failure_behavior_changed",
+      "severity": "blocking_for_requested_strict_equivalence",
+      "detail": "A successful witness never writes side B into canonical_rows. An input where side A fits max_scratch_bytes but A+B would hit SQLITE_FULL can now succeed. The candidate review explicitly acknowledges that B-only SQLITE_FULL/I/O failure order is not preserved; current 64KiB test only proves a case where side A itself fails."
+    },
+    {
+      "id": "report_protocol_changed",
+      "severity": "blocking_for_protocol_unchanged",
+      "detail": "Each public table result adds equal_input_order_witness. Prior report fields remain, but byte/schema protocol is not unchanged."
+    },
+    {
+      "id": "target_domain_speedup_unproven",
+      "severity": "adoption_risk",
+      "detail": "The fixed v2 Python/SQLite diagnostic median ratio is 0.9076299483 only for same-order equality, but 1.3683205413 for reverse-order equality and 1.2254548335 for last-row mismatch. The real scale driver mutates A incrementally and fully rebuilds B before most parity stages, so rowid/insertion order identity is not established and fallback can add a second B projection pass."
+    }
+  ],
+  "evidence_boundaries": {
+    "python_v2_pairs": 9,
+    "rust_current_source": "not_run_in_published_review_at_inspection",
+    "all_15_tables_runtime": "not_demonstrated_by_python_probe",
+    "g3_or_g8b_material_speedup": "not_established",
+    "new_todo_completions": 0
+  },
+  "required_narrow_resolution": [
+    "Do not adopt this witness as the requested strict-equivalence optimization while exact scratch-failure behavior and unchanged report protocol are requirements.",
+    "If engineering accepts relaxed physical-failure equivalence, remove the public equal_input_order_witness field or version the protocol explicitly, and use actual representative scale stages to measure per-table witness success/fallback before any speed claim.",
+    "For a strict candidate, prefer eliminating the duplicate per-column ValueRef read by fusing raw-size accounting with projection while preserving first-pass error precedence; keep the original two-side spool, sorted streams, Value equality, every-row-before-hash, and all limits."
+  ],
+  "verdict": "reject_for_round38_strict_contract; source witness appears logically conservative for equality but is not protocol/capacity-failure equivalent and has no demonstrated G3-domain speedup"
+}

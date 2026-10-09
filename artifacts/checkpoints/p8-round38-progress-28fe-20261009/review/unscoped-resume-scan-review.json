@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "kind": "independent-source-review",
+  "title": "scope-less incremental resume scan safety review",
+  "reviewed_at_utc": "2026-10-09T00:00:00Z",
+  "repository": "jyqj/codecortex",
+  "source_commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+  "task_scope": {
+    "request": "Review the unscoped incremental build chain behind the G3 body/api/config 100k workload and identify a material product optimization without changing dirty budget 200, resume cap 1024, benchmark stages, or measurement budget.",
+    "mutation_authority": "none",
+    "native_execution": false,
+    "owner_refs_moved": false,
+    "research_started": false
+  },
+  "reviewed_sources": [
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "blob": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "relevant": [
+        "Indexer::phase_scan_and_diff",
+        "Indexer::scoped_scan_and_diff",
+        "BuildScope",
+        "SCOPED_SCAN_MAX_EVENTS"
+      ]
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "relevant": [
+        "IndexBuildPlan::prepare_scoped",
+        "DirtyClosed::compute",
+        "PreparedBuild"
+      ]
+    },
+    {
+      "path": "crates/cc-index/src/scanner.rs",
+      "blob": "8e89915f736e799274d802be9ffdd22567c650c9",
+      "relevant": [
+        "Scanner::scan_with_manifest",
+        "WalkManifest"
+      ]
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/dirty.rs",
+      "blob": "ffcfce673e9501e36797fad3a07f42cb0348dc6f",
+      "relevant": [
+        "Indexer::run_dirty_propagation_with_inputs"
+      ]
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "blob": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "relevant": [
+        "Indexer::plan_dirty_reconciliation",
+        "dependency_window_pending",
+        "surface_window_pending"
+      ]
+    },
+    {
+      "path": "crates/cc-model/src/freshness.rs",
+      "blob": "2dfee5ad85c4b9b53a2fe02280c041a5c0b78720",
+      "relevant": [
+        "ReconcileState",
+        "ReconcileUpdate",
+        "ResolutionFreshness"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/engine.rs",
+      "blob": "8c8bcf70a321875cd99252b50a9c2010bedaec19",
+      "relevant": [
+        "CodeIndex::build_inputs",
+        "CodeIndex::prepare_build_scoped",
+        "BuildInputs"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "blob": "4ab8d8c72e9237e0faf8b8d6d0cc2c5645c4fb63",
+      "relevant": [
+        "build_index_scoped",
+        "run_split_build",
+        "split_build_once"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/mcp.rs",
+      "blob": "9a018185e2b2e362a16641c29bf3a41c74ac90ef",
+      "relevant": [
+        "tool_index"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/tools.rs",
+      "blob": "feed786f65f51f25960a72805d75bab8f331777e",
+      "relevant": [
+        "IndexParams"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/project_session.rs",
+      "blob": "c10c9e4585a9e192b2af9ed99630096d8c861c18",
+      "relevant": [
+        "start_watcher",
+        "run_watcher_tick",
+        "resolution_work_pending"
+      ]
+    },
+    {
+      "path": "crates/cc-server/src/watcher.rs",
+      "blob": "3f45d0eca3044f910454226016aeec13a89c5e9b",
+      "relevant": [
+        "FileWatcher",
+        "WatcherDrain::build_scope",
+        "classify_notification",
+        "drain_pending"
+      ]
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "blob": "1281d5340096699663308c92ce27978ae96ac84e",
+      "relevant": [
+        "scale_sample",
+        "build",
+        "ScalePlan::fanout_budgets"
+      ]
+    }
+  ],
+  "actual_chain": [
+    "cc-eval p8_scale::scale_sample applies a mutation to incremental and full-control trees.",
+    "The incremental side calls CodeIndexBackend::build_index_report(false) once, then repeats the same unscoped call while resolution_freshness.complete is false, bounded by max_resume_builds.",
+    "MCP tool_index turns absent/empty changed_paths and removed_paths into scope=None.",
+    "handlers::core::build_index_scoped holds the per-project build gate and calls run_split_build.",
+    "split_build_once loads current configuration into BuildInputs, creates an Indexer, and calls prepare_build_scoped with scope=None.",
+    "IndexBuildPlan::prepare_scoped calls Indexer::phase_scan_and_diff before dirty reconciliation.",
+    "phase_scan_and_diff can take scoped_scan_and_diff only for Some(non-empty scope); None and Some(empty) both enter Scanner::scan_with_manifest.",
+    "The resulting full ScanDiffResult feeds project-model capture, parsing, durable dirty reconciliation, resolution, commit and freshness reporting.",
+    "Each later resume is a new MCP call and therefore a new filesystem-observation boundary, even when the durable resolution frontier is the only remaining work."
+  ],
+  "observed_measurement_context": {
+    "source": "round-38 task handoff; not independently rerun by this reviewer",
+    "workload": "G3 body/api/config at 100k",
+    "unscoped_full_tree_scans": 991,
+    "interpretation": "The count is consistent with the source loop: each incomplete report causes another build_index_report(false), and every scope-less prepare performs scan_with_manifest."
+  },
+  "invariants_already_correct": [
+    "The durable ReconcileState retains roots, propagated contributions, completed files, events and reasons until the reachable consumers converge.",
+    "ReconcileUpdate is CAS-fenced by expected_index_epoch and is committed atomically with the file/edge batch.",
+    "Each dirty window remains bounded by indexing.dirty_propagation_max_files; the capacity workload fixes that budget at 200.",
+    "The evaluation driver bounds resumes at 1024 and preserves every actual returned IndexReport.",
+    "A new observed body/API/config/inventory event rebases the durable frontier instead of reusing obsolete completion proof.",
+    "Full and scoped scan paths retain policy/document-spec mismatch fallbacks, dot-path fallback, directory/oversized-event fallback and config/infra signature handling."
+  ],
+  "rejected_shortcuts": [
+    {
+      "idea": "Cache and reuse the previous WalkManifest for the next scope-less call",
+      "verdict": "unsafe",
+      "reason": "A manifest is evidence about a past walk, not proof that arbitrary source content, file inventory, nested ignore rules, dot paths, config files or infra files stayed unchanged between independent calls."
+    },
+    {
+      "idea": "Treat durable resolution debt as proof that no filesystem work is needed",
+      "verdict": "unsafe",
+      "reason": "ResolutionFreshness explicitly covers only observed invalidations and does not certify unobserved filesystem changes. New changes must rebase the frontier."
+    },
+    {
+      "idea": "Treat Some(empty BuildScope) or absent changed_paths as a no-change certificate",
+      "verdict": "unsafe for public/manual calls",
+      "reason": "The MCP boundary deliberately maps empty caller lists to None. A caller omitting paths has not asserted a complete event set. Even the current watcher queue has asynchronous debounce/staging and no cross-platform kernel flush watermark proving all prior changes were delivered."
+    },
+    {
+      "idea": "Use root or directory mtimes to validate the cached tree",
+      "verdict": "unsafe",
+      "reason": "File-content writes do not have to change parent-directory mtimes; same-size writes with restored file mtime are a direct counterexample."
+    },
+    {
+      "idea": "Change p8_scale to send changed_paths for the mutation and empty paths for resumes",
+      "verdict": "benchmark cheating",
+      "reason": "The fixed workload intentionally exercises the public scope-less build. Changing its request shape weakens the measured product contract and would not protect real callers from undeclared changes."
+    },
+    {
+      "idea": "Run every durable resume batch inside one public build and return only the last report",
+      "verdict": "not acceptable under the current contract",
+      "reason": "Although the first full scan could be reused within one logical filesystem snapshot, hiding hundreds of B=200 batches changes build latency/report cardinality and the benchmark's preserved-per-build evidence. It effectively changes the public operation and requires explicit report/protocol design."
+    },
+    {
+      "idea": "Raise B=200, reduce resume1024, skip body/api/config stages, or reuse full-control output",
+      "verdict": "forbidden",
+      "reason": "These alter the fixed workload or its safety budget rather than optimizing the product."
+    }
+  ],
+  "conclusion": {
+    "safe_patch_available_under_current_constraints": false,
+    "reason": "For an independent scope-less manual build, a fresh complete filesystem observation is the only currently implemented proof that there were no undeclared changes. The durable DB frontier proves pending resolution work but cannot prove filesystem quiescence. No existing cross-call mutation journal has a complete readiness/watermark contract. Therefore deleting the repeated walks would trade correctness for benchmark speed.",
+    "product_vs_benchmark": "The repeated scans are genuine product cost at the manual unscoped API boundary. They are not removable solely inside scan_with_manifest or the benchmark without adding a new correctness proof."
+  },
+  "minimum_future_product_design": {
+    "name": "fenced mutation journal for scope-less incremental resumes",
+    "protocol_change_required": false,
+    "modules": [
+      {
+        "path": "crates/cc-server/src/project_session.rs",
+        "changes": [
+          "Own one long-lived per-project MutationJournal independently of auto_index.enabled; auto-index controls publication scheduling, not observation.",
+          "Do not restart the journal when tool_index selects the already-active project.",
+          "Acquire the build gate before taking a journal snapshot/drain, and acknowledge a journal interval only after successful stage-3 publication."
+        ]
+      },
+      {
+        "path": "crates/cc-server/src/watcher.rs or a new mutation_journal.rs",
+        "changes": [
+          "Expose begin_baseline and changes_since token operations returning Complete{changed,removed,end_token}, Overflow, Unready or IdentityMismatch.",
+          "The token must be backed by a platform event-journal watermark or another mechanism that proves all changes before the watermark were delivered; the current debounced notify queue alone is insufficient.",
+          "Errors, overflow, rename ambiguity, directory events, invalid UTF-8 paths and observer restart must return an untrusted result that forces a full walk.",
+          "Keep events unacknowledged across failed builds."
+        ]
+      },
+      {
+        "path": "crates/cc-server/src/mcp.rs and handlers/core.rs",
+        "changes": [
+          "For explicit non-empty changed_paths, preserve the current caller-scoped path.",
+          "For a scope-less incremental request, use a complete journal interval only when its project identity and baseline match the last successfully full/scoped-reconciled build; otherwise pass None and perform the current full walk.",
+          "Do not expose a new request parameter and do not special-case cc-eval."
+        ]
+      },
+      {
+        "path": "crates/cc-index/src/indexer.rs",
+        "changes": [
+          "Add a private trusted scope provenance distinct from public BuildScope.",
+          "Complete empty journal intervals may construct a no-file-change ScanDiffResult from the full DB file-state universe: no parse/remove, all surviving paths Skip, walk_manifest=None, config_files_unaffected=true and infra_files_unaffected=true.",
+          "Non-empty intervals continue through scoped_scan_and_diff and every existing fallback.",
+          "Any policy/document-spec/config fingerprint mismatch invalidates the journal fast path."
+        ]
+      },
+      {
+        "path": "crates/cc-model or existing BuildExplain",
+        "changes": [
+          "Record scan mode full_tree, explicit_scope, journal_scope or journal_empty and the fallback reason.",
+          "Record journal baseline/end identities and whether the interval was acknowledged, without changing resolution freshness semantics."
+        ]
+      }
+    ],
+    "state_machine": [
+      "Cold/open/reopen: journal Unready; the first scope-less build performs a full walk.",
+      "The observer must already cover the project before that walk starts. A successful build binds the resulting index epoch/config/admission fingerprint to a complete journal baseline.",
+      "Next scope-less call: acquire build gate, request a fenced interval since the bound baseline.",
+      "Complete empty interval: resolution-only B=200 resume with no tree walk.",
+      "Complete non-empty interval: targeted scan; dot/config/infra/directory and existing Indexer rules retain their current conservative fallbacks.",
+      "Overflow, observer restart, identity mismatch, unknown event, excessive event set, failed previous publication, config/policy drift or cross-process uncertainty: full tree walk.",
+      "Only successful commit advances and acknowledges the journal token; failure retains or escalates to full reconciliation."
+    ],
+    "why_it_targets_991": "After one full observation for each real mutation, later resolution-only resumes can consume complete empty journal intervals. This attacks repeated product work rather than rewriting the benchmark or increasing the dirty budget.",
+    "implementation_risk": "medium-to-high; correctness depends on a real event-delivery watermark. The current notify callback/debounce queues are insufficient proof by themselves."
+  },
+  "required_negative_controls": [
+    "Unlisted ordinary source edit between two unscoped calls is observed and rebases the frontier; no journal-empty path.",
+    "Same-size source rewrite with restored mtime is still observed, or the journal is Untrusted and forces a full walk.",
+    "Create, delete, rename-from/to, directory move and nested-directory replacement cannot be represented as journal-empty.",
+    ".gitignore, nested .gitignore, .codecortex.json, .env and any dot-path event force full admission reconciliation.",
+    "tsconfig/jsconfig/go.mod/go.work/Cargo/Python config changes preserve project-model recomputation and may not reuse prior completion proof.",
+    "Dockerfile, compose, Kubernetes and Terraform candidate changes preserve infra signature recomputation.",
+    "Native overflow, event error, non-UTF8 path, observer restart and debounce/watermark timeout force a full walk.",
+    "First build, DB reopen, project switch, database incarnation change and unexpected index_epoch change invalidate the journal baseline.",
+    "Chunk-policy/document-spec/indexing-ignore changes force full reconciliation.",
+    "Failed prepare, stage-1 write, postprocess or stage-3 apply does not acknowledge journal events.",
+    "No-change durable debt still advances by at most B=200 promoted files per actual report.",
+    "At most 1024 resume attempts remain in the fixed evaluation and all original body/api/config stages and raw reports remain.",
+    "Incremental terminal state retains full-control oracle parity, including all frozen tables and freshness metadata.",
+    "BuildExplain distinguishes a genuine journal-empty product path from an explicit scope and from a full-tree fallback."
+  ],
+  "validation_plan": {
+    "static": [
+      "Review all journal-token transitions and lock ordering: build gate before drain, no CodeIndex lock held while waiting, acknowledge after successful stage 3.",
+      "Prove empty-journal ScanDiffResult uses the complete DB file-state universe so dirty propagation can still promote any importer.",
+      "Prove config/infra/project-model consumers never infer unaffected from an untrusted interval."
+    ],
+    "controlled": [
+      "Inject every negative-control event and assert scan_mode/fallback reason plus final DB state.",
+      "Inject events before baseline, during scan, between prepare and commit, during postprocess, after failed commit and immediately before the next call.",
+      "Run process reopen and cross-process DB-writer controls."
+    ],
+    "ordinary_regression": [
+      "cc-index all targets; cc-server watcher/project-session/MCP tests; fmt and strict clippy.",
+      "Existing full-vs-incremental oracle and durable-reconcile suites unchanged."
+    ],
+    "performance_evidence": [
+      "Only after correctness controls pass, run a separate diagnostic showing one real full walk per mutation and journal-empty continuation scans for later B=200 resumes.",
+      "Do not alter the fixed G3 plan, stages, 5x30 matrix, B=200, resume1024 or source/binary identity. A new binary requires its own evidence identity; it does not inherit old G3 timings."
+    ]
+  },
+  "current_round_credit": {
+    "code_commit": null,
+    "todo_closed": 0,
+    "justification": "Read-only source review produced no safely shippable patch under the no-protocol/no-benchmark-change constraints."
+  }
+}

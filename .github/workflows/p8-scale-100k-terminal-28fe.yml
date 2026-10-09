@@ -1,0 +1,190 @@
+name: P8 original 100k terminal readback 28fe
+
+on:
+  push:
+    branches:
+      - audit/p8-scale-100k-terminal-28fe-20261009
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+
+jobs:
+  original_terminal_metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Read the fixed original run and its existing error annotation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import datetime
+          import io
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import sys
+          import urllib.error
+          import urllib.request
+          import urllib.parse
+          import zipfile
+
+          def now():
+              return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+          root = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("p8-original-100k-terminal-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"])
+          root.mkdir(exist_ok=False)
+          receipt = {
+              "schema": "p8_original_100k_terminal_readback_v1",
+              "started_at_utc": now(),
+              "controller_run_id": os.environ["GITHUB_RUN_ID"],
+              "controller_head": os.environ["GITHUB_SHA"],
+              "controller_run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "original_run_id": 37872522779,
+              "original_job_id": 113638100879,
+              "original_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+              "method": "GET only; no checkout, native command, measurement or retry",
+              "requests": [],
+              "passed": False,
+          }
+          def save():
+              (root / "readback-receipt.json").write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+          save()
+          print("P8_TERMINAL_READBACK_START " + json.dumps(receipt, ensure_ascii=False), flush=True)
+          if os.environ["GITHUB_RUN_ATTEMPT"] != "1":
+              receipt["error"] = "rerun_attempt_not_authorized"
+              receipt["finished_at_utc"] = now()
+              save()
+              raise SystemExit(2)
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          opener = urllib.request.build_opener(NoRedirect())
+          base = "https://api.github.com/repos/jyqj/codecortex"
+          queries = [
+              ("original-run", "/actions/runs/37872522779"),
+              ("original-job", "/actions/jobs/113638100879"),
+              ("original-check", "/check-runs/113638100879"),
+              ("original-annotations", "/check-runs/113638100879/annotations?per_page=100"),
+              ("original-artifacts", "/actions/runs/37872522779/artifacts?per_page=100"),
+          ]
+          parsed = {}
+          try:
+              for name, suffix in queries:
+                  url = base + suffix
+                  item = {"name": name, "url": url, "method": "GET", "started_at_utc": now()}
+                  receipt["requests"].append(item)
+                  save()
+                  request = urllib.request.Request(url, headers={
+                      "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "User-Agent": "codecortex-original-terminal-readback",
+                  }, method="GET")
+                  try:
+                      with opener.open(request, timeout=30) as response:
+                          raw = response.read(16 * 1024 * 1024 + 1)
+                          status = response.status
+                  except urllib.error.HTTPError as error:
+                      raw = error.read(16 * 1024 * 1024 + 1)
+                      status = error.code
+                  if len(raw) > 16 * 1024 * 1024:
+                      raise RuntimeError("response_size_limit_exceeded:" + name)
+                  text = raw.decode("utf-8", errors="strict")
+                  (root / (name + ".json")).write_bytes(raw)
+                  item.update({"status": status, "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(), "finished_at_utc": now()})
+                  save()
+                  print("P8_TERMINAL_ORIGINAL_JSON " + json.dumps({"name": name, "status": status, "bytes": len(raw), "sha256": item["sha256"], "raw_utf8": text}, ensure_ascii=False), flush=True)
+                  if status != 200:
+                      raise RuntimeError("http_status_" + str(status) + ":" + name)
+                  parsed[name] = json.loads(text)
+
+              run = parsed["original-run"]
+              job = parsed["original-job"]
+              check = parsed["original-check"]
+              annotations = parsed["original-annotations"]
+              artifacts = parsed["original-artifacts"]
+              if run["id"] != 37872522779 or run["head_sha"] != receipt["original_head"] or run["run_attempt"] != 1:
+                  raise RuntimeError("original_run_identity_mismatch")
+              if job["id"] != 113638100879 or job["run_id"] != 37872522779 or job["head_sha"] != receipt["original_head"] or job["run_attempt"] != 1:
+                  raise RuntimeError("original_job_identity_mismatch")
+              if check["id"] != 113638100879 or check["head_sha"] != receipt["original_head"]:
+                  raise RuntimeError("original_check_identity_mismatch")
+              if not isinstance(annotations, list) or check["output"]["annotations_count"] != len(annotations) or len(annotations) > 100:
+                  raise RuntimeError("annotation_coverage_incomplete")
+              if artifacts["total_count"] != len(artifacts["artifacts"]) or artifacts["total_count"] > 100:
+                  raise RuntimeError("artifact_page_coverage_incomplete")
+              if any(a["workflow_run"]["id"] != 37872522779 or a["workflow_run"]["head_sha"] != receipt["original_head"] for a in artifacts["artifacts"]):
+                  raise RuntimeError("artifact_original_run_identity_mismatch")
+              original_matrix = next((a for a in artifacts["artifacts"] if a["id"] == 11599136237), None)
+              if original_matrix is None or original_matrix["size_in_bytes"] != 580 or original_matrix["digest"] != "sha256:6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3":
+                  raise RuntimeError("original_failed_matrix_artifact_identity_mismatch")
+              zip_url = base + "/actions/artifacts/11599136237/zip"
+              zip_request = urllib.request.Request(zip_url, headers={
+                  "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                  "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                  "User-Agent": "codecortex-original-terminal-readback",
+              }, method="GET")
+              zip_item = {"name": "original-failed-matrix-zip", "artifact_id": 11599136237, "api_url": zip_url, "started_at_utc": now(), "method": "GET"}
+              receipt["requests"].append(zip_item)
+              save()
+              try:
+                  with opener.open(zip_request, timeout=30) as unexpected:
+                      raise RuntimeError("expected_artifact_redirect_not_observed")
+              except urllib.error.HTTPError as redirect:
+                  if redirect.code != 302:
+                      raise
+                  location = redirect.headers.get("Location", "")
+              parsed_location = urllib.parse.urlsplit(location)
+              if parsed_location.scheme != "https" or not parsed_location.hostname or not parsed_location.hostname.endswith(".blob.core.windows.net") or parsed_location.username is not None or parsed_location.password is not None:
+                  raise RuntimeError("unexpected_artifact_storage_origin")
+              storage_request = urllib.request.Request(location, headers={"User-Agent": "codecortex-original-terminal-readback"}, method="GET")
+              with opener.open(storage_request, timeout=30) as response:
+                  zip_raw = response.read(16385)
+                  if response.status != 200:
+                      raise RuntimeError("original_zip_storage_status")
+              if len(zip_raw) != 580 or hashlib.sha256(zip_raw).hexdigest() != "6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3":
+                  raise RuntimeError("original_failed_matrix_zip_bytes_differ")
+              (root / "original-failed-matrix-11599136237.zip").write_bytes(zip_raw)
+              zip_item.update({"bytes": len(zip_raw), "sha256": hashlib.sha256(zip_raw).hexdigest(), "finished_at_utc": now(), "authorization_forwarded_to_storage": False})
+              save()
+              print("P8_TERMINAL_ORIGINAL_ZIP " + json.dumps({"artifact_id": 11599136237, "bytes": len(zip_raw), "sha256": zip_item["sha256"], "base64": base64.b64encode(zip_raw).decode("ascii")}), flush=True)
+              with zipfile.ZipFile(io.BytesIO(zip_raw), "r") as archive:
+                  members = archive.infolist()
+                  if len(members) != 1 or members[0].is_dir() or members[0].file_size > 65536 or not members[0].filename.endswith(".json") or "/" in members[0].filename or "\\" in members[0].filename:
+                      raise RuntimeError("unexpected_original_failed_matrix_member")
+                  original_json = archive.read(members[0])
+                  original_text = original_json.decode("utf-8", errors="strict")
+                  matrix = json.loads(original_text)
+              (root / "original-failed-matrix-json.raw").write_bytes(original_json)
+              receipt["original_failed_matrix"] = {"member": members[0].filename, "bytes": len(original_json), "sha256": hashlib.sha256(original_json).hexdigest(), "status": matrix.get("status"), "passed": matrix.get("passed")}
+              print("P8_TERMINAL_ORIGINAL_JSON " + json.dumps({"name": "original-failed-matrix-member", "status": 200, "member": members[0].filename, "bytes": len(original_json), "sha256": hashlib.sha256(original_json).hexdigest(), "raw_utf8": original_text}, ensure_ascii=False), flush=True)
+              if matrix.get("status") != "failed" or matrix.get("passed") is not False:
+                  raise RuntimeError("unexpected_original_matrix_outcome")
+              receipt["passed"] = True
+              receipt["interpretation"] = "complete existing metadata readback only; original job conclusion is preserved and no measurement completion is claimed"
+          except Exception as error:
+              receipt["error"] = type(error).__name__ + ": " + str(error)
+          finally:
+              receipt["finished_at_utc"] = now()
+              save()
+              print("P8_TERMINAL_READBACK_RESULT " + json.dumps(receipt, ensure_ascii=False), flush=True)
+          raise SystemExit(0 if receipt["passed"] else 2)
+          PY
+      - name: Preserve existing original metadata and the readback receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-original-100k-terminal-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-original-100k-terminal-${{ github.run_id }}-attempt${{ github.run_attempt }}/
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,398 @@
+{
+  "acceptance_boundaries": {
+    "accepted": "Only these five actual fixed-P5 selected engineering commands and source preparation.",
+    "clippy": "Strict workspace/all-targets Clippy passed; the complete workspace test suite was not run.",
+    "format": "Original recorded exit 0 supports success; the empty log alone is not proof.",
+    "independence": "Product canonical and semantic approval are separately owned by /root/pr_audit. This report reviews actual engineering evidence and does not supply semantic self-approval of earlier interface work.",
+    "mechanism": "Original prepare-only validates source controls and materializes four variants; it does not compile variants, exercise a provider, certify a mechanism ablation or run a study.",
+    "not_claimed": [
+      "compiled four-variant builds",
+      "provider mechanism ablation",
+      "formal study",
+      "release acceptance",
+      "complete TODO acceptance"
+    ],
+    "not_relabelled": [
+      "P2 full-workspace exit 101",
+      "P4 selected engineering executions",
+      "earlier native/CLI/GitHub CI",
+      "formal scale/provider/runtime studies"
+    ],
+    "task_ledger_unchanged": {
+      "newly_closed": 0,
+      "remaining": 29
+    },
+    "workspace_full_suite": "not_run_on_P5; retained P2 exit 101 and original G CI retain their own identities"
+  },
+  "commands": [
+    {
+      "argv_matches_original_runner": true,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "elapsed_seconds": 3.1801663119986188,
+      "exit_code": 0,
+      "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "log": "format.log",
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_sha256_verified": true,
+      "name": "format",
+      "original_rust_summary_lines": []
+    },
+    {
+      "argv_matches_original_runner": true,
+      "command": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "elapsed_seconds": 18.56948725500115,
+      "exit_code": 0,
+      "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "log": "clippy.log",
+      "log_bytes": 333,
+      "log_sha256": "0eb2c215a4c8b92bf50e1e2c85a5a54c6d3917d3c8dc71110d4bf61c945065f7",
+      "log_sha256_verified": true,
+      "name": "clippy",
+      "original_rust_summary_lines": []
+    },
+    {
+      "argv_matches_original_runner": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "--locked",
+        "--offline"
+      ],
+      "elapsed_seconds": 11.626386918000208,
+      "exit_code": 0,
+      "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "log": "search-lib.log",
+      "log_bytes": 21889,
+      "log_sha256": "92e45c5580879273c88feb594da1d93ea98e5df384f31d9b754da71d19e89f68",
+      "log_sha256_verified": true,
+      "name": "search-lib",
+      "original_rust_summary_lines": [
+        "test result: ok. 303 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.00s"
+      ]
+    },
+    {
+      "argv_matches_original_runner": true,
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "fixed_controls_match_current_product_source_once"
+      ],
+      "elapsed_seconds": 20.66576741300014,
+      "exit_code": 0,
+      "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "log": "mechanism-anchor.log",
+      "log_bytes": 664,
+      "log_sha256": "da3480dfc1b3d221489416aa53c864ba9ef222bc8474401dddaffa01b7e741a2",
+      "log_sha256_verified": true,
+      "name": "mechanism-anchor",
+      "original_rust_summary_lines": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 66 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "argv_matches_original_runner": true,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "scripts/p7_mechanism_build.py",
+        "--source",
+        "/workspace/scratch/50c364fd60b1/codecortex",
+        "--expected-head",
+        "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "--output",
+        "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare",
+        "--prepare-only"
+      ],
+      "elapsed_seconds": 1.7090470019975328,
+      "exit_code": 0,
+      "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "log": "mechanism-prepare.log",
+      "log_bytes": 108,
+      "log_sha256": "74f03af2ae1560f5c09ae2977036e59a232204267c0a0d422dffb0637edc1da3",
+      "log_sha256_verified": true,
+      "name": "mechanism-prepare",
+      "original_rust_summary_lines": []
+    }
+  ],
+  "environment": {
+    "original_overrides": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_HOME": "/workspace/scratch/50c364fd60b1/cargo",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_TARGET_DIR": "/workspace/scratch/50c364fd60b1/target-final",
+      "PATH": "/workspace/scratch/50c364fd60b1/cargo/bin:/root/.codex/tmp/arg0/codex-arg0xnK3sK:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RUSTUP_HOME": "/workspace/scratch/50c364fd60b1/rustup"
+    },
+    "original_rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "scope": "Original recorded overrides and compiler identity, not a hermetic inherited-environment claim. These debug/unoptimized selected checks reuse target-final and are not cold/release performance results."
+  },
+  "issues_found": [],
+  "original_evidence": {
+    "execution_completed_at_utc": "2026-10-09T11:08:26.653996+00:00",
+    "execution_started_at_utc": "2026-10-09T11:07:30.445677+00:00",
+    "mechanism_script_read_as_source": {
+      "bytes": 12407,
+      "path": "scripts/p7_mechanism_build.py",
+      "sha256": "48b5ade14f450eca004d07a4559af4caef2e8f0352746689c8a21b85ebc5cc76"
+    },
+    "receipt": {
+      "bytes": 302795,
+      "path": "engineering-checks/receipt.json",
+      "sha256": "2e915b63915198ad1df804ee6f02c3a40dd3fb0e5eee4ea4a3cef193c5b6bc0c"
+    },
+    "runner": {
+      "bytes": 4220,
+      "path": "run-P5-engineering.py",
+      "sha256": "008fa1239b740fa9ef6394bab13064bcf76919d2f11e7f972f4d8da76479832e"
+    },
+    "terminal_confirmation": "Root confirmed session 46153 exit 0 before this report was sealed."
+  },
+  "prepare_only_review": {
+    "actual_command_exit_code": 0,
+    "actual_elapsed_seconds": 1.7090470019975328,
+    "archive_original_json_bytes": 725913,
+    "archive_original_json_count": 7,
+    "archive_originals": [
+      {
+        "bytes": 569,
+        "path": "mechanism-prepare/source-binding.json",
+        "sha256": "4f7586dfdd813067ede8727d71e1a7d470e41e419e09bda84027040661872b6b"
+      },
+      {
+        "bytes": 144357,
+        "path": "mechanism-prepare/reference-inventory.json",
+        "sha256": "b8c10023d20ace3b87545627e567d3d6ddaf2a8e0c084aabe74ffb92ecfad11d"
+      },
+      {
+        "bytes": 3559,
+        "path": "mechanism-prepare/prepared-snapshots.json",
+        "sha256": "1e880be61799b275af2e3b7310853ac773d44e7f40fe875eaaa0740f3b8cd203"
+      },
+      {
+        "bytes": 144357,
+        "path": "mechanism-prepare/builds/none/source-inventory.json",
+        "sha256": "c73dceb4be4e72c4e0336b8e8c35e01186d2be42a948dbc55c41d4ae50e0d572"
+      },
+      {
+        "bytes": 144357,
+        "path": "mechanism-prepare/builds/local/source-inventory.json",
+        "sha256": "d4ec225983d468aff8e51599dbf210358a6dc1f94769a47ccd710b861a6cc411"
+      },
+      {
+        "bytes": 144357,
+        "path": "mechanism-prepare/builds/dense_only/source-inventory.json",
+        "sha256": "17dd7402859d684f98bd747bf7ac84430e033476986e7fc923028f6b8d9d6c9d"
+      },
+      {
+        "bytes": 144357,
+        "path": "mechanism-prepare/builds/hybrid/source-inventory.json",
+        "sha256": "b8c10023d20ace3b87545627e567d3d6ddaf2a8e0c084aabe74ffb92ecfad11d"
+      }
+    ],
+    "compiled": false,
+    "controls": [
+      {
+        "id": "local_retrieval",
+        "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: preserve policy obligations and type references,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = default_lane_registry().to_vec();\n    lanes.clear();\n    lanes\n}",
+        "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    default_lane_registry().to_vec()\n}",
+        "path": "crates/cc-search/src/lanes.rs"
+      },
+      {
+        "id": "semantic_dense",
+        "off_text": "        // Counterfactual experiment snapshot: suppress semantic dispatch,\n        // retain the actual caller's requested strategy and all budgets.\n        let _ = CcError::SemanticUnavailable;\n        let effective = RetrievalStrategy::Local;",
+        "on_text": "        if requested == RetrievalStrategy::Semantic && !semantic_configured {\n            return Err(CcError::SemanticUnavailable);\n        }\n        let effective = if requested == RetrievalStrategy::Local || !semantic_configured {\n            RetrievalStrategy::Local\n        } else {\n            requested\n        };",
+        "path": "crates/cc-search/src/query_policy.rs"
+      }
+    ],
+    "do_not_duplicate_source_directories": [
+      "mechanism-prepare/reference",
+      "mechanism-prepare/sources",
+      "mechanism-prepare/targets",
+      "mechanism-prepare/products"
+    ],
+    "original_script_boundary": "The original --prepare-only branch writes prepared-snapshots.json with compiled:false and returns at lines 157-160 before Cargo/toolchain resolution or the compile loop.",
+    "planned_path_boundary": "prepared-snapshots.json contains planned binary/build-receipt paths; all four binaries and four build receipts are absent. Those path strings are not build evidence.",
+    "reference_inventory_count": 1092,
+    "reference_inventory_map_equals_engineering_source_inputs": true,
+    "source_binding_original": {
+      "attestation": "local recorded provenance; not remote source-to-binary attestation",
+      "build_input_worktree_clean": true,
+      "reference_inventory_sha256": "df647d410b56f6baad57cc2aa96501651b457c69afb977a3232dd5c60fc249e3",
+      "selected_tracked_roots": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates"
+      ],
+      "snapshot_scope": "complete tracked Cargo workspace/lock/toolchain/config and all crate files; unrelated docs/history artifacts excluded",
+      "source_commit": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "started_utc": "2026-10-09T11:08:25.252992+00:00"
+    },
+    "source_control_anchor_test": "Original fixed_controls_match_current_product_source_once passed once on P5.",
+    "successful_mechanism_build_manifest_created": false,
+    "variants": [
+      {
+        "binary_created": false,
+        "build_receipt_created": false,
+        "changed_paths": {
+          "crates/cc-search/src/lanes.rs": {
+            "reference_sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+            "variant_sha256": "2f90d715d1f8030b07c6ac30277a85843b8a07310c1d66b0b50c90e892afbf24"
+          },
+          "crates/cc-search/src/query_policy.rs": {
+            "reference_sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+            "variant_sha256": "f60a676a9aa9fbcc60a018c039c4e79a555d904daa20189649d9e387882b217e"
+          }
+        },
+        "compact_inventory_sha256": "a38283166733b51095e5a09ed6e339be94aa3a539898ffc9622f2f8b5c761485",
+        "compiled": false,
+        "enabled_controls": [],
+        "id": "none",
+        "input_count": 1092,
+        "inventory_differences_match_disabled_controls": true,
+        "paths_added": [],
+        "paths_removed": []
+      },
+      {
+        "binary_created": false,
+        "build_receipt_created": false,
+        "changed_paths": {
+          "crates/cc-search/src/query_policy.rs": {
+            "reference_sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+            "variant_sha256": "f60a676a9aa9fbcc60a018c039c4e79a555d904daa20189649d9e387882b217e"
+          }
+        },
+        "compact_inventory_sha256": "11b635d357c8fb1d4a8a310102edfd67bb8201b27f68ac2560c311fbdb303205",
+        "compiled": false,
+        "enabled_controls": [
+          "local_retrieval"
+        ],
+        "id": "local",
+        "input_count": 1092,
+        "inventory_differences_match_disabled_controls": true,
+        "paths_added": [],
+        "paths_removed": []
+      },
+      {
+        "binary_created": false,
+        "build_receipt_created": false,
+        "changed_paths": {
+          "crates/cc-search/src/lanes.rs": {
+            "reference_sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+            "variant_sha256": "2f90d715d1f8030b07c6ac30277a85843b8a07310c1d66b0b50c90e892afbf24"
+          }
+        },
+        "compact_inventory_sha256": "f79e299ee0edde0edec45ac57664d6780733ea133846753ca779df46c063a581",
+        "compiled": false,
+        "enabled_controls": [
+          "semantic_dense"
+        ],
+        "id": "dense_only",
+        "input_count": 1092,
+        "inventory_differences_match_disabled_controls": true,
+        "paths_added": [],
+        "paths_removed": []
+      },
+      {
+        "binary_created": false,
+        "build_receipt_created": false,
+        "changed_paths": {},
+        "compact_inventory_sha256": "df647d410b56f6baad57cc2aa96501651b457c69afb977a3232dd5c60fc249e3",
+        "compiled": false,
+        "enabled_controls": [
+          "local_retrieval",
+          "semantic_dense"
+        ],
+        "id": "hybrid",
+        "input_count": 1092,
+        "inventory_differences_match_disabled_controls": true,
+        "paths_added": [],
+        "paths_removed": []
+      }
+    ],
+    "verification_boundary": "This audit compares all original JSON inventory maps and their declared changed paths. It does not independently rehash the four physical source forks or rerun preparation. Source materialization is supported by the original successful command, its original code path and original inventories. No compiled variant, provider exercise or mechanism-ablation result is claimed."
+  },
+  "review_execution": {
+    "method": "Python standard-library static AST/JSON parsing, SHA256 computation, original log-summary extraction, full recorded-map comparison and bounded absence checks. The original project runner and mechanism script were read as text only.",
+    "no_project_commands": true,
+    "original_bytes_unchanged_at_seal": true,
+    "result": "All checks within this bounded scope passed."
+  },
+  "reviewed_at_utc": "2026-10-09T11:10:34.535742+00:00",
+  "reviewer": "/root/scale_audit",
+  "runner_review": {
+    "all_five_argv_match_AST_and_requested_original_scope": true,
+    "all_five_successes_and_full_input_equality_required": true,
+    "exclusive_new_log_creation": true,
+    "original_return_codes_and_log_hashes_preserved": true,
+    "source_snapshot_before_after_and_fixed_head_checks": true,
+    "stops_after_nonzero_or_changed_head": true
+  },
+  "rust_results": {
+    "count_boundary": "The 303 search results include these four query-policy test witnesses; they are not added again. The 66 filtered-out entries, formatter/linter invocations and four prepared variants are not passed tests.",
+    "failed": 0,
+    "filtered_out_entries": 66,
+    "ignored": 0,
+    "invocations": 2,
+    "measured": 0,
+    "mechanism_anchor_passed": 1,
+    "passed": 304,
+    "query_policy_pass_witnesses": [
+      "test query_policy::tests::auto_without_port_is_local_and_explicit_semantic_is_unavailable ... ok",
+      "test query_policy::tests::intent_and_budgets_are_fingerprinted_without_hiding_partial ... ok",
+      "test query_policy::tests::obligations_follow_execution_order_with_intent_roles_and_budget_caps ... ok",
+      "test query_policy::tests::registry_cleanup_preserves_policy_wire_and_fingerprint ... ok"
+    ],
+    "search_lib_passed": 303,
+    "target_summaries": 2
+  },
+  "schema_version": 1,
+  "scope": "Independent bounded review of five actual P5 commands, original receipt, five logs, runner and seven prepare-only JSON outputs. No project command or new workload executed by this reviewer.",
+  "source_identity": {
+    "all_five_command_heads_before_after_equal_P5": true,
+    "compact_encoding": "UTF-8 JSON, sort_keys=True, separators=(comma,colon), no trailing LF; this inventory contains ASCII keys and values.",
+    "compact_manifest_sha256": "df647d410b56f6baad57cc2aa96501651b457c69afb977a3232dd5c60fc249e3",
+    "complete_before_after_map_equals_original_preparation_reference_inventory": true,
+    "complete_input_count": 1092,
+    "digest_boundary": "The two original JSON encodings have different byte digests; parsed complete maps match exactly. No digest is substituted for another.",
+    "formatted_encoding": "UTF-8 JSON, ensure_ascii=False, sort_keys=True, indent=2, trailing LF.",
+    "formatted_manifest_sha256": "b8c10023d20ace3b87545627e567d3d6ddaf2a8e0c084aabe74ffb92ecfad11d",
+    "source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+    "source_before_after_full_snapshot_equal": true,
+    "source_url": "https://github.com/jyqj/codecortex/commit/fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+    "tree": "0e6fdcfd2ac7a727184daf5a0e290cf00c55abbc"
+  },
+  "verdict": "accepted_actual_P5_selected_engineering_and_prepare_only"
+}

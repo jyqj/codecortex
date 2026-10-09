@@ -41,15 +41,21 @@ pub(crate) enum ScoreSlot {
     Graph,
 }
 
-/// Registry order is execution, fusion-bill, annotation, and tie-break order.
-pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {
-    vec![
+/// Shared registration order for execution, policy obligations and fusion.
+/// The lanes are stateless; inspecting this view allocates nothing and runs no lane.
+pub(crate) fn default_lane_registry() -> &'static [&'static dyn RetrievalLane] {
+    &[
         &ExactSymbolLane,
         &PathLane,
         &LexicalLane,
         &GrepLane,
         &GraphLane,
     ]
+}
+
+/// Keep the owned execution-list interface backed by the same policy registry.
+pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {
+    default_lane_registry().to_vec()
 }
 
 pub(crate) struct LaneContext<'a> {

@@ -1,0 +1,23 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/source-review/read-P5-source.py"
+  ],
+  "correction": "Compare the original receipt digest using its original JSON encoding; retain the compact canonical manifest digest under its separately declared encoding.",
+  "exit_code": 1,
+  "failure": "Reviewer incorrectly compared p7_build_identity manifest_sha256 against compact JSON encoding at line 204. Original helper json_bytes uses ensure_ascii=False, sort_keys=True, indent=2, plus newline.",
+  "observed_before_failure": "All full P5 required body hashes and 56 BASE deltas were verified; the complete 1092 receipt inputs equalled the independently calculated P5 inputs, and receipt before/after records were equal.",
+  "phase": "Read-only external receipt comparison, before canonical output",
+  "preserved_reader": {
+    "bytes": 22760,
+    "path": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/source-review/read-P5-source.attempt02.py",
+    "sha256": "fe479a95921ad79e4d63572fdc873a658b3341bff442658b195a14d27b393c1c"
+  },
+  "product_or_worktree_mutation": false,
+  "project_or_guard_execution": false,
+  "recorded_at_utc": "2026-10-09T11:15:06.295043+00:00",
+  "reviewer": "/root/todo_audit",
+  "schema_version": 1,
+  "source_product_failure": false
+}

@@ -2,8 +2,8 @@
   {
     "id": "local_retrieval",
     "path": "crates/cc-search/src/lanes.rs",
-    "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ]\n}",
-    "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: retain type references under -D warnings,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = vec![\n        &ExactSymbolLane,\n        &PathLane,\n        &LexicalLane,\n        &GrepLane,\n        &GraphLane,\n    ];\n    lanes.clear();\n    lanes\n}"
+    "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    default_lane_registry().to_vec()\n}",
+    "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: preserve policy obligations and type references,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = default_lane_registry().to_vec();\n    lanes.clear();\n    lanes\n}"
   },
   {
     "id": "semantic_dense",

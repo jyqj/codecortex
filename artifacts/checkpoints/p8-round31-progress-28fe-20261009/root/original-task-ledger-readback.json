@@ -1,0 +1,429 @@
+{
+  "schema": "codecortex.r31.original-task-readback.v1",
+  "readback_time": "2026-10-09 11:17:14 UTC",
+  "main_commit": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+  "main_tree": "6ed5ad8ed24aa6563184b737a36c4e2fe5d87de8",
+  "task_blob": "435f27d39b8244468f62601063d4375d23bbfd79",
+  "task_sha256": "e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063",
+  "baseline_done": 163,
+  "total": 192,
+  "counts": {
+    "done": 163,
+    "blocked": 1,
+    "in_progress": 16,
+    "todo": 12
+  },
+  "remaining": 29,
+  "newly_completed_ids": [],
+  "cumulative_newly_completed": 0,
+  "target_minimum": 10,
+  "all_original_definitions_preserved": true,
+  "only_original_progress_additions": [
+    {
+      "id": "P8-005",
+      "field": "evidence",
+      "added": 2
+    },
+    {
+      "id": "P8-005",
+      "field": "implementation_notes",
+      "added": 1330
+    },
+    {
+      "id": "P8-007",
+      "field": "evidence",
+      "added": 3
+    },
+    {
+      "id": "P8-007",
+      "field": "implementation_notes",
+      "added": 1470
+    },
+    {
+      "id": "P8-008",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-008",
+      "field": "implementation_notes",
+      "added": 326
+    },
+    {
+      "id": "P8-009",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-009",
+      "field": "implementation_notes",
+      "added": 328
+    },
+    {
+      "id": "P8-010",
+      "field": "evidence",
+      "added": 2
+    },
+    {
+      "id": "P8-010",
+      "field": "implementation_notes",
+      "added": 973
+    },
+    {
+      "id": "P8-011",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-011",
+      "field": "implementation_notes",
+      "added": 201
+    },
+    {
+      "id": "P8-012",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-012",
+      "field": "implementation_notes",
+      "added": 242
+    },
+    {
+      "id": "P8-013",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-013",
+      "field": "implementation_notes",
+      "added": 288
+    },
+    {
+      "id": "P8-016",
+      "field": "evidence",
+      "added": 1
+    },
+    {
+      "id": "P8-016",
+      "field": "implementation_notes",
+      "added": 331
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": "P7-018",
+      "title": "受授权的真实provider小集认证",
+      "status": "blocked",
+      "depends_on": [
+        "P7-017"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-004"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-006"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-007"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-008"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-009"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-011"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-012"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-014",
+      "title": "可选LLM评审旁证流程",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-013"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-015",
+      "title": "真实语义效果发布认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-013",
+        "P7-018"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-016"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-017"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-018"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-020",
+      "title": "P8发布评审与遗留关闭",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P8-015",
+          "when": "M4-semantic release; not required for M4-local"
+        }
+      ]
+    },
+    {
+      "id": "P9-001",
+      "title": "ANN收益与选型决策",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-002",
+      "title": "ANN适配与过滤更新闭环",
+      "status": "todo",
+      "depends_on": [
+        "P9-001"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-003",
+      "title": "ANN量化和规模认证",
+      "status": "todo",
+      "depends_on": [
+        "P9-002"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-004",
+      "title": "ANN决策收口",
+      "status": "todo",
+      "depends_on": [
+        "P9-003"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-005",
+      "title": "LSP按需生命周期",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-006",
+      "title": "LSP源码快照和冲突表达",
+      "status": "todo",
+      "depends_on": [
+        "P9-005"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-007",
+      "title": "LSP精度/内存收益认证",
+      "status": "todo",
+      "depends_on": [
+        "P9-006"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-008",
+      "title": "LSP工具面和安装边界收口",
+      "status": "todo",
+      "depends_on": [
+        "P9-007"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-009",
+      "title": "可选rerank端口与降级",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-010",
+      "title": "rerank盲测与费用消融",
+      "status": "todo",
+      "depends_on": [
+        "P9-009"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-011",
+      "title": "按需查询分解收益决策",
+      "status": "todo",
+      "depends_on": [
+        "P9-010"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-012",
+      "title": "P9可选增强逐项结项",
+      "status": "todo",
+      "depends_on": [
+        "P9-001",
+        "P9-002",
+        "P9-003",
+        "P9-004",
+        "P9-005",
+        "P9-006",
+        "P9-007",
+        "P9-008",
+        "P9-009",
+        "P9-010",
+        "P9-011"
+      ],
+      "conditional_dependencies": []
+    }
+  ],
+  "priority_original_ids": [
+    "P8-005",
+    "P8-006",
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "task_status_mutations_by_this_round": 0,
+  "original_plan_executed_by_this_round": false,
+  "copied_plan_check_provenance": "M31 preserves main181 author's original matching 205-byte PLAN-CHECK, not a fresh execution."
+}

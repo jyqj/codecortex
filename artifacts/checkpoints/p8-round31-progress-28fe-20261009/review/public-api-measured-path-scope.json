@@ -1,0 +1,189 @@
+{
+ "schema": "p8-public-snapshot-api-repair-measured-path-review-v1",
+ "reviewer": "/root/acceptance_review",
+ "scope": "只读固定源码调用链及实际Git对象；未执行编译、测试、native、CI或更新refs",
+ "identities": {
+  "registered_scale_source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "prior_product": "7dbd126dd07f178d2bcc83da1aa47d55e4ee2436",
+  "repaired_product": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+  "repaired_tree": "9ae248f8e0c42a8a7389e26e3f44710dfb029640",
+  "parents": [
+   "4652cad11dde4b41126544a38fddf25eb2fb7474",
+   "55aa2bcf355441585bcf980e1d6f4fab8eebe59d"
+  ]
+ },
+ "verdict": "accepted_scoped_call_path_applicability; no execution or binary-equivalence claim",
+ "findings": [
+  {
+   "id": "actual_diff",
+   "result": "实际cc-db完整非截断树比对仅3blob变化。cc-eval、cc-index、cc-server子树相对P7dbd全部原样；scripts/.github根原样。G3与P7dbd的cc-db/cc-eval/cc-index根相同；server engine/mcp/core三caller实际blob相同。未以three-dot compare代替two-tree。"
+  },
+  {
+   "id": "public_contract",
+   "result": "公开SnapshotWriteTxn::write_file_data仍调用insert_snapshot_file_data_precompressed；新内部flag为(false,true,false)，只将resolution dependency恢复逐行；六类既有leaf batching继续true。该公开借用连接不拥有事务。新测试在key-00070触发ABORT后捕获Err并COMMIT，要求新连接读得0..69共70行；旧批写只留64。修复恢复70，不是把合同改成64。公开成功调用的依赖statement分组也改变；不能宣称所有公开调用SQL轨迹不变。"
+  },
+  {
+   "id": "scale_full",
+   "result": "p8_scale::build→CodeIndexBackend::build_index_report→真实MCP index→handlers::core::run_split_build→IndexBuildPlan。full prepare在build_plan:319–336调用write_full_snapshot_build_staging；snapshot:119始终显式write_file_data_for_rebuild。新deferred分支(true,true,true)，FTS guard拒绝或window返回None的fallback新专用helper(false,true,true)，与旧两分支有效选择相同，仍依赖批写。"
+  },
+  {
+   "id": "other_full_adapters",
+   "result": "snapshot.rs内staging/temp-db/direct-writer三个适配器均调用同一write_full_snapshot_contents；write.rs旧direct-writer失败后temp-db fallback也进入同一for_rebuild。修复没有把FTS fallback误切回公开逐行入口。错误仍?传播，staging必须成功才commit/swap；没有新catch-Err-and-publish路径。"
+  },
+  {
+   "id": "incremental",
+   "result": "scale修改与resume均full=false，phase_write:126走write_reconciled_batch→write_incremental_batch；normal单位insert_file_units_batch→public_surface_store::insert_on→replace_on，dirty re-resolution直接replace_on，均前后逐行。config新增单位走insert_file_data，同样依赖flag前后false。全量flag、代际CAS/epoch、脏闭包/200预算不由本修复改变。"
+  },
+  {
+   "id": "oracle",
+   "result": "oracle的重建对照同样通过CodeIndexBackend；canonical从原DB只读，streaming CanonicalInsert只写自己的spool。已读scale/oracle/streaming全文均无write_file_data调用。15表投影、parity、行/字节/spool预算未变。不能将oracle scratch INSERT误认成公开SnapshotWriteTxn。"
+  },
+  {
+   "id": "runtime",
+   "result": "原p8_runtime.py:567先MCP index full=true；625构建操作full=false；759 comparison full=true，进入上述同一真实server调用链。read/cache业务没有直接调用公开SnapshotWriteTxn。该修复未改变这些已追到的成功业务分支、错误传播或原900/3601等驱动合同。它不填补另已确认的mixed实际DB lock-wait缺口。"
+  }
+ ],
+ "flag_table_columns": [
+  "entry",
+  "defer_files_literal_fts",
+  "snapshot_leaf_batches",
+  "rebuild_dependency_batches",
+  "effective_dependency_change"
+ ],
+ "flag_table": [
+  [
+   "IndexDb::insert_file_data[_precompressed]",
+   false,
+   false,
+   false,
+   "none"
+  ],
+  [
+   "IndexDb::insert_file_data_deferred_fts",
+   true,
+   false,
+   false,
+   "none"
+  ],
+  [
+   "SnapshotWriteTxn::write_file_data",
+   false,
+   true,
+   false,
+   "true -> false"
+  ],
+  [
+   "for_rebuild / FTS window present",
+   true,
+   true,
+   true,
+   "none"
+  ],
+  [
+   "for_rebuild / FTS fallback",
+   false,
+   true,
+   true,
+   "none"
+  ]
+ ],
+ "execution_applicability": {
+  "old_evidence": "G3执行、原binary/build/host/失败/分母继续只属于G3；本报告提供success-path逻辑适用性，不改source_commit，不授c92 measured/pass。",
+  "changed_fault_scope": "公开API由调用者保留事务、捕获依赖INSERT错误再COMMIT的部分前缀行为；不能用旧规模成功证明此故障已修好。",
+  "necessary_validation_choice": "新source的原source admission、编译/平台构建及公开prefix修复控制须按其真实身份记录；优先采用原计划中能覆盖该API、for_rebuild/FTS fallback与增量回归的实际检查。本文未执行、未预报通过，也未增加新项目验收门。",
+  "scale_decision": "仅因本次三Rust修复，源码调用链没有支持必须重开150的成功路径变化依据。此结论也不自动准许将旧研究转为新完整SHA研究；最终证据桥接仍需按既有source/build合同保留原执行身份。",
+  "limitations": [
+   "未做动态调用覆盖/新二进制A-B，不能证明指令布局、编译优化、时间或RSS完全相同。",
+   "普通公开write_file_data外部调用者与故障API不在上述scale/runtime路径等价范围。",
+   "平台build用到改变的Rust文件，旧平台二进制不变更身份；不能据逻辑等价伪造新build receipt。"
+  ],
+  "todo": {
+   "total": 192,
+   "done": 163,
+   "remaining": 29,
+   "newly_closed": 0
+  }
+ },
+ "source_locations": [
+  [
+   "crates/cc-db/src/index_db_write_batch.rs",
+   "34c1e5e5188910482fcf80863008620d30fa73b1",
+   "744,763,805–876; incremental307–480"
+  ],
+  [
+   "crates/cc-db/src/snapshot_write_txn.rs",
+   "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+   "65–77,92–123"
+  ],
+  [
+   "crates/cc-db/tests/p2b_resolution_store.rs",
+   "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+   "409–end,especially466–467"
+  ],
+  [
+   "crates/cc-db/src/public_surface_store.rs",
+   "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+   "14–44"
+  ],
+  [
+   "crates/cc-db/src/resolution_dependency_store.rs",
+   "97d3d9519fe10ed7cd30b9783164348998c02abc",
+   "15–63"
+  ],
+  [
+   "crates/cc-db/src/index_db_multi_insert.rs",
+   "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+   "137–183,519"
+  ],
+  [
+   "crates/cc-index/src/indexer_phases/snapshot.rs",
+   "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+   "110–244"
+  ],
+  [
+   "crates/cc-index/src/build_plan.rs",
+   "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+   "319–344,450–484"
+  ],
+  [
+   "crates/cc-index/src/indexer_phases/write.rs",
+   "43cb5db0e02a69a8c315ea14386d016fe94527a1",
+   "72–151"
+  ],
+  [
+   "crates/cc-server/src/handlers/core.rs",
+   "4ab8d8c72e9237e0faf8b8d6d0cc2c5645c4fb63",
+   "18–109"
+  ],
+  [
+   "crates/cc-server/src/mcp.rs",
+   "9a018185e2b2e362a16641c29bf3a41c74ac90ef",
+   "139–167"
+  ],
+  [
+   "crates/cc-eval/src/runner.rs",
+   "e771db498b9124321f2d3ef57faf387c12f672d7",
+   "129–154"
+  ],
+  [
+   "crates/cc-eval/src/benchmark/p8_scale.rs",
+   "1281d5340096699663308c92ce27978ae96ac84e",
+   "640–654,781–897"
+  ],
+  [
+   "crates/cc-eval/src/benchmark/oracle.rs",
+   "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+   "44–62,178–225"
+  ],
+  [
+   "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+   "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+   "69–181,259–284"
+  ],
+  [
+   "scripts/p8_runtime.py",
+   "031ebdc4c604fd39ab2d647b652ca533180bf818",
+   "567,625,759"
+  ]
+ ]
+}

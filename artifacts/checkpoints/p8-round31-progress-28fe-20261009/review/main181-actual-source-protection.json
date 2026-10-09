@@ -1,0 +1,256 @@
+{
+  "schema": "codecortex.r31.M31-actual-object-review.v1",
+  "recorded_at_utc": "2026-10-09 11:14:16 UTC",
+  "reviewer": "independent /root/runtime_review",
+  "verdict": "accepted_scoped_docs_and_history_integration",
+  "repository": "jyqj/codecortex",
+  "actual": {
+    "commit": "d3595b43c652179f3edbf31fa4834efbaa1577a3",
+    "tree": "0b383a3985979c550bb5a4e0772d2cb9ac7eb9df",
+    "parents": [
+      "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+      "b9412406e11422d7cf914458a8bfbbd58cf94eaa"
+    ],
+    "official_git_commit_parent_order_and_tree_verified": true
+  },
+  "design": {
+    "blob": "bf133c5178ff76c155d68bba5e314d608617fa95",
+    "bytes": 6404,
+    "sha256": "1c9c0afd32302ab922cd42e0ea530c91e34a4765db41b9752f5debc5733183e3",
+    "official_exact_readback_and_hash": true
+  },
+  "verification": {
+    "comparison": "Official G1...M31 compare returns248 files, fewer than the API300-file cap, with merge-base exactlyG1. Actual root, docs recursive trees and seven incoming checkpoint recursive trees independently checked; none truncated.",
+    "delta": {
+      "files": 248,
+      "modified_docs": 6,
+      "added_artifacts": 242,
+      "namespaces": [
+        {
+          "path": "artifacts/checkpoints/p8-empty-input-main-55-binding-20261009-50c",
+          "files": 10
+        },
+        {
+          "path": "artifacts/checkpoints/p8-empty-input-main-55-integration-20261009-50c",
+          "files": 32
+        },
+        {
+          "path": "artifacts/checkpoints/p8-empty-input-main-f7-binding-20261009-50c",
+          "files": 9
+        },
+        {
+          "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c",
+          "files": 32
+        },
+        {
+          "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c",
+          "files": 138
+        },
+        {
+          "path": "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c",
+          "files": 15
+        },
+        {
+          "path": "artifacts/checkpoints/p8-pr181-main-integration-20261009",
+          "files": 6
+        }
+      ],
+      "errors": []
+    },
+    "direct_root_changes": [
+      {
+        "path": "README.md",
+        "before": "447db6b7ae61d39d639da588c7dcdf1e45fc323b",
+        "after": "9328c4a25dbd8aab341b8e7e6f00f722ee6454fc"
+      },
+      {
+        "path": "artifacts",
+        "before": "972f5d22892e8be2dbdc6b2f28e9610047b9c8de",
+        "after": "ab21be45f202fffb43dbee0af4ea11eeb82417e1"
+      },
+      {
+        "path": "docs",
+        "before": "443d91623291884bd6dc6de751a76675c9ccd601",
+        "after": "b273a2ca99248336f0f54e815b7a24f3847b2d77"
+      }
+    ],
+    "source_copy": "All13 requested entry path/mode/type/OIDs independently match incoming mainb941. Six docs match finalmodified OIDs; seven actual incoming subtree inventories exactly match the242 additions.",
+    "artifact_preservation": {
+      "original_namespaces": 214,
+      "new_namespaces": 221,
+      "originalChanged": [],
+      "additions": [
+        "p8-empty-input-main-55-binding-20261009-50c",
+        "p8-empty-input-main-55-integration-20261009-50c",
+        "p8-empty-input-main-f7-binding-20261009-50c",
+        "p8-empty-input-main-f7-integration-20261009-50c",
+        "p8-empty-input-preparation-20261009-50c",
+        "p8-pr181-coordination-reconciliation-20261009-50c",
+        "p8-pr181-main-integration-20261009"
+      ]
+    },
+    "other_artifact_roots_unchanged": true,
+    "new_artifact_modes": "All242 new leaves are100644 regular blobs; no removed/replaced old checkpoints.",
+    "existing_docs": "409 docs leaves before/after; exactly5 changed under docs plus rootREADME. No other docs changes."
+  },
+  "exact_entries": [
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9328c4a25dbd8aab341b8e7e6f00f722ee6454fc"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/05-TODO.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2502a8289b79412bb0683a9ccf4c4acd6f209fc5"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad7b3e32c55579cfc25c3167f1a3955a50f141f5"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/PLAN-CHECK.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eee99f4ac15bfba3eb276a4e3971068566bc4d58"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "647927c548d507f1e084d2e46deadf8c52fd40ae"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "435f27d39b8244468f62601063d4375d23bbfd79"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-main-55-binding-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8fabca3f71e9bcc104ce705644c79a23931403a9"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-main-55-integration-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a2b236addb3ca8c787b1eae995faec864b168256"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-main-f7-binding-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b014e5d6924ab2eb7b26840f18316d400a625dd0"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0b161e5f195f62a1c80960cdb55194c5c5fad60a"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "433145fb1a0a0c5dd244368ff0e75bd4d6913852"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2b58b4ec8d32da7856bdd9496f3927e8e7f2b823"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-pr181-main-integration-20261009",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4d4ae94e61c557ae2076a0e97dcad6b91c8a01eb"
+    }
+  ],
+  "preserved": {
+    "protected_roots": [
+      {
+        "path": ".github",
+        "sha": "e192188202d5da9065c60b474edce10dedb24324",
+        "mode": "040000",
+        "type": "tree"
+      },
+      {
+        "path": ".gitignore",
+        "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "Cargo.toml",
+        "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "DESIGN.md",
+        "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "crates",
+        "sha": "8c6b1fc1822477fc2231d70e0c952afdc52b7e18",
+        "mode": "040000",
+        "type": "tree"
+      },
+      {
+        "path": "scripts",
+        "sha": "849e29c1bc7dc1b2f697ea5e4775a7de87a362b5",
+        "mode": "040000",
+        "type": "tree"
+      },
+      {
+        "path": "tests",
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "mode": "040000",
+        "type": "tree"
+      }
+    ],
+    "native": "The unchanged crates tree plus unchanged Cargo.toml/Cargo.lock preserve the previously verified1093 native inputs by exact Git object identity.",
+    "validation": "Unchanged scripts/.github/tests trees preserve the previously verified139 validation inputs and both v15 registry/verifier pins. No raw re-download or execution of these unchanged inputs was needed.",
+    "snapshot": "G snapshot.rs af1aa549cc2ebc4c952bf72804a7693e81ee5411 remains through identical crates tree, including write_file_data_for_rebuild. Incoming181 old snapshot was not substituted.",
+    "R31_api_repair": "c92 three-source public API repair is not part of this docs/history integration; its independent source report01cc85c52d03727c7c08486cb4d963f384d7f380 remains separate.",
+    "whole_tree_vs_execution": "M31 is a new commit/tree, not an execution of G1 or c92. Existing runs keep their actual checkout, source and binary identities. This report certifies only exact unchanged input domains and the historical material union."
+  },
+  "limitations": {
+    "no_tests_native_or_source_gate_execution": true,
+    "no_new_evidence_pass_or_TODO_credit": true,
+    "task_view": "Incoming tasks/PLAN-CHECK are copied as original181 documents; their presence does not mean M31 executed the recorded command.",
+    "ref_state": "This reviewer created no branch/ref/PR changes; only an unreferenced report blob is prepared. Publication remains root-owned."
+  },
+  "original_todos": {
+    "newly_completed": 0,
+    "remaining": 29
+  },
+  "errors": []
+}

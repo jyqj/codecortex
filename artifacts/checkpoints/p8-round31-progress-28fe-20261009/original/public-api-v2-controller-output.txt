@@ -1,0 +1,117 @@
+{"started": "resolution-store-suite-v2", "pid": 93311, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-db", "--test", "p2b_resolution_store"]}
+resolution-store-suite-v2 STDOUT_TAIL
+
+running 7 tests
+test corrupt_payload_is_rejected ... ok
+test package_aggregate_tracks_files_and_test_visibility ... ok
+test dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok
+test public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix ... ok
+test bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok
+test snapshot_dependency_manifest_and_rows_match_original_full_writer ... ok
+test snapshot_dependency_failure_keeps_live_rows_and_generation_like_original ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+
+resolution-store-suite-v2 STDERR_TAIL
+   Compiling cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s
+     Running tests/p2b_resolution_store.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/p2b_resolution_store-5df1cd9f2a57d257)
+
+RECEIPT {"after": {"bytes": 344938, "entries": 1244, "path": "resolution-store-suite-v2-input-after.json", "sha256": "84d533c801b3a49e44e386936aa3e663cd6a86e4fb21dac6ac5d3df4b8f0d0e2"}, "before": {"bytes": 344939, "entries": 1244, "path": "resolution-store-suite-v2-input-before.json", "sha256": "64653cce9c397bdbf5c6a8c854c136422bf60d1895293c2aa26ff63f96857732"}, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-db", "--test", "p2b_resolution_store"], "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse", "elapsed_seconds": 3.134877083, "ended_at": "2026-10-09T10:15:06.411492+00:00", "environment": {"CARGO_ENCODED_RUSTFLAGS": null, "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13", "CC": null, "CXX": null, "RUSTFLAGS": null, "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"}, "exit_code": 0, "label": "resolution-store-suite-v2", "minimum_tests": 7, "nonzero_test_check_passed": true, "pid": 93311, "schema": 1, "scope": "ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim", "source_G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "started_at": "2026-10-09T10:15:03.276677+00:00", "stderr": {"bytes": 441, "path": "resolution-store-suite-v2.stderr", "sha256": "79da567574eb29c99e7e257c0eebd498044d8feb9ab457ecabda465e85f67870"}, "stdout": {"bytes": 633, "path": "resolution-store-suite-v2.stdout", "sha256": "e92d0e7ee569c62bfb02212960688763ea84f29e3aea1f8ebcf8796bc6a0b8bf"}, "test_summaries": [{"failed": 0, "passed": 7}]}
+{"started": "snapshot-binder-dependency-unit-v2", "pid": 93318, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-db", "--lib", "index_db_snapshot_insert::"]}
+snapshot-binder-dependency-unit-v2 STDOUT_TAIL
+
+running 14 tests
+test index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables ... ok
+test index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal ... ok
+test index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs ... ok
+test index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok
+test index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok
+test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 193 filtered out; finished in 1.22s
+
+
+snapshot-binder-dependency-unit-v2 STDERR_TAIL
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running unittests src/lib.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/cc_db-3413f1f6e5dcc03e)
+P8_FTS_MAX_ROWID_CONTROL={"observations":[{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"literal_index"}],"timing_measurement":false}
+
+RECEIPT {"after": {"bytes": 344947, "entries": 1244, "path": "snapshot-binder-dependency-unit-v2-input-after.json", "sha256": "78110633ac0fabf07e657ee40ecd57c24f63d8f64acc351973b6c57942b9cc2c"}, "before": {"bytes": 344948, "entries": 1244, "path": "snapshot-binder-dependency-unit-v2-input-before.json", "sha256": "57f88e83e1aba139de2a01726af0c2bc7238b2dcf4960e44c787bb6c04c34403"}, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-db", "--lib", "index_db_snapshot_insert::"], "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse", "elapsed_seconds": 1.4296095420000006, "ended_at": "2026-10-09T10:15:08.007178+00:00", "environment": {"CARGO_ENCODED_RUSTFLAGS": null, "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13", "CC": null, "CXX": null, "RUSTFLAGS": null, "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"}, "exit_code": 0, "label": "snapshot-binder-dependency-unit-v2", "minimum_tests": 14, "nonzero_test_check_passed": true, "pid": 93318, "schema": 1, "scope": "ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim", "source_G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "started_at": "2026-10-09T10:15:06.577547+00:00", "stderr": {"bytes": 3543, "path": "snapshot-binder-dependency-unit-v2.stderr", "sha256": "e5149ad1e6ca1316298c2999ceab2fc0cb88583a03e63a10cdbee2a5c4fda19c"}, "stdout": {"bytes": 1749, "path": "snapshot-binder-dependency-unit-v2.stdout", "sha256": "42bb4fba86b04c7b4faef8d152de508d862689a1ae7a8afd910c6626c86d90a3"}, "test_summaries": [{"failed": 0, "passed": 14}]}
+{"started": "snapshot-leaf-owner-control-v2", "pid": 93334, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-index", "--test", "snapshot_leaf_batching"]}
+snapshot-leaf-owner-control-v2 STDOUT_TAIL
+
+running 6 tests
+test snapshot_leaf_never_delays_identity_checks_past_the_next_file ... ok
+test snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts ... ok
+test snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes ... ok
+test snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values ... ok
+test snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal ... ok
+test snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+
+snapshot-leaf-owner-control-v2 STDERR_TAIL
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running tests/snapshot_leaf_batching.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/snapshot_leaf_batching-1cb0f4f78038e7d5)
+
+RECEIPT {"after": {"bytes": 344943, "entries": 1244, "path": "snapshot-leaf-owner-control-v2-input-after.json", "sha256": "414255971ec10c19ad59376c97cd6779b6f36cd85da01ef741fef5c1a58f8121"}, "before": {"bytes": 344944, "entries": 1244, "path": "snapshot-leaf-owner-control-v2-input-before.json", "sha256": "a0cce9c577bd8b2582ad232410cfb2b45d22a22e3a8f5b9f971a3b4a8d0b1f60"}, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "test", "--locked", "-p", "cc-index", "--test", "snapshot_leaf_batching"], "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse", "elapsed_seconds": 1.1507128340000001, "ended_at": "2026-10-09T10:15:09.322418+00:00", "environment": {"CARGO_ENCODED_RUSTFLAGS": null, "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13", "CC": null, "CXX": null, "RUSTFLAGS": null, "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"}, "exit_code": 0, "label": "snapshot-leaf-owner-control-v2", "minimum_tests": 1, "nonzero_test_check_passed": true, "pid": 93334, "schema": 1, "scope": "ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim", "source_G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "started_at": "2026-10-09T10:15:08.171690+00:00", "stderr": {"bytes": 293, "path": "snapshot-leaf-owner-control-v2.stderr", "sha256": "21aa809db36162fc97677e6f635e442c0a51f9dcca3eebbdae30f2b99ad0bfe5"}, "stdout": {"bytes": 601, "path": "snapshot-leaf-owner-control-v2.stdout", "sha256": "ac6ffca56f62c10665fe64ddc115737843a8a3544ff4d0cf34d0a4e9b218c402"}, "test_summaries": [{"failed": 0, "passed": 6}]}
+{"started": "workspace-format-v2", "pid": 93356, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "fmt", "--all", "--", "--check"]}
+workspace-format-v2 STDOUT_TAIL
+
+workspace-format-v2 STDERR_TAIL
+
+RECEIPT {"after": {"bytes": 344932, "entries": 1244, "path": "workspace-format-v2-input-after.json", "sha256": "d5fd1d1f8efddf34d098bdca794aa3338e01c6641c1d0311d2dfa4a6b4f7c29f"}, "before": {"bytes": 344933, "entries": 1244, "path": "workspace-format-v2-input-before.json", "sha256": "99d19fdcd2878efe3c2f9094fff74596f91be994737ca0c52af8c7eff07c2d46"}, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "fmt", "--all", "--", "--check"], "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse", "elapsed_seconds": 1.494324958, "ended_at": "2026-10-09T10:15:10.965090+00:00", "environment": {"CARGO_ENCODED_RUSTFLAGS": null, "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13", "CC": null, "CXX": null, "RUSTFLAGS": null, "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"}, "exit_code": 0, "label": "workspace-format-v2", "minimum_tests": 0, "nonzero_test_check_passed": true, "pid": 93356, "schema": 1, "scope": "ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim", "source_G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "started_at": "2026-10-09T10:15:09.470743+00:00", "stderr": {"bytes": 0, "path": "workspace-format-v2.stderr", "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}, "stdout": {"bytes": 0, "path": "workspace-format-v2.stdout", "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}, "test_summaries": []}
+{"started": "cc-db-strict-clippy-v2", "pid": 93404, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "clippy", "--locked", "-p", "cc-db", "--all-targets", "--", "-D", "warnings"]}
+cc-db-strict-clippy-v2 STDOUT_TAIL
+
+cc-db-strict-clippy-v2 STDERR_TAIL
+    Checking memchr v2.8.0
+   Compiling libc v0.2.183
+    Checking serde_core v1.0.228
+    Checking hashbrown v0.17.1
+    Checking tracing-core v0.1.36
+    Checking log v0.4.29
+    Checking tracing v0.1.44
+    Checking aho-corasick v1.1.4
+    Checking parking_lot_core v0.9.12
+    Checking getrandom v0.4.2
+    Checking errno v0.3.14
+   Compiling jobserver v0.1.34
+    Checking hashlink v0.12.1
+    Checking rustix v1.1.4
+    Checking rand v0.10.3
+    Checking parking_lot v0.12.5
+   Compiling cc v1.2.58
+    Checking scheduled-thread-pool v0.2.7
+    Checking regex-automata v0.4.14
+    Checking r2d2 v0.8.10
+    Checking uuid v1.23.0
+    Checking serde v1.0.228
+    Checking serde_json v1.0.149
+    Checking tempfile v3.27.0
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+   Compiling libsqlite3-sys v0.38.1
+   Compiling blake3 v1.8.4
+    Checking chrono v0.4.44
+    Checking regex v1.12.3
+    Checking cc-model v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-model)
+    Checking rusqlite v0.40.1
+   Compiling zstd-safe v7.2.4
+    Checking r2d2_sqlite v0.35.0
+    Checking zstd v0.13.3
+    Checking cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.61s
+
+RECEIPT {"after": {"bytes": 344935, "entries": 1244, "path": "cc-db-strict-clippy-v2-input-after.json", "sha256": "77bd578d0fdb05f93cb5e44768cc375360f3eb22a093c471c05b55b83aaf9a77"}, "before": {"bytes": 344936, "entries": 1244, "path": "cc-db-strict-clippy-v2-input-before.json", "sha256": "02b630d7de0fd31cfde0c1a0adc20356d01495a7b8723cc67aacbb9518c3c565"}, "command": ["/Users/jin/.cargo/bin/cargo", "+1.95.0", "clippy", "--locked", "-p", "cc-db", "--all-targets", "--", "-D", "warnings"], "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse", "elapsed_seconds": 8.67085725, "ended_at": "2026-10-09T10:15:19.788511+00:00", "environment": {"CARGO_ENCODED_RUSTFLAGS": null, "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13", "CC": null, "CXX": null, "RUSTFLAGS": null, "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"}, "exit_code": 0, "label": "cc-db-strict-clippy-v2", "minimum_tests": 0, "nonzero_test_check_passed": true, "pid": 93404, "schema": 1, "scope": "ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim", "source_G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "started_at": "2026-10-09T10:15:11.117566+00:00", "stderr": {"bytes": 1386, "path": "cc-db-strict-clippy-v2.stderr", "sha256": "ef30d5fa52324961c02c7172ad8f4b8b5d7c3c3b12ea368d01889be6569bbde9"}, "stdout": {"bytes": 0, "path": "cc-db-strict-clippy-v2.stdout", "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}, "test_summaries": []}
+ALL_CONTROLS_PASSED 5

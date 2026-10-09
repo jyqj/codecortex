@@ -1,0 +1,178 @@
+{
+  "schema": "codecortex.r31.public-api-prefix-review.v1",
+  "recorded_at_utc": "2026-10-09 11:05:57 UTC",
+  "reviewer": "independent /root/runtime_review",
+  "repository": "jyqj/codecortex",
+  "verdict": "accepted_scoped_source_fix; not execution or TODO acceptance",
+  "identity": {
+    "current_G": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+    "current_P": "7dbd126dd07f178d2bcc83da1aa47d55e4ee2436",
+    "current_R": "43128cdb18e39b9754dfd6614bc41c8ec5dab043",
+    "candidate_P": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+    "candidate_tree": "9ae248f8e0c42a8a7389e26e3f44710dfb029640",
+    "candidate_parents": [
+      "4652cad11dde4b41126544a38fddf25eb2fb7474",
+      "55aa2bcf355441585bcf980e1d6f4fab8eebe59d"
+    ],
+    "official_commit_tree_and_source_bytes_verified": true
+  },
+  "files": [
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "old_oid": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "new_oid": "34c1e5e5188910482fcf80863008620d30fa73b1",
+      "bytes": 57238,
+      "sha256": "9d3300d999f58743cb42799c88e3328a101859ac879cc2161abbec17faa9b9b9",
+      "blob_verified": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "old_oid": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "new_oid": "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+      "bytes": 9204,
+      "sha256": "5bf74ee89cd731afb8d42b6a3f951b9198e5b2de5172a8cfc94290a026134b3f",
+      "blob_verified": true
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "old_oid": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "new_oid": "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+      "bytes": 17946,
+      "sha256": "39f49426530bd7367bb49030b1c8602ae5be908069ca3dfe4d974f8111a98ae9",
+      "blob_verified": true
+    }
+  ],
+  "native_domain": {
+    "native_inputs": 1093,
+    "changed": [
+      "crates/cc-db/src/index_db_write_batch.rs",
+      "crates/cc-db/src/snapshot_write_txn.rs",
+      "crates/cc-db/tests/p2b_resolution_store.rs"
+    ],
+    "expected_union_mismatch": [],
+    "other_native_inputs_unchanged": 1090,
+    "roots_except_crates_exact_P7dbd": true
+  },
+  "regression": {
+    "trigger": "Public SnapshotWriteTxn::write_file_data receives 73 ordered dependencies; BEFORE INSERT trigger raises ABORT at key-00070; caller catches Err and commits its existing transaction.",
+    "original_per_row_result": "Keys 00000..00069 survive: 70 rows.",
+    "batched_result": "First 64-row statement survives; following 8-row statement aborts, discarding its earlier six rows too: 64 rows.",
+    "public_observability": "SQLite statement ABORT does not imply rollback of the caller-owned transaction. Existing owner rollback/nonpublication tests do not cover catch-Err-then-COMMIT.",
+    "boundary": "Source semantics and real regression control inspected; no Rust test or native program executed in this review."
+  },
+  "production": {
+    "new_private_parameter": "rebuild_dependency_batches, independent of defer_fts_mirrors and snapshot_leaf_batches",
+    "flag_order": [
+      "defer_fts_mirrors",
+      "snapshot_leaf_batches",
+      "rebuild_dependency_batches"
+    ],
+    "routes": [
+      [
+        "insert_file_data_precompressed",
+        false,
+        false,
+        false
+      ],
+      [
+        "insert_file_data_deferred_fts",
+        true,
+        false,
+        false
+      ],
+      [
+        "insert_snapshot_file_data_precompressed: public SnapshotWriteTxn",
+        false,
+        true,
+        false
+      ],
+      [
+        "insert_snapshot_file_data_for_rebuild: new immediate-FTS fallback",
+        false,
+        true,
+        true
+      ],
+      [
+        "insert_snapshot_file_data_deferred_fts: explicit rebuild",
+        true,
+        true,
+        true
+      ]
+    ],
+    "dispatch": "index_db_write_batch.rs:872 selects public_surface_store::insert_snapshot_on only for rebuild_dependency_batches; public snapshot selects insert_on.",
+    "shared_unchanged_semantics": "The two unchanged surface helpers share validation and writes, selecting resolution replace_on versus replace_snapshot_on. Existing normalization/order/DELETE/manifest INSERT OR REPLACE/64-8-1 bounded batching and per-row preparation are unchanged.",
+    "other_leaf_scope": "The six other snapshot_leaf_batches branches remain unchanged. This repairs the demonstrated dependency-prefix regression; it does not newly certify historical error-prefix equivalence for every leaf table.",
+    "transaction_scope": "No SAVEPOINT, forced ROLLBACK, error swallowing or COMMIT added."
+  },
+  "fts_owner": {
+    "public": "snapshot_write_txn.rs:65-78 public write_file_data remains unchanged and now reaches the per-row dependency route.",
+    "rebuild": "write_file_data_for_rebuild retains existing 256-file windows and FTS lifecycle. mirror Some uses deferred FTS plus dependency batching; mirror None calls new immediate-FTS rebuild helper, also preserving dependency batching.",
+    "guards": "Existing autocommit/TEMP/schema checks, canonical non-index schema comparison, rowid capacity checks, survivor-rowid mirror flush and OR IGNORE behavior unchanged.",
+    "documentation": "Lines80-91 explicitly warn of differing partial dependency prefixes and require propagating Err, abandoning staging transaction/database and preventing publication; general callers use write_file_data.",
+    "conclusion": "Public dependency failure semantics restored; explicit full-rebuild optimization and both FTS branches retained."
+  },
+  "controls_read_not_run": {
+    "new_test": "p2b_resolution_store.rs:410 public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix",
+    "behavior": "Compares ordinary per-row IndexDb insertion against public SnapshotWriteTxn with first/failed/never files (73/73/8 dependencies), trigger key-00070, Err and active transaction assertions. Caller commits, closes original connection, reopens read-only, verifies exact 0..69 keys, previous file survival and never-file absence, then compares typed dependency/manifest/surface state.",
+    "existing": "Normalization/equivalence and staging-failure controls now explicitly call write_file_data_for_rebuild, keeping batched-owner coverage.",
+    "candidate_test_sha_matches_published_v2": true
+  },
+  "applicability": {
+    "retained": "Complete1093 native map differs from P7dbd only in these3 files; other1090 unchanged. All roots except crates match P7dbd, preserving PR185 product/build changes, Cargo.lock, docs/artifacts and139 validation inputs.",
+    "metadata_caution": "c92 is a product preparation, not a complete successor of currentG1. Its artifact/script roots are P7dbd's; it lacks later R431 evidence/pins. Final integration must retain G1 history and regenerate the ordinary P/R/G chain.",
+    "roots": {
+      "artifacts": {
+        "candidate": "4a4f37c0aa4ca50f62dcdc4ca9a1b144a4098372",
+        "current_G1": "972f5d22892e8be2dbdc6b2f28e9610047b9c8de"
+      },
+      "scripts": {
+        "candidate": "f47d4fc2c3a3e8da4c60ad3002c94f782873b407",
+        "current_G1": "849e29c1bc7dc1b2f697ea5e4775a7de87a362b5"
+      }
+    },
+    "execution": "Original C8/G3 and other studies retain actual source/binary/run identities. Preserved explicit rebuild source paths do not mean c92 was built or measured. This review neither re-labels old runs nor creates an automatic new150 requirement.",
+    "db_wait": "These3 files contain no mixed-path DB lock-wait instrumentation or Cargo feature; no public implementation locator was found in the materials reviewed. This separate narrow collection gap is not repaired here.",
+    "scope_frozen_despite_new_main": "Subsequent PR181 merge/mainb941 is outside this fixed c92 source comparison; no claim that the whole new main has been incorporated."
+  },
+  "evidence": {
+    "comments": [
+      "158#6079425638",
+      "180#6078471244",
+      "180#6079153497",
+      "180#6079362207"
+    ],
+    "native_archive_commit": "cd10beb3c2452d6a3269c2c818730d00a026696c",
+    "prefix": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round13-native-public-api-red-green/",
+    "manifest_blob": "208cdb87c3c3fd8a412c1a0b9ee895ec11608161",
+    "archives": [
+      {
+        "name": "native-public-dependency-fix-red-green-and-controls.zip",
+        "blob": "e7a90bc40e19ceda0c37fded58b902376d6d13fc",
+        "bytes": 2466963,
+        "sha256": "cfd396fd6eeb50724f0bac091abc955281741a712dcd846e33e706e3e893e840",
+        "declared_members": 63
+      },
+      {
+        "name": "PR180-public-dependency-fix-v2.zip",
+        "blob": "76d8b1106d3f4a7a40a64b61bdea73205a408e2a",
+        "bytes": 29913,
+        "sha256": "66fc1431ccd49c9fbf35a0d036e75f46c4ed058cbf21500c6951ebc63898fd6b",
+        "declared_members": 12
+      }
+    ],
+    "original_execution_binding": "Archived v2 controls are G3 plus the API patch, not automatically c92 including PR185.",
+    "delegated_boundary": "recovery_audit separately verified the small12-member v2 ZIP and reconstructed/hash-checked5 command streams from public tool-observation text:27 distinct tests(7+14+6), fmt0 and strictclippy0. The large63-member ZIP/1244 input maps remain unread through available transport. RED101/GREEN0 and firstfmt1 remain secondary here.",
+    "c92_claim_boundary": "Later comment claims29 tests/fmt/clippy passed. Public preparation record c5c12fb81ac6ad63671fae3b1cbaa89bb3b8c227 at10:46:04 only records preparation and dispatched/running controls. This source report does not certify the later c92 execution claim."
+  },
+  "actions": {
+    "source_changes": 0,
+    "tests": 0,
+    "native_runs": 0,
+    "refs_written": 0,
+    "pr_changes": 0
+  },
+  "todos": {
+    "newly_completed": 0,
+    "remaining": 29
+  }
+}

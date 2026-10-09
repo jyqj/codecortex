@@ -1,0 +1,168 @@
+{
+ "schema": "p8-main181-document-history-preservation-design-v1",
+ "reviewer": "/root/acceptance_review",
+ "verdict": "accepted_scoped_preparation_only",
+ "fixed": {
+  "base": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+  "base_tree": "7a87a8e335de5c09d041b01f8802973ea96cd595",
+  "incoming_main": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+  "incoming_tree": "6ed5ad8ed24aa6563184b737a36c4e2fe5d87de8",
+  "incoming_parents": [
+   "55aa2bcf355441585bcf980e1d6f4fab8eebe59d",
+   "d7426175ae21a9619cbcb393e41ec535695972d1"
+  ]
+ },
+ "scope": "只设计G基底的6文档替换+242历史新增，不创建tree/commit/ref，不执行任何验证；bfcc公开API修复独立保全。",
+ "direct_evidence": {
+  "main_delta": "55aa是b941直接父且官方compare mergebase==55aa；254项=4Rust+6docs+2pins+242added artifacts。",
+  "product": "三条181产品/test blob已经逐字等G；第四snapshot只有write_file_data/write_file_data_for_rebuild调用名差异，固定main原文单次替换即逐字等G，不接纳main旧调用。",
+  "archives": "官方两个完整非截断checkpoints浅树显示七个incoming namespace在G均不存在；所有共同namespace的mode/type/OID一致。按七原tree整体增加，零覆盖；原G独有历史不删。",
+  "docs": "实际main根README及完整docs树逐path/mode/type/OID与6项compare相等。只覆盖这6叶，不选整个main docs/root/source。"
+ },
+ "preserve_native": [
+  [
+   "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+   "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+   "already exact in G"
+  ],
+  [
+   "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+   "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+   "already exact in G"
+  ],
+  [
+   "crates/cc-index/tests/full_snapshot_empty_config.rs",
+   "c900883bd45b427a605330b6ce4ac359f99506ef",
+   "already exact in G"
+  ],
+  [
+   "crates/cc-index/src/indexer_phases/snapshot.rs",
+   "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+   "keep G for_rebuild; reject incoming b1db699f6597d8a948e3797e153a75fe8f5b07de"
+  ]
+ ],
+ "expected_after": {
+  "changed_leaves": 248,
+  "modified_docs": 6,
+  "added_artifacts": 242,
+  "deleted": 0,
+  "product_inputs": 1093,
+  "validation_inputs": 139,
+  "protected": "G crates/Cargo native inputs、所有139validation、两pins和既有全部artifact字节保持；不新造P/R/G，不将181/R/G替换G。",
+  "parent_order_if_root_creates": [
+   "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+   "b9412406e11422d7cf914458a8bfbbd58cf94eaa"
+  ]
+ },
+ "git_create_tree_entries": [
+  {
+   "path": "README.md",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "9328c4a25dbd8aab341b8e7e6f00f722ee6454fc"
+  },
+  {
+   "path": "docs/roadmap/code-index-v2/05-TODO.md",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "2502a8289b79412bb0683a9ccf4c4acd6f209fc5"
+  },
+  {
+   "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "ad7b3e32c55579cfc25c3167f1a3955a50f141f5"
+  },
+  {
+   "path": "docs/roadmap/code-index-v2/PLAN-CHECK.json",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "eee99f4ac15bfba3eb276a4e3971068566bc4d58"
+  },
+  {
+   "path": "docs/roadmap/code-index-v2/README.md",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "647927c548d507f1e084d2e46deadf8c52fd40ae"
+  },
+  {
+   "path": "docs/roadmap/code-index-v2/tasks.json",
+   "mode": "100644",
+   "type": "blob",
+   "sha": "435f27d39b8244468f62601063d4375d23bbfd79"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-empty-input-main-55-binding-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "8fabca3f71e9bcc104ce705644c79a23931403a9"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-empty-input-main-55-integration-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "a2b236addb3ca8c787b1eae995faec864b168256"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-empty-input-main-f7-binding-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "b014e5d6924ab2eb7b26840f18316d400a625dd0"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "0b161e5f195f62a1c80960cdb55194c5c5fad60a"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "433145fb1a0a0c5dd244368ff0e75bd4d6913852"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "2b58b4ec8d32da7856bdd9496f3927e8e7f2b823"
+  },
+  {
+   "path": "artifacts/checkpoints/p8-pr181-main-integration-20261009",
+   "mode": "040000",
+   "type": "tree",
+   "sha": "4d4ae94e61c557ae2076a0e97dcad6b91c8a01eb"
+  }
+ ],
+ "task_and_plan": {
+  "incoming_task_blob": "435f27d39b8244468f62601063d4375d23bbfd79",
+  "task_sha256": "e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063",
+  "prior_exact_task_review": "ccbf6515e0d7c9d177639c4bf6b9fd7844483c77",
+  "content": "与此前独审P4同一tasks字节：原192定义/status/deps与top元字段不变，9原任务追加13证据及notes；163done/29remaining，无新done。",
+  "plan_check": {
+   "git_blob": "eee99f4ac15bfba3eb276a4e3971068566bc4d58",
+   "bytes": 205,
+   "parsed": {
+    "status": "passed",
+    "task_count": 192,
+    "states": {
+     "done": 163,
+     "blocked": 1,
+     "in_progress": 16,
+     "todo": 12
+    },
+    "task_sha256": "e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063",
+    "views": 4
+   }
+  },
+  "provenance": "PLAN-CHECK是原作者tasks投影stdout；无执行HEAD/时间字段。可随同tasks原字节保全，不能称目标G/后继已运行plan或CI；需要执行时仍用原脚本，不改guard历史。",
+  "attribution": "旧181段落/日志仍按各固定源归档；复制不解除当前真实mixed DB acquisition wait缺口。"
+ },
+ "exclusions": [
+  "不复制incoming reviewed-source-registry-v15.json或verify_reviewed_source_v15.py。",
+  "不复用181旧快照覆盖G的FTS、DB、oracle等独有原生路径。",
+  "没有将作者新G4/P4执行重新认证为G1d39、此未建候选或c92。",
+  "若另叠加c92三Rust修复，那是独立产品变更，需其既定新source/review/pins；本文仅文档/历史合并，不给新产品运行信用。",
+  "未移动PR180/181，不运行native、源码门或重开规模研究；剩余29原TODO不变。"
+ ]
+}

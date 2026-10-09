@@ -1,0 +1,88 @@
+--- v1/crates/cc-eval/src/benchmark/p8_scale.rs
++++ v2/crates/cc-eval/src/benchmark/p8_scale.rs
+@@ -289,6 +289,9 @@
+     // The supervisor owns all fixture directories, including those allocated
+     // by the existing mutation runner; a deadline cannot orphan 100k trees.
+     let workspace = tempfile::tempdir()?;
++    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1)).then(|| {
++        json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()})
++    });
+     let mut command = Command::new(binary);
+     command
+         .arg("--worker-plan")
+@@ -434,7 +437,7 @@
+             _ => 2,
+         }
+     };
+-    let result = json!({
++    let mut result = json!({
+         "schema_version":1,"profile":plan.profile,"plan_digest":manifest::file_digest(&out.join("plan.json"))?,
+         "worker_pid":child.0.id(),"worker_binary_digest_before":binary_before,"worker_binary_digest_after":binary_after,"worker_binary_unchanged":binary_unchanged,
+         "status":termination.unwrap_or(if exit_code==0 {"measurement_complete"} else {"measurement_failed"}),
+@@ -448,6 +451,9 @@
+         "registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
+         "deadline_scope":"entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms"
+     });
++    if let Some(environment) = cold_temporary_environment {
++        result["cold_temporary_environment"] = environment;
++    }
+     control_json(&out.join("report.json"), &result)?;
+     Ok(result)
+ }
+--- v1/scripts/p8_cold_matrix.py
++++ v2/scripts/p8_cold_matrix.py
+@@ -189,8 +189,15 @@
+     require(seed.get("raw") == environment["CODECORTEX_SEED_CACHE_MAX_SYMBOLS"] and
+             seed.get("read_status") == ("absent" if seed["raw"] is None else "unicode"),
+             "worker seed cache environment differs")
+-    require(measured.get("runtime_environment") == {key: environment[key] for key in ENVIRONMENT_KEYS[1:]},
+-            "worker runtime environment differs")
++    report = full.read_json(directory / "native-shard/native/report.json")
++    temporary = report.get("cold_temporary_environment", {})
++    parent = full.producer_path(temporary.get("parent_root"), "supervisor temporary root")
++    worker = full.producer_path(temporary.get("worker_root"), "worker temporary root")
++    require(worker.parent == parent and str(parent) == environment["TMPDIR"],
++            "worker temporary root is not the supervisor-owned child on the registered filesystem")
++    worker_environment = {key: environment[key] for key in ENVIRONMENT_KEYS[1:]}
++    worker_environment.update({key: str(worker) for key in ("TMPDIR", "TMP", "TEMP")})
++    require(measured.get("runtime_environment") == worker_environment, "worker runtime environment differs")
+     inner = full.read_json(directory / "native-shard/shard.json")
+     require({key: environment[key] for key in ("TMPDIR", "TMP", "TEMP")} == inner["temporary_environment"],
+             "cold temporary filesystem differs from capacity preflight")
+--- v1/scripts/tests/test_p8_cold_matrix.py
++++ v2/scripts/tests/test_p8_cold_matrix.py
+@@ -200,7 +200,9 @@
+         self.plan, events = cold_fixture()
+         environment = {key: None for key in cold.ENVIRONMENT_KEYS}
+         environment.update({key: str(self.bundle) for key in ("TMPDIR", "TMP", "TEMP")})
+-        events[0]["cold_environment"]["runtime_environment"] = {key: environment[key] for key in cold.ENVIRONMENT_KEYS[1:]}
++        worker_environment = {key: environment[key] for key in cold.ENVIRONMENT_KEYS[1:]}
++        worker_environment.update({key: str(self.bundle / ".synthetic-worker") for key in ("TMPDIR", "TMP", "TEMP")})
++        events[0]["cold_environment"]["runtime_environment"] = worker_environment
+         raw = "".join(json.dumps(event) + "\n" for event in events).encode()
+         (self.native / "raw.jsonl").write_bytes(raw)
+         (self.native / "worker.stderr").write_bytes(b"")
+@@ -213,6 +215,7 @@
+         self.report = dict(profile="release", max_output_bytes=full.MAX_BYTES, exit_code=0, worker_exit_code=0,
+             status="measurement_complete", stderr_complete=True, fixture_cleanup=dict(error=None),
+             worker_binary_unchanged=True, worker_binary_digest_before="c" * 64, worker_binary_digest_after="c" * 64,
++            cold_temporary_environment=dict(parent_root=str(self.bundle), worker_root=str(self.bundle / ".synthetic-worker")),
+             plan_digest="f" * 64, raw_digest="f" * 64, summary=self.summary, shard_only=True,
+             registered_repetitions=30, executed_repetition_range=dict(start=0, end=1), release_certification="not_run",
+             full_100k_certification="not_run")
+@@ -248,6 +251,15 @@
+         with self.assertRaisesRegex(ValueError, "supervisor"):
+             self.validate()
+ 
++    def test_worker_temp_is_a_bound_child_not_an_equal_parent_or_another_filesystem(self):
++        self.assertEqual(len(self.validate()["measurements"]), 1)
++        for worker in (str(self.bundle), str(self.root / "unrelated")):
++            self.report["cold_temporary_environment"]["worker_root"] = worker
++            (self.native / "report.json").write_bytes(full.json_bytes(self.report))
++            self.seal()
++            with self.subTest(worker=worker), self.assertRaisesRegex(ValueError, "supervisor-owned child"):
++                self.validate()
++
+     def test_other_run_outer_build_and_changed_environment_are_rejected(self):
+         original = copy.deepcopy(self.outer_record)
+         for change in (

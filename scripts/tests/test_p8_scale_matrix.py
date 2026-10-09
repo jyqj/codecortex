@@ -477,6 +477,122 @@ class CapacityControls(unittest.TestCase):
             self.assertEqual(actual["files"], matrix.inventory(root / "failed", ("shard.json",)))
 
 
+class WideDirtyControls(unittest.TestCase):
+    def test_named_work_budget_keeps_the_old_plan_and_physical_contract(self):
+        old = matrix.registered_plan(100000, 0, 30, capacity_profile=matrix.CAPACITY_PROFILE)
+        wide = matrix.registered_plan(100000, 0, 30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        self.assertEqual(old["dirty_budget"], 200)
+        self.assertEqual(wide, old | {"capacity_profile": matrix.WIDE_DIRTY_PROFILE, "dirty_budget": 4096})
+        self.assertEqual(matrix.registered_plan(1000, 0, 6)["dirty_budget"], 8)
+        physical = matrix.capacity_contract()
+        self.assertEqual(physical["id"], matrix.CAPACITY_PROFILE)
+        self.assertNotIn("oracle_capacity_profile", physical)
+        self.assertEqual(matrix.capacity_contract(matrix.WIDE_DIRTY_PROFILE), physical | {
+            "id": matrix.WIDE_DIRTY_PROFILE, "scale_dirty_budget": 4096,
+            "oracle_capacity_profile": matrix.CAPACITY_PROFILE})
+        for profile in matrix.CAPACITY_PROFILES:
+            for parameters in ({"shard_count": 6}, {"repetitions": 29, "shard_count": 29},
+                               {"deadline_ms": 18_000_001}):
+                args = {"scale": 1000, "shard_index": 0, "shard_count": 30,
+                        "capacity_profile": profile} | parameters
+                with self.subTest(profile=profile, parameters=parameters), self.assertRaises(ValueError):
+                    matrix.registered_plan(**args)
+        with self.assertRaisesRegex(ValueError, "unknown capacity profile"):
+            matrix.registered_plan(1000, 0, 30, capacity_profile="unregistered")
+
+    def test_complete_wide_population_cannot_mix_old_work_profiles_or_limits(self):
+        shards = complete_shards(matrix.WIDE_DIRTY_PROFILE)
+        result = matrix.combine(shards, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        self.assertEqual((result["sample_count"], len(result["groups"])), (1500, 50))
+        self.assertTrue(all(group["n"] == 30 for group in result["groups"]))
+        self.assertEqual(result["capacity_contract"], matrix.capacity_contract(matrix.WIDE_DIRTY_PROFILE))
+        for selected in (None, matrix.CAPACITY_PROFILE):
+            with self.subTest(selected=selected), self.assertRaisesRegex(ValueError, "profile mismatch"):
+                matrix.combine(shards, shard_count=30, capacity_profile=selected)
+        old = complete_shards(matrix.CAPACITY_PROFILE)
+        with self.assertRaisesRegex(ValueError, "profile mismatch"):
+            matrix.combine(old, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        changed = copy.deepcopy(shards)
+        changed[1] = old[1]
+        with self.assertRaisesRegex(ValueError, "profile mismatch"):
+            matrix.combine(changed, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        for key, value in (("dirty_budget", 200), ("max_resume_builds", 1025),
+                           ("max_output_bytes", matrix.MAX_BYTES + 1)):
+            changed = copy.deepcopy(shards)
+            changed[1]["plan"][key] = value
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "parameters mismatch"):
+                matrix.combine(changed, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        with self.assertRaisesRegex(ValueError, "missing matrix shards"):
+            matrix.combine(shards[:-1], shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+
+    def test_wide_raw_keeps_nine_stages_full_parity_and_original_fanout_pressure(self):
+        plan, events = raw_fixture(capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        for event in events:
+            if "parity" in event:
+                event["parity"]["capacity_profile"] = matrix.CAPACITY_PROFILE
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "raw.jsonl"
+            def replay():
+                path.write_text("".join(json.dumps(event) + "\n" for event in events))
+                return matrix.inspect_raw(path, plan)
+            rows = replay()["measurements"]
+            self.assertEqual(len(rows), 14)
+            self.assertEqual(sum(row["group"].startswith("scale-") for row in rows), 9)
+            physical = next(event for event in events if event["event"] == "cold_parity")["parity"]
+            physical["capacity_profile"] = matrix.WIDE_DIRTY_PROFILE
+            with self.assertRaisesRegex(ValueError, "parity capacity profile"):
+                replay()
+            physical["capacity_profile"] = matrix.CAPACITY_PROFILE
+            started = next(event for event in events if event["event"] == "fanout_started")
+            started["case"]["dirty_budget"] = 4096
+            with self.assertRaisesRegex(ValueError, "fanout closure budget"):
+                replay()
+            started["case"]["dirty_budget"] = 8
+            physical["tables"].pop()
+            with self.assertRaisesRegex(ValueError, "fifteen unique tables"):
+                replay()
+
+    def test_wide_disk_oracle_uses_only_the_existing_physical_limits(self):
+        plan = matrix.registered_plan(1000, 0, 30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+        value = parity()
+        value["capacity_profile"] = matrix.CAPACITY_PROFILE
+        for side in ("incremental_counts", "full_counts"):
+            value[side]["tables"]["chunks"] = value[side]["chunks"] = 100_001
+        row = next(row for row in value["tables"] if row["table"] == "chunks")
+        row["incremental_rows"] = row["full_rows"] = 100_001
+        contract = matrix.capacity_contract()
+        value.update(oracle_mode="disk_backed_exact_v1", limits=contract["oracle_limits"],
+                     sorting_cache_kib=2048, storage_layout=contract["storage_layout"],
+                     canonical_bytes=1_000_000, scratch_peak_bytes=4096)
+        matrix.check_parity(value, plan)
+        for key in ("max_canonical_bytes", "max_scratch_bytes", "max_rows_per_table", "max_row_bytes"):
+            changed = copy.deepcopy(value)
+            changed["limits"][key] += 1
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "limits/layout"):
+                matrix.check_parity(changed, plan)
+
+    def test_wide_insufficient_disk_retains_its_work_identity_without_launching(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            build_directory = root / "build"
+            build_directory.mkdir()
+            (build_directory / "build.json").write_text("{}")
+            built = {key: "f" * 64 for key in ("source_commit", "source_manifest_sha256", "binary_sha256", "binary_blake3")}
+            built["driver_source"] = {"contract": "synthetic"}
+            plan = matrix.registered_plan(100000, 0, 30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+            with mock.patch.object(matrix, "validate_build", return_value=(built, root / "binary")), \
+                 mock.patch.object(matrix, "source_snapshot", return_value={"contract": "synthetic"}), \
+                 mock.patch.object(matrix.os, "statvfs", return_value=SimpleNamespace(f_bavail=0, f_frsize=1)), \
+                 mock.patch.object(matrix.subprocess, "run") as execute:
+                record = matrix.run_shard(root, build_directory, root / "failed", plan)
+            self.assertEqual(record["status"], "not_run")
+            self.assertIsNone(record["exit_code"])
+            execute.assert_not_called()
+            self.assertEqual(record["capacity_contract"], matrix.capacity_contract(matrix.WIDE_DIRTY_PROFILE))
+            self.assertEqual(record["command"][-2:], ["--capacity-profile", matrix.WIDE_DIRTY_PROFILE])
+            self.assertEqual(record["files"], matrix.inventory(root / "failed", ("shard.json",)))
+
+
 class PortableBuildOriginControls(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="p8-portable-build-contract-")

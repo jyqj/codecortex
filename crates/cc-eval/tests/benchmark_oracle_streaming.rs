@@ -73,6 +73,15 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     let legacy_b = oracle::canonical(b.path()).unwrap();
     assert_eq!(legacy_a, legacy_b);
     let report = compare(a.path(), b.path());
+    let same_source = compare(a.path(), a.path());
+    let expected_bytes: u64 = legacy_a
+        .values()
+        .chain(legacy_b.values())
+        .flatten()
+        .map(|row| serde_json::to_string(row).unwrap().len() as u64)
+        .sum();
+    assert_eq!(report["canonical_bytes"], expected_bytes);
+    assert_eq!(same_source["canonical_bytes"], expected_bytes);
     let capacity = oracle::compare_streaming_scale_capacity_v1(a.path(), b.path()).unwrap();
     assert_eq!(capacity["tables"], report["tables"]);
     assert_eq!(capacity["equal"], report["equal"]);
@@ -90,6 +99,14 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     assert_eq!(report["equal"], true);
     for name in oracle::tables() {
         let row = table(&report, name);
+        let same_source_row = table(&same_source, name);
+        assert_eq!(same_source_row["incremental_rows"], row["incremental_rows"]);
+        assert_eq!(same_source_row["full_rows"], row["incremental_rows"]);
+        assert_eq!(
+            same_source_row["incremental_digest"],
+            row["incremental_digest"]
+        );
+        assert_eq!(same_source_row["full_digest"], row["incremental_digest"]);
         assert_eq!(row["incremental_rows"], legacy_a[*name].len());
         assert_eq!(row["full_rows"], legacy_b[*name].len());
         assert_eq!(
@@ -173,6 +190,73 @@ fn preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests() {
     assert_eq!(report["equal"], true);
     assert_eq!(table(&report, "symbols")["incremental_digest"], ad);
     assert_eq!(table(&report, "symbols")["full_digest"], bd);
+}
+
+#[test]
+fn distinct_sql_types_and_column_layouts_keep_the_original_results() {
+    use rusqlite::types::Value as SqlValue;
+    for (av, bv) in [
+        (SqlValue::Integer(1), SqlValue::Real(1.0)),
+        (
+            SqlValue::Blob(b"same".to_vec()),
+            SqlValue::Text("same".into()),
+        ),
+    ] {
+        let a = fixture();
+        let b = fixture();
+        for (root, value) in [(a.path(), av), (b.path(), bv)] {
+            open(root)
+                .execute(
+                    "INSERT INTO symbols(name,value) VALUES ('fact',?1)",
+                    [value],
+                )
+                .unwrap();
+        }
+        let ca = oracle::canonical(a.path()).unwrap();
+        let cb = oracle::canonical(b.path()).unwrap();
+        let report = compare(a.path(), b.path());
+        let row = table(&report, "symbols");
+        assert_eq!(row["equal"], ca["symbols"] == cb["symbols"]);
+        assert_eq!(
+            row["incremental_digest"],
+            manifest::digest(&serde_json::to_vec(&ca["symbols"]).unwrap())
+        );
+        assert_eq!(
+            row["full_digest"],
+            manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+        );
+    }
+
+    let a = fixture();
+    let b = fixture();
+    open(b.path())
+        .execute_batch(
+            "DROP TABLE symbols;
+             CREATE TABLE symbols(value, name TEXT, mtime INTEGER, indexed_at INTEGER, id INTEGER);",
+        )
+        .unwrap();
+    for root in [a.path(), b.path()] {
+        open(root)
+            .execute(
+                "INSERT INTO symbols(name,value) VALUES ('fact','payload')",
+                [],
+            )
+            .unwrap();
+    }
+    let ca = oracle::canonical(a.path()).unwrap();
+    let cb = oracle::canonical(b.path()).unwrap();
+    assert_eq!(ca, cb);
+    let report = compare(a.path(), b.path());
+    let row = table(&report, "symbols");
+    assert_eq!(row["equal"], true);
+    assert_eq!(
+        row["incremental_digest"],
+        manifest::digest(&serde_json::to_vec(&ca["symbols"]).unwrap())
+    );
+    assert_eq!(
+        row["full_digest"],
+        manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+    );
 }
 
 #[test]
@@ -260,6 +344,90 @@ fn compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change() {
 }
 
 #[test]
+fn second_input_budgets_and_first_error_remain_enforced() {
+    let a = fixture();
+    let b = fixture();
+    for root in [a.path(), b.path()] {
+        open(root)
+            .execute("INSERT INTO symbols(name,value) VALUES ('same',7)", [])
+            .unwrap();
+    }
+    let canonical = oracle::canonical(a.path()).unwrap();
+    let first_side_bytes = serde_json::to_string(&canonical["symbols"][0])
+        .unwrap()
+        .len() as u64;
+    let limits = oracle::StreamingLimits {
+        max_canonical_bytes: first_side_bytes,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("canonical byte budget"));
+
+    open(b.path())
+        .execute("INSERT INTO symbols(name,value) VALUES ('extra',8)", [])
+        .unwrap();
+    let limits = oracle::StreamingLimits {
+        max_rows_per_table: 1,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("row budget exceeded: symbols side 1"));
+
+    // A's original spool must fail before B's different, oversized row is
+    // inspected. The second spool must not change this error precedence.
+    open(a.path())
+        .execute_batch("INSERT INTO symbols(name,value) VALUES ('bad',CAST(x'80' AS TEXT));")
+        .unwrap();
+    open(b.path())
+        .execute("UPDATE symbols SET value=?1", ["x".repeat(256)])
+        .unwrap();
+    let limits = oracle::StreamingLimits {
+        max_row_bytes: 128,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("UTF8"));
+}
+
+#[test]
+fn views_and_virtual_tables_keep_the_original_two_spool_comparison() {
+    for virtual_table in [false, true] {
+        let a = fixture();
+        let b = fixture();
+        for root in [a.path(), b.path()] {
+            let db = open(root);
+            db.execute("DROP TABLE symbols", []).unwrap();
+            if virtual_table {
+                db.execute_batch(
+                    "CREATE VIRTUAL TABLE symbols USING fts5(name,value);
+                     INSERT INTO symbols(name,value) VALUES ('same','fact');",
+                )
+                .unwrap();
+            } else {
+                db.execute_batch("CREATE VIEW symbols AS SELECT 'same' AS name, 'fact' AS value;")
+                    .unwrap();
+            }
+        }
+        let ca = oracle::canonical(a.path()).unwrap();
+        let cb = oracle::canonical(b.path()).unwrap();
+        assert_eq!(ca, cb);
+        let report = compare(a.path(), b.path());
+        let row = table(&report, "symbols");
+        assert_eq!(report["equal"], true);
+        assert_eq!(
+            row["full_digest"],
+            manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+        );
+    }
+}
+
+#[test]
 fn row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix() {
     let a = fixture();
     let b = fixture();
@@ -333,4 +501,72 @@ fn malformed_schema_utf8_and_foreign_keys_cannot_be_equal() {
             .to_string()
             .contains("table missing")
     );
+}
+
+#[test]
+fn equal_inputs_must_both_fit_the_original_scratch_limit() {
+    let a = fixture();
+    let b = fixture();
+    let empty = fixture();
+    for root in [a.path(), b.path()] {
+        let db = open(root);
+        for index in 0..7 {
+            db.execute(
+                "INSERT INTO symbols(name,value) VALUES (?1,?2)",
+                params![format!("row-{index}"), "x".repeat(4096)],
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(
+        oracle::canonical(a.path()).unwrap(),
+        oracle::canonical(b.path()).unwrap()
+    );
+    let limits = oracle::StreamingLimits {
+        max_scratch_bytes: 64 * 1024,
+        ..oracle::StreamingLimits::default()
+    };
+    // The same source A and same limits succeed when B contributes no rows.
+    // This prevents an A-side disk failure from satisfying the regression.
+    let one_side = oracle::compare_streaming(a.path(), empty.path(), limits).unwrap();
+    assert_eq!(one_side["equal"], false);
+    assert_eq!(table(&one_side, "symbols")["incremental_rows"], 7);
+    assert_eq!(table(&one_side, "symbols")["full_rows"], 0);
+    assert!(one_side["scratch_peak_bytes"].as_u64().unwrap() <= limits.max_scratch_bytes);
+
+    // Equality cannot waive B's real SQLite writes. At 4096-byte pages this
+    // two-sided row store exceeds 16 pages, although the first side fits.
+    // The former equal-input witness incorrectly returned success here.
+    let error = oracle::compare_streaming(a.path(), b.path(), limits).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "protocol/infrastructure error: oracle DB: database or disk is full"
+    );
+    assert_eq!(compare(a.path(), b.path())["equal"], true);
+}
+
+#[test]
+fn public_table_json_retains_the_original_field_set() {
+    let a = fixture();
+    let report = compare(a.path(), a.path());
+    let expected = std::collections::BTreeSet::from([
+        "table",
+        "equal",
+        "incremental_rows",
+        "full_rows",
+        "incremental_digest",
+        "full_digest",
+        "different_row_count",
+        "difference_alignment",
+        "different_row_examples",
+    ]);
+    for row in report["tables"].as_array().unwrap() {
+        let keys = row
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(keys, expected);
+    }
 }

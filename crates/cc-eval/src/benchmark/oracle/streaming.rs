@@ -61,6 +61,32 @@ fn check_row_size(row: &rusqlite::Row<'_>, cols: &[String], limit: usize) -> Res
     Ok(())
 }
 
+fn serialized_row(
+    row: &rusqlite::Row<'_>,
+    cols: &[String],
+    projection: &mut RowProjection<'_>,
+    limits: StreamingLimits,
+) -> Result<String> {
+    check_row_size(row, cols, limits.max_row_bytes)?;
+    let serialized = projection.serialize_row(row)?;
+    if serialized.len() > limits.max_row_bytes {
+        return Err(invalid(
+            "streaming oracle serialized row byte budget exceeded",
+        ));
+    }
+    Ok(serialized)
+}
+
+fn account_bytes(bytes: &mut u64, serialized: &str, limits: StreamingLimits) -> Result<()> {
+    *bytes = bytes
+        .checked_add(serialized.len() as u64)
+        .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
+    if *bytes > limits.max_canonical_bytes {
+        return Err(invalid("streaming oracle canonical byte budget exceeded"));
+    }
+    Ok(())
+}
+
 const INSERT_TIERS: [usize; 3] = [64, 8, 1];
 const PENDING_BYTES: usize = 64 * 1024;
 
@@ -186,19 +212,8 @@ fn spool(
                 "streaming oracle row budget exceeded: {table} side {side}"
             )));
         }
-        check_row_size(row, &cols, limits.max_row_bytes)?;
-        let serialized = projection.serialize_row(row)?;
-        if serialized.len() > limits.max_row_bytes {
-            return Err(invalid(
-                "streaming oracle serialized row byte budget exceeded",
-            ));
-        }
-        *canonical_bytes = canonical_bytes
-            .checked_add(serialized.len() as u64)
-            .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
-        if *canonical_bytes > limits.max_canonical_bytes {
-            return Err(invalid("streaming oracle canonical byte budget exceeded"));
-        }
+        let serialized = serialized_row(row, &cols, &mut projection, limits)?;
+        account_bytes(canonical_bytes, &serialized, limits)?;
         let ordinal = i64::try_from(count)
             .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
         insert.push(serialized, ordinal)?;

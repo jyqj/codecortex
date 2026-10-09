@@ -6,14 +6,28 @@ use crate::{
 use cc_model::{freshness::*, CcError, CcResult};
 use rusqlite::{Connection, OptionalExtension};
 
-pub(crate) fn replace_on(conn: &Connection, update: &ReconcileUpdate) -> CcResult<()> {
-    match &update.next {
+/// The payload is validated before indexed facts change. Private fields bind
+/// its bytes to the exact immutable state used by the later SQL publication.
+pub(crate) struct PreparedUpdate<'a> {
+    next: Option<(&'a ReconcileState, String)>,
+}
+
+pub(crate) fn prepare_update(update: &ReconcileUpdate) -> CcResult<PreparedUpdate<'_>> {
+    let next = update
+        .next
+        .as_ref()
+        .map(|state| state.payload().map(|payload| (state, payload)))
+        .transpose()?;
+    Ok(PreparedUpdate { next })
+}
+
+pub(crate) fn replace_on(conn: &Connection, prepared: PreparedUpdate<'_>) -> CcResult<()> {
+    match prepared.next {
         None => {
             conn.execute("DELETE FROM resolution_frontier WHERE id=1", [])
                 .map_err(db_err)?;
         }
-        Some(state) => {
-            let payload = state.payload()?;
+        Some((state, payload)) => {
             let digest = blake3::hash(payload.as_bytes()).to_hex().to_string();
             conn.execute("INSERT OR REPLACE INTO resolution_frontier(id,version,basis_epoch,reason,root_count,completed_files,payload,digest) VALUES(1,?1,?2,?3,?4,?5,?6,?7)",
                 rusqlite::params![state.version,state.basis_epoch.to_string(),state.stop.as_str(),u32::try_from(state.roots.len()).map_err(db_err)?,u32::try_from(state.completed.len()).map_err(db_err)?,payload,digest]).map_err(db_err)?;

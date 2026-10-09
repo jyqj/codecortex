@@ -136,3 +136,77 @@ fn invalid_frontier_fails_before_file_commit_and_bad_hash_is_not_ready() {
     assert!(db.reads().resolution_frontier().is_err());
     assert!(!db.reads().resolution_freshness().unwrap().complete);
 }
+
+#[test]
+fn invalid_frontier_precedes_a_file_mutation_error() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("index.db");
+    let db = IndexDb::open(&path).unwrap().0;
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute_batch(
+        "CREATE TRIGGER reject_file BEFORE INSERT ON files BEGIN
+         SELECT RAISE(ABORT, 'file mutation reached before frontier validation'); END;",
+    )
+    .unwrap();
+    let before = db.reads().generation().unwrap();
+    let mut update = pending(before.index_epoch);
+    let state = update.next.as_mut().unwrap();
+    state.roots.insert("../bad.rs".into());
+    assert!(matches!(
+        write(&db, &[unit("root.rs")], &update),
+        Err(cc_model::CcError::InvalidParams(_))
+    ));
+    assert_eq!(db.reads().generation().unwrap(), before);
+    assert!(db.reads().resolution_frontier().unwrap().is_none());
+    assert_eq!(
+        conn.query_row("SELECT COUNT(*) FROM files", [], |row| row.get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+}
+
+#[test]
+fn prepared_frontier_keeps_legacy_bytes_and_late_failure_rolls_back_facts() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("index.db");
+    let db = IndexDb::open(&path).unwrap().0;
+    let mut initial = pending(db.reads().generation().unwrap().index_epoch);
+    let state = initial.next.as_mut().unwrap();
+    state.roots.insert("café.rs".into());
+    state.completed.insert("done.rs".into());
+    let legacy_payload = initial.next.as_ref().unwrap().payload().unwrap();
+    let legacy_digest = blake3::hash(legacy_payload.as_bytes()).to_hex().to_string();
+    write(&db, &[unit("root.rs")], &initial).unwrap();
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    let stored: (String, String, i64, i64) = conn
+        .query_row(
+            "SELECT payload,digest,root_count,completed_files FROM resolution_frontier WHERE id=1",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+        )
+        .unwrap();
+    assert_eq!(stored, (legacy_payload, legacy_digest, 2, 1));
+    let before = db.reads().generation().unwrap();
+    let frontier_before = db.reads().resolution_frontier().unwrap();
+    conn.execute_batch(
+        "CREATE TRIGGER reject_frontier BEFORE INSERT ON resolution_frontier BEGIN
+         SELECT RAISE(ABORT, 'late frontier publication failure'); END;",
+    )
+    .unwrap();
+    let error = write(&db, &[unit("later.rs")], &pending(before.index_epoch)).unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("late frontier publication failure"));
+    assert_eq!(db.reads().generation().unwrap(), before);
+    assert_eq!(db.reads().resolution_frontier().unwrap(), frontier_before);
+    assert_eq!(
+        conn.query_row("SELECT COUNT(*) FROM files", [], |row| row.get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    assert!(db
+        .reads()
+        .public_surfaces(&["later.rs".into()])
+        .unwrap()
+        .is_empty());
+}

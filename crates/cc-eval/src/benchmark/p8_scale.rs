@@ -39,6 +39,24 @@ pub enum Profile {
 pub enum CapacityProfile {
     #[serde(rename = "scale_capacity_v1")]
     ScaleCapacityV1,
+    #[serde(rename = "scale_wide_dirty_v1")]
+    ScaleWideDirtyV1,
+}
+
+/// An explicitly separate stage study. Absence preserves the original plan
+/// serialization and executes every registered incremental and fanout stage.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StageScope {
+    #[serde(rename = "cold_only_v1")]
+    ColdOnlyV1,
+}
+
+/// Identity of the separate cold study, bound into both native plan and raw header.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ColdStudy {
+    pub run_id: String,
+    pub run_attempt: u32,
 }
 
 /// A disjoint slice of the registered repetition population. A successful
@@ -57,6 +75,10 @@ pub struct ScalePlan {
     pub profile: Profile,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub capacity_profile: Option<CapacityProfile>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stage_scope: Option<StageScope>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cold_study: Option<ColdStudy>,
     pub files: Vec<usize>,
     pub seed: u64,
     pub repetitions: usize,
@@ -78,6 +100,8 @@ impl Default for ScalePlan {
             schema_version: 1,
             profile: Profile::Smoke,
             capacity_profile: None,
+            stage_scope: None,
+            cold_study: None,
             files: vec![60],
             seed: 0x00c0_ffee,
             repetitions: 1,
@@ -123,7 +147,7 @@ impl ScalePlan {
                 "invalid/duplicate scale, repetition, fanout, deadline or output bound",
             ));
         }
-        if self.capacity_profile.is_some()
+        if self.capacity_profile == Some(CapacityProfile::ScaleCapacityV1)
             && (self.profile != Profile::Release
                 || self.files.len() != 1
                 || self.dirty_budget != 200
@@ -134,6 +158,17 @@ impl ScalePlan {
                 "scale_capacity_v1 requires release, one scale, one repetition per shard, dirty budget 200 and resume budget 1024; fanout keeps 8/128",
             ));
         }
+        if self.capacity_profile == Some(CapacityProfile::ScaleWideDirtyV1)
+            && (self.profile != Profile::Release
+                || self.files.len() != 1
+                || self.dirty_budget != 4096
+                || self.max_resume_builds != 1024
+                || self.shard.is_none_or(|s| s.count != self.repetitions))
+        {
+            return Err(invalid(
+                "scale_wide_dirty_v1 requires release, one scale, one repetition per shard, dirty budget 4096 and resume budget 1024; fanout keeps 8/128",
+            ));
+        }
         if self.profile == Profile::Release
             && (cfg!(debug_assertions)
                 || self.repetitions < 30
@@ -141,6 +176,34 @@ impl ScalePlan {
         {
             return Err(invalid(
                 "release measurement requires a release eval build, >=30 repetitions, and explicit canonical scales; this does not grant release certification",
+            ));
+        }
+        if self.stage_scope.is_some() != self.cold_study.is_some()
+            || self.cold_study.as_ref().is_some_and(|study| {
+                study.run_id.is_empty()
+                    || !study.run_id.bytes().all(|b| b.is_ascii_digit())
+                    || study.run_id.parse::<u64>().map_or(true, |id| id == 0)
+                    || study.run_attempt == 0
+            })
+        {
+            return Err(invalid(
+                "cold study identity must accompany only the explicit cold scope",
+            ));
+        }
+        if self.stage_scope.is_some()
+            && (!self.skip_fanout
+                || self.shard.is_none()
+                || (self.profile == Profile::Release
+                    && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
+                        || self.repetitions != 30
+                        || self.seed != 0x00c0_ffee
+                        || self.deadline_ms != 18_000_000
+                        || self.max_output_bytes != 512 * 1024 * 1024
+                        || self.batch_sizes != [1, 10, 100, 1000]
+                        || self.fanouts != [1, 4, 16, 64, 128])))
+        {
+            return Err(invalid(
+                "cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets",
             ));
         }
         Ok(())
@@ -159,9 +222,15 @@ impl ScalePlan {
 
     pub fn fanout_budgets(&self) -> (usize, usize) {
         match self.capacity_profile {
-            Some(CapacityProfile::ScaleCapacityV1) => (8, 128),
+            Some(CapacityProfile::ScaleCapacityV1 | CapacityProfile::ScaleWideDirtyV1) => (8, 128),
             None => (self.dirty_budget, self.max_resume_builds),
         }
+    }
+
+    // The work profile is in the plan. Both named profiles use the unchanged
+    // physical oracle limits; parity records this separate capacity identity.
+    fn oracle_capacity_profile(&self) -> Option<&'static str> {
+        self.capacity_profile.map(|_| "scale_capacity_v1")
     }
 }
 
@@ -239,6 +308,8 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
     // The supervisor owns all fixture directories, including those allocated
     // by the existing mutation runner; a deadline cannot orphan 100k trees.
     let workspace = tempfile::tempdir()?;
+    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1))
+        .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
     let mut command = Command::new(binary);
     command
         .arg("--worker-plan")
@@ -384,7 +455,7 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
             _ => 2,
         }
     };
-    let result = json!({
+    let mut result = json!({
         "schema_version":1,"profile":plan.profile,"plan_digest":manifest::file_digest(&out.join("plan.json"))?,
         "worker_pid":child.0.id(),"worker_binary_digest_before":binary_before,"worker_binary_digest_after":binary_after,"worker_binary_unchanged":binary_unchanged,
         "status":termination.unwrap_or(if exit_code==0 {"measurement_complete"} else {"measurement_failed"}),
@@ -398,6 +469,9 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
         "registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "deadline_scope":"entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms"
     });
+    if let Some(environment) = cold_temporary_environment {
+        result["cold_temporary_environment"] = environment;
+    }
     control_json(&out.join("report.json"), &result)?;
     Ok(result)
 }
@@ -588,11 +662,10 @@ fn parity(a: &Path, b: &Path, complete: bool, plan: &ScalePlan) -> Result<Value>
         })
     });
     if over {
-        let mut comparison = match plan.capacity_profile {
-            Some(CapacityProfile::ScaleCapacityV1) => {
-                oracle::compare_streaming_scale_capacity_v1(a, b)?
-            }
-            None => oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?,
+        let mut comparison = if plan.oracle_capacity_profile().is_some() {
+            oracle::compare_streaming_scale_capacity_v1(a, b)?
+        } else {
+            oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?
         };
         if !complete {
             comparison["status"] = json!("incomplete_not_certified");
@@ -633,7 +706,7 @@ fn parity(a: &Path, b: &Path, complete: bool, plan: &ScalePlan) -> Result<Value>
         json!({"status":if !complete{"incomplete_not_certified"}else if different.is_empty(){"equal"}else{"different"},
         "equal":complete&&different.is_empty(),"different_tables":different,"tables":table_evidence,
         "comparison":"complete unchanged oracle rows compared before hashing; only exported differing examples are bounded",
-        "incremental_counts":ac,"full_counts":bc,"capacity_profile":plan.capacity_profile}),
+        "incremental_counts":ac,"full_counts":bc,"capacity_profile":plan.oracle_capacity_profile()}),
     )
 }
 
@@ -797,6 +870,9 @@ fn scale_sample(
     let mut summaries = vec![
         json!({"sample":prefix,"stage":"cold","passed":initial["equal"]==true&&initial_fact["passed"]==true&&has_no_parse_error(&first)&&has_no_parse_error(&full),"parity_status":initial["status"]}),
     ];
+    if plan.stage_scope == Some(StageScope::ColdOnlyV1) {
+        return Ok(summaries);
+    }
     let mut stages = vec![
         ("no_op".to_owned(), 0),
         ("body".to_owned(), 1),
@@ -975,11 +1051,36 @@ fn distribution(samples: &[&Value], field: &str) -> Value {
 }
 
 fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
-    raw.emit(json!({"event":"run_started","plan":plan,"engine":runner::engine_provenance(Some(&std::env::current_exe()?))?,
+    let mut started = json!({"event":"run_started","plan":plan,"engine":runner::engine_provenance(Some(&std::env::current_exe()?))?,
         "evidence_layer":"actual native parser/SQLite; synthetic builds use existing in-process MCP; fanout uses existing mutation_case",
         "semantic":"disabled","release_certification":"not_run","tail_latency_estimate":Value::Null,
         "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
-        "statistics":"all repetitions retained; no best-of selection, speedup, stable p95/p99 or independent-sample quality inference"}))?;
+        "statistics":"all repetitions retained; no best-of selection, speedup, stable p95/p99 or independent-sample quality inference"});
+    if plan.stage_scope == Some(StageScope::ColdOnlyV1) {
+        let seed_cap = std::env::var("CODECORTEX_SEED_CACHE_MAX_SYMBOLS");
+        let parsed = seed_cap.as_ref().ok().and_then(|v| v.parse::<usize>().ok());
+        started["cold_environment"] = json!({
+            "seed_cache_max_symbols": {
+                "raw": seed_cap.as_ref().ok(),
+                "read_status": match &seed_cap {
+                    Ok(_) => "unicode",
+                    Err(std::env::VarError::NotPresent) => "absent",
+                    Err(std::env::VarError::NotUnicode(_)) => "non_unicode",
+                },
+                "parsed_usize": parsed,
+                "effective": cc_db::seed_cache_max_symbols(),
+            },
+            "runtime_environment": {
+                "RUSTFLAGS": std::env::var("RUSTFLAGS").ok(),
+                "CARGO_ENCODED_RUSTFLAGS": std::env::var("CARGO_ENCODED_RUSTFLAGS").ok(),
+                "TMPDIR": std::env::var("TMPDIR").ok(),
+                "TMP": std::env::var("TMP").ok(),
+                "TEMP": std::env::var("TEMP").ok(),
+            },
+            "scope": "observed inputs; no cache, capacity or engine-setting override",
+        });
+    }
+    raw.emit(started)?;
     let mut summaries = Vec::new();
     for &files in &plan.files {
         for repetition in plan.repetition_range()? {
@@ -1042,13 +1143,15 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
             "whole_fanout_fixture_replay_us":distribution(&samples,"fanout_replay_wall_us"),
             "first_build_incomplete_samples":samples.iter().filter(|s|s["first_build_incomplete"]==true).count()})
     }).collect();
-    Ok(
-        json!({"schema_version":1,"passed":passed,"sample_count":summaries.len(),"groups":groups,"raw_bytes":raw.written,
+    let mut summary = json!({"schema_version":1,"passed":passed,"sample_count":summaries.len(),"groups":groups,"raw_bytes":raw.written,
         "release_certification":"not_run","full_100k_certification":"not_run","prerequisite_gates":"not_evaluated",
         "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "not_selected_scales":RELEASE_SCALES.iter().filter(|n|!plan.files.contains(n)).collect::<Vec<_>>(),
-        "oracle_row_limit_unchanged":ORACLE_ROWS,"stable_tail_latency":"not_established"}),
-    )
+        "oracle_row_limit_unchanged":ORACLE_ROWS,"stable_tail_latency":"not_established"});
+    if let Some(scope) = plan.stage_scope {
+        summary["stage_scope"] = serde_json::to_value(scope)?;
+    }
+    Ok(summary)
 }
 
 /// Internal worker entry. The CLI supervisor is required for the hard deadline.

@@ -1,0 +1,26 @@
+[
+  {
+    "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+    "reported_line": 289,
+    "log_line": 476,
+    "before": "    // The supervisor owns all fixture directories, including those allocated\n    // by the existing mutation runner; a deadline cannot orphan 100k trees.\n    let workspace = tempfile::tempdir()?;\n    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1)).then(|| {\n        json!({\"parent_root\":std::env::temp_dir(),\"worker_root\":workspace.path()})\n    });\n    let mut command = Command::new(binary);\n    command\n        .arg(\"--worker-plan\")\n",
+    "after": "    // The supervisor owns all fixture directories, including those allocated\n    // by the existing mutation runner; a deadline cannot orphan 100k trees.\n    let workspace = tempfile::tempdir()?;\n    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1))\n        .then(|| json!({\"parent_root\":std::env::temp_dir(),\"worker_root\":workspace.path()}));\n    let mut command = Command::new(binary);\n    command\n        .arg(\"--worker-plan\")\n",
+    "nonwhitespace_equal": false
+  },
+  {
+    "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+    "reported_line": 1126,
+    "log_line": 488,
+    "before": "            \"whole_fanout_fixture_replay_us\":distribution(&samples,\"fanout_replay_wall_us\"),\n            \"first_build_incomplete_samples\":samples.iter().filter(|s|s[\"first_build_incomplete\"]==true).count()})\n    }).collect();\n    let mut summary =\n        json!({\"schema_version\":1,\"passed\":passed,\"sample_count\":summaries.len(),\"groups\":groups,\"raw_bytes\":raw.written,\n        \"release_certification\":\"not_run\",\"full_100k_certification\":\"not_run\",\"prerequisite_gates\":\"not_evaluated\",\n        \"shard_only\":plan.shard.is_some(),\"registered_repetitions\":plan.repetitions,\"executed_repetition_range\":plan.repetition_range()?,\n        \"not_selected_scales\":RELEASE_SCALES.iter().filter(|n|!plan.files.contains(n)).collect::<Vec<_>>(),\n",
+    "after": "            \"whole_fanout_fixture_replay_us\":distribution(&samples,\"fanout_replay_wall_us\"),\n            \"first_build_incomplete_samples\":samples.iter().filter(|s|s[\"first_build_incomplete\"]==true).count()})\n    }).collect();\n    let mut summary = json!({\"schema_version\":1,\"passed\":passed,\"sample_count\":summaries.len(),\"groups\":groups,\"raw_bytes\":raw.written,\n        \"release_certification\":\"not_run\",\"full_100k_certification\":\"not_run\",\"prerequisite_gates\":\"not_evaluated\",\n        \"shard_only\":plan.shard.is_some(),\"registered_repetitions\":plan.repetitions,\"executed_repetition_range\":plan.repetition_range()?,\n        \"not_selected_scales\":RELEASE_SCALES.iter().filter(|n|!plan.files.contains(n)).collect::<Vec<_>>(),\n",
+    "nonwhitespace_equal": true
+  },
+  {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "reported_line": 3,
+    "log_line": 498,
+    "before": "use cc_eval::benchmark::{\n    mutation_case,\n    p8_scale::{\n        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope, RELEASE_SCALES,\n    },\n};\nuse serde_json::{json, Value};\n",
+    "after": "use cc_eval::benchmark::{\n    mutation_case,\n    p8_scale::{\n        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope,\n        RELEASE_SCALES,\n    },\n};\nuse serde_json::{json, Value};\n",
+    "nonwhitespace_equal": true
+  }
+]

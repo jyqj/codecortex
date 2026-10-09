@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "scope": "independent CI-selector conflict review",
+  "recorded_at": "2026-10-09T19:35:28.268Z",
+  "reviewer": "/root/execution_recon",
+  "source": "da6289df86dd228e810a63b90f4be03c34b8d21b",
+  "tree": "2fab3865cc1da9892ea72d3ffa69b355bc7f5344",
+  "verdict": "blocked_for_existing_v15_source_admission",
+  "source_correctness_note": "The added native protocol step is behaviorally reasonable, but conflicts with the unchanged explicit original admission contract. No authorization or semantic judgment overrides that actual source gate.",
+  "guard": {
+    "git_blob": "088757bcba218cd9981e5c512f091c4cf5ce34ef",
+    "validation_exclusions_excerpt": "VALIDATION_ROOTS = (\"scripts\", \".github/workflows\", \"tests/source_integrity\")\n# The selected guard and its registry are the new trust root. Their fixed\n# references are installed after the reviewed product commit. The current CI\n# selector is separately constrained by expected_ci(), which runs the old proof.\nVALIDATION_EXCLUSIONS = frozenset({\n    \"scripts/verify_reviewed_source_v15.py\",\n    \"scripts/reviewed-source-registry-v15.json\",\n    \".github/workflows/ci.yml\",\n})\ngit = previous.git",
+    "expected_and_verify_ci_excerpt": "    new = \"verify_reviewed_source_v15.py --source-version \" + VERSION\n    require(original.count(old) == 1, \"v14 CI selector differs\")\n    return original.replace(old, new)\n\n\ndef verify_ci(root=ROOT):\n    target = root / \".github/workflows/ci.yml\"\n    require(not target.is_symlink() and target.is_file()\n            and target.read_text() == expected_ci(),\n            \"CI differs beyond the explicit v15 selector\")\n    unchanged_file(root, \".github/workflows/p7-engineering.yml\",\n                   git.blob(BASE, \".github/workflows/p7-engineering.yml\"),\n                   \"P7 engineering workflow changed\")\n\n\ndef main():\n    if sys.flags.optimize:\n        raise SystemExit(\"source verification requires Python without -O\")\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--source-version\", required=True, choices=[VERSION])"
+  },
+  "proposed_CI": {
+    "before_git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "after_git_blob": "289d027a0db946369638385307052fc7d21e8c66",
+    "exact_inserted_step": "      - name: Native scale protocol regressions\n        run: cargo test --locked -p cc-eval --test p8_scale\n\n",
+    "author_proof_git_blob": "adee97202982a36f18ba7ca8851e75043d533249"
+  },
+  "findings": [
+    ".github/workflows/ci.yml is excluded from complete validation maps; it is not a146th/147th freely updateable validation entry.",
+    "The original verify_ci requires exact equality to expected_ci, which permits only inherited v14-to-v15 selector replacement.",
+    "The proposed additional step changes bytes beyond that selector and thus cannot pass the unchanged original gate.",
+    "No new guard exception, registry extension, altered expected_ci, or unrecorded waiver is admitted."
+  ],
+  "decision_from_root": "Retain PCW2 and its original proposal; create sole-child PCW3 restoring the original CI leaf while preserving test formatting and sparse source fixes. Review net two-leaf change relative to R1.",
+  "runtime_executed": false,
+  "reviewer_preparation_failures": [
+    {
+      "scope": "schema introspection",
+      "exit_code": 1,
+      "cause": "Called keys() on a string field; corrected inspection only."
+    },
+    {
+      "scope": "source assertion",
+      "exit_code": 1,
+      "cause": "Assumed one artifact-exclusion line; original workflow has four job checkout blocks. Corrected exact replacement to the first build-only occurrence; all other bytes remain fixed."
+    },
+    {
+      "scope": "source assertion",
+      "exit_code": 1,
+      "cause": "Looked up ci.yml in validation inventory; its actual exclusion exposed the source-admission blocker above. No source or guard edited."
+    }
+  ],
+  "TODO_remaining": 29,
+  "new_TODO_complete": 0
+}

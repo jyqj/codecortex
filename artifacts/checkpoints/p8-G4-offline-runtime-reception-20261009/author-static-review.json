@@ -1,0 +1,65 @@
+{
+  "scope": "pure in-memory static/parser controls; no receiver, downloads, Cargo or native execution",
+  "files": {
+    ".github/workflows/p8-G4-offline-runtime-reception.yml": {
+      "bytes": 1831,
+      "sha256": "3812e5d99e139d5b90c63c843587aa09159d5aa40b6fd5c0f8d5a96e709c8946",
+      "git_blob": "89d81dc799399a9425c8401995be4f63f5da4f81"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/controller.py": {
+      "bytes": 16689,
+      "sha256": "cb82c1f1d09b5ee474cfb557bad389708f28ac8af10274747074dad76002687f",
+      "git_blob": "6bd103e3dddd32dcd73bfbe428351cbab9bcf91b"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/registration.json": {
+      "bytes": 2255,
+      "sha256": "0b55618dea223523aba2c05ca82c37a2182892edb34eeca10583b5459101e92b",
+      "git_blob": "6974c46121e00b25825f46f7925c9ede37084ec2"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/README.md": {
+      "bytes": 3045,
+      "sha256": "b38bafc8b42436b37a417314bc5d1c58a601bf5bfea443d13660015278a0e486",
+      "git_blob": "00793bf49621ddecb580ba32bb0db7891fbb3d10"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/mixed/review_mixed.py": {
+      "bytes": 14849,
+      "sha256": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+      "git_blob": "26e980a181912e2d6b2d3fb9804363832b81bcdd"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/inspect.py": {
+      "bytes": 21139,
+      "sha256": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
+      "git_blob": "3b92fe10103e1d6f6078ce47e597f850ffcea682"
+    },
+    "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/cache_wire.py": {
+      "bytes": 5523,
+      "sha256": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
+      "git_blob": "3864055b82f8fe73f4fcfae94bda8f27bd21a86b"
+    }
+  },
+  "checks": [
+    "fixed first-attempt independent branch and complete failure upload",
+    "exact five-archive registration and byte sum",
+    "two literal-only root maps invert to exact original bytes",
+    "valid synthetic ZIP central directory accepted",
+    "duplicate rejected",
+    "parent escape rejected",
+    "backslash rejected",
+    "directory rejected",
+    "symlink rejected",
+    "foreign prefix rejected",
+    "encrypted member rejected",
+    "all Python bodies parse without execution"
+  ],
+  "status": "passed_scoped_static",
+  "draft_preparation_errors": [
+    {
+      "kind": "author_JS_template_parse_error",
+      "error": "Unexpected token '.'",
+      "effect": "No script executed or files/ref changed; fixed Actions expressions to literal placeholders before creating final strings."
+    }
+  ],
+  "execution_status": "not_run",
+  "remote_ref_changed": false,
+  "scope_boundary": "Static author controls only. Non-author review and any receiver execution remain pending."
+}

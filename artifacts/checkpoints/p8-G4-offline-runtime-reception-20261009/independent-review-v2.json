@@ -1,0 +1,262 @@
+{
+  "schema_version": 2,
+  "reviewer": "/root/acceptance_audit",
+  "verdict": "accepted_scoped_for_original_G4_offline_receiver_execution",
+  "author_of_new_controller": false,
+  "source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+  "original_run": 37854847820,
+  "original_run_attempt": 1,
+  "controller_commit": null,
+  "publication_plan_git_blob": "6f056d94d3afa73f3d2937a734e4e28b5ad4c3eb",
+  "supersession": {
+    "withdrawn_independent_v1_blob": "8bab649715c4e048d5ada9f1ede8a1bf51825855",
+    "previous_plan_blob": "c0c7259012c4ddc2801e03da838dfc88d36dfb70",
+    "reason": "Root found two genuine output-safety blockers missed in the initial independent review: TimeoutExpired could serialize credential-bearing curl argv, and raw Actions logs could publish signed storage URLs. The original review remains preserved as superseded history; its output-safety claim is withdrawn.",
+    "corrected_inputs": [
+      "controller.py",
+      "workflow exact upload exclusions",
+      "README replay-delivery scope"
+    ]
+  },
+  "files": [
+    {
+      "path": ".github/workflows/p8-G4-offline-runtime-reception.yml",
+      "mode": "100644",
+      "bytes": 2287,
+      "sha256": "ffd4ff2db1ba535fefff6fff89211aa228f49aec86e6ae032e1c054dd6251344",
+      "blob": "877aab65bc569d7dfb0cee415854927f1e8d4297"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/controller.py",
+      "mode": "100644",
+      "bytes": 19863,
+      "sha256": "fa4a04dff47155e261485097b4c873da966a298eee243ce64b504fd98a5a659c",
+      "blob": "04f1d5447a29711eb78e24a902708fc73f5697f1"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/registration.json",
+      "mode": "100644",
+      "bytes": 2255,
+      "sha256": "0b55618dea223523aba2c05ca82c37a2182892edb34eeca10583b5459101e92b",
+      "blob": "6974c46121e00b25825f46f7925c9ede37084ec2"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/README.md",
+      "mode": "100644",
+      "bytes": 4194,
+      "sha256": "16faa6d65400f838a0bb6ac68008d14f0509f41b587cd973f3d115a34957c84e",
+      "blob": "cf0c775fb436a5fa5b8f94585ac8cb0e5025026a"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/mixed/review_mixed.py",
+      "mode": "100644",
+      "bytes": 14849,
+      "sha256": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+      "blob": "26e980a181912e2d6b2d3fb9804363832b81bcdd"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/inspect.py",
+      "mode": "100644",
+      "bytes": 21139,
+      "sha256": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
+      "blob": "3b92fe10103e1d6f6078ce47e597f850ffcea682"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/originals/soak/cache_wire.py",
+      "mode": "100644",
+      "bytes": 5523,
+      "sha256": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
+      "blob": "3864055b82f8fe73f4fcfae94bda8f27bd21a86b"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/author-static-review.json",
+      "mode": "100644",
+      "bytes": 2958,
+      "sha256": "805fa7b8566518b4cd10341c5101675fb2f77bf86067e46f83c02b2323423a7a",
+      "blob": "b48779941dbf4b9daf14cd14c874d80e0a41e7f5"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/output-safety.patch",
+      "mode": "100644",
+      "bytes": 7976,
+      "sha256": "e25367c0817983ff477a818ebc75d18364d8fa193386bc49bf29d3e1985171c7",
+      "blob": "577fcd01e8f63c0fff93ec8450dc00852e5c18c8"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-G4-offline-runtime-reception-20261009/output-safety-author-review.json",
+      "mode": "100644",
+      "bytes": 9859,
+      "sha256": "1d6cb4660de19a16421f91259f51ece7316505d3e2bf3c0afc79d55adb9053c7",
+      "blob": "9bf261dfffb12d6103c7503ba8258abc043b9c74"
+    }
+  ],
+  "unresolved_blockers": [],
+  "actual_existing_input_metadata": [
+    {
+      "id": 11590168318,
+      "job": 113576447129,
+      "kind": "mixed",
+      "c": 1,
+      "bytes": 16588933,
+      "sha256": "d793ce76d6da48c3cc96b28afad80c8eeab5576c4cb4d7ad364e5c823eb35355",
+      "actual_job_success": true
+    },
+    {
+      "id": 11590202791,
+      "job": 113576447195,
+      "kind": "mixed",
+      "c": 4,
+      "bytes": 16959276,
+      "sha256": "0adef902e90e21f9d32349d330a4f0d48041ae336878e826ab5b6beca67eec24",
+      "actual_job_success": true
+    },
+    {
+      "id": 11590639057,
+      "job": 113576447334,
+      "kind": "mixed",
+      "c": 8,
+      "bytes": 16621243,
+      "sha256": "befead56e71df69ab5c88d0483de67b9c2009b99ee82df0e683f99a25844daa7",
+      "actual_job_success": true
+    },
+    {
+      "id": 11588372461,
+      "job": 113576446998,
+      "kind": "mixed",
+      "c": 16,
+      "bytes": 16388340,
+      "sha256": "ad788f605deb6e55e7ad3d944394e079a5983ea774560869d2a9b09624e22e2a",
+      "actual_job_success": true
+    },
+    {
+      "id": 11590202308,
+      "job": 113576447137,
+      "kind": "soak",
+      "c": 4,
+      "bytes": 50994513,
+      "sha256": "46a72baaecbd0e5ea3197d05e639f618cd3a570b9cc65f46fa51a5f0a4916286",
+      "actual_job_success": true
+    }
+  ],
+  "metadata_pagination": {
+    "jobs": 6,
+    "artifacts": 6,
+    "complete": true,
+    "run_source_exact": true,
+    "selected_five_jobs_success": true,
+    "remaining_sixth_backfill_intentionally_out_of_scope": true
+  },
+  "unchanged_protocol_review": [
+    "Python bodies parse; workflow YAML has one independent first-attempt-only branch job, Ubuntu24,40min,contents/actions read, exact controller github.sha checkout and separately pinned G4 checkout.",
+    "CONTROL=HERE.parents[2] resolves the receiver checkout; SOURCE resolves the separately sparse-checked Cargo/crates/scripts tree. Original1087 product and7 observer snapshots are checked before and after.",
+    "Registration binds the exact original run/attempt/source/tree, four mixed C1/4/8/16 jobs and one soak job, exact artifact IDs/names/size/digest, and complete API pagination. All five registered items currently match independently read actual metadata.",
+    "ZIPs are retained before extraction, exact SHA/size checked, safe unique regular central-directory names enforced, and every member CRC/size/SHA checked during extraction. Original binary bytes and hidden members remain in the retained archive and expanded inventory.",
+    "The actual expansion ceiling is4GiB with512MiB filesystem headroom; double full expansion plus64MiB is reserved for derived replay copies. Capacity/transfer/validation failure remains nonzero/incomplete with retained data rather than reducing the sample population.",
+    "Exactly two REPO literal substitutions were independently reversed to the full original receiver bytes; mixed and soak predicate bodies are unchanged, cache_wire is unchanged.",
+    "Original G4 seal verification is run on all five complete build/runtime pairs, followed by fixed original portable Cargo/executable-copy/source/observer checks, raw denominators, native resources,15-table parity receipts and actual retained Rust statistics replay. No product or oracle executable is launched.",
+    "Mixed exact900 each /600reads+300builds remain perC, without pooling mutationN50 strata. Soak exact3601 operations/2400 compound reads/1201 builds and9600 bound subrequests retain the original actual-time/cache/RSS/oracle rules.",
+    "Successful return requires ZIP and every extracted byte recheck plus exact after snapshots. The original statistical reports are reproduced with their source-bound archived executable, not a new workload or estimator.",
+    "The auxiliary controller branch is separate from the product P/R/G chain and is not merged or opened as a product PR. It does not change the140 candidate validation inputs."
+  ],
+  "independent_v2_checks": {
+    "status": "passed_pure_memory_static_and_isolated_mock_checks",
+    "changed_existing_functions": [
+      "get_api",
+      "main"
+    ],
+    "unchanged_functions": [
+      "adapt",
+      "check_originals",
+      "extract_verified",
+      "free",
+      "head",
+      "invoke",
+      "location",
+      "original_name",
+      "paged",
+      "require",
+      "run",
+      "safe_infos",
+      "sha",
+      "write"
+    ],
+    "new_functions": [
+      "job_log_exclusions",
+      "public_job_log_events",
+      "record_withheld_job_logs"
+    ],
+    "exact_upload_exclusions": {
+      "mixed/C1/job-113576447129.log": 113576447129,
+      "mixed/C4/job-113576447195.log": 113576447195,
+      "mixed/C8/job-113576447334.log": 113576447334,
+      "mixed/C16/job-113576446998.log": 113576446998,
+      "soak/job-113576447137.log": 113576447137
+    },
+    "hashes": {
+      "new": {
+        "bytes": 19863,
+        "sha256": "fa4a04dff47155e261485097b4c873da966a298eee243ce64b504fd98a5a659c",
+        "git_blob": "04f1d5447a29711eb78e24a902708fc73f5697f1"
+      },
+      "workflow": {
+        "bytes": 2287,
+        "sha256": "ffd4ff2db1ba535fefff6fff89211aa228f49aec86e6ae032e1c054dd6251344",
+        "git_blob": "877aab65bc569d7dfb0cee415854927f1e8d4297"
+      },
+      "readme": {
+        "bytes": 4194,
+        "sha256": "16faa6d65400f838a0bb6ac68008d14f0509f41b587cd973f3d115a34957c84e",
+        "git_blob": "cf0c775fb436a5fa5b8f94585ac8cb0e5025026a"
+      },
+      "registration": {
+        "bytes": 2255,
+        "sha256": "0b55618dea223523aba2c05ca82c37a2182892edb34eeca10583b5459101e92b",
+        "git_blob": "6974c46121e00b25825f46f7925c9ede37084ec2"
+      }
+    },
+    "original_receiver_hashes": {
+      "mixed": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+      "soak": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
+      "cachewire": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35"
+    },
+    "typed_events": [
+      {
+        "line": 3,
+        "event": "checkout",
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "line": 4,
+        "event": "process_exit",
+        "exit_code": 7
+      }
+    ],
+    "timeout_credential_stringification_rejected": true,
+    "no_filesystem_or_transfer_or_receiver_or_binary_executed": true
+  },
+  "output_transport_findings": [
+    "get_api catches subprocess.TimeoutExpired without serializing the exception or its argv, and raises only a constant error plus registered relative API path from None. An isolated mock containing a synthetic bearer value independently passed.",
+    "The five raw job logs remain unchanged on the isolated runner and remain available to original predicates. No arbitrary raw log text, URL or command argv is copied into the public typed excerpt.",
+    "Workflow excludes exactly the five registration-derived raw log paths; every other owned evidence path, including hidden fixture members, remains included. Exclusions do not include any original ZIP or original expanded member.",
+    "The controller records original log API, presence, byte count/SHA and typed events; file inventory marks their included_in_upload=false. Both receipt and README explicitly require separate original Actions logs for complete independent replay.",
+    "All fourteen other existing controller functions, including run, adapt, ZIP checks and invocation, retain the original AST. Only get_api/main seams and three additive transport helpers differ.",
+    "All three original receiver bodies and registration are byte-identical. There is no relaxation of product identity, archive population, resource, cache, denominator, parity-receipt or retained Rust statistics predicates.",
+    "Exception during final inventory cannot return a valid success receipt. Missing final evidence after hard termination remains incomplete; this static admission does not promise upload survival after runner loss."
+  ],
+  "limitations": [
+    "This is non-author static admission and isolated pure-memory mock/AST checks. No receiver, download, original statistics executable, product workload, Cargo or repository tests ran in this review.",
+    "Controller commit/tree has not yet been published. Its actual tree must match the ten fixed inputs before its first branch event.",
+    "Five original ZIPs and their full expanded contents are to be retained. Public delivery intentionally lacks the five raw Actions logs, so it is not a fully standalone offline replay bundle.",
+    "Original G4 source1087/observer7 measurement identity remains G4. It is not relabelled as the current1089/observer9 source, and no later full CI or release is certified.",
+    "Full15-table parity denotes verification of original sealed parity/result and exit evidence, not a new product/oracle comparison.",
+    "No rerun, replacement of original samples, new primary scale study or original TODO closure is authorized by this scoped review."
+  ],
+  "review_execution_history": {
+    "first_two_checker_attempts": "Pure-memory review harness incorrectly passed stored tool-result objects to ast.parse, producing TypeError before controller functions executed. The final harness explicitly extracted the exact UTF-8 bodies and all static/mock checks passed. Candidate bytes were never changed.",
+    "files_written": 0,
+    "network_transfers_in_mock": 0,
+    "executed_receivers": 0
+  },
+  "new_TODO_closed": 0,
+  "remaining_TODO": 29
+}

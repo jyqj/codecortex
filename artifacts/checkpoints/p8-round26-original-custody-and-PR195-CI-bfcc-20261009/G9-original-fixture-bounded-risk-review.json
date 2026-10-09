@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-09T19:47:38.140213+00:00",
+  "reviewer": "/root/execution_recon",
+  "source_G9": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+  "current_product": "58a890857a6b6c2da874491817beb6d561897a9a",
+  "scope": "Bounded read-only full-index fixture path and retained original failure evidence; no new tests, timing samples, CI command or threshold changes.",
+  "verdict": "actual_failure_retained_causal_phase_not_established",
+  "original_evidence": {
+    "decoded_log_git": "e03f92599ad3995fa7d138d4db2c84549539cd5b",
+    "failure_review_git": "b99c697251d38e45916fb0fedd05b300f7691016",
+    "root_measurement_callchain_git": "2a5ba9864080eb55c1991f83eef0fd9feb766662"
+  },
+  "observed": {
+    "fixture_files": 18,
+    "index_cases": 1,
+    "reported_cold_ms": 519.07,
+    "reported_warm_ms": 556.28,
+    "original_warm_gate_ms": 500,
+    "warm_method": "one discarded warmup then best of two measured calls; nearest-rank across one index case",
+    "actual_exit_code": 101,
+    "meaning": "The retained shortest measured full rebuild exceeded the gate. Displayed p95 is the same single per-case best value, not a multi-sample tail estimate. Raw individual durations and internal phase times were not retained."
+  },
+  "bounded_source_findings": [
+    {
+      "finding": "The timer covers a real in-process MCP JSON-RPC tool call, not a direct no-op/index-cache lookup.",
+      "basis": "runner.rs call_tool131-187; separate existing corpus full=true from root proof."
+    },
+    {
+      "finding": "The server call acquires the project build gate, captures build inputs, prepares, commits write, computes postprocessing/analysis, applies bookkeeping, and serializes the report. Scheduling/locks and real rebuild work all remain inside the tool-call wall.",
+      "basis": "server-core.rs18-110; no fixed500ms sleep or intentional500ms timer appears in this reviewed path. This does not identify which component cost556ms."
+    },
+    {
+      "finding": "full=true always selects full staging, followed by staged generation publication; the ordinary incremental phase_write branch is bypassed. Catalog post-write handling explicitly clears or replaces the full-build basis rather than turning the next full call into a no-op.",
+      "basis": "build-plan.rs312-345 and459-509; indexer scan full branch uses full tree walk."
+    },
+    {
+      "finding": "CapturedProject acknowledge still occurs after staged publication. The review cannot assign a measured share to cached-payload reuse or serialization from this log.",
+      "basis": "build-plan.rs486; no internal IndexReport timings present in retained fixture stdout."
+    },
+    {
+      "finding": "The reviewed fixture runner and server/index build path contain no cc-eval fifteen-table oracle comparison call; separate scale parity costs must not be substituted for this fixture wall time.",
+      "basis": "Bounded direct call path above. This is path separation, not a claim that every transitive function was exhaustively profiled."
+    },
+    {
+      "finding": "All four bounded path files are byte-identical between failedG9 and currentPCW3. The current protocol/CI startup fixes therefore do not constitute a demonstrated performance repair for this existing gate.",
+      "basis": "Exact oldG9 complete-input SHA map compared with current canonical mode/blob/size/SHA."
+    }
+  ],
+  "unresolved": [
+    "No retained per-trial IndexReport phase payload or build-gate wait measurement.",
+    "No original runner CPU/I/O contention trace for this case.",
+    "No comparable oldG6 fixture timing distribution available.",
+    "No exact phase-level cause, stable-regression probability, or flakiness conclusion supported."
+  ],
+  "minimal_next_evidence_if_authorized": "On the next otherwise-authorized original CI execution, retain the already-returned IndexReport payload for each existing timed index call after its timer stops. Preserve1warmup+2measurements/best-of/currentthreads/500msgate; add no retries or samples. This is an observability proposal only, not an implemented change or new acceptance gate.",
+  "source_refs": [
+    {
+      "path": "crates/cc-eval/src/runner.rs",
+      "mode": "100644",
+      "sha": "e771db498b9124321f2d3ef57faf387c12f672d7",
+      "sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f",
+      "size": 21425,
+      "type": "blob",
+      "G9_to_PCW3_identical": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "mode": "100644",
+      "sha": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093",
+      "size": 60618,
+      "type": "blob",
+      "G9_to_PCW3_identical": true
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "mode": "100644",
+      "sha": "4ab8d8c72e9237e0faf8b8d6d0cc2c5645c4fb63",
+      "sha256": "624fd729b259d55ff6ac643d6e39afb71997d06dd5156115e0f270a61fb63f8c",
+      "size": 13449,
+      "type": "blob",
+      "G9_to_PCW3_identical": true
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "mode": "100644",
+      "sha": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c",
+      "size": 76225,
+      "type": "blob",
+      "G9_to_PCW3_identical": true
+    }
+  ],
+  "excerpts": [
+    {
+      "path": "crates/cc-eval/src/runner.rs",
+      "lines": "151-187",
+      "text": "    /// `index` tool's `path` param is resolved against the backend's project\n    /// root (and injected when missing). All other params pass through as-is \u2014\n    /// unknown tools and schema-invalid params surface as JSON-RPC errors.\n    pub fn call_tool(&self, tool: &str, params: &Value) -> CcResult<Value> {\n        let mut args = match params {\n            Value::Null => serde_json::Map::new(),\n            Value::Object(map) => map.clone(),\n            other => {\n                return Err(CcError::InvalidParams(format!(\n                    \"tool params must be a JSON object, got: {}\",\n                    other\n                )));\n            }\n        };\n        if tool == \"index\" {\n            let resolved = match args.get(\"path\").and_then(|v| v.as_str()) {\n                None | Some(\"\") | Some(\".\") => self.project_path.clone(),\n                Some(p) if !Path::new(p).is_absolute() => self.project_path.join(p),\n                Some(p) => PathBuf::from(p),\n            };\n            args.insert(\n                \"path\".to_string(),\n                Value::String(resolved.to_string_lossy().into_owned()),\n            );\n        }\n\n        let outcome = self.runtime.block_on(\n            self.client()\n                .call_tool(CallToolRequestParams::new(tool.to_string()).with_arguments(args)),\n        );\n        match outcome {\n            Ok(result) => unwrap_tool_result(result),\n            // JSON-RPC error: handler errors, schema validation failures\n            // (invalid params), and unknown tools all land here. The display\n            // string keeps the original message (e.g. \"Mcp error: -32602: ...\").\n            Err(e) => Err(CcError::Other(e.to_string())),\n        }"
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "lines": "18-110",
+      "text": "pub fn build_index_scoped(\n    runtime: SharedCodeIndex,\n    full: bool,\n    scope: Option<cc_index::BuildScope>,\n) -> CcResult<serde_json::Value> {\n    // Per-project build gate: clone the Arc under a brief read lock and DROP\n    // the read lock before blocking on the gate (lock-ordering rule: never\n    // block on the gate while holding the CodeIndex RwLock). Manual builds\n    // queue behind whichever build is in flight instead of racing prepares.\n    let build_gate = {\n        let rt = super::lock_index(&runtime)?;\n        rt.build_gate()\n    };\n    // The gate guards no data \u2014 only build ordering \u2014 so poison is safe to recover.\n    let _build_permit = build_gate\n        .lock()\n        .unwrap_or_else(|poisoned| poisoned.into_inner());\n    let report = run_split_build(&runtime, full, false, scope.as_ref())?;\n    Ok(serde_json::to_value(report)?)\n}\n\n/// Shared split-build driver for every gated entry point (manual `index`,\n/// watcher ticks, `maybe_auto_index`): brief read lock \u2192 clone inputs \u2192\n/// lock-free prepare \u2192 write lock { stage 1: phase_write } \u2192 lock-free\n/// stage 2 (postprocess/analysis compute) \u2192 write lock { stage 3: apply +\n/// bookkeeping }. If a stage reports a stale build (index_epoch moved \u2014 at\n/// stage 1 against the prepare snapshot, or at stage 3 against the stage-1\n/// write), the whole prepare+commit sequence is re-run once. With the build\n/// gate held by every entry point the retry never fires in-process; it\n/// defends future ungated callers and cross-process writers. Callers must\n/// already hold the build gate \u2014 stage-2 correctness (no concurrent build\n/// mutating the DB between write and apply) relies on it.\n///\n/// `scope` carries the watcher tick's drained event set so the prepare can\n/// stat/hash only those paths; the stale retry re-prepares with the SAME\n/// scope (the events still describe exactly what changed \u2014 the re-prepare\n/// re-reads the now-current DB state underneath them).\npub(crate) fn run_split_build(\n    runtime: &SharedCodeIndex,\n    full: bool,\n    use_auto_file_limit: bool,\n    scope: Option<&cc_index::BuildScope>,\n) -> CcResult<IndexReport> {\n    match split_build_once(runtime, full, use_auto_file_limit, scope) {\n        Err(stale @ CcError::StalePreparedBuild { .. }) => {\n            tracing::warn!(\"stale prepared build detected, retrying once: {}\", stale);\n            split_build_once(runtime, full, use_auto_file_limit, scope)\n        }\n        other => other,\n    }\n}\n\nfn split_build_once(\n    runtime: &SharedCodeIndex,\n    full: bool,\n    use_auto_file_limit: bool,\n    scope: Option<&cc_index::BuildScope>,\n) -> CcResult<IndexReport> {\n    // Brief read lock: clone the owned build inputs (plus the auto-index\n    // file-count gate when requested), then release.\n    let (inputs, auto_file_limit) = {\n        let rt = super::lock_index(runtime)?;\n        let limit = if use_auto_file_limit {\n            Some(rt.auto_index_file_limit()?)\n        } else {\n            None\n        };\n        (rt.build_inputs()?, limit)\n    };\n    // Heavy prepare phase runs with NO lock held \u2014 read queries are not blocked.\n    let prepared = CodeIndex::prepare_build_scoped(&inputs, full, auto_file_limit, scope)?;\n    // Stage 1 \u2014 write lock scoped to `phase_write` only (the generation guard\n    // runs inside, under this lock).\n    let written = {\n        let mut rt = super::lock_index_write(runtime)?;\n        rt.commit_build_write(&inputs, full, auto_file_limit, prepared)?\n    };\n    // Stage 2 \u2014 postprocess/analysis compute with NO lock held: signature\n    // scans, synthesis passes, Louvain, git/infra/ADR analysis all read the\n    // just-committed snapshot through the read pool while readers proceed.\n    // The build gate (held by our caller) keeps the DB stable until stage 3.\n    let staged = CodeIndex::compute_postprocess(&inputs, full, auto_file_limit, written)?;\n    // Stage 3 \u2014 short write lock: apply the typed deltas + bookkeeping.\n    let report = {\n        let mut rt = super::lock_index_write(runtime)?;\n        rt.apply_postprocess(&inputs, full, auto_file_limit, staged)?\n    };\n    #[cfg(feature = \"semantic\")]\n    {\n        let worker = super::lock_index(runtime)?.semantic_runtime();\n        if let Some(worker) = worker {\n            worker.schedule();\n        }"
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "lines": "312-345",
+      "text": "        let mut full_staging_us = None;\n        let (\n            write_units,\n            chunk_blobs,\n            full_rebuild_staging_floor,\n            staged_config_units,\n            staged_parsed_paths,\n        ) = if self.mode.is_full() {\n            let staged_parsed_paths: Vec<String> =\n                write_units.iter().map(|u| u.rel_path.clone()).collect();\n            let staging_started = Instant::now();\n            let (staged_config_units, generation_floor) =\n                time_step(\"prepare\", \"full_build_staging\", || {\n                    indexer.write_full_snapshot_build_staging(\n                        project_path,\n                        &write_units,\n                        &output_snapshot.route_nodes,\n                        &hierarchy_edges,\n                        &chunk_blobs,\n                        crate::project_model::BuildInputView {\n                            walk_manifest: scan_result.walk_manifest.as_deref(),\n                            project_model: Some(&project_model),\n                        },\n                    )\n                })?;\n            full_staging_us = Some(staging_started.elapsed().as_micros() as u64);\n            (\n                Vec::new(),\n                PrecompressedChunks::new(),\n                Some(generation_floor),\n                staged_config_units,\n                staged_parsed_paths,\n            )\n        } else {"
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "lines": "459-509",
+      "text": "        project_model.verify(project_path)?;\n        let mut build_explain = BuildExplainCollector::new();\n        let walk_manifest = scan_result.walk_manifest.clone();\n        let phase_start = Instant::now();\n        let write_result = if let Some(generation_floor) = full_rebuild_staging_floor {\n            indexer.commit_full_rebuild_staging(\n                project_path,\n                generation_floor,\n                &scan_result.to_remove,\n            )?\n        } else {\n            indexer.phase_write(\n                project_path,\n                self.mode.is_full(),\n                write_units,\n                &actions,\n                &scan_result.to_remove,\n                &output_snapshot.route_nodes,\n                &hierarchy_edges,\n                &chunk_blobs,\n                walk_manifest.as_deref(),\n                reconcile.as_ref(),\n                scan_result.scope_hints.as_ref(),\n                Some(&project_model),\n                &mut build_explain,\n            )?\n        };\n        project_model.acknowledge(&indexer.db)?;\n        let write_ms = phase_start.elapsed().as_millis() as u64;\n\n        let config_units = if staged_config_units.is_empty() {\n            write_result.config_units\n        } else {\n            staged_config_units\n        };\n        let parsed_file_paths = if staged_parsed_paths.is_empty() {\n            write_result\n                .write_units\n                .iter()\n                .map(|u| u.rel_path.clone())\n                .collect()\n        } else {\n            staged_parsed_paths\n        };\n\n        // Every phase_write write has committed: fold the resolution catalog\n        // into the cross-build cache (or clear it \u2014 full rebuilds and\n        // unprovable bases must not leave a stale catalog parked).\n        crate::resolver::catalog_cache::after_write(\n            &indexer.db,\n            self.mode.is_full(),"
+    }
+  ],
+  "new_TODO_complete": 0,
+  "TODO_remaining": 29
+}

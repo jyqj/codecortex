@@ -1,0 +1,81 @@
+{
+  "schema": "GCW3-original-v15-execution-v1",
+  "created_at": "2026-10-09T20:02:31.667519+00:00",
+  "verdict": "original_cli_or_source_check_failed",
+  "source": "34dc4e14dc96d077eae6173ab6885370323eff3f",
+  "tree": "74233d3b797162da63547afa04df2358acffe320",
+  "product": "58a890857a6b6c2da874491817beb6d561897a9a",
+  "review": "b39fdd8c858755d1a92c176efc5340907f4a3757",
+  "actual_cli_invocations": 1,
+  "execution": {
+    "argv": [
+      "python3",
+      "scripts/verify_reviewed_source_v15.py",
+      "--source-version",
+      "p8-completion-source-20261009-v15"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0/round26-GCW3-original-v15/source",
+    "started_at": "2026-10-09T19:55:27.462015+00:00",
+    "ended_at": "2026-10-09T20:01:34.969344+00:00",
+    "duration_seconds": 367.50733027499973,
+    "exit_code": 1,
+    "source_entries_equal": true,
+    "git_equal": true,
+    "index_equal": true,
+    "entries": 1434,
+    "stdout_bytes": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_bytes": 5409,
+    "stderr_sha256": "d6736446e29037b6a5ff5f59ef737531d4482f0ef6868c8d256c2f2f2b277080",
+    "scope": "original source admission CLI only; no benchmark/Rust or task completion"
+  },
+  "stdout_json": null,
+  "materialized_domain": {
+    "products": 1095,
+    "validation": 146,
+    "bindings_ci_exclusions": [
+      ".github/workflows/ci.yml",
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ],
+    "review": "artifacts/checkpoints/p8-cold-wide-startup-integration-bfcc-20261009/independent-source-review.json",
+    "history_protected": 236,
+    "history_overlap_existing": 47,
+    "total_expected": 1434,
+    "actual_entries": 1434,
+    "extras": [],
+    "missing": []
+  },
+  "inputs_before": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round26-GCW3-original-v15/original-v15-attempt01/inputs-before.json",
+    "bytes": 461593,
+    "sha256": "29ea617f66f40ab79607d8dc20022a3c26ab240f9d4d597e84fdd21b882e979f",
+    "git_blob": "6ebe8c9a1a0848109b54f624e61ddb0e7ddb52c1",
+    "mode": "0o644"
+  },
+  "inputs_after": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round26-GCW3-original-v15/original-v15-attempt01/inputs-after.json",
+    "bytes": 461593,
+    "sha256": "29ea617f66f40ab79607d8dc20022a3c26ab240f9d4d597e84fdd21b882e979f",
+    "git_blob": "6ebe8c9a1a0848109b54f624e61ddb0e7ddb52c1",
+    "mode": "0o644"
+  },
+  "runtime": {
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "python": "3.12.14"
+  },
+  "preparation": {
+    "kind": "Real isolated sparse Git checkout; actual fetched commit and detached HEAD, full index tree; no forged Git identity.",
+    "read_only_alternates": "/workspace/scratch/bfccb8494ba0/todo-audit-round25-50k-recovery/git-object-cache/objects",
+    "history": "Only original declared61 immutable script refs and original two catalogue sets hydrated; original helper relative, no-lazy-fetch, file and byte limits unchanged;236 current protected paths.",
+    "prior_auxiliary_read_failures": "One initial rg referenced nonexistent scripts/reviewed_source_git.py (exit2); later auxiliary ps could not see childPID across exec contexts (exit1). Neither called or retried v15; raw tool observations retained in session."
+  },
+  "limitations": [
+    "This proves the original selected source-admission CLI only.",
+    "No181-test suite, Rust, benchmark, source performance gate, or fullscale study ran here.",
+    "Sparse tree materialization1434 is the complete required product/validation/history union, not all repository files.",
+    "The earlier G9 500ms fixture failure remains unchanged."
+  ],
+  "newly_completed_todos": 0,
+  "remaining_todos": 29
+}

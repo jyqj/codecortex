@@ -145,7 +145,10 @@ pub struct IndexDb {
     /// borrowed connections retain their previous snapshot; new borrowers
     /// must explicitly reopen the database instead of reading a stale pool.
     pub(crate) pool: RwLock<Option<Pool<SqliteConnectionManager>>>,
+    #[cfg(not(feature = "p8-db-lock-observation"))]
     pub(crate) write_conn: Mutex<Connection>,
+    #[cfg(feature = "p8-db-lock-observation")]
+    pub(crate) write_conn: crate::lock_observation::ObservedMutex<Connection>,
     pub(crate) read_pool_size: u32,
     /// Process-unique handle identity assigned at open from a monotonic
     /// counter. Unlike `Arc::as_ptr`, it is never reused after a handle is
@@ -236,11 +239,17 @@ impl IndexDb {
         let pool = Self::build_read_pool(path, read_pool_size)?;
         tracing::debug!(read_pool_size, "index db read pool initialized");
 
+        #[cfg(feature = "p8-db-lock-observation")]
+        crate::lock_observation::record_instance_created();
+
         Ok((
             Self {
                 db_path: path.to_path_buf(),
                 pool: RwLock::new(Some(pool)),
+                #[cfg(not(feature = "p8-db-lock-observation"))]
                 write_conn: Mutex::new(write_conn),
+                #[cfg(feature = "p8-db-lock-observation")]
+                write_conn: crate::lock_observation::ObservedMutex::new(write_conn),
                 read_pool_size,
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
                 seed_cache: Mutex::new(None),
@@ -710,6 +719,7 @@ impl IndexDb {
     }
 
     /// Get a read connection from the pool.
+    #[cfg(not(feature = "p8-db-lock-observation"))]
     pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
         let pool = self
             .pool
@@ -723,6 +733,46 @@ impl IndexDb {
             })?
             .get()
             .map_err(|e| CcError::Database(format!("pool get: {}", e)))
+    }
+
+    /// Same acquisitions and errors as the default path; the optional observer
+    /// measures pool-lock acquisition separately from connection checkout wall.
+    #[cfg(feature = "p8-db-lock-observation")]
+    pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
+        use crate::lock_observation::{acquire, Kind, Outcome};
+        let timer = acquire(Kind::ReadPoolLock);
+        let result = self.pool.read();
+        timer.finish(if result.is_ok() {
+            Outcome::Acquired
+        } else {
+            Outcome::Poisoned
+        });
+        let pool = result.map_err(|e| CcError::Database(format!("read pool lock: {}", e)))?;
+        let timer = acquire(Kind::ReadConnectionCheckout);
+        let result = pool
+            .as_ref()
+            .ok_or_else(|| {
+                CcError::Database(
+                    "database rebuild reopen failed; reopen the database handle".into(),
+                )
+            })
+            .and_then(|pool| {
+                pool.get()
+                    .map_err(|e| CcError::Database(format!("pool get: {}", e)))
+            });
+        timer.finish(if result.is_ok() {
+            Outcome::Acquired
+        } else {
+            Outcome::Failed
+        });
+        result
+    }
+
+    /// Process-wide optional observations include retired database handles.
+    /// This reads counters only: no database lock, pool checkout, or SQL.
+    #[cfg(feature = "p8-db-lock-observation")]
+    pub fn lock_observation_snapshot(&self) -> crate::lock_observation::DbLockObservationSnapshot {
+        crate::lock_observation::snapshot(self.instance_id)
     }
 
     /// Force a WAL checkpoint, truncating the WAL file.

@@ -25,7 +25,10 @@ OBSERVER_FILES = (
     "scripts/p8_cold_build.py", "scripts/p8_rollback.py",
     "scripts/p7_stdio_build_receipt.py", "scripts/p8_backfill.py",
     "scripts/resource_harness/__init__.py", "scripts/resource_harness/runtime.py",
+    "scripts/p8_runtime_lock_observation.py",
 )
+LOCK_OBSERVATION_FEATURE = "p8-db-lock-observation"
+LOCK_OBSERVATION_PROFILE = "mixed_db_lock_observation_v1"
 
 
 def require(condition, message):
@@ -106,7 +109,7 @@ def verify_output(root):
     return value
 
 
-def checked_artifact(messages, root, target, name):
+def checked_artifact(messages, root, target, name, lock_observation=False):
     package, source, _, _ = TARGETS[name]
     rows = [row for row in messages if row.get("reason") == "compiler-artifact"
             and row.get("target", {}).get("name") == name
@@ -114,9 +117,10 @@ def checked_artifact(messages, root, target, name):
     require(len(rows) == 1, "exactly one original Cargo artifact required: " + name)
     value = rows[0]
     profile = value.get("profile", {})
-    require(value.get("features") == [] and profile.get("opt_level") == "3"
+    expected_features = [LOCK_OBSERVATION_FEATURE] if lock_observation else []
+    require(value.get("features") == expected_features and profile.get("opt_level") == "3"
             and profile.get("test") is False and profile.get("debug_assertions") is False,
-            "runtime artifact must be the actual release default profile: " + name)
+            "runtime artifact must be the actual release profile and requested feature set: " + name)
     require(value.get("fresh") is False, "runtime artifact was reused instead of built in the private target: " + name)
     require(value.get("manifest_path") == str(root / "crates" / package / "Cargo.toml")
             and value.get("target", {}).get("src_path") == str(root / "crates" / package / source),
@@ -130,11 +134,15 @@ def checked_artifact(messages, root, target, name):
     return value
 
 
-def command_for(target):
-    return ["cargo", "build", "--release", "--locked", "--offline", "--no-default-features",
+def command_for(target, lock_observation=False):
+    command = ["cargo", "build", "--release", "--locked", "--offline", "--no-default-features",
             "-p", "cc-server", "--bin", "codecortex", "-p", "cc-eval",
             "--bin", "p8-oracle", "--bin", "p8-runtime-statistics",
             "--message-format=json-render-diagnostics", "--target-dir", str(target)]
+    if lock_observation:
+        command.extend(["--features", "cc-server/" + LOCK_OBSERVATION_FEATURE
+                        + ",cc-eval/" + LOCK_OBSERVATION_FEATURE])
+    return command
 
 
 def private_build_environment(root, target):
@@ -174,7 +182,7 @@ def verify_toolchain(receipt):
     return before
 
 
-def verify_receipt(root, receipt_path, binaries):
+def verify_receipt(root, receipt_path, binaries, lock_observation=False):
     """Current same-checkout/same-job proof, including the actual copy source.
 
     This deliberately fails when the original Cargo target was removed or the
@@ -185,6 +193,8 @@ def verify_receipt(root, receipt_path, binaries):
     receipt = json.loads(receipt_path.read_text())
     require(receipt.get("schema_version") == 2 and receipt.get("status") == "passed"
             and receipt.get("build_exit_code") == 0, "runtime build receipt is not successful")
+    require(receipt.get("diagnostic_profile") == (LOCK_OBSERVATION_PROFILE if lock_observation else None),
+            "diagnostic/default runtime build profiles must not be mixed")
     source, observer = source_snapshot(root), observer_snapshot(root)
     require(receipt.get("source_before") == receipt.get("source_after") == source,
             "runtime source differs from the exact build")
@@ -193,7 +203,7 @@ def verify_receipt(root, receipt_path, binaries):
             "runtime observer differs from the exact build")
     target = Path(receipt.get("target_dir", "")).resolve(strict=True)
     require(target.is_dir() and receipt.get("target_dir") == str(target)
-            and receipt.get("build_command") == command_for(target),
+            and receipt.get("build_command") == command_for(target, lock_observation),
             "runtime Cargo invocation or target is not the recorded locked build")
     toolchain = verify_toolchain(receipt)
     directory = receipt_path.parent
@@ -214,7 +224,7 @@ def verify_receipt(root, receipt_path, binaries):
     for name, binary in binaries.items():
         binary = regular(binary).resolve()
         require(binary == directory / name, "runtime copied artifact is outside the sealed build directory")
-        artifact = checked_artifact(messages, root, target, name)
+        artifact = checked_artifact(messages, root, target, name, lock_observation)
         stored = receipt["artifacts"][name]
         original = regular(artifact["executable"])
         copied = dict(path=str(original), bytes=original.stat().st_size, sha256=digest(original))
@@ -239,12 +249,14 @@ def verify_receipt(root, receipt_path, binaries):
                 verification_scope="original Cargo target, copied artifacts and committed observer available in this job")
 
 
-def build(root, output):
+def build(root, output, lock_observation=False):
     root, out = Path(root).resolve(strict=True), new_directory(output)
     target = Path(os.environ.get("CARGO_TARGET_DIR", out.with_name(out.name + "-cargo-target"))).absolute().resolve()
-    command = command_for(target)
+    command = command_for(target, lock_observation)
     receipt = dict(schema_version=2, status="building", build_command=command, build_exit_code=None,
                    target_dir=str(target), cold_build_claim=False, artifacts={})
+    if lock_observation:
+        receipt["diagnostic_profile"] = LOCK_OBSERVATION_PROFILE
     error = None
     try:
         require(not target.is_relative_to(out), "Cargo target must be outside the retained build evidence")
@@ -276,7 +288,7 @@ def build(root, output):
         require(any(row.get("reason") == "build-finished" and row.get("success") is True for row in messages),
                 "Cargo success event missing")
         for name, (_, _, prefix, event_field) in TARGETS.items():
-            artifact = checked_artifact(messages, root, target, name)
+            artifact = checked_artifact(messages, root, target, name, lock_observation)
             executable = regular(artifact["executable"])
             original = dict(path=str(executable), bytes=executable.stat().st_size, sha256=digest(executable))
             copied = out / name
@@ -299,7 +311,7 @@ def build(root, output):
         seal_output(out)
     if error is not None:
         raise error
-    verify_receipt(root, out / "build-receipt.json", {name: out / name for name in TARGETS})
+    verify_receipt(root, out / "build-receipt.json", {name: out / name for name in TARGETS}, lock_observation)
     return receipt
 
 
@@ -307,9 +319,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--lock-observation", action="store_true",
+                        help="explicit opt-in diagnostic feature; never a default runtime sample")
     args = parser.parse_args()
     try:
-        receipt = build(args.source, args.output)
+        receipt = build(args.source, args.output, args.lock_observation)
         print(json.dumps({key: value for key, value in receipt.items()
                           if key.endswith("sha256") or key == "build_exit_code"}, indent=2))
     except Exception as error:

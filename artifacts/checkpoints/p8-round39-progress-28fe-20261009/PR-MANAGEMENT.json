@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "kind": "p8_round39_pr_management",
+  "recorded_at": "2026-10-09T19:09:00Z",
+  "main": {
+    "commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "checks": "19/19 success",
+    "action": "none"
+  },
+  "pull_requests": [
+    {
+      "number": 188,
+      "state": "open",
+      "draft": false,
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "checks": "26/26 success",
+      "decision": "OPEN/HOLD",
+      "reason": "paired dense/sparse/multi-batch regressions remain"
+    },
+    {
+      "number": 193,
+      "state": "open",
+      "draft": true,
+      "head": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+      "tree": "6eefdaabb405d5758e7a4fda7afdf86a62a66269",
+      "decision": "DRAFT/HOLD",
+      "ci_failure": {
+        "run": 37974288651,
+        "job": 113968501720,
+        "test": "cc_eval::tests::benchmark_fixture",
+        "actual_index_warm_p95_ms": 556.28,
+        "limit_ms": 500,
+        "exit_code": 101
+      },
+      "reason": "two prior semantic/protocol blockers remain and current-head CI is not green"
+    },
+    {
+      "number": 194,
+      "state": "open",
+      "draft": true,
+      "head": "a15034da7c6a6b1dda79a7aa1a1efd843d71fe15",
+      "base": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "decision": "DRAFT/SEPARATE",
+      "wide_run": {
+        "id": 37976092549,
+        "status": "queued",
+        "build_job": 113974644200
+      },
+      "reason": "dirty 4096 is independent research and cannot replace original dirty 200 acceptance"
+    }
+  ],
+  "specified_history": {
+    "178": "closed-unmerged",
+    "180": "merged",
+    "181": "merged",
+    "184": "closed-unmerged"
+  },
+  "actions": {
+    "merged": [],
+    "closed": [],
+    "reopened": [],
+    "workflow_dispatches": [],
+    "workflow_retries": [],
+    "workflow_cancellations": []
+  }
+}

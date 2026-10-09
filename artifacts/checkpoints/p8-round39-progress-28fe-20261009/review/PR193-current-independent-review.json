@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "kind": "pr193_round39_independent_incremental_acceptance",
+  "observed_at": "2026-10-09T18:58:13.194Z",
+  "repository": "jyqj/codecortex",
+  "pull_request": 193,
+  "base_main": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+  "reviewed_increment": {
+    "from": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "from_tree": "d8891f547c92044fd40b63165d6ef54cb6de8bab",
+    "to": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+    "to_tree": "6eefdaabb405d5758e7a4fda7afdf86a62a66269",
+    "ahead_by": 3,
+    "product_commit": "ce9891e15a0a4fc085e5fa8a57a172d3df458c36",
+    "product_tree": "5fc7edc2dbf33bcf1a57e96ecf7c09b0cfaf6bba",
+    "product_delta_classification": "rustfmt_only",
+    "proof": "ce9891 changes only nine formatting hunks in four Rust files; later commits add review artifacts and update source/review identity bindings."
+  },
+  "exact_blobs_at_head": {
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872",
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": "82fb62875823c983da2f5e16ad45c08fc2de9161"
+  },
+  "prior_blockers": [
+    {
+      "id": "A_fit_A_plus_B_SQLITE_FULL",
+      "resolved": false,
+      "evidence": [
+        "streaming.rs lines 452-457 still spools A, calls equal_input_order, and sets bc=ac without spooling side B when identical_order is true.",
+        "No semantic change exists in 4fe..52be; no new exact A-fits-but-A-plus-B-hits-max_page_count control exists.",
+        "The existing disk-budget control sets max_scratch_bytes=64KiB and proves only that A itself can fail; it does not preserve the prior two-spool capacity boundary."
+      ],
+      "consequence": "An equal-order case for which A fits but adding B would raise SQLITE_FULL can now certify equality; old resource-failure behavior is not preserved."
+    },
+    {
+      "id": "public_equal_input_order_witness",
+      "resolved": false,
+      "evidence": [
+        "streaming.rs line 509 still emits table JSON key equal_input_order_witness.",
+        "integration tests continue to assert the key, confirming a public report-schema addition rather than an internal-only diagnostic."
+      ],
+      "consequence": "The observable report protocol is still changed."
+    }
+  ],
+  "ci": {
+    "run_id": 37974288651,
+    "head_sha": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+    "run_status_at_observation": "queued",
+    "jobs": [
+      {
+        "id": 113968501411,
+        "name": "msrv",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 113968501720,
+        "name": "check",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 113968501748,
+        "name": "security",
+        "status": "queued",
+        "conclusion": null
+      }
+    ],
+    "check_failure": {
+      "step": "Default regression within authorized scope",
+      "exit_code": 101,
+      "test": "cc_eval::tests::benchmark_fixture",
+      "measured": "index warm p95 556.28ms",
+      "limit": "500ms",
+      "scope_note": "Not shown to be caused by the oracle patch, but the current head is objectively not green. Format, clippy and compile steps passed; the failure interrupted later default-test targets, so it does not establish the current-head oracle integration suite."
+    }
+  },
+  "performance_evidence": {
+    "candidate_micro_diagnostics_on_old_source": {
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "median_ratio_candidate_over_baseline": {
+        "same_input_order": 0.9076299483,
+        "reverse_order": 1.3683205413,
+        "late_mismatch": 1.2254548335
+      },
+      "interpretation": "Narrow same-order benefit, material fallback regressions; Python/SQLite diagnostic only, not registered-scale acceptance."
+    },
+    "registered_study": {
+      "run_id": 37962416564,
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "build_job": {
+        "id": 113928317071,
+        "conclusion": "success"
+      },
+      "preflights": [
+        {
+          "capacity": 1000,
+          "job_id": 113930880423,
+          "conclusion": "success"
+        },
+        {
+          "capacity": 5000,
+          "job_id": 113930880337,
+          "conclusion": "success"
+        },
+        {
+          "capacity": 10000,
+          "job_id": 113930880449,
+          "conclusion": "success"
+        },
+        {
+          "capacity": 50000,
+          "job_id": 113930880373,
+          "conclusion": "success"
+        },
+        {
+          "capacity": 100000,
+          "job_id": 113930880282,
+          "status": "in_progress",
+          "conclusion": null
+        }
+      ],
+      "expansion_jobs_present": false,
+      "limitation": "This is an old-source study and was incomplete at observation. Job success alone is not a validated performance result and cannot be relabeled as evidence for source 52be."
+    },
+    "current_head_representative_oracle_performance": "absent"
+  },
+  "verdict": "HOLD",
+  "blockers_required_for_admission": [
+    "Restore exact old A-fit/A-plus-B scratch-exhaustion behavior and add a targeted boundary control, or explicitly obtain acceptance to change that resource-failure contract.",
+    "Remove equal_input_order_witness from the public JSON report (or version the protocol with explicit acceptance) and update tests accordingly.",
+    "Obtain successful current-head CI and representative current-source performance evidence; distinguish same-order wins from reverse/late-mismatch fallback costs."
+  ],
+  "mutations": {
+    "refs_written": false,
+    "comments_written": false,
+    "workflow_dispatched": false,
+    "runs_retried_or_cancelled": false
+  }
+}

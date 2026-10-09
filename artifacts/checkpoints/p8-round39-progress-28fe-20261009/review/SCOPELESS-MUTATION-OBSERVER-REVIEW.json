@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "kind": "independent_scope_less_resume_journal_review",
+  "reviewed_date_utc": "2026-10-09",
+  "repository": "jyqj/codecortex",
+  "fixed_main": {
+    "commit": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+    "tree": "e039a817291934b15cc018fd74d2c83982bb7f37",
+    "conclusion": "main is unchanged from the round-38 source under review"
+  },
+  "question": "Whether a new PR/commit already implements a complete scope-less resume watermark/journal, and whether a strictly minimal safe product slice can be landed without changing the fixed benchmark protocol, B=200, resume=1024, stages, or budgets.",
+  "publication_search": {
+    "open_pull_requests_reviewed": [
+      {
+        "number": 188,
+        "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+        "relevant_product_paths": [
+          "crates/cc-db/src/resolution_dependency_store.rs"
+        ],
+        "verdict": "unrelated"
+      },
+      {
+        "number": 189,
+        "head": "10ec828beb94200ec679302c45115760ebd55ee9",
+        "relevant_product_paths": [
+          "crates/cc-eval/src/benchmark/p8_scale.rs",
+          "crates/cc-eval/src/bin/p8-scale.rs"
+        ],
+        "verdict": "study/configuration only; no journal"
+      },
+      {
+        "number": 190,
+        "head": "9ddae045f6925140a4d652c5f28f64add459eff1",
+        "relevant_product_paths": [
+          "crates/cc-eval/src/benchmark/oracle.rs"
+        ],
+        "verdict": "unrelated"
+      },
+      {
+        "number": 191,
+        "head": "7da43a80bc00698101de5619dd486a3393a667a3",
+        "relevant_product_paths": [
+          "crates/cc-db/src/index_db_write_batch.rs"
+        ],
+        "verdict": "unrelated"
+      },
+      {
+        "number": 192,
+        "head": "e7f8e913861f32e6745bcd56794601133b621c34",
+        "relevant_product_paths": [
+          "crates/cc-eval/src/benchmark/p8_scale.rs",
+          "crates/cc-eval/src/bin/p8-scale.rs"
+        ],
+        "verdict": "study/configuration only; no journal"
+      },
+      {
+        "number": 193,
+        "head": "52bef997f0825451e32fc6291f90cd8df5c8bbd7",
+        "relevant_product_paths": [
+          "crates/cc-db/src/freshness_store.rs",
+          "crates/cc-db/src/index_db_write_batch.rs",
+          "crates/cc-index/src/project_model/mod.rs"
+        ],
+        "verdict": "payload/oracle reuse only; no watcher, session, scan, build driver, or journal"
+      },
+      {
+        "number": 194,
+        "head": "a15034da7c6a6b1dda79a7aa1a1efd843d71fe15",
+        "relevant_product_paths": [
+          "crates/cc-index/src/project_model/mod.rs",
+          "crates/cc-eval/src/benchmark/p8_scale.rs",
+          "crates/cc-eval/src/bin/p8-scale.rs"
+        ],
+        "verdict": "new wide-dirty study changes the registered work configuration; no journal and not applicable to the fixed 200/1024 study"
+      }
+    ],
+    "commit_and_code_queries": [
+      "MutationJournal",
+      "watermark changes_since",
+      "scope-less",
+      "watcher overflow",
+      "event journal overflow index epoch",
+      "resume scan"
+    ],
+    "branch_queries": [
+      "mutation",
+      "journal",
+      "watermark",
+      "scope",
+      "scan",
+      "resume"
+    ],
+    "result": "No post-round-38 public PR, commit, default-branch code result, or matching branch carries a scope-less resume completeness journal/watermark."
+  },
+  "fixed_source": [
+    {
+      "path": "crates/cc-server/src/mcp.rs",
+      "blob": "9a018185e2b2e362a16641c29bf3a41c74ac90ef",
+      "fact": "tool_index calls set_active_project for every request and passes None when changed_paths/removed_paths are absent."
+    },
+    {
+      "path": "crates/cc-server/src/project_session.rs",
+      "blob": "c10c9e4585a9e192b2af9ed99630096d8c861c18",
+      "fact": "set_active_project calls start_watcher; start_watcher replaces the tracked watcher and starts it only when auto_index.enabled is true. maybe_auto_index and scope-less manual builds call run_split_build with None."
+    },
+    {
+      "path": "crates/cc-server/src/watcher.rs",
+      "blob": "3f45d0eca3044f910454226016aeec13a89c5e9b",
+      "fact": "RecommendedWatcher records changed/removed sets, treats folder/rename/unknown/incomplete-remove/error/rescan as rescan_needed, debounces staging into pending, and drains by destructive take. It exposes no durable cursor, delivery fence, or build-linked acknowledgement token."
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "blob": "4ab8d8c72e9237e0faf8b8d6d0cc2c5645c4fb63",
+      "fact": "run_split_build transports only Option<&BuildScope>; success has no journal acknowledgement and stale retry reuses the same scope."
+    },
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "blob": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "fact": "phase_scan_and_diff only takes the targeted path for a nonempty BuildScope; scope-less and empty scopes execute scan_with_manifest. Scoped trust assumes the supplied events are the complete changes since the prior build."
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "fact": "prepare captures project inputs after scan/diff and commit guards index_epoch, but no filesystem observation generation is captured or acknowledged."
+    },
+    {
+      "path": "Cargo.toml",
+      "blob": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+      "fact": "workspace uses notify 8.2 through RecommendedWatcher."
+    }
+  ],
+  "external_primary_api_check": {
+    "watcher_trait": {
+      "url": "https://docs.rs/notify/8.2.0/notify/trait.Watcher.html",
+      "fact": "Watcher offers new, watch, unwatch, kind, paths_mut, and configure; it does not expose an event-delivery barrier or a filesystem mutation cursor."
+    },
+    "rescan_flag": {
+      "url": "https://docs.rs/notify/8.2.0/notify/event/enum.Flag.html",
+      "fact": "Rescan indicates a lapse or state change that invalidates events, but is emitted only by some platforms/backends."
+    },
+    "known_problems": {
+      "url": "https://docs.rs/notify/8.2.0/notify/",
+      "fact": "The library documents filesystems/platform cases that may emit no events or miss events; RecommendedWatcher alone is therefore not a cross-platform completeness proof."
+    }
+  },
+  "decision": {
+    "verdict": "REJECT_CURRENT_ROUND_PRODUCT_PATCH",
+    "reason": [
+      "Keeping the present FileWatcher alive and reusing its changed/removed set would optimize only auto-index-enabled sessions and would still be reset by repeated tool_index set_active_project calls unless lifecycle changes are made.",
+      "Starting a RecommendedWatcher for auto_index=false removes one lifecycle gap but does not produce a complete delivery watermark. An empty queue is not proof that no undeclared filesystem change occurred.",
+      "Directory mtimes, root mtimes, git status, the durable dirty-closure state, and the SQLite index epoch each miss valid classes of source/config/infra changes. None can certify scope-less no-change.",
+      "A PollWatcher may rewalk/hash the tree, moving rather than removing the 100k scan cost; excluding that work from the measured build would be benchmark-accounting distortion.",
+      "Changing p8_scale to pass known changed_paths would alter the fixed scope-less protocol and is prohibited."
+    ],
+    "code_written": false,
+    "owner_ref_moved": false,
+    "native_execution_started": false,
+    "benchmark_or_budget_changed": false,
+    "original_todo_credit": 0
+  },
+  "minimum_future_safe_slice": {
+    "public_protocol": "No MCP parameter change. tool_index remains scope-less.",
+    "internal_components": [
+      {
+        "name": "ProjectMutationObserver",
+        "owner": "ProjectServices, keyed by normalized project path",
+        "lifetime": "Created once with the project runtime, independent of auto_index; never replaced merely because the same project becomes active again.",
+        "contract": "begin/full-baseline/changes_since/ack, returning Complete, Overflow, Unready, Unsupported, or IdentityMismatch."
+      },
+      {
+        "name": "ObservationToken",
+        "binds": [
+          "canonical project identity",
+          "observer backend instance",
+          "filesystem or volume identity",
+          "monotonic backend cursor",
+          "index database incarnation",
+          "index_epoch",
+          "admission/config fingerprint"
+        ],
+        "rule": "Only a Complete interval may authorize a targeted scan; every other result falls back to the current scan_with_manifest path."
+      },
+      {
+        "name": "BuildObservationLease",
+        "rule": "Acquire under the existing per-project build gate; snapshot but do not destructively acknowledge events before prepare/commit. Ack the end token only after stage 3 succeeds. Failure, panic, stale retry exhaustion, close/reopen, or observer restart forces full reconciliation."
+      }
+    ],
+    "backend_requirement": "At least one explicitly supported backend must supply a documented, testable complete cursor/fence. notify RecommendedWatcher callbacks alone do not meet this contract. Other platforms/filesystems stay on full scan until their backend supplies the same proof.",
+    "baseline_rule": "First build after observer creation/restart/identity change remains a full scan. Observer coverage must begin before it; events accumulated during the full build are retained as conservative next-build work unless the backend can fence and prove them included.",
+    "scope_derivation": "Complete empty interval yields a DB-universe no-files-changed ScanDiffResult and may continue only durable resolution work. Complete nonempty interval becomes the existing BuildScope path. Dot paths, directory/rename events, config/admission changes, >512 events, unsupported path encodings, overflow, and observer errors force full scan.",
+    "explainability": "Record scan mode, start/end token identities, fallback reason, and acknowledgement outcome in BuildExplain without changing benchmark stages or treating diagnostics as acceptance."
+  },
+  "required_negative_controls": [
+    "undeclared source edit between successful scope-less builds",
+    "same-size edit with restored mtime",
+    "create, delete, rename, directory creation/removal, and replacement-save patterns",
+    "dot path and nested .gitignore changes",
+    ".codecortex.json and project model/config changes",
+    "hidden config and infra files outside ordinary source admission",
+    "more than 512 events",
+    "backend overflow/error, missing event, watcher restart, and project reactivation",
+    "auto_index=false session",
+    "project cache eviction, close/reopen, DB replacement, DB incarnation/index_epoch mismatch",
+    "prepare failure, stage-1 failure, stage-2 failure, stage-3 failure, and stale retry",
+    "B=200 unchanged, resume=1024 unchanged, same number and order of benchmark stages and reports",
+    "full-scan parity after every forced fallback"
+  ],
+  "non_solutions": [
+    "Do not cache WalkManifest as a freshness certificate.",
+    "Do not infer filesystem quiescence from resolution_freshness.complete.",
+    "Do not turn empty scope into no-op.",
+    "Do not use root/directory mtimes as a content-completeness proof.",
+    "Do not make the benchmark scoped or add a wider dirty budget to repair the fixed population.",
+    "Do not hide an equivalent full-tree poll outside measured build windows."
+  ]
+}

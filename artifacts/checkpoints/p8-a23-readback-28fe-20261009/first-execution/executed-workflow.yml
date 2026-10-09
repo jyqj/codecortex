@@ -1,0 +1,82 @@
+name: Fixed A23 original artifact readback
+
+on:
+  push:
+    branches: [audit/p8-a23-original-readback-28fe-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  GIT_OPTIONAL_LOCKS: '0'
+
+jobs:
+  readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        group: [runtime, platform]
+    steps:
+      - name: Obtain the immutable readback controller
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-a23-readback-28fe-20261009/controller/
+      - name: Preserve the controller outside the measured checkout
+        run: |
+          test ! -e "$RUNNER_TEMP/a23-readback-controller"
+          cp -a artifacts/checkpoints/p8-a23-readback-28fe-20261009/controller "$RUNNER_TEMP/a23-readback-controller"
+      - name: Obtain the exact original A23 source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - name: Parse the controller and run bounded transport fixtures
+        run: |
+          python3 -B - "$RUNNER_TEMP/a23-readback-controller" <<'PY'
+          import ast, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          for path in sorted(root.rglob('*.py')):
+              ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
+          print('All fixed controller and reviewer Python sources parsed.')
+          PY
+          python3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" --self-check
+      - name: Read the fixed original ZIPs and invoke original data validators
+        env:
+          GH_TOKEN: ${{ github.token }}
+          P8_READBACK_GROUP: ${{ matrix.group }}
+        run: |
+          python3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" \
+            --group "$P8_READBACK_GROUP" \
+            --source "$GITHUB_WORKSPACE" \
+            --controller "$RUNNER_TEMP/a23-readback-controller" \
+            --output "$RUNNER_TEMP/a23-readback-$P8_READBACK_GROUP"
+      - name: Stage regular original and derived files without following checkout views
+        if: always()
+        env:
+          P8_READBACK_GROUP: ${{ matrix.group }}
+        run: |
+          python3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" --stage-upload \
+            --output "$RUNNER_TEMP/a23-readback-$P8_READBACK_GROUP" \
+            --controller "$RUNNER_TEMP/a23-readback-controller" \
+            --upload "$RUNNER_TEMP/a23-readback-upload-$P8_READBACK_GROUP"
+      - name: Retain all original inputs, partial transfers, failed reviews and receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-a23-original-readback-${{ matrix.group }}-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/a23-readback-upload-${{ matrix.group }}
+          include-hidden-files: true
+          if-no-files-found: error

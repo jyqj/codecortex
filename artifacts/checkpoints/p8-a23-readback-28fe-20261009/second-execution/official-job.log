@@ -1,0 +1,502 @@
+﻿2026-10-09T04:49:47.9532058Z Current runner version: '2.337.0'
+2026-10-09T04:49:47.9557823Z ##[group]Runner Image Provisioner
+2026-10-09T04:49:47.9558796Z Hosted Compute Agent
+2026-10-09T04:49:47.9559429Z Version: 20261002.596
+2026-10-09T04:49:47.9560067Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T04:49:47.9561295Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T04:49:47.9562007Z Worker ID: {f7af2e0f-3057-406e-98bb-a7688333cb3e}
+2026-10-09T04:49:47.9562692Z Region: westus2
+2026-10-09T04:49:47.9563303Z Cloud: Azure
+2026-10-09T04:49:47.9564237Z ##[endgroup]
+2026-10-09T04:49:47.9566609Z ##[group]Operating System
+2026-10-09T04:49:47.9567305Z Ubuntu
+2026-10-09T04:49:47.9567810Z 24.04.5
+2026-10-09T04:49:47.9568395Z LTS
+2026-10-09T04:49:47.9568908Z ##[endgroup]
+2026-10-09T04:49:47.9569513Z ##[group]Runner Image
+2026-10-09T04:49:47.9570123Z Image: ubuntu-24.04
+2026-10-09T04:49:47.9570695Z Version: 20261004.327.1
+2026-10-09T04:49:47.9572006Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T04:49:47.9573837Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T04:49:47.9574890Z ##[endgroup]
+2026-10-09T04:49:47.9576254Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T04:49:47.9578220Z Actions: read
+2026-10-09T04:49:47.9578843Z Contents: read
+2026-10-09T04:49:47.9579564Z Metadata: read
+2026-10-09T04:49:47.9580119Z ##[endgroup]
+2026-10-09T04:49:47.9582271Z Secret source: Actions
+2026-10-09T04:49:47.9583276Z Cache mode: write
+2026-10-09T04:49:47.9584404Z Prepare workflow directory
+2026-10-09T04:49:48.0050208Z Prepare all required actions
+2026-10-09T04:49:48.0099489Z Getting action download info
+2026-10-09T04:49:48.3625125Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T04:49:48.4568132Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T04:49:48.6787619Z Complete job name: readback (platform)
+2026-10-09T04:49:48.7570288Z ##[group]Run actions/checkout@v4
+2026-10-09T04:49:48.7571305Z with:
+2026-10-09T04:49:48.7571771Z   persist-credentials: false
+2026-10-09T04:49:48.7572346Z   ref: 5019b3d68043bb3c5a714222caab5fe6b24c11b8
+2026-10-09T04:49:48.7572972Z   sparse-checkout-cone-mode: false
+2026-10-09T04:49:48.7573971Z   sparse-checkout: /artifacts/checkpoints/p8-a23-readback-28fe-20261009/controller/
+
+2026-10-09T04:49:48.7574812Z   repository: jyqj/codecortex
+2026-10-09T04:49:48.7578635Z   token: ***
+2026-10-09T04:49:48.7579075Z   ssh-strict: true
+2026-10-09T04:49:48.7579509Z   ssh-user: git
+2026-10-09T04:49:48.7579930Z   clean: true
+2026-10-09T04:49:48.7580341Z   fetch-depth: 1
+2026-10-09T04:49:48.7580805Z   fetch-tags: false
+2026-10-09T04:49:48.7581246Z   show-progress: true
+2026-10-09T04:49:48.7581689Z   lfs: false
+2026-10-09T04:49:48.7582094Z   submodules: false
+2026-10-09T04:49:48.7582544Z   set-safe-directory: true
+2026-10-09T04:49:48.7583047Z   allow-unsafe-pr-checkout: false
+2026-10-09T04:49:48.7584134Z env:
+2026-10-09T04:49:48.7584581Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:49:48.7585092Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:49:48.7585549Z ##[endgroup]
+2026-10-09T04:49:48.8601188Z Syncing repository: jyqj/codecortex
+2026-10-09T04:49:48.8604715Z ##[group]Getting Git version info
+2026-10-09T04:49:48.8605924Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T04:49:48.8607126Z [command]/usr/bin/git version
+2026-10-09T04:49:48.8694037Z git version 2.55.0
+2026-10-09T04:49:48.8716766Z ##[endgroup]
+2026-10-09T04:49:48.8732400Z Temporarily overriding HOME='/home/runner/work/_temp/3ce6775a-de21-4ce0-84f5-ee6d8a455310' before making global git config changes
+2026-10-09T04:49:48.8737683Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:49:48.8739600Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T04:49:48.8789402Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T04:49:48.8793168Z ##[group]Initializing the repository
+2026-10-09T04:49:48.8797802Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T04:49:48.8896869Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T04:49:48.8897966Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T04:49:48.8898992Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T04:49:48.8900146Z hint: call:
+2026-10-09T04:49:48.8900813Z hint:
+2026-10-09T04:49:48.8901525Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T04:49:48.8902707Z hint:
+2026-10-09T04:49:48.8904103Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T04:49:48.8905913Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T04:49:48.8907344Z hint:
+2026-10-09T04:49:48.8908138Z hint: 	git branch -m <name>
+2026-10-09T04:49:48.8908973Z hint:
+2026-10-09T04:49:48.8910103Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T04:49:48.8912093Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T04:49:48.8915685Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T04:49:48.8962725Z ##[endgroup]
+2026-10-09T04:49:48.8963519Z ##[group]Disabling automatic garbage collection
+2026-10-09T04:49:48.8966639Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T04:49:48.8995600Z ##[endgroup]
+2026-10-09T04:49:48.8996346Z ##[group]Setting up auth
+2026-10-09T04:49:48.9002865Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:49:48.9067045Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:49:48.9451129Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:49:48.9483413Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:49:48.9705257Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:49:48.9736312Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:49:48.9955969Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T04:49:48.9991790Z ##[endgroup]
+2026-10-09T04:49:49.0001077Z ##[group]Fetching the repository
+2026-10-09T04:49:49.0002560Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin 5019b3d68043bb3c5a714222caab5fe6b24c11b8
+2026-10-09T04:49:49.3461190Z From https://github.com/jyqj/codecortex
+2026-10-09T04:49:49.3462814Z  * branch            5019b3d68043bb3c5a714222caab5fe6b24c11b8 -> FETCH_HEAD
+2026-10-09T04:49:49.3466637Z ##[endgroup]
+2026-10-09T04:49:49.3468211Z ##[group]Determining the checkout info
+2026-10-09T04:49:49.3469808Z ##[endgroup]
+2026-10-09T04:49:49.3471180Z ##[group]Setting up sparse checkout
+2026-10-09T04:49:49.3474407Z [command]/usr/bin/git config core.sparseCheckout true
+2026-10-09T04:49:49.3509176Z [command]/usr/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-09T04:49:49.3531162Z .git/info/sparse-checkout
+2026-10-09T04:49:49.3540070Z ##[endgroup]
+2026-10-09T04:49:49.3540868Z ##[group]Checking out the ref
+2026-10-09T04:49:49.3551174Z [command]/usr/bin/git checkout --progress --force 5019b3d68043bb3c5a714222caab5fe6b24c11b8
+2026-10-09T04:49:49.6506457Z Note: switching to '5019b3d68043bb3c5a714222caab5fe6b24c11b8'.
+2026-10-09T04:49:49.6507194Z 
+2026-10-09T04:49:49.6507715Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T04:49:49.6509074Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T04:49:49.6510076Z state without impacting any branches by switching back to a branch.
+2026-10-09T04:49:49.6510652Z 
+2026-10-09T04:49:49.6511049Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T04:49:49.6512018Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T04:49:49.6512599Z 
+2026-10-09T04:49:49.6512860Z   git switch -c <new-branch-name>
+2026-10-09T04:49:49.6513235Z 
+2026-10-09T04:49:49.6513483Z Or undo this operation with:
+2026-10-09T04:49:49.6514272Z 
+2026-10-09T04:49:49.6514510Z   git switch -
+2026-10-09T04:49:49.6514817Z 
+2026-10-09T04:49:49.6515295Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T04:49:49.6515932Z 
+2026-10-09T04:49:49.6516507Z HEAD is now at 5019b3d docs(p8): freeze independent review for corrected original platform readback
+2026-10-09T04:49:49.6520858Z ##[endgroup]
+2026-10-09T04:49:49.6562335Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T04:49:49.6586082Z 5019b3d68043bb3c5a714222caab5fe6b24c11b8
+2026-10-09T04:49:49.6596534Z ##[group]Removing auth
+2026-10-09T04:49:49.6600175Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:49:49.6628532Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:49:49.6878511Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:49:49.6904660Z http.https://github.com/.extraheader
+2026-10-09T04:49:49.6915119Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T04:49:49.6947128Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:49:49.7182876Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:49:49.7215812Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:49:49.7469204Z ##[endgroup]
+2026-10-09T04:49:49.7705954Z ##[group]Run test ! -e "$RUNNER_TEMP/a23-readback-controller"
+2026-10-09T04:49:49.7708060Z [36;1mtest ! -e "$RUNNER_TEMP/a23-readback-controller"[0m
+2026-10-09T04:49:49.7711037Z [36;1mcp -a artifacts/checkpoints/p8-a23-readback-28fe-20261009/controller "$RUNNER_TEMP/a23-readback-controller"[0m
+2026-10-09T04:49:49.7966824Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:49:49.7968178Z env:
+2026-10-09T04:49:49.7969229Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:49:49.7970528Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:49:49.7971659Z ##[endgroup]
+2026-10-09T04:49:49.8464969Z ##[group]Run actions/checkout@v4
+2026-10-09T04:49:49.8466800Z with:
+2026-10-09T04:49:49.8467878Z   persist-credentials: false
+2026-10-09T04:49:49.8469102Z   ref: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T04:49:49.8470472Z   sparse-checkout-cone-mode: false
+2026-10-09T04:49:49.8471862Z   sparse-checkout: /*
+!/artifacts/
+
+2026-10-09T04:49:49.8473264Z   repository: jyqj/codecortex
+2026-10-09T04:49:49.8483942Z   token: ***
+2026-10-09T04:49:49.8484876Z   ssh-strict: true
+2026-10-09T04:49:49.8485803Z   ssh-user: git
+2026-10-09T04:49:49.8486691Z   clean: true
+2026-10-09T04:49:49.8487557Z   fetch-depth: 1
+2026-10-09T04:49:49.8488466Z   fetch-tags: false
+2026-10-09T04:49:49.8489416Z   show-progress: true
+2026-10-09T04:49:49.8490366Z   lfs: false
+2026-10-09T04:49:49.8491238Z   submodules: false
+2026-10-09T04:49:49.8492192Z   set-safe-directory: true
+2026-10-09T04:49:49.8493276Z   allow-unsafe-pr-checkout: false
+2026-10-09T04:49:49.8494612Z env:
+2026-10-09T04:49:49.8495535Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:49:49.8496606Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:49:49.8497766Z ##[endgroup]
+2026-10-09T04:49:49.9370873Z Syncing repository: jyqj/codecortex
+2026-10-09T04:49:49.9374100Z ##[group]Getting Git version info
+2026-10-09T04:49:49.9375689Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T04:49:49.9412606Z [command]/usr/bin/git version
+2026-10-09T04:49:49.9449840Z git version 2.55.0
+2026-10-09T04:49:49.9472180Z ##[endgroup]
+2026-10-09T04:49:49.9486399Z Temporarily overriding HOME='/home/runner/work/_temp/a9eb1ed9-23d7-4c1d-91cd-e0140d011a7d' before making global git config changes
+2026-10-09T04:49:49.9490019Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:49:49.9492665Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T04:49:49.9531881Z [command]/usr/bin/git config --local --get remote.origin.url
+2026-10-09T04:49:49.9555200Z https://github.com/jyqj/codecortex
+2026-10-09T04:49:49.9570082Z ##[group]Removing previously created refs, to avoid conflicts
+2026-10-09T04:49:49.9573951Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+2026-10-09T04:49:49.9594558Z HEAD
+2026-10-09T04:49:49.9634400Z ##[endgroup]
+2026-10-09T04:49:49.9635554Z [command]/usr/bin/git submodule status
+2026-10-09T04:49:49.9879025Z ##[group]Cleaning the repository
+2026-10-09T04:49:49.9882785Z [command]/usr/bin/git clean -ffdx
+2026-10-09T04:49:49.9988683Z [command]/usr/bin/git reset --hard HEAD
+2026-10-09T04:49:50.0664736Z HEAD is now at 5019b3d docs(p8): freeze independent review for corrected original platform readback
+2026-10-09T04:49:50.0671811Z ##[endgroup]
+2026-10-09T04:49:50.0674013Z ##[group]Disabling automatic garbage collection
+2026-10-09T04:49:50.0678630Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T04:49:50.0712467Z ##[endgroup]
+2026-10-09T04:49:50.0714418Z ##[group]Setting up auth
+2026-10-09T04:49:50.0719412Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:49:50.0754263Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:49:50.1002748Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:49:50.1037592Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:49:50.1282333Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:49:50.1345290Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:49:50.1580187Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T04:49:50.1625029Z ##[endgroup]
+2026-10-09T04:49:50.1627690Z ##[group]Fetching the repository
+2026-10-09T04:49:50.1637255Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T04:49:50.4281571Z From https://github.com/jyqj/codecortex
+2026-10-09T04:49:50.4284542Z  * branch            a23bb72d3c954f385b99fe81ce9189885c208557 -> FETCH_HEAD
+2026-10-09T04:49:50.4289741Z ##[endgroup]
+2026-10-09T04:49:50.4291237Z ##[group]Determining the checkout info
+2026-10-09T04:49:50.4293947Z ##[endgroup]
+2026-10-09T04:49:50.4295601Z ##[group]Setting up sparse checkout
+2026-10-09T04:49:50.4301644Z [command]/usr/bin/git config core.sparseCheckout true
+2026-10-09T04:49:50.4328979Z [command]/usr/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-09T04:49:50.4350675Z .git/info/sparse-checkout
+2026-10-09T04:49:50.4358712Z ##[endgroup]
+2026-10-09T04:49:50.4360290Z ##[group]Checking out the ref
+2026-10-09T04:49:50.4363052Z [command]/usr/bin/git checkout --progress --force a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T04:49:52.2986559Z Updating files:   2% (34/1683)
+2026-10-09T04:49:52.3011129Z Updating files:   3% (51/1683)
+2026-10-09T04:49:52.3031168Z Updating files:   4% (68/1683)
+2026-10-09T04:49:52.3048997Z Updating files:   5% (85/1683)
+2026-10-09T04:49:52.3062841Z Updating files:   6% (101/1683)
+2026-10-09T04:49:52.3076535Z Updating files:   7% (118/1683)
+2026-10-09T04:49:52.3092357Z Updating files:   8% (135/1683)
+2026-10-09T04:49:52.3127748Z Updating files:   9% (152/1683)
+2026-10-09T04:49:52.3186508Z Updating files:  10% (169/1683)
+2026-10-09T04:49:52.3211940Z Updating files:  11% (186/1683)
+2026-10-09T04:49:52.3230044Z Updating files:  12% (202/1683)
+2026-10-09T04:49:52.3247113Z Updating files:  13% (219/1683)
+2026-10-09T04:49:52.3259126Z Updating files:  14% (236/1683)
+2026-10-09T04:49:52.3285927Z Updating files:  15% (253/1683)
+2026-10-09T04:49:52.3301557Z Updating files:  16% (270/1683)
+2026-10-09T04:49:52.3324446Z Updating files:  17% (287/1683)
+2026-10-09T04:49:52.3340207Z Updating files:  18% (303/1683)
+2026-10-09T04:49:52.3360738Z Updating files:  19% (320/1683)
+2026-10-09T04:49:52.3394502Z Updating files:  20% (337/1683)
+2026-10-09T04:49:52.3421251Z Updating files:  21% (354/1683)
+2026-10-09T04:49:52.3439536Z Updating files:  22% (371/1683)
+2026-10-09T04:49:52.3457249Z Updating files:  23% (388/1683)
+2026-10-09T04:49:52.3478677Z Updating files:  24% (404/1683)
+2026-10-09T04:49:52.3497427Z Updating files:  25% (421/1683)
+2026-10-09T04:49:52.3508707Z Updating files:  26% (438/1683)
+2026-10-09T04:49:52.3514707Z Updating files:  27% (455/1683)
+2026-10-09T04:49:52.3523488Z Updating files:  28% (472/1683)
+2026-10-09T04:49:52.3532004Z Updating files:  29% (489/1683)
+2026-10-09T04:49:52.3541930Z Updating files:  30% (505/1683)
+2026-10-09T04:49:52.3551307Z Updating files:  31% (522/1683)
+2026-10-09T04:49:52.3565941Z Updating files:  32% (539/1683)
+2026-10-09T04:49:52.3578469Z Updating files:  33% (556/1683)
+2026-10-09T04:49:52.3598111Z Updating files:  34% (573/1683)
+2026-10-09T04:49:52.3613192Z Updating files:  35% (590/1683)
+2026-10-09T04:49:52.3637713Z Updating files:  36% (606/1683)
+2026-10-09T04:49:52.3660210Z Updating files:  37% (623/1683)
+2026-10-09T04:49:52.3680018Z Updating files:  38% (640/1683)
+2026-10-09T04:49:52.3697162Z Updating files:  39% (657/1683)
+2026-10-09T04:49:52.3716308Z Updating files:  40% (674/1683)
+2026-10-09T04:49:52.3737822Z Updating files:  41% (691/1683)
+2026-10-09T04:49:52.3765772Z Updating files:  42% (707/1683)
+2026-10-09T04:49:52.3784836Z Updating files:  43% (724/1683)
+2026-10-09T04:49:52.3803088Z Updating files:  44% (741/1683)
+2026-10-09T04:49:52.3824174Z Updating files:  45% (758/1683)
+2026-10-09T04:49:52.3837068Z Updating files:  46% (775/1683)
+2026-10-09T04:49:52.3852512Z Updating files:  47% (792/1683)
+2026-10-09T04:49:52.3867580Z Updating files:  48% (808/1683)
+2026-10-09T04:49:52.3879822Z Updating files:  49% (825/1683)
+2026-10-09T04:49:52.3893540Z Updating files:  50% (842/1683)
+2026-10-09T04:49:52.3904316Z Updating files:  51% (859/1683)
+2026-10-09T04:49:52.3914136Z Updating files:  52% (876/1683)
+2026-10-09T04:49:52.3927008Z Updating files:  53% (892/1683)
+2026-10-09T04:49:52.3943296Z Updating files:  54% (909/1683)
+2026-10-09T04:49:52.3962120Z Updating files:  55% (926/1683)
+2026-10-09T04:49:52.3973066Z Updating files:  56% (943/1683)
+2026-10-09T04:49:52.3998914Z Updating files:  57% (960/1683)
+2026-10-09T04:49:52.4012201Z Updating files:  58% (977/1683)
+2026-10-09T04:49:52.4032869Z Updating files:  59% (993/1683)
+2026-10-09T04:49:52.4056160Z Updating files:  60% (1010/1683)
+2026-10-09T04:49:52.4074465Z Updating files:  61% (1027/1683)
+2026-10-09T04:49:52.4094162Z Updating files:  62% (1044/1683)
+2026-10-09T04:49:52.4109756Z Updating files:  63% (1061/1683)
+2026-10-09T04:49:52.4124637Z Updating files:  64% (1078/1683)
+2026-10-09T04:49:52.4144130Z Updating files:  65% (1094/1683)
+2026-10-09T04:49:52.4160537Z Updating files:  66% (1111/1683)
+2026-10-09T04:49:52.4177094Z Updating files:  67% (1128/1683)
+2026-10-09T04:49:52.4191508Z Updating files:  68% (1145/1683)
+2026-10-09T04:49:52.4203501Z Updating files:  69% (1162/1683)
+2026-10-09T04:49:52.4226847Z Updating files:  70% (1179/1683)
+2026-10-09T04:49:52.4234821Z Updating files:  71% (1195/1683)
+2026-10-09T04:49:52.4254390Z Updating files:  72% (1212/1683)
+2026-10-09T04:49:52.4269394Z Updating files:  73% (1229/1683)
+2026-10-09T04:49:52.4284821Z Updating files:  74% (1246/1683)
+2026-10-09T04:49:52.4302266Z Updating files:  75% (1263/1683)
+2026-10-09T04:49:52.4313270Z Updating files:  76% (1280/1683)
+2026-10-09T04:49:52.4322648Z Updating files:  77% (1296/1683)
+2026-10-09T04:49:52.4333937Z Updating files:  78% (1313/1683)
+2026-10-09T04:49:52.4345615Z Updating files:  79% (1330/1683)
+2026-10-09T04:49:52.4374317Z Updating files:  80% (1347/1683)
+2026-10-09T04:49:52.4386198Z Updating files:  81% (1364/1683)
+2026-10-09T04:49:52.4395825Z Updating files:  82% (1381/1683)
+2026-10-09T04:49:52.4406538Z Updating files:  83% (1397/1683)
+2026-10-09T04:49:52.4417406Z Updating files:  84% (1414/1683)
+2026-10-09T04:49:52.4430761Z Updating files:  85% (1431/1683)
+2026-10-09T04:49:52.4462321Z Updating files:  86% (1448/1683)
+2026-10-09T04:49:52.4472704Z Updating files:  87% (1465/1683)
+2026-10-09T04:49:52.4484281Z Updating files:  88% (1482/1683)
+2026-10-09T04:49:52.4496113Z Updating files:  89% (1498/1683)
+2026-10-09T04:49:52.4513681Z Updating files:  90% (1515/1683)
+2026-10-09T04:49:52.4556682Z Updating files:  91% (1532/1683)
+2026-10-09T04:49:52.4573546Z Updating files:  92% (1549/1683)
+2026-10-09T04:49:52.4595038Z Updating files:  93% (1566/1683)
+2026-10-09T04:49:52.4608087Z Updating files:  94% (1583/1683)
+2026-10-09T04:49:52.4626073Z Updating files:  95% (1599/1683)
+2026-10-09T04:49:52.4639849Z Updating files:  96% (1616/1683)
+2026-10-09T04:49:52.4654540Z Updating files:  97% (1633/1683)
+2026-10-09T04:49:52.4669482Z Updating files:  98% (1650/1683)
+2026-10-09T04:49:52.4680663Z Updating files:  99% (1667/1683)
+2026-10-09T04:49:52.4681248Z Updating files: 100% (1683/1683)
+2026-10-09T04:49:52.4681612Z Updating files: 100% (1683/1683), done.
+2026-10-09T04:49:52.4852559Z Warning: you are leaving 1 commit behind, not connected to
+2026-10-09T04:49:52.4853340Z any of your branches:
+2026-10-09T04:49:52.4853848Z 
+2026-10-09T04:49:52.4854289Z   5019b3d docs(p8): freeze independent review for corrected original platform readback
+2026-10-09T04:49:52.4854770Z 
+2026-10-09T04:49:52.4855018Z If you want to keep it by creating a new branch, this may be a good time
+2026-10-09T04:49:52.4855607Z to do so with:
+2026-10-09T04:49:52.4855806Z 
+2026-10-09T04:49:52.4855942Z  git branch <new-branch-name> 5019b3d
+2026-10-09T04:49:52.4856254Z 
+2026-10-09T04:49:52.4856817Z HEAD is now at a23bb72 test(p8): bind combined source admission for original full execution
+2026-10-09T04:49:52.4874176Z ##[endgroup]
+2026-10-09T04:49:52.4913358Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T04:49:52.4938471Z a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T04:49:52.4947824Z ##[group]Removing auth
+2026-10-09T04:49:52.4951810Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:49:52.4981751Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:49:52.5225806Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:49:52.5248986Z http.https://github.com/.extraheader
+2026-10-09T04:49:52.5258018Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T04:49:52.5289605Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:49:52.5591162Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:49:52.5622534Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:49:52.5856311Z ##[endgroup]
+2026-10-09T04:49:52.5980086Z ##[group]Run python3 -B - "$RUNNER_TEMP/a23-readback-controller" <<'PY'
+2026-10-09T04:49:52.5980640Z [36;1mpython3 -B - "$RUNNER_TEMP/a23-readback-controller" <<'PY'[0m
+2026-10-09T04:49:52.5981059Z [36;1mimport ast, pathlib, sys[0m
+2026-10-09T04:49:52.5981348Z [36;1mroot = pathlib.Path(sys.argv[1])[0m
+2026-10-09T04:49:52.5981668Z [36;1mfor path in sorted(root.rglob('*.py')):[0m
+2026-10-09T04:49:52.5982073Z [36;1m    ast.parse(path.read_text(encoding='utf-8'), filename=str(path))[0m
+2026-10-09T04:49:52.5982561Z [36;1mprint('All fixed controller and reviewer Python sources parsed.')[0m
+2026-10-09T04:49:52.5982926Z [36;1mPY[0m
+2026-10-09T04:49:52.5983260Z [36;1mpython3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" --self-check[0m
+2026-10-09T04:49:52.6048862Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:49:52.6049137Z env:
+2026-10-09T04:49:52.6049344Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:49:52.6049601Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:49:52.6049854Z ##[endgroup]
+2026-10-09T04:49:52.6743824Z All fixed controller and reviewer Python sources parsed.
+2026-10-09T04:49:52.7490276Z {"schema": "a23-readback-transport-controls-v1", "passed": true, "cases": ["valid_nested_member", "rejected_path_0", "rejected_path_1", "rejected_path_2", "rejected_path_3", "rejected_symlink", "rejected_corrupt_crc", "rejected_directory_crc", "rejected_directory_payload", "valid_complete_deflate_member", "rejected_declared_prefix_with_hidden_deflate_tail"], "native_executions": 0}
+2026-10-09T04:49:52.7626562Z ##[group]Run python3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" \
+2026-10-09T04:49:52.7627157Z [36;1mpython3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" \[0m
+2026-10-09T04:49:52.7627576Z [36;1m  --group "$P8_READBACK_GROUP" \[0m
+2026-10-09T04:49:52.7627873Z [36;1m  --source "$GITHUB_WORKSPACE" \[0m
+2026-10-09T04:49:52.7628246Z [36;1m  --controller "$RUNNER_TEMP/a23-readback-controller" \[0m
+2026-10-09T04:49:52.7628666Z [36;1m  --output "$RUNNER_TEMP/a23-readback-$P8_READBACK_GROUP"[0m
+2026-10-09T04:49:52.7691956Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:49:52.7692212Z env:
+2026-10-09T04:49:52.7692435Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:49:52.7692692Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:49:52.7695667Z   GH_TOKEN: ***
+2026-10-09T04:49:52.7695906Z   P8_READBACK_GROUP: platform
+2026-10-09T04:49:52.7696153Z ##[endgroup]
+2026-10-09T04:50:35.0789636Z A23_READBACK_EXECUTION_RECEIPT_BEGIN
+2026-10-09T04:50:35.0931679Z {"controller_commit": "5019b3d68043bb3c5a714222caab5fe6b24c11b8", "controller_unchanged": true, "errors": [], "finished_utc": "2026-10-09T04:50:35Z", "group": "platform", "original_tasks": {"done": 163, "newly_closed": 0, "remaining": 29, "total": 192}, "passed": true, "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39", "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]", "review": {"accepted": true, "archive_commit": "4630e635cd762bfbd2726cf1dd49e37803c06034", "checked_original_artifacts": [{"id": 11591108235, "members": 19, "sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9"}, {"id": 11591159319, "members": 19, "sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44"}, {"id": 11591229630, "members": 19, "sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e"}, {"id": 11591733636, "members": 19, "sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b"}, {"id": 11592146562, "members": 499, "sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e"}, {"id": 11592180029, "members": 337, "sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25"}, {"id": 11592442010, "members": 19, "sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd"}, {"id": 11592465349, "members": 19, "sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174"}, {"id": 11592498371, "members": 1, "sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700"}, {"id": 11592750594, "members": 19, "sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73"}, {"id": 11592990763, "members": 19, "sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214"}], "derived_directory": "/home/runner/work/_temp/a23-readback-platform/derived/platform-readback", "fixed_original_artifacts": [{"bytes": 8270537, "id": 11591108235, "name": "p8-platform-cell-macos-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8351887, "id": 11591159319, "name": "p8-platform-cell-macos-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8031708, "id": 11591229630, "name": "p8-platform-cell-macos-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8768177, "id": 11591733636, "name": "p8-platform-cell-linux-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 121408707, "id": 11592146562, "name": "p8-full-recovery-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 32985345, "id": 11592180029, "name": "p8-gates-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838927, "sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 9022522, "id": 11592442010, "name": "p8-platform-cell-linux-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8605542, "id": 11592465349, "name": "p8-platform-cell-macos-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 1504, "id": 11592498371, "name": "p8-platform-complete-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8719713, "id": 11592750594, "name": "p8-platform-cell-linux-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, {"bytes": 8968832, "id": 11592990763, "name": "p8-platform-cell-linux-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557", "run_attempt": 1, "run_id": 37871838952, "sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}], "groups": {"failure_gates": {"detail": {"new_cli_docker_native_execution": false, "original_cli_replays": [{"case": "quality_failed", "new_execution": false, "original_exit_code": 1, "original_status": "failed"}, {"case": "latency_failed", "new_execution": false, "original_exit_code": 1, "original_status": "failed"}, {"case": "insufficient_samples", "new_execution": false, "original_exit_code": 1, "original_status": "inconclusive"}, {"case": "zero_latency_denominator", "new_execution": false, "original_exit_code": 1, "original_status": "inconclusive"}, {"case": "raw_lock_drift", "new_execution": false, "original_exit_code": 2, "original_status": "invalid_measurement"}, {"case": "bad_policy", "new_execution": false, "original_exit_code": 2, "original_status": "invalid_measurement"}, {"case": "output_overwrite_refusal", "new_execution": false, "original_exit_code": 2, "original_status": null}], "original_execution_context": "Docker Desktop on macOS arm64, linux/amd64 compatibility execution; deterministic fixture comparison only, not native platform/performance measurement", "original_rust_controls": [{"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5879, "original_stdout_sha256": "3268e68d41a11590415e4dfe89c9b906b61aa211d3273eafdc098e97a81e976b", "package": "cc-eval", "target": "benchmark_cli", "test_name": "unmeasurable_latency_cannot_pass_comparison"}, {"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5897, "original_stdout_sha256": "9744b51fb5ce56be8115c8444162d3c8f7df7a8bad374b6ca2acebc2b0f17fdf", "package": "cc-eval", "target": "benchmark_cli", "test_name": "zero_measurement_gate_is_invalid"}, {"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5915, "original_stdout_sha256": "a8505936e590f887168e9572e48b08b189c2cfee242312fe494718fa9e2158a6", "package": "cc-eval", "target": "benchmark_cli", "test_name": "cli_quality_and_latency_failures_are_nonzero_and_keep_raw"}, {"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5939, "original_stdout_sha256": "3b531516190eaece55de4b7e89a9441cb8b308d02f762cb87abbfd2ed22300e1", "package": "cc-eval", "target": "benchmark_cli", "test_name": "cli_inconclusive_is_nonzero"}, {"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5960, "original_stdout_sha256": "a4c59f82aa92f3f4907f68d3139b7a1c94ae1b82ebd10d052956a1b52c8c1376", "package": "cc-eval", "target": "benchmark_cli", "test_name": "cli_lock_failure_preserves_machine_readable_failure_and_raw"}, {"binary_sha256": "85dca0f567147b770eee8703bddfadd2839d26c47cf0cb7cc8e242aa37aae13f", "new_execution": false, "original_exit_code": 0, "original_pid": 5981, "original_stdout_sha256": "c77caa8afef2e5e888f413d3e149df33a4973b398cefc2e67af90129b48ebbb4", "package": "cc-eval", "target": "benchmark_cli", "test_name": "cli_bad_policy_is_recorded_without_overwriting_existing_report"}], "previous_transport_failure": {"reason": "Original comparison::report::replay recomputes derived metrics; readonly source mount appropriately refused writes; new run uses exact fixture copies", "report": "replay-report.json", "sha256": "d7922af0d2404cdba6f8ed6aacec84cbde9a3a59ea8d98495c9ecbb67f6e897c"}, "quality_performance_or_release_certification": false, "retained_cli_sha256": "daac7973861d3f7a6a419dfa34a2563af5796a227b016903a5b91c30a793f80a", "zero_plan_scope": "separately accepted original nonignored zero_measurement_gate_is_invalid Rust test; not relabeled as a CLI process"}, "status": "passed_readback"}, "originals_after": {"detail": {"all_original_bytes_unchanged": true, "original_artifact_ids": [11591108235, 11591159319, 11591229630, 11591733636, 11592146562, 11592180029, 11592442010, 11592465349, 11592498371, 11592750594, 11592990763]}, "status": "passed_readback"}, "platform": {"detail": {"cells": [{"binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a", "bundle_sha256": "bb19c93b31ec354c22325d6ac526d019c55f891d4e9175675b202059808b5ae4", "cell": {"package": "default", "platform": "linux", "toolchain": "1.95"}, "rustc_release": "1.95.0", "status": "passed", "wall_seconds": 181.76679331900002}, {"binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c", "bundle_sha256": "3f885378f4a3b7bbe10e212d05fc2e83d3c3e6dc5e0692305192bf7a513880da", "cell": {"package": "semantic", "platform": "linux", "toolchain": "1.95"}, "rustc_release": "1.95.0", "status": "passed", "wall_seconds": 237.44014904699998}, {"binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404", "bundle_sha256": "55119f1838b28e2997029aed215e7b404d19e8afa7aa072eb34cbf95eb3510ab", "cell": {"package": "default", "platform": "linux", "toolchain": "stable"}, "rustc_release": "1.99.0", "status": "passed", "wall_seconds": 224.653002578}, {"binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66", "bundle_sha256": "1dba3314ded854913dec5c09719e2b545d84f15c30ce85a09b70d68ad6c4ab24", "cell": {"package": "semantic", "platform": "linux", "toolchain": "stable"}, "rustc_release": "1.99.0", "status": "passed", "wall_seconds": 161.096919436}, {"binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f", "bundle_sha256": "1e6ef1ede5e1755b973f6078f477fc3aeea76cf76d35ec7816975d0bf4544a82", "cell": {"package": "default", "platform": "macos", "toolchain": "1.95"}, "rustc_release": "1.95.0", "status": "passed", "wall_seconds": 305.727865542}, {"binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68", "bundle_sha256": "59a2a9698d718f670b4e7a9efb81c7cefb14dd3a1c45c1fd2b338780eef6cf59", "cell": {"package": "semantic", "platform": "macos", "toolchain": "1.95"}, "rustc_release": "1.95.0", "status": "passed", "wall_seconds": 207.90119804199992}, {"binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150", "bundle_sha256": "63292f4a865b6384553dfd471cc02525f1da6aa590d8e3ee21f51efea492c7f6", "cell": {"package": "default", "platform": "macos", "toolchain": "stable"}, "rustc_release": "1.99.0", "status": "passed", "wall_seconds": 307.48002308400004}, {"binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f", "bundle_sha256": "f6bc36deb8878236766ddfdd73509a37bdd83214d715150488ab34c70cc4b84f", "cell": {"package": "semantic", "platform": "macos", "toolchain": "stable"}, "rustc_release": "1.99.0", "status": "passed", "wall_seconds": 262.38607125000004}], "counts": {"failed": 0, "not_run": 0, "passed": 8}, "executed_original_portable_collector": true, "fresh_build_or_native_smoke_rerun": false, "original_artifact_id": 11592498371, "original_matrix_sha256": "d37eb7bef5005a686ca549d3e2dd4f2c033260f9cba212eaff738e85dab68941", "replayed_matrix_sha256": "fda69b393d4d213333a1247e5701e219af3de5d67559dcad3f9136572c6fa7cb", "scope": "eight actual fresh-target builds and stdio smoke; source-byte and binary binding; task dependencies and release certification remain separate"}, "status": "passed_readback"}, "recovery_databases": {"detail": {"new_backup_restore_gc_or_fault_run": false, "original_reader_report": {"active_databases": [{"database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "seed": 223, "semantic_manifest_count": 1, "stale_document_versions": 0}, {"database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "seed": 227, "semantic_manifest_count": 1, "stale_document_versions": 0}, {"database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "seed": 229, "semantic_manifest_count": 1, "stale_document_versions": 0}], "actual_historical_schemas": [25, 24, 25, 25], "artifact_id": 11592146562, "database_copies": {"active-stdio-223/project/.codecortex/index.sqlite3": {"copied_inputs": {"active-stdio-223/project/.codecortex/index.sqlite3": {"bytes": 675840, "sha256": "ba2ac4b1678d305aab9984dca192f1c2d1af492526ecb8c234d0121beff45d9c"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "active-stdio-227/project/.codecortex/index.sqlite3": {"copied_inputs": {"active-stdio-227/project/.codecortex/index.sqlite3": {"bytes": 675840, "sha256": "7a441234aa455f80e747bb78e40f06bc9d79f485e38ee22b10bb35aeb71122ef"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "active-stdio-229/project/.codecortex/index.sqlite3": {"copied_inputs": {"active-stdio-229/project/.codecortex/index.sqlite3": {"bytes": 675840, "sha256": "bbdbfc324d51122e74b3fb785e9105fee43a13cc3b4550d8b1886ee82973b030"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 1, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "actual-version-pair/backups/current-original.sqlite3": {"copied_inputs": {"actual-version-pair/backups/current-original.sqlite3": {"bytes": 684032, "sha256": "7122929710fb570b721a669e285391361a49d8b64c9f80be2c272d8a6252b387"}, "actual-version-pair/backups/current-original.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "actual-version-pair/backups/current-original.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "actual-version-pair/backups/current-rebuilt.sqlite3": {"copied_inputs": {"actual-version-pair/backups/current-rebuilt.sqlite3": {"bytes": 684032, "sha256": "d5270615612fce5908648fdc8e8507a80eb2ff3f4de60143381ced0c4a52f83e"}, "actual-version-pair/backups/current-rebuilt.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "actual-version-pair/backups/current-rebuilt.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "actual-version-pair/backups/previous-rebuilt.sqlite3": {"copied_inputs": {"actual-version-pair/backups/previous-rebuilt.sqlite3": {"bytes": 663552, "sha256": "ee064ee5d48d6567d2f86bc3bce5988ef23daa9d64d9a8449562a21aa4815b86"}, "actual-version-pair/backups/previous-rebuilt.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "actual-version-pair/backups/previous-rebuilt.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 24}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "actual-version-pair/fixture/.codecortex/index.sqlite3": {"copied_inputs": {"actual-version-pair/fixture/.codecortex/index.sqlite3": {"bytes": 684032, "sha256": "450cef676e00e7d4f2bccef2f2f3b9b27cf9f8353e01edd7f81327b31bd93542"}, "actual-version-pair/fixture/.codecortex/index.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "actual-version-pair/fixture/.codecortex/index.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "local-recovery/database_busy/fixture/.codecortex/index.sqlite3": {"copied_inputs": {"local-recovery/database_busy/fixture/.codecortex/index.sqlite3": {"bytes": 692224, "sha256": "441036cf4c9f59248d137717da37e4777e5e0347205bde14dad943c7c445d2ff"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 3, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "local-recovery/deleted_source/fixture/.codecortex/index.sqlite3": {"copied_inputs": {"local-recovery/deleted_source/fixture/.codecortex/index.sqlite3": {"bytes": 688128, "sha256": "0f8ca2d94a0516a26befa8d60eb9b32b498d83d9241b2a38ae5aeec6025213ab"}, "local-recovery/deleted_source/fixture/.codecortex/index.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "local-recovery/deleted_source/fixture/.codecortex/index.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "local-recovery/kill_restart/fixture/.codecortex/index.sqlite3": {"copied_inputs": {"local-recovery/kill_restart/fixture/.codecortex/index.sqlite3": {"bytes": 692224, "sha256": "5294dd070cd1b92c82349d93b8becc66aec2d2f4c09560a4bd8152c6e1d0a1f5"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 3, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "rollback/backups/index-future.sqlite3": {"copied_inputs": {"rollback/backups/index-future.sqlite3": {"bytes": 688128, "sha256": "903602f285804275898f042c520bc616d5b4f95832dbdd85b7b4b4b0d9feb605"}, "rollback/backups/index-future.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "rollback/backups/index-future.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": true, "indexed_files": 2, "integrity": "ok", "schema_version": 1025}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "rollback/backups/index-old.sqlite3": {"copied_inputs": {"rollback/backups/index-old.sqlite3": {"bytes": 684032, "sha256": "774053a1f9d34c881e6d1075c4f4ce3c0e00cfd2b645392a1b603731b2030c7c"}, "rollback/backups/index-old.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "rollback/backups/index-old.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "rollback/backups/index-rebuilt.sqlite3": {"copied_inputs": {"rollback/backups/index-rebuilt.sqlite3": {"bytes": 684032, "sha256": "9a79bd2baf239441f5e17cfc58c95242f4d03db19d364a433ebdc78f1af295b0"}, "rollback/backups/index-rebuilt.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "rollback/backups/index-rebuilt.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}, "rollback/fixture/.codecortex/index.sqlite3": {"copied_inputs": {"rollback/fixture/.codecortex/index.sqlite3": {"bytes": 684032, "sha256": "b978a3e71180049aee06873deb1f9fc48b06d262c9ee9f390456fd1a7fa727f0"}, "rollback/fixture/.codecortex/index.sqlite3-shm": {"bytes": 32768, "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb"}, "rollback/fixture/.codecortex/index.sqlite3-wal": {"bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}, "observed_snapshot": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}, "operation": "SQLite mode=ro&immutable=1 only after absent/zero-length WAL assertion; original PRAGMA integrity_check/foreign_key_check and SELECT assertions on owned byte copies"}}, "historical_source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5", "inactive_cache_reader_not_run_preserved": true, "limitations": ["public source revisions and controlled schema injection are not a released-package pair", "no power-loss, physical-device failure or real paid provider claim", "global manifest readiness and per-query artifact coverage are verified separately"], "local_databases": [{"case": "kill_restart", "database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 3, "integrity": "ok", "schema_version": 25}}, {"case": "database_busy", "database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 3, "integrity": "ok", "schema_version": 25}}, {"case": "deleted_source", "database": {"foreign_key_errors": 0, "future_sentinel_present": false, "indexed_files": 2, "integrity": "ok", "schema_version": 25}}], "original_artifact_inventory_and_hashes_unchanged": true, "rollback_schemas": [25, 1025, 25, 25], "schema_version": 1, "source_and_config_unchanged": true, "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557", "status": "accepted_original_database_config_and_version_rollback", "todo_status_change": false}, "report_sha256": "193d6124e28f19d1b5ffc3a504ea0e589a72d72c3834a1deba6275a88634fb26", "scope": "14 owned byte copies, SELECT/PRAGMA only, ro immutable after empty-WAL check"}, "status": "passed_readback"}, "recovery_identity": {"detail": {"active_seeds": [223, 227, 229], "actual_paid_cost": null, "limitations": ["public source revisions and controlled schema injection are not a released-package pair", "no power-loss, physical-device failure or real paid provider claim", "global manifest readiness and per-query artifact coverage are verified separately"], "new_fault_or_native_execution": false, "original_production_tests": [{"binary_sha256": "4ba366d57bad9cc21a0e28b937a3b560f3dbbbf331321762bed16003ebf18a39", "new_execution": false, "original_exit_code": 0, "original_pid": 8028, "original_stdout_sha256": "9dc57394eed2792edb137977dfe333c08529a6d4fcda9c7e7c3030f765e1ec03", "package": "cc-semantic", "target": "p7_crash_preparation", "test_name": "isolated_sigkill_reopen_replay_preparation"}, {"binary_sha256": "68eabebbb35cfa5f8fddb80d92021d06a7b2d09965c1dd226863770e9898286a", "new_execution": false, "original_exit_code": 0, "original_pid": 8166, "original_stdout_sha256": "7336e84533b802296ff207ed7ff5381fcb321bb71d77df12b3539b69bd3b7d9f", "package": "cc-semantic", "target": "crash_independent_review", "test_name": "independently_observed_sigkill_boundaries"}, {"binary_sha256": "d998ac3120159cd05f158a121bc5a305a5ab4c80df2149a679d48b7fcd3190f3", "new_execution": false, "original_exit_code": 0, "original_pid": 8513, "original_stdout_sha256": "cdd893aedc554a52f3b811da4505cf8cfd35f2d6aa4551c45f574435efd471fb", "package": "cc-db", "target": null, "test_name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database"}, {"binary_sha256": "d998ac3120159cd05f158a121bc5a305a5ab4c80df2149a679d48b7fcd3190f3", "new_execution": false, "original_exit_code": 0, "original_pid": 8597, "original_stdout_sha256": "515e70d7d833122474c3176d60b2b2e1c20ffda4937028fda0d6c15a44b0bfcb", "package": "cc-db", "target": null, "test_name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation"}, {"binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55", "new_execution": false, "original_exit_code": 0, "original_pid": 8642, "original_stdout_sha256": "20627d1e1d7ecbd143c7e0f7875928c0701103c7ac275fc4b180a4e9f2856747", "package": "cc-semantic", "target": "artifact_cache", "test_name": "meta_tampering_is_detected_as_corrupt"}, {"binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55", "new_execution": false, "original_exit_code": 0, "original_pid": 8660, "original_stdout_sha256": "bcc3530a79091d235c702027307b05da1f6851062d123c88255b8a9fe1fc4f41", "package": "cc-semantic", "target": "artifact_cache", "test_name": "different_spaces_never_cross_hit"}, {"binary_sha256": "f05629c9f48b5e6ab2477fd2b1bd6ee68da7a5d2358d299eabd683cdfb545e55", "new_execution": false, "original_exit_code": 0, "original_pid": 8678, "original_stdout_sha256": "38cc2880797f7d021e03dc277c5922f0f4041f8eb443ed2936c155eafa775305", "package": "cc-semantic", "target": "artifact_cache", "test_name": "namespaces_are_isolated"}], "original_sealed_files": 495, "products": {"default": {"actual_profile": "dev", "binary_sha256": "685b592eacb7fc92e91f80644f6e9a9d14f2cd72924d49cdca362277a6e80b79", "cold_build_claim": false, "features": [], "input_count": 1087, "release_certified": false, "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, "previous-default": {"actual_profile": "dev", "binary_sha256": "6d2bccc1adbd277d4c40b64201df823bf302ca37bcb6a21b424e5a9530f8a5f6", "cold_build_claim": false, "features": [], "input_count": 704, "release_certified": false, "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5"}, "semantic": {"actual_profile": "dev", "binary_sha256": "bd45afaf4fb4720f74c31fe326fbe245507aa73977fc4cac0c0d9f9e7278f265", "cold_build_claim": false, "features": ["semantic"], "input_count": 1087, "release_certified": false, "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}, "semantic-http": {"actual_profile": "dev", "binary_sha256": "2a2c49b8e3c67331daa19dbe27cea266b1012b7c1038b4760098a729511cbc27", "cold_build_claim": false, "features": ["semantic", "semantic-http"], "input_count": 1087, "release_certified": false, "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557"}}}, "status": "passed_readback"}, "recovery_raw_events": {"detail": {"original_reader_report": {"active_seeds": [{"disconnects": 1, "event_sha256": "31fb5e7ced530ba2382c58bbcdd5414608e525fcd521f932c6be4fb59068e689", "mcp_requests": 42, "mcp_responses": 42, "native_clean_exits": 2, "provider_requests": 6, "seed": 223, "semantic_lane_sequence": ["complete", "partial", "complete", "partial", "complete"], "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"}, {"disconnects": 1, "event_sha256": "d36e7c8acb9eeeefe166186a24283731218fe68c8ece64f3e6cf21df1470b9a4", "mcp_requests": 42, "mcp_responses": 42, "native_clean_exits": 2, "provider_requests": 6, "seed": 227, "semantic_lane_sequence": ["complete", "partial", "complete", "partial", "complete"], "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"}, {"disconnects": 1, "event_sha256": "a576da0a77a97e9023d38b3e9e55367e18b26084550e0f57b031d9c3da29ea59", "mcp_requests": 42, "mcp_responses": 42, "native_clean_exits": 2, "provider_requests": 6, "seed": 229, "semantic_lane_sequence": ["complete", "partial", "complete", "partial", "complete"], "status": "accepted_original_raw_MCP_HTTP_and_lifecycle"}], "artifact_id": 11592146562, "local_cases": [{"case": "kill_restart", "finished_ns": 247403439198, "started_ns": 246846839398, "status": "accepted_raw_RPC_and_source"}, {"case": "database_busy", "finished_ns": 252733132205, "started_ns": 247404172042, "status": "accepted_raw_RPC_and_source"}, {"case": "deleted_source", "finished_ns": 253154333218, "started_ns": 252734361550, "status": "accepted_raw_RPC_and_source"}], "native_sessions": [{"exit_code": 0, "expected_pending": [], "pid": 11804, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "8846d3f2af15e3b240853f19abeb9460412eef3e4991e40b5561642591daa411", "session": "actual-version-pair/01-current-build", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 11826, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "b873cf6f29a0cd38da410209fc74ca716a656ef3cc3c6539431d8d7415750421", "session": "actual-version-pair/02-previous-opens-current", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 11846, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "c3f9169f1994ceacaa0f4b296022b31c26436b22cc048af26abc18885f422b41", "session": "actual-version-pair/03-current-restored", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 11865, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "1faaf3a65e34a2935800aa170629274739e801f2ee80670b929c71b167fbe6bc", "session": "actual-version-pair/04-original-backup-restored", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 7161, "requests": 9, "responses": 9, "rpc_errors": 1, "rpc_sha256": "777c1e6099fdd8a6ab0f207baab00c38fd5f5022b33a6160ef769b1fbda8c7df", "session": "local-recovery/database_busy/lock-window", "wire_rows": 9}, {"exit_code": 0, "expected_pending": [], "pid": 7224, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "7963aab99985f1e2e2dc153cdecc894d4e2228744f5fc7a3aaa13458d168682f", "session": "local-recovery/deleted_source/reopen-without-index", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 7196, "requests": 11, "responses": 11, "rpc_errors": 0, "rpc_sha256": "81372686c309f36ce6b1229261c33a3b6c0ed9ea2c7782d834d582929f86b129", "session": "local-recovery/deleted_source/warm-before-delete", "wire_rows": 11}, {"exit_code": 0, "expected_pending": [], "pid": 7138, "requests": 7, "responses": 7, "rpc_errors": 0, "rpc_sha256": "f8b06840b901303d8646311262dc624bf97b46c16a06d13cfc1eebb663086ec7", "session": "local-recovery/kill_restart/after-restart", "wire_rows": 7}, {"exit_code": -9, "expected_pending": [7], "pid": 7115, "requests": 7, "responses": 6, "rpc_errors": 0, "rpc_sha256": "a519bfdf125131668249155b637e8967a0bea52a517580e8ab13c76a8fa026af", "session": "local-recovery/kill_restart/before-kill", "wire_rows": 6}, {"exit_code": 0, "expected_pending": [], "pid": 8685, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "80331297ef5a10839eba62465c0e12df31cbb30d75c689f7c5459f8862bd0ec0", "session": "rollback/01-before", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 8720, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "388b9640b0ce78b9923e026f2e36b1b86e412192c9ae17941175d0583f208b80", "session": "rollback/02-schema-rollback", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 8755, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "a1e5c4a278aa8c0ccc79c99c0879f015f7dbc577e6cab0c29d3a1e0d066d69ed", "session": "rollback/03-default-package", "wire_rows": 5}, {"exit_code": 0, "expected_pending": [], "pid": 8780, "requests": 5, "responses": 5, "rpc_errors": 0, "rpc_sha256": "9105379450b38b80bf6df8a6ba1597fb93f2eca2537e73d8b935a58b65f398f9", "session": "rollback/04-backup-restored", "wire_rows": 5}], "schema_version": 1, "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557", "status": "raw_RPC_HTTP_lifecycle_accepted_database_backup_replay_pending", "todo_status_change": false}, "report_sha256": "45e5ef47e598ef26b943b9540cafde0190e520bd3c7e3df2389b74287c980521", "scope": "original 13 sessions and 3 local + 3x4 active cases; no new fault run"}, "status": "passed_readback"}, "source": {"detail": {"input_count": 1087, "manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557", "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96"}, "status": "passed_readback"}, "source_after": {"detail": {"source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557", "source_inputs_unchanged": true}, "status": "passed_readback"}}, "new_native_measurements": 0, "new_product_or_fault_executions": 0, "new_retained_cli_executions": 0, "passed": true, "roadmap_task_completion": false, "schema": "a23-platform-readback-v1", "scope": "readback of fixed existing executions; original failures/unknown/not_run retained", "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557", "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96", "status": "passed_readback"}, "run_attempt": "1", "run_id": "37885688054", "schema": "a23-original-readback-execution-v1", "scope": "Actual Linux data readback only. Inherited Mac scope strings in unchanged historical reviewer code describe its original author run, not this execution. No product, statistics or oracle ELF, Cargo build, performance workload, fault injection or native CLI replay is run. No original TODO status is changed.", "source_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00", "source_unchanged": true, "started_utc": "2026-10-09T04:49:52Z", "transport": [{"artifact_id": 11591733636, "expanded_bytes": 28450518, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8768177, "zip_sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b"}, {"artifact_id": 11592442010, "expanded_bytes": 29022229, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 9022522, "zip_sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd"}, {"artifact_id": 11592750594, "expanded_bytes": 28336781, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8719713, "zip_sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73"}, {"artifact_id": 11592990763, "expanded_bytes": 28900887, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8968832, "zip_sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214"}, {"artifact_id": 11591229630, "expanded_bytes": 25255328, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8031708, "zip_sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e"}, {"artifact_id": 11591108235, "expanded_bytes": 25745309, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8270537, "zip_sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9"}, {"artifact_id": 11591159319, "expanded_bytes": 27942869, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8351887, "zip_sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44"}, {"artifact_id": 11592465349, "expanded_bytes": 28544016, "input_unchanged": true, "members": 19, "passed": true, "run_id": 37871838952, "zip_bytes": 8605542, "zip_sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174"}, {"artifact_id": 11592498371, "expanded_bytes": 4124, "input_unchanged": true, "members": 1, "passed": true, "run_id": 37871838952, "zip_bytes": 1504, "zip_sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700"}, {"artifact_id": 11592146562, "expanded_bytes": 524691396, "input_unchanged": true, "members": 499, "passed": true, "run_id": 37871838952, "zip_bytes": 121408707, "zip_sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e"}, {"artifact_id": 11592180029, "expanded_bytes": 132194579, "input_unchanged": true, "members": 337, "passed": true, "run_id": 37871838927, "zip_bytes": 32985345, "zip_sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25"}]}
+2026-10-09T04:50:35.1059050Z A23_READBACK_EXECUTION_RECEIPT_END
+2026-10-09T04:50:35.1112446Z ##[group]Run python3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" --stage-upload \
+2026-10-09T04:50:35.1113223Z [36;1mpython3 -B "$RUNNER_TEMP/a23-readback-controller/receive.py" --stage-upload \[0m
+2026-10-09T04:50:35.1114032Z [36;1m  --output "$RUNNER_TEMP/a23-readback-$P8_READBACK_GROUP" \[0m
+2026-10-09T04:50:35.1114497Z [36;1m  --controller "$RUNNER_TEMP/a23-readback-controller" \[0m
+2026-10-09T04:50:35.1114936Z [36;1m  --upload "$RUNNER_TEMP/a23-readback-upload-$P8_READBACK_GROUP"[0m
+2026-10-09T04:50:35.1175725Z shell: /usr/bin/bash -e {0}
+2026-10-09T04:50:35.1175973Z env:
+2026-10-09T04:50:35.1176180Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:50:35.1176436Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:50:35.1176673Z   P8_READBACK_GROUP: platform
+2026-10-09T04:50:35.1176916Z ##[endgroup]
+2026-10-09T04:50:37.4692188Z {"schema": "a23-readback-upload-custody-v1", "passed": true, "regular_file_count": 1289, "excluded_symlink_views": ["audit/source", "audit/derived/platform-readback/raw", "audit/derived/platform-readback/source"], "missing_roots": [], "manifest_sha256": "9d86219a12459d4b74b9e4664a685ec95a7cfc04b6228ac6b9e60893304c8888"}
+2026-10-09T04:50:37.4885656Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T04:50:37.4885961Z with:
+2026-10-09T04:50:37.4886245Z   name: p8-a23-original-readback-platform-37885688054-attempt1
+2026-10-09T04:50:37.4886700Z   path: /home/runner/work/_temp/a23-readback-upload-platform
+2026-10-09T04:50:37.4887038Z   include-hidden-files: true
+2026-10-09T04:50:37.4887277Z   if-no-files-found: error
+2026-10-09T04:50:37.4887505Z   compression-level: 6
+2026-10-09T04:50:37.4887723Z   overwrite: false
+2026-10-09T04:50:37.4887919Z env:
+2026-10-09T04:50:37.4888111Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T04:50:37.4888351Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T04:50:37.4888561Z ##[endgroup]
+2026-10-09T04:50:37.6624315Z (node:2758) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T04:50:37.6625635Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T04:50:38.0133350Z With the provided path, there will be 1290 files uploaded
+2026-10-09T04:50:38.0139640Z Artifact name is valid!
+2026-10-09T04:50:38.0140207Z Root directory input is valid!
+2026-10-09T04:50:38.3872311Z Beginning upload of artifact content to blob storage
+2026-10-09T04:50:39.0140131Z (node:2758) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T04:50:39.9082249Z Uploaded bytes 8388608
+2026-10-09T04:50:40.4753186Z Uploaded bytes 16777216
+2026-10-09T04:50:40.5457561Z Uploaded bytes 25165824
+2026-10-09T04:50:41.2607521Z Uploaded bytes 33554432
+2026-10-09T04:50:42.0516632Z Uploaded bytes 41943040
+2026-10-09T04:50:42.7197183Z Uploaded bytes 50331648
+2026-10-09T04:50:43.5436869Z Uploaded bytes 58720256
+2026-10-09T04:50:44.3134710Z Uploaded bytes 67108864
+2026-10-09T04:50:44.9514867Z Uploaded bytes 75497472
+2026-10-09T04:50:45.3948496Z Uploaded bytes 83886080
+2026-10-09T04:50:45.9377324Z Uploaded bytes 92274688
+2026-10-09T04:50:46.3477736Z Uploaded bytes 100663296
+2026-10-09T04:50:46.8415071Z Uploaded bytes 109051904
+2026-10-09T04:50:47.1959451Z Uploaded bytes 117440512
+2026-10-09T04:50:47.8611091Z Uploaded bytes 125829120
+2026-10-09T04:50:48.1574998Z Uploaded bytes 134217728
+2026-10-09T04:50:49.0759919Z Uploaded bytes 142606336
+2026-10-09T04:50:50.1759606Z Uploaded bytes 150994944
+2026-10-09T04:50:50.9357331Z Uploaded bytes 159383552
+2026-10-09T04:50:51.9881817Z Uploaded bytes 167772160
+2026-10-09T04:50:52.8320612Z Uploaded bytes 176160768
+2026-10-09T04:50:53.8177439Z Uploaded bytes 184549376
+2026-10-09T04:50:54.9234971Z Uploaded bytes 192937984
+2026-10-09T04:50:55.7919079Z Uploaded bytes 201326592
+2026-10-09T04:50:56.7381539Z Uploaded bytes 209715200
+2026-10-09T04:50:57.7270000Z Uploaded bytes 218103808
+2026-10-09T04:50:58.6290163Z Uploaded bytes 226492416
+2026-10-09T04:50:59.7528479Z Uploaded bytes 234881024
+2026-10-09T04:51:00.5283100Z Uploaded bytes 243269632
+2026-10-09T04:51:01.5802197Z Uploaded bytes 251658240
+2026-10-09T04:51:02.2682177Z Uploaded bytes 260046848
+2026-10-09T04:51:02.5210037Z Uploaded bytes 268435456
+2026-10-09T04:51:02.7723551Z Uploaded bytes 276824064
+2026-10-09T04:51:03.0740983Z Uploaded bytes 285212672
+2026-10-09T04:51:03.6071273Z Uploaded bytes 293601280
+2026-10-09T04:51:03.7111841Z Uploaded bytes 301989888
+2026-10-09T04:51:04.1332500Z Uploaded bytes 310378496
+2026-10-09T04:51:04.3401182Z Uploaded bytes 318767104
+2026-10-09T04:51:04.5766764Z Uploaded bytes 327155712
+2026-10-09T04:51:04.6378178Z Uploaded bytes 335544320
+2026-10-09T04:51:04.8886397Z Uploaded bytes 343932928
+2026-10-09T04:51:05.2738166Z Uploaded bytes 352321536
+2026-10-09T04:51:05.4107941Z Uploaded bytes 360710144
+2026-10-09T04:51:05.7091689Z Uploaded bytes 369098752
+2026-10-09T04:51:06.0173189Z Uploaded bytes 377487360
+2026-10-09T04:51:06.9363723Z Uploaded bytes 385875968
+2026-10-09T04:51:07.7457575Z Uploaded bytes 394264576
+2026-10-09T04:51:08.9169156Z Uploaded bytes 402653184
+2026-10-09T04:51:09.6357155Z Uploaded bytes 411041792
+2026-10-09T04:51:10.1123301Z Uploaded bytes 419430400
+2026-10-09T04:51:10.2044685Z Uploaded bytes 427819008
+2026-10-09T04:51:10.7667515Z Uploaded bytes 436207616
+2026-10-09T04:51:10.8316536Z Uploaded bytes 444596224
+2026-10-09T04:51:11.4130631Z Uploaded bytes 452984832
+2026-10-09T04:51:11.6690978Z Uploaded bytes 461373440
+2026-10-09T04:51:12.2429774Z Uploaded bytes 469762048
+2026-10-09T04:51:12.5218494Z Uploaded bytes 478150656
+2026-10-09T04:51:13.2614007Z Uploaded bytes 486539264
+2026-10-09T04:51:13.8194519Z Uploaded bytes 494927872
+2026-10-09T04:51:14.3362450Z Uploaded bytes 503316480
+2026-10-09T04:51:14.6452919Z Uploaded bytes 511705088
+2026-10-09T04:51:14.7459466Z Uploaded bytes 513397192
+2026-10-09T04:51:14.8249405Z Finished uploading artifact content to blob storage!
+2026-10-09T04:51:14.8252479Z SHA256 digest of uploaded artifact zip is f935590d0862d8f33f30dbdf5f319a851aacfc9fde012777af3d8eb467f89745
+2026-10-09T04:51:14.8255135Z Finalizing artifact upload
+2026-10-09T04:51:15.2310654Z Artifact p8-a23-original-readback-platform-37885688054-attempt1.zip successfully finalized. Artifact ID 11596472312
+2026-10-09T04:51:15.2312738Z Artifact p8-a23-original-readback-platform-37885688054-attempt1 has been successfully uploaded! Final size is 513397192 bytes. Artifact ID is 11596472312
+2026-10-09T04:51:15.2321200Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37885688054/artifacts/11596472312
+2026-10-09T04:51:15.2568300Z Post job cleanup.
+2026-10-09T04:51:15.3478189Z [command]/usr/bin/git version
+2026-10-09T04:51:15.3520629Z git version 2.55.0
+2026-10-09T04:51:15.3562605Z Temporarily overriding HOME='/home/runner/work/_temp/545993cd-5859-46f2-b852-ae23193eff9c' before making global git config changes
+2026-10-09T04:51:15.3563552Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:51:15.3568926Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T04:51:15.3612353Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:51:15.3648679Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:51:15.3956473Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:51:15.3992108Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:51:15.4246795Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:51:15.4281509Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:51:15.4755111Z Post job cleanup.
+2026-10-09T04:51:15.5653066Z [command]/usr/bin/git version
+2026-10-09T04:51:15.5691979Z git version 2.55.0
+2026-10-09T04:51:15.5731109Z Temporarily overriding HOME='/home/runner/work/_temp/41092a7c-d1d2-4acf-9c52-f21254c76f06' before making global git config changes
+2026-10-09T04:51:15.5732526Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T04:51:15.5738400Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T04:51:15.5786781Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T04:51:15.5826610Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T04:51:15.6077944Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T04:51:15.6113888Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T04:51:15.6385183Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T04:51:15.6431176Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T04:51:15.6815323Z Cleaning up orphan processes
+2026-10-09T04:51:15.7143012Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

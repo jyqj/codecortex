@@ -1,0 +1,415 @@
+{
+  "schema": "p8-a23-platform-readback-entrypoint-correction-independent-review-v1",
+  "status": "accepted_for_second_platform_only_fixed_original_data_readback",
+  "scope": "Static non-author review for a second platform-only data readback; no original native reexecution or task completion.",
+  "a1": {
+    "run_id": 37883820893,
+    "attempt": 1,
+    "controller_commit": "7494b6e439b11a60d0277c24d2b3fdd9d985e3d4",
+    "platform_job_id": 113669245095,
+    "overall_passed": false,
+    "failed_groups": [
+      [
+        "failure_gates",
+        {
+          "error": "retained CLI Cargo provenance differs",
+          "error_type": "ValueError",
+          "status": "failed_readback",
+          "waived": false
+        }
+      ]
+    ],
+    "other_group_statuses": {
+      "failure_gates": "failed_readback",
+      "originals_after": "passed_readback",
+      "platform": "passed_readback",
+      "recovery_databases": "passed_readback",
+      "recovery_identity": "passed_readback",
+      "recovery_raw_events": "passed_readback",
+      "source": "passed_readback",
+      "source_after": "passed_readback"
+    },
+    "source_unchanged": true,
+    "controller_unchanged": true,
+    "eleven_transports_unchanged": true,
+    "official_job_log": {
+      "key": "platform_first_log",
+      "bytes": 72745,
+      "sha256": "ac722ecea200854fb432515b4f8efa86f287840da71d51213c12d315b6fd32c8",
+      "blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6"
+    },
+    "exact_log_receipt_json": {
+      "sha256": "7cb4320d5f192386311ba714b01cd8e4342e72ababed696757ec881e7f1747a4",
+      "bytes": 35138,
+      "note": "One-line JSON extracted from official job log, not the pretty execution-receipt.json disk bytes."
+    },
+    "artifact_id": 11595850188,
+    "failure_retained": true
+  },
+  "patch": {
+    "before": {
+      "key": "platform_v2",
+      "bytes": 63358,
+      "sha256": "3c08bfd6fb95bab47fdcee2ed46233d19546ddc51e46a8f7e9e54b1956cfb245",
+      "blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb"
+    },
+    "after": {
+      "key": "platform_v3",
+      "bytes": 63365,
+      "sha256": "d1bf355e2b0820ebf19ffb278ae9a54599898de8044362ef913b500752df9c96",
+      "blob": "8172dfcd77d994cbd33889670d4185ca08c93943"
+    },
+    "line": 1073,
+    "before_literal": "/crates/cc-eval/src/main.rs",
+    "after_literal": "/crates/cc-eval/src/bin/cc-eval.rs",
+    "changed_line_count": 1,
+    "total_line_count_unchanged": true,
+    "inverse_exact": true,
+    "unchanged_checks": [
+      "compiler-artifact reason",
+      "cc-eval target name and bin kind",
+      "fixed original Cargo.toml path",
+      "executable equals cli.path and exact original target/debug/cc-eval path",
+      "CLI binary SHA256 equals fixed original audit and hardcoded expected digest",
+      "exact Cargo artifact is present in first case-00/build/stdout.log",
+      "all sealed original inventory and source/observer digest validation",
+      "all subsequent original retained CLI replay assertions"
+    ],
+    "no_relaxed_conjunction": true
+  },
+  "actual_source_evidence": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "src_contents_url": "https://api.github.com/repos/jyqj/codecortex/contents/crates/cc-eval/src?ref=a23bb72d3c954f385b99fe81ce9189885c208557",
+    "main_rs_absent": true,
+    "bin_tree": "456f6df6e9a9135e951ebc819d1fa3d2e0014346",
+    "bin_tree_sha_recomputed": "456f6df6e9a9135e951ebc819d1fa3d2e0014346",
+    "entrypoint": {
+      "key": "cc_eval_source",
+      "bytes": 16918,
+      "sha256": "99de08c18fa7b0172693763c9e14c3be2778cb2109f15ed5e474b20238350578",
+      "blob": "73c4666b05611b2e7b6578412f8f7dc4365e7d4c"
+    },
+    "entrypoint_main_line": 457,
+    "cargo_toml": {
+      "key": "cc_eval_toml",
+      "bytes": 1715,
+      "sha256": "d79b3b1693130c199c8b803bf555ef94836230c00c28afd499bab1e4ffa99179",
+      "blob": "c2f6dc531a42a5643c866856eae36f312e6f30d1"
+    },
+    "explicit_bin_override_absent": true
+  },
+  "workflow": {
+    "before": {
+      "key": "workflow_a1",
+      "bytes": 3235,
+      "sha256": "7aee87a534737ead0c5f39001d59d8ff5922b56433e938bc4e91ec56943d7ee1",
+      "blob": "ab5b0d05879f4feebc2c0b025e6d0f5cacf4bd16"
+    },
+    "after": {
+      "key": "workflow_a2",
+      "bytes": 3257,
+      "sha256": "2ae7b3cd1c6c176af7ff3b9f5bfa1d629f10e649467aaca2a4f065e1897316d2",
+      "blob": "6104ce7363b6765d1a41fcfdbf048dd6b274e6e2"
+    },
+    "changed_lines": [
+      1,
+      5,
+      21,
+      23
+    ],
+    "changes": [
+      "workflow name labels entrypoint correction",
+      "new single-use audit/p8-a23-original-readback-28fe-a2-20261009 push branch",
+      "max-parallel 2 to 1",
+      "matrix runtime,platform to platform only"
+    ],
+    "fixed_a23_source_checkout_preserved": true,
+    "read_only_permissions_preserved": true,
+    "persist_credentials_false_both_checkouts": true,
+    "no_original_a1_ref_push_requested": true,
+    "runtime_not_repeated": true,
+    "no_native_execution_requested": true,
+    "always_regular_only_upload_and_first_failure_retention_preserved": true
+  },
+  "root_cause_scope": "The v2 fixed path names a source file absent from the exact A23 checkout. The reviewed correction names the actual bound cc-eval bin source. A1 failed at the combined Cargo provenance assertion; its log did not print all compared Cargo artifact field values. This review does not claim the corrected combined assertion or later assertions have actually passed before A2 runs.",
+  "execution_status": "not_yet_executed",
+  "original_todos": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "reviewer_actions": {
+    "no_native_or_local_tests": true,
+    "no_run_trigger_rerun_ref_commit_write": true,
+    "only_authorized_audit_blob_creation_when_finalized": true
+  },
+  "actual_preparation": {
+    "commit": "ac9fac49f907bc8a24b00313275ffe4e98df03b5",
+    "tree": "183747a981d8d90e8b2b6d5b3dcd91199f928e89",
+    "sole_parent": "7494b6e439b11a60d0277c24d2b3fdd9d985e3d4",
+    "official_api_commit_readback": true,
+    "official_compare_total_commits": 1,
+    "changed_files": [
+      {
+        "path": ".github/workflows/p8-a23-original-readback-28fe.yml",
+        "status": "modified",
+        "git_blob": "6104ce7363b6765d1a41fcfdbf048dd6b274e6e2",
+        "added_lines": 4,
+        "removed_lines": 4
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/controller/platform_readback.py",
+        "status": "modified",
+        "git_blob": "8172dfcd77d994cbd33889670d4185ca08c93943",
+        "added_lines": 1,
+        "removed_lines": 1
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/entrypoint-correction/README.md",
+        "status": "added",
+        "git_blob": "1bc5c41f49b1e18def8464566a05e54e14df5831",
+        "added_lines": 13,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/entrypoint-correction/manifest.json",
+        "status": "added",
+        "git_blob": "5b0bfd6f7df73b34d7c2811b6c5395da6e9d25ef",
+        "added_lines": 63,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/artifact-locators.json",
+        "status": "added",
+        "git_blob": "97ba7f2b276bdce8a94285fcd914a013d0babccb",
+        "added_lines": 60,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/platform-execution-from-log.json",
+        "status": "added",
+        "git_blob": "5b60d4963795f7842a815dde67cfb1009c4b2637",
+        "added_lines": 1,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/platform-official-job.log",
+        "status": "added",
+        "git_blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+        "added_lines": 503,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/runtime-independent-review.json",
+        "status": "added",
+        "git_blob": "d9b9be3dff94fa18dc499c7a0d6eecc5fce62da1",
+        "added_lines": 851,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/runtime-official-job.log",
+        "status": "added",
+        "git_blob": "b42830a24117cdb511a8c7679b654749266d6f6d",
+        "added_lines": 481,
+        "removed_lines": 0
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/history/platform-v2-first-executed.py",
+        "status": "added",
+        "git_blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb",
+        "added_lines": 1251,
+        "removed_lines": 0
+      }
+    ],
+    "exact_scope": {
+      "modified": 2,
+      "added": 8,
+      "deleted": 0,
+      "root_entries_unchanged": 11,
+      "original_workflows_unchanged": 8,
+      "other_artifact_subtrees_unchanged": 4,
+      "other_checkpoints_unchanged": 190,
+      "controller_leaves": 32,
+      "controller_leaves_unchanged": 31,
+      "sole_changed_controller": "platform_readback.py"
+    },
+    "controller_tree": "b0529c567a2a84aeb2a36192342eedc238a3a398",
+    "tree_digest_checks": [
+      {
+        "name": "base_root",
+        "expected": "e4faa76f6a6bfb493104f922327a706bee7dc835",
+        "actual": "e4faa76f6a6bfb493104f922327a706bee7dc835"
+      },
+      {
+        "name": "candidate_root",
+        "expected": "183747a981d8d90e8b2b6d5b3dcd91199f928e89",
+        "actual": "183747a981d8d90e8b2b6d5b3dcd91199f928e89"
+      },
+      {
+        "name": "base_artifacts",
+        "expected": "0265d082913bdf1936d4b18a66234928e7995803",
+        "actual": "0265d082913bdf1936d4b18a66234928e7995803"
+      },
+      {
+        "name": "candidate_artifacts",
+        "expected": "da466c621d8e8bf2aa03cd72319b068455e2d208",
+        "actual": "da466c621d8e8bf2aa03cd72319b068455e2d208"
+      },
+      {
+        "name": "base_checkpoints",
+        "expected": "8e1274e2159cc8cd803a0a3d9115c1b9d4160464",
+        "actual": "8e1274e2159cc8cd803a0a3d9115c1b9d4160464"
+      },
+      {
+        "name": "candidate_checkpoints",
+        "expected": "dde3c7c1564ae2b7bc35e044ff6d91b5272a1040",
+        "actual": "dde3c7c1564ae2b7bc35e044ff6d91b5272a1040"
+      },
+      {
+        "name": "package/",
+        "expected": "1a03f50db410f306db7847ecfd35ba57ba787a7c",
+        "actual": "1a03f50db410f306db7847ecfd35ba57ba787a7c"
+      },
+      {
+        "name": "package/controller",
+        "expected": "b0529c567a2a84aeb2a36192342eedc238a3a398",
+        "actual": "b0529c567a2a84aeb2a36192342eedc238a3a398"
+      },
+      {
+        "name": "package/controller/reviewers",
+        "expected": "52a33bbfac906e4920674ec9993d584007e6cf3b",
+        "actual": "52a33bbfac906e4920674ec9993d584007e6cf3b"
+      },
+      {
+        "name": "package/controller/reviewers/gates-retained-cli",
+        "expected": "5116014517adb3d7deca6d62c3bb68c8d1600433",
+        "actual": "5116014517adb3d7deca6d62c3bb68c8d1600433"
+      },
+      {
+        "name": "package/controller/reviewers/gates-retained-cli/outputs-v2",
+        "expected": "3a118717919ba836becc24797275c8a657116e35",
+        "actual": "3a118717919ba836becc24797275c8a657116e35"
+      },
+      {
+        "name": "package/entrypoint-correction",
+        "expected": "09904f25c74693bc5d1bc5983c71a2767873f22f",
+        "actual": "09904f25c74693bc5d1bc5983c71a2767873f22f"
+      },
+      {
+        "name": "package/first-execution",
+        "expected": "4b8825167b7ed0556aded6be74272475cd1990fd",
+        "actual": "4b8825167b7ed0556aded6be74272475cd1990fd"
+      },
+      {
+        "name": "package/history",
+        "expected": "6bfafa220f66d9d78053c4a28535bc864f48006f",
+        "actual": "6bfafa220f66d9d78053c4a28535bc864f48006f"
+      },
+      {
+        "name": "base_github_recursive/workflows",
+        "expected": "84c0801c1a40b9ea3ab4fe36eb6f5787b61faba9",
+        "actual": "84c0801c1a40b9ea3ab4fe36eb6f5787b61faba9"
+      },
+      {
+        "name": "base_github_recursive",
+        "expected": "205944766ee06c6d899103d0f25f8fc777143bea",
+        "actual": "205944766ee06c6d899103d0f25f8fc777143bea"
+      },
+      {
+        "name": "candidate_github/workflows",
+        "expected": "e3e95a1e162fc7ba6d11824c17394145b0051543",
+        "actual": "e3e95a1e162fc7ba6d11824c17394145b0051543"
+      },
+      {
+        "name": "candidate_github",
+        "expected": "3e7ef1e44546768267dec7b3459e462bc070c6ef",
+        "actual": "3e7ef1e44546768267dec7b3459e462bc070c6ef"
+      }
+    ],
+    "all_tree_digests_equal": true,
+    "added_file_byte_checks": [
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/entrypoint-correction/README.md",
+        "sha": "1bc5c41f49b1e18def8464566a05e54e14df5831",
+        "recomputed_blob": "1bc5c41f49b1e18def8464566a05e54e14df5831",
+        "bytes": 2608,
+        "sha256": "bfdffd0dd8bb28638dc701fb3b0d093ec91b058eb9d0516996ab22cb5abb02f8"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/entrypoint-correction/manifest.json",
+        "sha": "5b0bfd6f7df73b34d7c2811b6c5395da6e9d25ef",
+        "recomputed_blob": "5b0bfd6f7df73b34d7c2811b6c5395da6e9d25ef",
+        "bytes": 2399,
+        "sha256": "616a16a80f0ff0f5eb340c243e2b4651a5a83f494bdb584300b24df386d881d0"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/artifact-locators.json",
+        "sha": "97ba7f2b276bdce8a94285fcd914a013d0babccb",
+        "recomputed_blob": "97ba7f2b276bdce8a94285fcd914a013d0babccb",
+        "bytes": 2499,
+        "sha256": "a47747b7b9f973f454b1a1d18efad9ea2adcdc1fa32982a68f7e6d1682d3eb9a"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/platform-execution-from-log.json",
+        "sha": "5b60d4963795f7842a815dde67cfb1009c4b2637",
+        "recomputed_blob": "5b60d4963795f7842a815dde67cfb1009c4b2637",
+        "bytes": 35139,
+        "sha256": "4c8313fdd6f822b3908220875cfcfaf497f841a70ebcbb0e6d02375303915ffe"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/platform-official-job.log",
+        "sha": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+        "recomputed_blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+        "bytes": 72745,
+        "sha256": "ac722ecea200854fb432515b4f8efa86f287840da71d51213c12d315b6fd32c8"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/runtime-independent-review.json",
+        "sha": "d9b9be3dff94fa18dc499c7a0d6eecc5fce62da1",
+        "recomputed_blob": "d9b9be3dff94fa18dc499c7a0d6eecc5fce62da1",
+        "bytes": 31197,
+        "sha256": "56196d0bf6920698cd77dcf775da41790441b9d7b22a20314e5f63fb28bb55b5"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/first-execution/runtime-official-job.log",
+        "sha": "b42830a24117cdb511a8c7679b654749266d6f6d",
+        "recomputed_blob": "b42830a24117cdb511a8c7679b654749266d6f6d",
+        "bytes": 144913,
+        "sha256": "09f928eb3115a1dc84d7792f5bacc24abc7428fc0015c3fdbafa6aec39eee97d"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/history/platform-v2-first-executed.py",
+        "sha": "d3e593e956d952b06ca11966f2690bb9601dbcfb",
+        "recomputed_blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb",
+        "bytes": 63358,
+        "sha256": "3c08bfd6fb95bab47fdcee2ed46233d19546ddc51e46a8f7e9e54b1956cfb245"
+      }
+    ],
+    "first_execution_preservation_checks": {
+      "history_exact": true,
+      "official_platform_log_exact": true,
+      "extracted_receipt_exact_plus_lf": true,
+      "runtime_original_review_sha": true,
+      "runtime_log_sha": true
+    },
+    "original_artifact_locators_match_fresh_official_api": {
+      "official_total": 2,
+      "all_identity_fields_match": true
+    },
+    "head_filtered_actions_run_count": 0,
+    "head_filtered_actions_run_api": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=ac9fac49f907bc8a24b00313275ffe4e98df03b5&per_page=100&page=1"
+  },
+  "limitations": {
+    "approval_is_static_preparation_only": true,
+    "a2_execution_not_yet_observed": true,
+    "no_other_provenance_clause_assumed_passed": true,
+    "no_fixture_ast_python_native_tests_run_by_this_reviewer": true,
+    "original_zip_bytes_not_copied_into_git_by_these_locator_files": true,
+    "new_workflow_must_preserve_exact_controller_input_and_fixed_A23_checkout": true,
+    "next_run_must_return_strict_review_passed_and_preserve_failure_outputs": true,
+    "original_first_failure_remains_failure_even_if_second_succeeds": true,
+    "unrelated_27_dependencies_and_runtime_bytes_preserved": true,
+    "no_original_todo_closure_or_dependency_bypass": true
+  }
+}

@@ -68,6 +68,12 @@ python3 scripts/p0-validation.py \
 
 该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。
 
+记录平台结论时同时注明源码、实际 OS/架构、Rust 工具链与所选 SDK；没有采集的 SDK
+版本写明 unknown，不从构建成功推断。新 target 的产品冷构建、完整 workspace 测试、
+单个测试和独立诊断各自保留命令、退出码与前置条件；使用预先执行过的 helper 时明确
+记录准备步骤，不能据此重标首次执行 helper 的旧失败。已知范围见
+[平台证据边界](docs/BENCHMARK.md#p8-平台证据边界2026-10-09)。
+
 ## 文档约定
 
 - 文档语言为简体中文；代码标识符、命令、日志、错误信息保留原文。

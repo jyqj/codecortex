@@ -1,0 +1,1128 @@
+{
+  "scope": "Root native preparation, actual failures, canonical edits, fixed-source inputs and terminal v2 controls. Raw command receipts and stdio are separately archived.",
+  "items": [
+    {
+      "key": "round13-native-preparation-read",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Command exited with status 1.\nNo files were modified by WebCodex itself; command side effects, if any, are from the invoked command.\nstdout_tail:\n\nstderr_tail:\nTraceback (most recent call last):\n  File \"<temporary-script>\", line 6, in <module>\n    print(json.dumps({'root':str(root),'parent_head':cmd(['git','rev-parse','HEAD']),'candidate_object':cmd(['git','cat-file','-t','3ffcefc3b28ee1a4ed80caecebd7208a45c3e302']),'main_object':cmd(['git','cat-file','-t','f7a003636b4902f569404f4e493e1fff7630093e']),'cargo':shutil.which('cargo'),'cargo_195':cmd(['cargo','+1.95.0','--version']),'disk_free':shutil.disk_usage(root).free,'owned_benchmark_subdirs':[p.name for p in (root/'artifacts/benchmarks/p8-bfccb8494ba0').iterdir() if p.is_dir()]},ensure_ascii=False))\n  File \"<temporary-script>\", line 4, in cmd\n    r=subprocess.run(args,text=True,capture_output=True)\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 505, in run\n    with Popen(*popenargs, **kwargs) as process:\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 951, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 1821, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cargo'\n\nRetry guidance: inspect stderr/stdout above, then fix the reported issue or use a narrower tool."
+          }
+        ],
+        "structuredContent": {
+          "success": false,
+          "output": {
+            "exit_code": 1,
+            "language": "python",
+            "stdout_tail": "",
+            "stderr_tail": "Traceback (most recent call last):\n  File \"<temporary-script>\", line 6, in <module>\n    print(json.dumps({'root':str(root),'parent_head':cmd(['git','rev-parse','HEAD']),'candidate_object':cmd(['git','cat-file','-t','3ffcefc3b28ee1a4ed80caecebd7208a45c3e302']),'main_object':cmd(['git','cat-file','-t','f7a003636b4902f569404f4e493e1fff7630093e']),'cargo':shutil.which('cargo'),'cargo_195':cmd(['cargo','+1.95.0','--version']),'disk_free':shutil.disk_usage(root).free,'owned_benchmark_subdirs':[p.name for p in (root/'artifacts/benchmarks/p8-bfccb8494ba0').iterdir() if p.is_dir()]},ensure_ascii=False))\n  File \"<temporary-script>\", line 4, in cmd\n    r=subprocess.run(args,text=True,capture_output=True)\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 505, in run\n    with Popen(*popenargs, **kwargs) as process:\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 951, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 1821, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cargo'\n",
+            "stdout_lines": 0,
+            "stderr_lines": 12,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "command_started": true,
+            "command_completed": true,
+            "command_ok": false,
+            "execution_state": "completed",
+            "failure_kind": "command_exit_nonzero",
+            "tool_failure": false,
+            "promoted_to_job": false,
+            "terminal": true,
+            "job_id": null,
+            "job_status": null,
+            "effective_timeout_secs": 60,
+            "sync_wait_secs": 10,
+            "async_handoff_available": true
+          },
+          "error": "Command exited with status 1.\nNo files were modified by WebCodex itself; command side effects, if any, are from the invoked command.\nstdout_tail:\n\nstderr_tail:\nTraceback (most recent call last):\n  File \"<temporary-script>\", line 6, in <module>\n    print(json.dumps({'root':str(root),'parent_head':cmd(['git','rev-parse','HEAD']),'candidate_object':cmd(['git','cat-file','-t','3ffcefc3b28ee1a4ed80caecebd7208a45c3e302']),'main_object':cmd(['git','cat-file','-t','f7a003636b4902f569404f4e493e1fff7630093e']),'cargo':shutil.which('cargo'),'cargo_195':cmd(['cargo','+1.95.0','--version']),'disk_free':shutil.disk_usage(root).free,'owned_benchmark_subdirs':[p.name for p in (root/'artifacts/benchmarks/p8-bfccb8494ba0').iterdir() if p.is_dir()]},ensure_ascii=False))\n  File \"<temporary-script>\", line 4, in cmd\n    r=subprocess.run(args,text=True,capture_output=True)\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 505, in run\n    with Popen(*popenargs, **kwargs) as process:\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 951, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py\", line 1821, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cargo'\n\nRetry guidance: inspect stderr/stdout above, then fix the reported issue or use a narrower tool.",
+          "error_code": "INVALID_ARGUMENT"
+        },
+        "isError": true
+      }
+    },
+    {
+      "key": "round13-native-preparation-read-v2",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "{\"root\": \"/Users/jin/Desktop/codecortex-rust\", \"parent_head\": {\"args\": [\"git\", \"rev-parse\", \"HEAD\"], \"exit\": 0, \"stdout\": \"ff458bc591b4e7e444af4464d6eef2513cdb335c\", \"stderr\": \"\"}, \"candidate_object\": {\"args\": [\"git\", \"cat-file\", \"-t\", \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\"], \"exit\": 0, \"stdout\": \"commit\", \"stderr\": \"\"}, \"main_object\": {\"args\": [\"git\", \"cat-file\", \"-t\", \"f7a003636b4902f569404f4e493e1fff7630093e\"], \"exit\": 0, \"stdout\": \"commit\", \"stderr\": \"\"}, \"disk_free\": 317110235136}\n{\"candidate_cargo\": \"/Users/jin/.cargo/bin/cargo\", \"exists\": true, \"version\": {\"args\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"--version\"], \"exit\": 0, \"stdout\": \"cargo 1.95.0 (f2d3ce0bd 2026-03-21)\", \"stderr\": \"\"}}\n{\"candidate_cargo\": \"/opt/homebrew/bin/cargo\", \"exists\": false, \"version\": null}\n{\"candidate_cargo\": \"/usr/local/bin/cargo\", \"exists\": false, \"version\": null}\n{\"owned_base_exists\": true, \"owned_subdirs\": [\"raw-pr178-9f7b16f\", \"fts-prototype-target\", \"publication\", \"targets\", \"review-next-candidate\", \"candidate-combined\", \"source\", \"review-scale\", \"oracle-prototype-target\", \"review-ci\", \"review-tasks\", \"queue-management\", \"candidate-macos\", \"review-platform-pr178-9f7b16f\", \"candidate-fts\", \"review-pr\", \"review-runtime\", \"candidate-leaf\", \"review-platform\", \"candidate-oracle\", \"candidate-macos-integration\", \"raw\", \"candidate-fts-integration\", \"candidate-ready-signal\", \"raw-pr178-c8be5afa\"]}\n",
+            "stdout_lines": 5
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fix-worktree-create",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "execution_state": "running",
+            "command_started": true,
+            "command_completed": false,
+            "command_ok": false,
+            "exit_code": null,
+            "failure_kind": null,
+            "tool_failure": false,
+            "cwd": ".",
+            "terminal": false,
+            "job_id": "wc_job_SpuR06OU5Ogln-bu",
+            "job_status": "running",
+            "purpose": "operation",
+            "executor": "agent",
+            "activity": {
+              "state": "working",
+              "phase": "process_running",
+              "source": "runner_execution"
+            },
+            "effective_timeout_secs": 120,
+            "sync_wait_secs": 10,
+            "process_summary": "git worktree add --detach artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix 3ffcefc3b28ee1a4ed80caece…",
+            "stdout_tail": "",
+            "stderr_tail": "",
+            "stdout_lines": 0,
+            "stderr_lines": 0,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "detected_summary": {
+              "kind": "operation",
+              "outcome": "in_progress",
+              "progress": {
+                "state": "working",
+                "reason_code": "process_running",
+                "summary": "Process execution in progress",
+                "source": "runner_execution"
+              }
+            },
+            "continuation": {
+              "tool": "observe_jobs",
+              "arguments": {
+                "items": [
+                  {
+                    "job_id": "wc_job_SpuR06OU5Ogln-bu",
+                    "after_observation_token": "wj3_JezOnLV-CUmTxNEW.3.0.0"
+                  }
+                ],
+                "wait_secs": 55,
+                "wake_on": "terminal"
+              }
+            },
+            "execution_source": "run_process",
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_SpuR06OU5Ogln-bu",
+                  "kind": "run_process",
+                  "status": "running",
+                  "created_at": 1791539525,
+                  "started_at": 1791539525,
+                  "ended_at": null,
+                  "exit_code": null,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fix-worktree-observation-v2",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "items": [
+              {
+                "job_id": "wc_job_SpuR06OU5Ogln-bu",
+                "status": "timeout",
+                "terminal": true,
+                "changed": true,
+                "log_delta_status": "delta",
+                "observation_token": "wj3_JezOnLV-CUmTxNEW.4.1.2",
+                "observation_ref": "~j781",
+                "exit_code": -1,
+                "command_execution_state": "timed_out",
+                "detected_summary": {
+                  "kind": "operation",
+                  "outcome": "timed_out"
+                },
+                "stdout_tail": "",
+                "stderr_tail": "Preparing worktree (detached HEAD 3ffcefc3b)\ncommand timed out after 120 seconds\n"
+              }
+            ],
+            "wait": {
+              "outcome": "terminal"
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-failed-worktree-inspection",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "{\"target_exists\": false, \"git_file\": false, \"items\": []}\n{\"worktree_list_exit\": 0, \"own_blocks\": [], \"stderr\": \"\"}\n",
+            "stdout_lines": 2,
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_SpuR06OU5Ogln-bu",
+                  "kind": "run_process",
+                  "status": "timeout",
+                  "created_at": 1791539525,
+                  "started_at": 1791539525,
+                  "ended_at": 1791539645,
+                  "exit_code": -1,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fix-sparse-worktree-create",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "stderr_tail": "Preparing worktree (detached HEAD 3ffcefc3b)\n",
+            "stderr_lines": 1
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fix-domain-checkout",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "execution_state": "running",
+            "command_started": true,
+            "command_completed": false,
+            "command_ok": false,
+            "exit_code": null,
+            "failure_kind": null,
+            "tool_failure": false,
+            "cwd": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse",
+            "terminal": false,
+            "job_id": "wc_job_x_XSt8Jqc_ifktwn",
+            "job_status": "running",
+            "purpose": "operation",
+            "executor": "agent",
+            "activity": {
+              "state": "working",
+              "phase": "process_running",
+              "source": "runner_execution"
+            },
+            "effective_timeout_secs": 120,
+            "sync_wait_secs": 10,
+            "process_summary": "git checkout 3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 -- Cargo.toml Cargo.lock crates scripts .github tests",
+            "stdout_tail": "",
+            "stderr_tail": "",
+            "stdout_lines": 0,
+            "stderr_lines": 0,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "detected_summary": {
+              "kind": "operation",
+              "outcome": "in_progress",
+              "progress": {
+                "state": "working",
+                "reason_code": "process_running",
+                "summary": "Process execution in progress",
+                "source": "runner_execution"
+              }
+            },
+            "continuation": {
+              "tool": "observe_jobs",
+              "arguments": {
+                "items": [
+                  {
+                    "job_id": "wc_job_x_XSt8Jqc_ifktwn",
+                    "after_observation_token": "wj3_UFfefQ6qjR8Ln91v.3.0.0"
+                  }
+                ],
+                "wait_secs": 55,
+                "wake_on": "terminal"
+              }
+            },
+            "execution_source": "run_process",
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_x_XSt8Jqc_ifktwn",
+                  "kind": "run_process",
+                  "status": "running",
+                  "created_at": 1791539796,
+                  "started_at": 1791539796,
+                  "ended_at": null,
+                  "exit_code": null,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-domain-checkout-terminal",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "items": [
+              {
+                "job_id": "wc_job_x_XSt8Jqc_ifktwn",
+                "status": "failed",
+                "terminal": true,
+                "changed": true,
+                "log_delta_status": "reset",
+                "observation_token": "wj3_UFfefQ6qjR8Ln91v.4.1.5",
+                "observation_ref": "~j782",
+                "exit_code": 128,
+                "command_execution_state": "completed",
+                "detected_summary": {
+                  "kind": "operation",
+                  "outcome": "failed"
+                },
+                "stdout_tail": "",
+                "stderr_tail": "fatal: You are attempting to fetch f4c8e03d8667c468c0886c9fb9e5131dca41bcd5, which is in the commit graph file but not in the object database.\nThis is probably due to repo corruption.\nIf you are attempting to repair this repo corruption by refetching the missing object, use 'git fetch --refetch' with the missing object.\nfatal: could not fetch 8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d from promisor remote\n",
+                "stdout_delta_reset": true,
+                "stderr_delta_reset": true,
+                "stdout_lines": 0,
+                "stderr_lines": 4,
+                "stdout_returned_lines": 0,
+                "stderr_returned_lines": 4,
+                "stdout_retained_from_line": 1,
+                "stderr_retained_from_line": 1,
+                "cursor": {
+                  "stdout": 1,
+                  "stderr": 5
+                },
+                "last_update_seq": 3,
+                "stdout_truncated": false,
+                "stderr_truncated": false,
+                "earlier_stdout_unavailable": false,
+                "earlier_stderr_unavailable": false,
+                "purpose": "operation",
+                "command_summary": "git checkout 3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 -- Cargo.toml Cargo.lock crates scripts .github tests"
+              }
+            ],
+            "wait": {
+              "outcome": "immediate"
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fix-domain-checkout-no-commitgraph",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "execution_state": "running",
+            "command_started": true,
+            "command_completed": false,
+            "command_ok": false,
+            "exit_code": null,
+            "failure_kind": null,
+            "tool_failure": false,
+            "cwd": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse",
+            "terminal": false,
+            "job_id": "wc_job_mS-IuZXug933OVMT",
+            "job_status": "running",
+            "purpose": "operation",
+            "executor": "agent",
+            "activity": {
+              "state": "working",
+              "phase": "process_running",
+              "source": "runner_execution"
+            },
+            "effective_timeout_secs": 180,
+            "sync_wait_secs": 10,
+            "process_summary": "git -c \"core.commitGraph=false\" checkout 3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 -- Cargo.toml Cargo.lock crates script…",
+            "stdout_tail": "",
+            "stderr_tail": "",
+            "stdout_lines": 0,
+            "stderr_lines": 0,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "detected_summary": {
+              "kind": "operation",
+              "outcome": "in_progress",
+              "progress": {
+                "state": "working",
+                "reason_code": "process_running",
+                "summary": "Process execution in progress",
+                "source": "runner_execution"
+              }
+            },
+            "continuation": {
+              "tool": "observe_jobs",
+              "arguments": {
+                "items": [
+                  {
+                    "job_id": "wc_job_mS-IuZXug933OVMT",
+                    "after_observation_token": "wj3_DyZnoa0ezhZpBOOA.3.0.0"
+                  }
+                ],
+                "wait_secs": 55,
+                "wake_on": "terminal"
+              }
+            },
+            "execution_source": "run_process",
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_mS-IuZXug933OVMT",
+                  "kind": "run_process",
+                  "status": "running",
+                  "created_at": 1791539913,
+                  "started_at": 1791539913,
+                  "ended_at": null,
+                  "exit_code": null,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-domain-no-graph-observation",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "items": [
+              {
+                "job_id": "wc_job_mS-IuZXug933OVMT",
+                "status": "completed",
+                "terminal": true,
+                "changed": true,
+                "log_delta_status": "reset",
+                "observation_token": "wj3_DyZnoa0ezhZpBOOA.4.1.1",
+                "observation_ref": "~j783",
+                "exit_code": 0,
+                "command_execution_state": "completed",
+                "detected_summary": {
+                  "kind": "operation",
+                  "outcome": "passed"
+                },
+                "stdout_tail": "",
+                "stderr_tail": "",
+                "stdout_delta_reset": true,
+                "stderr_delta_reset": true,
+                "stdout_lines": 0,
+                "stderr_lines": 0,
+                "stdout_returned_lines": 0,
+                "stderr_returned_lines": 0,
+                "stdout_retained_from_line": 1,
+                "stderr_retained_from_line": 1,
+                "cursor": {
+                  "stdout": 1,
+                  "stderr": 1
+                },
+                "last_update_seq": 3,
+                "stdout_truncated": false,
+                "stderr_truncated": false,
+                "earlier_stdout_unavailable": false,
+                "earlier_stderr_unavailable": false,
+                "purpose": "operation",
+                "command_summary": "git -c \"core.commitGraph=false\" checkout 3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 -- Cargo.toml Cargo.lock crates script…"
+              }
+            ],
+            "wait": {
+              "outcome": "immediate"
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fixed-domain-receipt",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "{\"receipt\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/native-public-dependency-fix-evidence/before-domain-receipt.json\", \"bytes\": 344264, \"sha256\": \"216b1d21ab9713fad32fdba517c4bc742deb9fef91610e72b458b27e169a4153\", \"entries\": 1242, \"source\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\"}\n{\"cached_candidate\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-ready-signal\", \"exists\": true, \"target_dir_exists\": false}\n{\"cached_candidate\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-combined\", \"exists\": true, \"target_dir_exists\": false}\n{\"cached_candidate\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets\", \"exists\": true, \"target_dir_exists\": false}\nTARGETS ['targets/combined-1.95-sdk154-round10', 'targets/fts-integration-1.95-sdk154-round9', 'targets/macos-engineering-1.95-sdk154-round7', 'targets/macos-integration-1.95-sdk154-round8', 'targets/premerge-workspace-a23-rust195-round5', 'targets/premerge-workspace-a23-rust195-sdk154-round5', 'targets/ready-signal-1.95-sdk154-round11']\n",
+            "stdout_lines": 5,
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_mS-IuZXug933OVMT",
+                  "kind": "run_process",
+                  "status": "completed",
+                  "created_at": 1791539913,
+                  "started_at": 1791539913,
+                  "ended_at": 1791539924,
+                  "exit_code": 0,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-sdk-read",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "CLT_SDKS ['/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX13.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX27.0.sdk', '/Library/Developer/CommandLineTools/SDKs/MacOSX27.sdk']\n{\"scope\": \"raw-pr178-c8be5afa\", \"matched\": []}\n{\"scope\": \"raw-pr178-9f7b16f\", \"matched\": []}\n{\"scope\": \"raw\", \"matched\": []}\n",
+            "stdout_lines": 4
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-cache-clone",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "execution_state": "running",
+            "command_started": true,
+            "command_completed": false,
+            "command_ok": false,
+            "exit_code": null,
+            "failure_kind": null,
+            "tool_failure": false,
+            "cwd": "artifacts/benchmarks/p8-bfccb8494ba0",
+            "terminal": false,
+            "job_id": "wc_job_bihpA2WwOBcR7-kp",
+            "job_status": "running",
+            "purpose": "operation",
+            "executor": "agent",
+            "activity": {
+              "state": "working",
+              "phase": "process_running",
+              "source": "runner_execution"
+            },
+            "effective_timeout_secs": 300,
+            "sync_wait_secs": 10,
+            "process_summary": "/bin/cp -cR targets/ready-signal-1.95-sdk154-round11 targets/public-dependency-fix-1.95-sdk154-round13",
+            "stdout_tail": "",
+            "stderr_tail": "",
+            "stdout_lines": 0,
+            "stderr_lines": 0,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "detected_summary": {
+              "kind": "operation",
+              "outcome": "in_progress",
+              "progress": {
+                "state": "working",
+                "reason_code": "process_running",
+                "summary": "Process execution in progress",
+                "source": "runner_execution"
+              }
+            },
+            "continuation": {
+              "tool": "observe_jobs",
+              "arguments": {
+                "items": [
+                  {
+                    "job_id": "wc_job_bihpA2WwOBcR7-kp",
+                    "after_observation_token": "wj3_fBpCOcOMzMUhf6tx.3.0.0"
+                  }
+                ],
+                "wait_secs": 55,
+                "wake_on": "terminal"
+              }
+            },
+            "execution_source": "run_process",
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_bihpA2WwOBcR7-kp",
+                  "kind": "run_process",
+                  "status": "running",
+                  "created_at": 1791540411,
+                  "started_at": 1791540411,
+                  "ended_at": null,
+                  "exit_code": null,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-cache-clone-observed",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "items": [
+              {
+                "job_id": "wc_job_bihpA2WwOBcR7-kp",
+                "status": "completed",
+                "terminal": true,
+                "changed": true,
+                "log_delta_status": "reset",
+                "observation_token": "wj3_fBpCOcOMzMUhf6tx.4.1.1",
+                "observation_ref": "~j784",
+                "exit_code": 0,
+                "command_execution_state": "completed",
+                "detected_summary": {
+                  "kind": "operation",
+                  "outcome": "passed"
+                },
+                "stdout_tail": "",
+                "stderr_tail": "",
+                "stdout_delta_reset": true,
+                "stderr_delta_reset": true,
+                "stdout_lines": 0,
+                "stderr_lines": 0,
+                "stdout_returned_lines": 0,
+                "stderr_returned_lines": 0,
+                "stdout_retained_from_line": 1,
+                "stderr_retained_from_line": 1,
+                "cursor": {
+                  "stdout": 1,
+                  "stderr": 1
+                },
+                "last_update_seq": 3,
+                "stdout_truncated": false,
+                "stderr_truncated": false,
+                "earlier_stdout_unavailable": false,
+                "earlier_stderr_unavailable": false,
+                "purpose": "operation",
+                "command_summary": "/bin/cp -cR targets/ready-signal-1.95-sdk154-round11 targets/public-dependency-fix-1.95-sdk154-round13"
+              }
+            ],
+            "wait": {
+              "outcome": "terminal"
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-red-test-edit",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "dry_run": false,
+            "applied_count": 1,
+            "ignored_noop_count": 0,
+            "changed": true,
+            "state_changed": true,
+            "execution_state": "completed",
+            "would_change": true,
+            "files": [
+              {
+                "index": 0,
+                "kind": "edit",
+                "path": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/tests/p2b_resolution_store.rs",
+                "to_path": null,
+                "read_revision": 7928562570315967,
+                "edits": [
+                  {
+                    "index": 0,
+                    "kind": "replace_exact",
+                    "old_start_line": 1,
+                    "old_end_line": 406,
+                    "new_line_count": 489,
+                    "would_change": true
+                  }
+                ],
+                "changed": true,
+                "would_change": true
+              }
+            ],
+            "changed_paths": [
+              "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/tests/p2b_resolution_store.rs"
+            ],
+            "planned_count": 1,
+            "change_summary": {
+              "requested_changes": 1,
+              "changed_files": 1,
+              "logical_edits": 1,
+              "resolved_matches": 1,
+              "warnings": 0
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-green-production-edits",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "dry_run": false,
+            "applied_count": 2,
+            "ignored_noop_count": 0,
+            "changed": true,
+            "state_changed": true,
+            "execution_state": "completed",
+            "would_change": true,
+            "files": [
+              {
+                "index": 0,
+                "kind": "edit",
+                "path": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/src/index_db_write_batch.rs",
+                "to_path": null,
+                "read_revision": 7928562570315969,
+                "edits": [
+                  {
+                    "index": 0,
+                    "kind": "replace_exact",
+                    "old_start_line": 1,
+                    "old_end_line": 1042,
+                    "new_line_count": 1054,
+                    "would_change": true
+                  }
+                ],
+                "changed": true,
+                "would_change": true
+              },
+              {
+                "index": 1,
+                "kind": "edit",
+                "path": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/src/snapshot_write_txn.rs",
+                "to_path": null,
+                "read_revision": 7928562570315970,
+                "edits": [
+                  {
+                    "index": 0,
+                    "kind": "replace_exact",
+                    "old_start_line": 1,
+                    "old_end_line": 207,
+                    "new_line_count": 209,
+                    "would_change": true
+                  }
+                ],
+                "changed": true,
+                "would_change": true
+              }
+            ],
+            "changed_paths": [
+              "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/src/index_db_write_batch.rs",
+              "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/src/snapshot_write_txn.rs"
+            ],
+            "planned_count": 2,
+            "change_summary": {
+              "requested_changes": 2,
+              "changed_files": 2,
+              "logical_edits": 2,
+              "resolved_matches": 2,
+              "warnings": 0
+            },
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_VwG5Nq3QlWFJLs8g",
+                  "kind": "run_script",
+                  "status": "failed",
+                  "created_at": 1791540476,
+                  "started_at": 1791540476,
+                  "ended_at": 1791540488,
+                  "exit_code": 101,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-format-v2-edit",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "dry_run": false,
+            "applied_count": 1,
+            "ignored_noop_count": 0,
+            "changed": true,
+            "state_changed": true,
+            "execution_state": "completed",
+            "would_change": true,
+            "files": [
+              {
+                "index": 0,
+                "kind": "edit",
+                "path": "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/tests/p2b_resolution_store.rs",
+                "to_path": null,
+                "read_revision": 7928562570315971,
+                "edits": [
+                  {
+                    "index": 0,
+                    "kind": "replace_exact",
+                    "old_start_line": 414,
+                    "old_end_line": 414,
+                    "new_line_count": 3,
+                    "would_change": true
+                  }
+                ],
+                "changed": true,
+                "would_change": true
+              }
+            ],
+            "changed_paths": [
+              "artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db/tests/p2b_resolution_store.rs"
+            ],
+            "planned_count": 1,
+            "change_summary": {
+              "requested_changes": 1,
+              "changed_files": 1,
+              "logical_edits": 1,
+              "resolved_matches": 1,
+              "warnings": 0
+            },
+            "job_attention": {
+              "changed": true,
+              "items": [
+                {
+                  "job_id": "wc_job_5uz0H0Ak4nyXS3Kh",
+                  "kind": "run_script",
+                  "status": "failed",
+                  "created_at": 1791540636,
+                  "started_at": 1791540636,
+                  "ended_at": 1791540659,
+                  "exit_code": 1,
+                  "reconciled_at": null
+                }
+              ]
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-fixed-validation-include-checkout",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {},
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-v2-extra-input-review",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "{\"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"reason\": \"original #[path] compile input required by cc-server test during workspace rustfmt; not product fix\", \"git_ls_tree_exit_code\": 0, \"additional_compile_input\": {\"path\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"bytes\": 13866, \"sha256\": \"fc3986fdc6ba8950d875908d17972957146c1abc1d2580f2e02093986545032f\", \"git_blob\": \"6b25ddadb69ba1f27dcc547e000c392119467cb1\", \"mode\": \"100644\"}}\n{\"v2_test\": \"crates/cc-db/tests/p2b_resolution_store.rs\", \"bytes\": 17946, \"sha256\": \"39f49426530bd7367bb49030b1c8602ae5be908069ca3dfe4d974f8111a98ae9\", \"git_blob\": \"f009b732320705dbb221aa22a4f32d1aa9e2cfea\"}\n",
+            "stdout_lines": 2
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-review-confirm-and-input-1",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Command exited with status 1.\nNo files were modified by WebCodex itself; command side effects, if any, are from the invoked command.\nstdout_tail:\n{\"literal_artifact_path_attributes\": [{\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"exists\": true}, {\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"exists\": false}]}\n\nstderr_tail:\nTraceback (most recent call last):\n  File \"<temporary-script>\", line 10, in <module>\n    assert all(x['exists'] for x in rows)\nAssertionError\n\nRetry guidance: inspect stderr/stdout above, then fix the reported issue or use a narrower tool."
+          }
+        ],
+        "structuredContent": {
+          "success": false,
+          "output": {
+            "exit_code": 1,
+            "language": "python",
+            "stdout_tail": "{\"literal_artifact_path_attributes\": [{\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"exists\": true}, {\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"exists\": false}]}\n",
+            "stderr_tail": "Traceback (most recent call last):\n  File \"<temporary-script>\", line 10, in <module>\n    assert all(x['exists'] for x in rows)\nAssertionError\n",
+            "stdout_lines": 1,
+            "stderr_lines": 4,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "command_started": true,
+            "command_completed": true,
+            "command_ok": false,
+            "execution_state": "completed",
+            "failure_kind": "command_exit_nonzero",
+            "tool_failure": false,
+            "promoted_to_job": false,
+            "terminal": true,
+            "job_id": null,
+            "job_status": null,
+            "effective_timeout_secs": 60,
+            "sync_wait_secs": 10,
+            "async_handoff_available": true
+          },
+          "error": "Command exited with status 1.\nNo files were modified by WebCodex itself; command side effects, if any, are from the invoked command.\nstdout_tail:\n{\"literal_artifact_path_attributes\": [{\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"exists\": true}, {\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"exists\": false}]}\n\nstderr_tail:\nTraceback (most recent call last):\n  File \"<temporary-script>\", line 10, in <module>\n    assert all(x['exists'] for x in rows)\nAssertionError\n\nRetry guidance: inspect stderr/stdout above, then fix the reported issue or use a narrower tool.",
+          "error_code": "INVALID_ARGUMENT"
+        },
+        "isError": true
+      }
+    },
+    {
+      "key": "round13-native-fixed-validation-include2-checkout",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {},
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-v2-complete-extra-inputs",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "language": "python",
+            "stdout_tail": "{\"receipt_sha256\": \"ddb36bc81c1975911c06f0a4d3c2807731598698511819cc6fa714cd1cc54fc0\", \"receipt_bytes\": 1575, \"receipt\": {\"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"reason\": \"original literal #[path] compile inputs required by cc-server test for full workspace rustfmt; not product edits\", \"additional_compile_inputs\": [{\"path\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"bytes\": 13866, \"sha256\": \"fc3986fdc6ba8950d875908d17972957146c1abc1d2580f2e02093986545032f\", \"git_blob\": \"6b25ddadb69ba1f27dcc547e000c392119467cb1\", \"mode\": \"100644\"}, {\"path\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"bytes\": 16326, \"sha256\": \"a23c566aa37c4305bc98620eeae46cf41efee06a74fa783d7892bdda815e146b\", \"git_blob\": \"17fc3cdceb467e8837475f396778fa3dff6208cc\", \"mode\": \"100644\"}], \"literal_reference_scan\": [{\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs\", \"exists\": true}, {\"referencer\": \"crates/cc-server/tests/p7_status_snapshot_independent_review.rs\", \"literal\": \"../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"resolved\": \"artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs\", \"exists\": true}]}}\n",
+            "stdout_lines": 1
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "key": "round13-native-controls-v2-observation",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "WebCodex tool completed successfully."
+          }
+        ],
+        "structuredContent": {
+          "success": true,
+          "output": {
+            "items": [
+              {
+                "job_id": "wc_job_1pI1z_wu2241zGg1",
+                "status": "completed",
+                "terminal": true,
+                "changed": true,
+                "log_delta_status": "reset",
+                "observation_token": "wj3_fnI7EgGemlO8sVjU.4.3a.1",
+                "observation_ref": "~j787",
+                "exit_code": 0,
+                "command_execution_state": "completed",
+                "detected_summary": {
+                  "kind": "validation",
+                  "outcome": "passed"
+                },
+                "stdout_tail": "{\"started\": \"resolution-store-suite-v2\", \"pid\": 93311, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-db\", \"--test\", \"p2b_resolution_store\"]}\nresolution-store-suite-v2 STDOUT_TAIL\n\nrunning 7 tests\ntest corrupt_payload_is_rejected ... ok\ntest package_aggregate_tracks_files_and_test_visibility ... ok\ntest dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok\ntest public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix ... ok\ntest bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok\ntest snapshot_dependency_manifest_and_rows_match_original_full_writer ... ok\ntest snapshot_dependency_failure_keeps_live_rows_and_generation_like_original ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s\n\n\nresolution-store-suite-v2 STDERR_TAIL\n   Compiling cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s\n     Running tests/p2b_resolution_store.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/p2b_resolution_store-5df1cd9f2a57d257)\n\nRECEIPT {\"after\": {\"bytes\": 344938, \"entries\": 1244, \"path\": \"resolution-store-suite-v2-input-after.json\", \"sha256\": \"84d533c801b3a49e44e386936aa3e663cd6a86e4fb21dac6ac5d3df4b8f0d0e2\"}, \"before\": {\"bytes\": 344939, \"entries\": 1244, \"path\": \"resolution-store-suite-v2-input-before.json\", \"sha256\": \"64653cce9c397bdbf5c6a8c854c136422bf60d1895293c2aa26ff63f96857732\"}, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-db\", \"--test\", \"p2b_resolution_store\"], \"cwd\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse\", \"elapsed_seconds\": 3.134877083, \"ended_at\": \"2026-10-09T10:15:06.411492+00:00\", \"environment\": {\"CARGO_ENCODED_RUSTFLAGS\": null, \"CARGO_TARGET_DIR\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13\", \"CC\": null, \"CXX\": null, \"RUSTFLAGS\": null, \"SDKROOT\": \"/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk\"}, \"exit_code\": 0, \"label\": \"resolution-store-suite-v2\", \"minimum_tests\": 7, \"nonzero_test_check_passed\": true, \"pid\": 93311, \"schema\": 1, \"scope\": \"ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim\", \"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"started_at\": \"2026-10-09T10:15:03.276677+00:00\", \"stderr\": {\"bytes\": 441, \"path\": \"resolution-store-suite-v2.stderr\", \"sha256\": \"79da567574eb29c99e7e257c0eebd498044d8feb9ab457ecabda465e85f67870\"}, \"stdout\": {\"bytes\": 633, \"path\": \"resolution-store-suite-v2.stdout\", \"sha256\": \"e92d0e7ee569c62bfb02212960688763ea84f29e3aea1f8ebcf8796bc6a0b8bf\"}, \"test_summaries\": [{\"failed\": 0, \"passed\": 7}]}\n{\"started\": \"snapshot-binder-dependency-unit-v2\", \"pid\": 93318, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-db\", \"--lib\", \"index_db_snapshot_insert::\"]}\nsnapshot-binder-dependency-unit-v2 STDOUT_TAIL\n\nrunning 14 tests\ntest index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables ... ok\ntest index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal ... ok\ntest index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs ... ok\ntest index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok\ntest index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok\ntest index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok\n\ntest result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 193 filtered out; finished in 1.22s\n\n\nsnapshot-binder-dependency-unit-v2 STDERR_TAIL\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s\n     Running unittests src/lib.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/cc_db-3413f1f6e5dcc03e)\nP8_FTS_MAX_ROWID_CONTROL={\"observations\":[{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":0,\"rows\":0,\"sum_fullscan_steps\":0,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":0,\"rows\":0,\"sum_fullscan_steps\":0,\"table\":\"literal_index\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":1,\"rows\":1,\"sum_fullscan_steps\":0,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":1,\"rows\":1,\"sum_fullscan_steps\":0,\"table\":\"literal_index\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,9,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":257,\"rows\":257,\"sum_fullscan_steps\":256,\"table\":\"files\"},{\"explain\":[[0,\"Init\",0,15,0,null],[1,\"Null\",0,1,2,null],[2,\"OpenRead\",0,81,0,\"0\"],[3,\"Last\",0,9,0,null],[4,\"Rowid\",0,3,0,null],[5,\"CollSeq\",0,0,0,\"BINARY-8\"],[6,\"AggStep\",0,3,2,\"max(1)\"],[7,\"Goto\",0,9,0,null],[8,\"Prev\",0,4,0,null],[9,\"AggFinal\",2,1,0,\"max(1)\"],[10,\"SCopy\",2,4,0,null],[11,\"NotNull\",4,13,0,null],[12,\"Integer\",0,4,0,null],[13,\"ResultRow\",4,1,0,null],[14,\"Halt\",0,0,0,null],[15,\"Transaction\",0,0,210,\"0\"],[16,\"Goto\",0,1,0,null]],\"max_fullscan_steps\":0,\"maximum\":257,\"rows\":257,\"sum_fullscan_steps\":256,\"table\":\"literal_index\"}],\"timing_measurement\":false}\n\nRECEIPT {\"after\": {\"bytes\": 344947, \"entries\": 1244, \"path\": \"snapshot-binder-dependency-unit-v2-input-after.json\", \"sha256\": \"78110633ac0fabf07e657ee40ecd57c24f63d8f64acc351973b6c57942b9cc2c\"}, \"before\": {\"bytes\": 344948, \"entries\": 1244, \"path\": \"snapshot-binder-dependency-unit-v2-input-before.json\", \"sha256\": \"57f88e83e1aba139de2a01726af0c2bc7238b2dcf4960e44c787bb6c04c34403\"}, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-db\", \"--lib\", \"index_db_snapshot_insert::\"], \"cwd\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse\", \"elapsed_seconds\": 1.4296095420000006, \"ended_at\": \"2026-10-09T10:15:08.007178+00:00\", \"environment\": {\"CARGO_ENCODED_RUSTFLAGS\": null, \"CARGO_TARGET_DIR\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13\", \"CC\": null, \"CXX\": null, \"RUSTFLAGS\": null, \"SDKROOT\": \"/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk\"}, \"exit_code\": 0, \"label\": \"snapshot-binder-dependency-unit-v2\", \"minimum_tests\": 14, \"nonzero_test_check_passed\": true, \"pid\": 93318, \"schema\": 1, \"scope\": \"ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim\", \"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"started_at\": \"2026-10-09T10:15:06.577547+00:00\", \"stderr\": {\"bytes\": 3543, \"path\": \"snapshot-binder-dependency-unit-v2.stderr\", \"sha256\": \"e5149ad1e6ca1316298c2999ceab2fc0cb88583a03e63a10cdbee2a5c4fda19c\"}, \"stdout\": {\"bytes\": 1749, \"path\": \"snapshot-binder-dependency-unit-v2.stdout\", \"sha256\": \"42bb4fba86b04c7b4faef8d152de508d862689a1ae7a8afd910c6626c86d90a3\"}, \"test_summaries\": [{\"failed\": 0, \"passed\": 14}]}\n{\"started\": \"snapshot-leaf-owner-control-v2\", \"pid\": 93334, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-index\", \"--test\", \"snapshot_leaf_batching\"]}\nsnapshot-leaf-owner-control-v2 STDOUT_TAIL\n\nrunning 6 tests\ntest snapshot_leaf_never_delays_identity_checks_past_the_next_file ... ok\ntest snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts ... ok\ntest snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes ... ok\ntest snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values ... ok\ntest snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal ... ok\ntest snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s\n\n\nsnapshot-leaf-owner-control-v2 STDERR_TAIL\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s\n     Running tests/snapshot_leaf_batching.rs (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13/debug/deps/snapshot_leaf_batching-1cb0f4f78038e7d5)\n\nRECEIPT {\"after\": {\"bytes\": 344943, \"entries\": 1244, \"path\": \"snapshot-leaf-owner-control-v2-input-after.json\", \"sha256\": \"414255971ec10c19ad59376c97cd6779b6f36cd85da01ef741fef5c1a58f8121\"}, \"before\": {\"bytes\": 344944, \"entries\": 1244, \"path\": \"snapshot-leaf-owner-control-v2-input-before.json\", \"sha256\": \"a0cce9c577bd8b2582ad232410cfb2b45d22a22e3a8f5b9f971a3b4a8d0b1f60\"}, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"test\", \"--locked\", \"-p\", \"cc-index\", \"--test\", \"snapshot_leaf_batching\"], \"cwd\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse\", \"elapsed_seconds\": 1.1507128340000001, \"ended_at\": \"2026-10-09T10:15:09.322418+00:00\", \"environment\": {\"CARGO_ENCODED_RUSTFLAGS\": null, \"CARGO_TARGET_DIR\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13\", \"CC\": null, \"CXX\": null, \"RUSTFLAGS\": null, \"SDKROOT\": \"/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk\"}, \"exit_code\": 0, \"label\": \"snapshot-leaf-owner-control-v2\", \"minimum_tests\": 1, \"nonzero_test_check_passed\": true, \"pid\": 93334, \"schema\": 1, \"scope\": \"ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim\", \"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"started_at\": \"2026-10-09T10:15:08.171690+00:00\", \"stderr\": {\"bytes\": 293, \"path\": \"snapshot-leaf-owner-control-v2.stderr\", \"sha256\": \"21aa809db36162fc97677e6f635e442c0a51f9dcca3eebbdae30f2b99ad0bfe5\"}, \"stdout\": {\"bytes\": 601, \"path\": \"snapshot-leaf-owner-control-v2.stdout\", \"sha256\": \"ac6ffca56f62c10665fe64ddc115737843a8a3544ff4d0cf34d0a4e9b218c402\"}, \"test_summaries\": [{\"failed\": 0, \"passed\": 6}]}\n{\"started\": \"workspace-format-v2\", \"pid\": 93356, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"fmt\", \"--all\", \"--\", \"--check\"]}\nworkspace-format-v2 STDOUT_TAIL\n\nworkspace-format-v2 STDERR_TAIL\n\nRECEIPT {\"after\": {\"bytes\": 344932, \"entries\": 1244, \"path\": \"workspace-format-v2-input-after.json\", \"sha256\": \"d5fd1d1f8efddf34d098bdca794aa3338e01c6641c1d0311d2dfa4a6b4f7c29f\"}, \"before\": {\"bytes\": 344933, \"entries\": 1244, \"path\": \"workspace-format-v2-input-before.json\", \"sha256\": \"99d19fdcd2878efe3c2f9094fff74596f91be994737ca0c52af8c7eff07c2d46\"}, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"fmt\", \"--all\", \"--\", \"--check\"], \"cwd\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse\", \"elapsed_seconds\": 1.494324958, \"ended_at\": \"2026-10-09T10:15:10.965090+00:00\", \"environment\": {\"CARGO_ENCODED_RUSTFLAGS\": null, \"CARGO_TARGET_DIR\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13\", \"CC\": null, \"CXX\": null, \"RUSTFLAGS\": null, \"SDKROOT\": \"/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk\"}, \"exit_code\": 0, \"label\": \"workspace-format-v2\", \"minimum_tests\": 0, \"nonzero_test_check_passed\": true, \"pid\": 93356, \"schema\": 1, \"scope\": \"ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim\", \"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"started_at\": \"2026-10-09T10:15:09.470743+00:00\", \"stderr\": {\"bytes\": 0, \"path\": \"workspace-format-v2.stderr\", \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}, \"stdout\": {\"bytes\": 0, \"path\": \"workspace-format-v2.stdout\", \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}, \"test_summaries\": []}\n{\"started\": \"cc-db-strict-clippy-v2\", \"pid\": 93404, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"clippy\", \"--locked\", \"-p\", \"cc-db\", \"--all-targets\", \"--\", \"-D\", \"warnings\"]}\ncc-db-strict-clippy-v2 STDOUT_TAIL\n\ncc-db-strict-clippy-v2 STDERR_TAIL\n    Checking memchr v2.8.0\n   Compiling libc v0.2.183\n    Checking serde_core v1.0.228\n    Checking hashbrown v0.17.1\n    Checking tracing-core v0.1.36\n    Checking log v0.4.29\n    Checking tracing v0.1.44\n    Checking aho-corasick v1.1.4\n    Checking parking_lot_core v0.9.12\n    Checking getrandom v0.4.2\n    Checking errno v0.3.14\n   Compiling jobserver v0.1.34\n    Checking hashlink v0.12.1\n    Checking rustix v1.1.4\n    Checking rand v0.10.3\n    Checking parking_lot v0.12.5\n   Compiling cc v1.2.58\n    Checking scheduled-thread-pool v0.2.7\n    Checking regex-automata v0.4.14\n    Checking r2d2 v0.8.10\n    Checking uuid v1.23.0\n    Checking serde v1.0.228\n    Checking serde_json v1.0.149\n    Checking tempfile v3.27.0\n   Compiling zstd-sys v2.0.16+zstd.1.5.7\n   Compiling libsqlite3-sys v0.38.1\n   Compiling blake3 v1.8.4\n    Checking chrono v0.4.44\n    Checking regex v1.12.3\n    Checking cc-model v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-model)\n    Checking rusqlite v0.40.1\n   Compiling zstd-safe v7.2.4\n    Checking r2d2_sqlite v0.35.0\n    Checking zstd v0.13.3\n    Checking cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse/crates/cc-db)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.61s\n\nRECEIPT {\"after\": {\"bytes\": 344935, \"entries\": 1244, \"path\": \"cc-db-strict-clippy-v2-input-after.json\", \"sha256\": \"77bd578d0fdb05f93cb5e44768cc375360f3eb22a093c471c05b55b83aaf9a77\"}, \"before\": {\"bytes\": 344936, \"entries\": 1244, \"path\": \"cc-db-strict-clippy-v2-input-before.json\", \"sha256\": \"02b630d7de0fd31cfde0c1a0adc20356d01495a7b8723cc67aacbb9518c3c565\"}, \"command\": [\"/Users/jin/.cargo/bin/cargo\", \"+1.95.0\", \"clippy\", \"--locked\", \"-p\", \"cc-db\", \"--all-targets\", \"--\", \"-D\", \"warnings\"], \"cwd\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-public-dependency-fix-sparse\", \"elapsed_seconds\": 8.67085725, \"ended_at\": \"2026-10-09T10:15:19.788511+00:00\", \"environment\": {\"CARGO_ENCODED_RUSTFLAGS\": null, \"CARGO_TARGET_DIR\": \"/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13\", \"CC\": null, \"CXX\": null, \"RUSTFLAGS\": null, \"SDKROOT\": \"/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk\"}, \"exit_code\": 0, \"label\": \"cc-db-strict-clippy-v2\", \"minimum_tests\": 0, \"nonzero_test_check_passed\": true, \"pid\": 93404, \"schema\": 1, \"scope\": \"ordinary engineering regression on exact3ff plus frozen three-file patch v2 and two restored original artifact compile inputs; cloned cached target; no cold/performance or whole-repository claim\", \"source_G\": \"3ffcefc3b28ee1a4ed80caecebd7208a45c3e302\", \"started_at\": \"2026-10-09T10:15:11.117566+00:00\", \"stderr\": {\"bytes\": 1386, \"path\": \"cc-db-strict-clippy-v2.stderr\", \"sha256\": \"ef30d5fa52324961c02c7172ad8f4b8b5d7c3c3b12ea368d01889be6569bbde9\"}, \"stdout\": {\"bytes\": 0, \"path\": \"cc-db-strict-clippy-v2.stdout\", \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}, \"test_summaries\": []}\nALL_CONTROLS_PASSED 5\n",
+                "stderr_tail": "",
+                "stdout_delta_reset": true,
+                "stderr_delta_reset": true,
+                "stdout_lines": 117,
+                "stderr_lines": 0,
+                "stdout_returned_lines": 117,
+                "stderr_returned_lines": 0,
+                "stdout_retained_from_line": 1,
+                "stderr_retained_from_line": 1,
+                "cursor": {
+                  "stdout": 118,
+                  "stderr": 1
+                },
+                "last_update_seq": 3,
+                "stdout_truncated": false,
+                "stderr_truncated": false,
+                "earlier_stdout_unavailable": false,
+                "earlier_stderr_unavailable": false,
+                "purpose": "validation",
+                "command_summary": "python script (4874 bytes, 0 args)"
+              }
+            ],
+            "wait": {
+              "outcome": "terminal"
+            }
+          },
+          "error": null
+        },
+        "isError": false
+      }
+    }
+  ]
+}

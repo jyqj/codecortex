@@ -1,7 +1,7 @@
 //! Resolver evidence shares the file transaction; reverse lookup uses indexed
 //! kind/key pairs and a bounded unique file frontier, never independent writes.
 use crate::{
-    index_db::{FileWriteUnit, ReadOps},
+    index_db::{FileWriteUnit, IndexDb, ReadOps},
     sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE},
 };
 use cc_model::{
@@ -23,12 +23,12 @@ pub(crate) fn replace_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()
             "resolution payload budget exceeded".into(),
         ));
     }
-    conn.execute(
+    IndexDb::execute_cached(
+        conn,
         "DELETE FROM resolution_dependencies WHERE file_path=?1",
         [&file.rel_path],
-    )
-    .map_err(db_err)?;
-    conn.execute("INSERT OR REPLACE INTO resolution_manifests(file_path,version,payload,digest) VALUES(?1,?2,?3,?4)",rusqlite::params![file.rel_path,m.version,payload,blake3::hash(payload.as_bytes()).to_hex().to_string()]).map_err(db_err)?;
+    )?;
+    IndexDb::execute_cached(conn,"INSERT OR REPLACE INTO resolution_manifests(file_path,version,payload,digest) VALUES(?1,?2,?3,?4)",rusqlite::params![file.rel_path,m.version,payload,blake3::hash(payload.as_bytes()).to_hex().to_string()])?;
     let mut stmt = conn
         .prepare_cached("INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)")
         .map_err(db_err)?;

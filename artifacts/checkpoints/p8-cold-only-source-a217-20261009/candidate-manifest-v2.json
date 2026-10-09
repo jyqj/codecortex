@@ -1,0 +1,100 @@
+{
+  "base": "b2a17adc188338c48b95d01761836916e5d0fcdb",
+  "changed_shared_validator": "Original public full validate_shard uses same plan/raw callbacks; shared internal immutable receipt checks reused. Native raw loop only explicit cold scope chooses no mutation/fanout stages. Original full workflow/support tests/capacity helper unchanged.",
+  "execution": {
+    "Python_synthetic_protocol_controls": "v1 final 50 matrix + 8 capacity passed; v2 temp relationship 12 cold controls passed; no Rust/native run",
+    "Rust_fmt_compile_tests": "not_run; local Rust toolchain unavailable",
+    "native_measurements": "not_run"
+  },
+  "files": [
+    {
+      "before_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "bytes": 50085,
+      "git_blob": "0cd6078cac9458de0f7387a50ad68e58ced9ca00",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "0de0a396cf71ad39f49a4956a844101173edaaf09db8fdca264f07152c0d3a03",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90",
+      "bytes": 5591,
+      "git_blob": "e812809e33c54d49a59930b57fd2b87ccd12cfe3",
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "sha256": "95e8080eaa0c4b11ca1fbfbb423e217426fe5ccade77035ff3037f0b91dcc0d4",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a",
+      "bytes": 24788,
+      "git_blob": "64fd186c65d5f854b7d02a84462313190fbbb176",
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "sha256": "3b4f7df5e83d00975abd1df14880f7a8af553d3b3372abef9c59ed69722671e6",
+      "status": "modified"
+    },
+    {
+      "before_sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "bytes": 66114,
+      "git_blob": "2054142a6936de0a7432d688352b69c655fc4fd7",
+      "path": "scripts/p8_scale_matrix.py",
+      "sha256": "4a035c0a82add61abecf215cea63c07adc7b01ec92355cebe7de3a6009016810",
+      "status": "modified"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 18312,
+      "git_blob": "1854b72a116d95e01b40826277551a7e8626e108",
+      "path": "scripts/p8_cold_matrix.py",
+      "sha256": "ce952558bb65c14d69d68d3b9e8bb9c314816db908b129f00943d51901ad90f6",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 15409,
+      "git_blob": "46e5ae719f942088673e993e9f0d48870fee525b",
+      "path": "scripts/tests/test_p8_cold_matrix.py",
+      "sha256": "56bcad956c60e81ae955a920e11157352c25e16fba4a47a853516dc428d96eb3",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 8819,
+      "git_blob": "12af60f35e1555cfde812b3b6f7f63bf94cba9b8",
+      "path": ".github/workflows/p8-cold.yml",
+      "sha256": "6103586e6ad83a962b548a8685e00096ab7862cd6e788d951a2097daebce3da6",
+      "status": "added"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 3242,
+      "git_blob": "92d80d764a1081efd5bf2cb2d3f98f07293fc54b",
+      "path": "docs/roadmap/code-index-v2/P8-COLD-ONLY.md",
+      "sha256": "406973c90ad9cc80dba18a08c80be65d6a22e68d36839cea67a1796bd36287f4",
+      "status": "added"
+    }
+  ],
+  "frozen_utc": "2026-10-09T15:18:11.755301+00:00",
+  "protocol": {
+    "cold_pair_samples": 150,
+    "job_timeout_minutes": 350,
+    "max_output_bytes": 536870912,
+    "max_parallel_measure": 10,
+    "native_deadline_ms": 18000000,
+    "repetitions_per_scale": 30,
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "stage_scope": "cold_only_v1",
+    "tables": 15
+  },
+  "schema": "cold-only-independent-candidate-v2",
+  "scope": "separate explicit P8-005 cold study; old full study/default plan retained; no ref or dispatch",
+  "supersedes": {
+    "manifest": "candidate-manifest-v1.json",
+    "reason": "Peer found supervisor overwrites worker TMP with child workspace; v2 separately seals parent/worker roots and tests the actual relationship. Original v1 raw controls used an equal-root synthetic fixture and did not expose this.",
+    "sha256": "98d60039072a86207958702e6b30736ae34b94237823dd56ce55df1bdc251b0b"
+  }
+}

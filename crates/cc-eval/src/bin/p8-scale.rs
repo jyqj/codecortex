@@ -1,7 +1,7 @@
 //! Development-only local P8 measurements. Never certifies a release.
 use cc_eval::benchmark::{
     invalid,
-    p8_scale::{self, CapacityProfile, Profile, ScalePlan, ScaleShard},
+    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope},
     Result,
 };
 use clap::{Parser, ValueEnum};
@@ -18,6 +18,14 @@ enum Mode {
 enum Capacity {
     #[value(name = "scale_capacity_v1")]
     ScaleCapacityV1,
+    #[value(name = "scale_wide_dirty_v1")]
+    ScaleWideDirtyV1,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum Stages {
+    #[value(name = "cold_only_v1")]
+    ColdOnlyV1,
 }
 
 #[derive(Parser)]
@@ -28,9 +36,16 @@ enum Capacity {
 struct Cli {
     #[arg(long, value_enum, default_value = "smoke")]
     profile: Mode,
-    /// Opt into the registered 200/1024 scale capacity; separate fanout keeps 8/128.
+    /// Select a registered 200/1024 or 4096/1024 work profile; fanout keeps 8/128.
     #[arg(long, value_enum)]
     capacity_profile: Option<Capacity>,
+    /// Select a separate cold-only study; omission executes the original stages.
+    #[arg(long, value_enum)]
+    stage_scope: Option<Stages>,
+    #[arg(long, requires_all = ["study_attempt", "stage_scope"])]
+    study_run_id: Option<String>,
+    #[arg(long, requires_all = ["study_run_id", "stage_scope"])]
+    study_attempt: Option<u32>,
     /// Comma-separated exact corpus sizes; 60 is the safe default.
     #[arg(long, value_delimiter = ',', conflicts_with = "matrix")]
     files: Vec<usize>,
@@ -105,7 +120,18 @@ fn run(cli: Cli) -> Result<i32> {
         },
         capacity_profile: cli.capacity_profile.map(|profile| match profile {
             Capacity::ScaleCapacityV1 => CapacityProfile::ScaleCapacityV1,
+            Capacity::ScaleWideDirtyV1 => CapacityProfile::ScaleWideDirtyV1,
         }),
+        stage_scope: cli.stage_scope.map(|scope| match scope {
+            Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,
+        }),
+        cold_study: cli
+            .study_run_id
+            .zip(cli.study_attempt)
+            .map(|(run_id, run_attempt)| ColdStudy {
+                run_id,
+                run_attempt,
+            }),
         files: if cli.matrix {
             p8_scale::RELEASE_SCALES.to_vec()
         } else if cli.files.is_empty() {

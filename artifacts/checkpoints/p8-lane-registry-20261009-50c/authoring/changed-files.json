@@ -1,0 +1,89 @@
+{
+  "Cargo_build_test_or_Clippy_result": null,
+  "GitHub_or_study_mutations": false,
+  "author": "/root/pr_audit",
+  "base_input_bytes_equal_P4": true,
+  "base_source": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+  "base_tree": "6ed5ad8ed24aa6563184b737a36c4e2fe5d87de8",
+  "callsites_checked": [
+    {
+      "change_needed": false,
+      "consumer": "default_lanes() -> run_lanes(&lanes, context)",
+      "path": "crates/cc-search/src/engine.rs"
+    },
+    {
+      "change_needed": false,
+      "consumer": "default_lanes_registry_keeps_fusion_order",
+      "path": "crates/cc-search/src/engine_lane_tests.rs"
+    },
+    {
+      "change_needed": true,
+      "consumer": "QueryPolicy::resolve policy obligations",
+      "path": "crates/cc-search/src/query_policy.rs"
+    }
+  ],
+  "changed_files": [
+    {
+      "after_bytes": 31723,
+      "after_git_blob": "f760ca52ec32547215092a5c700d4cb977a9669d",
+      "after_sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+      "before_bytes": 31442,
+      "before_git_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+      "before_sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+      "candidate_relative_path": "candidate/crates/cc-search/src/lanes.rs",
+      "mode": "100644",
+      "original_relative_path": "original/crates/cc-search/src/lanes.rs",
+      "path": "crates/cc-search/src/lanes.rs"
+    },
+    {
+      "after_bytes": 14087,
+      "after_git_blob": "79873db31d8d93a86f1537b930038f2437b99594",
+      "after_sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+      "before_bytes": 5795,
+      "before_git_blob": "d7642807baaab53c565d7e8f91568d1addbcd5b9",
+      "before_sha256": "7934394278307dec06ffaa683cb3fc33619e3d5516fcc49811d4ec4711ebc612",
+      "candidate_relative_path": "candidate/crates/cc-search/src/query_policy.rs",
+      "mode": "100644",
+      "original_relative_path": "original/crates/cc-search/src/query_policy.rs",
+      "path": "crates/cc-search/src/query_policy.rs"
+    }
+  ],
+  "created_at_utc": "2026-10-09T11:02:36.428755+00:00",
+  "independent_review": "Pending /root/todo_audit; this author does not self-approve source semantics.",
+  "isolated_format": {
+    "argv": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "--edition",
+      "2021",
+      "--config",
+      "skip_children=true",
+      "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/candidate/crates/cc-search/src/lanes.rs",
+      "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/candidate/crates/cc-search/src/query_policy.rs"
+    ],
+    "exit_code": 0,
+    "finished_at_utc": "2026-10-09T11:02:36.422523+00:00",
+    "started_at_utc": "2026-10-09T11:02:36.334945+00:00",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "original_product_read_source": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+  "patch": {
+    "bytes": 10247,
+    "file": "lane-ownership.patch",
+    "sha256": "587da491941afdf937eec1dee8800e635fb3fe989c77bd4f12b0bb33305150c5"
+  },
+  "production_decision": "A static slice of the five existing stateless lane references is the sole catalog. QueryPolicy reads IDs directly from it; default_lanes retains its existing Vec return and clones only the references from that same slice. No second constant ID list, boxed lane allocation, DB read, worker construction or lane execution is added for policy.",
+  "project_or_source_guard_executed": false,
+  "regressions_added": [
+    "Eight intents x seven valid configured/explicit strategies x two deadline-cap fixtures compare policy local order against execution and independent intent-role expectations, plus optional semantic suffix and budgets.",
+    "Two fixed complete old policy serializations (explicit local and inherited configured auto) pin wire field order/labels/roles/caps and fingerprint against expected bytes. These tests have not yet executed."
+  ],
+  "repository_worktree_index_HEAD_or_refs_changed": false,
+  "schema": "round10-isolated-lane-owner-candidate-v1",
+  "scope": "P8-017 single local lane registration owner; no task-state or source-admission changes.",
+  "task_status": {
+    "TODO_closed": 0,
+    "TODO_done": 163,
+    "TODO_remaining": 29
+  }
+}

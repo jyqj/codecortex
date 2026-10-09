@@ -1,0 +1,232 @@
+{
+  "actual_execution_boundary": {
+    "actual_P5_root_engineering": "Separate original receipt and logs under validation/lane-ownership-round10/engineering-checks; not a result of this static review.",
+    "compiled_counterfactual_acceptance": false,
+    "performance_or_provider_or_study_acceptance": false,
+    "reviewer_network_fetch_or_git_object_index_ref_worktree_mutation": false,
+    "reviewer_ran_Cargo_rustfmt_product_tests_or_original_prepare_script": false,
+    "reviewer_ran_source_guard": false
+  },
+  "author": "/root/pr_audit",
+  "candidate_manifest": {
+    "bytes": 7104,
+    "path": "validation/lane-ownership-round10/changed-files-v2.json",
+    "sha256": "9c216e17b7d3f5586d692e5e12f4be367f402e7bd7d2c6be71ae1f22cd820db9"
+  },
+  "candidate_patch": {
+    "bytes": 11826,
+    "path": "validation/lane-ownership-round10/lane-ownership-v2.patch",
+    "sha256": "adc12ac8b13558b99b90c180abc463df5a8177e9f4b26e47fe854873b174c10b"
+  },
+  "changed_files": [
+    {
+      "after": {
+        "blob": "f760ca52ec32547215092a5c700d4cb977a9669d",
+        "bytes": 31723,
+        "mode": "100644",
+        "sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+        "type": "blob"
+      },
+      "before": {
+        "blob": "9069edd85e1e76144930fcc03f073441138693c7",
+        "bytes": 31442,
+        "mode": "100644",
+        "sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+        "type": "blob"
+      },
+      "path": "crates/cc-search/src/lanes.rs"
+    },
+    {
+      "after": {
+        "blob": "79873db31d8d93a86f1537b930038f2437b99594",
+        "bytes": 14087,
+        "mode": "100644",
+        "sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+        "type": "blob"
+      },
+      "before": {
+        "blob": "d7642807baaab53c565d7e8f91568d1addbcd5b9",
+        "bytes": 5795,
+        "mode": "100644",
+        "sha256": "7934394278307dec06ffaa683cb3fc33619e3d5516fcc49811d4ec4711ebc612",
+        "type": "blob"
+      },
+      "path": "crates/cc-search/src/query_policy.rs"
+    },
+    {
+      "after": {
+        "blob": "c979369c3a6e3d2ef6e16f1848648d8096465756",
+        "bytes": 1280,
+        "mode": "100644",
+        "sha256": "07600c12e46ce7ae69bdd7f9563423122f5d426f94705d4735b74d3129655cc8",
+        "type": "blob"
+      },
+      "before": {
+        "blob": "96216fdb7dff3fc635820fef921cbe0a249c8047",
+        "bytes": 1455,
+        "mode": "100644",
+        "sha256": "f24ae9777ce7c4c042624bb7144eb5ed3d100ca5f342184095ba54f76228b94b",
+        "type": "blob"
+      },
+      "path": "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json"
+    }
+  ],
+  "independently_verified": {
+    "Rust_v2_equals_preserved_v1": true,
+    "actual_P5_equals_candidate_v2": true,
+    "all_other_tracked_mode_type_blob_entries_unchanged": true,
+    "controls_only_two_local_text_fields_changed": true,
+    "exactly_three_paths_changed_from_M": true,
+    "original_tests_retained_byte_for_byte": true,
+    "semantic_control_complete_entry_unchanged": true
+  },
+  "meaningful_test_review": {
+    "fingerprint_boundary": "Complete fixed wire strings are compared before hashing. They pin policy inputs to the existing bytes_hash function, not an independently certified hash algorithm. The fixtures were independently compared with the prechange source contract, not labelled as a newly executed prechange capture.",
+    "independent_order_oracle": "The unchanged engine default_lanes_registry_keeps_fusion_order test pins the five literal lane constants; the new cross-view comparison does not stand alone.",
+    "matrix": "Eight intents x seven valid configured/explicit strategy cases x two deadline-cap fixtures = 112 combinations. Checks execution/policy ID order, independent literal roles, caps, semantic state and optional final semantic lane. The preserved older test covers explicit Semantic with an unavailable provider.",
+    "new_test_names": [
+      "obligations_follow_execution_order_with_intent_roles_and_budget_caps",
+      "registry_cleanup_preserves_policy_wire_and_fingerprint"
+    ],
+    "retained_test_names": [
+      "auto_without_port_is_local_and_explicit_semantic_is_unavailable",
+      "intent_and_budgets_are_fingerprinted_without_hiding_partial"
+    ],
+    "test_deletions_or_weakened_assertions": false,
+    "wire_fixtures": [
+      {
+        "Rust_baseline_execution": false,
+        "bytes": 929,
+        "matches_source_derived_prechange_wire": true,
+        "name": "LOCAL",
+        "sha256": "cb4448f737ae363e2ad1d40e1867c93c32f9ff1280a3179573c70f74d536ac3a"
+      },
+      {
+        "Rust_baseline_execution": false,
+        "bytes": 993,
+        "matches_source_derived_prechange_wire": true,
+        "name": "AUTO",
+        "sha256": "083abe15b7eb9a6f8f662369a14b623200cb860f4dd321d10a0740aefd364825"
+      }
+    ]
+  },
+  "original_control_text_replacements": [
+    {
+      "counterfactual_source_sha256": "2f90d715d1f8030b07c6ac30277a85843b8a07310c1d66b0b50c90e892afbf24",
+      "execution": false,
+      "id": "local_retrieval",
+      "off_after_replacement": 1,
+      "off_before": 0,
+      "on_occurrences": 1,
+      "path": "crates/cc-search/src/lanes.rs"
+    },
+    {
+      "counterfactual_source_sha256": "f60a676a9aa9fbcc60a018c039c4e79a555d904daa20189649d9e387882b217e",
+      "execution": false,
+      "id": "semantic_dense",
+      "off_after_replacement": 1,
+      "off_before": 0,
+      "on_occurrences": 1,
+      "path": "crates/cc-search/src/query_policy.rs"
+    }
+  ],
+  "reproduction": {
+    "bytes": 12588,
+    "path": "validation/lane-ownership-round10/reviewer/review-semantic-v2.py",
+    "sha256": "5f8fa72b68fc65a1c916035f26f852cb73ed5b7930b0957fec79849e3a88feb8"
+  },
+  "review_kind": "independent_static_semantic_review_of_exact_three_file_v2",
+  "reviewed_at_utc": "2026-10-09T11:10:46.503453+00:00",
+  "reviewer": "/root/todo_audit",
+  "schema_version": 1,
+  "semantic_findings": [
+    {
+      "finding": "The five existing stateless lane objects remain in exact symbol/path/lexical/grep/graph order. A static slice of Sync trait references is the sole production registration list. default_lanes keeps its crate-private Vec-returning API by cloning references from that slice; execution, fusion ordering, annotation and tie-break consumers remain unchanged.",
+      "id": "single_local_catalog"
+    },
+    {
+      "finding": "The sole production policy edit obtains lane IDs from that same static registration view. Each existing lane_id method returns its unchanged static string. Config validation and error order, strategy/semantic availability, all eight intent-role rules, local and semantic caps, optional semantic suffix, wire field order, version, completeness/no-answer text and fingerprint implementation are unchanged. Policy still allocates its original obligations Vec; the view adds no intermediate catalogue Vec, boxed lane, DB/service access or lane execution.",
+      "id": "policy_invariants"
+    },
+    {
+      "finding": "The v1 two-file edit no longer matched the original local_retrieval literal anchor. Existing Rust controls and the original prepare script require one exact match. v2 updates only this control on_text/off_text: the off variant clears the owned execution Vec while preserving the static registry and policy obligations. The semantic_dense control, all replacement validators, witness protocol and gate rules are unchanged. This finding was static; no failed Cargo run is asserted.",
+      "id": "necessary_existing_counterfactual_compatibility"
+    }
+  ],
+  "source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+  "source_parent": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+  "task_boundary": {
+    "TODO_closed": 0,
+    "TODO_done": 163,
+    "TODO_remaining": 29,
+    "TODO_total": 192,
+    "dependency": "P8-016",
+    "status_and_dependency_unchanged": true,
+    "task": "P8-017"
+  },
+  "tree": "0e6fdcfd2ac7a727184daf5a0e290cf00c55abbc",
+  "unchanged_related_mode_blob_entries": {
+    "crates/cc-eval/src/benchmark/ablation.rs": {
+      "blob": "c1d6add3fb450fa3ba63cc9e037e48214b4d3bcc",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-eval/src/benchmark/ablation/mechanism.rs": {
+      "blob": "4593f68c75f548f144eb39368341581167d0a297",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-model/src/identity.rs": {
+      "blob": "81bbcc5af0f8590e25409e0b171f2f2fab754ff5",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-model/src/lib.rs": {
+      "blob": "e647c80002cbeadde281f7cbd1f222befbe0efc6",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-model/src/query.rs": {
+      "blob": "673608b7b0b4069f1cefac74c5a7322dc055e791",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/engine.rs": {
+      "blob": "cbd1f6e75036c217737f3df838b65b47a591399b",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/engine_lane_tests.rs": {
+      "blob": "2da259536f72ae5ec4e9f9fffa3bf2ebdf8ff0b7",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/execution.rs": {
+      "blob": "11356cd1179c96fa839864d1caa60ef3ecbd3502",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/lanes/exact_symbol.rs": {
+      "blob": "d9c88e700c8eab8a1684ab6f86f72f88fcbc6128",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/lanes/path.rs": {
+      "blob": "cd6ccdece6580d4c2538a4e2f6367d7840d703be",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "crates/cc-search/src/plan.rs": {
+      "blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+      "mode": "100644",
+      "type": "blob"
+    },
+    "scripts/p7_mechanism_build.py": {
+      "blob": "a91c2f0fdc48a7bf248b556891e83964d472dae0",
+      "mode": "100644",
+      "type": "blob"
+    }
+  },
+  "unresolved_blockers": [],
+  "verdict": "accepted_scoped"
+}

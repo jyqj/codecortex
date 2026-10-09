@@ -1,0 +1,59 @@
+{
+  "build": {
+    "controls": [
+      {
+        "id": "local_retrieval",
+        "off_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    // Counterfactual snapshot: preserve policy obligations and type references,\n    // then remove every local lane before run_lanes can execute any of them.\n    let mut lanes: Vec<&'static dyn RetrievalLane> = default_lane_registry().to_vec();\n    lanes.clear();\n    lanes\n}",
+        "on_text": "pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {\n    default_lane_registry().to_vec()\n}",
+        "path": "crates/cc-search/src/lanes.rs"
+      },
+      {
+        "id": "semantic_dense",
+        "off_text": "        // Counterfactual experiment snapshot: suppress semantic dispatch,\n        // retain the actual caller's requested strategy and all budgets.\n        let _ = CcError::SemanticUnavailable;\n        let effective = RetrievalStrategy::Local;",
+        "on_text": "        if requested == RetrievalStrategy::Semantic && !semantic_configured {\n            return Err(CcError::SemanticUnavailable);\n        }\n        let effective = if requested == RetrievalStrategy::Local || !semantic_configured {\n            RetrievalStrategy::Local\n        } else {\n            requested\n        };",
+        "path": "crates/cc-search/src/query_policy.rs"
+      }
+    ],
+    "reference_source": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/reference",
+    "schema_version": 1,
+    "source_commit": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+    "variants": [
+      {
+        "binary": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/products/none",
+        "build_receipt": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/builds/none/receipt.json",
+        "enabled": [],
+        "id": "none",
+        "source_root": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/sources/none"
+      },
+      {
+        "binary": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/products/local",
+        "build_receipt": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/builds/local/receipt.json",
+        "enabled": [
+          "local_retrieval"
+        ],
+        "id": "local",
+        "source_root": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/sources/local"
+      },
+      {
+        "binary": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/products/dense_only",
+        "build_receipt": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/builds/dense_only/receipt.json",
+        "enabled": [
+          "semantic_dense"
+        ],
+        "id": "dense_only",
+        "source_root": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/sources/dense_only"
+      },
+      {
+        "binary": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/products/hybrid",
+        "build_receipt": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/builds/hybrid/receipt.json",
+        "enabled": [
+          "local_retrieval",
+          "semantic_dense"
+        ],
+        "id": "hybrid",
+        "source_root": "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare/sources/hybrid"
+      }
+    ]
+  },
+  "compiled": false
+}

@@ -1,0 +1,104 @@
+{
+  "started_at_utc": "2026-10-09T11:23:05.714389+00:00",
+  "status": "completed",
+  "product_source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+  "review_source": "365e2cc503a0119b2fba3cf98ce38e5aa65cfcd4",
+  "guard_source": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+  "source_before": {
+    "head": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+    "tree": "5f5699d65996bb43e00554d6fbdc637c06ca6be3",
+    "registry_sha256": "7d4f24aa1068db11feb024edf276ff92a5f9ccee4ee9296fe59f2f16a13ccde1",
+    "verifier_sha256": "b926b19fbb6a2609192f3ea11d230b9d1bbd432d9274ebae24bb7e05fad6a82d"
+  },
+  "execution_identity": "G5 HEAD with prospective six-document changes; not an execution on a future publication commit.",
+  "input_receipts": {
+    "G5_cli": {
+      "receipt_sha256": "a79d64a8d082ae7a0dfe677fb73010ef5be006a92e3d315438736171f1b61c30",
+      "log_sha256": "c4337289e1a44173a1e1a897a2d3f7a221f36622568abb155df56de9580a435c",
+      "completed_at_utc": "2026-10-09T11:21:08.481179+00:00",
+      "source": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+      "review_source": "365e2cc503a0119b2fba3cf98ce38e5aa65cfcd4"
+    },
+    "P5_engineering": {
+      "receipt_sha256": "2e915b63915198ad1df804ee6f02c3a40dd3fb0e5eee4ea4a3cef193c5b6bc0c",
+      "source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "completed_at_utc": "2026-10-09T11:08:26.653996+00:00",
+      "five_commands_passed": true
+    },
+    "mechanism_preparation": {
+      "sha256": "1e880be61799b275af2e3b7310853ac773d44e7f40fe875eaaa0740f3b8cd203",
+      "source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "variant_count": 4,
+      "compiled": false
+    },
+    "original_plan_script_sha256": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c"
+  },
+  "commands": [
+    {
+      "name": "plan-write",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "scripts/code_index_plan.py",
+        "--write"
+      ],
+      "cwd": "/workspace/scratch/50c364fd60b1/codecortex",
+      "timeout_seconds": 300,
+      "started_at_utc": "2026-10-09T11:23:05.751586+00:00",
+      "head_before": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+      "status": "completed",
+      "stdout_path": "plan-checks/plan-write.stdout.log",
+      "stderr_path": "plan-checks/plan-write.stderr.log",
+      "exit_code": 0,
+      "completed_at_utc": "2026-10-09T11:23:05.869692+00:00",
+      "elapsed_seconds": 0.11466197299887426,
+      "head_after": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+      "stdout_sha256": "2045677442425ede481471fba7dee1d606fbefd32bbb73417961962daebcad3a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "plan-check",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "scripts/code_index_plan.py"
+      ],
+      "cwd": "/workspace/scratch/50c364fd60b1/codecortex",
+      "timeout_seconds": 300,
+      "started_at_utc": "2026-10-09T11:23:05.874399+00:00",
+      "head_before": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+      "status": "completed",
+      "stdout_path": "plan-checks/plan-check.stdout.log",
+      "stderr_path": "plan-checks/plan-check.stderr.log",
+      "exit_code": 0,
+      "completed_at_utc": "2026-10-09T11:23:05.991611+00:00",
+      "elapsed_seconds": 0.11451277900050627,
+      "head_after": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+      "stdout_sha256": "2045677442425ede481471fba7dee1d606fbefd32bbb73417961962daebcad3a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "passed": true,
+  "completed_at_utc": "2026-10-09T11:23:06.079149+00:00",
+  "source_after": {
+    "head": "27d6e8294e4b7ae337ee978ffada5b2dbeb43f31",
+    "tree": "5f5699d65996bb43e00554d6fbdc637c06ca6be3",
+    "registry_sha256": "7d4f24aa1068db11feb024edf276ff92a5f9ccee4ee9296fe59f2f16a13ccde1",
+    "verifier_sha256": "b926b19fbb6a2609192f3ea11d230b9d1bbd432d9274ebae24bb7e05fad6a82d"
+  },
+  "tracked_changed_paths": [
+    "README.md",
+    "docs/roadmap/code-index-v2/05-TODO.md",
+    "docs/roadmap/code-index-v2/08-HANDOFF.md",
+    "docs/roadmap/code-index-v2/PLAN-CHECK.json",
+    "docs/roadmap/code-index-v2/README.md",
+    "docs/roadmap/code-index-v2/tasks.json"
+  ],
+  "task_append_proof_sha256": "e13d81c79b34bbd2527cca5bcf58bcdaa2b029844138496606eec4c8e57041d1"
+}

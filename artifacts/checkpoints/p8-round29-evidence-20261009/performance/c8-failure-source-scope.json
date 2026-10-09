@@ -1,0 +1,424 @@
+{
+  "schema": "p8_c8_failed100k_source_coverage_pending_phase_extract_v1",
+  "author": "/root/scale_engineering",
+  "scope": "Read-only source/body comparison, original small report/shard reads, one complete paginated API snapshot; no raw ZIP download, native execution, source modification or performance claim.",
+  "studies": {
+    "c8": {
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run": 37902429727,
+      "artifact": 11617588539,
+      "zip": {
+        "git_blob": "ecabdc3c5503dfbdfb4e041812c6588d01052d6a",
+        "bytes": 5212266,
+        "sha256": "f758ca519a6b5ed90bfe1040944ad32b1daad8248e44b8ea4c7d4840d4a43236",
+        "CRC_scope": "Root received original12 members. This author did not repeat ZIP verification."
+      },
+      "raw": {
+        "bytes": 20144893,
+        "sha256": "9bf309d05c2361e18edf41eb0e70208f9697e09630cdae35c2cac8d96976d65e",
+        "phase_parse_status": "pending complete output"
+      },
+      "native_report": {
+        "bytes": 1175,
+        "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287",
+        "json": {
+          "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+          "executed_repetition_range": {
+            "end": 1,
+            "start": 0
+          },
+          "exit_code": 3,
+          "fixture_cleanup": {
+            "elapsed_ms": 18280,
+            "error": null
+          },
+          "full_100k_certification": "not_run",
+          "max_output_bytes": 536870912,
+          "plan_digest": "73cbbd6aeb996b180d564666757a7fc2974f0c235520bc71e6ab92b20ea2c97c",
+          "profile": "release",
+          "raw_digest": "c45ea74320426db61a7ef3204db9668451ec9ec3c22e25619bfac4004610db43",
+          "registered_repetitions": 30,
+          "release_certification": "not_run",
+          "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+          "schema_version": 1,
+          "shard_only": true,
+          "status": "deadline_exceeded",
+          "stderr_complete": false,
+          "summary": null,
+          "wall_ms": 18019626,
+          "worker_binary_digest_after": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+          "worker_binary_digest_before": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+          "worker_binary_unchanged": true,
+          "worker_exit_code": null,
+          "worker_pid": 2461
+        }
+      },
+      "shard": {
+        "bytes": 5033,
+        "sha256": "979c320e01f83a855537349c27b82b3a9020571ac92ee02ee89b20cd65973b23",
+        "json": {
+          "binary_blake3": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+          "binary_sha256": "1a46a855c72ab77e01582a302bf1f369a24cc21ac5e9ffcd7a29d911f9ae464b",
+          "build_receipt_sha256": "fa19d7c27458ceb294fb4e52d152c9e414c9e053a08ece0bbd7ce3cde11004da",
+          "capacity_contract": {
+            "deadline_ms": 18000000,
+            "disk_requirement_scope": "preregistered capacity estimate, not an observed peak or sufficiency proof",
+            "environment_policy": "heterogeneous_stratified_coverage_v1",
+            "fanout_dirty_budget": 8,
+            "fanout_max_resume_builds": 128,
+            "id": "scale_capacity_v1",
+            "max_output_bytes": 536870912,
+            "minimum_free_bytes_per_file": 262144,
+            "minimum_free_fixed_bytes": 4294967296,
+            "one_repetition_per_shard": true,
+            "oracle_limits": {
+              "max_canonical_bytes": 17179869184,
+              "max_row_bytes": 1048576,
+              "max_rows_per_table": 5000000,
+              "max_scratch_bytes": 8589934592
+            },
+            "scale_dirty_budget": 200,
+            "scale_max_resume_builds": 1024,
+            "sorting_cache_kib": 2048,
+            "storage_layout": "without_rowid_value_ordinal_v1"
+          },
+          "command": [
+            "/home/runner/work/_temp/p8-scale-build/p8-scale",
+            "--profile",
+            "release",
+            "--files",
+            "100000",
+            "--seed",
+            "12648430",
+            "--repetitions",
+            "30",
+            "--shard-index",
+            "0",
+            "--shard-count",
+            "30",
+            "--dirty-budget",
+            "200",
+            "--max-resume-builds",
+            "1024",
+            "--batch-sizes",
+            "1,10,100,1000",
+            "--fanouts",
+            "1,4,16,64,128",
+            "--deadline-ms",
+            "18000000",
+            "--max-output-bytes",
+            "536870912",
+            "--output",
+            "/home/runner/work/_temp/p8-scale-shard-100000-0/native",
+            "--skip-fanout",
+            "--capacity-profile",
+            "scale_capacity_v1"
+          ],
+          "driver_source": {
+            "inputs": {
+              "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+              "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+            },
+            "manifest_sha256": "f1ccf6b374eea2366e4d5828137fd18c94fbacab4c85294c5a6d3b9e4867d2ee",
+            "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+          },
+          "environment": {
+            "cpu_count": 4,
+            "cpu_model": "AMD EPYC 7763 64-Core Processor",
+            "host": "runnervmmprz5",
+            "machine": "x86_64",
+            "release": "6.17.0-1022-azure",
+            "rustflags": "",
+            "system": "Linux"
+          },
+          "error": "native shard failed",
+          "exit_code": 3,
+          "files": {
+            "disk-after.json": {
+              "bytes": 354,
+              "sha256": "dcba15051396bdecc9ce9456e8a0661c6f45a5538db5b5c1c903564d4f5232d5"
+            },
+            "disk-preflight.json": {
+              "bytes": 354,
+              "sha256": "5f9e5e77c9a9ce9b79ec1b6803bbe3e5950c0fb2ee4e5003995e261ea76ff0f6"
+            },
+            "native/plan.json": {
+              "bytes": 463,
+              "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801"
+            },
+            "native/raw.jsonl": {
+              "bytes": 20144893,
+              "sha256": "9bf309d05c2361e18edf41eb0e70208f9697e09630cdae35c2cac8d96976d65e"
+            },
+            "native/report.json": {
+              "bytes": 1175,
+              "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287"
+            },
+            "native/worker.stderr": {
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "registered-plan.json": {
+              "bytes": 463,
+              "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801"
+            },
+            "source-after.json": {
+              "bytes": 146525,
+              "sha256": "324d8ad3d213d9a80e86effb11dfa6b40ab5fa82b8cc9b596b35012521c07a1a"
+            },
+            "source-before.json": {
+              "bytes": 146525,
+              "sha256": "324d8ad3d213d9a80e86effb11dfa6b40ab5fa82b8cc9b596b35012521c07a1a"
+            },
+            "supervisor.stderr": {
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "supervisor.stdout": {
+              "bytes": 1175,
+              "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287"
+            }
+          },
+          "finished_utc": "2026-10-09T13:17:13.882299+00:00",
+          "kind": "shard",
+          "plan": {
+            "batch_sizes": [
+              1,
+              10,
+              100,
+              1000
+            ],
+            "capacity_profile": "scale_capacity_v1",
+            "deadline_ms": 18000000,
+            "dirty_budget": 200,
+            "fanouts": [
+              1,
+              4,
+              16,
+              64,
+              128
+            ],
+            "files": [
+              100000
+            ],
+            "max_output_bytes": 536870912,
+            "max_resume_builds": 1024,
+            "profile": "release",
+            "repetitions": 30,
+            "schema_version": 1,
+            "seed": 12648430,
+            "shard": {
+              "count": 30,
+              "index": 0
+            },
+            "skip_fanout": true
+          },
+          "release_certification": "not_run",
+          "schema": "p8-scale-matrix-v1",
+          "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "source_manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+          "started_utc": "2026-10-09T08:16:53.368409+00:00",
+          "status": "failed",
+          "temporary_environment": {
+            "TEMP": "/home/runner/work/_temp",
+            "TMP": "/home/runner/work/_temp",
+            "TMPDIR": "/home/runner/work/_temp"
+          }
+        }
+      },
+      "read_integrity": "Complete read_files numbered small-body output reconstructed with trailing newline; native/report exactSHA and1175B equal sealed shard manifest. Full shard text read; shard5033B identity is author's text reconstruction, not a second ZIP-member CRC run."
+    },
+    "original275e": {
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run": 37896198208,
+      "analysis_git_blob": "8cfb12b13162013fb49354fda2e2ed8c52882a03",
+      "known_costs_us": {
+        "six_complete_parity": 7079403376,
+        "seven_complete_full_staging": 3382057512,
+        "incremental_prepare_991_builds": 3222380277,
+        "incremental_commit_991_builds": 2797455468
+      },
+      "scope": "Previous complete original-raw analysis only; no new timing. Incomparable timing views are not summed."
+    },
+    "peer3ff": {
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "run": 37910924354,
+      "status_at_snapshot": "100k in_progress;6jobs10artifacts",
+      "scope": "Separate source and runner. Current queued/in-progress status does not establish success or speedup."
+    }
+  },
+  "actual_source_comparison": [
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "git_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "bytes": 29410,
+      "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101",
+      "equals_known_275e_or_b356_body": true,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "git_blob": "c4eee424e815aafce896379387fb894d99d490e6",
+      "bytes": 18581,
+      "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+      "equals_known_275e_or_b356_body": false,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "git_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+      "bytes": 56514,
+      "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+      "equals_known_275e_or_b356_body": false,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "git_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "bytes": 8537,
+      "sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
+      "equals_known_275e_or_b356_body": true,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "bytes": 10207,
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
+      "equals_known_275e_or_b356_body": true,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "bytes": 9084,
+      "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+      "equals_known_275e_or_b356_body": false,
+      "equals_3ff_body": true,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "bytes": 8780,
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "equals_known_275e_or_b356_body": true,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "bytes": 29842,
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "equals_known_275e_or_b356_body": true,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "git_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+      "bytes": 10144,
+      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+      "equals_known_275e_or_b356_body": false,
+      "equals_3ff_body": false,
+      "equals_fixed_c92_body": false
+    }
+  ],
+  "code_findings": [
+    {
+      "finding": "c8 retains the two original275e oracle bodies exactly; RowProjection reuse is absent.",
+      "paths": [
+        "crates/cc-eval/src/benchmark/oracle.rs",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+      ],
+      "c8": [
+        "d6324b3003b5a3c3e8a1680536260ea99a950152",
+        "3c05342f976f534861347c098c3229ce988dfb61"
+      ],
+      "peer3ff": [
+        "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+        "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3"
+      ],
+      "coverage": "RowProjection targets per-row projection/key allocation inside mandatory full typed comparison. It does not remove row reads, sorting/insertion, duplicate preservation or Value comparison."
+    },
+    {
+      "finding": "c8 already has bounded files/literal FTS windows and a rebuild-only FTS entry. It is not an entirely unoptimized snapshot writer.",
+      "paths": [
+        "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "crates/cc-db/src/snapshot_write_txn.rs",
+        "crates/cc-index/src/indexer_phases/snapshot.rs"
+      ],
+      "pins": [
+        "c4eee424e815aafce896379387fb894d99d490e6",
+        "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "7aefc0bb357b97df3c8ba45257d2b45509f3e483"
+      ],
+      "source_locations": [
+        "snapshot_insert lines37-62 canonical schema eligibility;79-145 rowid bounded FTS begin/flush",
+        "snapshot_write_txn lines90-121 write_file_data_for_rebuild, chunks256",
+        "snapshot.rs line111 calls write_file_data_for_rebuild"
+      ],
+      "coverage": "Do not credit all later FTS changes as missing from c8. No causal wall reduction inferred from this static difference."
+    },
+    {
+      "finding": "c8 still lacks bounded resolution_dependencies INSERT batching. Its public_surface_store and resolution_dependency_store bodies equal the earlier275e bodies; snapshot_insert has no resolution_dependencies helper.",
+      "pins": [
+        "df522a327e68a820699ce21f4c5b9880f48d519c",
+        "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+        "32ed0414d16321032a45aa6b8f0a5333da7acf81"
+      ],
+      "coverage": "The later optimization targets full-staging dependency statements. Required c92 separate rebuild_dependency_batches flag preserves public catch-error-then-COMMIT prefix semantics; never copy unfixed3ff paths alone.",
+      "fixed_c92": [
+        "34c1e5e5188910482fcf80863008620d30fa73b1",
+        "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+        "f009b732320705dbb221aa22a4f32d1aa9e2cfea"
+      ]
+    }
+  ],
+  "interpretation": {
+    "established": "c8 and275e both ended native deadline_exceeded under the unchanged300min budget; this does not establish identical stage-cost composition.",
+    "not_yet_established": [
+      "c8 completed stage/build counts",
+      "c8 parity/full-staging/prepare/commit clock totals",
+      "c8 dependency SQL counters",
+      "c8 unfinished final stage",
+      "causal speedup or deadline sufficiency of new source"
+    ],
+    "minimum_next_step": "Use complete output of the already-submitted single readonly extraction, then compare the same fields with275e. No new benchmark or source patch is justified by the missing output.",
+    "latest_pr180_boundary": "Root reports new0e6b includes c92 fixes/184 DB and additional lock-observation changes. This report compares fixed c8 with fixed3ff/c92 bodies and does not claim to audit that newer whole source.",
+    "immutable_reuse_plan": "9446d50d36a434ef00f25a022bb01d5300c29f73"
+  },
+  "api_snapshot": {
+    "git_blob": "4cb4849a0105ff8a206f43fcd7fbc2aef9d90f94",
+    "bytes": 129048,
+    "sha256": "18dcc006c1f79d14e2b73f9ea02fc33f0d94971e3054226b449f3b0686d6803e",
+    "start_utc": "2026-10-09 13:38:14 UTC",
+    "end_utc": "2026-10-09 13:38:15 UTC"
+  },
+  "readonly_extraction": {
+    "script_git_blob": "e00b4afb78b2f5ef98332d9f4a08ad0993a8d53c",
+    "bytes": 4314,
+    "sha256": "d4afe7bbb593c3537755e37791a33738c0dea820fe45c974034da1da7edd06a7",
+    "execution_owner": "/root",
+    "first_execution": "Root reports exit0 but tool stdout truncated; not used for cost totals.",
+    "root_capture": "Root reports one repeat readonly parse wrapped to save same-original derived JSON; native request timed out, actual file creation unconfirmed.",
+    "author_read": "The one known-path read_files request completed with MCP request timed out (-32603); no derived JSON body was returned. No repeated execution or read request was sent; no truncation accepted.",
+    "author_read_failure": {
+      "tool": "webcodex.read_files",
+      "result": "MCP request timed out",
+      "code": -32603,
+      "observed_utc": "2026-10-09T13:44:57Z",
+      "previous_pending_report": "912eb76871fd30e3ff519646983aec11b9cac913"
+    }
+  },
+  "status": "source_findings_complete_phase_cost_comparison_blocked_on_complete_original_derived_output",
+  "task_status_changed": false,
+  "new_done": 0,
+  "remaining": 29
+}

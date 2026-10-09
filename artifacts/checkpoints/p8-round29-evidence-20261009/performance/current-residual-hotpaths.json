@@ -1,0 +1,216 @@
+{
+  "schema": "p8_round29_remaining_hotpaths_static_after_0e6_v1",
+  "author": "/root/scale_engineering",
+  "scope": "Nine exact source-body reads plus two full-function byte comparisons; reuse previously accepted275e cost observations. No native invocation, ZIP decode, new workload or source patch.",
+  "fixed_source": {
+    "pr": 180,
+    "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+    "base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "pr_updated_at": "2026-10-09T13:43:12Z"
+  },
+  "previous_evidence": {
+    "cost_report": "8cfb12b13162013fb49354fda2e2ed8c52882a03",
+    "c8_partial_read_and_blocked_extract": "d033c846db61a8879cf07b25e32c4224b3e2516d",
+    "c92_required_repair_review": "aab759f83ed6b584645d95d884ffa822b0a456b3"
+  },
+  "exact_body_map": [
+    {
+      "path": "crates/cc-db/src/seed_symbol_cache.rs",
+      "current": "c4663dceac1d01dc7013ab4b130ad73479aec4bc",
+      "bytes": 26544,
+      "sha256": "667960f8c82df2a1009376bdd43778416b7f3587e50ecb15ca1f9460fce4af79",
+      "old": "c4663dceac1d01dc7013ab4b130ad73479aec4bc",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_query.rs",
+      "current": "64711afb162499e09c226c107ed8ca72ce0333a0",
+      "bytes": 36519,
+      "sha256": "d06dda09e00d3b4b02ed54d45e8fe7d38db4242ab592bab49d3e012522de70cd",
+      "old": "64711afb162499e09c226c107ed8ca72ce0333a0",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+      "current": "675be9852afd8e78144836758cd696780cbb8a3d",
+      "bytes": 39961,
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
+      "old": "675be9852afd8e78144836758cd696780cbb8a3d",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-index/src/resolver/catalog_cache.rs",
+      "current": "ce4f4691b38a71efb6003dea3d8574e5f123e7c9",
+      "bytes": 14391,
+      "sha256": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a",
+      "old": "ce4f4691b38a71efb6003dea3d8574e5f123e7c9",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "current": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "bytes": 10939,
+      "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf",
+      "old": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "equals_previous_localization_body": false
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "current": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "bytes": 8957,
+      "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5",
+      "old": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "equals_previous_localization_body": false
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "current": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "bytes": 33276,
+      "sha256": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88",
+      "old": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "current": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "bytes": 60618,
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093",
+      "old": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "equals_previous_localization_body": true
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "current": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "bytes": 76225,
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c",
+      "old": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "equals_previous_localization_body": true
+    }
+  ],
+  "exact_reader_function_proofs": [
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "old_git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "current_git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "function": "pub fn resolution_dependents_with_work",
+      "bytes": 2620,
+      "sha256": "b2e29613f19212a49184ea3ab10f0188714cfcfc0a91766641c75178c75da3b5",
+      "full_function_byte_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "old_git_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "current_git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "function": "pub fn surface_dependents_bounded",
+      "bytes": 2477,
+      "sha256": "c030714fbd65e3e56825d06297f9213531e46c7c5d2a06dd41b00fbe78fedb57",
+      "full_function_byte_equal": true
+    }
+  ],
+  "findings": [
+    {
+      "topic": "Seed/cache capacity rejection path remains",
+      "fixed_paths": [
+        "crates/cc-db/src/seed_symbol_cache.rs",
+        "crates/cc-db/src/index_db_query.rs",
+        "crates/cc-index/src/indexer_phases/resolve.rs",
+        "crates/cc-index/src/resolver/catalog_cache.rs"
+      ],
+      "actual_body_change_from_previous_localization": "none",
+      "measured_old_source_evidence": {
+        "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "persisted_symbols_cold": 556137,
+        "resolve_ms_body_api_config": 2176485,
+        "incremental_builds_body_api_config": 991
+      },
+      "exact_source_behavior": [
+        "seed_cache_max_symbols reads CODECORTEX_SEED_CACHE_MAX_SYMBOLS, default500000 (seed_symbol_cache167-172).",
+        "resolver_seed_symbols_with_token_excluding cache miss loads all seed rows before seed_cache_store and applies exclusions in memory (index_db_query392-413).",
+        "SeedSymbolCache::build rejects over-cap snapshots (215-217).",
+        "fold_incremental updates carried catalog and type catalog, clears resolve cache, then park_if_consistent checks live row count/tombstones and finally capacity (catalog_cache131-163/193-219)."
+      ],
+      "supported_inference": "If the effective cap is the default and the original556137+ live symbol population applies, capacity admission is rejected. The next resolution cannot use these rejected cross-build caches. The existing cache-fold work may be discarded after its update.",
+      "not_measured": "Original raw does not record effective cap/cache hit/miss/rejection or separate catalog-load/fold clocks. The full2176.485s resolve interval is not attributed to this path.",
+      "narrow_future_option": "If root chooses an implementation followup, consider an equivalent early capacity rejection before work whose sole outcome is parking an over-cap catalog, while retaining token/epoch invalidation and cleanup semantics. This does not eliminate the necessary resolve data load, justify increasing the cap or prove deadline success. No patch authored."
+    },
+    {
+      "topic": "Indexed dependency prefixes remain repeated across prepares",
+      "fixed_paths": [
+        "crates/cc-db/src/resolution_dependency_store.rs",
+        "crates/cc-db/src/public_surface_store.rs",
+        "crates/cc-index/src/indexer_phases/reconcile.rs"
+      ],
+      "proof": "Both full reader functions are byte-identical to the c8/previous versions; new writer batching does not alter them.",
+      "exact_source_behavior": [
+        "SQL LIMIT remains cap + excluded.len(), followed by Rust excluded filtering.",
+        "DISTINCT file_path/ORDER BY file_path remains per kind/key batch or per target table/batch.",
+        "Existing invocation-local windows avoid redundant tail reads but do not persist a cursor across prepares."
+      ],
+      "measured_old_source_evidence": {
+        "rows": 130570693,
+        "vm_steps": 6209004986,
+        "sorts": 429255,
+        "statements": 430770,
+        "fullscan_steps": 0,
+        "whole_parse_dirty_reload_ms": 354202
+      },
+      "limit": "0 fullscan_steps is not absence of repeated indexed prefixes. Dependency query clocks are not independently available; all such work is inside the354.202s parse/dirty-reload view and must not be labeled the five-hour dominant cause.",
+      "requirement_for_any_future_fix": "Preserve global sorted unique cap+1 unexcluded witnesses over all batches, exact actual SqlWork, read_pool_size1, external changes at the next prepare and epoch fences; no persistent unvalidated cursor or weakened dirty budget."
+    },
+    {
+      "topic": "Each resume still traverses the file plan",
+      "fixed_paths": [
+        "crates/cc-index/src/indexer.rs",
+        "crates/cc-index/src/build_plan.rs"
+      ],
+      "actual_body_change_from_previous_localization": "none",
+      "measured_old_source_evidence": {
+        "incremental_builds": 991,
+        "files_scanned": 99100000,
+        "files_parsed": 2,
+        "scan_diff_ms": 689989
+      },
+      "limit": "These are original275e counts and clocks, not c8 or0e6 results. Filesystem scan cost remains distinct from SQLite SQL counters. No evidence justifies skipping the next prepare's external modification detection."
+    },
+    {
+      "topic": "Commit outer attribution remains unresolved",
+      "measured_old_source_evidence": {
+        "commit_write_us": 2797455468,
+        "inner_write_ms": 1198388,
+        "outer_residual_us": 1599067468
+      },
+      "explanation": "The outer residual can include project-model verification, catalog-cache work, book-keeping, destruction and other spans. No available original clock assigns all residual to one function or lock. New observation changes must be judged from their actual fixed-source output, not inferred from their presence.",
+      "action": "No speculative lock/caching patch or contention diagnosis."
+    },
+    {
+      "topic": "Mandatory parity still contains work beyond projection",
+      "measured_old_source_evidence": {
+        "completed_parity_count": 6,
+        "total_parity_us": 7079403376,
+        "completed_full_builds": 7,
+        "full_staging_us": 3382057512
+      },
+      "coverage": "Current donor improvements reuse RowProjection and batch rebuild writes. c8 already had FTS windows but not RowProjection/dependency batching. Projection reuse does not eliminate full row traversal, typed serialization, bounded SQLite insertion/sorting, duplicates or Value comparison.",
+      "limit": "There are no per-table oracle or per-subtable staging clocks in the original275e raw, and no complete c8 cost extract has reached this author. No remaining parity/staging wall proportion or speedup is inferred for0e6."
+    }
+  ],
+  "native_transport_boundary": {
+    "c8_cost_extract_status": "Original readonly parse first returned truncated output; subsequent known derived-file request timed out. No complete cost extraction accepted.",
+    "pure_v8_probe": {
+      "DecompressionStream": "undefined",
+      "ReadableStream": "undefined",
+      "Blob": "undefined",
+      "Buffer": "undefined",
+      "TextDecoder": "undefined",
+      "atob": "undefined"
+    },
+    "binary_path": "Root's generic Git blob request rejected the binary as non-UTF8. No fullbase64 was obtained.",
+    "stopped_zip_work": "No JS DEFLATE implementation, test suite or ZIP execution was written. Root explicitly stopped this path."
+  },
+  "conclusion": "There are concrete residual algorithmic paths beyond FTS/dependency writer optimization, but only the old275e cost totals are measured here. The early cache-rejection observation is a narrowly reviewable candidate direction, not a newly established bottleneck total. Preserve the existing eleven-file repair scope and wait for complete original/new-source evidence before claiming sufficiency.",
+  "task_status_changed": false,
+  "new_tests_or_measurements": 0,
+  "new_source_patch": false,
+  "new_done": 0,
+  "remaining": 29
+}

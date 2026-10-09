@@ -1,0 +1,621 @@
+{
+  "schema": "p8-pr180-0e6-current-head-independent-inventory-review-v1",
+  "status": "read_only_source_and_binding_comparison_complete_not_new_whole_semantic_or_execution_approval",
+  "reviewer": "/root/acceptance_audit",
+  "observed_at_utc": "2026-10-09T13:42:20Z",
+  "lease": {
+    "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+    "tree": "9755e717368ffb51bc084c3348c1715b00b34d0d",
+    "ordered_parents": [
+      "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "aae42c4a729ce60d591360dbbf4350b41e43bc9c",
+      "b356043c2c0c970d000e5f5e32f1dff69f88454f"
+    ],
+    "base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "changed_files_against_PR_base": 321,
+    "body": {
+      "bytes": 29021,
+      "sha256": "03a312176d642e378278f03ef91429ed84c278d21d3098f1d1ec34cd3445c676"
+    },
+    "initial_and_final_head_equal": true,
+    "initial_and_final_body_equal": true
+  },
+  "previous_audit": {
+    "blob": "1d06ee037ba183fca0bb43eaa4fcedab7910894c",
+    "bytes": 14213,
+    "sha256": "c8a69e058531bc9b82d3eff203249ca267d804c512607f7ec304110830ce27cc",
+    "head": "832f79b8702c6cdfb567b7cf949508cd4589f286"
+  },
+  "inventory": {
+    "blob": "c0e7f1b918b71296fb56c2298a7f67cd9a2fd966",
+    "bytes": 532947,
+    "sha256": "09f0c64851cb1b2abf5575c67baee3e72a51e1a5522cbe885f8e90e1ba53007a"
+  },
+  "delta": {
+    "relative_to": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+    "exact_leaf_count": 113,
+    "artifact_leaves": 90,
+    "product_leaves": 15,
+    "validation_leaves": 5,
+    "trust_leaves": 2,
+    "documentation_leaves": 1,
+    "added": 96,
+    "modified": 17,
+    "deleted": 0,
+    "API_compare_and_actual_tree_path_sets_equal": true,
+    "actual_changed_tree_objects": 53,
+    "unchanged_entry_witnesses": 507,
+    "recursive_source_validation_subtrees_Merkle_verified": 228
+  },
+  "findings": [
+    "0e6 is a real product and validation integration, not evidence-only. Besides three c92 repair and three184 DB bodies, it imports feature-gated lock-observation DB/server/Cargo inputs, runtime observers, a control and an auxiliary workflow.",
+    "All11 selected performance identities now match the prior desired candidate, including all three previously missing c92 repair files. All three184 DB bodies and all three Mac cfg bodies also exactly match. The old832f six-missing-leaf observation remains historical and is not current.",
+    "The remaining one of18 unequal selected identities is the existing prepared-helper test. Current31b340 was preserved, rather than overwritten by02dc or969ba. Unequal OID here is not evidence of an unprepared helper or a current product regression.",
+    "Current0e6 and pinned bound G aae42c4 have identical12 non-artifact root mode/type/OIDs; their only root difference is artifacts. Their actual complete product/validation inventories are identical. Pinned P b3bf products and all142 validation map identities also exactly match current0e6.",
+    "Existing ordinary workflows were triggered for current0e6, but the observed seven runs and25 checks are queued. Their head metadata matches current0e6; actual checkout/input manifests and successful execution results do not yet exist in this observation."
+  ],
+  "selected_eighteen": [
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "group": "performance11",
+      "desired": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "current": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "group": "performance11",
+      "desired": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "current": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "group": "performance11",
+      "desired": "34c1e5e5188910482fcf80863008620d30fa73b1",
+      "current": "34c1e5e5188910482fcf80863008620d30fa73b1",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "group": "performance11",
+      "desired": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "current": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "group": "performance11",
+      "desired": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "current": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "group": "performance11",
+      "desired": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "current": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "group": "performance11",
+      "desired": "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+      "current": "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "group": "performance11",
+      "desired": "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+      "current": "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "group": "performance11",
+      "desired": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "current": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "group": "performance11",
+      "desired": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "current": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "group": "performance11",
+      "desired": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+      "current": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "group": "184DB",
+      "desired": "603e8060ad36c0a46242184e74d4e56805e1d8d9",
+      "current": "603e8060ad36c0a46242184e74d4e56805e1d8d9",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "681c500b4ddd203582e87a874d268be68db3c1fe",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "group": "184DB",
+      "desired": "55ce1194ab0e890ad43793077cf1238ab150da5d",
+      "current": "55ce1194ab0e890ad43793077cf1238ab150da5d",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+      "group": "184DB",
+      "desired": "f581c77eb8f6d414712c584fbf66ae24fc50a049",
+      "current": "f581c77eb8f6d414712c584fbf66ae24fc50a049",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+      "old_equal": false
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "group": "184Mac",
+      "desired": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+      "current": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "group": "184Mac",
+      "desired": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+      "current": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "group": "184Mac",
+      "desired": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+      "current": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+      "mode": "100644",
+      "equal": true,
+      "previous_head_blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+      "old_equal": true
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "group": "P4fixture",
+      "desired": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+      "current": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "mode": "100644",
+      "equal": false,
+      "previous_head_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "old_equal": false
+    }
+  ],
+  "binding": {
+    "P": {
+      "commit": "b3bf22eab019175774c6c83295620b63a9740888",
+      "tree": "964af30886e142c6284dddab4e4451b4dc5e26cb",
+      "parents": [
+        "d7f21ab52ee2068c45ab5f7781e9e1db57f613de",
+        "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+        "ae033369f015c416cd7995709c1853497773cf6a"
+      ]
+    },
+    "R": {
+      "commit": "cd68f3ecf384a3da5e1186c27b1f3ff328bafca4",
+      "tree": "90d4c0aec835c9b5fff9d809c433d353d409dcf8",
+      "sole_parent": "b3bf22eab019175774c6c83295620b63a9740888"
+    },
+    "G": {
+      "commit": "aae42c4a729ce60d591360dbbf4350b41e43bc9c",
+      "tree": "41a1708082eb49432e8e22aac2c0400f80337cfb",
+      "sole_parent": "cd68f3ecf384a3da5e1186c27b1f3ff328bafca4"
+    },
+    "review": {
+      "blob": "c8a6b80912dfa13c664ded8e88f21bbe4a200e73",
+      "bytes": 783329,
+      "sha256": "9ae179a92dbedf27c0b3a6ca56b1ed792cc6639e3bb0765d634ece4db2dd79cd",
+      "path": "artifacts/checkpoints/p8-final-main-integration-bfcc-20261009/independent-source-review.json",
+      "verdict": "accepted_scoped",
+      "reviewers": [
+        "/root/execution_recon"
+      ],
+      "scope": "independently_reviewed_source_and_validation_inputs"
+    },
+    "guard": {
+      "blob": "20907d5100d128f06713f5449c6798176d422150",
+      "bytes": 11093,
+      "sha256": "85e2e82c4215758637378dc92c8c7a4e983a8f5bf4a23625909ce3e0b328557c"
+    },
+    "registry": {
+      "blob": "fd8dc60cff3addc10bac3a7dae7caf913c082f44",
+      "bytes": 179026,
+      "sha256": "197fff1830f41a05ce0d4c65973f1dc2c8b863865a3a35332c0dc9dc38ecd2a0"
+    },
+    "complete_inputs": 1095,
+    "BASE_delta": 70,
+    "validation_inputs": 142,
+    "all_1237_mode_type_blob_identities_equal_review": true,
+    "registry_source_delta_validation_maps_equal_review": true,
+    "guard_four_pin_inverse_equals_832f": true,
+    "identity_boundary": "This confirms current source identity with the existing independently recorded P/R/G. It does not relabel a native P or donor-source execution as a new0e6 run, or independently reperform the entire semantic review."
+  },
+  "fixture": {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "current": {
+      "blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+    },
+    "root_P4": {
+      "blob": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+      "bytes": 21328,
+      "sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a"
+    },
+    "reviewed_optional_composition": {
+      "blob": "969ba37fe82092c419ddd738653d26631efab94e",
+      "bytes": 21190,
+      "sha256": "a4586c83da81a15ec0c77d80db3d2801f3f952a9cda956e7c2da8004dcfcdb0a"
+    },
+    "composition_review": {
+      "blob": "f877ff233c111f1c9171d626c0ae354e248b0348",
+      "bytes": 7491,
+      "sha256": "e606eec75baa023c807e6bfd3bbe0cda5c4431ef7f6cb48a79316a3f12064387"
+    },
+    "mechanical_composition": {
+      "bytes_added": 122,
+      "exact_added_text": "    assert_eq!(report[\"worker_exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"summary\"][\"passed\"], true, \"{report}\");\n",
+      "whole_inverse_equal": true
+    },
+    "current_semantics": "Single readiness invocation through the original supervisor with2s deadline and real sleeping descendant; require readiness exit0/worker_exit0/summarypassed/stderr_complete/cleanup-error-null/release_not_run and preserve failed readiness directory without retry. Then retain the original250ms measured scenario and<2s assertion.",
+    "root_P4_semantics": "Separate one-shot no-descendant --fixture-preflight subprocess bounded by2s, then original250ms/20s/<2s scenario plus worker_exit0 and summarypassed assertions.",
+    "composition_semantics": "969ba preserves current31b340 full readiness implementation and adds exactly122 bytes: the two measured-run worker_exit_code0 and summarypassed assertions. Its actual whole-file inverse to current31b340 is verified here. No new execution of969ba is claimed.",
+    "current_does_not_include_composition": true
+  },
+  "execution_scope": {
+    "current_runs": [
+      {
+        "id": 37936553220,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/ci.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553223,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p8-runtime.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553244,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p8-platform.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553213,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p8-gates.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553225,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p7-closeout.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553246,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p8-lifecycle.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 37936553439,
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "path": ".github/workflows/p7-engineering.yml",
+        "event": "pull_request",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null
+      }
+    ],
+    "current_checks": [
+      {
+        "id": 113840051586,
+        "name": "lifecycle",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839939054,
+        "name": "cold macos / stable / semantic",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839939051,
+        "name": "cold macos / stable / default",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839939022,
+        "name": "cold linux / stable / default",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938990,
+        "name": "cold linux / 1.95 / default",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938854,
+        "name": "cold linux / stable / semantic",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938802,
+        "name": "cold linux / 1.95 / semantic",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938794,
+        "name": "cold macos / 1.95 / semantic",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938718,
+        "name": "cold macos / 1.95 / default",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938604,
+        "name": "security",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938483,
+        "name": "offline (semantic)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938392,
+        "name": "closeout",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938388,
+        "name": "actual recovery and rollback matrix",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938354,
+        "name": "mechanism",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938246,
+        "name": "engineering",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938204,
+        "name": "offline (default)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938190,
+        "name": "mixed (1)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938174,
+        "name": "mixed (8)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938154,
+        "name": "fake_backfill",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938114,
+        "name": "mixed (16)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938111,
+        "name": "mixed (4)",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839938088,
+        "name": "gate_controls",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839937923,
+        "name": "check",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839937874,
+        "name": "soak",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113839937471,
+        "name": "msrv",
+        "head": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "status": "queued",
+        "conclusion": null
+      }
+    ],
+    "complete_counts": {
+      "runs": 7,
+      "checks": 25
+    },
+    "pinned_P_existing_canonical_claim": {
+      "source": "b3bf22eab019175774c6c83295620b63a9740888",
+      "scope": "Actual P2 focused engineering only: retained first fmt0/compile101, then unchanged P2 with six original compile inputs materialized, 303searchlib+1anchor pass, exact two-package all-target strictClippy0 and original prepare-only0. No workspaceClippy, benchmark, cold build or four-C/scale credit.",
+      "accepted_engineering_result": {
+        "mechanism_anchor_passed": 1,
+        "mechanism_prepare_only": 0,
+        "no_variants_built_or_measured_by_prepare_only": true,
+        "search_lib_passed": 303,
+        "strict_Clippy": "cc-search + cc-eval --all-targets -D warnings exit0; not workspace Clippy",
+        "workspace_fmt": 0
+      },
+      "limits": [
+        "Source entry arrays equal, while snapshot JSON phase/labels differ; no whole-file byte equality claim.",
+        "Mac Rust1.95 SDK15.4 cached/APFS engineering controls, no cold or performance claim.",
+        "P1/G1/PR186 original executions retain their own source scopes.",
+        "Current four-C acquisition and originalGc8 scale remain independent; no TODO completion."
+      ],
+      "source_identity_bridge": "All1095 product and142 validation identities independently match current0e6. Existing original execution remains P b3bf and its recorded environment, not new0e6 execution.",
+      "supporting_execution_reception": "This audit read the complete canonical record. It did not independently re-receive its25MB native ZIP. Separate fetch attempts for two referenced thin peer-report blobs returned errors; no execution credit is inferred from those failed retrievals."
+    },
+    "c92_prior_controls": {
+      "review": {
+        "blob": "d08bfe6df564b672e718ee9b7c57ae8d5a8f8d87",
+        "bytes": 28439,
+        "sha256": "350d96fb6fe8bc97cbee562520ecd98c73416a816a7d9db26cf9fb7c7d15a445"
+      },
+      "source": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+      "accepted_tests_reported": 29,
+      "scope": "Complete fixed peer report read; original c92 source and6 commands retained. Not a new0e6 full-workspace result or a fresh original-ZIP reception."
+    },
+    "root_P4_workspace": "The root184 P4 workspace2731 pass/73ignored and its later G guards belong to their exact sources. They are not relabelled as0e6 tests."
+  },
+  "next_bounded_action": "No additional six-file overlay is needed: all six bodies are already present. If root elects to preserve its extra descendant-result assertions, the existing969ba two-line composition is based on the exact still-current31b340 leaf, subject to a fresh head check and new source binding/execution. Otherwise retain current identity and assess only its own actual checks. The newly imported lock-observation domain is to be assessed separately against its existing non-author reviews and original execution evidence; this inventory is not a new task acceptance gate.",
+  "boundaries": [
+    "No source/ref/PR/workflow or study operation performed.",
+    "No new Cargo, native product, benchmark or synthetic execution.",
+    "Current queued checks are not passes; source equality is not binary, environment, cold-build, performance or release equivalence.",
+    "Old832f audit and negative execution history remain immutable.",
+    "No original task status, definition, dependency or acceptance_subgates is changed. The original007 interpretation and c861 review are not displaced by optional diagnostics.",
+    "0 new TODO closures;29 remain."
+  ],
+  "actions": {
+    "API_read_only": true,
+    "Git_unreferenced_audit_blobs_only": true,
+    "source_changes": false,
+    "refs": false,
+    "PR_writes": false,
+    "executions": false
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

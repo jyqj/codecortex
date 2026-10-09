@@ -1,0 +1,395 @@
+{
+  "schema": "p8-007-original-mixed-db-acquisition-evidence-correction-v1",
+  "reviewer": "/root/pr_audit",
+  "prepared_at_utc": "2026-10-09 14:04:32 UTC",
+  "status": "original_mixed_DB_collection_requirement_confirmed_existing_probe_substitution_not_sufficient_P8_007_pending",
+  "scope": "Read-only original-contract interpretation and existing-source/record locator review. No source/ledger/ref/PR modification, no new workload, no artifact ZIP download, no runtime validator or statistics re-execution.",
+  "reviewer_role": {
+    "prior_work": "Reviewer previously audited retained G275 runtime delivery and authored an optional diagnostic-statistics candidate. Neither fact qualifies that optional architecture as an original acceptance gate.",
+    "independence": "This is an independent read of the original task/specification, the prior interpretation authored by acceptance_audit, and immutable original producer code. It does not certify a newly authored implementation."
+  },
+  "conclusion": {
+    "required": "Original 09-BENCHMARK section9 associates DB lock wait and worker contention collection with configured C1/4/8/16 mixed read/build. Requiring evidence of DB acquisition observations attributable to that mixed workload is grounded in the original text, rather than a newly introduced optional-diagnostics condition.",
+    "existing_gap": "The three separate same-source backfill db_control probes do not establish the DB acquisition measurement during the actual mixed read/build populations. They run once per seed before the held query waves; the writer interval includes BEGIN IMMEDIATE and ROLLBACK. Existing G275 mixed client spans do not identify backend DB acquisition.",
+    "correction": "Retain c861 as an immutable historical report and supersede only its inference that those three probes cover the original mixed DB subject and that P8-006 is the only remaining reason to keep P8-007 open. Existing valid measurements and their narrower provenance remain accepted in their own scopes.",
+    "decision": "P8-007 remains pending/in_progress. P8-006 remains an original hard dependency, and the mixed DB evidence gap must also be resolved from an existing appropriately bound record or other legitimately accepted original-scope evidence. This review closes no task.",
+    "existing_route": "An already-running fixed observer study has located C4 and C8 artifacts, with C1 and C16 still queued in the retrieved complete API pages. Receive and independently validate the existing records; neither prose, canonical source review nor green job metadata alone establishes complete four-cell acceptance. This review requests no rerun."
+  },
+  "normative_basis": {
+    "task_blob": {
+      "blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/tasks.json"
+    },
+    "task_exact": {
+      "id": "P8-007",
+      "phase": "P8",
+      "phase_name": "规模、质量与发行认证",
+      "batch": "P8-B",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "priority": "normal",
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-server/"
+      ],
+      "depends_on": [
+        "P8-006"
+      ],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "deliverables": [
+        "多并发与混合负载的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "contracts_doc": "02-CONTRACTS.md",
+      "benchmark_doc": "09-BENCHMARK.md",
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ],
+      "evidence": [
+        {
+          "status": "local_engineering_advanced_not_full_acceptance",
+          "round": 3,
+          "source": "25399fc51bb004885c18e8ba13fd1aae9614be17",
+          "artifacts": [
+            "artifacts/checkpoints/p8-load-20261007",
+            "docs/roadmap/code-index-v2/P8-LOAD.md",
+            "artifacts/checkpoints/p8-local-waves-20261007/round3"
+          ],
+          "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+        }
+      ],
+      "conditional_dependencies": [],
+      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。"
+    },
+    "benchmark": {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "git_blob_computed": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+    },
+    "section": "9",
+    "decisive_paragraph_exact": "并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。",
+    "validation_document": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "git_blob_computed": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e"
+    },
+    "interpretation_limit": "The original wording specifies the workload context and measurement subjects. It does not prescribe complete backend tracing, a timestamp for every SQL/lock/RPC, pure SQLite internal busy-time, an exact diagnostic implementation, a new diagnostic N, or repeating the already accepted hour."
+  },
+  "prior_report": {
+    "blob": "c861a3ea9994cb77bd6210d6331c2ed0523f9aa2",
+    "bytes": 21685,
+    "sha256": "a839273993bb09d0bd2d25f618f887c3c81c1182416afad51410ef1cc122a564",
+    "prior_conclusion_exact": "G275's existing accepted mixed/backfill data can support the original P8-007 measurement requirements at their explicitly limited client/acquisition/progress boundaries. It is not justified to turn missing finer backend decomposition into a new mandatory complete telemetry architecture or repeated-hour prerequisite. This corrects the prior overbroad interpretation; it does not relabel missing internal timestamps, certify all tails or close P8-007 while P8-006 remains open.",
+    "DB_mapping_exact": {
+      "requirement": "DB lock-wait subject",
+      "evidence": "Three original DB probes during held-provider work: read_conn checkout2/3/3microseconds; SELECT9/10/11microseconds; independent BEGIN IMMEDIATE;ROLLBACK23/23/27microseconds, with unchanged DB generation.",
+      "decision": "It is incorrect to say no DB acquisition/availability or contention observation exists. These timed acquisition probes cover the subject at their declared inclusive boundary; the reviewed original text does not mandate a pure-wait decomposition for every lock.",
+      "limit": "Checkout includes implementation overhead; writer elapsed includes acquisition, SQL and rollback. busy_timeout_ms100 is configuration, not observed wait. These are three probes, not per-MCP pure lock-wait samples or a lock quantile distribution."
+    },
+    "task_mapping_exact": {
+      "requirement": "Task closure and source identity",
+      "evidence": "P8-007 depends_on P8-006; P8-010 depends_on P8-009. Original relevant regressions and evidence gates remain source-bound.",
+      "decision": "Keep007 open until006 is satisfied; this scope clarification does not close any task or transfer G275 observations to current main. Optional diagnostics are not an extra dependency.",
+      "limit": "No all-domains-same-final-SHA gate, new provider authorization, additional one-hour run or 13-file diagnostic implementation prerequisite is introduced."
+    },
+    "preserved_valid_scope": [
+      "Original G275 mixed four cells each retain all900 attempts,600read/300build, configured C1/4/8/16 and actual maxima1/4/7/12; no reclassification of client timing as pure backend service.",
+      "Original same-source fake-backfill768 local queries, held provider/worker queue states and finite progress/deadline outcomes remain actual bounded worker-contention/progress evidence. They are not erased by this correction.",
+      "Three DB probes are real inclusive read-pool checkout/statement/writer transaction availability observations during held-provider work. It remains incorrect to call them nonexistent; it is also incorrect to assign them to unobserved mixed acquisition intervals.",
+      "The accepted original long soak and its actual source/3601operations/9600wire/15-table boundaries are not reopened merely because stronger optional diagnostics exist."
+    ]
+  },
+  "producer_evidence": {
+    "immutable_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "files": [
+      {
+        "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+        "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "blob": "5920466ea32a5470532309a46c92d6638959d53c",
+        "bytes": 23104,
+        "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+        "git_blob_computed": "5920466ea32a5470532309a46c92d6638959d53c"
+      },
+      {
+        "path": "scripts/p8_runtime.py",
+        "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "bytes": 58896,
+        "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+        "git_blob_computed": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8"
+      },
+      {
+        "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+        "bytes": 17027,
+        "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+        "git_blob_computed": "34f5cf8a67962edd94c277cf0e9dd299aa004235"
+      }
+    ],
+    "db_control": {
+      "lines": [
+        213,
+        236
+      ],
+      "read_checkout": "Instant surrounds db.read_conn(); elapsed includes acquisition API work, not exclusively time blocked on a lock.",
+      "read_statement": "Separate SELECT COUNT(*) interval.",
+      "writer": "A separately opened SQLite connection has busy_timeout100ms, then an Instant surrounds execute_batch(\"BEGIN IMMEDIATE; ROLLBACK;\"); elapsed includes acquisition, SQL and rollback. Configured timeout100ms is not observed wait."
+    },
+    "call_order": {
+      "lines": [
+        385,
+        400
+      ],
+      "exact_tail": [
+        "let held_provider = provider.snapshot();",
+        "let db_availability = db_control(db.clone()).await;",
+        "let held = samples(index.clone(), seed, \"held\").await;"
+      ],
+      "meaning": "The DB probe is executed once per seed before the held samples function iterates C1/4/8/16. It is not a per-cell or per-operation DB acquisition record from the independent mixed read/build processes."
+    },
+    "original_probe_values_in_us": [
+      {
+        "seed": 7,
+        "single_read_pool_checkout_us": 2,
+        "read_statement_us": 9,
+        "writer_acquire_and_rollback_us": 23,
+        "writer_busy_timeout_ms": 100,
+        "generation_unchanged": true
+      },
+      {
+        "seed": 19,
+        "single_read_pool_checkout_us": 3,
+        "read_statement_us": 10,
+        "writer_acquire_and_rollback_us": 23,
+        "writer_busy_timeout_ms": 100,
+        "generation_unchanged": true
+      },
+      {
+        "seed": 43,
+        "single_read_pool_checkout_us": 3,
+        "read_statement_us": 11,
+        "writer_acquire_and_rollback_us": 27,
+        "writer_busy_timeout_ms": 100,
+        "generation_unchanged": true
+      }
+    ],
+    "mixed_driver": {
+      "lines": [
+        610,
+        626
+      ],
+      "meaning": "operation start, the Python write_lock for builds/soak and mutation preparation precede call_started_ns. This driver lock and preparation segment is not the server DB mutex/read-pool acquisition."
+    },
+    "original_statistics": {
+      "lines": [
+        204,
+        206,
+        264
+      ],
+      "latency_scope_exact": "client observations include transport, admission and validation; no separated backend service or queue claim",
+      "meaning": "client_dispatch_wait, write_admission_and_preparation and client_call_to_terminal_including_validation preserve real client intervals, but none proves an internal DB acquisition window."
+    },
+    "custody_boundary": "Producer bodies were read in full and independently hashed in this review. Probe values and retained workload outcomes above are quoted from c861's already source-bound independent original receipt reading, backed by prior complete runtime custody. No fresh native/raw ZIP re-execution is claimed.",
+    "prior_actual_custody": {
+      "independent_report": "528fed03d56fab5506c6182a48e42c2e3fd3bd48",
+      "complete_receipt": "ce1278f0c96548399c84ebe9bc86000e3753b04e",
+      "delivery_manifest": "d551874abafec383274bc3824b5a5b102c85ede5",
+      "archive": "cd92ce4b931e770994770ba3dba6fd0a47a505ea"
+    }
+  },
+  "minimal_evidence_boundary": {
+    "required_subject": "Source/build/profile-bound DB acquisition observations in the actual configured mixed read/build cells, with unambiguous measurement windows and missing/unavailable states. Preserve original offered/outcome populations and original regressions.",
+    "permitted_measurement_description": "Acquisition-call wall can be reported honestly as inclusive of uncontended/API overhead. A mutex-acquisition or read-pool-checkout API interval must not be renamed pure SQLite internal busy-wait. Whether a submitted implementation covers the original subject still requires inspection of its actual data and boundaries.",
+    "not_new_requirements": [
+      "All backend locks instrumented",
+      "One diagnostic record per RPC",
+      "Optional22-leaf or13-file architecture",
+      "Pure SQLite internal lock/busy decomposition",
+      "A new one-hour soak",
+      "A new150-shard scale run just for this observation",
+      "New latency/SLA thresholds",
+      "Replacing any failed historical measurement or relabeling a new source as G275"
+    ],
+    "identity_rule": "Default-build latency populations remain default-build observations. A feature-enabled acquisition-observation binary is a distinct diagnostic profile with its own exact source/build receipt. It can supply the DB observation subject when its real data are validated; it cannot silently replace default-build latency/throughput/SLA samples, prove feature-off overhead, or inherit another source's performance result.",
+    "unknowns": "Missing internal timing remains unavailable/unknown, not zero. This review does not infer backend timing from client elapsed time or infer a zero lock wait from successful throughput."
+  },
+  "existing_record_locator": {
+    "issue": {
+      "number": 158,
+      "type": "issue",
+      "url": "https://github.com/jyqj/codecortex/issues/158",
+      "updated_at": "2026-10-09T13:43:13Z",
+      "complete_comments_retrieved": 34,
+      "latest_relevant_comment_id": 6082140717,
+      "latest_progress_commit": "906321b6d83dcdecda7256fb71831d7123504c74",
+      "note": "The /pulls/158 lookup returned404 because158 is an issue. Issue body and all34comments were read; no repository-wide search followed."
+    },
+    "earlier_review": {
+      "blob": "b5ba1052fbc43b30c85876db5f526f5045bd0cc9",
+      "bytes": 17303,
+      "sha256": "846d6817af0027ffc733383c433ae6a866076aa34ec52d18c6bc315d9d192e10",
+      "scope": "Earlier canonical/execution engineering identities were independently located, but a complete old four-C custody plus independent runtime reception was not established. Its reference to c861 does not override this correction."
+    },
+    "new_run": {
+      "id": 37930392164,
+      "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "event": "push",
+      "attempt": 1,
+      "workflow_path": ".github/workflows/p8-db-lock-observation.yml",
+      "created_at": "2026-10-09T12:29:43Z",
+      "run_status": "queued",
+      "conclusion": null,
+      "workflow_updated_at": "2026-10-09T13:13:28Z",
+      "run_status_caveat": "Queued run-level metadata coexists with completed jobs; no inference that all jobs are unstarted."
+    },
+    "observation_time_bound": "Complete jobs/artifacts API pages were retrieved before the independently read clock2026-10-09T14:01:27Z; these pages already contain C4 completion13:57:14Z. This is a retained observation, not a claim of continued current state.",
+    "jobs_total": 5,
+    "jobs": [
+      {
+        "id": 113819400505,
+        "name": "admission_and_controls",
+        "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T13:08:15Z",
+        "completed_at": "2026-10-09T13:13:27Z"
+      },
+      {
+        "id": 113835779454,
+        "name": "mixed (8)",
+        "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T13:34:09Z",
+        "completed_at": "2026-10-09T13:46:54Z"
+      },
+      {
+        "id": 113835779486,
+        "name": "mixed (4)",
+        "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T13:45:09Z",
+        "completed_at": "2026-10-09T13:57:14Z"
+      },
+      {
+        "id": 113835779540,
+        "name": "mixed (1)",
+        "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null,
+        "started_at": "2026-10-09T13:13:28Z",
+        "completed_at": null
+      },
+      {
+        "id": 113835779541,
+        "name": "mixed (16)",
+        "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "attempt": 1,
+        "status": "queued",
+        "conclusion": null,
+        "started_at": "2026-10-09T13:13:28Z",
+        "completed_at": null
+      }
+    ],
+    "artifacts_total": 3,
+    "artifacts": [
+      {
+        "id": 11621010611,
+        "name": "p8-db-lock-mixed-c8-4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "bytes": 16642248,
+        "digest": "sha256:d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236",
+        "expired": false,
+        "created_at": "2026-10-09T13:46:53Z",
+        "updated_at": "2026-10-09T13:46:53Z"
+      },
+      {
+        "id": 11620977433,
+        "name": "p8-db-lock-mixed-c4-4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "bytes": 16993296,
+        "digest": "sha256:67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc",
+        "expired": false,
+        "created_at": "2026-10-09T13:57:12Z",
+        "updated_at": "2026-10-09T13:57:12Z"
+      },
+      {
+        "id": 11617781499,
+        "name": "p8-db-lock-controls-4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+        "bytes": 7220,
+        "digest": "sha256:576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b",
+        "expired": false,
+        "created_at": "2026-10-09T13:13:25Z",
+        "updated_at": "2026-10-09T13:13:25Z"
+      }
+    ],
+    "fixed_workflow": {
+      "path": ".github/workflows/p8-db-lock-observation.yml",
+      "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "blob": "be748aa8c8ee902661fa81bc1be3683a508e9d27",
+      "bytes": 5547,
+      "sha256": "1d600566ca809039f90f27e858491c5d4b18cdaeffd4caa85acdac43f299603a",
+      "git_blob_computed": "be748aa8c8ee902661fa81bc1be3683a508e9d27"
+    },
+    "workflow_exact_scope": {
+      "checkout": "github.sha",
+      "build_command": "python3 scripts/p8_runtime_build.py --lock-observation --output \"$RUNNER_TEMP/p8-lock-build\"",
+      "measurement_flags": "--lock-observation --profile mixed --concurrency matrix[1,4,8,16] --operations900 --files1000 --interval-ms500",
+      "verification": "Original p8_runtime.py verify --output and --build-output runs ifalways; original build/runtime output uploaded with include-hidden-files:true.",
+      "admission": "Exact sourceguard, Rust formatting, default-off and feature controls, original Python runtime tests precede matrix.",
+      "not_asserted": "Workflow source and API metadata do not prove complete uploaded member custody, validator assertions, actual source-after, feature timings, or original four-cell acceptance."
+    },
+    "reception_status": {
+      "C1": "queued; no original artifact in retrieved complete inventory",
+      "C4": "job success and fixed original artifact located; not downloaded or independently accepted by this review",
+      "C8": "job success and fixed original artifact located; not downloaded or independently accepted by this review",
+      "C16": "queued; no original artifact in retrieved complete inventory",
+      "complete_four_C_accepted": false,
+      "download_or_rerun_requested": false
+    }
+  },
+  "actions": {
+    "GitHub_read_only_except_this_unreferenced_report_blob": true,
+    "source_changes": false,
+    "task_changes": false,
+    "ref_changes": false,
+    "PR_or_issue_messages": false,
+    "local_or_native_execution": false,
+    "new_study": false,
+    "artifact_download": false
+  },
+  "ledger": {
+    "newly_closed": 0,
+    "done": 163,
+    "remaining": 29,
+    "P8_007": "in_progress; original dependency and evidence requirements remain",
+    "original_task_definition_changed": false
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schema": "codecortex.p8.round36.pr188-vs-g3-review.v1",
+  "reviewed_at_utc": "2026-10-09T15:38:11Z",
+  "read_only": true,
+  "pr": {
+    "number": 188,
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "base": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+    "ahead": 9,
+    "behind": 0
+  },
+  "product_changes": [
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "additions": 29,
+      "deletions": 10,
+      "g3_and_pr180_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "pr188_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f"
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "additions": 229,
+      "deletions": 0,
+      "pr188_blob": "9c2aa567b007cb7c3a97adce2bb7184c0662a18f"
+    }
+  ],
+  "algorithm": "non-empty exclusions use one JSON parameter and json_each NOT IN before LIMIT; empty exclusions preserve the old SQL",
+  "correctness": {
+    "p2b_tests": "9 passed / 0 failed / 0 ignored",
+    "dense_fixture": "580/600 excluded prefix: rows 590→10 and lower VM steps",
+    "proves_100k_wall_fix": false
+  },
+  "ci": {
+    "jobs": 26,
+    "success": 22,
+    "failure": 0,
+    "in_progress": 3,
+    "queued": 1,
+    "terminal": false
+  },
+  "counterevidence": [
+    "sparse two-key VM callbacks 132988→163001 (+22.57%)",
+    "no exact release 100k run",
+    "no N30/150-shard/1500-sample study",
+    "no causal link from G3 failure artifact to this function",
+    "no Rust JSON serialization cost measurement",
+    "related extended candidate recorded wall-time regression and performance admission held"
+  ],
+  "relation": {
+    "g3_is_ancestor": true,
+    "changes_g3_function": true,
+    "g3_failure_proves_function_cause": false,
+    "pr188_vs_pr180": {
+      "diverged": true,
+      "ahead": 7,
+      "behind": 15
+    },
+    "narrow_two_file_delta_textually_composable": true,
+    "whole_branch_merge_forbidden": true
+  },
+  "verdict": {
+    "code": "NO_AS_IS_MATERIAL_REPAIR_ADMISSION",
+    "claim_fixes_g3": false,
+    "merge_now": false,
+    "keep_draft_open": true,
+    "todo_effect": []
+  },
+  "admission_requirements": [
+    "prove G3 failure is dominated by this reverse-query/high-exclusion path",
+    "paired current-source wall+rows+VM+JSON+SQLite measurements across dense/sparse/multi-batch",
+    "reject or revise if general cases regress",
+    "narrow fresh integration only, new P/R/G and exact-source CI",
+    "full new-source 150-shard/1500-sample certification"
+  ]
+}

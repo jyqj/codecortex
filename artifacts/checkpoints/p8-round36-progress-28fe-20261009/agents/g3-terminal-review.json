@@ -1,0 +1,153 @@
+{
+  "schema": "codecortex.p8.round36.g3-terminal-review.v1",
+  "reviewed_at_utc": "2026-10-09T15:40:00Z",
+  "read_only": true,
+  "run": {
+    "id": 37910924354,
+    "url": "https://github.com/jyqj/codecortex/actions/runs/37910924354",
+    "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "jobs": {
+    "build": {
+      "id": 113755594498,
+      "conclusion": "success"
+    },
+    "successful_preflights": [
+      1000,
+      5000,
+      10000,
+      50000
+    ],
+    "failed_100k": {
+      "id": 113760872142,
+      "conclusion": "failure",
+      "execution_step": 7,
+      "preservation_step": "success"
+    },
+    "measure": {
+      "id": 113891085641,
+      "conclusion": "skipped"
+    },
+    "aggregate": {
+      "id": 113891085346,
+      "conclusion": "failure",
+      "exit_code": 1,
+      "error": "shard execution failed or is missing"
+    }
+  },
+  "artifacts": {
+    "failed_100k": {
+      "id": 11626430756,
+      "size_bytes": 5287177,
+      "sha256": "7470aa3a5d6ede0ea0a83045af26191c611bc19d091d4e7822e567069a0a0946",
+      "download_sha_match": true,
+      "zip_crc": "pass",
+      "members": 12,
+      "uncompressed_bytes": 21129064,
+      "manifest_files_checked": 11,
+      "manifest_mismatches": 0
+    },
+    "matrix": {
+      "id": 11626127365,
+      "size_bytes": 258,
+      "sha256": "cb0d43a48f20e8629723a501b5764706288b594edf6bcd58cbce03bf99ac90f5",
+      "download_sha_match": true,
+      "zip_crc": "pass",
+      "members": 1,
+      "matrix_json_sha256": "a448432e14a0d40bc5a1a91833a94327692aed1cf7ee6732a3b3aa377a16f346",
+      "status": "failed",
+      "passed": false,
+      "release_certification": "not_run"
+    }
+  },
+  "identity": {
+    "source_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+    "source_inputs": 1092,
+    "source_manifest_sha256": "be60b3d1bb7b90a8f8023506e9d9570c7b445d67686f047e4ef12fde75f7e835",
+    "source_before_after_equal": true,
+    "source_before_after_sha256": "96e463b131b1ae27d611238f4950377c832f8fbfccd916611b783f8fa0332766",
+    "binary_sha256": "b8c0ede576a2330ab401db6283d56b80c2e631603f140019be258291643a461e",
+    "binary_unchanged": true
+  },
+  "contract": {
+    "files": 100000,
+    "repetitions": 30,
+    "shard_index": 0,
+    "shard_count": 30,
+    "seed": 12648430,
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ],
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "skip_fanout": true,
+    "dirty_budget": 200,
+    "max_resume_builds": 1024,
+    "deadline_ms": 18000000,
+    "max_output_bytes": 536870912,
+    "profile": "release"
+  },
+  "failure": {
+    "status": "deadline_exceeded",
+    "driver_exit_code": 3,
+    "worker_exit_code": null,
+    "stderr_complete": false,
+    "wall_ms": 18022655,
+    "summary": null,
+    "full_100k_certification": "not_run",
+    "fixture_cleanup": {
+      "elapsed_ms": 21685,
+      "error": null
+    }
+  },
+  "raw": {
+    "bytes": 20826459,
+    "lines": 2018,
+    "sha256": "f523933e515b3f2d01a92bf9778b4b30ad97b5eee19275d3f82ab18706f5b947",
+    "build_started": 1002,
+    "build_finished": 1002,
+    "last_event": {
+      "event": "build_finished",
+      "label": "scale-100000/repetition-0/batch_10/full_control",
+      "end_us": 17065613262,
+      "resident_bytes_snapshot": 10244059136,
+      "threads_snapshot": 15
+    },
+    "missing": [
+      "batch_10 stage_finished",
+      "batch_100",
+      "batch_1000",
+      "run summary"
+    ]
+  },
+  "accounting": {
+    "required_shards": 150,
+    "successful_shards": 4,
+    "failed_shards": 1,
+    "missing_or_unmaterialized_shards": 145,
+    "aggregate_sample_count": null
+  },
+  "verdict": "valid_terminal_negative_evidence_only",
+  "todo_effect": {
+    "P8_005": "remain in_progress",
+    "P8_006": "remain in_progress",
+    "newly_done": []
+  },
+  "prohibited_actions_confirmed": {
+    "rerun": false,
+    "cancel": false,
+    "dispatch": false,
+    "budget_change": false,
+    "cross_source_pooling": false
+  }
+}

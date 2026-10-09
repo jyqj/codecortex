@@ -1,0 +1,61 @@
+{
+  "schema": "codecortex.p8.round36.pr180-review.v1",
+  "reviewed_at_utc": "2026-10-09T15:34:40Z",
+  "read_only": true,
+  "pr": {
+    "number": 180,
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "head": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+    "tree": "7fd27832748e18cf878132fedf27571d0c20de1f",
+    "base": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3"
+  },
+  "delta_from_b2a": {
+    "ahead": 3,
+    "behind": 0,
+    "product": "3c0bffefb0aa49e65dae5df92e2302cf7a635acf",
+    "review": "90634915eb13b9c2ccc0aa046da5927059b5434c",
+    "guard": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+    "product_scope": "preselect.rs +5/-1 exact rustfmt only",
+    "review_scope": "four evidence files",
+    "guard_scope": "two binding files only"
+  },
+  "candidate_status": {
+    "formatter": {
+      "candidate": "3ebf3f6163e37e7e23c441e23d706abd54c3dd82",
+      "status": "absorbed equivalently",
+      "blob": "3d2daf9788173cb6fee2cb91350ea5c425e3e2a0",
+      "action": "do not reapply"
+    },
+    "ready_pid": {
+      "candidate": "c04033a02a7ed27f35a77247c0e5d45d0bb000a7",
+      "status": "not absorbed; still applicable only as fresh narrow integration",
+      "path": "crates/cc-semantic/tests/p7_crash_preparation.rs",
+      "head_blob": "6493cbe6c291bc4622cf93cdb566f68e6e215155",
+      "candidate_blob": "97ce7a96471cabc0943a1f5ecf9d2a62bde40d12",
+      "risk": "ready path visible before PID write completes"
+    }
+  },
+  "ci_snapshot": {
+    "jobs": 25,
+    "success": 7,
+    "failure": 0,
+    "in_progress": 5,
+    "queued": 13,
+    "confirmed_success": [
+      "Format check",
+      "Clippy",
+      "Compile every default test target",
+      "Default regression"
+    ],
+    "new_failures": []
+  },
+  "decision": [
+    "keep Draft/Open",
+    "do not merge incomplete exact-head CI",
+    "do not reapply formatter",
+    "ready fix requires fresh expected-head and new P/R/G",
+    "no original TODO effect"
+  ]
+}

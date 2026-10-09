@@ -193,6 +193,66 @@ fn preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests() {
 }
 
 #[test]
+fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_path() {
+    use rusqlite::types::Value as SqlValue;
+    for (av, bv) in [
+        (SqlValue::Integer(1), SqlValue::Real(1.0)),
+        (SqlValue::Blob(b"same".to_vec()), SqlValue::Text("same".into())),
+    ] {
+        let a = fixture();
+        let b = fixture();
+        for (root, value) in [(a.path(), av), (b.path(), bv)] {
+            open(root)
+                .execute("INSERT INTO symbols(name,value) VALUES ('fact',?1)", [value])
+                .unwrap();
+        }
+        let ca = oracle::canonical(a.path()).unwrap();
+        let cb = oracle::canonical(b.path()).unwrap();
+        let report = compare(a.path(), b.path());
+        let row = table(&report, "symbols");
+        assert_eq!(row["equal_input_order_witness"], false);
+        assert_eq!(row["equal"], ca["symbols"] == cb["symbols"]);
+        assert_eq!(
+            row["incremental_digest"],
+            manifest::digest(&serde_json::to_vec(&ca["symbols"]).unwrap())
+        );
+        assert_eq!(
+            row["full_digest"],
+            manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+        );
+    }
+
+    let a = fixture();
+    let b = fixture();
+    open(b.path())
+        .execute_batch(
+            "DROP TABLE symbols;
+             CREATE TABLE symbols(value, name TEXT, mtime INTEGER, indexed_at INTEGER, id INTEGER);",
+        )
+        .unwrap();
+    for root in [a.path(), b.path()] {
+        open(root)
+            .execute("INSERT INTO symbols(name,value) VALUES ('fact','payload')", [])
+            .unwrap();
+    }
+    let ca = oracle::canonical(a.path()).unwrap();
+    let cb = oracle::canonical(b.path()).unwrap();
+    assert_eq!(ca, cb);
+    let report = compare(a.path(), b.path());
+    let row = table(&report, "symbols");
+    assert_eq!(row["equal_input_order_witness"], false);
+    assert_eq!(row["equal"], true);
+    assert_eq!(
+        row["incremental_digest"],
+        manifest::digest(&serde_json::to_vec(&ca["symbols"]).unwrap())
+    );
+    assert_eq!(
+        row["full_digest"],
+        manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+    );
+}
+
+#[test]
 fn detects_content_multiplicity_and_missing_rows_without_hash_only_equality() {
     let a = fixture();
     let b = fixture();

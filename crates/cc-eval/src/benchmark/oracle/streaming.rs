@@ -239,6 +239,28 @@ fn stored_table(source: &Connection, table: &str) -> Result<bool> {
     Ok(root_page.is_some_and(|page| page > 0))
 }
 
+/// A sufficient condition for identical canonical bytes, not Value equality.
+/// In particular, signed zeros and different SQL types must use the original
+/// comparison. Exact blob bytes are stronger than their canonical digest.
+fn identical_cells(a: &rusqlite::Row<'_>, b: &rusqlite::Row<'_>, count: usize) -> Result<bool> {
+    for index in 0..count {
+        let equal = match (
+            a.get_ref(index).map_err(db_error)?,
+            b.get_ref(index).map_err(db_error)?,
+        ) {
+            (ValueRef::Null, ValueRef::Null) => true,
+            (ValueRef::Integer(a), ValueRef::Integer(b)) => a == b,
+            (ValueRef::Real(a), ValueRef::Real(b)) => a.to_bits() == b.to_bits(),
+            (ValueRef::Text(a), ValueRef::Text(b)) | (ValueRef::Blob(a), ValueRef::Blob(b)) => a == b,
+            _ => false,
+        };
+        if !equal {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
 /// A complete byte witness can avoid writing the second identical row set.
 /// The first spool has already succeeded, so its errors keep precedence. Only
 /// ordinary stored tables may be reread: a view or virtual table can evaluate
@@ -257,7 +279,9 @@ fn equal_input_order(
     }
     let acols = columns(a, table)?;
     let bcols = columns(b, table)?;
-    let mut aprojection = RowProjection::new(&acols);
+    if acols != bcols {
+        return Ok(false);
+    }
     let mut bprojection = RowProjection::new(&bcols);
     let mut astmt = a
         .prepare(&format!(
@@ -295,8 +319,10 @@ fn equal_input_order(
         let Some(arow) = arows.next().map_err(db_error)? else {
             return Ok(false);
         };
-        let av = serialized_row(arow, &acols, &mut aprojection, limits)?;
-        if av != bv {
+        // A was fully validated and spooled in this same read snapshot.
+        // Equal raw cells under the same layout reproduce its canonical
+        // bytes without allocating and serializing the A row a second time.
+        if !identical_cells(arow, brow, acols.len())? {
             // No witness credit or byte accounting survives a difference.
             // The unchanged second spool will validate and consume all of B.
             return Ok(false);

@@ -1,0 +1,761 @@
+{
+  "all_two_diagnostic_assertions_satisfied": true,
+  "case_results": [
+    {
+      "case": "original",
+      "command": {
+        "argv": [
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/observer",
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/case01-original/stderr-holder.sh",
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/case01-original/run",
+          "original"
+        ],
+        "case": "original",
+        "complete": true,
+        "elapsed_seconds": 0.07212520899997799,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T05:42:56Z",
+        "pid": 20105,
+        "spawn_returned_after_seconds": 0.0027370000000246364,
+        "started_at": "2026-10-09T05:42:56Z",
+        "status": "returned",
+        "streams": [
+          {
+            "bytes_kept": 0,
+            "eof": true,
+            "error": null,
+            "overflow": false,
+            "reader_alive_at_freeze": false
+          },
+          {
+            "bytes_kept": 0,
+            "eof": true,
+            "error": null,
+            "overflow": false,
+            "reader_alive_at_freeze": false
+          }
+        ],
+        "timeout_seconds": 2.0,
+        "within_outer_bound": true
+      },
+      "diagnostic_assertions_satisfied": true,
+      "helper_after": {
+        "bytes": 159,
+        "git_blob": "52fef9e31920263bbfb40fd6de58ccc76d3caad0",
+        "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae"
+      },
+      "helper_before": {
+        "bytes": 159,
+        "git_blob": "52fef9e31920263bbfb40fd6de58ccc76d3caad0",
+        "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae"
+      },
+      "report": {
+        "case": "original",
+        "certification": "not_run",
+        "cleanup_error": null,
+        "cleanup_reap_exit": {
+          "code": 0,
+          "signal": null
+        },
+        "cleanup_signal": {
+          "child_kill_error": null,
+          "group_errno": null,
+          "group_kill_return": 0,
+          "owned_pgid": 20106
+        },
+        "diagnostic_only": true,
+        "differences": [
+          "causal observer, not original run_supervised",
+          "bounded memory stderr and filesystem summary observations perturb timing",
+          "diagnostic plan ignored by fixed shell fixture",
+          "bounded reaping replaces blocking wait solely for containment",
+          "marker timestamps are receive upper bounds"
+        ],
+        "drain_finished_at_original_check": true,
+        "events": [
+          {
+            "at_ns": 500,
+            "detail": {},
+            "event": "before_spawn"
+          },
+          {
+            "at_ns": 431791,
+            "detail": {},
+            "event": "spawn_returned"
+          },
+          {
+            "at_ns": 437750,
+            "detail": {},
+            "event": "ownership_write_begin"
+          },
+          {
+            "at_ns": 585208,
+            "detail": {},
+            "event": "ownership_write_end"
+          },
+          {
+            "at_ns": 587250,
+            "detail": {
+              "case": "original",
+              "fresh_process_group_requested": true,
+              "getpgid_errno": null,
+              "observed_pgid": 20106,
+              "observer_pid": 20105,
+              "schema_version": 1,
+              "worker_pid": 20106
+            },
+            "event": "child_owned"
+          },
+          {
+            "at_ns": 589000,
+            "detail": {},
+            "event": "before_drain_thread"
+          },
+          {
+            "at_ns": 618375,
+            "detail": {},
+            "event": "after_drain_thread"
+          },
+          {
+            "at_ns": 621666,
+            "detail": {
+              "index": 1
+            },
+            "event": "poll"
+          },
+          {
+            "at_ns": 22228250,
+            "detail": {
+              "index": 2
+            },
+            "event": "poll"
+          },
+          {
+            "at_ns": 22261125,
+            "detail": {
+              "code": 0,
+              "signal": null
+            },
+            "event": "worker_exit_observed"
+          },
+          {
+            "at_ns": 22352000,
+            "detail": {
+              "meaning": "filesystem visibility upper bound, not write timestamp"
+            },
+            "event": "summary_first_observed"
+          },
+          {
+            "at_ns": 22356541,
+            "detail": {},
+            "event": "cleanup_signal_begin"
+          },
+          {
+            "at_ns": 22414000,
+            "detail": {
+              "child_kill_error": null,
+              "group_errno": null,
+              "group_kill_return": 0,
+              "owned_pgid": 20106
+            },
+            "event": "cleanup_signal_end"
+          },
+          {
+            "at_ns": 22418583,
+            "detail": {
+              "code": 0,
+              "signal": null
+            },
+            "event": "cleanup_reap_observed"
+          },
+          {
+            "at_ns": 42741666,
+            "detail": {
+              "exit_code": 0
+            },
+            "event": "observer_result"
+          }
+        ],
+        "exit_code": 0,
+        "helper_unchanged": true,
+        "limits": {
+          "containment_reap_ms": 1500,
+          "outer_watchdog_ms": 2000,
+          "poll_ms": 10,
+          "stderr_bytes": 16384,
+          "worker_lifetime_ms": 250
+        },
+        "markers": [],
+        "polls": 2,
+        "schema_version": 1,
+        "status": "diagnostic_case_complete",
+        "stderr_bytes_kept": 0,
+        "stderr_chunks": [],
+        "stderr_complete": true,
+        "stderr_eof": true,
+        "stderr_error": null,
+        "stderr_overflow": false,
+        "summary_error": null,
+        "summary_first_observed_ns": 22351791,
+        "summary_passed_exact_fixture": true,
+        "summary_present": true,
+        "wait_error": null,
+        "wall_ns": 42745750,
+        "worker_exit": {
+          "code": 0,
+          "signal": null
+        },
+        "worker_exit_code": 0,
+        "worker_pid": 20106
+      },
+      "report_error": null,
+      "report_identity": {
+        "bytes": 2412,
+        "git_blob": "f0a3d66d89d8b5ac23febcee0aa26a9d70947fbf",
+        "sha256": "c8033490c50e4794ffb1e7352d459b22da4b59a17a8bc7beb72b9bb36820c6d6"
+      }
+    },
+    {
+      "case": "instrumented",
+      "command": {
+        "argv": [
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/observer",
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/case02-instrumented/stderr-holder.sh",
+          "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/case02-instrumented/run",
+          "instrumented"
+        ],
+        "case": "instrumented",
+        "complete": true,
+        "elapsed_seconds": 0.13382279199993263,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T05:42:56Z",
+        "pid": 20108,
+        "spawn_returned_after_seconds": 0.001844499999947402,
+        "started_at": "2026-10-09T05:42:56Z",
+        "status": "returned",
+        "streams": [
+          {
+            "bytes_kept": 0,
+            "eof": true,
+            "error": null,
+            "overflow": false,
+            "reader_alive_at_freeze": false
+          },
+          {
+            "bytes_kept": 0,
+            "eof": true,
+            "error": null,
+            "overflow": false,
+            "reader_alive_at_freeze": false
+          }
+        ],
+        "timeout_seconds": 2.0,
+        "within_outer_bound": true
+      },
+      "diagnostic_assertions_satisfied": true,
+      "helper_after": {
+        "bytes": 358,
+        "git_blob": "84dd6e97bbf36b24f57e26d838ba0e4f72705e03",
+        "sha256": "813483d07fe67e3ee589e030b4d981c9d71b95779d531ffc23e85950e9fe1d8a"
+      },
+      "helper_before": {
+        "bytes": 358,
+        "git_blob": "84dd6e97bbf36b24f57e26d838ba0e4f72705e03",
+        "sha256": "813483d07fe67e3ee589e030b4d981c9d71b95779d531ffc23e85950e9fe1d8a"
+      },
+      "report": {
+        "case": "instrumented",
+        "certification": "not_run",
+        "cleanup_error": null,
+        "cleanup_reap_exit": {
+          "code": 0,
+          "signal": null
+        },
+        "cleanup_signal": {
+          "child_kill_error": null,
+          "group_errno": null,
+          "group_kill_return": 0,
+          "owned_pgid": 20109
+        },
+        "diagnostic_only": true,
+        "differences": [
+          "causal observer, not original run_supervised",
+          "bounded memory stderr and filesystem summary observations perturb timing",
+          "diagnostic plan ignored by fixed shell fixture",
+          "bounded reaping replaces blocking wait solely for containment",
+          "marker timestamps are receive upper bounds"
+        ],
+        "drain_finished_at_original_check": true,
+        "events": [
+          {
+            "at_ns": 1083,
+            "detail": {},
+            "event": "before_spawn"
+          },
+          {
+            "at_ns": 354042,
+            "detail": {},
+            "event": "spawn_returned"
+          },
+          {
+            "at_ns": 359542,
+            "detail": {},
+            "event": "ownership_write_begin"
+          },
+          {
+            "at_ns": 518875,
+            "detail": {},
+            "event": "ownership_write_end"
+          },
+          {
+            "at_ns": 520958,
+            "detail": {
+              "case": "instrumented",
+              "fresh_process_group_requested": true,
+              "getpgid_errno": null,
+              "observed_pgid": 20109,
+              "observer_pid": 20108,
+              "schema_version": 1,
+              "worker_pid": 20109
+            },
+            "event": "child_owned"
+          },
+          {
+            "at_ns": 524292,
+            "detail": {},
+            "event": "before_drain_thread"
+          },
+          {
+            "at_ns": 551000,
+            "detail": {},
+            "event": "after_drain_thread"
+          },
+          {
+            "at_ns": 552417,
+            "detail": {
+              "index": 1
+            },
+            "event": "poll"
+          },
+          {
+            "at_ns": 90665917,
+            "detail": {
+              "index": 2
+            },
+            "event": "poll"
+          },
+          {
+            "at_ns": 90803375,
+            "detail": {
+              "code": 0,
+              "signal": null
+            },
+            "event": "worker_exit_observed"
+          },
+          {
+            "at_ns": 90898833,
+            "detail": {
+              "meaning": "filesystem visibility upper bound, not write timestamp"
+            },
+            "event": "summary_first_observed"
+          },
+          {
+            "at_ns": 90903375,
+            "detail": {},
+            "event": "cleanup_signal_begin"
+          },
+          {
+            "at_ns": 90960125,
+            "detail": {
+              "child_kill_error": null,
+              "group_errno": null,
+              "group_kill_return": 0,
+              "owned_pgid": 20109
+            },
+            "event": "cleanup_signal_end"
+          },
+          {
+            "at_ns": 90965208,
+            "detail": {
+              "code": 0,
+              "signal": null
+            },
+            "event": "cleanup_reap_observed"
+          },
+          {
+            "at_ns": 109325667,
+            "detail": {
+              "exit_code": 0
+            },
+            "event": "observer_result"
+          }
+        ],
+        "exit_code": 0,
+        "helper_unchanged": true,
+        "limits": {
+          "containment_reap_ms": 1500,
+          "outer_watchdog_ms": 2000,
+          "poll_ms": 10,
+          "stderr_bytes": 16384,
+          "worker_lifetime_ms": 250
+        },
+        "markers": [
+          {
+            "marker": "CCDIAG:parse_before",
+            "meaning": "pipe receipt upper bound",
+            "received_at_ns": 7320750
+          },
+          {
+            "marker": "CCDIAG:parse_after",
+            "meaning": "pipe receipt upper bound",
+            "received_at_ns": 7413125
+          },
+          {
+            "marker": "CCDIAG:sleep_before",
+            "meaning": "pipe receipt upper bound",
+            "received_at_ns": 7417708
+          },
+          {
+            "marker": "CCDIAG:sleep_after",
+            "meaning": "pipe receipt upper bound",
+            "received_at_ns": 7798000
+          },
+          {
+            "marker": "CCDIAG:summary_after",
+            "meaning": "pipe receipt upper bound",
+            "received_at_ns": 8180583
+          }
+        ],
+        "polls": 2,
+        "schema_version": 1,
+        "status": "diagnostic_case_complete",
+        "stderr_bytes_kept": 99,
+        "stderr_chunks": [
+          {
+            "bytes_kept": 20,
+            "bytes_read": 20,
+            "offset": 0,
+            "received_at_ns": 7320750
+          },
+          {
+            "bytes_kept": 19,
+            "bytes_read": 19,
+            "offset": 20,
+            "received_at_ns": 7413125
+          },
+          {
+            "bytes_kept": 20,
+            "bytes_read": 20,
+            "offset": 39,
+            "received_at_ns": 7417708
+          },
+          {
+            "bytes_kept": 19,
+            "bytes_read": 19,
+            "offset": 59,
+            "received_at_ns": 7798000
+          },
+          {
+            "bytes_kept": 21,
+            "bytes_read": 21,
+            "offset": 78,
+            "received_at_ns": 8180583
+          }
+        ],
+        "stderr_complete": true,
+        "stderr_eof": true,
+        "stderr_error": null,
+        "stderr_overflow": false,
+        "summary_error": null,
+        "summary_first_observed_ns": 90898625,
+        "summary_passed_exact_fixture": true,
+        "summary_present": true,
+        "wait_error": null,
+        "wall_ns": 109330083,
+        "worker_exit": {
+          "code": 0,
+          "signal": null
+        },
+        "worker_exit_code": 0,
+        "worker_pid": 20109
+      },
+      "report_error": null,
+      "report_identity": {
+        "bytes": 3250,
+        "git_blob": "838b74f6f8b28ee1e4358e640fa4b92a5e1ae4db",
+        "sha256": "57834b1fc30a8822e9ee2fea7fc4934c0487b7ab4dd22dc2e63b62bf44af7916"
+      }
+    }
+  ],
+  "certification": "not_run",
+  "compile": {
+    "argv": [
+      "rustc",
+      "+1.95.0",
+      "--edition=2021",
+      "/Users/runner/work/codecortex/codecortex/controller/artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/observe.rs",
+      "-o",
+      "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run/observer"
+    ],
+    "case": null,
+    "complete": true,
+    "elapsed_seconds": 4.12559029099998,
+    "exit_code": 0,
+    "finished_at": "2026-10-09T05:42:56Z",
+    "pid": 19812,
+    "spawn_returned_after_seconds": 0.005702250000013009,
+    "started_at": "2026-10-09T05:42:52Z",
+    "status": "returned",
+    "streams": [
+      {
+        "bytes_kept": 0,
+        "eof": true,
+        "error": null,
+        "overflow": false,
+        "reader_alive_at_freeze": false
+      },
+      {
+        "bytes_kept": 0,
+        "eof": true,
+        "error": null,
+        "overflow": false,
+        "reader_alive_at_freeze": false
+      }
+    ],
+    "timeout_seconds": 120,
+    "within_outer_bound": true
+  },
+  "controller": {
+    "observe.rs": {
+      "bytes": 15946,
+      "git_blob": "5b8fba174872cbc27911272b4343520125a1e2f9",
+      "sha256": "dc9cc22732be459aada546324042fa0e726bd2ce9a6eaa0f011a0293bca76f8e"
+    },
+    "run.py": {
+      "bytes": 20957,
+      "git_blob": "76c777f119943e702807c656f6b84e3231b33640",
+      "sha256": "e281b673425b886a49e6b3f6a645bd2da347272c8e2f8ef27cb82a7466bcb6f7"
+    }
+  },
+  "diagnostic_only": true,
+  "environment_policy": {
+    "child_overrides": [
+      "RAYON_NUM_THREADS=2",
+      "TMPDIR=owned-tmp",
+      "TMP=owned-tmp",
+      "TEMP=owned-tmp"
+    ],
+    "inherited_allowlist": [
+      "PATH",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "TZ",
+      "RUSTUP_HOME",
+      "CARGO_HOME",
+      "SDKROOT",
+      "MACOSX_DEPLOYMENT_TARGET",
+      "TMPDIR",
+      "TMP",
+      "TEMP"
+    ],
+    "original_removed_keys": [
+      "CODECORTEX_CACHE_DIR",
+      "CODECORTEX_DIRTY_PROPAGATION",
+      "CODECORTEX_DIRTY_PROPAGATION_MAX_FILES",
+      "CODECORTEX_MEMORY_BUDGET_FRACTION",
+      "CODECORTEX_MAX_CONCURRENT_PARSE",
+      "CODECORTEX_USE_DIRECT_WRITER"
+    ],
+    "secrets_and_shell_startup_variables": "not inherited; no complete environment is recorded"
+  },
+  "errors": [],
+  "exit_code": 0,
+  "finished_at": "2026-10-09T05:42:56Z",
+  "fixed_case_order": [
+    "original",
+    "instrumented"
+  ],
+  "helpers": {
+    "instrumented": {
+      "bytes": 358,
+      "git_blob": "84dd6e97bbf36b24f57e26d838ba0e4f72705e03",
+      "sha256": "813483d07fe67e3ee589e030b4d981c9d71b95779d531ffc23e85950e9fe1d8a"
+    },
+    "original": {
+      "bytes": 159,
+      "git_blob": "52fef9e31920263bbfb40fd6de58ccc76d3caad0",
+      "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae"
+    }
+  },
+  "image": {
+    "ImageOS": "macos26",
+    "ImageVersion": "20260907.0351.1",
+    "RUNNER_ARCH": "ARM64",
+    "RUNNER_OS": "macOS"
+  },
+  "interpretation": [
+    "causal observer is not original run_supervised or original regression acceptance",
+    "original case result is never replaced by instrumented case",
+    "both cases retain before-spawn clock; no ready handshake is excluded",
+    "instrumentation and added observations perturb timing; fixed case order may warm caches",
+    "marker times are pipe receipt upper bounds, not shell execution timestamps",
+    "different host/image/SDK and sanitized inherited environment limit attribution",
+    "a nonreturned spawn or unreaped child remains unknown; timeout is never success",
+    "no indexing worker, performance measurement, Cargo, or existing test binary is executed"
+  ],
+  "limits": {
+    "original_poll_ms": 10,
+    "original_worker_ms": 250,
+    "outer_case_seconds": 2,
+    "outer_signal_at_seconds": 1.8,
+    "streams_max_bytes_each": 65536
+  },
+  "observer_binary": {
+    "bytes": 765512,
+    "git_blob": "a252a48882079d08846888682b900df142fec6cf",
+    "sha256": "fcf0c761f6e25b9d1cb66b65e81bc3367b1ce2d96dfbd17475b2977e7e8be2af"
+  },
+  "output": "/Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1/run",
+  "platform": {
+    "machine": "arm64",
+    "python": "3.14.7",
+    "release": "25.6.0",
+    "system": "Darwin"
+  },
+  "rustc_sysroot": "/Users/runner/.rustup/toolchains/1.95.0-aarch64-apple-darwin",
+  "rustc_version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+  "schema_version": 1,
+  "sdk_query": {
+    "receipt": {
+      "argv": [
+        "xcrun",
+        "--show-sdk-path"
+      ],
+      "case": null,
+      "complete": true,
+      "elapsed_seconds": 0.07278512499999579,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:42:52Z",
+      "pid": 19810,
+      "spawn_returned_after_seconds": 0.003434500000025764,
+      "started_at": "2026-10-09T05:42:51Z",
+      "status": "returned",
+      "streams": [
+        {
+          "bytes_kept": 100,
+          "eof": true,
+          "error": null,
+          "overflow": false,
+          "reader_alive_at_freeze": false
+        },
+        {
+          "bytes_kept": 0,
+          "eof": true,
+          "error": null,
+          "overflow": false,
+          "reader_alive_at_freeze": false
+        }
+      ],
+      "timeout_seconds": 15,
+      "within_outer_bound": true
+    },
+    "stdout": "/Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk\n"
+  },
+  "sdkroot": null,
+  "source": "/Users/runner/work/codecortex/codecortex/original",
+  "source_after": {
+    "expected_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "expected_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "files": {
+      "crates/cc-eval/src/benchmark/p8_scale.rs": {
+        "actual": {
+          "bytes": 46139,
+          "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+          "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+        },
+        "expected": {
+          "bytes": 46139,
+          "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+          "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+        },
+        "git_bytes_equal": true
+      },
+      "crates/cc-eval/tests/p8_scale.rs": {
+        "actual": {
+          "bytes": 19815,
+          "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+          "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+        },
+        "expected": {
+          "bytes": 19815,
+          "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+          "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+        },
+        "git_bytes_equal": true
+      }
+    },
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "observed_at": "2026-10-09T05:42:56Z",
+    "passed": true,
+    "tracked_and_untracked_clean": true,
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96"
+  },
+  "source_before": {
+    "expected_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "expected_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "files": {
+      "crates/cc-eval/src/benchmark/p8_scale.rs": {
+        "actual": {
+          "bytes": 46139,
+          "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+          "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+        },
+        "expected": {
+          "bytes": 46139,
+          "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+          "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+        },
+        "git_bytes_equal": true
+      },
+      "crates/cc-eval/tests/p8_scale.rs": {
+        "actual": {
+          "bytes": 19815,
+          "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+          "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+        },
+        "expected": {
+          "bytes": 19815,
+          "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+          "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+        },
+        "git_bytes_equal": true
+      }
+    },
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "observed_at": "2026-10-09T05:42:51Z",
+    "passed": true,
+    "tracked_and_untracked_clean": true,
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96"
+  },
+  "source_expected": {
+    "files": {
+      "crates/cc-eval/src/benchmark/p8_scale.rs": {
+        "bytes": 46139,
+        "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+        "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+      },
+      "crates/cc-eval/tests/p8_scale.rs": {
+        "bytes": 19815,
+        "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+        "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+      }
+    },
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96"
+  },
+  "source_unchanged": true,
+  "started_at": "2026-10-09T05:42:51Z",
+  "status": "diagnostic_completed"
+}

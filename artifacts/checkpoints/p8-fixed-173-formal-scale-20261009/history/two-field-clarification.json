@@ -1,0 +1,33 @@
+{
+  "schema": "p8-formal173-registration-two-field-delta-v1",
+  "author": "/root/scale_engineering",
+  "prior": {
+    "git_blob": "2f208039d52b501a3c4bc2003973717cde0d45f5",
+    "bytes": 25692,
+    "sha256": "f6e2b80d72a966ca735f24ad25582f7612e55d3fdf904f5f51249c30c102ef9d"
+  },
+  "candidate": {
+    "git_blob": "ccc71f4d8c305a71b611d120d3a8dd6420b6dc2f",
+    "bytes": 26177,
+    "sha256": "36077714539d628d8542934da7e68a2fe65df609e2d330205ddb68d806f231d8"
+  },
+  "method": "Recursive comparison of complete parsed JSON, rejecting changed object key sets or array lengths and recording every differing scalar; reverse replacement of exactly these two string values reproduces the entire original JSON serialization including its terminal newline.",
+  "changes": [
+    {
+      "path": "execution.runner_scope",
+      "before": "fresh GitHub-hosted VM per job; no paid or self-hosted runner",
+      "after": "Original standard ubuntu-24.04 GitHub-hosted runner class, with a fresh VM per job; do not request larger or self-hosted runners or change billing. Account billing and actual charges have not been audited; this registration does not assert zero cost."
+    },
+    {
+      "path": "evidence_and_reception.remote_matrix_rule",
+      "before": "When published, retain and compare the original matrix result and job conclusion, including failure. Strict unchanged original aggregate must pass on complete raw before claiming complete measurement coverage. A missing/failed remote aggregate caused by independent infrastructure cannot be called Actions success; report it separately, without silently promoting remote job greenness into a replacement for raw replay.",
+      "after": "For a successful published remote matrix, compare its full result with the unchanged original replay aggregate using exact_equal over every field. The sole permitted normalization is evidence[].directory through the explicitly registered one-to-one mapping from original artifact directories to the reception directories; do not normalize any other field or numeric kind. When a remote matrix fails or is missing, preserve that original outcome and job conclusion without claiming Actions success. Strict unchanged original aggregate must pass on complete raw before claiming complete measurement coverage; an independent remote aggregate infrastructure failure is reported separately and never replaces raw replay."
+    }
+  ],
+  "changed_scalar_count": 2,
+  "all_other_fields_identical": true,
+  "prior_preserved": true,
+  "product_or_workflow_or_budget_changes": false,
+  "launched": false,
+  "full_byte_inverse_equal": true
+}

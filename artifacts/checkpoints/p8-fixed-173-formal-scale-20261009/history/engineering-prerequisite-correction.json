@@ -1,0 +1,150 @@
+{
+  "schema": "p8-round19-scale-recovery-contract-correction-v1",
+  "recorded_utc": "2026-10-09 06:46:57 UTC",
+  "author": "/root/scale_engineering",
+  "repository": "jyqj/codecortex",
+  "purpose": "Preserve the actual correction of an over-broad engineering prerequisite and the reason for choosing the unchanged formal workflow. This is an audit note, not a measurement or a protocol amendment.",
+  "correction": {
+    "earlier_author_position": "The author had described a separate full auxiliary controls/build -> 1k/10k -> 100k engineering sequence as mandatory before a fresh formal study.",
+    "disposition": "withdrawn_as_original_task_requirement",
+    "reason": "That sequence was an earlier session operational choice and is required only if selecting the old auxiliary workflow whose own needs implement it. Neither original P8-005/P8-006 nor their benchmark/scale contract adds that separate sequence before the existing five formal repetition-zero shards.",
+    "change_in_acceptance": "none",
+    "original_failure_records": "retained",
+    "actual_experiments_started_by_author": "none"
+  },
+  "fixed_contract_source": {
+    "commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46"
+  },
+  "evidence": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "lines": [
+        259,
+        281
+      ],
+      "exact_prerequisites": "Build once; execute all five registered repetition-zero shards with all nine scale stages, independent full controls, all fifteen canonical tables, plus the original fanout cases owned by the 1k shard; only after all five pass execute indices1..29. All150 and each group's N30 remain mandatory.",
+      "specific_lines": {
+        "first_formal_slices": [
+          261,
+          265
+        ],
+        "remainder_and_population": [
+          267,
+          270
+        ],
+        "failure_and_missing_rejection": [
+          272,
+          276
+        ],
+        "full_commit_build_identity": [
+          278,
+          281
+        ]
+      }
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "selectors": [
+        "tasks[id=P8-005]",
+        "tasks[id=P8-006]"
+      ],
+      "original_requirements": "P8-005 complete fixed-seed release scales and actual workload counts; P8-006 all registered incremental/fanout cases, attributable time, complete full parity and explicit incomplete status; original dependencies and regression evidence remain. No standalone auxiliary engineering prerequisite is present."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "lines": [
+        130,
+        136,
+        173,
+        189
+      ],
+      "original_requirements": "Input/source/binary locks, explicit invalid/failure/budget outcomes and partials, all samples/no best-of, and release profile/CI tiers. The CI tier list does not impose an extra sequential copy of the 1k/10k/100k auxiliary experiment."
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "lines": {
+        "original_trigger": [
+          4,
+          6,
+          19
+        ],
+        "preflight": [
+          49,
+          57
+        ],
+        "remaining": [
+          109,
+          117
+        ],
+        "aggregate": [
+          169,
+          172
+        ]
+      },
+      "source": "275e",
+      "semantics": "The existing labeled PR p8-scale-run event runs the existing formal sequence; no new workflow is necessary."
+    },
+    {
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "lines": {
+        "small_needs": 211,
+        "large_needs": 265
+      },
+      "condition": "Only when explicitly choosing this old auxiliary workflow: small diagnostics need controls_and_build and 100k needs both controls_and_build and diagnostic_small.",
+      "presence_on_173": "The old auxiliary path is absent from the fixed173 tree; it is not inherited as an implicit prerequisite."
+    }
+  ],
+  "options_considered": [
+    {
+      "option": "fresh_formal_173",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "original_sequence": "one fresh exact-source release build -> five formal rep0 ->145",
+      "new_product_changes": 0,
+      "new_workflow_changes": 0,
+      "extra_diagnostic_samples": 0,
+      "choice": "selected_by_root",
+      "time_scope": "Avoids duplicating a standalone auxiliary build and three diagnostic slices. No prediction that 100k or the full matrix will succeed or finish within a particular wall time."
+    },
+    {
+      "option": "new_auxiliary_then_formal",
+      "original_sequence": "Optional auxiliary controls/build ->1k+10k ->100k, then still the original formal build ->five ->145",
+      "extra_diagnostic_samples": 3,
+      "choice": "not_selected",
+      "time_scope": "Adds its build/queue and the critical path max(1k,10k)+100k outside formal N150; 100k has the original300-minute native limit,302-minute supervisor and350-minute job bound. These are limits, not observed times or completion promises.",
+      "source_boundary": "If new controller or source changes full Git SHA, create a matching fresh build receipt; never relabel old G2 or engineering receipts."
+    },
+    {
+      "option": "fresh_formal_original_a23",
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "original_sequence": "one fresh exact-source release build ->five formal rep0 ->145",
+      "choice": "not_selected",
+      "time_scope": "No extra engineering requirement follows from the observed infrastructure failure, but this source does not include the subsequently tested173 surface-window optimization. No performance comparison is inferred.",
+      "failure_boundary": "Original run37872522779/attempt1 reported hosted runner lost communication. No terminal native artifact was produced for100k; OOM/deadline/performance is not established. Any new study must be separately registered with all150 fresh and no borrowing of the old four successful first slices."
+    }
+  ],
+  "selected_registration": {
+    "git_blob": "2f208039d52b501a3c4bc2003973717cde0d45f5",
+    "bytes": 25692,
+    "sha256": "f6e2b80d72a966ca735f24ad25582f7612e55d3fdf904f5f51249c30c102ef9d",
+    "fixed_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "activation": "Root alone, after registration publication and independent review, may add p8-scale-run once to PR173 after fresh head/label/zero-prior-formal-run checks. No dispatch, remove/re-add or automatic rerun; ambiguous responses require read-only resolution.",
+    "source_and_registration_branches_separate": true,
+    "actual_run_id": null,
+    "author_actions": "Only source reads and unreferenced JSON blob creation; no tree/ref/trigger or product execution."
+  },
+  "scope_limits": [
+    "Original150 shards,50 groups eachN30,total1500,all originalbudgets/capacity/typed15-table parity remain unchanged.",
+    "The five formal first slices count once in N30 and are never excluded as an extra smoke.",
+    "Prior G/a23/G2/8e successes/failures/incomplete outcomes and source identities remain intact; no sample mixing.",
+    "Earlier operational caution is recorded, but is not added as a task dependency or an independent task.",
+    "No original TODO is marked complete by this correction or registration."
+  ]
+}

@@ -1,0 +1,629 @@
+{
+  "schema": "p8-fixed-173-formal-scale-registration-v1",
+  "study_id": "p8-fixed-173-formal-scale-20261009",
+  "prepared_utc": "2026-10-09T06:45:05Z",
+  "author": "/root/scale_engineering",
+  "status": "registered_proposal_not_launched",
+  "repository": "jyqj/codecortex",
+  "objective": {
+    "original_tasks": [
+      "P8-005",
+      "P8-006"
+    ],
+    "scope": "One fresh complete measurement-coverage study under the unchanged original scale protocol; not release, G8, quality, causal speedup, or automatic task closure.",
+    "original_ledger": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_closed_by_this_registration": 0
+    },
+    "additional_engineering_prerequisite": false,
+    "explanation": "A separate auxiliary 1k/10k/100k engineering run is not a prerequisite in the original task/scale contract. The five original formal repetition-zero shards are the admission gate and count once in N30."
+  },
+  "measured_source": {
+    "commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+    "product_input_count": 1089,
+    "product_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+    "manifest_scope": "Original p7_build_identity.source_snapshot Cargo.toml + Cargo.lock + complete crates tracked-input map; exact source-before and source-after must match.",
+    "product_commit_pin": "a402e88d460179afb12e3e2dc066d62cf168c690",
+    "independent_review_commit_pin": "f66daf6088f6f6a8d990d736ee0c1213032ca175",
+    "source_branch": "task/p8-surface-window-controls-20261009",
+    "pull_request": 173,
+    "workflow_and_observers": [
+      {
+        "path": ".github/workflows/p8-scale.yml",
+        "mode": "100644",
+        "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+      },
+      {
+        "path": "scripts/p8_scale_matrix.py",
+        "mode": "100644",
+        "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+        "bytes": 65092,
+        "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+      },
+      {
+        "path": "scripts/p7_build_identity.py",
+        "mode": "100644",
+        "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "bytes": 5940,
+        "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+      },
+      {
+        "path": "scripts/p8_runner_capacity.py",
+        "mode": "100644",
+        "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+        "bytes": 11164,
+        "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+      }
+    ],
+    "loaded_replayer_rule": "Load unchanged scripts/p8_scale_matrix.py and scripts/p7_build_identity.py from a real clean Git checkout of this exact commit. Capacity observer is separately checked against its exact committed source. Never relabel another source or a PR merge checkout as this commit.",
+    "no_source_or_workflow_changes": true
+  },
+  "prior_admission_evidence": {
+    "original_ci": {
+      "run_id": 37890756949,
+      "attempt": 1,
+      "event": "pull_request",
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 113690916080,
+          "name": "check",
+          "conclusion": "success"
+        },
+        {
+          "id": 113690915899,
+          "name": "security",
+          "conclusion": "success"
+        },
+        {
+          "id": 113690916129,
+          "name": "msrv",
+          "conclusion": "success"
+        }
+      ],
+      "actual_checkout_commit": "d53ea0be17a53d1354ee1d6f0a111c5e588e91f5",
+      "actual_checkout_tree": "fad5406abaf0c716b8f9522abf08b245f3730233",
+      "source_equivalence_scope": "Independent review verified all 12 non-artifact root entries equal the registered 275e head. The original CI checkout was the historical PR merge above, not literal 275e and not a later merge.",
+      "python_unique_methods_passed": 636,
+      "python_population_components": [
+        46,
+        409,
+        181
+      ],
+      "rust_passed_executions": 3281,
+      "rust_original_ignored_executions": 132,
+      "rust_failed_executions": 0,
+      "counting_boundary": "Rust count is executions, not unique methods. Original ignored tests remain explicitly ignored and are not claimed executed.",
+      "root_review": {
+        "git_blob": "0f352cd0fb1c986ff742d359210751d881314fe6",
+        "bytes": 331878,
+        "sha256": "b22a3f31e7ab9a69dffecf04ce3e6fead106bf7eb69c85fe84520269d87ad35f"
+      },
+      "independent_review": {
+        "git_blob": "875011d4d91976537385f56ac14a6d4998ee6458",
+        "bytes": 313085,
+        "sha256": "683eb032cc90534ded592929ea6b12c18d98223efcca28e0afb8316d74f85338"
+      }
+    },
+    "surface_window_controls": {
+      "run_id": 37890734575,
+      "job_id": 113690845958,
+      "attempt": 1,
+      "event": "push",
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "actual_checkout_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "artifact_id": 11597533828,
+      "artifact_bytes": 114785,
+      "artifact_sha256": "ca3a5283df03b7c4e307b0a33588b505a903eabb13e8e5a70fe2c34e7d39aab4",
+      "artifact_git_blob": "dfe25f243936351d240863188e29d0738a254987",
+      "member_count": 21,
+      "actual_commands": 6,
+      "new_surface_methods": 6,
+      "original_dependency_methods": 3,
+      "original_stale_prepare_methods": 1,
+      "exact_method_total": 10,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "source_before_after_equal": true,
+      "actual_gates": [
+        "original v15 source gate",
+        "cargo fmt --all -- --check",
+        "Clippy -D warnings",
+        "six surface-window methods",
+        "three dependency-window methods",
+        "one exact stale-prepared-build method"
+      ],
+      "fixture_cost_scope": "90 bounded SQL equivalence cases (54 surface + 36 dependency); no large-scale speedup inference.",
+      "root_review": {
+        "git_blob": "8f356d69a1ddbe03e09d2eb81aff9996a8812df4",
+        "bytes": 54496,
+        "sha256": "3a8017a779217c33489a7ccc95e5c242aa8ba8ce4957ed4f67c3c0987a79f365"
+      },
+      "final_custody": {
+        "git_blob": "1ca2f0e36c46abe1760adbd42bd1df0feb8dcd0f",
+        "bytes": 33226,
+        "sha256": "261c4e8ecee0db71d0dba8c50cc71816214303e26f6b79b5c63feb23e5069af3"
+      }
+    }
+  },
+  "contract_authority": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "selectors": [
+        "tasks[id=P8-005]",
+        "tasks[id=P8-006]"
+      ],
+      "requirements": [
+        "P8-005 fixed-seed release 1k/5k/10k/50k/100k; report chunks/edges/vectors; no file-count-only or mismatched-workload ratios; preserve regressions and not_run/blocked.",
+        "P8-006 no-op/body/API/config/batch/over-budget closure; attributable time; complete full parity after closure; explicit incomplete status; original dependencies remain."
+      ]
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "line_ranges": [
+        [
+          199,
+          256
+        ],
+        [
+          259,
+          281
+        ]
+      ],
+      "excerpts": {
+        "first_slices": "工作流先构建并封存一次 release 可执行文件，再对五个规范规模各执行 `shard-index=0`。这些是原注册总体中真实的 `repetition=0`。",
+        "complete_population": "五个首片全部成功后，`measure` 才执行同一固定源码与二进制的 shard 1–29。两段分别包含 5 片与 145 片，交集为空；合计仍为五规模各 30 个全局重复，全部 150 片、1500 个样本。",
+        "failure_gate": "首片任一失败时，剩余 145 片不启动；失败片的原始记录照常上传。",
+        "source_freeze": "每次完整执行应先固定最终的 **完整 Git SHA**，再让 build、首片、余下片和 aggregate 全部检出该 SHA。"
+      }
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "line_ranges": [
+        [
+          128,
+          136
+        ],
+        [
+          169,
+          189
+        ]
+      ],
+      "requirements": [
+        "Fixed source/binary/profile/config/workload/toolchain/host/seed/budget inputs.",
+        "Failures, infrastructure invalidity and budget stops remain distinct with original partial evidence.",
+        "All registered samples retained, no best-of or unsupported stable tail/causal claim."
+      ]
+    }
+  ],
+  "activation": {
+    "registration_branch_proposal": "task/p8-round19-scale-registration-20261009",
+    "registration_branch_is_not_measurement_source": true,
+    "registration_publication_rule": "Root publishes this immutable plan plus independent review on an evidence-only branch before the trigger. Do not move, add files to, or repin the measured 275e branch.",
+    "method": "GitHub purpose-built add_issue_labels exactly once",
+    "target_pull_request": 173,
+    "label": "p8-scale-run",
+    "event": "pull_request",
+    "event_action": "labeled",
+    "expected_branch": "task/p8-surface-window-controls-20261009",
+    "expected_head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "expected_workflow_path": ".github/workflows/p8-scale.yml",
+    "expected_attempt": 1,
+    "prior_inventory_observation": {
+      "observed_utc": "2026-10-09T06:40:59Z",
+      "source": "root read-only native gh complete original-workflow inventory filtered by head275e",
+      "formal_run_total_count": 0,
+      "body_bytes": 36,
+      "body_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915",
+      "pull_request_state": "open",
+      "draft": true,
+      "labels": [],
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    "fresh_pretrigger_requirements": [
+      "Root and a non-author accept the published exact plan.",
+      "Read actual PR173 head and ensure it remains 275e, open, and label p8-scale-run absent.",
+      "Read all pages of existing p8-scale.yml runs with this exact head; require zero before this one new study is triggered.",
+      "Record registration commit/tree, plan bytes/SHA and independent review; record immediate pre-trigger UTC and the request intent in a separate receipt.",
+      "Use only one add_issue_labels(173,['p8-scale-run']) operation."
+    ],
+    "response_ambiguity_rule": "If the response is unclear, do not repeat, remove/re-add the label, dispatch, rerun or create a replacement run. Read PR events and complete workflow-run pages to determine whether the one intended event produced a unique eligible run; otherwise remain blocked with the ambiguity preserved.",
+    "actual_run_binding": {
+      "run_id": null,
+      "run_number": null,
+      "created_at": null,
+      "workflow_id": null,
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "head_branch": "task/p8-surface-window-controls-20261009",
+      "event": "pull_request",
+      "pull_request_number": 173,
+      "run_attempt": 1,
+      "status": "not_created_or_bound"
+    },
+    "actual_binding_rule": "After the trigger, append a separate immutable receipt binding the single actual run to registration, original workflow path/ID, PR173, head/branch, event, attempt1 and created_at no earlier than the recorded trigger cutoff. Record all pages, actual IDs and the event relation. Never invent IDs. Reject ambiguous/multiple candidates; no automatic selection or extra trigger.",
+    "checkout_rule": "For the labeled PR event, every original workflow checkout uses github.event.pull_request.head.sha || github.sha. Require actual product/source receipts to report 275e; a merge GITHUB_SHA is not a substitute."
+  },
+  "execution": {
+    "workflow_unchanged": true,
+    "runner": "ubuntu-24.04",
+    "runner_scope": "Original standard ubuntu-24.04 GitHub-hosted runner class, with a fresh VM per job; do not request larger or self-hosted runners or change billing. Account billing and actual charges have not been audited; this registration does not assert zero cost.",
+    "toolchain": "1.95.0",
+    "profile": "release",
+    "features": "default executable features only, original Cargo artifact verifier accepts [] or ['default']",
+    "workflow_environment": {
+      "CARGO_TERM_COLOR": "never",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_BUILD_JOBS": "2",
+      "RUSTFLAGS": ""
+    },
+    "immutable_build": {
+      "job": "build",
+      "timeout_minutes": 45,
+      "count": 1,
+      "wrapper_argv": [
+        "python3",
+        "scripts/p8_scale_matrix.py",
+        "build",
+        "--root",
+        "$GITHUB_WORKSPACE",
+        "--output",
+        "$RUNNER_TEMP/p8-scale-build",
+        "--target-directory",
+        "$RUNNER_TEMP/p8-scale-cargo"
+      ],
+      "cargo_argv": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--bin",
+        "p8-scale",
+        "--message-format=json",
+        "--target-dir",
+        "$RUNNER_TEMP/p8-scale-cargo"
+      ],
+      "binary_sha256": null,
+      "binary_blake3": null,
+      "build_receipt_sha256": null,
+      "proof": "Original Cargo stdout/stderr, unique artifact line with exact producer manifest/src/executable, original copy-source path/bytes/SHA, preserved executable bytes, release profile, toolchain and source/driver before-after records. These future hashes are filled only by the original build and bound identically in all 150 shard receipts."
+    },
+    "first_formal_slices": {
+      "job": "preflight",
+      "needs": [
+        "build"
+      ],
+      "scale_order": [
+        100000,
+        50000,
+        10000,
+        5000,
+        1000
+      ],
+      "shard_indices": [
+        0
+      ],
+      "count": 5,
+      "max_parallel": 5,
+      "fail_fast": false,
+      "timeout_minutes": 350,
+      "counts_toward_formal_N": true
+    },
+    "remaining_formal_slices": {
+      "job": "measure",
+      "needs": [
+        "build",
+        "preflight"
+      ],
+      "scale_order": [
+        100000,
+        50000,
+        10000,
+        5000,
+        1000
+      ],
+      "shard_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "count": 145,
+      "max_parallel": 10,
+      "fail_fast": false,
+      "timeout_minutes": 350,
+      "starts_only_if_all_five_first_slices_succeed": true
+    },
+    "aggregate": {
+      "job": "aggregate",
+      "needs": [
+        "build",
+        "preflight",
+        "measure"
+      ],
+      "condition": "always() && needs.build.result == 'success'",
+      "timeout_minutes": 30,
+      "original_function": "p8_scale_matrix.aggregate",
+      "arguments": {
+        "repetitions": 30,
+        "shard_count": 30,
+        "capacity_profile": "scale_capacity_v1"
+      }
+    },
+    "no_additional_engineering_workflow": true,
+    "no_automatic_retry_or_rerun": true,
+    "temporal_scope": "No wall-clock success estimate is registered. Native per-shard deadline is 300 minutes, supervisor 302 minutes, job limit 350 minutes, with original build/queue/upload overhead. Hosted runner communication loss is infrastructure failure unless original evidence proves a more specific cause."
+  },
+  "population": {
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "repetitions_per_scale": 30,
+    "shards_per_scale": 30,
+    "global_repetition_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "total_shards": 150,
+    "repetitions_per_shard": 1,
+    "seed": 12648430,
+    "shard_mapping": "range(30*index//30,30*(index+1)//30), exactly global repetition index",
+    "scale_stages": [
+      "cold",
+      "no_op",
+      "body",
+      "api",
+      "config",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000"
+    ],
+    "scale_stage_groups": 45,
+    "fanout_values": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "fanout_owner_scale": 1000,
+    "fanout_groups": 5,
+    "total_groups": 50,
+    "samples_per_group": 30,
+    "total_measurement_samples": 1500,
+    "per_scale_groups": [
+      {
+        "scale": 1000,
+        "groups": 14,
+        "samples": 420
+      },
+      {
+        "scale": 5000,
+        "groups": 9,
+        "samples": 270
+      },
+      {
+        "scale": 10000,
+        "groups": 9,
+        "samples": 270
+      },
+      {
+        "scale": 50000,
+        "groups": 9,
+        "samples": 270
+      },
+      {
+        "scale": 100000,
+        "groups": 9,
+        "samples": 270
+      }
+    ],
+    "full_population_rule": "All 45 scale-stage groups and five independent fanout groups retain exact repetition IDs 0..29. There are not ten groups at each scale. No duplicate/missing IDs, no borrowed old samples, no pooled replacement, no repetition-zero exclusion or remeasurement.",
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ]
+  },
+  "fixed_capacity_contract": {
+    "id": "scale_capacity_v1",
+    "environment_policy": "heterogeneous_stratified_coverage_v1",
+    "scale_dirty_budget": 200,
+    "scale_max_resume_builds": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_max_resume_builds": 128,
+    "oracle_limits": {
+      "max_rows_per_table": 5000000,
+      "max_canonical_bytes": 17179869184,
+      "max_scratch_bytes": 8589934592,
+      "max_row_bytes": 1048576
+    },
+    "sorting_cache_kib": 2048,
+    "storage_layout": "without_rowid_value_ordinal_v1",
+    "one_repetition_per_shard": true,
+    "deadline_ms": 18000000,
+    "supervisor_timeout_seconds": 18120,
+    "max_output_bytes": 536870912,
+    "minimum_free_bytes_per_file": 262144,
+    "minimum_free_fixed_bytes": 4294967296,
+    "minimum_free_by_scale": [
+      {
+        "scale": 1000,
+        "bytes": 4557111296
+      },
+      {
+        "scale": 5000,
+        "bytes": 5605687296
+      },
+      {
+        "scale": 10000,
+        "bytes": 6916407296
+      },
+      {
+        "scale": 50000,
+        "bytes": 17402167296
+      },
+      {
+        "scale": 100000,
+        "bytes": 30509367296
+      }
+    ],
+    "disk_requirement_scope": "Preregistered capacity estimate, not an observed peak or proof of sufficiency.",
+    "preparation": "Only the existing observer on this disposable GitHub-hosted Ubuntu24 VM, exact source and repository checks, explicit original opt-in, and only fixed unused /usr/local/lib/android and /usr/share/dotnet if required. Original same-privilege process-group deadline, stdout/stderr and before/after receipts remain. No current/shared host cleanup, unrelated path deletion, reduced threshold, additional storage or paid allocation.",
+    "insufficient_capacity": "Original explicit nonzero/not_run or failed preparation with available original evidence; do not launch the native workload, lower the threshold or fabricate a pass."
+  },
+  "original_correctness_and_statistics": {
+    "tables": [
+      "document_manifest",
+      "resolution_frontier",
+      "semantic_edges",
+      "dispatch_sites",
+      "resolution_manifests",
+      "resolution_dependencies",
+      "public_surfaces",
+      "files",
+      "symbols",
+      "imports",
+      "symbol_refs",
+      "call_edges",
+      "chunks",
+      "test_edges",
+      "routes"
+    ],
+    "parity": "Unchanged complete typed canonical Value comparison for all fifteen tables, all original row duplicates/counts and original integrity/FK gates. No sampling, digest-only equality, reduced oracle frequency, omitted data or limits.",
+    "stage_contract": "Every cold and mutation checkpoint retains its independent full control. Closure must complete under original budgets before full parity can certify it. Actual original over-budget fanout evidence is mandatory in aggregate; unfinished closure remains explicitly incomplete.",
+    "attribution": "Keep every original build/phase/SQL work report, original input/file/chunk/edge/vector workload counts, full_staging and timing conservation fields. Nested timings are not double-counted.",
+    "all_failures": "Retain every registered original failed/not_run/incomplete/timeout/infrastructure outcome and partial raw, including missing artifacts if a runner dies. Failed or absent shards never count as successful observations, are never removed from the population and cannot be repaired with another run.",
+    "heterogeneous_hosts": "Preserve each original host/CPU/kernel/core/parallelism/environment identity and all per-sample environment mappings. Replayer computes within-environment strata; pooled latency statistics are explicitly not computed. No fastest-host selection, same-host causal claim or stable p95/p99 claim.",
+    "replayer": "Exact original validate_build -> validate_shard -> inspect_raw -> combine/aggregate at source275e, all 150 original raw inputs and all original source/binary/driver/profile/config/seed/environment checks; summaries never replace replay."
+  },
+  "evidence_and_reception": {
+    "names": {
+      "build": "p8-scale-build-<actual-run-id>",
+      "capacity": "p8-scale-capacity-<scale>-<shard>-<actual-run-id>",
+      "shard": "p8-scale-shard-<scale>-<shard>-<actual-run-id>",
+      "matrix": "p8-scale-matrix-<actual-run-id>"
+    },
+    "complete_delivery_expected_artifacts": 302,
+    "components": {
+      "build": 1,
+      "capacity": 150,
+      "shards": 150,
+      "matrix": 1
+    },
+    "complete_raw_inputs_required": 301,
+    "raw_components": {
+      "build": 1,
+      "capacity": 150,
+      "shards": 150
+    },
+    "remote_matrix_rule": "For a successful published remote matrix, compare its full result with the unchanged original replay aggregate using exact_equal over every field. The sole permitted normalization is evidence[].directory through the explicitly registered one-to-one mapping from original artifact directories to the reception directories; do not normalize any other field or numeric kind. When a remote matrix fails or is missing, preserve that original outcome and job conclusion without claiming Actions success. Strict unchanged original aggregate must pass on complete raw before claiming complete measurement coverage; an independent remote aggregate infrastructure failure is reported separately and never replaces raw replay.",
+    "reception_steps": [
+      "Read all workflow/job/artifact API pages and actual total_count; pin run/head/event/attempt and record missing/extra/expired artifacts.",
+      "Download original ZIPs by actual IDs; verify registered API bytes/digest, full ZIP bytes, every central-directory member CRC/SHA, safe paths and complete bidirectional inventories; preserve all original files and required executable copies.",
+      "Use exact275e committed replay code and original single build; verify all source-before/after1089 inputs and driver/binary/copy provenance, original plans, raw line termination/duplicate-key checks, all stages and all150 distinct shard IDs.",
+      "Independently verify all150 original capacity receipts and their observer source/context/threshold/protected-cleanup outcomes; the native aggregate does not consume these separate capacity artifacts.",
+      "Replay unchanged full aggregate with repetitions30/shard_count30/capacity profile; require 50 groups each exactN30, total1500, complete parity and actual over-budget closure; preserve original host strata.",
+      "Seal final source/executable/original ZIP hashes again and preserve success, failure, partial and not_run reports. If local resource constraints prevent complete reception, use an independently reviewed offline receiver; never lower original predicates or rerun product measurement."
+    ],
+    "source_identity_of_registration": "Registration/review commits and future offline-receiver commits are not the measured product source.",
+    "public_output": "No tokens, signed storage URLs, private download URIs or secret-bearing job-log excerpts in publication. Keep safe API identities and exact original hashes; disclose any separately obtained original logs required for replay."
+  },
+  "prior_studies_retained": [
+    {
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "run_id": 37872522779,
+      "attempt": 1,
+      "status": "failed",
+      "failure_scope": "100k first slice hosted runner lost communication; original native terminal raw missing. CPU/memory/network/runner termination are possible annotation causes only, not established OOM/deadline.",
+      "sample_reuse": false
+    },
+    {
+      "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "run_id": 37877604259,
+      "status_at_last_observation": "engineering 100k still in progress",
+      "sample_reuse": false
+    },
+    {
+      "source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+      "run_id": 37863581678,
+      "status_at_last_observation": "2026-10-09T06:40:32Z: engineering100k in_progress, upload pending",
+      "sample_reuse": false
+    }
+  ],
+  "changes_authorized_by_plan": "Registration and later one existing-workflow trigger only, after root and independent approval; no product/workflow/guard/ledger/budget mutation. This author creates only an unreferenced plan blob; root owns tree/ref/trigger.",
+  "acceptance_status": "not_run; this document and prior CI/controls do not certify any of the new150 measurements"
+}

@@ -1,0 +1,447 @@
+{
+  "schema": "p8-original-task-source-boundary-and-recovery-review-v1",
+  "status": "accepted_scoped_contract_interpretation_not_task_completion_or_new_execution",
+  "round": 18,
+  "reviewer": "acceptance_audit",
+  "actual_state": {
+    "ledger": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_closed": 0
+    },
+    "owner_main": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "owner_main_proof": "8008e6609a7e24313ce9efba95bb706646c2b178",
+    "main_no_longer_product_identical_to_a23": true,
+    "old_measured_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "old_run": 37872522779,
+    "old_attempt": 1,
+    "old_run_terminal": "failure",
+    "old_full_matrix": {
+      "passed": false,
+      "received_shards": 4,
+      "missing_shards": 146,
+      "remote_failed_matrix_blob": "826742d5fa994e91336414f21dd0b8fa974c591d"
+    },
+    "official_annotation": {
+      "blob": "af056bfc11d4c535a1369f63400882587136d7b8",
+      "read_in_full_by_this_reviewer": true,
+      "established": "Hosted runner lost communication with the server.",
+      "not_established": [
+        "specific CPU starvation",
+        "specific memory exhaustion",
+        "specific network failure",
+        "product error",
+        "native timeout or native final state"
+      ]
+    },
+    "failed_matrix_146_pairs_independently_equal_to_complete_aggregate_log": true,
+    "existing_failed_study_is_not_repairable_by_mixing_new_run_or_source": true
+  },
+  "original_sources": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "full_actual_body_read_and_parsed": true,
+      "ten_selected_contract_fields_exactly_match_prior_af607_plan": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "full_actual_body_read": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "full_actual_body_read": true
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "ref": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "blob": "1b8b544b8967c516f8272d44e09acc4b6debba6d",
+      "bytes": 11099,
+      "sha256": "03aa66d1946a1ff9a2ce7d342e587e9ca34b0832cb936f135b4525cb478f32a2",
+      "actual_body_read": true
+    },
+    {
+      "path": "scripts/code_index_plan.py",
+      "blob": "378ff47434a67a78dd1194b1fdf15dffda3fbfc3",
+      "actual_body_read": true,
+      "qualification": "Ledger validator checks nonempty evidence and completed hard dependencies. It does not independently validate evidence substance or turn source admission into measurements."
+    }
+  ],
+  "original_tasks": [
+    {
+      "id": "P8-005",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-eval/tests/index_v2_scale.rs"
+      ],
+      "depends_on": [
+        "P8-004"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-006",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/mutations.rs",
+        "crates/cc-index/"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-007",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-server/"
+      ],
+      "depends_on": [
+        "P8-006"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-008",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-eval/src/benchmark/statistics.rs"
+      ],
+      "depends_on": [
+        "P8-007"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-009",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-semantic/"
+      ],
+      "depends_on": [
+        "P8-008"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-010",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/tests/soak.rs",
+        "crates/cc-eval/src/benchmark/mutations.rs"
+      ],
+      "depends_on": [
+        "P8-009"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-011",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/tests/semantic_lifecycle.rs",
+        "crates/cc-server/tests/mcp_stdio.rs"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-012",
+      "status": "in_progress",
+      "scope": [
+        ".github/workflows/ci.yml",
+        "CONTRIBUTING.md"
+      ],
+      "depends_on": [
+        "P8-011"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-013",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-eval/src/benchmark/gate.rs",
+        "crates/cc-eval/tests/benchmark_cli.rs"
+      ],
+      "depends_on": [
+        "P8-012"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-016",
+      "status": "in_progress",
+      "scope": [
+        "crates/cc-db/src/index_migrate.rs",
+        "crates/cc-semantic/src/cache.rs",
+        "docs/TROUBLESHOOTING.md"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    }
+  ],
+  "textual_basis": [
+    {
+      "source": "tasks.json",
+      "locator": "P8-005.steps[0]",
+      "text": "固定seed与release构建测1k/5k/10k/50k/100k",
+      "meaning": "A fixed release measurement profile is required. This is not a demand to mutate old measurements when main moves."
+    },
+    {
+      "source": "tasks.json",
+      "locator": "P8-006.acceptance[0]",
+      "text": "时间可归因且闭包完成后full parity，未完成有显式status",
+      "meaning": "The failed incomplete original population cannot be labelled complete."
+    },
+    {
+      "source": "tasks.json",
+      "locator": "all ten selected tasks acceptance[1]",
+      "text": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "meaning": "Reused evidence must actually support the declared task scope and relevant regressions. Source changes cannot be hidden behind a source-review verdict."
+    },
+    {
+      "source": "09-BENCHMARK.md",
+      "line": 130,
+      "text": "SuiteManifest 至少锁：engine SHA+binary digest+build profile/features",
+      "meaning": "Every profile retains the engine/binary/configuration actually measured; old a23 raw never becomes new-main raw."
+    },
+    {
+      "source": "09-BENCHMARK.md",
+      "line": 173,
+      "meaning": "Performance is measured in release, all samples retained, profile-specific N/CI/coldness labels preserved. Debug/test results and incomparable profiles stay separately labelled."
+    },
+    {
+      "source": "09-BENCHMARK.md",
+      "line": 191,
+      "text": "latest 只是指针，不覆盖旧原始 run。",
+      "meaning": "New studies append source-specific results; they do not overwrite the failed run."
+    },
+    {
+      "source": "06-VALIDATION.md",
+      "line": 15,
+      "text": "L3 产品黑盒：当前精确构建的 MCP stdio 子进程",
+      "meaning": "A black-box claim belongs to the exact binary used in its own execution; it is not automatically a claim about a later changed binary."
+    },
+    {
+      "source": "06-VALIDATION.md",
+      "lines": [
+        58,
+        61
+      ],
+      "text": "同一 gate 的所有任务必须有当前 run-id 证据。",
+      "meaning": "For a phase/release gate such as G8, the current declared gate scope needs its current evidence. The original selected subtask graph does not make P8-020/G8 a prerequisite of005..013/016."
+    },
+    {
+      "source": "verify_reviewed_source_v15.py",
+      "lines": [
+        2,
+        3,
+        4,
+        5,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "meaning": "The guard admits exact source and validation inputs. It explicitly neither relabels historical executions nor grants task/quality/release approval; runtime and quality claims require separate execution evidence."
+    }
+  ],
+  "conclusions": [
+    "No original selected-task text requires every domain to share one Git SHA, or automatically rerunning all domains whenever main moves. Hard dependencies require completed predecessor tasks, not numerical equality of all evidence engine SHAs.",
+    "Conversely, a source approval, current-main merge or unchanged test harness cannot relabel an old binary's performance, resource, soak or recovery observations as measurements of the changed new binary.",
+    "Already qualified a23 component evidence remains valid historical, source-specific evidence. Main's change does not erase its original bytes or retroactively invalidate every completed milestone. Its use in a closure package must identify exact task/profile/source and preserve its original limitations.",
+    "Current-state claims require an explicit change-impact/related-regression review. If a changed implementation is material to the property being claimed, an older profile alone is insufficient for that new-source claim. The necessary additional evidence follows that concrete property; this is not blanket repetition of all domains.",
+    "Had a23 completed its original study, it could have supported005/006 and the other existing source-qualified domains within an explicitly a23-scoped milestone package, without falsely certifying changed main or G8. In reality it did not:146 original cells are missing, so this counterfactual cannot authorize any status change.",
+    "A future new complete study may be used as the scale evidence in a multi-source component package. The other accepted components may retain their original source identities. The final task-by-task review must distinguish those historical measurements from any unmeasured new-source performance/resource assertions and confirm related regressions as already required.",
+    "One complete replacement study can jointly satisfy005 and006; transitive dependencies do not require another duplicate150 study for each of007..013/016. No extraG2 auxiliary run, paid/live provider, P8-020 approval or invented tail/stability claim has been added."
+  ],
+  "root_selected_recovery": {
+    "decision_received": "Use the existing original p8-scale.yml on fixed approved #173 branch/source275e8799d4947d297329073eaa3ca675d3fd0777 for one new independently registered complete study.",
+    "not_yet_claimed": "No new run ID, artifact ID, measurement or success exists in this report.",
+    "exact_new_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "constraints": [
+      "No new product commit solely to start this study.",
+      "Preserve original build→five rep0→145 remaining cells, N30, seed, capacities, deadlines, phases and full raw predicates.",
+      "Publish the independent pre-run registration before the single original workflow_dispatch.",
+      "Validate actual new head/build/input/observer identities and every new original shard within this new run only.",
+      "Never insert new samples into old37872522779 or rename a23 receipts."
+    ],
+    "review_owner_boundary": "scale_engineering authors the new pre-run registration; pr_audit independently reviews it; root controls publication/dispatch. This report does not perform or preapprove an uninspected future registration."
+  },
+  "minimal_closure_sequence": [
+    "Archive the old terminal failure, official runner-loss annotation, unavailable-job-log attempts, failed matrix, complete146-missing list and all successful old components. Keep all old task statuses unchanged.",
+    "Approve and persist the new fixed-source registration, then trigger the existing original workflow exactly once. Every primary result, including failures, remains part of that new study.",
+    "Receive the new original301 mandatory artifacts; verify any original matrix separately. Run unchanged original validate_build + all150 validate_shard/inspect_raw + original combine/aggregate, retaining all50 groups×N30=1500 and environment strata. Missing or invalid measurements block005/006.",
+    "Create a task-by-task source/profile coverage table for005..013/016. The new scale study has its new source identity; historical qualified mixed/lifecycle/resources/soak/recovery/platform/gate/rollback retain theirs. Explicitly review the actual implementation differences and related regressions; do not claim unmeasured new-source resource/performance results.",
+    "Only after all original component acceptance and hard dependencies are supported, append durable exact evidence to the ten original tasks and apply the existing ledger-generation/check procedure c11c2e6632978f1a1dc6eb71221f60d1bed27824. P8-020/G8 remains a separate later scope."
+  ],
+  "actions_performed": [
+    "Read-only exact original contracts/current guard and authoritative failure JSON.",
+    "Pure in-memory task-field/list equality checks.",
+    "Created only this unreferenced review blob."
+  ],
+  "actions_not_performed": [
+    "No new study dispatch or ref mutation.",
+    "No product workload, Cargo or new performance result.",
+    "No task/acceptance/budget/source rewriting."
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

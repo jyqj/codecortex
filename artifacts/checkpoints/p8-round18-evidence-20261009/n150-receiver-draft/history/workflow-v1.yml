@@ -1,0 +1,104 @@
+name: Original a23 N150 offline reception
+on:
+  push:
+    branches: [task/p8-a23-scale-reception-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: a23-original-N150-offline-reception
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  GIT_OPTIONAL_LOCKS: "0"
+  RUSTFLAGS: ""
+
+jobs:
+  original-offline-reception:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Refuse reruns before checkout or original transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_RUN_ATTEMPT:-}" = "1"
+          test "$GITHUB_EVENT_NAME" = "push"
+          test "$GITHUB_REF" = "refs/heads/task/p8-a23-scale-reception-20261009"
+
+      - name: Checkout the immutable controller revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-a23-N150-offline-reception-20261009/controller.py
+
+      - name: Stage the byte-pinned receiver
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C controller rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -B - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          source = Path("controller/artifacts/checkpoints/p8-a23-N150-offline-reception-20261009/controller.py")
+          body = source.read_bytes()
+          assert hashlib.sha256(body).hexdigest() == "f94ef0e8224360a7ed83b0f025901385267f5aa9c772f3412a49fdd6e8da382a"
+          target = Path(os.environ["RUNNER_TEMP"]) / "a23-N150-controller.py"
+          with target.open("xb") as stream:
+              stream.write(body)
+          assert target.read_bytes() == body
+          PY
+
+      - name: Checkout the exact original measured source
+        uses: actions/checkout@v4
+        with:
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          path: source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+
+      - name: Freeze terminal metadata and receive original evidence only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B "$RUNNER_TEMP/a23-N150-controller.py" download --source-root "$GITHUB_WORKSPACE/source"
+
+      - name: Replay the original full-population aggregate without transport credentials
+        env:
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
+          ACTIONS_RUNTIME_TOKEN: ""
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B "$RUNNER_TEMP/a23-N150-controller.py" replay --source-root "$GITHUB_WORKSPACE/source"
+
+      - name: Preserve original ZIPs and complete safe receipts on success or failure
+        if: ${{ always() && github.run_attempt == 1 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: a23-original-N150-offline-reception-${{ github.run_id }}
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/a23-scale-intake/metadata/
+            ${{ runner.temp }}/a23-scale-intake/originals/
+            ${{ runner.temp }}/a23-scale-intake/review/
+            ${{ runner.temp }}/a23-scale-intake/registration.json
+            ${{ runner.temp }}/a23-scale-intake/download-complete.json
+            ${{ runner.temp }}/a23-scale-intake/withheld-original-job-logs.json
+            ${{ runner.temp }}/a23-scale-intake/*-receipt.json

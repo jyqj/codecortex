@@ -1,0 +1,208 @@
+{
+  "schema": "p8-a23-original-N150-reception-gap-review-v1",
+  "status": "accepted_scoped_static_reuse_plan_not_ready_for_full_reception",
+  "reviewer": "acceptance_audit; independent of the original a23 workflow/driver authors",
+  "round": 18,
+  "repository": "jyqj/codecortex",
+  "run_id": 37872522779,
+  "run_attempt": 1,
+  "measured_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "measured_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "finding": "No already-fixed and reviewed a23-specific full-150 external receiver was located. Both peer reviewers explicitly confirmed this. The original a23 driver already implements all per-shard/raw and whole-population acceptance, so the smallest next deliverable is a source-specific transport/registration/offline-execution wrapper, not another implementation of validation or statistics.",
+  "existing_material": {
+    "original_workflow": {
+      "path": ".github/workflows/p8-scale.yml",
+      "blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    "original_matrix_driver": {
+      "path": "scripts/p8_scale_matrix.py",
+      "blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    "original_source_helper": {
+      "path": "scripts/p7_build_identity.py",
+      "blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    "original_capacity_helper": {
+      "path": "scripts/p8_runner_capacity.py",
+      "blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "bytes": 11164,
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    "old_G_sequential_receiver": {
+      "local_reference": "/workspace/scratch/2eaa00d0f93a/p8-scale-sequential-receiver/receive.py",
+      "sha256": "a05743c0bdd15df5337287ca6861c6e88317623ebf53855d10dd83642a88528d",
+      "reuse_scope": "Delivery/inventory and sequential low-space reception pattern only. Its original G source/run/registration are not a23 approval."
+    },
+    "ten_task_ledger_plan": {
+      "blob": "c11c2e6632978f1a1dc6eb71221f60d1bed27824",
+      "scope": "Task-ledger update procedure after actual required evidence; not a 150-shard receiver."
+    },
+    "existing_peer_entry_review": {
+      "blob": "bf8e303dfb22c90b171ca620b3277e0a2d2bdf4e",
+      "scope": "Earlier source-specific domain evidence and a few rep-0 shards; expressly not a completed N150 population."
+    }
+  },
+  "observed_api": {
+    "blob": "d124d0492a47b6f82e598dec6a6916bed6184969",
+    "bytes": 54074,
+    "sha256": "7956b42f1f159aff496669b2de615446d2b0575185e1cc9f9346466bc229b6ef",
+    "clock_after_lookup_utc": "2026-10-09 06:07:29 UTC",
+    "jobs_total_count": 6,
+    "artifacts_total_count": 10,
+    "jobs_and_artifacts_all_pages_received": true,
+    "materialized_successful_measurement_cells": 4,
+    "still_running": {
+      "scale": 100000,
+      "shard_index": 0,
+      "job_id": 113638100879
+    },
+    "unmaterialized_primary_measurements": 145,
+    "matrix_present": false,
+    "artifact_bytes_not_downloaded_or_validated_here": true
+  },
+  "original_workflow_population": {
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "global_repetitions": 30,
+    "shards_per_scale": 30,
+    "primary_cells": 150,
+    "rep0": "All five preflight (scale,0) jobs are original registered primary samples, not auxiliary diagnostics.",
+    "remaining": "145 original measure jobs use indices1..29 and depend on all five preflight jobs succeeding.",
+    "complete_job_topology": {
+      "build": 1,
+      "preflight": 5,
+      "measure": 145,
+      "aggregate": 1,
+      "total": 152
+    },
+    "artifact_population": {
+      "mandatory_source_raw_and_capacity": 301,
+      "build": 1,
+      "capacity": 150,
+      "shard": 150,
+      "original_matrix": 1,
+      "usual_total_including_matrix": 302
+    },
+    "expected_artifact_names": {
+      "build": "p8-scale-build-37872522779",
+      "capacity": "p8-scale-capacity-{scale}-{index}-37872522779",
+      "shard": "p8-scale-shard-{scale}-{index}-37872522779",
+      "matrix": "p8-scale-matrix-37872522779"
+    },
+    "group_population": {
+      "scale_groups": 45,
+      "fanout_groups_owned_by_1000": 5,
+      "total_groups": 50,
+      "samples_per_group": 30,
+      "total_samples": 1500
+    },
+    "no_unknown_artifact_ids_preallocated": true
+  },
+  "original_acceptance_chain": [
+    {
+      "owner": "validate_build",
+      "line": 311,
+      "requirements": "Full build inventory; source before=after and complete source-input manifest; exact committed two-file driver identity; original Cargo command/manifest/src_path/executable/copy provenance; release flags/default features; copied executable SHA/bytes and native BLAKE3 --hash-file. Pass the exact a23 root explicitly in the outer admission check."
+    },
+    {
+      "owner": "validate_shard",
+      "line": 754,
+      "requirements": "Original plan and all-file receipt inventory; source before=after; fixed build receipt/source/bin/driver; capacity/TMP path and original disk admission; unchanged original release/native budgets; clean child termination and retained stderr/worker summary; binary/plan/raw native hashes; consume all original raw records."
+    },
+    {
+      "owner": "inspect_raw",
+      "line": 548,
+      "requirements": "No unknown/failing/duplicate events or unused build receipts. Exact generated input/config; all cold/noop/body/API/config/batch phases; all original timing fields; full 15-table typed equality and fanout closure/budget proofs. Do not substitute a small diagnostic or a success flag for this path."
+    },
+    {
+      "owner": "combine",
+      "line": 861,
+      "requirements": "All five scales x indices0..29 exactly once, one common registered protocol/source/binary, same-scale input digest, all 50 groups with exact global rep IDs0..29 and N30. Capacity profile keeps host/CPU/kernel strata and does not pool latency distributions. At least one actual first-build-incomplete fanout closure is required by the existing predicate."
+    },
+    {
+      "owner": "aggregate",
+      "line": 952,
+      "requirements": "Original function calls validate_build, then validate_shard for every input on the success path, then combine. It preserves a failed matrix with an error on a rejection; it must not be replaced by a successes-only combine."
+    }
+  ],
+  "minimal_remaining_work": [
+    "Wait for and freeze the actual original attempt1 terminal run/jobs/artifact metadata, with every page and every original success/failure/missing upload visible. The present 6-job/10-artifact snapshot is not that terminal registration.",
+    "Bind the actual build and all150 capacity/shard artifact IDs, bytes and digests from that original run only. Preserve the original matrix artifact and its failure/success result when produced. No retry, replacement, alternate primary selection or invented missing-artifact identity.",
+    "Use one fresh Linux Ubuntu24 offline reception job with exact a23 Git HEAD/tree, complete1087 production inputs and exact original driver/helper/capacity-observer bytes. Keep transport/controller source identity separate from measured a23. Do not reuse a newer product checkout or rename a23 data to a successor source.",
+    "Reuse existing standard-zipfile transport and inventory controls to preserve every original ZIP, verify whole-ZIP SHA/size and every regular member CRC/size/SHA, and safely materialize actual directories without mutating source or receipt contents. Preserve original executable bytes; executable mode on the copied reception file may be set for original --hash-file.",
+    "Validate each original capacity receipt and all its owned command/log files offline. Require original source/helper/context/run/attempt/job/scale, exact scale*256KiB+4GiB requirement, final capacity_available/exit0, sealed completion, and exact command/log inventory. Do not call prepare or rerun SDK cleanup; the separate shard driver disk preflight remains the authoritative original measurement admission.",
+    "Capture source_snapshot and driver_snapshot before and after reception, explicitly call validate_build(build_dir, exact_source_root), and run the original aggregate with all150 actual shard directories in original artifact-name order. The only native invocations are the original retained binary's --hash-file checks. No product run, Cargo, new benchmark or new statistics algorithm.",
+    "Preserve complete original job logs privately/provider-side with byte hashes and safe typed execution/checkout/upload observations. Raw signed download URLs must not be copied to a public archive. If obtaining logs is incomplete, state that custody boundary; do not infer complete command execution solely from green job metadata.",
+    "On a complete pass, preserve the untouched independent matrix and original remote matrix. Compare all fields with only an explicit one-to-one relocation of evidence[].directory accepted for comparison; retain both original path-bearing documents unchanged. Source, receipt digests, environments, every sample and all numerical fields must remain exact.",
+    "On any missing/bad original shard or failed original aggregate, preserve all received material and the original failed matrix. Do not filter, backfill, fabricate, reseal original measurements or close005/006. A future independent study would have its own identity and is not part of this reception plan."
+  ],
+  "original_offline_cli": {
+    "cwd": "<exact a23 checkout>",
+    "argv": [
+      "python3",
+      "scripts/p8_scale_matrix.py",
+      "aggregate",
+      "--build",
+      "<original build directory>",
+      "--inputs",
+      "<all150 safely extracted original shard directories in original artifact-name order>",
+      "--output",
+      "<new owned independent matrix directory>",
+      "--repetitions",
+      "30",
+      "--shard-count",
+      "30",
+      "--capacity-profile",
+      "scale_capacity_v1"
+    ],
+    "explicit_root_admission_before_cli": "matrix.validate_build(build_directory, exact_source_root)",
+    "source_and_driver_before_after_required": true,
+    "expected_success": {
+      "passed": true,
+      "status": "complete_measurement_coverage",
+      "sample_count": 1500,
+      "groups": 50,
+      "n_each_group": 30,
+      "evidence": 150
+    },
+    "not_executed": true
+  },
+  "resource_boundary": {
+    "measurement_budget_unchanged": {
+      "per_shard_native_bytes": 536870912,
+      "raw_line_bytes": 67108864,
+      "deadline_ms": 18000000,
+      "driver_outer_timeout_seconds": 18120,
+      "workflow_measure_minutes": 350,
+      "registered_seed": 12648430
+    },
+    "sum_of_150_original_per_shard_native_caps_bytes": 80530636800,
+    "sum_cap_is_not_an_observation_or_complete_delivery_storage_estimate": true,
+    "offline_storage": "Budget from actual ZIP and declared expanded sizes once they exist, plus actual safe output/headroom. The 75GiB sum is only an upper bound on native shard outputs, excluding delivery and build overhead. No claim that the current shared disk/RAM is adequate.",
+    "minimal_host": "A fresh external Linux job can use disk-backed standard zipfile and original portable validators. It need not recreate the original producer target directory: build provenance records are checked as records, while the original binary's --hash-file does not execute a measured product workload.",
+    "not_required": "No new generic ZIP parser, Range transport, alternative statistics implementation, local measurement or second150 study is needed to receive this original study."
+  },
+  "scope_limits": [
+    "This is static/source and current-API preparation, not completed artifact reception or benchmark acceptance.",
+    "A green original aggregate would not eliminate independent full-original-raw reception.",
+    "The original capacity-profile result is heterogeneous stratified coverage; it is not a pooled p95/p99 claim, same-environment speedup inference, G8/release certification, or automatic task status edit.",
+    "No additional paid provider, successor P3 source, P8-020 certification or new measurement gate has been added."
+  ]
+}

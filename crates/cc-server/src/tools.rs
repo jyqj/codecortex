@@ -196,6 +196,10 @@ pub struct StatusParams {
 impl StatusParams {
     pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        #[cfg(feature = "p8-db-lock-observation")]
+        if self.aspect == "lock_observation" {
+            return Ok(());
+        }
         validate_enum(
             &self.aspect,
             &["index", "capabilities", "schema", "all"],

@@ -27,6 +27,8 @@ mod index_db_retrieval;
 mod index_db_snapshot_insert;
 mod index_db_types;
 mod index_db_write_batch;
+#[cfg(feature = "p8-db-lock-observation")]
+pub mod lock_observation;
 mod statement_work;
 mod symbol_identity_store;
 

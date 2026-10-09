@@ -1,7 +1,7 @@
 {
   "schema": "codecortex.p8.round33.progress.v1",
   "round": 33,
-  "recorded_at_utc": "2026-10-09T12:44:00Z",
+  "recorded_at_utc": "2026-10-09T12:47:00Z",
   "repository": "jyqj/codecortex",
   "previous_round_commit": "dee8f0930b033af513b285924b14fb9d6093b00f",
   "main": {
@@ -117,7 +117,7 @@
       "required": 150,
       "preflight_100k": "failure",
       "measure_job": "skipped",
-      "aggregate_job": "queued"
+      "aggregate_job": "failure"
     }
   ],
   "old275e_100k_failure": {
@@ -187,5 +187,21 @@
     "scale_dispatch": false,
     "retry": false,
     "cancel": false
+  },
+  "old275e_aggregate": {
+    "job_id": 113815378305,
+    "conclusion": "failure",
+    "failed_step": "Replay every raw record and reject missing or incompatible cells",
+    "error": "shard execution failed or is missing",
+    "sample_count": null,
+    "exit_code": 1,
+    "input_artifacts": 5,
+    "report_artifact": {
+      "id": 11616736761,
+      "name": "p8-scale-matrix-37896198208",
+      "zip_bytes": 258,
+      "zip_sha256": "e9bddc19668e8466cd55c31d9d297e3b1ac0fb00ded2b2f0d9615795d8b8cc1e"
+    },
+    "interpretation": "Expected terminal aggregate rejection after the registered 100k shard failure; no successful sample added."
   }
 }

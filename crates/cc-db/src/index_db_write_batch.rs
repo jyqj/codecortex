@@ -847,7 +847,11 @@ impl IndexDb {
             )?;
         }
 
-        crate::public_surface_store::insert_on(conn, file)?;
+        if snapshot_leaf_batches {
+            crate::public_surface_store::insert_snapshot_on(conn, file)?;
+        } else {
+            crate::public_surface_store::insert_on(conn, file)?;
+        }
 
         // chunks + chunks_fts
         for (chunk_idx, c) in outcome.chunks.iter().enumerate() {

@@ -23,8 +23,8 @@ fn value_bytes(value: ValueRef<'_>) -> usize {
     }
 }
 
-// Bound the actual bound-value payload, not a JSON estimate. These six model
-// rows bind only primitive/optional values; borrowed text stays borrowed.
+// Bound the actual bound-value payload, not a JSON estimate. The model rows
+// bind only primitive/optional values; borrowed text stays borrowed.
 // SQLite's own statement/index allocations are not an RSS bound.
 fn payload_bytes(values: &[&dyn ToSql]) -> CcResult<usize> {
     values.iter().try_fold(0usize, |total, value| {
@@ -41,15 +41,16 @@ fn payload_bytes(values: &[&dyn ToSql]) -> CcResult<usize> {
     })
 }
 
-fn bounded_rows<T>(
-    rows: &[T],
+fn bounded_rows<'a, T: 'a>(
+    rows: impl IntoIterator<Item = &'a T>,
     size: impl Fn(&T) -> CcResult<usize>,
     write: impl Fn(&[&T]) -> CcResult<()>,
 ) -> CcResult<()> {
-    if rows.is_empty() {
+    let rows = rows.into_iter();
+    if rows.size_hint().1 == Some(0) {
         return Ok(());
     }
-    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.len()));
+    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.size_hint().0));
     let mut bytes = 0usize;
     for row in rows {
         let row_bytes = size(row)?;
@@ -72,6 +73,26 @@ fn bounded_rows<T>(
         write(&pending)?;
     }
     Ok(())
+}
+
+/// Borrow the normalized BTreeSet directly; do not collect the whole file or
+/// carry rows across file boundaries. Large legal rows keep the single-row path.
+pub(crate) fn resolution_dependencies(
+    conn: &Connection,
+    file_path: &str,
+    rows: &std::collections::BTreeSet<cc_model::resolution::ResolutionDependency>,
+) -> CcResult<()> {
+    bounded_rows(
+        rows,
+        |dependency| {
+            payload_bytes(rusqlite::params![
+                file_path,
+                dependency.kind.as_str(),
+                &dependency.key,
+            ])
+        },
+        |batch| IndexDb::insert_resolution_dependencies_multi(conn, file_path, batch),
+    )
 }
 
 pub(crate) fn symbols(conn: &Connection, rows: &[cc_model::symbol::SymbolRecord]) -> CcResult<()> {
@@ -400,5 +421,125 @@ mod tests {
                 .unwrap()
         };
         assert_eq!(read(&old), read(&new));
+    }
+
+    fn dependency_test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.set_prepared_statement_cache_capacity(64);
+        conn.execute_batch(
+            "CREATE TABLE resolution_dependencies(
+                file_path TEXT NOT NULL,kind TEXT NOT NULL,key TEXT NOT NULL,
+                PRIMARY KEY(file_path,kind,key));",
+        )
+        .unwrap();
+        conn
+    }
+
+    fn dependency_rows(conn: &Connection) -> Vec<(i64, String, String, String)> {
+        let mut statement = conn
+            .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
+            .unwrap();
+        statement
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
+            .unwrap()
+            .collect::<rusqlite::Result<Vec<_>>>()
+            .unwrap()
+    }
+
+    fn dependency_insert_runs(conn: &Connection) -> i32 {
+        [64, 8, 1]
+            .into_iter()
+            .map(|n| {
+                let sql = format!(
+                    "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES{}",
+                    vec!["(?,?,?)"; n].join(",")
+                );
+                conn.prepare_cached(&sql)
+                    .unwrap()
+                    .get_status(StatementStatus::Run)
+            })
+            .sum()
+    }
+
+    #[test]
+    fn resolution_snapshot_batches_match_original_order_and_statement_work() {
+        use cc_model::resolution::{DependencyKind, ResolutionDependency};
+        use std::collections::BTreeSet;
+
+        const ORIGINAL: &str =
+            "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)";
+        let old = dependency_test_db();
+        let new = dependency_test_db();
+        let mut expected_rows = 0usize;
+        for count in [0usize, 1, 7, 8, 9, 63, 64, 65, 73, 129, 4096] {
+            let path = format!("file-{count}.py");
+            let mut dependencies = BTreeSet::new();
+            for n in (0..count).rev() {
+                let kind = match n % 7 {
+                    0 => DependencyKind::TargetSurface,
+                    1 => DependencyKind::NameBucket,
+                    2 => DependencyKind::MissingPath,
+                    3 => DependencyKind::ModuleConfig,
+                    4 => DependencyKind::PackageFiles,
+                    5 => DependencyKind::SymbolInventory,
+                    _ => DependencyKind::FileInventory,
+                };
+                let dependency = ResolutionDependency::new(kind, format!("键-{n:05}"));
+                dependencies.insert(dependency.clone());
+                dependencies.insert(dependency);
+            }
+            expected_rows += dependencies.len();
+            for dependency in &dependencies {
+                IndexDb::execute_cached(
+                    &old,
+                    ORIGINAL,
+                    rusqlite::params![path, dependency.kind.as_str(), dependency.key],
+                )
+                .unwrap();
+            }
+            resolution_dependencies(&new, &path, &dependencies).unwrap();
+            assert_eq!(dependency_rows(&old), dependency_rows(&new));
+        }
+        let old_runs = old
+            .prepare_cached(ORIGINAL)
+            .unwrap()
+            .get_status(StatementStatus::Run);
+        let new_runs = dependency_insert_runs(&new);
+        assert_eq!(old_runs, expected_rows as i32);
+        assert!(new_runs > 0 && new_runs < old_runs);
+        eprintln!("resolution INSERT runs: original={old_runs}, snapshot={new_runs}");
+    }
+
+    #[test]
+    fn resolution_snapshot_byte_windows_keep_legal_large_rows_single() {
+        use cc_model::resolution::{DependencyKind, ResolutionDependency};
+        use std::collections::BTreeSet;
+
+        let db = dependency_test_db();
+        // Each legal 4096-byte key counts its repeated file and kind bindings,
+        // so this window is byte-limited before the 64-row cap.
+        let dependencies: BTreeSet<_> = (0..64)
+            .map(|n| {
+                ResolutionDependency::new(
+                    DependencyKind::NameBucket,
+                    format!("{n:04}{}", "x".repeat(4092)),
+                )
+            })
+            .collect();
+        let before = dependency_insert_runs(&db);
+        resolution_dependencies(&db, "bytes.py", &dependencies).unwrap();
+        assert!(dependency_insert_runs(&db) - before > 1);
+        assert_eq!(dependency_rows(&db).len(), dependencies.len());
+
+        // The existing byte bound limits batching, not acceptance of a bound
+        // value. This helper receives SQL values, not filesystem paths.
+        let large_file_value = "p".repeat(MAX_BOUND_BYTES + 1);
+        let three: BTreeSet<_> = dependencies.into_iter().take(3).collect();
+        let before = dependency_insert_runs(&db);
+        resolution_dependencies(&db, &large_file_value, &three).unwrap();
+        assert_eq!(dependency_insert_runs(&db) - before, 3);
+        let rows = dependency_rows(&db);
+        assert_eq!(rows.len(), 67);
+        assert!(rows[64..].iter().all(|row| row.1 == large_file_value));
     }
 }

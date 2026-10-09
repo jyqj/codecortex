@@ -102,6 +102,24 @@ macro_rules! bind_row {
 }
 
 impl IndexDb {
+    /// One file's already normalized dependency order; snapshot caller only.
+    pub(crate) fn insert_resolution_dependencies_multi(
+        conn: &Connection,
+        file_path: &str,
+        rows: &[&cc_model::resolution::ResolutionDependency],
+    ) -> CcResult<()> {
+        multi_insert(
+            conn,
+            "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES",
+            3,
+            rows,
+            |stmt, base, dependency| {
+                bind_row!(stmt, base, [file_path, dependency.kind.as_str(), &dependency.key]);
+                Ok(())
+            },
+        )
+    }
+
     /// Table-major batched insert of every [`FileWriteUnit`]'s rows, with the
     /// `files_fts` / `literal_fts` mirrors deferred (the caller must run
     /// [`Self::insert_files_literal_fts_batch`] over the same paths in the

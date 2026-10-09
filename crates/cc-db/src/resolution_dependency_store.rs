@@ -13,6 +13,20 @@ use cc_model::{
 use rusqlite::Connection;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 pub(crate) fn replace_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
+    replace_with(conn, file, false)
+}
+
+/// Only the full-snapshot seam opts into bounded dependency INSERTs. Both
+/// paths retain the exact manifest preparation and table-write order below.
+pub(crate) fn replace_snapshot_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
+    replace_with(conn, file, true)
+}
+
+fn replace_with(
+    conn: &Connection,
+    file: &FileWriteUnit,
+    snapshot_leaf_batches: bool,
+) -> CcResult<()> {
     let mut m = file.outcome.resolution.clone();
     m.normalize();
     m.validate()
@@ -29,12 +43,22 @@ pub(crate) fn replace_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()
         [&file.rel_path],
     )?;
     IndexDb::execute_cached(conn,"INSERT OR REPLACE INTO resolution_manifests(file_path,version,payload,digest) VALUES(?1,?2,?3,?4)",rusqlite::params![file.rel_path,m.version,payload,blake3::hash(payload.as_bytes()).to_hex().to_string()])?;
-    let mut stmt = conn
-        .prepare_cached("INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)")
-        .map_err(db_err)?;
-    for d in &m.dependencies {
-        stmt.execute(rusqlite::params![file.rel_path, d.kind.as_str(), d.key])
+    if snapshot_leaf_batches && m.dependencies.len() >= 8 {
+        crate::index_db_snapshot_insert::resolution_dependencies(
+            conn,
+            &file.rel_path,
+            &m.dependencies,
+        )?;
+    } else {
+        let mut stmt = conn
+            .prepare_cached(
+                "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)",
+            )
             .map_err(db_err)?;
+        for d in &m.dependencies {
+            stmt.execute(rusqlite::params![file.rel_path, d.kind.as_str(), d.key])
+                .map_err(db_err)?;
+        }
     }
     Ok(())
 }

@@ -238,3 +238,154 @@ fn corrupt_payload_is_rejected() {
         .unwrap();
     assert!(db.reads().resolution_manifests(&["a.py".into()]).is_err());
 }
+
+
+fn snapshot_dependency_unit(path: &str, count: usize) -> FileWriteUnit {
+    let mut file = unit(path);
+    file.outcome.resolution.dependencies.clear();
+    for n in (0..count).rev() {
+        file.outcome
+            .resolution
+            .dependency(DependencyKind::NameBucket, format!("key-{n:05}"));
+        // The manifest's original BTreeSet deduplication remains authoritative.
+        file.outcome
+            .resolution
+            .dependency(DependencyKind::NameBucket, format!("key-{n:05}"));
+    }
+    let record = file.outcome.resolution.records[0].clone();
+    file.outcome.resolution.records.push(record);
+    file
+}
+
+fn snapshot_dependency_tables(db: &IndexDb) -> Vec<Vec<Vec<rusqlite::types::Value>>> {
+    let conn = rusqlite::Connection::open_with_flags(
+        db.admin().db_path(),
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+    )
+    .unwrap();
+    [
+        "SELECT rowid,* FROM resolution_dependencies ORDER BY rowid",
+        "SELECT * FROM resolution_manifests ORDER BY file_path",
+        "SELECT * FROM public_surfaces ORDER BY file_path",
+    ]
+    .into_iter()
+    .map(|sql| {
+        let mut statement = conn.prepare(sql).unwrap();
+        let columns = statement.column_count();
+        statement
+            .query_map([], |row| {
+                (0..columns)
+                    .map(|column| row.get::<_, rusqlite::types::Value>(column))
+                    .collect::<rusqlite::Result<Vec<_>>>()
+            })
+            .unwrap()
+            .collect::<rusqlite::Result<Vec<_>>>()
+            .unwrap()
+    })
+    .collect()
+}
+
+#[test]
+fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
+    let directory = tempfile::tempdir().unwrap();
+    let old = IndexDb::open_with_read_pool_size(&directory.path().join("old.db"), 1)
+        .unwrap()
+        .0;
+    let new = IndexDb::open_with_read_pool_size(&directory.path().join("new.db"), 1)
+        .unwrap()
+        .0;
+    let files: Vec<_> = [0usize, 1, 7, 8, 9, 63, 64, 65, 73]
+        .into_iter()
+        .map(|count| snapshot_dependency_unit(&format!("n-{count}.py"), count))
+        .collect();
+    let old_before = old.reads().generation().unwrap();
+    let new_before = new.reads().generation().unwrap();
+    old.admin()
+        .rebuild_with_temp_db(|conn| {
+            for file in &files {
+                IndexDb::insert_file_data(conn, file)?;
+            }
+            Ok(())
+        })
+        .unwrap();
+    new.admin()
+        .rebuild_with_temp_db(|conn| {
+            cc_db::SnapshotWriteTxn::new(conn)
+                .write_file_data(&files, &Default::default())
+        })
+        .unwrap();
+    assert_eq!(old.reads().generation().unwrap().index_epoch, old_before.index_epoch + 1);
+    assert_eq!(new.reads().generation().unwrap().index_epoch, new_before.index_epoch + 1);
+    assert_eq!(snapshot_dependency_tables(&old), snapshot_dependency_tables(&new));
+    let paths: Vec<_> = files.iter().map(|file| file.rel_path.clone()).collect();
+    let original = old.reads().resolution_manifests(&paths).unwrap();
+    let batched = new.reads().resolution_manifests(&paths).unwrap();
+    assert_eq!(original, batched);
+    assert!(batched.values().all(|manifest| manifest.records.len() == 1));
+
+    // An ordinary live replacement after the snapshot keeps the unchanged
+    // incremental writer, delete behavior and one generation bump.
+    let before = new.reads().generation().unwrap();
+    new.writes()
+        .replace_files_batch(&[snapshot_dependency_unit("n-73.py", 8)])
+        .unwrap();
+    assert_eq!(new.reads().generation().unwrap().index_epoch, before.index_epoch + 1);
+    assert_eq!(
+        new.reads().resolution_manifests(&["n-73.py".into()]).unwrap()["n-73.py"]
+            .dependencies.len(),
+        8
+    );
+}
+
+#[test]
+fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut errors = Vec::new();
+    for snapshot in [false, true] {
+        let path = directory.path().join(format!("failure-{snapshot}.db"));
+        let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+        db.writes().replace_files_batch(&[unit("retained.py")]).unwrap();
+        let before = db.reads().generation().unwrap();
+        let retained = snapshot_dependency_tables(&db);
+        let mut mode_errors = Vec::new();
+        for invalid_manifest in [false, true] {
+            let good = snapshot_dependency_unit("first.py", 73);
+            let mut failed = snapshot_dependency_unit("failed.py", 73);
+            if invalid_manifest {
+                failed.outcome.resolution.version = 999;
+            }
+            let result = db.admin().rebuild_with_temp_db(|conn| {
+                if !invalid_manifest {
+                    conn.execute_batch(
+                        "CREATE TRIGGER fail_dependency BEFORE INSERT ON resolution_dependencies
+                         WHEN NEW.file_path='failed.py' AND NEW.key='key-00070'
+                         BEGIN SELECT RAISE(ABORT,'injected dependency failure'); END;",
+                    )
+                    .map_err(|error| cc_model::CcError::Database(error.to_string()))?;
+                }
+                let files = [good, failed, snapshot_dependency_unit("never.py", 8)];
+                if snapshot {
+                    cc_db::SnapshotWriteTxn::new(conn)
+                        .write_file_data(&files, &Default::default())?;
+                } else {
+                    for file in &files {
+                        IndexDb::insert_file_data(conn, file)?;
+                    }
+                }
+                Ok(())
+            });
+            let error = result.unwrap_err().to_string();
+            assert!(error.contains(if invalid_manifest {
+                "unsupported version"
+            } else {
+                "injected dependency failure"
+            }));
+            mode_errors.push(error);
+            assert_eq!(db.reads().generation().unwrap(), before);
+            assert_eq!(db.reads().list_file_paths().unwrap(), vec!["retained.py"]);
+            assert_eq!(snapshot_dependency_tables(&db), retained);
+        }
+        errors.push(mode_errors);
+    }
+    assert_eq!(errors[0], errors[1]);
+}

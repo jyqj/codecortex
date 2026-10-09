@@ -5,7 +5,7 @@
 //! are reported (in particular, -0.0 and +0.0 compare equal). The
 //! disposable index bounds sorting memory without introducing a second fact
 //! projection, sampling rows, or increasing the legacy in-memory row budget.
-use super::{columns, db_error, project_row, select_columns, snapshot, TABLES};
+use super::{columns, db_error, select_columns, snapshot, RowProjection, TABLES};
 use crate::benchmark::{invalid, manifest, Result};
 use rusqlite::{types::ValueRef, Connection};
 use serde::{Deserialize, Serialize};
@@ -169,6 +169,7 @@ fn spool(
     canonical_bytes: &mut u64,
 ) -> Result<u64> {
     let cols = columns(source, table)?;
+    let mut projection = RowProjection::new(&cols);
     let mut statement = source
         .prepare(&format!(
             "SELECT {} FROM \"{table}\"",
@@ -186,7 +187,7 @@ fn spool(
             )));
         }
         check_row_size(row, &cols, limits.max_row_bytes)?;
-        let serialized = serde_json::to_string(&project_row(row, &cols)?)?;
+        let serialized = projection.serialize_row(row)?;
         if serialized.len() > limits.max_row_bytes {
             return Err(invalid(
                 "streaming oracle serialized row byte budget exceeded",
@@ -396,6 +397,7 @@ fn compare_with_validated_limits(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::benchmark::oracle::project_row;
 
     // Original single-row implementation, retained independently of batching.
     fn reference_spool(

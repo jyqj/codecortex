@@ -1,0 +1,55 @@
+name: Original G4 platform offline reception
+
+on:
+  push:
+    branches: [task/p8-g4-platform-reception-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  offline_replay:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Require the independently reviewed first receiver attempt
+        shell: bash
+        run: test "$GITHUB_RUN_ATTEMPT" = 1
+      - name: Check out only the external receiver controller at its actual event commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: receiver
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-G4-offline-platform-reception-20261009/
+      - name: Check out immutable original G4 product and observers separately
+        uses: actions/checkout@v4
+        with:
+          ref: 260f596582f2d82b8d7c707b61a6b8b6a43b069f
+          path: source
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Cargo.toml
+            /Cargo.lock
+            /crates/
+            /scripts/
+      - name: Replay the original complete eight-cell platform collector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -B -u receiver/artifacts/checkpoints/p8-G4-offline-platform-reception-20261009/controller.py
+      - name: Preserve original archives, all expanded evidence, failed checks and exact replay outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-G4-offline-platform-reception-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-G4-offline-platform
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 21

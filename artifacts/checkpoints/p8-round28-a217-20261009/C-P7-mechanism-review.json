@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at": "2026-10-09T10:29:40.320806+00:00",
+  "status": "accepted_scoped_original_job_log",
+  "source_head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "source_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+  "job": {
+    "id": 113748747306,
+    "run_id": 37908825794,
+    "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "name": "mechanism",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T10:13:16Z",
+    "completed_at": "2026-10-09T10:21:05Z"
+  },
+  "official_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-09T10:13:17Z",
+      "completed_at": "2026-10-09T10:13:18Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-09T10:13:18Z",
+      "completed_at": "2026-10-09T10:13:45Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-09T10:13:45Z",
+      "completed_at": "2026-10-09T10:13:53Z"
+    },
+    {
+      "name": "Build four independent complete source snapshots",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-09T10:13:53Z",
+      "completed_at": "2026-10-09T10:18:59Z"
+    },
+    {
+      "name": "Actual local, dense-only, hybrid and no-lanes control with paired replay",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-09T10:18:59Z",
+      "completed_at": "2026-10-09T10:20:48Z"
+    },
+    {
+      "name": "Archive all arms, build receipts, raw observations and paired statistics",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-09T10:20:48Z",
+      "completed_at": "2026-10-09T10:21:03Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12,
+      "started_at": "2026-10-09T10:21:03Z",
+      "completed_at": "2026-10-09T10:21:03Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13,
+      "started_at": "2026-10-09T10:21:03Z",
+      "completed_at": "2026-10-09T10:21:03Z"
+    }
+  ],
+  "official_job_collection": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/official-p7-1791541363765.json",
+    "bytes": 23136,
+    "sha256": "03d62075a03776190e1ea2ed49302bc1cf802888c93edfbe9d13623b9b7471d8",
+    "git_blob": "9b7528005dfac2992d03ba72a3bab829813b2941",
+    "total_count": 4,
+    "actual_count": 4
+  },
+  "log": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/C3ff-p7-mechanism-113748747306-original.log",
+    "bytes": 74430,
+    "sha256": "949bae9c19eec1f1c352bf348f7d0fe84b3c504ee28cc382906e6539efd5db44",
+    "git_blob": "2b4362afdc95531b35b05fcbef24ac9d8c907ddc"
+  },
+  "raw_capture": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/C3ff-p7-mechanism-113748747306-tool-capture.json",
+    "bytes": 81766,
+    "sha256": "b27c8573b5764b8bc36922229af0edb9b8e9e4f3f9c1cce08a9a4e802689213e",
+    "git_blob": "fbf281ae9ce07b98185bfdc1f0c41d47a1e55c4e"
+  },
+  "raw_capture_and_log_identical": true,
+  "rust_results": {
+    "group_count": 3,
+    "invocation_totals": {
+      "passed": 11,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 66
+    },
+    "meaning": "Totals count test invocations across repeated feature/selector executions, not distinct test functions. Compile-only commands do not add executed tests.",
+    "groups": [
+      {
+        "line": 703,
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 66
+      },
+      {
+        "line": 719,
+        "passed": 7,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered_out": 0
+      },
+      {
+        "line": 797,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0
+      }
+    ],
+    "ignored_named_results": [
+      {
+        "line": 710,
+        "text": "test actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source ... ignored, requires explicit current product path and SHA256; mechanism smoke, no quality certification"
+      }
+    ]
+  },
+  "formal_todo_completion": false,
+  "ledger": {
+    "done": 163,
+    "remaining": 29
+  },
+  "native_reruns": 0,
+  "limitations": [
+    "Only the immutable original log and completed official job collection were reviewed here. No original artifact ZIP was replayed by this review.",
+    "This report retains source C and its actual checkout, never relabels observations to the later external PR merge head M4652.",
+    "The opt-in DB-lock observation candidate was not part of this source or these results."
+  ],
+  "actual_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "checkout_locators": [
+    {
+      "line": 191,
+      "text": "HEAD is now at 3ffcefc3 ci(review): pin independently reviewed PR180 integration inputs"
+    },
+    {
+      "line": 194,
+      "text": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302"
+    }
+  ],
+  "original_commands": [
+    {
+      "line": 458,
+      "text": "python3 scripts/p7_mechanism_build.py --source \"$PWD\" --expected-head \"$EXACT_SOURCE\" \\"
+    },
+    {
+      "line": 478,
+      "text": "set -o pipefail"
+    },
+    {
+      "line": 480,
+      "text": "cargo test -p cc-eval --features semantic --locked --lib benchmark::ablation::mechanism:: \\"
+    },
+    {
+      "line": 482,
+      "text": "cargo test -p cc-eval --features semantic --locked --test p7_strategy_ablation \\"
+    },
+    {
+      "line": 484,
+      "text": "cargo test -p cc-eval --features semantic --locked --test p7_mechanism_stdio \\"
+    }
+  ],
+  "uploaded_artifact_log_locators": [
+    {
+      "line": 844,
+      "text": "Artifact p7-mechanism-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302.zip successfully finalized. Artifact ID 11610460298"
+    },
+    {
+      "line": 845,
+      "text": "Artifact p7-mechanism-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 has been successfully uploaded! Final size is 99409421 bytes. Artifact ID is 11610460298"
+    },
+    {
+      "line": 846,
+      "text": "Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37908825794/artifacts/11610460298"
+    }
+  ],
+  "mechanism_summary": [
+    {
+      "line": 794,
+      "value": {
+        "actual_hybrid_mislabel_rejected": true,
+        "aliased_binary_rejected": true,
+        "aliased_source_rejected": true,
+        "all_36_requests_preserved": true,
+        "cells": [
+          {
+            "actual_lane_witnesses": 9,
+            "cell": "none",
+            "metrics_replayed": true,
+            "positive_negative_controls_passed": true,
+            "requests_including_warmup": 9
+          },
+          {
+            "actual_lane_witnesses": 9,
+            "cell": "local",
+            "metrics_replayed": true,
+            "positive_negative_controls_passed": true,
+            "requests_including_warmup": 9
+          },
+          {
+            "actual_lane_witnesses": 9,
+            "cell": "dense_only",
+            "metrics_replayed": true,
+            "positive_negative_controls_passed": true,
+            "requests_including_warmup": 9
+          },
+          {
+            "actual_lane_witnesses": 9,
+            "cell": "hybrid",
+            "metrics_replayed": true,
+            "positive_negative_controls_passed": true,
+            "requests_including_warmup": 9
+          }
+        ],
+        "cost_billing_and_cache_reuse": "unknown; never imputed as zero",
+        "held_out_semantic_quality_gate": "not_evaluated",
+        "misattributed_source_commit_rejected": true,
+        "original_p7_019_fake_engineering_leg_complete": true,
+        "paired_bootstrap_replayed": true,
+        "passed": true,
+        "profile": "fake",
+        "provider_query_positive_controls_observed": true,
+        "quality_interpretation": "none; fixed fake/authored holdout partition only, no real semantic benefit claim",
+        "same_locked_inputs_and_effective_budgets": true,
+        "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+        "spec": "p7-019-fake-mechanism-acceptance-v1"
+      }
+    }
+  ],
+  "scope": "Actual fake engineering-leg controls and 36 requests completed; the original report explicitly leaves held-out semantic quality not_evaluated and cost/billing/cache reuse unknown. No live provider, release-quality or task-completion claim."
+}

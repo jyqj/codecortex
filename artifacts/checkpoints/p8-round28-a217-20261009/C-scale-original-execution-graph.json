@@ -1,0 +1,151 @@
+{
+  "schema": "C3ff-original-scale-execution-graph-v1",
+  "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "run_id": 37910924354,
+  "attempt": 1,
+  "source_inputs": [
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "bytes": 8621
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "bytes": 65092
+    },
+    {
+      "path": "scripts/p8_runner_capacity.py",
+      "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+      "bytes": 11164
+    }
+  ],
+  "original_trigger": "Existing pull_request labeled run already created; no additional label or dispatch is needed for its measure jobs.",
+  "build": {
+    "job": "build",
+    "timeout_minutes": 45,
+    "executables": "One immutable release executable; all slices download p8-scale-build-37910924354."
+  },
+  "preflight": {
+    "needs": [
+      "build"
+    ],
+    "scales": [
+      100000,
+      50000,
+      10000,
+      5000,
+      1000
+    ],
+    "shards": [
+      0
+    ],
+    "jobs": 5,
+    "max_parallel": 5,
+    "fail_fast": false,
+    "timeout_minutes": 350,
+    "native_deadline_ms": 18000000,
+    "meaning": "These are the original repetition-0 samples and remain in the final 150; no duplicate warmup or resampling."
+  },
+  "measure": {
+    "needs": [
+      "build",
+      "preflight"
+    ],
+    "condition": "Default job success dependency; all five original preflight matrix jobs must succeed.",
+    "automatic": true,
+    "scales": [
+      100000,
+      50000,
+      10000,
+      5000,
+      1000
+    ],
+    "shards": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "jobs": 145,
+    "max_parallel": 10,
+    "fail_fast": false,
+    "timeout_minutes": 350,
+    "capacity_profile": "scale_capacity_v1",
+    "repetitions": 30,
+    "shard_count": 30,
+    "repetition_mapping": "range(30 * j // 30, 30 * (j + 1) // 30), exactly global repetition j.",
+    "fixed_checkout": "github.event.pull_request.head.sha || github.sha from this same event, exact C; never use moving main."
+  },
+  "aggregate": {
+    "needs": [
+      "build",
+      "preflight",
+      "measure"
+    ],
+    "if": "always() && needs.build.result == 'success'",
+    "timeout_minutes": 30,
+    "input_pattern": "p8-scale-shard-*-37910924354",
+    "automatic": true,
+    "original_call": "matrix.aggregate(build, inputs, output, repetitions=30, shard_count=30, capacity_profile=matrix.CAPACITY_PROFILE)",
+    "required_shards": 150,
+    "required_groups": 50,
+    "samples_per_group": 30,
+    "required_samples": 1500,
+    "checks": [
+      "All five scale/shard0..29 pairs exactly present without duplicates",
+      "One source/binary/profile signature and exact per-scale input digest",
+      "Global repetitions0..29 in every expected group",
+      "Actual over-budget closure observed",
+      "All original shard raw validation and source/build bindings"
+    ],
+    "failure": "A preflight failure skips dependent measure jobs under the existing graph; aggregate still records failed/missing coverage. There is no registered manual partial dispatch that silently fills its samples."
+  },
+  "observed_admission_at_cutoff": {
+    "shards": 3,
+    "samples": 32,
+    "index": "admitted-subset-003.json",
+    "not_aggregate_complete": true
+  },
+  "collection_management": {
+    "all_official_pages": true,
+    "deduplicate_by_id": true,
+    "expected_if_every_job_uploads_all_originals": {
+      "jobs": 152,
+      "artifacts": 302
+    },
+    "count_scope": "Use actual official total_count, not this successful-case expectation, for complete pagination."
+  },
+  "independent_replay": "Keep original b107 per-shard validator unchanged, retain original ZIPs and compact validated returns, then original combine only when all150 accepted.",
+  "new_run_or_budget_changes": false,
+  "formal_task_completion": false,
+  "remaining_todos": 29
+}

@@ -1,0 +1,221 @@
+{
+  "schema": "p8-round28-closeout-a217-20261009-v1",
+  "round": 28,
+  "next_round": 29,
+  "recorded_at": "2026-10-09T10:47:16Z",
+  "original_task_ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "closed_this_round": 0,
+    "closed_this_session": 0,
+    "user_minimum_new_completions": 10,
+    "request_fulfilled": false,
+    "targets": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "status_definitions_dependencies_and_old_subgates_modified": false,
+    "original_tasks_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "original_definition_projection_sha256": "7445d280ab1e71861139fb7b54abe16c7f2ae60bee360ab60ce368f27277acb7"
+  },
+  "diagnostic_implementation": {
+    "product": "48be21414e3e04cb542615157eef25fbffae4a17",
+    "product_tree": "421fabe282497ea00a22091b1c8630a8dc3fb913",
+    "review": "57c5c4bf9d7bf9732df584d9893e4ced43dc4c72",
+    "review_tree": "52aab548338361f00a0077b7f0d6388a7e15ce47",
+    "guard": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+    "guard_tree": "c155e89ca5e0ac636d16ca49fa9766927efb026b",
+    "parent": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "feature": "p8-db-lock-observation",
+    "default": false,
+    "product_paths_changed": 9,
+    "validation_paths_changed": 5,
+    "documentation_paths_changed": 1,
+    "complete_product_inputs": 1094,
+    "complete_validation_inputs": 142,
+    "base_delta_inputs": 60,
+    "source_review_scope": "accepted source and validation inputs only",
+    "requirements_origin": "Original 09-BENCHMARK section 9 requires DB lock wait for the C1/4/8/16 mixed workload; this is an existing P8-007 acceptance gap.",
+    "observation_scope": "Actual DB writer mutex, pool RwLock read acquisition and read connection checkout; workload versus observer counters; fixed process-lifetime storage and coherent before/after snapshots.",
+    "limitations": [
+      "No SQLite busy duration is inferred from host-lock counters.",
+      "No per-RPC backend-span or all-lock histogram claim.",
+      "Lifetime maximum at endpoint is explicitly labelled; interval maximum is unavailable.",
+      "Diagnostic accounting has overhead; no bit-identical binary, memory layout or timing claim.",
+      "C raw packages use their original 9-observer identity; diagnostic packages use a distinct 10-observer identity."
+    ]
+  },
+  "source_admission": {
+    "returncode": 0,
+    "started_at": "2026-10-09T10:39:50.105599+00:00",
+    "finished_at": "2026-10-09T10:43:30.739588+00:00",
+    "elapsed_seconds": 220.63399815899902,
+    "source_before": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+    "source_after": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+    "inputs_unchanged": true,
+    "original_logic_unchanged": true,
+    "four_identity_pin_changes_only": true,
+    "stdout_sha256": "819c2c507a86159e117db500422b4dfc1696a29203bab82f0013908a09258a33",
+    "stderr_bytes": 0,
+    "receipt": "source-admission.json",
+    "review": "root-composition-review.json",
+    "independent_review": "independent-LG-review.json",
+    "preparation_failure_retained": "diagnostic-source/source-worktree-preparation-attempt-v1.json in the public archive; source checkout was completed with read-tree before the original v15 command. This was not a product or native test execution."
+  },
+  "diagnostic_ci": {
+    "branch": "task/p8-db-lock-observation-a217-20261009",
+    "head": "18255c53b7fa153bb71c96f57f1b97ca139e427f",
+    "branch_created_once": true,
+    "branch_ref_readback_verified": true,
+    "run_id": 37919399759,
+    "event": "create",
+    "run_attempt": 1,
+    "created_at": "2026-10-09T10:44:02Z",
+    "admission_job": 113783411293,
+    "status_at_initial_observation": "queued",
+    "rust_format_compile_controls": "pending_actual_execution",
+    "native_matrix": "pending; original C1/4/8/16 each 900 operations, not yet counted",
+    "url": "https://github.com/jyqj/codecortex/actions/runs/37919399759"
+  },
+  "original_C_evidence": {
+    "head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+    "ci": {
+      "actual_checkout": "54031d548d4199c84bc8ff5ea056adb26470f930",
+      "status": "accepted_scoped_original_job_log",
+      "new_control_count": 16,
+      "rust_result_groups": 419,
+      "rust_invocation_totals": {
+        "passed": 3320,
+        "failed": 0,
+        "ignored": 132,
+        "measured": 0,
+        "filtered_out": 1972
+      },
+      "meaning": "Totals count test invocations across repeated feature/selector executions, not distinct test functions. Compile-only commands do not add executed tests.",
+      "main_check_review": "C-main-check-review.json",
+      "p7_closeout_review": "C-P7-closeout-review.json",
+      "p7_mechanism_review": "C-P7-mechanism-review.json",
+      "p7_semantic_review": "C-P7-semantic-review.json",
+      "security_review": "C-security-review.json",
+      "last_p7_offline_default": "in_progress_at_2026-10-09T10:41:36Z"
+    },
+    "scale": {
+      "run_id": 37910924354,
+      "attempt": 1,
+      "snapshot_at": "2026-10-09T10:44:31Z",
+      "accepted_shards": 3,
+      "required_shards": 150,
+      "accepted_samples": 32,
+      "required_samples": 1500,
+      "accepted_artifacts": [
+        11610312063,
+        11610456545,
+        11610782288
+      ],
+      "capacity_receipts": 5,
+      "capacity_sample_credit": 0,
+      "first_50k_and_100k": "original native jobs still running at snapshot",
+      "automatic_continuation": "After all five original preflight shards succeed, the same workflow automatically expands 145 measure jobs, max-parallel 10, followed by its original aggregate. No extra dispatch or label is required.",
+      "budgets_and_n_unchanged": true,
+      "combined_or_completed": false,
+      "review": "C-scale-admitted-subset-003.json",
+      "execution_graph": "C-scale-original-execution-graph.json"
+    },
+    "lifecycle": {
+      "artifact_id": 11609403178,
+      "status": "accepted_scoped_actual_lifecycle_observation",
+      "sample_counts": {
+        "expected": 1230,
+        "recorded": 1230
+      },
+      "actual_queries": 1200,
+      "closed_sessions": 431,
+      "owned_resource_samples": 1261,
+      "zip_bytes": 49230392,
+      "zip_sha256": "33b0c0c362e7134a3e434224bf9aed200b8d469b59307aeee2afbc0f1009ba0e",
+      "review": "C-life-review.json"
+    },
+    "platform": {
+      "accepted_cells": 4,
+      "required_cells": 8,
+      "accepted_scope": "Four original macOS cold-build cells only; Linux cells and final collector still pending.",
+      "review": "C-platform-four-review.json"
+    },
+    "gates": {
+      "status": "accepted_scoped_original_failure_gate_execution",
+      "cases": 6,
+      "independent_cli_replays": 6,
+      "original_payload_files": 336,
+      "source_files": 1092,
+      "original_artifacts_unchanged": true,
+      "task_done": false,
+      "release_approval": false,
+      "review": "C-gates-review.json"
+    },
+    "runtime": {
+      "backfill_native_step_started": "2026-10-09T10:41:56Z",
+      "soak_native_step_started": "2026-10-09T10:42:03Z",
+      "four_mixed_cells": "queued_at_2026-10-09T10:43Z",
+      "recovery": "queued_at_2026-10-09T10:43Z"
+    }
+  },
+  "historical_separation": {
+    "source_173": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "source_173_accepted_shards": 4,
+    "source_173_accepted_samples": 41,
+    "source_C8": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "source_C8_new_50k_artifact": 11610565832,
+    "source_C8_accepted_shards": 4,
+    "source_C8_accepted_samples": 41,
+    "transferred_to_current_C": false
+  },
+  "pr_management": {
+    "pr": 180,
+    "observed_external_head": "4652cad11dde4b41126544a38fddf25eb2fb7474",
+    "observed_main": "fd9ca5db6485b575872c722995c451db926d05c9",
+    "external_advance_authored_by_this_agent": false,
+    "root_actual_C_to_M_delta": {
+      "added_artifact_paths": 20,
+      "modified_documentation_paths": 7,
+      "production_validation_or_guard_changes": 0
+    },
+    "source_C_original_execution_identity_preserved": true,
+    "older_prs_174_and_176": "observed externally closed, not merged by this agent",
+    "diagnostic_source_separate": true
+  },
+  "publication": {
+    "archive": "round28-public-evidence.tar.gz",
+    "archive_bytes": 1449625,
+    "archive_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+    "archive_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+    "original_public_files": 146,
+    "uncompressed_payload_bytes": 8713133,
+    "inventory": "inventory.json",
+    "readback": "archive-readback.json",
+    "private_transfer_identifiers_and_urls_published": false,
+    "full_original_zip_publication_claim": false,
+    "original_files_unchanged": true
+  },
+  "next_round_work": [
+    "Accept the actual diagnostic CI controls before any diagnostic native result is credited; preserve and fix concrete failures if present.",
+    "Continue the existing C study and stream each original shard through its unchanged acceptance helper; aggregate only the full valid study.",
+    "Accept the original C mixed/backfill/soak/recovery/Linux platform artifacts when their real jobs finish.",
+    "Complete the original ten TODO acceptance/dependency chains, then make scoped normal PR integration and ledger updates; no task closure credit for tests, commits or evidence files."
+  ],
+  "approvals": {
+    "cloud_codex": false,
+    "paid_or_live_provider_work": false,
+    "G8_quality_or_release_approval": false
+  }
+}
+

@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at": "2026-10-09T10:15:22.115651+00:00",
+  "status": "accepted_scoped_original_job_log",
+  "source_head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "job": {
+    "id": 113748747170,
+    "run_id": 37908825870,
+    "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "name": "security",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T10:05:18Z",
+    "completed_at": "2026-10-09T10:08:26Z"
+  },
+  "official_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-09T10:05:18Z",
+      "completed_at": "2026-10-09T10:05:19Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-09T10:05:19Z",
+      "completed_at": "2026-10-09T10:05:49Z"
+    },
+    {
+      "name": "Run rustsec/audit-check@v2.0.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-09T10:05:49Z",
+      "completed_at": "2026-10-09T10:08:23Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-09T10:08:23Z",
+      "completed_at": "2026-10-09T10:08:24Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-09T10:08:24Z",
+      "completed_at": "2026-10-09T10:08:24Z"
+    }
+  ],
+  "official_job_collection": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/official-ci-1791540806685.json",
+    "sha256": "dad94914076906968071175dc19cef6fa1f2690c52bd56b6de6be93d0b76b14d",
+    "total_count": 3,
+    "actual_count": 3
+  },
+  "log": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/C3ff-security-113748747170-original.log",
+    "bytes": 64309,
+    "sha256": "51a3a6e831b16c46c8f755c96d939a5a0e8c81ff7c0fed47f907ad6075924568",
+    "git_blob": "ee55761b6e6d00f8134d7da34f05f0d39e559d5e"
+  },
+  "formal_todo_completion": false,
+  "ledger": {
+    "done": 163,
+    "remaining": 29
+  },
+  "native_reruns": 0,
+  "actual_checkout": "54031d548d4199c84bc8ff5ea056adb26470f930",
+  "actual_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+  "tree_scope": "prior official commit proof: full tree equals C; no later main identity claim",
+  "findings": [
+    {
+      "lines": [
+        178,
+        181
+      ],
+      "fact": "Actual pull/180 merge checkout 54031, parents B and C."
+    },
+    {
+      "lines": [
+        182,
+        847,
+        848,
+        849,
+        852
+      ],
+      "command": "cargo audit --json --file ./Cargo.lock",
+      "audit": {
+        "database": {
+          "advisory-count": 1296,
+          "last-commit": "7eebec69c352c7191b1f13eb95dd510eeca5d1de",
+          "last-updated": "2026-10-09T10:12:02+02:00"
+        },
+        "lockfile": {
+          "dependency-count": 338
+        },
+        "settings": {
+          "target_arch": [],
+          "target_os": [],
+          "severity": null,
+          "ignore": [],
+          "informational_warnings": [
+            "unmaintained",
+            "unsound",
+            "notice"
+          ]
+        },
+        "vulnerabilities": {
+          "found": false,
+          "count": 0,
+          "list": []
+        },
+        "warnings": {}
+      },
+      "fact": "Official rustsec action completed success; 338 dependencies, no vulnerabilities or warnings, no ignored advisories."
+    }
+  ],
+  "limitations": [
+    "Dependency advisory scan at the recorded database commit; not a source security audit.",
+    "Cargo-audit installation compiled the audit tool, not evidence of product runtime tests."
+  ]
+}

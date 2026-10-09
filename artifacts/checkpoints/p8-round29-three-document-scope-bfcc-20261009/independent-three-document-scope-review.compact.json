@@ -1,0 +1,157 @@
+{
+  "schema": "three-documents-new-main-v15-scope-bridge-v1",
+  "reviewer": "/root/execution_recon",
+  "recorded_at": "2026-10-09T22:58:14.116098+00:00",
+  "main": "a406a4968c46ab005225666e60e81acddaa77de8",
+  "same_input_source": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+  "verdict": "outside_product_validation_and_historical_protection_no_P_R_G_rebinding_required",
+  "counts": {
+    "complete_inputs": 1096,
+    "delta": 78,
+    "validation_inputs": 146
+  },
+  "checks": [
+    {
+      "path": "docs/BENCHMARK.md",
+      "complete_inputs": false,
+      "delta": false,
+      "validation_inputs": false,
+      "historical_explicit_or_registry_record": false,
+      "helper_protected_script_or_test_predicate": false
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-OWNERSHIP.md",
+      "complete_inputs": false,
+      "delta": false,
+      "validation_inputs": false,
+      "historical_explicit_or_registry_record": false,
+      "helper_protected_script_or_test_predicate": false
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md",
+      "complete_inputs": false,
+      "delta": false,
+      "validation_inputs": false,
+      "historical_explicit_or_registry_record": false,
+      "helper_protected_script_or_test_predicate": false
+    }
+  ],
+  "actual_registry_pins": {
+    "product_source": "57a731b12df8a3c9a70742a8c9d4590af65ea269",
+    "review_source": "f6c489ac66b83ac9f6323a30d5509971f8846a16",
+    "review_sha256": "926b2e9fa3346951804b001b1a78c37ec7b8bcd1ca71a9a09cf163cac0d3326b"
+  },
+  "guard_algorithm_byte_equal_after_only_four_pin_normalization": true,
+  "history_helper_full_byte_equal_to_previously_reviewed_source379099": true,
+  "historical_base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "historical_records_count": 189,
+  "official_b8ab_to_main_compare": {
+    "url": "https://api.github.com/repos/jyqj/codecortex/compare/b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f...a406a4968c46ab005225666e60e81acddaa77de8",
+    "base_sha": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+    "merge_base_sha": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+    "status": "ahead",
+    "ahead_by": 4,
+    "behind_by": 0,
+    "total_commits": 4,
+    "files": [
+      {
+        "filename": "README.md",
+        "status": "modified",
+        "sha": "daa99f15ca21e62d3b6231f25ef0da918110641c"
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/05-TODO.md",
+        "status": "modified",
+        "sha": "4ff8016616bb9390315809f2bcb0d4da05b8b919"
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+        "status": "modified",
+        "sha": "02647849f35b73157bdec9895c4d75e9e4ac1c86"
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/README.md",
+        "status": "modified",
+        "sha": "3dc2d0bc28446c057212c83af59050c512ab815c"
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/tasks.json",
+        "status": "modified",
+        "sha": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+      }
+    ],
+    "boundary": "Bounded projection of actual official compare response; not the unabridged original response.",
+    "full_local_projection_sha256": "8241845edde5254c2e1593607f3d163f4bbe8658f58378038a880db77880b6d8"
+  },
+  "current_registry_delta_since_old379099_maps": {
+    "complete_inputs": {
+      "added_paths": [],
+      "removed_paths": [],
+      "changed_common_paths": [
+        "crates/cc-db/src/freshness_store.rs",
+        "crates/cc-db/src/index_db_write_batch.rs",
+        "crates/cc-db/tests/p2c_freshness_store.rs",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "crates/cc-eval/src/bin/p8-scale.rs",
+        "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "crates/cc-eval/tests/p8_scale.rs",
+        "crates/cc-index/src/project_model/mod.rs"
+      ]
+    },
+    "delta": {
+      "added_paths": [
+        "crates/cc-db/src/freshness_store.rs",
+        "crates/cc-db/tests/p2c_freshness_store.rs",
+        "crates/cc-index/src/project_model/mod.rs"
+      ],
+      "removed_paths": [],
+      "changed_common_paths": [
+        "crates/cc-db/src/index_db_write_batch.rs",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "crates/cc-eval/src/bin/p8-scale.rs",
+        "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "crates/cc-eval/tests/p8_scale.rs"
+      ]
+    },
+    "validation_inputs": {
+      "added_paths": [
+        ".github/workflows/p8-cold.yml",
+        ".github/workflows/p8-scale-wide-dirty.yml",
+        "scripts/p8_cold_matrix.py",
+        "scripts/tests/test_p8_cold_matrix.py"
+      ],
+      "removed_paths": [],
+      "changed_common_paths": [
+        "scripts/p8_scale_matrix.py",
+        "scripts/tests/test_p8_scale_matrix.py"
+      ]
+    }
+  },
+  "exact_current_input_files": [
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "git_blob": "44c775576b08dec78c4c8322f552723595529ed3",
+      "bytes": 181382,
+      "sha256": "2f43ec91137e645c9c76db951e55f9883f93b789ea59c657fd4045a761b85830"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "git_blob": "a9176916125c9a26aac51a4dae82cfe8242da7ac",
+      "bytes": 11095,
+      "sha256": "6849dc9669eda660527fea2bf05dbad24b03acb150462f3611562e2618640a44"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "git_blob": "f7e68c27ce4d728a2e637e34fe863f74c25d485d",
+      "bytes": 8682,
+      "sha256": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20"
+    }
+  ],
+  "decision": "Use ordinary docs CI; leave original guard/registry/definitions unchanged. This only bridges the exact three paths on the new main, not arbitrary future documents.",
+  "source_cli_executions": 0,
+  "tests_or_measurements_executed": 0,
+  "task_status_changed": false,
+  "local_full_review_sha256": "a35eefe0d8389f76c106e15a783bbf288db7821951a31077daa48fae9d303535"
+}

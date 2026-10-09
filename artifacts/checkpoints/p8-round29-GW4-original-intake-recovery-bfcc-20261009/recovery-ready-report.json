@@ -1,0 +1,157 @@
+{
+  "schema": "GW4-fixed-original-shard-intake-recovery-ready-v1",
+  "observed_at": "2026-10-09T22:54:04.416131+00:00",
+  "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+  "source_tree": "d5ce466ab3ccde1f00dad693e39ebfa07f051f3b",
+  "run_id": 37982220020,
+  "run_attempt": 1,
+  "profile": "scale_wide_dirty_v1",
+  "status": "ready_for_actual_new_shard_original_validation_only",
+  "restoration": {
+    "schema": "immutable-GW4-build-transport-restoration-v1",
+    "original_source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+    "artifact_id": 11642471195,
+    "run_id": 37982220020,
+    "run_attempt": 1,
+    "archive": "/workspace/scratch/bfccb8494ba0/round29-GW4-original-build-transport-recovery/GW4-original-build-008f-37982220020-recovery.zip",
+    "archive_bytes": 9222888,
+    "archive_sha256": "6f39842dc5bd9292b1441b3d4fa8394c154c304ec63a72f44e95606656923447",
+    "git_blob": "d6bf17c610c18701345a1a58a414ca4762dc251d",
+    "restored_directory": "/workspace/scratch/bfccb8494ba0/GW4-original-build-intake/original-validation-attempt01/extracted",
+    "members": [
+      {
+        "path": "build.json",
+        "bytes": 4110,
+        "sha256": "2f80346e278d27b74c868a95e159aba00c256cb5991a1ad06b044a57975ba66e",
+        "restored_mode": "0o644",
+        "zip_member_crc32": 3318076472
+      },
+      {
+        "path": "cargo.jsonl",
+        "bytes": 200070,
+        "sha256": "5eb283fa2b4e015f555d943f2a0efa40a02ef2ea9e9b2fb4ca3accecc7c25a7b",
+        "restored_mode": "0o644",
+        "zip_member_crc32": 1480289257
+      },
+      {
+        "path": "cargo.stderr",
+        "bytes": 6171,
+        "sha256": "2cca9f9de591b1a82bfc48715188fd26c6b803d2ee78fd4c385d91517037be14",
+        "restored_mode": "0o644",
+        "zip_member_crc32": 3156759276
+      },
+      {
+        "path": "p8-scale",
+        "bytes": 28282968,
+        "sha256": "0ea2a33bcc8cdf18a26d367996d2d23b33386a5a27a42c144ef6eb1f3dcdfdae",
+        "restored_mode": "0o755",
+        "zip_member_crc32": 661508164
+      },
+      {
+        "path": "source-after.json",
+        "bytes": 147145,
+        "sha256": "34ab978c187595be3ebdbf4092abf99775ca26e37c148229282eb0051c909fcb",
+        "restored_mode": "0o644",
+        "zip_member_crc32": 2382372599
+      },
+      {
+        "path": "source-before.json",
+        "bytes": 147145,
+        "sha256": "34ab978c187595be3ebdbf4092abf99775ca26e37c148229282eb0051c909fcb",
+        "restored_mode": "0o644",
+        "zip_member_crc32": 2382372599
+      }
+    ],
+    "inventory_equal_to_original_accepted_build": true,
+    "receiver_recovery_not_new_build": true,
+    "new_validate_build_calls": 0,
+    "new_validate_shard_calls": 0,
+    "binary_executions": 0,
+    "measurements_added": 0,
+    "scope": "Original ZIP content/CRC read only during necessary restoration, no separate testzip or repeated product verification. ELF restored to ZIP mode 0755, matching original accepted executable-mode receipt."
+  },
+  "restoration_child": {
+    "argv": [
+      "python3",
+      "/workspace/scratch/bfccb8494ba0/round29-GW4-intake-recovery/restore-original-build-from-zip.py",
+      "/workspace/scratch/bfccb8494ba0/round29-GW4-original-build-transport-recovery/GW4-original-build-008f-37982220020-recovery.zip"
+    ],
+    "started_at": "2026-10-09T22:53:21.804045+00:00",
+    "ended_at": "2026-10-09T22:53:22.014583+00:00",
+    "exit_code": 0,
+    "stdout_sha256": "83a8a70c63ef54e8257cf7aa21f84d2711dd0f59736532391ab1c83d1c37bc5d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "transport_recovery": "same artifact11642471195 after filesystem loss; second Actions transport authorized by root; not a new build/sample"
+  },
+  "original_acceptance_reused": {
+    "published_commit": "b64764ab2802747f431bd185d42ea14bea71e793",
+    "support_git_blob": "141bd6303c7347d0ce2333e3f9079c66e1076c86",
+    "original_receipt": {
+      "argv": [
+        "python3",
+        "/workspace/scratch/bfccb8494ba0/GW4-original-build-intake/validate-original-GW4-build.py"
+      ],
+      "cwd": "/workspace/scratch/bfccb8494ba0/GW4-original-build-intake",
+      "started_at": "2026-10-09T20:07:26.587017+00:00",
+      "ended_at": "2026-10-09T20:07:27.548125+00:00",
+      "elapsed_seconds": 0.9611141340001268,
+      "exit_code": 0,
+      "stdout_bytes": 2233,
+      "stdout_sha256": "a3f183951a8989e1b9ac5696afc4cea23941f1d3c688ff4e887040f27876a4af",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "input_snapshot_sha256": "d2a0413ada6adcece59b0cdfd588b5918d15ec097792cc83bd75958d33827b66"
+  },
+  "original_validator_driver": {
+    "path": "/workspace/scratch/bfccb8494ba0/GW4-original-build-intake/source-observers/scripts/p8_scale_matrix.py",
+    "git_blob": "011da8340dc4989c81976ba66e163638b4e7aa07",
+    "sha256": "116e8634bead6629a3ea411555dfcf0609c058a03c433acc37115be4ba3c8b85",
+    "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+    "algorithm_unchanged": true
+  },
+  "host_adapter": {
+    "path": "/workspace/scratch/bfccb8494ba0/round29-GW4-intake-recovery/prepared-minimal-intake/intake-original-shard-recovered-once.py",
+    "bytes": 8914,
+    "sha256": "29cbb60c478f5b05a49c6d32156281d3265f464038751f454f461c754aedf34c",
+    "non_author_static_review_git_blob": "1d61f7c52213d2587ea1419e26195ada48a030a3",
+    "local_product_checkout_restored": false,
+    "local_source_snapshot_executed": false,
+    "no_monkeypatch": true,
+    "source_binding": "retained immutable original accepted complete1095 map; new shard source-before/source-after must both exactly equal it; original validate_shard additionally verifies preserved source manifest and original build/engine/binary identity",
+    "functions_to_run_only_when_new_shard_arrives": [
+      "original receiver.extract_original",
+      "original driver.validate_shard (one invocation)"
+    ],
+    "native_operation_for_success": "original --hash-file on original native plan and raw, not a workload"
+  },
+  "execution_template": [
+    "python3",
+    "/workspace/scratch/bfccb8494ba0/round29-GW4-intake-recovery/prepared-minimal-intake/intake-original-shard-recovered-once.py",
+    "<actual-new-artifact-descriptor.json>",
+    "<new-empty-output-directory>"
+  ],
+  "prior_failed_recovery_preserved": {
+    "initial_checkout_timeout_seconds": 60,
+    "explicit_blob_batch_exit_codes": [
+      1,
+      1
+    ],
+    "github_file_binary_content": "empty",
+    "github_fetch_blob_binary_error": "UnicodeDecodeError",
+    "later_git_fetches_stopped": true,
+    "build_actions_transport_recovery": "root-authorized second transport of exact original artifact after filesystem loss"
+  },
+  "counts_unchanged": {
+    "GW4_accepted_shards": 4,
+    "registered_shards": 150,
+    "GW4_accepted_measurements": 41,
+    "registered_measurements": 1500,
+    "new_measurements": 0,
+    "new_validate_build_calls": 0,
+    "new_validate_shard_calls": 0,
+    "ELF_executions": 0,
+    "new_TODO_completions": 0
+  },
+  "scope": "Preparation and original byte restoration only. Prior pending report is retained unchanged. Original G8/default failed study and GW4 wide study stay separate."
+}

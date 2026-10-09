@@ -1,0 +1,34 @@
+--- a/docs/roadmap/code-index-v2/P8-OWNERSHIP.md
++++ b/docs/roadmap/code-index-v2/P8-OWNERSHIP.md
+@@ -60,3 +60,31 @@
+ 不属于 `51138c2` 已发布实现或本表已验收内容。
+ P8-018 的事实生成与安装说明入口仍是 [P8-FACTS.md](P8-FACTS.md)；本页不修改其受管表、
+ 任何任务状态、受保护定义、依赖或生成导航。
++
++
++## 删除回归的原件对应（补充）
++
++原 P8-017 已有实际清理及删除回归，不因其依赖 P8-016 尚开放而归零。
++[原 engine 独审](../../../artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/review/engine-independent-review.json)
++逐项对应删除的 18 个重复测试及 helper 与 `engine_lane_tests` 中保留的同一测试；
++17 项仅模块缩进不同，1 项仅注释文字不同，生产体和另外 17 个测试的原字节保留。
++[原整合收据说明](../../../artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md)
++记录了产品 `b069c73a` 的实际模块回归及当时未通过的全 workspace 环境尝试，两者不能混记。
++
++[lane 清理记录](../../../artifacts/checkpoints/p8-lane-registry-20261009-50c/README.md)
++另将实际执行目录和 QueryPolicy 的重复目录收口到同一借用 registry；原产品 `fa6562ad`
++上的 303 项 cc-search 测试及 1 项原 mechanism-anchor 控制通过，四个 prepare-only
++变体仍是 `compiled:false`，不视为机制研究通过。
++
++后续 [PR197 原主 CI](https://github.com/jyqj/codecortex/actions/runs/37995531210/job/114040465849)
++实际检出 `eee3b5326b9c4afff2400f2e8b7ac46f66fd46d0`，完整 tree
++`70eeac47cc8f2e7d02425d8db4558c27a1a6722f` 等于该 PR 的 head。
++PR197 相对上述 main 只改五份任务和导航文档，产品与验证域不变。
++其已保留完整日志（Git blob `2ec9f3f4a724d064bdaf02ac179ee61d7f8fb0ef`）包含
++18 个保留 owner 测试、17 个未删除测试和上表 16 个控制的原 `ok` 行。
++这些名称集合存在重叠，同名测试在不同 target 中的多次出现也不累计为唯一测试总数。
++这是复用已有运行，不是本页新增测试，亦不将旧执行的 source 身份改写为当前 main。
++
++
++本补充仅完善原删除回归与实际 CI 对应，不改上述 V18 / V21 的范围或任务状态。
++P8-016 的依赖仍开放；已有组件证据不因依赖开放而失效，也不据此替代完整原验收。

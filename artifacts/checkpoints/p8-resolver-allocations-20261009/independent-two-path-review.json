@@ -1,0 +1,67 @@
+{
+  "schema": "resolver-local-allocation-candidate-two-path-independent-static-review-v1",
+  "reviewer": "scale_closeout",
+  "reviewed_at_utc": "2026-10-09T06:41:37.306Z",
+  "status": "accepted_scoped",
+  "baseline": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "files": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "baseline_blob": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+      "candidate_blob": "dbff4adaa41f1254844c2a692bd19bf3bdfb4967",
+      "bytes": 39439,
+      "sha256": "5959b1837e310b124ffc67ec4e27206af76b3b1af0dc0a7bb32bc63a1693252c"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "baseline_blob": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+      "candidate_blob": "97ebe8747c4f82a92e7ca630508f9093321f5f26",
+      "bytes": 15073,
+      "sha256": "38c48943f2180e517ff11499e59960c62fbeffa50f54377577f01b0807aedda4"
+    }
+  ],
+  "review_basis": [
+    "Complete immutable candidate and baseline Git contents read; candidate UTF8 byte sizes and SHA256 match author pins.",
+    "Complete line differences reviewed, consisting of three production substitutions and four reference-based test definitions.",
+    "Existing stable_candidates, strip_ext, best_by_import_distance and candidate_count_penalty function regions compared byte-for-byte and unchanged."
+  ],
+  "findings": [
+    {
+      "area": "Export registration",
+      "result": "Original lowercase name, optional lowercase export alias, and conditional default key still form exactly the same set. Default-key duplication is resolved before optional alias equality filtering. Each resulting file/name bucket receives the original symbol index once in original symbol order, including Unicode lowercase expansion and empty alias/name values. Different key insertion order does not enter direct_exports file/name lookup."
+    },
+    {
+      "area": "Catalog lifecycle",
+      "result": "Entry allocation, other indices, direct_exports lookup and remove_files are unchanged. Removal really tombstones without reusing slots, so the new reference control's append index symbols.len()+i matches the existing source behavior."
+    },
+    {
+      "area": "Path prefix",
+      "result": "Only the intermediate two segment Vec allocations are removed. Original strip_ext and forward slash splitting, empty components, trailing separators, Unicode, unknown/case-sensitive suffix handling and comparison stopping rule are preserved."
+    },
+    {
+      "area": "Distance selection",
+      "result": "Single traversal retains all candidates at the greatest observed prefix length, preserving their input order, then invokes the unchanged stable_candidates. This retains its existing stable sort and adjacent identity deduplication, including same identity with different qname; no broader dedup, uniqueness or confidence change is introduced."
+    },
+    {
+      "area": "Controls",
+      "result": "Read two catalog tests using the original HashSet registration reference (alias/default/Unicode/empty collisions, chunked append, remove/readd/tombstone) and two helpers tests using original Vec-prefix and two-pass selection references (path edge cases and exhaustive candidate sequences length 0..4). No obvious static type/ownership issue found. These controls have not been compiled or executed by this reviewer."
+    }
+  ],
+  "unresolved_scoped_source_blockers": [],
+  "limits": [
+    "Static source review only; rustfmt, compilation, Clippy and four new Rust control execution remain not_run.",
+    "No measurement, full 100k improvement, E failure cause, whole-repository source admission or original TODO completion claim.",
+    "No change to frozen E, original workload, acceptance thresholds, populations, cleanup or scale protocol."
+  ],
+  "actions": {
+    "native_or_tests_rerun": false,
+    "local_filesystem_operations": false,
+    "remote_mutations": false
+  },
+  "formal_task_completion": false,
+  "counts": {
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

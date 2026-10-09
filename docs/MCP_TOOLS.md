@@ -96,7 +96,8 @@ P5-B 的 search/context 已接入 MCP `notifications/cancelled`。QueryTimedOut�
 
 | 出口策略 | 工具 | 行为 |
 |---|---|---|
-| ByteCap | `context`、`node`、`relations`、`impact`、`architecture` | 序列化 JSON 超过档位 `max_output_chars` 时整体替换为截断信封：`{"_truncated": true, "_original_chars", "_max_chars", "partial"}`（`partial` 是 UTF-8 安全的前缀预览） |
+| 完整对象预算 | `context` 中 `machine_pack.kind="code_index_context"` 且含 `token_budget` 的响应 | 通过 `pack_value` 按整个对象预算重新封装，保留完整正文或明确引用，不截取 JSON 前缀；无法封装时返回带 `_truncated=true`、`error="context_budget_exceeded"`、`partial=true` 的信封。`code_index_context` 是输出标记，不是新增工具名。 |
+| ByteCap | `node`、`relations`、`impact`、`architecture` 及其他 `context` 响应形态 | 序列化 JSON 超过档位 `max_output_chars` 时整体替换为截断信封：`{"_truncated": true, "_original_chars", "_max_chars", "partial"}`（`partial` 是 UTF-8 安全的前缀预览） |
 | ItemCap | `files`（仅 `list`） | 顶层数组截到档位 `max_items`，末尾追加 `{"_truncated": true, "_total", "_shown"}` 标记 |
 | Passthrough | 其余 8 个 | 出口不截断——工具在 handler 内部用语义化预算自我约束（如 trace 的 snippet 字符预算、graph_query 的行数信封） |
 
@@ -390,5 +391,12 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
 ```
 codecortex mcp [--project-path PATH]   启动 MCP stdio 服务器
 codecortex install [--force]           为检测到的 AI agent 安装 MCP 配置
-codecortex uninstall                   从所有 AI agent 移除 MCP 配置
+codecortex uninstall                   从检测到的 AI agent 移除 MCP 配置
 ```
+
+`install` 未指定 `--force` 时只处理检测到的客户端；`--force` 跳过检测，尝试全部
+7 个已注册的安装目标。`uninstall` 同样只处理检测到的目标。
+
+安装和卸载分别输出成功目标名单、错误信息及最终处理数量。当前 CLI 即使某个目标操作失败并输出 `Error:`，仍可能返回退出码 0；因此验收不能只看退出码。
+应同时检查错误输出、成功名单和目标配置中的 CodeCortex 条目。`0 agent(s)` 也可能仅表示
+没有检测到客户端，不代表 MCP 已连接或已完成索引。客户端连接与实际 stdio 调用需另行验证。

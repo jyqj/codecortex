@@ -1,0 +1,99 @@
+{
+  "schema": "p8-275e-recovery-offline-audit-identity-adaptation-v1",
+  "status": "static_proposal_execution_pending",
+  "author": "/root/scale_engineering",
+  "measured_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+  "original_run": 37890757129,
+  "original_job": 113690916709,
+  "original_artifact": {
+    "id": 11597639035,
+    "bytes": 121513685,
+    "sha256": "4c3035f0458e7c91088f9881ea9e5b3072b83dad9ae27a75939cc2afefbcd854"
+  },
+  "historical_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+  "previous_auditor": {
+    "git_blob": "2b9e7ffa6744a9a4ce3cc89ff357227d1f1148f7",
+    "bytes": 20965,
+    "sha256": "7433e7e84ef52df4525814144844f2edcfe52658f75cf448ac120a577aa7b213",
+    "restoration": {
+      "manifest_git_blob": "45b07fc255bdc52c9aac8c4e99fe9a93d219f7df",
+      "archive_git_blob": "7441c1c3b1b5a442af4c6f7e81cdda2f2383b111",
+      "archive_bytes": 1413998,
+      "archive_sha256": "831a1e8351dbd1794c263e3eeeb354f6558fe5e301aad3d1d961d2c7947abbe0",
+      "member": "G4-recovery-reception/recovery-rollback/audit_raw.py",
+      "complete_archive_and_213_manifest_members_verified": true,
+      "member_bytes_total": 6150884
+    }
+  },
+  "candidate_auditor": {
+    "git_blob": "a9f42ff0a794486679a6be441b282a14b3c63966",
+    "bytes": 20970,
+    "sha256": "ae01b32d396eee3297136537693263fae5c08a176e102abf14d55e6fe548122f"
+  },
+  "literal_changes": [
+    {
+      "before": "\"\"\"Read-only independent replay of retained G4 recovery evidence; never runs a product.\"\"\"",
+      "after": "\"\"\"Author offline replay of retained PR173 recovery evidence; never runs a product.\"\"\""
+    },
+    {
+      "before": "RAW = HERE / \"nonbinary-originals\" / \"p8-full-recovery\"",
+      "after": "RAW = HERE.parent / \"evidence\" / \"recovery\" / \"11597639035\" / \"p8-full-recovery\""
+    },
+    {
+      "before": "REPO = Path(\"/workspace/scratch/2eaa00d0f93a/p8-G4-exact-source\")",
+      "after": "REPO = HERE.parent / \"evidence\" / \"source\""
+    },
+    {
+      "before": "G = \"260f596582f2d82b8d7c707b61a6b8b6a43b069f\"",
+      "after": "G = \"275e8799d4947d297329073eaa3ca675d3fd0777\""
+    },
+    {
+      "before": "\"run_id\": 37854847808, \"job_id\": 113576446835",
+      "after": "\"run_id\": 37890757129, \"job_id\": 113690916709"
+    },
+    {
+      "before": "\"reviewer\": \"scale_engineering\", \"checks\": {}",
+      "after": "\"reviewer\": \"scale_engineering\", \"review_role\": \"author_reception\", \"checks\": {}"
+    },
+    {
+      "before": "sha(HERE/\"nonbinary-originals\"/name)",
+      "after": "sha(RAW.parent/name)"
+    },
+    {
+      "before": "HERE/\"independent-review.json\"",
+      "after": "HERE/\"author-review.json\""
+    },
+    {
+      "before": "No product or Cargo was executed by this independent review;",
+      "after": "No product or Cargo was executed by this author reception;"
+    }
+  ],
+  "inverse_byte_equal": true,
+  "unchanged": "All original helper implementations, source/Cargo/copy checks, full/nested inventory predicates, seven original exact fault tests, crash populations, active HTTP three seeds, EOF and full stdout/RPC checks, eight immutable SQLite/FK/integrity checks, original schema25->24->25->25 restore semantics and original scope limitations.",
+  "owned_root": "artifacts/checkpoints/p8-round19-evidence-intake-20261009/platform275e-author",
+  "adapter_directory": "recovery-review",
+  "source_directory": "evidence/source",
+  "raw_directory": "evidence/recovery/11597639035/p8-full-recovery",
+  "pre_execution_requirements": [
+    "The already independently admitted980ea634 transport must have actually completed whole original ZIP SHA and all member CRC/SHA scans; retain its original outcome even if cold collection failed.",
+    "Require the original recovery inventory to have the observed p8-full-recovery/ prefix and the original full-recovery.json entry, and bind every original map entry to the retained actual member bytes.",
+    "Derive member-hashes.json directly from evidence/members/11597639035.json without altering any path, byte count, SHA or CRC. Add only extracted_nonbinary=(basename not in ['codecortex','fault-test']) to preserve the original auditor's final nonbinary audit selector; all thirteen retained binary bytes remain fully checked by transport and Cargo/copy predicates.",
+    "Derive github-metadata.json.artifact from the actual registered API artifact object, including exact11597639035/source/run/bytes/SHA. Do not fabricate its identity.",
+    "Verify candidate and original auditor full bytes against the two fixed Git blobs and exact byte inverse; compile/parse only is allowed before invoking the script.",
+    "Use the same exact275e owned Git/source copy as original collect-cells; verify both275e and unchanged OLD277 objects are readable. No active repository checkout/index/ref mutation.",
+    "Place the adapted script and wrappers only in a fresh recovery-review directory below the same owned_root; preserve all failed attempts/output. Invoke Python -B with no product/Cargo/statistics execution and no original file changes."
+  ],
+  "invocation": [
+    "python3",
+    "-B",
+    "<owned_root>/recovery-review/audit_raw_275e.py"
+  ],
+  "expected_output": "<owned_root>/recovery-review/author-review.json; exact original assertions must all pass before any scoped semantic recovery acceptance.",
+  "byte_conservation": "After replay, recompute all original recovery ZIP/member bytes/SHA and all source/observer before-after invariants; original read-only immutable SQLite checks reject nonempty WAL and preserve every DB hash.",
+  "review_role": "author reception with separately required non-author adapter review; no new product experiment and no independent acceptance claimed by the author.",
+  "failure_rule": "Any source/schema/field/population/EOF/database mismatch remains a failed original-replay result; do not change original predicates or treat a transport or API success as semantic acceptance.",
+  "scope": "Actual retained recovery products are dev, historical OLD277 is an unmodified public schema24 revision rather than a tagged release, controlled loopback costs remain null, original task dependencies remain separate.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

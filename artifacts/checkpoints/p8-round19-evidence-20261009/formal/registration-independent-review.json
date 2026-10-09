@@ -1,0 +1,448 @@
+{
+  "schema": "p8-fixed-173-formal-scale-registration-independent-review-v2",
+  "reviewer": "/root/pr_audit",
+  "non_author": true,
+  "status": "accepted_scoped_for_evidence_only_preregistration_then_one_original_label_trigger",
+  "review_completed_utc": "2026-10-09 06:50:06 UTC",
+  "registration": {
+    "blob": "ccc71f4d8c305a71b611d120d3a8dd6420b6dc2f",
+    "bytes": 26177,
+    "sha256": "36077714539d628d8542934da7e68a2fe65df609e2d330205ddb68d806f231d8"
+  },
+  "historical_v1": {
+    "blob": "2f208039d52b501a3c4bc2003973717cde0d45f5",
+    "bytes": 25692,
+    "sha256": "f6e2b80d72a966ca735f24ad25582f7612e55d3fdf904f5f51249c30c102ef9d",
+    "unchanged": true
+  },
+  "metadata_only_v2_delta": {
+    "differences": [
+      {
+        "path": "/execution/runner_scope",
+        "before": "fresh GitHub-hosted VM per job; no paid or self-hosted runner",
+        "after": "Original standard ubuntu-24.04 GitHub-hosted runner class, with a fresh VM per job; do not request larger or self-hosted runners or change billing. Account billing and actual charges have not been audited; this registration does not assert zero cost."
+      },
+      {
+        "path": "/evidence_and_reception/remote_matrix_rule",
+        "before": "When published, retain and compare the original matrix result and job conclusion, including failure. Strict unchanged original aggregate must pass on complete raw before claiming complete measurement coverage. A missing/failed remote aggregate caused by independent infrastructure cannot be called Actions success; report it separately, without silently promoting remote job greenness into a replacement for raw replay.",
+        "after": "For a successful published remote matrix, compare its full result with the unchanged original replay aggregate using exact_equal over every field. The sole permitted normalization is evidence[].directory through the explicitly registered one-to-one mapping from original artifact directories to the reception directories; do not normalize any other field or numeric kind. When a remote matrix fails or is missing, preserve that original outcome and job conclusion without claiming Actions success. Strict unchanged original aggregate must pass on complete raw before claiming complete measurement coverage; an independent remote aggregate infrastructure failure is reported separately and never replaces raw replay."
+      }
+    ],
+    "inverse_full_bytes_equal": true,
+    "author_proof": {
+      "blob": "f1c4f8287c45b85da932a5066837ee72a5a2259f",
+      "bytes": 2616,
+      "sha256": "ca6dc8fdf236e0e827aaf676cf0ca04681a1756fdcdc159367bcfd6ff70bbbe6"
+    }
+  },
+  "measured_source": {
+    "commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+    "product_input_count": 1089,
+    "product_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+    "manifest_scope": "Original p7_build_identity.source_snapshot Cargo.toml + Cargo.lock + complete crates tracked-input map; exact source-before and source-after must match.",
+    "product_commit_pin": "a402e88d460179afb12e3e2dc066d62cf168c690",
+    "independent_review_commit_pin": "f66daf6088f6f6a8d990d736ee0c1213032ca175",
+    "source_branch": "task/p8-surface-window-controls-20261009",
+    "pull_request": 173,
+    "workflow_and_observers": [
+      {
+        "path": ".github/workflows/p8-scale.yml",
+        "mode": "100644",
+        "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+      },
+      {
+        "path": "scripts/p8_scale_matrix.py",
+        "mode": "100644",
+        "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+        "bytes": 65092,
+        "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+      },
+      {
+        "path": "scripts/p7_build_identity.py",
+        "mode": "100644",
+        "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "bytes": 5940,
+        "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+      },
+      {
+        "path": "scripts/p8_runner_capacity.py",
+        "mode": "100644",
+        "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+        "bytes": 11164,
+        "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+      }
+    ],
+    "loaded_replayer_rule": "Load unchanged scripts/p8_scale_matrix.py and scripts/p7_build_identity.py from a real clean Git checkout of this exact commit. Capacity observer is separately checked against its exact committed source. Never relabel another source or a PR merge checkout as this commit.",
+    "no_source_or_workflow_changes": true
+  },
+  "machine_checks": [
+    {
+      "name": "complete1089_source_manifest",
+      "passed": true,
+      "evidence": {
+        "source_review": "21b3ad05383d93ddef35d2575645585eb0592ae1",
+        "manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+        "entries": 1089
+      }
+    },
+    {
+      "name": "exact_committed_body:.github/workflows/p8-scale.yml",
+      "passed": true,
+      "evidence": {
+        "mode": "100644",
+        "blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+      }
+    },
+    {
+      "name": "exact_committed_body:scripts/p8_scale_matrix.py",
+      "passed": true,
+      "evidence": {
+        "mode": "100644",
+        "blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+        "bytes": 65092,
+        "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+      }
+    },
+    {
+      "name": "exact_committed_body:scripts/p7_build_identity.py",
+      "passed": true,
+      "evidence": {
+        "mode": "100644",
+        "blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "bytes": 5940,
+        "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+      }
+    },
+    {
+      "name": "exact_committed_body:scripts/p8_runner_capacity.py",
+      "passed": true,
+      "evidence": {
+        "mode": "100644",
+        "blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+        "bytes": 11164,
+        "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+      }
+    },
+    {
+      "name": "CI_head_and_real_checkout",
+      "passed": true,
+      "evidence": {
+        "original_review": {
+          "git_blob": "875011d4d91976537385f56ac14a6d4998ee6458",
+          "bytes": 313085,
+          "sha256": "683eb032cc90534ded592929ea6b12c18d98223efcca28e0afb8316d74f85338"
+        }
+      }
+    },
+    {
+      "name": "original_ci_actual_population",
+      "passed": true,
+      "evidence": {
+        "scope": "Original8750 full logs already independently parsed; no duplicate execution."
+      }
+    },
+    {
+      "name": "surface_controls_actual_proof",
+      "passed": true,
+      "evidence": {
+        "root_review": {
+          "git_blob": "8f356d69a1ddbe03e09d2eb81aff9996a8812df4",
+          "bytes": 54496,
+          "sha256": "3a8017a779217c33489a7ccc95e5c242aa8ba8ce4957ed4f67c3c0987a79f365"
+        },
+        "scope": "Author-independent root original reception referenced; not newly executed by registration reviewer."
+      }
+    },
+    {
+      "name": "exact_disjoint_5plus145_and_all150",
+      "passed": true,
+      "evidence": {
+        "first": 5,
+        "remaining": 145,
+        "intersection": 0,
+        "total": 150
+      }
+    },
+    {
+      "name": "original_50groups_and1500_samples",
+      "passed": true,
+      "evidence": {
+        "scale_groups": 45,
+        "fanout_groups": 5,
+        "groups": 50,
+        "N": 30,
+        "samples": 1500
+      }
+    },
+    {
+      "name": "original_workflow_population_and_timeouts",
+      "passed": true,
+      "evidence": {
+        "workflow_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "scope": "Actual unchanged workflow body read fully; default needs success admits remaining145 only afterall5."
+      }
+    },
+    {
+      "name": "original_capacity_and_deadline",
+      "passed": true,
+      "evidence": {
+        "native_deadline_ms": 18000000,
+        "supervisor_seconds": 18120,
+        "output_bytes": 536870912,
+        "oracle": {
+          "max_rows_per_table": 5000000,
+          "max_canonical_bytes": 17179869184,
+          "max_scratch_bytes": 8589934592,
+          "max_row_bytes": 1048576
+        }
+      }
+    },
+    {
+      "name": "original_fifteen_table_population",
+      "passed": true,
+      "evidence": {
+        "tables": [
+          "document_manifest",
+          "resolution_frontier",
+          "semantic_edges",
+          "dispatch_sites",
+          "resolution_manifests",
+          "resolution_dependencies",
+          "public_surfaces",
+          "files",
+          "symbols",
+          "imports",
+          "symbol_refs",
+          "call_edges",
+          "chunks",
+          "test_edges",
+          "routes"
+        ]
+      }
+    },
+    {
+      "name": "no_borrowed_samples_or_aux_gate",
+      "passed": true,
+      "evidence": {
+        "prior_sources": [
+          {
+            "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+            "run": 37872522779,
+            "sample_reuse": false
+          },
+          {
+            "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+            "run": 37877604259,
+            "sample_reuse": false
+          },
+          {
+            "source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+            "run": 37863581678,
+            "sample_reuse": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown_actual_ids_remain_null",
+      "passed": true,
+      "evidence": {
+        "actual_run_created": false
+      }
+    },
+    {
+      "name": "fresh_complete_no_existing_formal_run",
+      "passed": true,
+      "evidence": {
+        "observed_utc": "2026-10-09 06:46:58 UTC",
+        "head_runs": 8,
+        "formal_scale_runs": 0,
+        "repeat_required_immediately_before_root_trigger": true
+      }
+    },
+    {
+      "name": "fresh_PR_source_and_absent_label",
+      "passed": true,
+      "evidence": {
+        "state": "open",
+        "draft": true,
+        "head": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "labels": [],
+        "ref": "refs/heads/task/p8-surface-window-controls-20261009"
+      }
+    }
+  ],
+  "author_evidence_checks": [
+    {
+      "scope": "Original CI",
+      "blob": "875011d4d91976537385f56ac14a6d4998ee6458",
+      "relation": "This reviewer authored the already executed independent CI reception; exact immutable original log counts and actual d53 checkout preserved. Registration author is different.",
+      "bytes": 313085,
+      "sha256": "683eb032cc90534ded592929ea6b12c18d98223efcca28e0afb8316d74f85338"
+    },
+    {
+      "scope": "Root independent original CI reception",
+      "blob": "0f352cd0fb1c986ff742d359210751d881314fe6",
+      "bytes": 331878,
+      "sha256": "b22a3f31e7ab9a69dffecf04ce3e6fead106bf7eb69c85fe84520269d87ad35f",
+      "full_body_retrieved_and_digest_equal": true
+    },
+    {
+      "scope": "Actual surface controls root independent reception",
+      "git_blob": "8f356d69a1ddbe03e09d2eb81aff9996a8812df4",
+      "bytes": 54496,
+      "sha256": "3a8017a779217c33489a7ccc95e5c242aa8ba8ce4957ed4f67c3c0987a79f365",
+      "relation": "Previously received root non-author full original21memberZIP/10methods actual result; no new control execution by this review."
+    },
+    {
+      "scope": "Controls final custody",
+      "git_blob": "1ca2f0e36c46abe1760adbd42bd1df0feb8dcd0f",
+      "bytes": 33226,
+      "sha256": "261c4e8ecee0db71d0dba8c50cc71816214303e26f6b79b5c63feb23e5069af3",
+      "full_body_retrieved_and_digest_equal": true
+    },
+    {
+      "scope": "Original task/workload plan",
+      "blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "relevant_lines": [
+        259,
+        281
+      ],
+      "finding": "Original five repetition-zero samples are included once inN30 and success-admit the remaining145. No auxiliary1k/10k/100k workflow added as a requirement."
+    }
+  ],
+  "fresh_read_only_observation": {
+    "window_utc": {
+      "from": "2026-10-09 06:46:58 UTC",
+      "through": "2026-10-09 06:48:27 UTC"
+    },
+    "pull_request": {
+      "api": "https://api.github.com/repos/jyqj/codecortex/pulls/173",
+      "number": 173,
+      "state": "open",
+      "draft": true,
+      "head": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "labels": [],
+      "base_field_as_returned": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "base_field_not_used_as_current_main_authority": true
+    },
+    "branch": {
+      "api": "https://api.github.com/repos/jyqj/codecortex/git/ref/heads/task/p8-surface-window-controls-20261009",
+      "ref": "refs/heads/task/p8-surface-window-controls-20261009",
+      "sha": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    "complete_head_runs": {
+      "api": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=275e8799d4947d297329073eaa3ca675d3fd0777&per_page=100&page=1",
+      "total_count": 8,
+      "returned_count": 8,
+      "pages": 1,
+      "per_page": 100,
+      "head_filter": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "runs": [
+        {
+          "id": 37890757202,
+          "path": ".github/workflows/p7-engineering.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 377627814
+        },
+        {
+          "id": 37890757129,
+          "path": ".github/workflows/p8-platform.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 378814665
+        },
+        {
+          "id": 37890757030,
+          "path": ".github/workflows/p8-runtime.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 378814663
+        },
+        {
+          "id": 37890757049,
+          "path": ".github/workflows/p8-lifecycle.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 378814664
+        },
+        {
+          "id": 37890756962,
+          "path": ".github/workflows/p7-closeout.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 378002355
+        },
+        {
+          "id": 37890756917,
+          "path": ".github/workflows/p8-gates.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 378814666
+        },
+        {
+          "id": 37890756949,
+          "path": ".github/workflows/ci.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "pull_request",
+          "attempt": 1,
+          "workflow_id": 284891610
+        },
+        {
+          "id": 37890734575,
+          "path": ".github/workflows/p8-surface-window-controls.yml",
+          "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "event": "push",
+          "attempt": 1,
+          "workflow_id": 379314259
+        }
+      ],
+      "scale_workflow_count": 0
+    },
+    "tool_boundary": "The filename-specific workflow-runs fetch was rejected by the connector. A complete successful repository-actions query filtered by exact head returned all8 runs, all with that head and none p8-scale.yml. The failed tool route is not claimed successful.",
+    "time_of_use_requirement": "This observation precedes registration publication. Root must again read head/absentlabel/completezero-formal-run immediately before its sole trigger as required by the fixed plan."
+  },
+  "full_logical_review": [
+    "Exactly one new source-bound study, current original workflow unchanged. A separate evidence branch carries preregistration and review; measured275e branch and P/R/G pins stay fixed.",
+    "Original labeled event p8-scale-run satisfies the real workflow build predicate. Product checkout uses pull_request.head.sha, preserving275e despite event GITHUB_SHA being a merge commit.",
+    "5first samples and145remaining samples are disjoint and cover all5scales×30global repetition IDs. Fanout exists only in1ksource stage:45scale-stagegroups+5fanoutgroups, eachN30, total1500. No invented ten-groups-per-scale shorthand.",
+    "Original releasebuild singleton, source1089/manifest593cf, actual Cargo/executablecopy/profiles and driver source apply unchanged. Every new sample binds that one original build.",
+    "Original deadline300min/nativeoutput512MiB/supervisor302min/job350min, dirty200/maxresume1024 and fanout8/128, oracle16GiBcanonical/8GiBscratch/5mrows/1MiBrow/2MiBcache, capacityfixedthresholds all unchanged.",
+    "Existing standard ubuntu24 runner class only; no larger/selfhosted/billing change. Account costs are unknown and not represented as zero.",
+    "All15complete typedValue tables, duplicates/integrity/FK, full-controlparity, phase timing/workload dimensions and actual overbudget closure remain governed by original consumers.",
+    "Mandatory301 inputs plus all150 original validators and aggregate. Optional302remote matrix is compared by exact typed equality when successful; only registered one-to-one evidence.directory relocation permitted. Failed/missing remote aggregate and every measurement/infrastructure failure remain separate retained outcomes.",
+    "Remote job greenness never replaces complete raw validation; no requirement that all152jobconclusions be success is inserted. Any missing/failed measurement still fails the original population.",
+    "All olda23/G2/8e sources/runs/results remain separate withsample_reusefalse. This registration cannot repair the losta23100k or skipped145, and cannot relabel earlier measurements.",
+    "All priorCI facts preserve their historicald53merge actualcheckout and product-domain equivalence rather than rewriting it to275e. New actualrun/buildbinary/receipt identifiers remain null until observed.",
+    "One root labeladdition only after immutable registration publication and fresh conditions. Unclear response requires read-only event/run reconciliation; never repeat/remove-readd/dispatch/rerun/select a convenient duplicate.",
+    "Related original regressions are already evidenced. This review does not add a newpaidprovider,release,G8,quality,extraaux or duplicateN150 prerequisite, nor does it close tasks."
+  ],
+  "remaining_actions_owned_by_root": [
+    "Publish exact immutable registration+this review on evidence-only branch and verify itsactualcommit/tree.",
+    "Immediately recheck PR173 open/head275e, absentp8-scale-run, and completezeroformalruns.",
+    "Record pretriggerintentUTC and add the existing p8-scale-run label exactlyonce.",
+    "Read actualevent/run metadata and bind a unique attempt1/head275e/pathp8-scale.yml/runID withcreated_at aftercutoff in a separate immutable receipt.",
+    "Receive originalsource/binary/301raw+capacity data and execute original full aggregate before any measurement-coverage acceptance or taskledger updates."
+  ],
+  "unresolved_static_blockers": [],
+  "new_measurements": 0,
+  "native_or_Cargo_execution_by_this_review": false,
+  "labels_refs_prs_changed_by_this_review": false,
+  "actual_new_run_id": null,
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

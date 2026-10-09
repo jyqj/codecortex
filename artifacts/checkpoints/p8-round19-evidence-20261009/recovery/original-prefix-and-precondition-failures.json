@@ -1,0 +1,62 @@
+{
+  "schema": "275e-recovery-reception-actual-layout-addendum-v1",
+  "status": "author_preexecution_layout_observation_no_auditor_result_yet",
+  "candidate_auditor": "a9f42ff0a794486679a6be441b282a14b3c63966",
+  "candidate_sha256": "ae01b32d396eee3297136537693263fae5c08a176e102abf14d55e6fe548122f",
+  "independent_review": "00cb8b3e2f96f34fd89d370f0a449ce91efde0e7",
+  "original_plan": "267883c69b04189b2be8f28416440924fd9b9f3f",
+  "actual_inventory": {
+    "full_count": 496,
+    "members": 499,
+    "prefix_counts": {
+      "p8-full-recovery": 496,
+      "p8-recovery-preparation": 3
+    },
+    "preparation": {
+      "p8-recovery-preparation/controls.log": {
+        "bytes": 4738,
+        "crc32": "642bab99",
+        "sha256": "b77d428b1413042d20de1ead4a7b4527e99642a706f2078f0e273a5a9054accf"
+      },
+      "p8-recovery-preparation/fetch.log": {
+        "bytes": 10937,
+        "crc32": "aac606de",
+        "sha256": "c823c4622bcf775b83ebf00b48d1c30df9c0ac189ea8cf9e16f2205b6e48447f"
+      },
+      "p8-recovery-preparation/previous-fetch.log": {
+        "bytes": 0,
+        "crc32": "00000000",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "preexecution_failures": [
+    {
+      "script_sha256": "ad3d172de92eb247132a40134203a5901c2345dbba1fdde3cd1f4b47d5950c14",
+      "exit_code": 1,
+      "auditor_executed": false,
+      "new_output_directory_created": false,
+      "assertion": "each literal after occurs once",
+      "cause": "The output report path occurs twice in both original and candidate. The complete inverse byte proof itself is true.",
+      "correction": "Require each candidate literal occurrence count equal its original counterpart; replace all occurrences and compare complete original bytes."
+    },
+    {
+      "script_sha256": "397dc180c2dfa053b2ead1940949c4dc0efb9ae84fa4a4068e195db193dd8c9f",
+      "exit_code": 1,
+      "auditor_executed": false,
+      "new_output_directory_created": false,
+      "assertion": "all original ZIP members begin p8-full-recovery/",
+      "cause": "Actual original ZIP includes the three independently hashed preparation logs in addition to496full entries.",
+      "correction": "Require actual complete499 set and exact two observed prefixes and three preparation names; keep every member in wrapper. Original auditor intentionally derives full seal from full prefix and final nonbinary conservation from whole map."
+    }
+  ],
+  "unchanged": [
+    "Candidate auditor full20970B body",
+    "Whole original ZIP121513685B and all499 member hashes/bytes/CRC",
+    "All recovery assertions, source snapshots, seven loaded observers,13binary full verification,8DB immutable and epoch/schema cases",
+    "Full source275e and historical277 identities"
+  ],
+  "scope": "Only execution-wrapper observed layout and inverse-count correction. No product/source change, no new workload, no original predicate or denominator reduction. Actual original audit still pending.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

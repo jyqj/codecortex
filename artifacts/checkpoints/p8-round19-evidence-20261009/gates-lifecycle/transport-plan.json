@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "draft_for_non_author_review_not_executed",
+  "parent_adapter_plan": "e09de8247663dfe0bb0164a08508bec8aa9d8ce6",
+  "scope": "Transport/source preparation and one original offline lifecycle replay; no new measurements or Cargo",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "inputs": 1089,
+  "manifest": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+  "files": [
+    {
+      "role": "gates_prepare",
+      "blob": "026201b871744f7384fa8435b95f21c1445f0c8d",
+      "bytes": 8786,
+      "sha256": "b0f292fcf68baedfe8ec46afad3d9e6f2ded7dd2164691db0a67cf8fd8f7df91"
+    },
+    {
+      "role": "lifecycle_prepare",
+      "blob": "153a7b97a1d564a051e46dd52339c8aef0643b6b",
+      "bytes": 8385,
+      "sha256": "f0ae045858cd5dc30aad96118fe2b85b612b7279fde5793c02e665a35b891f23"
+    },
+    {
+      "role": "lifecycle_launcher",
+      "blob": "246f8c6374e938015842eea1545c83d30ee13f3f",
+      "bytes": 8207,
+      "sha256": "c1d64850ce616341b116a94158db21faa174681665581e23d9a84fc8f9d331e1"
+    }
+  ],
+  "sequence": [
+    "After non-author review, execute gates preparation in the explicitly new owned evidence root. It creates an independent sparse source copy without changing active source/ref/index.",
+    "Execute the unchanged-metadata gates checker separately with explicit host Python3.14; accept only actual exit0 and original evidence predicates.",
+    "Prepare lifecycle: fixed API identity, full original ZIP hash, all original member CRC/SHA, dynamic exact expanded bytes plus64MiB overhead and512MiB free reserve, new non-overwritten files directory.",
+    "Run reviewed Linux-only e532 checker in existing pinned Python3d361 image. Read-only original inputs/source/objects; only new owned execution root writable. Original absolute synthetic fixture is restored into a16MiB container tmpfs, not host /home.",
+    "Keep the original two inventory-verifier calls and unchanged retained p8-measurements --input/--output replay; compare its report byte-for-byte. Outer actual exit0 and original ZIP/source/files recheck required."
+  ],
+  "environment_evidence": [
+    "5ade7fca1a343010d5f874ed5c1216a37f375889",
+    "0da76a75d397097e598507ac274fd16a21cbdb04"
+  ],
+  "boundaries": [
+    "No Docker pull, network, package installation, product workload, Cargo, statistical resampling or source mutation.",
+    "Original build/profile/source/observer/raw/sample/cache/physical storage/denominator clauses in e443/e532 remain unchanged except exact measured identity metadata.",
+    "Lifecycle preparation is not acceptance; no original counts/member expansion size are inferred from G4/a23 artifacts.",
+    "Linux offline replay owns only its new output and synthetic32-file fixture namespace. A failed or unconfirmed execution is never a passed inspection.",
+    "All original task dependencies remain unchanged; 0 newly closed,29 remaining."
+  ],
+  "TODO": {
+    "new_closed": 0,
+    "remaining": 29
+  }
+}

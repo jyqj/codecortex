@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "verdict": "accepted_scoped_existing_peer_formatter_repair_observation",
+  "reviewer": "/root/pr_audit",
+  "observed_within_actual_clock_bounds": [
+    "2026-10-09T07:39:48Z",
+    "2026-10-09T07:47:58Z"
+  ],
+  "PR": 179,
+  "old_execution_head": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+  "new_execution_head": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+  "new_tree": "6d9c1fe209aac4254c1b1c9af0231cde1754c799",
+  "actual_chain": [
+    {
+      "sha": "dc714a384cdde70ee326fafd1d9f0a04fbb9e117",
+      "parents": [
+        "26888651b9eedcd1f784463ce54f9cef46b703ee"
+      ],
+      "message": "style: apply original CI formatter output to resolver controls"
+    },
+    {
+      "sha": "7e978288745f19d36279fa4d796deacb506938ba",
+      "parents": [
+        "dc714a384cdde70ee326fafd1d9f0a04fbb9e117"
+      ],
+      "message": "docs: preserve resolver CI formatting failure and independent repair review"
+    },
+    {
+      "sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+      "parents": [
+        "7e978288745f19d36279fa4d796deacb506938ba"
+      ],
+      "message": "ci: bind unchanged source admission to resolver formatting repair"
+    }
+  ],
+  "complete_compare": {
+    "base": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+    "merge_base": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+    "ahead_by": 3,
+    "total_commits": 3,
+    "files": [
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/first-check-failure.log",
+        "status": "added",
+        "blob": "9f345794222c578345d36dbe5f2091b6560f961e"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/implementation-facts.json",
+        "status": "added",
+        "blob": "2a649d99106110d862874dcb060bae3c10185c27"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/independent-formatting-review.json",
+        "status": "added",
+        "blob": "89ee6ef6b759d6613c8d27296b2fb1be536de88c"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/independent-source-review.json",
+        "status": "added",
+        "blob": "2e95d14ca4e6b98171dcf0e2722b31722f690c1d"
+      },
+      {
+        "path": "crates/cc-index/src/resolver/catalog.rs",
+        "status": "modified",
+        "blob": "69ca350784614fcc3df3b93eac981023d18eaea0"
+      },
+      {
+        "path": "crates/cc-index/src/resolver/helpers.rs",
+        "status": "modified",
+        "blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2"
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "status": "modified",
+        "blob": "02ff8bd98d41a7707e0d7439bcb36ce06aa0f9ec"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "status": "modified",
+        "blob": "45c598eeab857394fbe26bf4e62dc4a87aad868d"
+      }
+    ]
+  },
+  "original_failed_check": {
+    "id": 113709327167,
+    "command": "cargo fmt --all -- --check",
+    "exit_code": 1,
+    "original_log": {
+      "blob": "9f345794222c578345d36dbe5f2091b6560f961e",
+      "bytes": 38796,
+      "sha256": "2af980744ee7016fd23bf6f92cfd158138496b2ac2f89af269beca1444a862b5"
+    },
+    "peer_archive_contains_exact_same_log": true
+  },
+  "source_transform": [
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "before": {
+        "blob": "dbff4adaa41f1254844c2a692bd19bf3bdfb4967",
+        "bytes": 39439,
+        "sha256": "5959b1837e310b124ffc67ec4e27206af76b3b1af0dc0a7bb32bc63a1693252c"
+      },
+      "after": {
+        "blob": "69ca350784614fcc3df3b93eac981023d18eaea0",
+        "bytes": 39427,
+        "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be"
+      },
+      "transform": "Fold exact let removed assignment",
+      "whole_body_after_equals_exact_original_CI_output_transform": true,
+      "all_other_bytes_preserved": true
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "before": {
+        "blob": "97ebe8747c4f82a92e7ca630508f9093321f5f26",
+        "bytes": 15073,
+        "sha256": "38c48943f2180e517ff11499e59960c62fbeffa50f54377577f01b0807aedda4"
+      },
+      "after": {
+        "blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+        "bytes": 15113,
+        "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88"
+      },
+      "transform": "Fold exact legacy_candidates signature; expand exact five-entry path array with rustfmt trailing comma",
+      "whole_body_after_equals_exact_original_CI_output_transform": true,
+      "all_other_bytes_preserved": true
+    }
+  ],
+  "new_actual_checks_at_observation": [
+    {
+      "id": 113721515480,
+      "name": "check",
+      "head": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+      "status": "queued",
+      "conclusion": null
+    },
+    {
+      "id": 113721515383,
+      "name": "msrv",
+      "head": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 113721515236,
+      "name": "security",
+      "head": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+      "status": "queued",
+      "conclusion": null
+    }
+  ],
+  "decision": "Do not create a duplicate fix, change the peer ref, or rerun the original failure. Owner already published the exact minimal P/R/G follow-up; await its own unchanged CI results.",
+  "limits": [
+    "This verifies the formatter-only repair and actual fixed object chain; it does not independently reapprove the original resolver algorithm or claim newly run Rust controls.",
+    "No product source, branch, ref, PR, label, task, or original study was mutated by this reviewer.",
+    "New CI was queued/in progress at the recorded snapshot. The old formatting failure and skipped later steps remain old-head evidence.",
+    "Formal scale source275e and its original registered study remain unchanged."
+  ],
+  "TODO": {
+    "new_closed": 0,
+    "remaining": 29
+  }
+}

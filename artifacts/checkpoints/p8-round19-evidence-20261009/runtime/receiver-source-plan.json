@@ -1,0 +1,158 @@
+{
+  "schema": "275e-runtime-original-reception-final-source-plan-v2",
+  "status": "fixed_source_for_non_author_review_actual_execution_pending",
+  "author": "/root/acceptance_audit",
+  "supersedes_unexecuted_plan": "6d6b83e76356c54a858b163b33ea7da8aa1890c6",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+  "run": 37890757030,
+  "attempt": 1,
+  "original_metadata": {
+    "blob": "13afede564db81d75dd52c39be67fd317e9a9e0a",
+    "bytes": 45891,
+    "sha256": "32528777022a3961e44b9f140e59e33f74512a6b61f233d147385da20b7aafc2"
+  },
+  "files": [
+    {
+      "name": "prepare.py",
+      "blob": "c3a6c717b59613489691f3e7e37ef4806393a294",
+      "bytes": 9866,
+      "sha256": "c6301785d65106d64690bfb5ad1cbf424df5418788bf0a919bd45ce77bb13743"
+    },
+    {
+      "name": "replay.py",
+      "blob": "c2aa532d1cf8a2d1abccf5a2aa5ec37a1d84e672",
+      "bytes": 12869,
+      "sha256": "476753d0645f6861ef8cae49d42a2fa120d22f57c690a33322ead958aa0c6f39"
+    },
+    {
+      "name": "runtime_checker.py",
+      "blob": "7e349d643d0801a9a5fe6186a614d44fe4a7015a",
+      "bytes": 20157,
+      "sha256": "de155652510db5f49e55ba6a5d92c9e8cd8d92223bfcbfab1475d9d40977f935"
+    },
+    {
+      "name": "backfill_checker.py",
+      "blob": "82512a67ee847ae4913365ed040210ecb04bd051",
+      "bytes": 9221,
+      "sha256": "c5b305bfb27efb8a3e9f025096a366c502dcded1591e66d11f71380a039fe8e3"
+    },
+    {
+      "name": "hour_supplement.py",
+      "blob": "1b06badb70b5a63279c62a96a8111d87439ed35c",
+      "bytes": 11670,
+      "sha256": "5e83cf55e4048ccdfe585dcfb26f0efcf332bada00c114ccc958dc66943df2f2"
+    },
+    {
+      "name": "cache_wire.py",
+      "blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc",
+      "bytes": 9750,
+      "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea"
+    },
+    {
+      "name": "launch.py",
+      "blob": "6e8002ff8b10f749ad00f4f365c21217965af921",
+      "bytes": 8184,
+      "sha256": "cad7d0bfa3c61eb2379dab9090aad14b93c565364dc312dfcdac15b0b5e38e5e"
+    },
+    {
+      "name": "registration.json",
+      "blob": "9e5257ac7a958b7da91cb6445232e4de06388c0c",
+      "bytes": 7015,
+      "sha256": "f17ce5c7afaf27a3f0c67c46f369938b2f9222f41a1f5c09886621b1dbaaf9a3"
+    }
+  ],
+  "archive_or_git_reference_operations": "unreferenced blobs only; no ref or workflow/study changes",
+  "owned_root": "artifacts/checkpoints/p8-round19-evidence-intake-20261009/runtime275e-author",
+  "actual_existing_backend": {
+    "status": "existing_exact_Linux_Python_image_actual_environment_probe_passed_original_consumer_pending",
+    "existing_image": "python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "platform": "linux/amd64",
+    "observed_Python": "3.12.15",
+    "observed_glibc": "2.41",
+    "actual_environment_report": "0da76a75d397097e598507ac274fd16a21cbdb04",
+    "host_prepare_interpreter": "/Users/jin/.local/bin/python3.14",
+    "no_image_pull": true,
+    "network": "none",
+    "original_raw_source_and_control_mounts_readonly": true,
+    "only_new_output_writable": true,
+    "no_receiver_execution_yet": true
+  },
+  "exact_launch_commands": [
+    {
+      "argv": [
+        "/Users/jin/.local/bin/python3.14",
+        "-B",
+        "artifacts/checkpoints/p8-round19-evidence-intake-20261009/runtime275e-author/prepare.py"
+      ],
+      "cwd": "native project root",
+      "scope": "Receive original six ZIPs and new own Git source copy; no original consumer or native binary."
+    },
+    {
+      "argv": [
+        "/Users/jin/.local/bin/python3.14",
+        "-B",
+        "artifacts/checkpoints/p8-round19-evidence-intake-20261009/runtime275e-author/launch.py"
+      ],
+      "cwd": "native project root",
+      "scope": "One owned existing-image offline Linux container. Exact docker create/start argv is emitted before execution. --pull=never, network none, read-only root, read-only controls/source/raw/inventories/object stores, only new /work output writable. No product/oracle/worker/Cargo process."
+    }
+  ],
+  "container": {
+    "image": "python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "platform": "linux/amd64",
+    "name": "p8-275e-runtime-original-replay-20261009-01",
+    "memory": "2g",
+    "cpus": 2,
+    "pids": 128,
+    "network": "none",
+    "pull": "never",
+    "root_readonly": true,
+    "cap_drop": "ALL",
+    "no_new_privileges": true,
+    "tmpfs": "/tmp:rw,noexec,nosuid,size=64m",
+    "executable": [
+      "python3",
+      "-B",
+      "/receiver/replay.py",
+      "/work"
+    ],
+    "inputs_unchanged": true,
+    "timeout_seconds": 1800,
+    "failure_cleanup": "Inspect and stop only this newly created container if it is still running, retain logs/receipts. No automatic retry or evidence repair."
+  },
+  "preserved_protocols": {
+    "mixed": "Original900 outcomes/cell with C1/4/8/16,600read+300build, original timings/queue/resources/15table/no-extra-index, exact original all-attempt statistics; no pooling host strata.",
+    "backfill": "Original768 queryrecords with3seeds×2phases×4C×32; original query/progress/writer watchdogs, retire/drain/resource facts; no worker test rerun.",
+    "hour": "Original3601 operations/2400read/1201build, minimum1h,1Hz/maxgap5s,RSS quarters,mutations/catalog/cache,all9600 fullwirevalue/clock mappings and separate endpoint/sampler populations.",
+    "no_new_acceptance_thresholds_or_denominator_changes": true,
+    "no_measured_result_relabelled": true
+  },
+  "checker_inverse_results": {
+    "mixed": true,
+    "backfill": true,
+    "hour": true
+  },
+  "additional_replay_checks": "New wrapper strengthens portable exactCargo command/log/manifest/src/executable→copy correspondence and source/observer before/after. It never claims destroyed original compiler/target still exists. Four copied original mixed statistics binaries replay once each; existing hour supplement replays fifth. Compare whole original statistics bytes, before/after seal and all input hashes.",
+  "actual_static_only": {
+    "all_bodies_full_hash_and_Git_readback": true,
+    "old_3_checker_inverse_fullbyte_equality": true,
+    "old_10_prepare_helpers_byte_identical": true,
+    "Python_AST_import_or_test_execution_by_author": false,
+    "downloads": 0,
+    "original_consumer_executions": 0,
+    "native_statistics": 0
+  },
+  "explicit_limitations": [
+    "Source-level review and actual pure AST/compile of new code still required before execution.",
+    "Environment probe is not original-statistics execution or raw acceptance.",
+    "Initial per-domain plan and v1 registration retain their historic pending-backend wording; this v2 records the newly established existing-image facts.",
+    "All real report/output checks must actually pass; expected outcomes are not prefilled.",
+    "No TODO completion or originalN150 acceptance follows from these runtime artifacts."
+  ],
+  "TODO": {
+    "new_done": 0,
+    "done": 163,
+    "remaining": 29
+  }
+}

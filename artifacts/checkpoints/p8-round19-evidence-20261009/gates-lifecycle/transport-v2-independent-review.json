@@ -1,0 +1,41 @@
+{
+  "schema": "p8-275e-gates-lifecycle-transport-v2-non-author-incremental-review",
+  "status": "accepted_scoped_static_for_original_evidence_reception",
+  "reviewer": "/root/acceptance_audit",
+  "prior_review": "d2f694c915cc19dc89eb917bb82b060c2621d571",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "files": [
+    {
+      "git_blob": "b91b3053659e8b14c246d1ef731be4e7f6312c99",
+      "bytes": 8197,
+      "sha256": "31a50298f412764f390b5c98b07b325934b7513d3a195a5fcbab5930c8011574"
+    },
+    {
+      "git_blob": "c274c7f01b9c4b9a40e29aaa7d582ac52f2dd230",
+      "bytes": 8443,
+      "sha256": "f046f8c773357ee92d9bf922d13efb45fbad772330dc230b67da675ccdc06e7a"
+    }
+  ],
+  "actual_static_inverse": {
+    "c274c7f01b9c4b9a40e29aaa7d582ac52f2dd230": {
+      "inverse_full_equal": true,
+      "only_logflag": true,
+      "reuse_original_source_with_full_identity_and_new_output": false
+    },
+    "b91b3053659e8b14c246d1ef731be4e7f6312c99": {
+      "inverse_full_equal": true,
+      "only_logflag": false,
+      "reuse_original_source_with_full_identity_and_new_output": true
+    }
+  },
+  "changes": [
+    "Only original /logs endpoint receives gh --allow-escape-sequences; no retry, URL substitution, byte stripping or input repair. stdout stays a private captured file/pipe, never terminal rendering.",
+    "Gates uses new gates-reception-02 and gates-preparation-receipt-02.json, leaving original failed reception untouched. Reuses only the already independently created source after exactHEAD/tree/clean/helper/1089/count/manifest checks; no active source/ref/index write or second source checkout.",
+    "Original gates/lifecycle checker bodies e443/e532 and Linux launcher246 remain unchanged. Lifecycle transport differs solely by the log flag."
+  ],
+  "retained_failure": "Author reports original gh ANSI safety rejection before original ZIP/checker execution. It remains an infrastructure reception failure; this static review did not re-run it or reclassify it as a product failure.",
+  "privacy": "Original log control characters are preserved in private files for exact original checks, not emitted to user terminals. Signed-URI-bearing original job logs and arbitrary stderr must not be published; use full SHA/bytes and safe typed excerpts.",
+  "dynamic_execution": "pending; no tools/tests/product/Cargo/original-statistics executed by this review",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

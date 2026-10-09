@@ -1,0 +1,87 @@
+{
+  "TODO_closed": 0,
+  "TODO_remaining": 29,
+  "container_id": "6b0884188bfd0f9018eb9587e5aca761f4cc1762f3b8332ae072ab0544781def",
+  "controller_blob": "4a66aa4145f9e9ae29567fed811248b153276713",
+  "controller_sha256": "81f16b18296497bc321401ade8d9628d4086b854d3def34581e5c1cebc089fcb",
+  "create": {
+    "argv": [
+      "/usr/local/bin/docker",
+      "create",
+      "--name=p8-275e-first-slices-root-20261009-001",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--platform=linux/amd64",
+      "--user",
+      "501:20",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--pids-limit=128",
+      "--memory=2g",
+      "--cpus=1",
+      "--env=PYTHONDONTWRITEBYTECODE=1",
+      "--env=GIT_OPTIONAL_LOCKS=0",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-evidence-intake-20261009/platform275e-author/evidence/source,dst=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-evidence-intake-20261009/platform275e-author/evidence/source,readonly",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/.git/objects,dst=/Users/jin/Desktop/codecortex-rust/.git/objects,readonly",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-build-validation/build-copy,dst=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-build-validation/build-copy,readonly",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-slices-001,dst=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-slices-001,readonly",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/first-slices-validation-001/validate_original_slices.py,dst=/validate_original_slices.py,readonly",
+      "--mount",
+      "type=bind,src=/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/first-slices-validation-001/output,dst=/output",
+      "python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+      "python3",
+      "-B",
+      "/validate_original_slices.py",
+      "/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-evidence-intake-20261009/platform275e-author/evidence/source",
+      "/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-build-validation/build-copy",
+      "/Users/jin/Desktop/codecortex-rust/artifacts/checkpoints/p8-round19-scale-intake-20261009-root/original-slices-001"
+    ],
+    "exit_code": 0
+  },
+  "finished_utc": "2026-10-09T07:56:10Z",
+  "image-inspect": {
+    "argv": [
+      "/usr/local/bin/docker",
+      "image",
+      "inspect",
+      "--platform",
+      "linux/amd64",
+      "python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96"
+    ],
+    "exit_code": 0
+  },
+  "inspect": {
+    "argv": [
+      "/usr/local/bin/docker",
+      "inspect",
+      "6b0884188bfd0f9018eb9587e5aca761f4cc1762f3b8332ae072ab0544781def"
+    ],
+    "exit_code": 0
+  },
+  "inspection_sha256": "1a12f4e38cae96820e84fffc345031674e25da20c307c42fe2020babded5f998",
+  "new_measurement_or_Cargo": false,
+  "only_original_ELF_hash_commands": true,
+  "only_output_mount_writable": true,
+  "original_capacity": 5,
+  "original_samples": 32,
+  "original_shards": 3,
+  "owned_container_cleanup_exit_code": 0,
+  "run": {
+    "argv": [
+      "/usr/local/bin/docker",
+      "start",
+      "--attach",
+      "6b0884188bfd0f9018eb9587e5aca761f4cc1762f3b8332ae072ab0544781def"
+    ],
+    "exit_code": 0
+  },
+  "schema": "p8-275e-first-original-slices-launch-v1",
+  "started_utc": "2026-10-09T07:56:06Z",
+  "status": "passed"
+}

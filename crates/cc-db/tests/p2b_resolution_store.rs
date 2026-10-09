@@ -66,6 +66,68 @@ fn dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback() {
         .is_err());
     assert_eq!(db.reads().generation().unwrap(), after);
     assert_eq!(db.reads().list_file_paths().unwrap(), vec!["use.py"]);
+    assert_eq!(
+        db.reads().resolution_manifests(&["use.py".into()]).unwrap(),
+        stored
+    );
+
+    // Reuse the writer after a rollback which already wrote another path.
+    // The replacement must remove old dependencies and bind its own payload.
+    let mut replacement = unit("use.py");
+    replacement.outcome.resolution = ResolutionManifest::new();
+    replacement
+        .outcome
+        .resolution
+        .dependency(DependencyKind::MissingPath, "replacement.py");
+    db.writes().replace_files_batch(&[replacement]).unwrap();
+    let replacement_generation = db.reads().generation().unwrap();
+    assert_eq!(replacement_generation.index_epoch, after.index_epoch + 1);
+    let replacement_stored = db.reads().resolution_manifests(&["use.py".into()]).unwrap();
+    assert!(replacement_stored["use.py"].records.is_empty());
+    let replacement_event =
+        ResolutionDependency::new(DependencyKind::MissingPath, "replacement.py");
+    assert_eq!(
+        replacement_stored["use.py"].dependencies,
+        BTreeSet::from([replacement_event.clone()])
+    );
+    assert_eq!(
+        db.reads()
+            .resolution_dependents(&BTreeSet::from([replacement_event]), 10, &[])
+            .unwrap(),
+        vec!["use.py"]
+    );
+    drop(db);
+    let db = IndexDb::open_with_read_pool_size(&d.path().join("db"), 1)
+        .unwrap()
+        .0;
+    assert_eq!(db.reads().generation().unwrap(), replacement_generation);
+    assert_eq!(
+        db.reads().resolution_manifests(&["use.py".into()]).unwrap(),
+        replacement_stored
+    );
+    for event in [
+        ResolutionDependency::new(DependencyKind::NameBucket, "missing"),
+        ResolutionDependency::new(DependencyKind::MissingPath, "api.py"),
+    ] {
+        assert!(db
+            .reads()
+            .resolution_dependents(&BTreeSet::from([event]), 10, &[])
+            .unwrap()
+            .is_empty());
+    }
+    assert_eq!(
+        db.reads()
+            .resolution_dependents(
+                &BTreeSet::from([ResolutionDependency::new(
+                    DependencyKind::MissingPath,
+                    "replacement.py"
+                )]),
+                10,
+                &[]
+            )
+            .unwrap(),
+        vec!["use.py"]
+    );
     db.writes().remove_files_batch(&["use.py".into()]).unwrap();
     assert!(db
         .reads()

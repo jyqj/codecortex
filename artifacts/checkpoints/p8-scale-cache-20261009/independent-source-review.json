@@ -1,5 +1,5 @@
 {
-  "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
   "complete_inputs": {
     "Cargo.lock": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
     "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
@@ -1089,7 +1089,80 @@
     "crates/cc-server/tests/support/p7_status_review/legacy.rs": "273e5b4c9709257f568f825db46aee0f0e990131ff5a7d7cf0d0509d35e488b9",
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
-  "delta": {
+  "exact_review_files": {
+    "diagnostics/100k-original-failure-diagnostic.json": {
+      "bytes": 20380,
+      "sha256": "992a94c8095ee3cfa865b15c29ab4c348282a3cbb7126fccb41a596bd5970f4d"
+    },
+    "diagnostics/100k-original-stage-cost-addendum.json": {
+      "bytes": 15246,
+      "sha256": "f69ef3072bba3fa64d8495358af974b60b9cdc04bfad747c03b59d7fc52a4ef6"
+    },
+    "diagnostics/8e-controls-original-independent-review.json": {
+      "bytes": 23004,
+      "sha256": "014c4850a7c051b63a0131c82107c34dfe6729e841d6793bad9d7c21fb3b198c"
+    },
+    "diagnostics/P8-010-cache-coverage-correction-v1.json": {
+      "bytes": 4884,
+      "sha256": "2c61134b41c1f6a6551559435b026a9eea1adca2406cf0d57771bdb1caf90bcf"
+    },
+    "diagnostics/fixed599-scale-study-closed-failed.json": {
+      "bytes": 11442,
+      "sha256": "c921b31196115586353c46969a861a94c09326eadb449195dc9ef59dbde7c155"
+    },
+    "source-admission/all-35-product-deltas-independent-review.json": {
+      "bytes": 14138,
+      "sha256": "f5b6287d9271a84b949627901338d7becafdb2325bf60afe25bebafe43a90834"
+    },
+    "source-admission/combined-original-protocol-acceptance-plan.json": {
+      "bytes": 23309,
+      "sha256": "888ffcba8d282d03eb39dec37bad9939c915eee7af51781bc647ebba955b35ca"
+    },
+    "source-admission/eight-validation-files-independent-review.json": {
+      "bytes": 178333,
+      "sha256": "6bd6d85fc349cb37138cacaaebb69d926d7d770aa0b7c7cafd017414d2a2d27d"
+    },
+    "source-admission/root-exact-product-tree-and-input-proof.json": {
+      "bytes": 294689,
+      "sha256": "2701afc05d945d0f20b1d9a51628157e8594a386333963194cdeffbdafe6c3ee"
+    },
+    "source-admission/scale-protocol-independent-review.json": {
+      "bytes": 7605,
+      "sha256": "89d5a1ba7f0a6235ba590c54da146651ce21e93d4cad3373cc0f456ccc6d03ca"
+    },
+    "source-admission/six-product-paths-independent-review.json": {
+      "bytes": 13713,
+      "sha256": "b66485fd23304e0aab51f8277022b16673926890fa366638d4cd2a6302684e1f"
+    },
+    "source-admission/source-composition-independent-verification.json": {
+      "bytes": 300559,
+      "sha256": "f79c7124668d1c31a31d26cdfa7ba7d9652cd9abe24dbd301d690a9cf040e27c"
+    }
+  },
+  "execution_admission": {
+    "7_new_inline_controls": "must be observed as actual ok in unchanged complete CI; absent from the 8e auxiliary 41 tests",
+    "native_and_CI_results": "not_run_for_this_new_source",
+    "new_exact_execution_head_required": true,
+    "no_deadline_budget_workload_parallelism_or_guard_logic_relaxation": true,
+    "old_study_samples_inherited": 0,
+    "original_150_shards_and_1500_samples_required": true,
+    "original_runtime_lifecycle_recovery_platform_gate_workloads_required": true
+  },
+  "independent_reviewers": [
+    "/root/pr_audit",
+    "/root/runtime_closeout",
+    "/root/scale_closeout"
+  ],
+  "integration_base": "55902428d49b09bb4a90cee6ccccf985680618bb",
+  "new_product_paths_against_current_main": [
+    "crates/cc-db/src/resolution_dependency_store.rs",
+    "crates/cc-db/src/symbol_identity_store.rs",
+    "crates/cc-db/tests/p2b_resolution_store.rs",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+    "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "crates/cc-index/tests/qname_identity_transaction.rs"
+  ],
+  "paths": {
     "crates/cc-db/src/index_migrate.rs": {
       "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
       "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
@@ -1231,14 +1304,80 @@
       "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
     }
   },
-  "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "254009277688d64677361a0ca33e5dea73f295ef",
-  "review_sha256": "23ddf9792e9467038ead236a3c0a046524221a5d1823aced74b574b1a856b3cb",
-  "review_source": "3a11f30f9f00a89fe3cd481b3b7609066728baad",
-  "runtime_and_quality_claims": "require_separate_execution_evidence",
-  "schema_version": 10,
+  "preserved_current_main_fixes": [
+    "crates/cc-server/src/project_session.rs",
+    "crates/cc-eval/src/bench.rs",
+    "crates/cc-eval/src/benchmark/statistics.rs",
+    "crates/cc-eval/src/report.rs",
+    "crates/cc-eval/tests/p8_measurements.rs",
+    "crates/cc-eval/src/benchmark/p8_scale.rs"
+  ],
+  "previous_fixed_review": {
+    "review_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
+    "review_source": "f25d0b994edf9c08c5514864701e3b050b317c88",
+    "source": "3e3981163efd8def60b89dde150d5bd9e09fccf8"
+  },
+  "retained_old_delta_paths": [
+    "crates/cc-db/src/index_migrate.rs",
+    "crates/cc-db/src/sql/index_v1.sql",
+    "crates/cc-db/tests/ci_schema_guard_contract.rs",
+    "crates/cc-eval/src/bench.rs",
+    "crates/cc-eval/src/benchmark/oracle.rs",
+    "crates/cc-eval/src/benchmark/p8_scale.rs",
+    "crates/cc-eval/src/benchmark/sampler.rs",
+    "crates/cc-eval/src/benchmark/statistics.rs",
+    "crates/cc-eval/src/bin/p8-measurements.rs",
+    "crates/cc-eval/src/bin/p8-oracle.rs",
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "crates/cc-eval/src/bin/p8-scale.rs",
+    "crates/cc-eval/src/report.rs",
+    "crates/cc-eval/tests/benchmark_cli.rs",
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+    "crates/cc-eval/tests/p7_worker_contention.rs",
+    "crates/cc-eval/tests/p8_lifecycle_replay.rs",
+    "crates/cc-eval/tests/p8_measurements.rs",
+    "crates/cc-eval/tests/p8_scale.rs",
+    "crates/cc-index/src/build_plan.rs",
+    "crates/cc-index/src/indexer.rs",
+    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs",
+    "crates/cc-index/src/indexer_phases/resolve.rs",
+    "crates/cc-index/src/lib.rs",
+    "crates/cc-index/src/resolver/catalog.rs",
+    "crates/cc-index/src/resolver/catalog_cache.rs",
+    "crates/cc-index/src/resource_accounting.rs",
+    "crates/cc-server/src/engine.rs",
+    "crates/cc-server/src/project_session.rs"
+  ],
+  "review_ownership": {
+    "all_35_product_deltas": "/root/pr_audit:29 exact inherited reviewed deltas and six directly reviewed paths, with streaming as the sole overlapping old path",
+    "eight_changed_validation_inputs": "/root/runtime_closeout: exact e95 eight-script content and all unchanged validation bytes",
+    "root": "composition and official Git identity; root does not replace the independent author reviews",
+    "scale_contract": "/root/scale_closeout: original registration, complete workload, bounds, source identity and independent execution requirement"
+  },
+  "schema_version": 1,
   "scope": "independently_reviewed_source_and_validation_inputs",
-  "source_version": "p8-completion-source-20261009-v15",
+  "source": "254009277688d64677361a0ca33e5dea73f295ef",
+  "source_tree": "4202266e59934dba86e1ea10154392247fff15e7",
+  "task_and_release_boundary": {
+    "G8_and_release_certification": "not_granted",
+    "P7-018": "blocked: no live provider or new spending authorization",
+    "done": 163,
+    "new_TODOs_closed": 0,
+    "original_tasks_total": 192,
+    "remaining": 29,
+    "task_status_action": "no_change"
+  },
+  "unresolved_blockers": [],
+  "validation_changes_against_current_main": [
+    "scripts/p8_cold_build.py",
+    "scripts/p8_rollback.py",
+    "scripts/p8_runtime.py",
+    "scripts/tests/test_p8_platform.py",
+    "scripts/tests/test_p8_recovery.py",
+    "scripts/tests/test_p8_runtime.py",
+    "scripts/tests/test_p8_runtime_cache.py",
+    "scripts/tests/test_p8_runtime_finalization.py"
+  ],
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
@@ -1378,5 +1517,6 @@
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
     "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
-  }
+  },
+  "verdict": "accepted_scoped"
 }

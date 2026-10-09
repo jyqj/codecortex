@@ -1,0 +1,746 @@
+{
+  "all_receipt_member_hashes_verified": true,
+  "all_six_product_changed_path_bytes_match_254009": {
+    "crates/cc-db/src/resolution_dependency_store.rs": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
+    "crates/cc-db/src/symbol_identity_store.rs": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49",
+    "crates/cc-db/tests/p2b_resolution_store.rs": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+    "crates/cc-index/src/indexer_phases/reconcile.rs": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
+    "crates/cc-index/tests/qname_identity_transaction.rs": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b"
+  },
+  "candidate_254009_native_tests_relabelled": false,
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "index": 0,
+      "stderr": {
+        "bytes": 0,
+        "path": "00.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "00.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": null,
+      "test_names_ok": []
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "-p",
+        "cc-db",
+        "-p",
+        "cc-eval",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "index": 1,
+      "stderr": {
+        "bytes": 6169,
+        "path": "01.stderr",
+        "sha256": "ca6cf08d6e4149955fe99fb7244290fda7b1b903dbe95c4345698d3ab89c7b32"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "01.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": null,
+      "test_names_ok": []
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--test",
+        "p2b_resolution_store"
+      ],
+      "exit_code": 0,
+      "index": 2,
+      "stderr": {
+        "bytes": 1956,
+        "path": "02.stderr",
+        "sha256": "01ad96adb000b7cd0c6af8f4b3b138a19ca959dbae0b4d3d0f69485c13c9f55e"
+      },
+      "stdout": {
+        "bytes": 381,
+        "path": "02.stdout",
+        "sha256": "ef97de0982212549a0a29f9415ea598b424aa5b6265d579a2bcf15903724a5a5"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "corrupt_payload_is_rejected",
+        "package_aggregate_tracks_files_and_test_visibility",
+        "dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback",
+        "bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--test",
+        "qname_identity_transaction"
+      ],
+      "exit_code": 0,
+      "index": 3,
+      "stderr": {
+        "bytes": 1943,
+        "path": "03.stderr",
+        "sha256": "0428259c1b6f778cc6bb94747d1103e519f6ef9d857eac6df56a0fc8b7b901c8"
+      },
+      "stdout": {
+        "bytes": 304,
+        "path": "03.stdout",
+        "sha256": "cde86853194bf73718e9d9937ac9c7fb820405f6251ba73e1b9db266496456e0"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "only_the_real_sql_surviving_declaration_gets_identity_without_candidate_deduplication",
+        "real_file_transaction_rejects_changed_relation_and_preserves_previous_generation"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-index",
+        "--test",
+        "qname_identity_proof"
+      ],
+      "exit_code": 0,
+      "index": 4,
+      "stderr": {
+        "bytes": 289,
+        "path": "04.stderr",
+        "sha256": "b2ae6ea483b3646c8a3cc068cc730808c9b8bb8815f9dd49ea17a733db6931b1"
+      },
+      "stdout": {
+        "bytes": 461,
+        "path": "04.stdout",
+        "sha256": "70f9ac811a106dd6356bac9b1570327e2a83bea31b1b57881feee00fe8df9781"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "association_requires_unique_exact_complete_source_and_matching_existing_labels",
+        "decorated_body_call_owners_use_the_same_canonical_parser_identity",
+        "parser_lexical_qnames_distinguish_function_locals_class_methods_and_async_decorated_scopes",
+        "same_name_neighbor_owner_cannot_authorize_a_disjoint_body_chunk"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--test",
+        "public_surface_store"
+      ],
+      "exit_code": 0,
+      "index": 5,
+      "stderr": {
+        "bytes": 283,
+        "path": "05.stderr",
+        "sha256": "7e983bf271b65679beecde24773b622d310ebb75d9722ba90237eb169f6cad79"
+      },
+      "stdout": {
+        "bytes": 527,
+        "path": "05.stdout",
+        "sha256": "819b13e29d7a83121485d792aa504160155ca1ed4e4dfe8fcfca6a38618f9ac1"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        6,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "a_bad_surface_rolls_back_the_whole_file_batch",
+        "nonempty_surface_roundtrip_canonicalizes_declaration_order",
+        "corrupt_fingerprint_and_new_format_fail_closed",
+        "surface_roundtrip_shares_file_epoch_and_cascades_on_delete",
+        "batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown",
+        "previous_schema_cannot_reuse_absent_surface_evidence"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--lib",
+        "full_rebuild_advances_both_epochs_past_previous_values"
+      ],
+      "exit_code": 0,
+      "index": 6,
+      "stderr": {
+        "bytes": 259,
+        "path": "06.stderr",
+        "sha256": "b7be2e104944fccab155427265758d88c4a19a89a4fe6291658f2268dadd9116"
+      },
+      "stdout": {
+        "bytes": 198,
+        "path": "06.stdout",
+        "sha256": "061220f904e14e2004bf67cf159872506e49a960382ad60debc39a2069b0affe"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        1,
+        0,
+        0,
+        0,
+        192
+      ],
+      "test_names_ok": [
+        "index_db::tests::full_rebuild_advances_both_epochs_past_previous_values"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--lib",
+        "rebuild_generation_exceeds_writes_committed_during_rebuild"
+      ],
+      "exit_code": 0,
+      "index": 7,
+      "stderr": {
+        "bytes": 178,
+        "path": "07.stderr",
+        "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+      },
+      "stdout": {
+        "bytes": 202,
+        "path": "07.stdout",
+        "sha256": "fca0b271b40b3d950a6d1326c8c5c2b71b84ebd9c995a49f383703649f96099c"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        1,
+        0,
+        0,
+        0,
+        192
+      ],
+      "test_names_ok": [
+        "index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--lib",
+        "staging_checkpoint_busy_preserves_wal_and_refuses_replacement"
+      ],
+      "exit_code": 0,
+      "index": 8,
+      "stderr": {
+        "bytes": 178,
+        "path": "08.stderr",
+        "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+      },
+      "stdout": {
+        "bytes": 205,
+        "path": "08.stdout",
+        "sha256": "c6f84ca08fe8ce1255dee6eb77f8afb0b9725fcd044c70100352d8188b7a1e9b"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        1,
+        0,
+        0,
+        0,
+        192
+      ],
+      "test_names_ok": [
+        "index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--lib",
+        "schema_mismatch_rebuild_advances_generation_past_old_values"
+      ],
+      "exit_code": 0,
+      "index": 9,
+      "stderr": {
+        "bytes": 178,
+        "path": "09.stderr",
+        "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+      },
+      "stdout": {
+        "bytes": 203,
+        "path": "09.stdout",
+        "sha256": "3ed5c06f9c11c4ef8c4555a6fabca68dd96dbcfac0b129342be98b7c6bd0d7d4"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        1,
+        0,
+        0,
+        0,
+        192
+      ],
+      "test_names_ok": [
+        "index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-db",
+        "--test",
+        "p2d_dependency_cost"
+      ],
+      "exit_code": 0,
+      "index": 10,
+      "stderr": {
+        "bytes": 281,
+        "path": "10.stderr",
+        "sha256": "64d229f9059be5bd3d30ab06eb724ec13dd2412b4ba23175b85111a94fbed407"
+      },
+      "stdout": {
+        "bytes": 204,
+        "path": "10.stdout",
+        "sha256": "2e1c3b47e9a42a430450b2d4cfc3cb55fcc6c5011ff4556265585972db7d0552"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p8_scale"
+      ],
+      "exit_code": 0,
+      "index": 11,
+      "stderr": {
+        "bytes": 3303,
+        "path": "11.stderr",
+        "sha256": "fd3a4290e0cdafc8e8251e953bcb3e626231616f6f2522fe8008a99f80f71441"
+      },
+      "stdout": {
+        "bytes": 1056,
+        "path": "11.stdout",
+        "sha256": "59b44c916023db34c9c2974b51946608931e150a8a8bec04e931df2f4f0f986c"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        12,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+        "failed_independent_fanout_truth_remains_a_failure",
+        "matrix_and_release_admission_are_explicit_and_bounded",
+        "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+        "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+        "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+        "shards_partition_registered_repetitions_without_lowering_release_admission",
+        "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "configured_evidence_budget_stops_without_overwriting_partial_raw",
+        "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+        "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity"
+      ]
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cc-eval",
+        "--test",
+        "benchmark_oracle_streaming"
+      ],
+      "exit_code": 0,
+      "index": 12,
+      "stderr": {
+        "bytes": 299,
+        "path": "12.stderr",
+        "sha256": "e4618d205e480d82833b9796041c2a24c7af559c9517e3cea0f6f52c647ee060"
+      },
+      "stdout": {
+        "bytes": 723,
+        "path": "12.stdout",
+        "sha256": "e9a881f305428e408c0eb4737f61f8f58696f5036625ad5bb9b803cc0406e3a8"
+      },
+      "summary_counts_passed_failed_ignored_measured_filtered": [
+        8,
+        0,
+        0,
+        0,
+        0
+      ],
+      "test_names_ok": [
+        "detects_content_multiplicity_and_missing_rows_without_hash_only_equality",
+        "every_existing_table_remains_part_of_the_comparison",
+        "malformed_schema_utf8_and_foreign_keys_cannot_be_equal",
+        "preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests",
+        "agrees_with_legacy_for_all_types_duplicates_and_physical_columns",
+        "row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix",
+        "cached_canonical_order_matches_original_serialized_key_bytes",
+        "compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change"
+      ]
+    }
+  ],
+  "failed_tests": 0,
+  "formal_todo_completion": false,
+  "ignored_tests": 0,
+  "input_count": 1087,
+  "members": {
+    "00.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "00.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "01.stderr": {
+      "bytes": 6169,
+      "sha256": "ca6cf08d6e4149955fe99fb7244290fda7b1b903dbe95c4345698d3ab89c7b32"
+    },
+    "01.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "02.stderr": {
+      "bytes": 1956,
+      "sha256": "01ad96adb000b7cd0c6af8f4b3b138a19ca959dbae0b4d3d0f69485c13c9f55e"
+    },
+    "02.stdout": {
+      "bytes": 381,
+      "sha256": "ef97de0982212549a0a29f9415ea598b424aa5b6265d579a2bcf15903724a5a5"
+    },
+    "03.stderr": {
+      "bytes": 1943,
+      "sha256": "0428259c1b6f778cc6bb94747d1103e519f6ef9d857eac6df56a0fc8b7b901c8"
+    },
+    "03.stdout": {
+      "bytes": 304,
+      "sha256": "cde86853194bf73718e9d9937ac9c7fb820405f6251ba73e1b9db266496456e0"
+    },
+    "04.stderr": {
+      "bytes": 289,
+      "sha256": "b2ae6ea483b3646c8a3cc068cc730808c9b8bb8815f9dd49ea17a733db6931b1"
+    },
+    "04.stdout": {
+      "bytes": 461,
+      "sha256": "70f9ac811a106dd6356bac9b1570327e2a83bea31b1b57881feee00fe8df9781"
+    },
+    "05.stderr": {
+      "bytes": 283,
+      "sha256": "7e983bf271b65679beecde24773b622d310ebb75d9722ba90237eb169f6cad79"
+    },
+    "05.stdout": {
+      "bytes": 527,
+      "sha256": "819b13e29d7a83121485d792aa504160155ca1ed4e4dfe8fcfca6a38618f9ac1"
+    },
+    "06.stderr": {
+      "bytes": 259,
+      "sha256": "b7be2e104944fccab155427265758d88c4a19a89a4fe6291658f2268dadd9116"
+    },
+    "06.stdout": {
+      "bytes": 198,
+      "sha256": "061220f904e14e2004bf67cf159872506e49a960382ad60debc39a2069b0affe"
+    },
+    "07.stderr": {
+      "bytes": 178,
+      "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+    },
+    "07.stdout": {
+      "bytes": 202,
+      "sha256": "fca0b271b40b3d950a6d1326c8c5c2b71b84ebd9c995a49f383703649f96099c"
+    },
+    "08.stderr": {
+      "bytes": 178,
+      "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+    },
+    "08.stdout": {
+      "bytes": 205,
+      "sha256": "c6f84ca08fe8ce1255dee6eb77f8afb0b9725fcd044c70100352d8188b7a1e9b"
+    },
+    "09.stderr": {
+      "bytes": 178,
+      "sha256": "f0c8d31b15a7282d1a8123f3fc19064f642dbf5132c1fee9825f11d40cc3a352"
+    },
+    "09.stdout": {
+      "bytes": 203,
+      "sha256": "3ed5c06f9c11c4ef8c4555a6fabca68dd96dbcfac0b129342be98b7c6bd0d7d4"
+    },
+    "10.stderr": {
+      "bytes": 281,
+      "sha256": "64d229f9059be5bd3d30ab06eb724ec13dd2412b4ba23175b85111a94fbed407"
+    },
+    "10.stdout": {
+      "bytes": 204,
+      "sha256": "2e1c3b47e9a42a430450b2d4cfc3cb55fcc6c5011ff4556265585972db7d0552"
+    },
+    "11.stderr": {
+      "bytes": 3303,
+      "sha256": "fd3a4290e0cdafc8e8251e953bcb3e626231616f6f2522fe8008a99f80f71441"
+    },
+    "11.stdout": {
+      "bytes": 1056,
+      "sha256": "59b44c916023db34c9c2974b51946608931e150a8a8bec04e931df2f4f0f986c"
+    },
+    "12.stderr": {
+      "bytes": 299,
+      "sha256": "e4618d205e480d82833b9796041c2a24c7af559c9517e3cea0f6f52c647ee060"
+    },
+    "12.stdout": {
+      "bytes": 723,
+      "sha256": "e9a881f305428e408c0eb4737f61f8f58696f5036625ad5bb9b803cc0406e3a8"
+    },
+    "observations/p2d-dependency-work.json": {
+      "bytes": 1926,
+      "sha256": "c98221b07623c65b2674d3b60f63571fd35bd6e0d192efe56be593e2475a5b39"
+    },
+    "plan.json": {
+      "bytes": 2829,
+      "sha256": "4d0db56d462e541b256ed7795451d3e1a4821033a91a99b7b2c6d5d3bd7660cb"
+    },
+    "progress.json": {
+      "bytes": 7687,
+      "sha256": "3195948ded7e1ac41370a0c7fcb6348c8ef61ad872da30551caab23dd123fdd9"
+    },
+    "receipt.json": {
+      "bytes": 11850,
+      "sha256": "b67c671794372b301f5c26cf1e151c456fbc01747cff0d6017259b9ef7997d87"
+    },
+    "source-after.json": {
+      "bytes": 146168,
+      "sha256": "1b2b03586ddf93553b024273c98aef22a0ac18f5282ee8d16f777c04fd876a4b"
+    },
+    "source-before.json": {
+      "bytes": 146168,
+      "sha256": "1b2b03586ddf93553b024273c98aef22a0ac18f5282ee8d16f777c04fd876a4b"
+    }
+  },
+  "new_full_study_samples_inherited": 0,
+  "new_g4_inline_tests_not_executed_by_these_13_commands": [
+    "batched_spool_matches_original_at_tier_and_byte_boundaries",
+    "batch_inserts_reduce_actual_statements_with_bounded_pending_bytes",
+    "batched_spool_budget_errors_match_original_and_never_commit_pending_rows",
+    "batched_spool_scratch_exhaustion_remains_an_error",
+    "materialized_dependency_window_matches_original_pending_sql",
+    "dependency_window_reloads_after_replacement_removal_and_reopen",
+    "consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+  ],
+  "official_job": {
+    "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113604866890",
+    "completed_at": "2026-10-09T00:27:19Z",
+    "conclusion": "success",
+    "created_at": "2026-10-09T00:12:32Z",
+    "head_branch": "task/p8-staging-cache-engineering-20261008",
+    "head_sha": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/37863581678/job/113604866890",
+    "id": 113604866890,
+    "labels": [
+      "ubuntu-24.04"
+    ],
+    "name": "controls_and_build",
+    "node_id": "CR_kwDOSnV9Ys8AAAAac2CzSg",
+    "run_attempt": 1,
+    "run_id": 37863581678,
+    "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37863581678",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions",
+    "runner_id": 1000004173,
+    "runner_name": "GitHub Actions 1000004173",
+    "started_at": "2026-10-09T00:20:35Z",
+    "status": "completed",
+    "steps": [
+      {
+        "completed_at": "2026-10-09T00:20:37Z",
+        "conclusion": "success",
+        "name": "Set up job",
+        "number": 1,
+        "started_at": "2026-10-09T00:20:36Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:21:00Z",
+        "conclusion": "success",
+        "name": "Run actions/checkout@v4",
+        "number": 2,
+        "started_at": "2026-10-09T00:20:37Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:21:08Z",
+        "conclusion": "success",
+        "name": "Run dtolnay/rust-toolchain@1.95.0",
+        "number": 3,
+        "started_at": "2026-10-09T00:21:00Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:21:11Z",
+        "conclusion": "success",
+        "name": "Fetch locked dependencies before engineering controls",
+        "number": 4,
+        "started_at": "2026-10-09T00:21:08Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:23:39Z",
+        "conclusion": "success",
+        "name": "Capture fixed-source controls and preserve every attempted command",
+        "number": 5,
+        "started_at": "2026-10-09T00:21:11Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:23:40Z",
+        "conclusion": "success",
+        "name": "Preserve original control source, logs and SQL counters",
+        "number": 6,
+        "started_at": "2026-10-09T00:23:39Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:27:15Z",
+        "conclusion": "success",
+        "name": "Build one exact release scale executable after successful controls",
+        "number": 7,
+        "started_at": "2026-10-09T00:23:40Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:27:16Z",
+        "conclusion": "success",
+        "name": "Preserve original release build and exact executable",
+        "number": 8,
+        "started_at": "2026-10-09T00:27:15Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:27:16Z",
+        "conclusion": "success",
+        "name": "Post Run actions/checkout@v4",
+        "number": 16,
+        "started_at": "2026-10-09T00:27:16Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-10-09T00:27:17Z",
+        "conclusion": "success",
+        "name": "Complete job",
+        "number": 17,
+        "started_at": "2026-10-09T00:27:16Z",
+        "status": "completed"
+      }
+    ],
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113604866890",
+    "workflow_name": "P8 full staging cache engineering"
+  },
+  "official_log": {
+    "bytes": 72029,
+    "path": "/dev/shm/a217aaae3bde/platform-review/combined-254009-review/8e-controls-build-original.log",
+    "sha256": "0d13e183f9c07901befbbc55c7e5af98cf113f74f3e771b50c8222b12390dbbf"
+  },
+  "official_run": 37863581678,
+  "original_zip": {
+    "artifact_id": 11587252940,
+    "bytes": 117164,
+    "path": "/workspace/scratch/a217aaae3bde/ci-artifacts/11587252940/11587252940.zip",
+    "sha256": "51dc4f79bec39ffa6294e20a8fb1d60cc3de0de0ce862f50466f4b45d3854449"
+  },
+  "passed_tests": 41,
+  "remaining": 29,
+  "schema_version": 1,
+  "scope": "Original 8e auxiliary engineering controls only",
+  "source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+  "source_before_after_bytes_equal": true,
+  "source_manifest_sha256": "7a561d39191708023052b22ef5d626bf26ecf4ca6042eb39dc2f50a82ceb34bf",
+  "source_tree": "28a35d538f11613e98e645f37d8bbd4946d754ac",
+  "verdict": "accepted_scoped_auxiliary_controls"
+}

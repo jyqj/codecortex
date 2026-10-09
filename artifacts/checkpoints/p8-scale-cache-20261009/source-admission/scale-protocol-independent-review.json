@@ -1,0 +1,141 @@
+{
+  "schema": "independent-combined254-scale-protocol-source-review-v1",
+  "reviewer": "/root/scale_closeout",
+  "reviewed_utc": "2026-10-09T01:44:00.202836+00:00",
+  "status": "accepted_unchanged_scale_protocol_for_new_fixed_source_execution_not_measurement_acceptance",
+  "source_commit": "254009277688d64677361a0ca33e5dea73f295ef",
+  "source_tree": "4202266e59934dba86e1ea10154392247fff15e7",
+  "parent": "55902428d49b09bb4a90cee6ccccf985680618bb",
+  "input_view": "14-file overlay over separately verified296 local source; not a complete254 checkout",
+  "root_proof": {
+    "path": "/workspace/scratch/a217aaae3bde/combined-scale-cache-candidate/exact-product-tree-and-input-proof.json",
+    "sha256": "2701afc05d945d0f20b1d9a51628157e8594a386333963194cdeffbdafe6c3ee"
+  },
+  "independent_actual_checks": {
+    "recursive_tree_nodes_rehashed": 223,
+    "full_product_inputs": 1087,
+    "validation_inputs": 138,
+    "all1225_input_bytes_SHA256_and_Git_blob_ids_match": true,
+    "product_input_inventory_matches_official_recursive_tree": true,
+    "current_fixes_preserved_paths": [
+      "crates/cc-server/src/project_session.rs",
+      "crates/cc-eval/src/bench.rs",
+      "crates/cc-eval/src/benchmark/statistics.rs",
+      "crates/cc-eval/src/report.rs",
+      "crates/cc-eval/tests/p8_measurements.rs",
+      "crates/cc-eval/src/benchmark/p8_scale.rs"
+    ],
+    "product_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+    "protocol_paths_byte_identical_to599": {
+      ".github/workflows/p8-scale.yml": {
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+        "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e"
+      },
+      "scripts/p8_scale_matrix.py": {
+        "bytes": 65092,
+        "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+        "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886"
+      },
+      "scripts/p8_runner_capacity.py": {
+        "bytes": 11164,
+        "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+        "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f"
+      },
+      "scripts/p7_build_identity.py": {
+        "bytes": 5940,
+        "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+        "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e"
+      },
+      "scripts/tests/test_p8_scale_matrix.py": {
+        "bytes": 34929,
+        "sha256": "8b05fafeeb64f936d2e55894457614f2e9945c0242726c4f79eeb6af800e9759",
+        "git_blob": "cb9fc9972fa3068c026e2e549cc40089f6de310a"
+      },
+      "scripts/tests/test_p8_runner_capacity.py": {
+        "bytes": 6730,
+        "sha256": "d0330bc7a5e65def965fd0cd535a630633b65c6313bfd9bda26bd1b7984f8292",
+        "git_blob": "30cc1fbcc7385fd4c0d001e358c161752f1fcac4"
+      },
+      "crates/cc-eval/src/benchmark/p8_scale.rs": {
+        "bytes": 46139,
+        "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+        "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568"
+      },
+      "crates/cc-eval/src/benchmark/oracle.rs": {
+        "bytes": 8780,
+        "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+        "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152"
+      }
+    },
+    "pure_registration_function_enumeration": {
+      "plans": 150,
+      "logical_required_samples": 1500,
+      "native_workloads": 0
+    }
+  },
+  "capacity_contract": {
+    "id": "scale_capacity_v1",
+    "environment_policy": "heterogeneous_stratified_coverage_v1",
+    "scale_dirty_budget": 200,
+    "scale_max_resume_builds": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_max_resume_builds": 128,
+    "oracle_limits": {
+      "max_rows_per_table": 5000000,
+      "max_canonical_bytes": 17179869184,
+      "max_scratch_bytes": 8589934592,
+      "max_row_bytes": 1048576
+    },
+    "sorting_cache_kib": 2048,
+    "storage_layout": "without_rowid_value_ordinal_v1",
+    "one_repetition_per_shard": true,
+    "deadline_ms": 18000000,
+    "max_output_bytes": 536870912,
+    "minimum_free_bytes_per_file": 262144,
+    "minimum_free_fixed_bytes": 4294967296,
+    "disk_requirement_scope": "preregistered capacity estimate, not an observed peak or sufficiency proof"
+  },
+  "workflow_contract": {
+    "preflight_rep0_all_five_scales": true,
+    "remaining_reps_1_through_29_after_all_preflight_success": true,
+    "max_parallel_preflight": 5,
+    "max_parallel_measure": 10,
+    "shard_job_timeout_minutes": 350,
+    "four_noncone_sparse_checkouts": true,
+    "aggregate_requires_all150_and1500_raw_samples": true
+  },
+  "performance_changes_static_scope": [
+    "Oracle canonical insert batching retains old canonical serialization, row/byte/scratch budgets, side-local ordinal identity and primary-tree sorting; only bounded64KiB/64-row input buffering plus64/8/1 statement tiers. Original spool function remains an exact whitespace-normalized independent test reference.",
+    "Prepare-local dependency_window derives pending status from the original budget+1 distinct window and <=budget promotions; fallback to original SQL remains on admission contract violation. No cross-prepare reuse or read lease is retained.",
+    "Three execute_cached substitutions keep SQL and parameters inside the existing writer transaction; rollback/reopen/identity tests are expanded.",
+    "Current cancellation hook, statistics/measurement fixes, production scale driver/workflow and original registration are preserved; no G4 older-source overwrite."
+  ],
+  "measured_motivation": {
+    "original599_failed_diagnostic_path": "/dev/shm/a217aaae3bde/scale-round5-review/100k-original-failure-diagnostic.json",
+    "original599_failed_diagnostic_sha256": "992a94c8095ee3cfa865b15c29ab4c348282a3cbb7126fccb41a596bd5970f4d",
+    "completed_parity_wall_us": 6606025640,
+    "main_index_wall_us": 6165545798,
+    "independent_full_control_wall_us": 4208985564,
+    "claim": "Supports selecting these optimization candidates; no improvement or5h success is inferred."
+  },
+  "new_source_requirements": [
+    "Fresh exact published execution HEAD and full1087 product plus driver/workflow/oracle source binding; manifest differs from oldac7421.",
+    "Fresh release build/binary receipts and immutable source observations; initialize a new acceptance state, keep old599failed study separate.",
+    "All150new-source original shards and1500samples withN30 and original15table parity/closure/phase fields, followed by original complete combine.",
+    "Actual targeted Rust correctness tests, current CI and original dependent acceptance gates remain required; this review did not compile or run native work."
+  ],
+  "inherited_scale_samples": 0,
+  "formal_task_completion": false,
+  "task_counts": {
+    "done": 163,
+    "remaining": 29
+  },
+  "unresolved_blockers_in_static_protocol_scope": [],
+  "additional_official_validation_binding": "All114 selected script inputs bind to exact official recursive scripts entries; all7 workflow and17 source-integrity inputs bind to unchanged official root trees through current296 Git blobs. All modes are preserved; existing executable fixtures remain executable Git entries.",
+  "supersedes_initial_review": {
+    "path": "/dev/shm/a217aaae3bde/scale-round5-review/combined254-scale-protocol-independent-review.json",
+    "sha256": "b2a891bcb8c8e025fc6fd007ac73409872351e9ee80cf4a75ede513c7503bc5a",
+    "reason": "Adds explicit per-input official script/root-tree validation binding and the base root tree hash; no product or protocol change."
+  }
+}

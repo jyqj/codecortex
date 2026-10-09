@@ -43,6 +43,44 @@ fn real_file_transaction_rejects_changed_relation_and_preserves_previous_generat
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].qname.as_deref(), Some("needle"));
     assert_eq!(rows[0].text, original.outcome.chunks[0].text);
+
+    // The same writer must recover after rollback and bind each new identity,
+    // rather than retaining a previous chunk/document/payload association.
+    let replacement =
+        unit("def replacement_one():\n    return 1\ndef replacement_two():\n    return 2\n");
+    db.writes()
+        .replace_files_batch(std::slice::from_ref(&replacement))
+        .unwrap();
+    let replacement_generation = db.reads().read_generation().unwrap();
+    assert_eq!(
+        replacement_generation.index_epoch,
+        generation.index_epoch + 1
+    );
+    drop(db);
+    let (db, _) = IndexDb::open(&path).unwrap();
+    assert_eq!(
+        db.reads().read_generation().unwrap(),
+        replacement_generation
+    );
+    let ids: Vec<_> = replacement
+        .outcome
+        .symbol_identities
+        .iter()
+        .map(|identity| identity.chunk_id.as_str())
+        .collect();
+    assert_eq!(ids.len(), 2);
+    let rows = db
+        .retrieval()
+        .chunk_rows_by_ids(&ids, &Default::default())
+        .unwrap();
+    assert_eq!(rows.len(), 2);
+    for identity in &replacement.outcome.symbol_identities {
+        let row = rows
+            .iter()
+            .find(|row| row.chunk_id == identity.chunk_id)
+            .unwrap();
+        assert_eq!(row.qname.as_deref(), Some(identity.qname.as_str()));
+    }
 }
 
 #[test]

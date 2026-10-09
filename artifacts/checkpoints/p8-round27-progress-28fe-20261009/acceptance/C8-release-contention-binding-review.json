@@ -1,0 +1,102 @@
+{
+  "schema": "c8-runtime-attribution-release-evidence-addendum-v1",
+  "reviewer": "/root/runtime_review",
+  "recorded_at_utc": "2026-10-09 09:40:02 UTC",
+  "verdict": "same_source_fresh_release_worker_contention_is_existing_complementary_evidence; no_new_native_run_required_for_readback",
+  "prior_report": {
+    "git_blob": "35aa3c542d64e35e42efb23b7b769f7e22a6ac12",
+    "bytes": 15458,
+    "sha256": "514fa6027d29f0984bd307595c5837b08bb9988f3f21be735c38455eb49b9652",
+    "preserved_unchanged": true
+  },
+  "purpose": "The prior report explicitly labels C8 closeout as test/unoptimized. That run supplies functional and resource evidence, not release-profile performance numbers. This addendum independently binds the already completed C8 fresh-release execution of the SAME worker-contention source; it does not relabel the debug run.",
+  "identity": {
+    "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "run": 37901930897,
+    "job": 113726258977,
+    "name": "fake_backfill",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T08:28:41Z",
+    "completed_at": "2026-10-09T08:37:30Z",
+    "job_bound_by": "actual full run jobs collection"
+  },
+  "original_log": {
+    "git_blob": "6f6b0c66d1502e866e129186d8a3900d397627d5",
+    "bytes": 58984,
+    "sha256": "9b5af1cd295731c97716369c14ddbac8f8f8e558af7a0428e1ee1a4bf0d68f4b",
+    "checkout": {
+      "line": 185,
+      "sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+    },
+    "toolchain": "1.95.0",
+    "execute": {
+      "lines": "771-787",
+      "command": "python3 scripts/p8_backfill.py --output \"$RUNNER_TEMP/p8-backfill\"",
+      "actual_target": "/home/runner/work/_temp/p8-backfill-target",
+      "original_result_at": "2026-10-09T08:37:25.1644963Z",
+      "status": "passed_observation",
+      "exit_code": 0,
+      "error": null,
+      "executable_sha256": "7c909ba2d4b07bc866873f4ba70474179d75cc53bcfc7a378bd5bcdf06c05b41"
+    },
+    "verify": {
+      "lines": "788-798",
+      "command": "python3 scripts/p8_backfill.py verify --output \"$RUNNER_TEMP/p8-backfill\"",
+      "status": "sealed_raw_verified",
+      "observation_status": "passed_observation",
+      "files": 32
+    },
+    "artifact": {
+      "id": 11604162920,
+      "name": "p8-backfill-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "bytes": 7836131,
+      "sha256": "ff504bc5016ad7997db58f3e76d8eb32a30d23e2e5732009a107ada6e724d9d5",
+      "created_at": "2026-10-09T08:37:27Z",
+      "expired": false,
+      "official_API_and_original_uploader_match": true
+    }
+  },
+  "actual_driver": {
+    "path": "scripts/p8_backfill.py",
+    "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+    "bytes": 8799,
+    "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+    "build_command": "cargo test --release --locked --offline -p cc-eval --no-default-features --features semantic --test p7_worker_contention --no-run --message-format=json-render-diagnostics --target-dir <private target>",
+    "release_validation": "artifact() lines20-39 requires one compiler-artifact, targetkind[test], features[semantic], profile.test=true,opt_level3,debug_assertions=false,fresh=false; exact source path and executable within the private target; successful build-finished event.",
+    "identity_conservation": "execute checks original source/observer/compiler before and after build and native execution. Copied executable SHA must match original Cargo executable before and after. This is actual unchanged driver's admission logic consumed by the original passing CLI, not a new validation run.",
+    "native_command": "<copied executable> --exact real_slow_backfill_preserves_local_progress_and_records_every_request --nocapture",
+    "native_output_check": "Actual driver requires return0 and original stdout '1 passed; 0 failed; 0 ignored'; exact raw seed dirs19,43,7 must be present before passed_observation.",
+    "original_output": "CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR=<output>/raw, independent native timeout300s",
+    "retention": "Original receipt inventory, seal_output and verify_output occur in finally. The existing verify command returned sealed_raw_verified with32files."
+  },
+  "same_contention_measurement": {
+    "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+    "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+    "bytes": 23104,
+    "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+    "population": "3seeds x quiet/held x C1/4/8/16 x32 =768 fixed local request observations",
+    "expected_raw_members": "raw/seed-{7,19,43}/{protocol,quiet-requests,held-before,held-requests,summary}.json",
+    "DB_fields": "summary.db_availability.single_read_pool_checkout_us, read_statement_us, writer_acquire_and_rollback_us, writer_busy_timeout_ms100, generation_before/generation_after equality",
+    "worker_fields": "Every quiet/held row's caller_schedule_us/capture_admission_us/retrieval_us/offered_to_api_return_us; before/final queue totals,pending,claimed,attempt_count,published,uncovered; actual provider entered,active,waiting,maximum_active,held_inputs,fake_completed_calls.",
+    "correct_semantic_label": "The DB probe times actual pool acquisition and real BEGIN IMMEDIATE;ROLLBACK while worker provider calls are held. It includes checkout/statement/rollback overhead, not pure per-request lock waiting. Worker contention compares actual quiet/held populations and preserves original workload boundaries.",
+    "limits": "Synthetic provider vectors, no quality/live-provider claim; no server-internal queue/service decomposition. Exact source summary retains full_p7_015_complete=false and no invented performance delta SLA."
+  },
+  "evidence_level": {
+    "independently_read": "Full original official log, actual fixed source bodies, official artifact collection identity, actual full run jobs collection.",
+    "not_read": "This review did not download/open the original ZIP or independently parse its numerical summary/request JSON. No exact probe duration or per-member hash verification is claimed.",
+    "what_pass_proves": "The fixed original driver ran through its release-build, native success, three-seed, identity and seal validations. Source inspection specifies the measurements generated under that actual execution.",
+    "next_small_action": "Read the already retained original summary/request JSON through the existing artifact mechanism if numeric tabulation is needed. No source change, new instrumentation, duplicate 768 native run or repeated hour is necessary merely to obtain those existing records."
+  },
+  "conclusion": "Original release-profile requirement can use this dedicated run instead of debug closeout timings, while keeping both separate. The claim that C8 has no genuine DB-acquisition/worker-contention evidence is too strong. Separated backend telemetry remains unmeasured and must not be fabricated, but the original wording does not establish the stronger new per-operation/backend/hour gates.",
+  "prohibited_actions_performed": false,
+  "native_or_tests_started": false,
+  "refs_or_PR_changed": false,
+  "task_boundary": {
+    "original": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0,
+    "not_rebound_to_G275_or_main_f7a_or_E6_or_G3": true
+  }
+}

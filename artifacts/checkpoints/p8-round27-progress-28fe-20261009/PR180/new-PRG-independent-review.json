@@ -1,0 +1,324 @@
+{
+  "schema": "p8-pr180-new-PRG-limited-independent-readback-v1",
+  "repository": "jyqj/codecortex",
+  "reviewer": "/root/acceptance_review",
+  "recorded_at_utc": "2026-10-09T09:29:47.058Z",
+  "verdict": "accepted_scoped_identity_and_composition_readback",
+  "execution_approval": false,
+  "merge_approval": false,
+  "tests_run": [],
+  "blockers_found": [],
+  "fixed": {
+    "old_G": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "P": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+    "P_tree": "618eb8514d111a78bb5559827dc36b29e8190721",
+    "R": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
+    "R_tree": "db32c66dc0bfef05131789fa1cba3570c93c8a5e",
+    "G": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "G_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+    "BASE": "7354db236c9d9850a75f31672697ae9eab44565e"
+  },
+  "actual_parent_chain": "P has sole parent old_G; R has sole parent P; G has sole parent R. All actual commit/root objects read from official Git API.",
+  "inspection_scope": "Read official actual trees, composition plan, full source review JSON, independent-composition/cross-interface/database-oracle reviews, guard and registry, changed production/workflow bytes and inherited metadata. No source checkout, compilation, tests, validators, native samples, refs, CI triggering or PR changes.",
+  "product": {
+    "count": 1092,
+    "base_delta": 52,
+    "validation_count": 139,
+    "independent_method": "Enumerated complete untruncated actual crates tree plus Cargo.toml/Cargo.lock, and actual scripts/workflows/source_integrity trees using unchanged exclusions. Compared all path/mode/type/Git-OID entries to old_G and original BASE. Recomputed the five new input blobs and SHA-256. The unchanged 1088 product inputs and138 validation inputs retain exact old_G Git object identity and identical inherited registry hashes; this finite review does not claim to have downloaded/rehash-executed all1230 source blobs again.",
+    "all_paths_equal_registry": true,
+    "registry_maps_equal_actual_R_source_review": true,
+    "all_leaf_modes_regular": true,
+    "old_G_product_count": 1090,
+    "old_G_BASE_delta": 49,
+    "unchanged_old_product_inputs": 1088,
+    "unchanged_old_validation_inputs": 138,
+    "actual_native_changes": [
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1ec37855f7209426931dd90ae2d483cc1fe2ffc1"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d"
+        }
+      },
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "before": null,
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d1888e13cb6bc1e4748cf372209b9686a705a1da"
+        }
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "7aefc0bb357b97df3c8ba45257d2b45509f3e483"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "af1aa549cc2ebc4c952bf72804a7693e81ee5411"
+        }
+      },
+      {
+        "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+        "before": null,
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c900883bd45b427a605330b6ce4ac359f99506ef"
+        }
+      }
+    ],
+    "new_inputs": [
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+        "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+        "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+        "bytes": 11716,
+        "composition_matches": true,
+        "registry_matches": true
+      },
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+        "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
+        "bytes": 9704,
+        "composition_matches": true,
+        "registry_matches": true
+      },
+      {
+        "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+        "git_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+        "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+        "bytes": 3850,
+        "composition_matches": true,
+        "registry_matches": true
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "git_blob": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+        "sha256": "82074da7c0fadaf17d4b02b879132c4ef06ce5f20319b344c3f709c5d7e41d8b",
+        "bytes": 10488,
+        "composition_matches": true,
+        "registry_matches": true
+      },
+      {
+        "path": ".github/workflows/p8-scale.yml",
+        "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+        "bytes": 8621,
+        "composition_matches": true,
+        "registry_matches": true
+      }
+    ],
+    "delta_hash_checks": "All52 current digests equal complete_inputs. Old49 before-digests remain exact; the only old delta current digest changing is snapshot.rs. Added interface file before-digest matches independently read original blob1ec378; two new test files have null before. Actual BASE tree has the same52 paths and no deletion.",
+    "outer_root_preservation": "P differs from old_G only in crates and .github subtrees; their complete leaf diffs are the four Rust paths plus p8-scale.yml. All other original root entries, including docs/tasks, scripts and existing artifacts, are unchanged."
+  },
+  "composition": {
+    "donor": "PR181 head50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "exact_donor_files": [
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "crates/cc-index/tests/full_snapshot_empty_config.rs"
+    ],
+    "snapshot_proof": "Actual old_G snapshot7aefc0 equals original pre-181 snapshot with its already-reviewed write_file_data_for_rebuild entrypoint. Actual new af1aa equals181 snapshot with precisely that same FTS entrypoint. Thus only the two declared token-preparation hunks enter; no FTS/bounded dependency writer is overwritten.",
+    "workflow_proof": "Actual74f1b64 equals old f667b72 after one literal max-parallel:20 ->10 replacement; no other byte changes. Original30repetitions/30shards, native command and aggregate contract remain. This schedule belongs to newP, not a re-identification of an old run.",
+    "source_semantics": "Empty config preparation and interface typed-read/error/cleanup semantics retain the limited conclusions of independent report2ae2e23c7d8a98b319f0face3b26536777f2a53c. No dynamic or100k performance claim is inferred.",
+    "test_correction": "As a supplemental source check, independently reconstructed all three expected-result err().expect ->expect_err changes against original test blob77eb31; reconstructed bytes equal actuald1888. This does not convert old test runs into correctedP runs."
+  },
+  "R_scope": {
+    "only_changed_root": "artifacts",
+    "only_changed_artifacts_child": "checkpoints",
+    "new_directories": [
+      {
+        "path": "artifacts/checkpoints/p8-combined-integration-a217-20261009",
+        "tree": "112d5f9698193cbc6b2f1c869dd63097a71e070f",
+        "files": 20
+      },
+      {
+        "path": "artifacts/checkpoints/p8-pr180-integration-a217-20261009",
+        "tree": "3afecee94f6a90d572726f055112c4d5f5f1cd57",
+        "files": 36
+      },
+      {
+        "path": "artifacts/checkpoints/p8-round23-a217-20261009",
+        "tree": "9a2cbf05d404631073d834297b0cb1f455ea8680",
+        "files": 13
+      }
+    ],
+    "added_files": 69,
+    "added_bytes": 8797992,
+    "all_modes": "100644",
+    "overwritten_or_deleted_paths": 0,
+    "proof": "Compared actual P/R root, artifacts and checkpoints entries. All existing entries equal; three new subtrees fully enumerated without truncation. No large archive member replay or evidence-content certification is claimed by this metadata check.",
+    "review_records_all_bound_to_actual_R_blobs": true
+  },
+  "G_scope": {
+    "only_changed_root": "scripts",
+    "changed_files": [
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "before": "c47cae53020a4fbcfd1ab8b21eab7f0609e660fb",
+        "after": "53dae35d245acf7ca084d90a31b3086362adc7cf"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "before": "705a6d34cb71b3a9dc6c90c5f2b8a85d4caac5ed",
+        "after": "caf26bf55794ceae66e591a390df8ae9be39bfb4"
+      }
+    ],
+    "guard_changed_constants": [
+      "PRODUCT",
+      "REVIEW",
+      "REVIEW_PATH",
+      "REGISTRY_SHA256"
+    ],
+    "guard_after_masking_only_these_constants_exact_old_G": true,
+    "registry_changed_fields": [
+      "complete_inputs",
+      "delta",
+      "product_source",
+      "review_sha256",
+      "review_source",
+      "validation_inputs"
+    ],
+    "unchanged_registry_fields": [
+      "base_source",
+      "previous_source_version",
+      "runtime_and_quality_claims",
+      "schema_version",
+      "scope",
+      "source_version"
+    ],
+    "registry_schema_version": 10,
+    "BASE_VERSION_FROZEN_and_guard_logic_unchanged": true,
+    "database_schema_sources_unchanged_from_old_G": true,
+    "actual_registry_sha256": "bd73dcab83430d83a6a18c272386caf63547a498b1cd196c74f00b6aeea3cb04",
+    "actual_review_sha256": "7e78a64eff0d5dc7a9d773fce30d0c108d44406efe7d9fa07671039f6ca9af58",
+    "registry_review_guard_hash_links_equal": true,
+    "frozen": [
+      {
+        "path": "scripts/verify_reviewed_source_v14.py",
+        "BASE_blob": "5e5ef518787ec7445731eec75eface5e70cc834a",
+        "P_R_G_blob": "5e5ef518787ec7445731eec75eface5e70cc834a",
+        "mode": "100755",
+        "equal": true
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v14.json",
+        "BASE_blob": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+        "P_R_G_blob": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+        "mode": "100644",
+        "equal": true
+      },
+      {
+        "path": "tests/source_integrity/test_reviewed_source_v14.py",
+        "BASE_blob": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+        "P_R_G_blob": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+        "mode": "100644",
+        "equal": true
+      },
+      {
+        "path": "scripts/v14_historical_context.py",
+        "BASE_blob": "48296d55b90f56e8ee97c52dab0430087487f462",
+        "P_R_G_blob": "48296d55b90f56e8ee97c52dab0430087487f462",
+        "mode": "100644",
+        "equal": true
+      },
+      {
+        "path": "tests/source_integrity/v14_historical_test_adapter.py",
+        "BASE_blob": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+        "P_R_G_blob": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+        "mode": "100644",
+        "equal": true
+      },
+      {
+        "path": "tests/source_integrity/test_v14_historical_context.py",
+        "BASE_blob": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+        "P_R_G_blob": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+        "mode": "100644",
+        "equal": true
+      }
+    ],
+    "original_ci_unchanged": true
+  },
+  "preserved_limits": [
+    "Original e6, C8,173 and PR181 executions keep their actual source/build/run identities; new G receives zero inherited native samples.",
+    "PR181 original workspace101 and targeted child-snapshot failure are retained; namespace/root cause remains unknown. Crash-ready fix is unrelated and is not evidence of sampler repair.",
+    "The narrow PR181 report separately flags590 and standalone corpus command attribution; this new composition does not rectify or re-run those original records.",
+    "Source-admission reports explicitly leave new P formatting, compile, regressions, source guards and task acceptance for actual execution. Root owns current CI; this review did not poll or approve it.",
+    "No source guard, task definition, historic acceptance, benchmark sample budget or original failure is changed by this reviewer. This review grants no TODO/performance/platform/live-provider/G8/release certification."
+  ],
+  "evidence": [
+    {
+      "key": "composition",
+      "git_blob": "05bce8967bd0edb271808f1188cfb40389672d22",
+      "bytes": 14993,
+      "sha256": "cd2b16eaa92dbb773e3656f519dce42568b9a0ca96ecdc08f00aac7f886c41ce"
+    },
+    {
+      "key": "independent_composition",
+      "git_blob": "45d7060d7006fd960902e7f27049234d9123d96f",
+      "bytes": 8102,
+      "sha256": "4dcff554479b49b6cf30f3f97c5a81d5cab26c5239c9bb91d8532cd4d2761f49"
+    },
+    {
+      "key": "source_review",
+      "git_blob": "329248fb4cd3f1c03e8ff455e1a21f8be4350dd8",
+      "bytes": 185026,
+      "sha256": "7e78a64eff0d5dc7a9d773fce30d0c108d44406efe7d9fa07671039f6ca9af58"
+    },
+    {
+      "key": "crossreview",
+      "git_blob": "280fc83a29688e5beb07342790e9b8aa82aab0ac",
+      "bytes": 13462,
+      "sha256": "e8315b71d7727ebac3265ce7d397ed6156ff5bd63a7e958fe755770ce451f336"
+    },
+    {
+      "key": "dbreview",
+      "git_blob": "bdd0c54f8df09fd956f0dc0be3f6808cbbf41b36",
+      "bytes": 23049,
+      "sha256": "866393f309ce966d0f77dc1d2e112b0cf108fdc77a54c7bc6717bfe30dbfebed"
+    },
+    {
+      "key": "registry",
+      "git_blob": "53dae35d245acf7ca084d90a31b3086362adc7cf",
+      "bytes": 174452,
+      "sha256": "bd73dcab83430d83a6a18c272386caf63547a498b1cd196c74f00b6aeea3cb04"
+    },
+    {
+      "key": "guard",
+      "git_blob": "caf26bf55794ceae66e591a390df8ae9be39bfb4",
+      "bytes": 11088,
+      "sha256": "bc26835abea70c65db5f9768677e4ad68ba312a2d9dfe25d2752997da192a13d"
+    },
+    {
+      "key": "old_registry",
+      "git_blob": "c47cae53020a4fbcfd1ab8b21eab7f0609e660fb",
+      "bytes": 173557,
+      "sha256": "0d32f4ba80bf58679b26903ac46a02566341097efe6ba148c0548637a10f07dd"
+    },
+    {
+      "key": "old_guard",
+      "git_blob": "705a6d34cb71b3a9dc6c90c5f2b8a85d4caac5ed",
+      "bytes": 11101,
+      "sha256": "e5654c6a6c6436494121084ef789294fa8894069e15adfdf4e9163d42880ed04"
+    }
+  ],
+  "TODO": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "mutations": "Only this unreferenced review Git blob."
+}

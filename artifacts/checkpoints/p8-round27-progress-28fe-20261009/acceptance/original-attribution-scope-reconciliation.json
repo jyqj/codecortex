@@ -1,0 +1,263 @@
+{
+  "schema": "p8-original-runtime-attribution-requirement-review-v1",
+  "reviewer": "/root/acceptance_review",
+  "reviewed_at_utc": "2026-10-09T09:40:13.767Z",
+  "repository": "jyqj/codecortex",
+  "scope": "Read-only original-requirement interpretation and exact C8 source/evidence mapping. No product/test/driver/task edits, native execution, ZIP download/replay, study/ref/PR changes or new gate.",
+  "verdict": "The absence of separated production-internal timings is real, but the reviewed claim that P8-007/P8-010 necessarily require new multi-crate per-request telemetry is not established by the original words. Existing exact-C8 release backfill/worker/DB controls must be included in the mapping. No TODO is closed here.",
+  "task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_tasks_completed": 0
+  },
+  "reviewed_claim": {
+    "publication_commit": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+    "git_blob": "055fe9425d1c2536600299bd78ddd43f173520e9",
+    "bytes": 37046,
+    "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982",
+    "source_location_review": {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-location-review.json",
+      "git_blob": "d861e80e3a94ce48e898b46e913822f058e02bb7",
+      "bytes": 23799,
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5"
+    },
+    "identity_limit": "That review examined G275/main bd469 and an earlier PR175 head. This review directly reads C8; it does not transfer G275 measurements to C8."
+  },
+  "original_requirements": {
+    "comparison_base": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "measured_C8": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bd469_and_C8_bytes_same": true,
+      "selected_original_fields": [
+        {
+          "id": "P8-007",
+          "scope": [
+            "crates/cc-eval/src/benchmark/runner.rs",
+            "crates/cc-server/"
+          ],
+          "steps": [
+            "C1/4/8/16 mixed read/build/backfill",
+            "记录offered load和排队"
+          ],
+          "acceptance": [
+            "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+            "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+          ],
+          "depends_on": [
+            "P8-006"
+          ],
+          "validations": [
+            "V11",
+            "V20"
+          ],
+          "contracts_doc": "02-CONTRACTS.md",
+          "benchmark_doc": "09-BENCHMARK.md"
+        },
+        {
+          "id": "P8-010",
+          "scope": [
+            "crates/cc-eval/tests/soak.rs",
+            "crates/cc-eval/src/benchmark/mutations.rs"
+          ],
+          "steps": [
+            "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+            "终点完整对账"
+          ],
+          "acceptance": [
+            "内存/队列不无界增长，长期索引和全量一致",
+            "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+          ],
+          "depends_on": [
+            "P8-009"
+          ],
+          "validations": [
+            "V07",
+            "V17",
+            "V20"
+          ],
+          "contracts_doc": "02-CONTRACTS.md",
+          "benchmark_doc": "09-BENCHMARK.md"
+        }
+      ]
+    },
+    "benchmark": {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bd469_and_C8_bytes_same": true,
+      "line173": "冷 OS cache 仅在明确且可复现的受控 runner 上测；没有清理就不要标 cold disk。常规 profile 不用 sudo 清缓存。release build 测性能，debug/test build 的结果单独标签。每种 query profile 预热后采集全部样本，禁止 best-of；起始建议每层至少 30 个重复，正式尾延迟 profile 至少 200 个同类样本并报告 N/CI，不能因样本小仍声称稳定 p99。各数值是设计下限，可在 P0 资源评估后锁定。",
+      "line175": "并发 C=1/4/8/16，混合读取与构建，采集 queue+service+end-to-end 时延、吞吐、error/timeout、DB lock wait、worker contention。负载发生器记录 offered load 和排队，不能用闭环吞吐隐藏尾部延迟。",
+      "line177": "资源分 client runner、CodeCortex 子进程树、LSP/模型服务、OCE 外部容器。缺权限时 reported unavailable，不填 0。macOS RSS 单位与 Linux 不同；ru_maxrss 是高水位，不是瞬时 RSS，采样函数必须有平台测试。记录 peak sampling interval、index/FTS/cache/向量占用、读写字节、model requests/tokens/cache hits/重复费用不确定次数。",
+      "interpretation": "DB lock wait and worker contention are original observation subjects, not optional inventions. The wording does not specify backend-internal timestamps, per-request or per-round IDs, independent timing for every lock type, or duplication of all concurrency-attribution observations in the hour-long soak. Missing-permission resource treatment is not a blanket waiver for unimplemented telemetry."
+    },
+    "contracts": {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "C15_lines": "120-122: stage/work counts and cache/FTS/SQL/candidate/budget/vector statistics; benchmark collects resources/raw; no persistent product telemetry database.",
+      "C16_line126": "Completion requires behavior, wiring, positive/negative and old regressions, performance/quality comparison, docs, recovery/rollback and evidence for the current target SHA. A narrower CLI pass is not the whole task."
+    },
+    "validation": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "V11_line33": "deadline/cancellation, bounded threads, one-connection read pool, network outside locks, mixed-generation rejection/finite retry, complete cache keys",
+      "V20_line42": "1k–100k; cold/no-op/body/API/config/batch; C1/4/8/16; RSS owner, no best-of, cost reuse",
+      "scope_boundary": "The verification-package list does not mean every future scenario is certified (line3). Original profile/thresholds remain required; no invented absolute SLA."
+    }
+  },
+  "facts_and_interpretation": [
+    {
+      "subject": "Client, queue and service boundary",
+      "facts": "C8 p8_runtime records scheduled/offered/started/call-started/finished. Rust statistics labels client_dispatch_wait, write_admission_and_preparation, client_call_to_terminal_including_validation and full offered/scheduled elapsed. StdioRPC explicitly emits backend_queue_ms=None/backend_service_ms=None.",
+      "locations": [
+        "scripts/p8_runtime.py:612-626",
+        "crates/cc-eval/src/bin/p8-runtime-statistics.rs:201-207,264",
+        "scripts/resource_harness/runtime.py:244-247"
+      ],
+      "finding": "It would be false to relabel these as pure backend queue or pure backend service. They are the declared observable client/request boundary, including transport/preparation/validation. Original §9 alone does not require a new server request-context architecture as the only admissible way to report queue/service."
+    },
+    {
+      "subject": "Actual DB acquisition observation",
+      "facts": "The original worker control times IndexDb::read_conn, separately times SELECT, and times an independent BEGIN IMMEDIATE;ROLLBACK while actual provider calls are held. It preserves generation equality and a 100ms busy-timeout setting.",
+      "locations": [
+        "crates/cc-eval/tests/p7_worker_contention.rs:213-236,385-400,512-525"
+      ],
+      "finding": "single_read_pool_checkout_us and writer_acquire_and_rollback_us are real acquisition/availability probe elapsed values, not per-MCP pure waiting times. They bound/include acquisition and setup/rollback costs and must keep their exact labels. This is relevant existing evidence for the original DB-lock subject; neither zero wait nor every internal lock's wait distribution is established."
+    },
+    {
+      "subject": "Worker contention",
+      "facts": "Three seeds; actual CodeIndex/post-index worker; 4 held provider attempts and pending work; quiet and held local requests for C1/4/8/16,32 per cell; queue/provider preservation; writer/read progress; write/delete/model-retirement and drain controls.",
+      "locations": [
+        "crates/cc-eval/tests/p7_worker_contention.rs:31-36,239-300,377-412,424-525"
+      ],
+      "finding": "This is a real same-source quiet/held worker-contention comparison with raw observations, not absence of any contention evidence. It is fake-provider scheduling/fencing, not live quality/cost. It does not measure successful provider-permit wait or every worker round's service duration, and does not certify stable tails."
+    },
+    {
+      "subject": "P8-010 applicability",
+      "facts": "Original task steps are sustained changes, branch changes, catalog compaction, cache/worker reuse, endpoint reconciliation; acceptance is bounded memory/queues and long-term equality. Its hard predecessor P8-009 transitively includes P8-007.",
+      "finding": "The same core evidence must remain source-bound and the dependency must close. No reviewed original clause establishes a separate new requirement to rerun the hour solely to obtain all production-internal C1/4/8/16 attribution fields. Existing soak evidence cannot be relabeled as such fields."
+    },
+    {
+      "subject": "Assessment of proposed implementation",
+      "facts": "The source audit proposes optional request contexts, permit/submission/work boundaries, DB mutex/pool/BEGIN timings, worker-round IDs and provider admission timings across multiple crates.",
+      "finding": "Those are plausible deeper diagnostic designs. The source audit correctly says old raw cannot reconstruct them, but the design is more specific than the original acceptance. Their absence alone is not proof that the already registered local/core scope requires that entire product change. Preserve the missing detailed attribution as unknown/unavailable; do not erase existing complementary observations."
+    }
+  ],
+  "C8_complementary_actual_evidence": {
+    "release_backfill": {
+      "run_id": 37901930897,
+      "job_id": 113726258977,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "actual_job_conclusion": "success",
+      "original_log_git_blob": "6f6b0c66d1502e866e129186d8a3900d397627d5",
+      "log_bytes": 58984,
+      "log_sha256": "9b5af1cd295731c97716369c14ddbac8f8f8e558af7a0428e1ee1a4bf0d68f4b",
+      "prior_independent_report": "47cdd87e20811ab41c90d01954061f350c28949c",
+      "driver": "scripts/p8_backfill.py",
+      "driver_git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "source_contract": "lines27-34 require real opt_level3/debug_assertionsfalse/freshfalse exact source test artifact; lines47-49 actual --release --locked --offline semantic test build; lines90-107 original exact test + evidence directory + 1passed/0failed/0ignored and all3seed directories",
+      "actual_log": "lines771-787 actual driver outputs passed_observation/exit0; lines788-798 original seal verifier outputs sealed_raw_verified/observation_status passed_observation/files32; no inner durations printed",
+      "executable_sha256": "7c909ba2d4b07bc866873f4ba70474179d75cc53bcfc7a378bd5bcdf06c05b41",
+      "artifact": {
+        "id": 11604162920,
+        "name": "p8-backfill-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "bytes": 7836131,
+        "sha256": "ff504bc5016ad7997db58f3e76d8eb32a30d23e2e5732009a107ada6e724d9d5"
+      },
+      "population": "3 seeds [7,19,43] x 2 phases x 4 C levels x32 =768; same p7_worker_contention source5920466; original raw/seed-*/summary.json contains db_availability, quiet/held request files contain named API timing fields.",
+      "evidence_level": "Fixed producer source + actual successful original collector/inner test contract + original seal verification + official uploaded ZIP identity. This review did not download the ZIP or independently re-read numeric DB probe values. It introduces no new ZIP-replay completion gate."
+    },
+    "debug_closeout": {
+      "run_id": 37901931093,
+      "job_id": 113726260410,
+      "actual_head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "job_conclusion": "success",
+      "log_git_blob": "868270122e64fb74e7d626fe2c920a56ef69d233",
+      "log_bytes": 1911893,
+      "log_sha256": "9ad49bd9da30ee3ec57e1e67141e06a6ef2239cc7aef47035003d58c1e69e4b8",
+      "actual_log_lines": {
+        "checkout": "37,179",
+        "command": "4044-4046",
+        "evidence_output": "4058",
+        "selected_test": "4102-4107",
+        "source_before_after_assertion": "4123-4125",
+        "upload": "4160,4169-4172"
+      },
+      "actual_test": "real_slow_backfill_preserves_local_progress_and_records_every_request:1passed/0failed/0ignored,3.97s",
+      "profile": "debug test path, separately labelled; not substituted for the release backfill performance population",
+      "artifact": {
+        "id": 11606169975,
+        "name": "p7-closeout-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "bytes": 20424754,
+        "sha256": "586b222ca0b614815e6fa9d611ffdcb72d594cdd0783a24a800816f5724c9313",
+        "uploaded_files": 95
+      },
+      "direct_API_read": "Full attempt1 jobs and run artifact list read once; exact C8 repo/head/id/size/digest confirmed. No archive download."
+    }
+  },
+  "actionable_resolution": [
+    "Add the existing C8 release-backfill DB/worker evidence to the P8-007 original-clause mapping; keep debug-closeout only as separately labelled functional support.",
+    "Keep every client/service/transport, read-pool acquisition, writer-acquire-plus-rollback and worker-held field at its actual boundary. Pure backend times, pure lock waiting and per-round successful admission remain unknown; do not derive them by subtraction or fill zero.",
+    "Do not infer a mandatory new multi-crate telemetry implementation or hour rerun solely from the source-audit proposed design. Any desire for deeper backend attribution should be identified as that additional scope, not silently substituted into the original task.",
+    "Before final closure, retain all original C8 task evidence, original source/CI/profile conditions and hard dependencies; full scale and every actual required job must pass. No broader backend-performance claim is approved by this interpretation.",
+    "The earlier conditional C8 eligibility is not itself an acceptance report. This explicit mapping supplements it without retroactively changing raw, sources, thresholds, old failures or task status."
+  ],
+  "source_inputs": [
+    {
+      "key": "r27gap_doc_0",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "bytes": 14819
+    },
+    {
+      "key": "r27gap_doc_1",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "bytes": 10172
+    },
+    {
+      "key": "r27gap_doc_2",
+      "git_blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+      "sha256": "48189f265e42a34dc0768c8861105a8080fe64fbe7282e5d3d3d8805e71833ad",
+      "bytes": 8616
+    },
+    {
+      "key": "r27gap_code_0",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+      "bytes": 23104
+    },
+    {
+      "key": "r27gap_code_1",
+      "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5",
+      "bytes": 11117
+    },
+    {
+      "key": "r27gap_code_2",
+      "git_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+      "bytes": 17027
+    },
+    {
+      "key": "r27gap_runtime",
+      "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "bytes": 58896
+    },
+    {
+      "key": "09-BENCHMARK",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "bytes": 20488
+    }
+  ],
+  "unmeasured_limits": [
+    "No numeric ZIP member was newly read.",
+    "No pure DB-wait or production internal queue/service measurement is asserted.",
+    "No stable p99, paid-provider, 150-shard or 10-TODO acceptance is granted.",
+    "No inference from C8 evidence to PR180 newG or current main."
+  ]
+}

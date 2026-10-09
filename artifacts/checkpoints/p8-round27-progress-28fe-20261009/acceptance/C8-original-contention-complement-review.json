@@ -1,0 +1,241 @@
+{
+  "schema": "c8-existing-runtime-attribution-scope-review-v1",
+  "reviewer": "/root/runtime_review",
+  "recorded_at_utc": "2026-10-09 09:38:09 UTC",
+  "verdict": "actual_complementary_DB_acquisition_and_worker_contention_evidence_exists; separated_backend_queue_service_unmeasured; do_not_invent_new_mandatory_gate",
+  "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "questioned_report": {
+    "git_blob": "055fe9425d1c2536600299bd78ddd43f173520e9",
+    "reviewed_source_population": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "boundary": "This report does not rewrite G275 findings or transfer C8 execution to G275/main/E6/G3. It evaluates existing same-C8 complementary evidence."
+  },
+  "decision": [
+    "The absence of separated backend queue/service telemetry is real in the inspected C8 implementation. Client call elapsed time, resource counters, originating SQL-work counters and independent DB probe timing cannot honestly be renamed as that telemetry.",
+    "It is inaccurate to describe the existing C8 coverage as no DB lock-acquisition or worker-contention observation: the original same-source closeout really ran the actual worker/provider-hold experiment, timed real read-pool acquisition and an independent BEGIN IMMEDIATE/ROLLBACK probe, preserved 768 local request rows, and uploaded the original output.",
+    "Original benchmark section9 explicitly requests queue/service/end-to-end, DB lock wait and worker contention. As independently checked by acceptance_review, it does not say backend, per-request ID, every-operation pure lock timing, continuous telemetry, exact C saturation, or repeat every diagnostic during every hour. Those stronger requirements cannot be introduced by the gap report.",
+    "Use current raw mixed/soak timings at their truthful client boundary, plus this fixed-C8 worker/DB scope as complementary observations. Do not claim decomposition of server internals or final task completion from this review. The original P8-010 long-run boundedness/cache/parity requirements are not disproved by absent extra backend decomposition.",
+    "No new native run is justified merely to satisfy the gap report's stronger terminology. Current known task dependencies and genuine original acceptance remain separate."
+  ],
+  "actual_closeout": {
+    "run": 37901931093,
+    "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "log_git_blob": "868270122e64fb74e7d626fe2c920a56ef69d233",
+    "log_bytes": 1911893,
+    "log_sha256": "9ad49bd9da30ee3ec57e1e67141e06a6ef2239cc7aef47035003d58c1e69e4b8",
+    "checkout_lines": "176-179: detached C8 and git log exact40-character SHA",
+    "compiler": "rustc1.95.0(59807616e 2026-04-14), x86_64-unknown-linux-gnu",
+    "commands": [
+      "cargo test -p cc-eval --locked --lib self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup -- --nocapture",
+      "cargo test -p cc-eval --features semantic --locked --test p7_worker_contention --test semantic_lifecycle --test p7_strategy_ablation -- --nocapture"
+    ],
+    "command_lines": "4041-4046",
+    "evidence_env_line": 4058,
+    "evidence_env": "CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR=/home/runner/work/_temp/p7-closeout/worker-contention",
+    "results": {
+      "self_resource": {
+        "line": 4084,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "elapsed_seconds": 0.03
+      },
+      "actual_worker": {
+        "lines": "4102-4107",
+        "name": "real_slow_backfill_preserves_local_progress_and_records_every_request",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "elapsed_seconds": 3.97,
+        "start": "2026-10-09T09:25:00.6703324Z",
+        "finish": "2026-10-09T09:25:04.6389019Z",
+        "profile": "test unoptimized",
+        "binary_path": "/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_worker_contention-37ece17b77e4f8ce"
+      },
+      "semantic_lifecycle": {
+        "lines": "4112-4115",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "elapsed_seconds": 0.61
+      }
+    },
+    "source_after": "Original source_snapshot comparison at lines4123-4125 completed before upload. No checkout or source changes performed by this review.",
+    "artifact": {
+      "id": 11606169975,
+      "name": "p7-closeout-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "bytes": 20424754,
+      "sha256": "586b222ca0b614815e6fa9d611ffdcb72d594cdd0783a24a800816f5724c9313",
+      "upload_file_count": 95,
+      "created_at": "2026-10-09T09:25:07Z",
+      "expired": false,
+      "API_and_upload_match": true
+    },
+    "job": 113726260410,
+    "job_status": "completed",
+    "job_conclusion": "success",
+    "job_started_at": "2026-10-09T09:15:53Z",
+    "job_completed_at": "2026-10-09T09:25:10Z"
+  },
+  "worker_evidence": {
+    "source_lines": "p7_worker_contention.rs:32-37,213-300,380-421,510-524",
+    "population": "3 fixed seeds7/19/43 x quiet/held x C1/4/8/16 x32 =768 actual local API requests; no extra independent samples from phase timing.",
+    "actual_worker": "The real CodeIndex post-index worker calls a held synthetic provider. The test waits for exactly LOCAL_ATTEMPT_WIDTH4 provider calls, asserts4 claimed plus pending/outstanding work, then runs local queries and DB control. Fake vectors establish scheduling/fencing only, not live quality or paid-provider behavior.",
+    "request_fields": {
+      "caller_schedule_us": "Instant at spawned task entry minus offered before tokio::spawn; caller scheduling.",
+      "capture_admission_us": "capture_for_request completion minus task start; includes shared ExecutionPool admission/permit and QueryHandle capture, not a separately measured backend queue.",
+      "retrieval_us": "search_async completion minus capture completion; total local retrieval API region, not split server queue/service.",
+      "offered_to_api_return_us": "actual returned local request end-to-end.",
+      "originating_work": "sampler::retrieval_work extracts versioned originating work from response, with explicit cache-hit limitation. SQL counts are not elapsed time."
+    },
+    "DB_probe": {
+      "source_lines": "p7_worker_contention.rs:213-237",
+      "single_read_pool_checkout_us": "Time around actual db.read_conn(). IndexDb::read_conn takes the pool RwLock and r2d2.get; covers checkout latency, not a pure SQLite lock-wait counter.",
+      "read_statement_us": "Time around real SELECT COUNT(*) FROM document_manifest.",
+      "writer_acquire_and_rollback_us": "Time around a separate connection's BEGIN IMMEDIATE; ROLLBACK. Includes SQL dispatch, write-lock acquisition and rollback overhead. It is a genuine acquisition/availability probe and an upper bound on its acquisition wait, not pure wait or a per-request DB sum.",
+      "writer_busy_timeout_ms": 100,
+      "generation_before_after_equal": true,
+      "scope": "One held-phase probe per fixed seed; not distribution of all mixed/soak DB statements. Existing query/progress watchdogs are functional controls, not a new performance SLA."
+    },
+    "worker_contention_observations": [
+      "Quiet and held request populations retain every row and report nearest-rank p50/p95/p99/max at every configured C.",
+      "Provider active/waiting/maximum_active/held inputs and outbox pending/claimed/attempt/publication counts are retained; held reads must not start/complete extra provider work or consume attempts/publications.",
+      "Local write/delete, model retirement, drain and stale-publication checks are actual CodeIndex operations, not queue mocks.",
+      "Resource fields use direct kernel SELF CPU and lifetime RSS high-water for the shared in-process runner/CodeIndex/fake-provider owner; they do not separately measure component CPU or current RSS."
+    ],
+    "raw_paths": "worker-contention/seed-{7,19,43}/{protocol,quiet-requests,held-before,held-requests,summary}.json",
+    "raw_value_read_boundary": "The source writes request rows and summary.db_availability using std::fs::write(...).unwrap(); the original output env is present and the actual test succeeded. The original95-file ZIP upload and official artifact identity are observed. This review did NOT open that ZIP or independently read its numerical JSON values; it does not invent millisecond values or claim per-member hash verification.",
+    "assertion_limits": "Summary explicitly full_p7_015_complete=false, performance_delta_gate not evaluated, and scope actual CodeIndex/post-index worker with synthetic vectors. This review retains those limits."
+  },
+  "existing_runtime_and_server": {
+    "p8_runtime": {
+      "lines": "610-657",
+      "fields": [
+        "scheduled_ns",
+        "offered_ns",
+        "started_ns",
+        "call_started_ns",
+        "finished_ns"
+      ],
+      "scope": "Python executor dispatch, write/soak admission plus mutation preparation, product.tool RPC/compound-read duration and client validation. No server-receive timestamp or backend permit-service split."
+    },
+    "original_statistics": {
+      "lines": "170-207,264",
+      "labels": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation"
+      ],
+      "explicit_scope": "client observations include transport, admission and validation; no separated backend service or queue claim"
+    },
+    "p8_load": {
+      "lines": "448-470,567-623,645-685",
+      "queue_us": "Fixed workload Queue admitted→worker execute start; workload queue, not internal query-executor semaphore.",
+      "service_us": "Worker execute start→terminal, includes serialized mutation writer wait, native backend call and post-call validation.",
+      "backend_call_started_finished": "Monotonic stamps bracket CodeIndexBackend synchronous API invocation, not its internal queue/compute decomposition.",
+      "writer_wait_us": "Wait on the load generator's mutation Mutex, not SQLite DB lock.",
+      "execution_boundary": "Source capability only for this review. The C8 closeout log does not execute p8_load; do not manufacture a complementary measured p8_load result."
+    },
+    "server_execution": {
+      "path": "crates/cc-search/src/execution.rs",
+      "lines": "62-107,112-169",
+      "fields": [
+        "cpu_limit",
+        "async_limit",
+        "queue_limit",
+        "cpu_in_flight",
+        "cpu_admitted",
+        "async_in_flight",
+        "async_admitted",
+        "rejected",
+        "completed"
+      ],
+      "actual_behavior": "Bounded admission and semaphore acquisition exist, followed by spawn_blocking or async execution. No elapsed queue/service duration is exported by ExecutionStats.",
+      "capture": "query_handle.rs:143-158 admits capture through run_cpu before lock acquisition; capture_admission timing can include these operations but cannot split them.",
+      "build": "handlers/core.rs retains real build gate and short RwLock stages. Existing BuildTiming reports phases; it is not a separately timed DB lock wait."
+    },
+    "DB": "IndexDb::read_conn at713-728 returns pooled connections without a timing receipt. No existing current per-request pure DB wait value was found in these inspected paths.",
+    "resource_and_SQL_counters": "Sampler RSS/SELF usage and RetrievalCost SQL rows/statements/vm_steps/sorts are real useful data, but neither is a replacement for queue/lock duration."
+  },
+  "minimal_followup": {
+    "immediate": "Map existing C8 closeout and release backfill original artifacts to their precise probe/worker scope, alongside mixed/soak client timings. Read the already generated small seed summary/request records through the existing artifact reader when available; that is data readback, not a new measurement or new acceptance gate.",
+    "if_explicit_backend_breakdown_is_desired": "Treat it as a new diagnostic scope, not a retroactive requirement or offline repair. Smallest relevant touchpoints are ExecutionPool permit wait / closure entry-exit, QueryHandle capture, and targeted DB acquisition observation, with optional bounded response diagnostics consumed by existing runtime observer. Do not count missing diagnostics as zero or alias client_call duration.",
+    "if_only_probe_boundary_clarity_is_needed": "A future bounded worker-contention run could split BEGIN IMMEDIATE completion from ROLLBACK completion and preserve the existing aggregate field. This narrows the probe measurement; it still would not be pure SQLite internal wait. No justification here for repeating the hour/150-scale study or widening original workloads.",
+    "execution": "Design only; no code/ref/workflow changes or runs, retries, cancellation, native processes or tests started."
+  },
+  "source_files": [
+    {
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "bytes": 23104,
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_load.rs",
+      "bytes": 45617,
+      "sha256": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31",
+      "git_blob": "80aa08218883e4c4360945b9a18a0c3365407bf2"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "bytes": 17027,
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+      "git_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235"
+    },
+    {
+      "path": "crates/cc-search/src/execution.rs",
+      "bytes": 14311,
+      "sha256": "8c1f42b3aeccfd174631b57fe5e0e4aca3546c6d954ecce6324e55dd6536fa4b",
+      "git_blob": "11356cd1179c96fa839864d1caa60ef3ecbd3502"
+    },
+    {
+      "path": "crates/cc-server/src/query_handle.rs",
+      "bytes": 5979,
+      "sha256": "7b331043093f243e8ad23516098d008216cda0cecb3c3fa63a7947a5f226b420",
+      "git_blob": "d490fcc4155ffb512ffa145e04645a845528c942"
+    },
+    {
+      "path": "crates/cc-server/src/handlers/core.rs",
+      "bytes": 13449,
+      "sha256": "624fd729b259d55ff6ac643d6e39afb71997d06dd5156115e0f270a61fb63f8c",
+      "git_blob": "4ab8d8c72e9237e0faf8b8d6d0cc2c5645c4fb63"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/sampler.rs",
+      "bytes": 41583,
+      "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317",
+      "git_blob": "3808397a29522a30846087999340ffeba51d911c"
+    },
+    {
+      "path": "scripts/p8_backfill.py",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221"
+    },
+    {
+      "path": "crates/cc-model/src/retrieval_cost.rs",
+      "bytes": 3579,
+      "sha256": "e5f9517faf57546c1fef524657ba10f29be1c7b5667a3c309f6edd3fbb384d2f",
+      "git_blob": "fd7ccc49208480af8ba79755e432de227392a980"
+    },
+    {
+      "path": "crates/cc-db/src/index_db.rs",
+      "bytes": 49499,
+      "sha256": "6202a556d78731b88757a08cdbc77f83112db17e3000fe2eaef9572a65915d4e",
+      "git_blob": "58c30296ae0e635fe3ab0f383558c692f507e63b"
+    }
+  ],
+  "task_boundary": {
+    "original": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0,
+    "hard_dependencies_unchanged": true,
+    "source_identity_not_transferred_to_main_f7a_or_E6_or_G3": true
+  }
+}

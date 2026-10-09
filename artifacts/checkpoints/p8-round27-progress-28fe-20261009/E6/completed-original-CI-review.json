@@ -1,0 +1,308 @@
+{
+  "schema": "round27-E6-completed-original-CI-check-independent-readback-v1",
+  "reviewer": "/root/recovery_audit",
+  "reviewed_at_utc": "2026-10-09T09:41:25Z",
+  "verdict": "accepted_original_E6_CI_scope_19_distinct_new_controls_observed_ok",
+  "identity": {
+    "repository": "jyqj/codecortex",
+    "run_id": 37903872633,
+    "job_id": 113732521918,
+    "run_attempt": 1,
+    "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+    "job_status": "completed",
+    "job_conclusion": "success",
+    "started_at": "2026-10-09T09:08:28Z",
+    "completed_at": "2026-10-09T09:36:46Z",
+    "actual_checkout": "4959f616ae22b4ddefaacd802503a45daf4be1d4",
+    "checkout_log_line": 189,
+    "checkout_parents": [
+      "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+    ],
+    "actual_checkout_tree": "3d01f935c76a6c4da4ca4f1348804888fe08d45e",
+    "E6_tree": "3d01f935c76a6c4da4ca4f1348804888fe08d45e",
+    "whole_tree_exact": true,
+    "scope": "Official commit tree equality includes all source, validation, guard and artifact paths. No repeated complete-body hash review was performed; actual execution identity remains 4959."
+  },
+  "original_log": {
+    "git_blob": "b11bce70026a2cc9705e2cc39e5dfbf56b9cdf83",
+    "bytes": 1074111,
+    "sha256": "d6711bb2ba0e77c483b3dc3cff49ba8c4863e973491f80d8fb6aca9d93de3633",
+    "official_url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113732521918/logs",
+    "physical_lines": 9639,
+    "encoding": "Original decoded UTF-8 with leading BOM and final newline preserved.",
+    "official_git_blob_readback_exact": true,
+    "line_basis": "One-based physical lines; timestamp and ANSI removal only in parser memory."
+  },
+  "source_admission": {
+    "line": 5937,
+    "original_stdout": {
+      "schema_version": 10,
+      "source_version": "p8-completion-source-20261009-v15",
+      "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+      "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "product_source": "86a6e8eb88ddc97ee50a534452839bea25d92d16",
+      "review_source": "cc73a151f7c1a47a3b05c3e49140d2e90771df46",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1090,
+      "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+    },
+    "native_suite": {
+      "count": 181,
+      "elapsed_seconds": 556.972,
+      "summary_line": 5934,
+      "terminal_line": 5936,
+      "terminal": "OK"
+    }
+  },
+  "execution_scope": {
+    "all_35_job_steps_completed_success": true,
+    "format_and_clippy": "Original format and strict Clippy steps succeeded.",
+    "compile": "Original cargo test --workspace --all-targets --locked --no-run succeeded; compilation is not counted as execution.",
+    "default_commands": [
+      "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+      "cargo test -p cc-semantic --lib --locked",
+      "cargo test -p cc-semantic --locked --test artifact_cache --test attempt_lease_contract --test bounded_parallel --test manifest_exact_integration --test p7_cache_allocation_independent_review --test publish_cas --test query_cache --test queue_worker --test retry_worker_layering --test semantic_degrade --test space_switch"
+    ],
+    "command_lines": [
+      726,
+      727,
+      728,
+      729
+    ],
+    "environment": "Ubuntu hosted runner, stable rustc1.99.0 (b940084d7 2026-09-28), RUSTFLAGS=-D warnings; original workflow environment retained.",
+    "limit": "This is the original authorized default/selected-semantic and subsequent CI command scope, not execution of every semantic fault/recovery target or full P8 runtime acceptance."
+  },
+  "requested_new_controls": {
+    "distinct": 19,
+    "observed_ok_execution_lines": 21,
+    "by_group": {
+      "resolution_dependency": 4,
+      "oracle": 2,
+      "FTS": 9,
+      "resolver": 4
+    },
+    "items": [
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+        "ok_lines": [
+          890
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback",
+        "ok_lines": [
+          891
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+        "ok_lines": [
+          894
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+        "ok_lines": [
+          895
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "ok_lines": [
+          897
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+        "ok_lines": [
+          898
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+        "ok_lines": [
+          899
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs",
+        "ok_lines": [
+          902
+        ]
+      },
+      {
+        "group": "resolution_dependency",
+        "name": "index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+        "ok_lines": [
+          903
+        ]
+      },
+      {
+        "group": "resolution_dependency",
+        "name": "index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work",
+        "ok_lines": [
+          905
+        ]
+      },
+      {
+        "group": "FTS",
+        "name": "index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors",
+        "ok_lines": [
+          953
+        ]
+      },
+      {
+        "group": "resolution_dependency",
+        "name": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+        "ok_lines": [
+          1003
+        ]
+      },
+      {
+        "group": "resolution_dependency",
+        "name": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+        "ok_lines": [
+          1004
+        ]
+      },
+      {
+        "group": "oracle",
+        "name": "benchmark::oracle::projection_tests::projection_error_clears_partial_and_prior_values_before_recovery",
+        "ok_lines": [
+          1220,
+          7216
+        ]
+      },
+      {
+        "group": "oracle",
+        "name": "benchmark::oracle::projection_tests::reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+        "ok_lines": [
+          1221,
+          7217
+        ]
+      },
+      {
+        "group": "resolver",
+        "name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_after_remove_and_readd",
+        "ok_lines": [
+          2529
+        ]
+      },
+      {
+        "group": "resolver",
+        "name": "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_for_alias_collisions",
+        "ok_lines": [
+          2530
+        ]
+      },
+      {
+        "group": "resolver",
+        "name": "resolver::helpers::import_distance_regression_tests::one_pass_distance_preserves_original_ties_duplicates_and_order",
+        "ok_lines": [
+          2532
+        ]
+      },
+      {
+        "group": "resolver",
+        "name": "resolver::helpers::import_distance_regression_tests::streamed_prefix_matches_original_path_segment_semantics",
+        "ok_lines": [
+          2533
+        ]
+      }
+    ],
+    "count_rule": "Each fully qualified test name counted once. The same two oracle tests appear again under optional eval-http; those two repeat executions do not create two additional distinct controls.",
+    "result": "Every one of the nineteen has an actual terminal ok line, not merely a compiled target. No new-head 3ff tests are included."
+  },
+  "suite_summary": {
+    "whole_check_rust": {
+      "summaries": 418,
+      "passed": 3310,
+      "failed": 0,
+      "ignored": 132,
+      "filtered": 1972
+    },
+    "rust_count_scope": "3310 passed are repeated executions summed over418 command summaries, not3310 unique tests. Original132 ignored and1972 filtered remain separate.",
+    "python": [
+      {
+        "count": 46,
+        "seconds": 3.355,
+        "summary_line": 5306,
+        "terminal_line": 5308,
+        "terminal": "OK",
+        "scope": "resource_harness"
+      },
+      {
+        "count": 410,
+        "seconds": 49.261,
+        "summary_line": 5722,
+        "terminal_line": 5724,
+        "terminal": "OK",
+        "scope": "scripts/tests/test_p8_*; actual E6 count410, not C8's409"
+      },
+      {
+        "count": 181,
+        "seconds": 556.972,
+        "summary_line": 5934,
+        "terminal_line": 5936,
+        "terminal": "OK",
+        "scope": "source_integrity"
+      },
+      {
+        "count": 9,
+        "seconds": 1.991,
+        "summary_line": 9032,
+        "terminal_line": 9034,
+        "terminal": "OK",
+        "scope": "source_architecture, nonverbose summary"
+      },
+      {
+        "count": 14,
+        "seconds": 1.006,
+        "summary_line": 9561,
+        "terminal_line": 9563,
+        "terminal": "OK",
+        "scope": "historical_corpus"
+      }
+    ],
+    "further_original_steps": "Facts, historical-integrations, source proof, plan/corpus and later named original regression steps all reach success. No ZIP contents or missing standalone report are inferred from that status."
+  },
+  "official_read_inputs": [
+    {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37903872633/jobs?per_page=100",
+      "sha256": "6ed68f3191ce1720f5ea7840a8224c7d9d750b955ce3d316290d1b7c9b3887df"
+    },
+    {
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/4959f616ae22b4ddefaacd802503a45daf4be1d4",
+      "sha256": "28c8127dc10461a2bf5ab355e05e0f7e83e993801ae3c826ef0c9d8a8aa81362"
+    },
+    {
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/e6ab28bc5956e225e2015a57f601bc4d867d3732",
+      "sha256": "f76b3d75b047e772e9bcb6fba16654b462de093dc4b0a93611bf891106c8e94f"
+    }
+  ],
+  "attribution": {
+    "applies_to": "E6 e6ab28bc5956e225e2015a57f601bc4d867d3732 via identical actual4959 complete tree",
+    "does_not_apply_to": "Current PR180 head3ffcefc3b28ee1a4ed80caecebd7208a45c3e302 or its added four files/ten tests; C8; any later combined source.",
+    "new_head_CI": "Parent reported run37908825870 three jobs queued; not polled in this review, no successful result inferred.",
+    "runtime_and_quality": "Separate same-source original evidence still required; this CI result is not scale/release/TODO closure."
+  },
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "actions": "One completed original job log read, jobs metadata and two immutable commit objects, two supporting fixed review blobs. Only unreferenced original log and this report blobs created; no tests, native, reruns, dispatch, cancellation, refs, source or task changes."
+}

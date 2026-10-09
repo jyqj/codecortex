@@ -1,0 +1,760 @@
+{
+  "schema": "round27b-C8-completed-CI-runtime-closeout-log-review-v1",
+  "reviewer": "/root/recovery_audit",
+  "initial_snapshot_utc": "2026-10-09T09:24:27Z",
+  "repository": "jyqj/codecortex",
+  "scope": "Requested read-only refresh. Full logs only for newly terminal original jobs; no execution, run/ref mutation or repeated old log reads.",
+  "adaptive_followup": "Closeout artifact11606169975 appeared during the necessary artifact-index read, so one further jobs read confirmed its09:25:10 success before fetching its log. This is not a busy polling loop.",
+  "CI": {
+    "job": 113726259355,
+    "run": 37901930820,
+    "name": "check",
+    "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T08:44:15Z",
+    "completed_at": "2026-10-09T09:11:42Z",
+    "log": {
+      "git_blob": "aafd2bd4710fa7c34ed28f8078ac3152691ceffc",
+      "bytes": 1070541,
+      "sha256": "9295451e7bcc8eaa176f80b73cd71d385b0fd5d13e3c1bd417d20974811c98f7",
+      "official_blob_readback_exact": true
+    },
+    "actual_checkout": "39ae6437c417236f40110f0d18f29aa1ac3db3de",
+    "actual_tree": "5740779fd52e1978d1ab8f1aab03bd4ce3667f02",
+    "parents": [
+      "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+    ],
+    "C8_root": "9b031be22a430e51e153cce6e80770ed885818e3",
+    "root_comparison": [
+      {
+        "path": ".github",
+        "actual": "e192188202d5da9065c60b474edce10dedb24324",
+        "C8": "e192188202d5da9065c60b474edce10dedb24324",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": ".gitignore",
+        "actual": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+        "C8": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "actual": "e70d34871f78f394578a6e4273df75dd92afa35f",
+        "C8": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+        "mode_match": true,
+        "equal": false
+      },
+      {
+        "path": "Cargo.lock",
+        "actual": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+        "C8": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "Cargo.toml",
+        "actual": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "C8": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "DESIGN.md",
+        "actual": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+        "C8": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "actual": "38531b85f2d458d049ca7379eb65188132388ed4",
+        "C8": "38531b85f2d458d049ca7379eb65188132388ed4",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "README.md",
+        "actual": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+        "C8": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "artifacts",
+        "actual": "4c20d4f28dbe8f7fc176b917524d95e3b6478fdf",
+        "C8": "1b3afd5a393f1f4b08f0dad9ea682539a5ea9fd2",
+        "mode_match": true,
+        "equal": false
+      },
+      {
+        "path": "crates",
+        "actual": "67707c0ff283b0393047b57b82fbcc708fbc29f9",
+        "C8": "67707c0ff283b0393047b57b82fbcc708fbc29f9",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "docs",
+        "actual": "90aa5d9f12a0eb3305a5602db168337b315a8e31",
+        "C8": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+        "mode_match": true,
+        "equal": false
+      },
+      {
+        "path": "scripts",
+        "actual": "305fd69f92bd391e4575d819520f97aec3a6ddb5",
+        "C8": "305fd69f92bd391e4575d819520f97aec3a6ddb5",
+        "mode_match": true,
+        "equal": true
+      },
+      {
+        "path": "tests",
+        "actual": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "C8": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+        "mode_match": true,
+        "equal": true
+      }
+    ],
+    "source_attribution": "Actual checkout is the synthetic merge. crates/scripts/tests/.github/Cargo.lock/Cargo.toml exactly equal C8; root differences are CONTRIBUTING.md, docs and artifacts only. No literal-C8 checkout claim for this job.",
+    "all_35_steps_success": true,
+    "actual_original_commands": {
+      "default": [
+        "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "cargo test -p cc-semantic --lib --locked",
+        "cargo test -p cc-semantic --locked \\",
+        "  --test artifact_cache --test attempt_lease_contract \\",
+        "  --test bounded_parallel --test manifest_exact_integration \\",
+        "  --test p7_cache_allocation_independent_review --test publish_cas \\",
+        "  --test query_cache --test queue_worker --test retry_worker_layering \\",
+        "  --test semantic_degrade --test space_switch",
+        "shell: /usr/bin/bash -e {0}"
+      ],
+      "source_admission": "python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15"
+    },
+    "actual_Rust_executions": {
+      "groups": 418,
+      "passed": 3290,
+      "failed": 0,
+      "ignored": 132,
+      "unique_test_count_claimed": false,
+      "ignored_reclassified_as_pass": false
+    },
+    "actual_Python_groups": [
+      "Ran 46 tests in 3.255s",
+      "Ran 409 tests in 47.285s",
+      "Ran 181 tests in 538.791s",
+      "Ran 9 tests in 1.763s",
+      "Ran 14 tests in 0.996s"
+    ],
+    "three_resource_P8_source_groups": [
+      46,
+      409,
+      181
+    ],
+    "new_FTS_controls": [
+      "test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok",
+      "test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok"
+    ],
+    "source_admission": {
+      "schema_version": 10,
+      "source_version": "p8-completion-source-20261009-v15",
+      "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+      "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "product_source": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+      "review_source": "a9706a90a72226cb59c3bfd374ef9c1e3d66cbcb",
+      "scope": "independently_reviewed_source_and_validation_inputs",
+      "runtime_and_quality_claims": "require_separate_execution_evidence",
+      "status": "passed",
+      "complete_inputs": 1090,
+      "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+    },
+    "task_consistency": {
+      "status": "passed",
+      "task_count": 192,
+      "states": {
+        "done": 163,
+        "blocked": 1,
+        "in_progress": 16,
+        "todo": 12
+      },
+      "task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "views": 4
+    },
+    "historical_proof": {
+      "status": "passed",
+      "scope": "historical_integrity_and_current_task_definitions_only",
+      "evidence_content_acceptance": "not_granted_by_this_verifier",
+      "fault_runtime_tests": "not_run",
+      "full_P7": "open",
+      "quality_and_100k": "not_inherited"
+    },
+    "documentation_facts": {
+      "status": "passed",
+      "scope": "declared_documentation_facts_only",
+      "runtime_certified": false,
+      "errors": []
+    },
+    "limits": [
+      "Default target compilation includes crash_independent_review, but this authorized default regression selects specific cc-semantic test binaries and does not execute that crash test. Its actual execution evidence is separately recorded from the newly completed closeout job.",
+      "The 3290 pass and132 ignored values sum418 original Rust test-result records across command executions, not unique tests.",
+      "This source proof and9FTS controls belong to C8 and its actual merge checkout, not old e6 or current3ff PR180."
+    ]
+  },
+  "mixed": [
+    {
+      "job": 113726259202,
+      "run": 37901930897,
+      "name": "mixed (4)",
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T08:55:27Z",
+      "completed_at": "2026-10-09T09:08:25Z",
+      "log": {
+        "git_blob": "02cefad1239d283232fac4403c66e628ef820f11",
+        "bytes": 279186,
+        "sha256": "28cecc45a21dcdfd3a49193cf6e8936f73b4b43e37cbf8b816249b5caac9cb9e",
+        "official_blob_readback_exact": true
+      },
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "controls": {
+        "count": 68,
+        "original_result": "OK"
+      },
+      "build": {
+        "build_exit_code": 0,
+        "cargo_log_sha256": "fcb1775d1674f707fcd9c2861e31db636950fe1c8eafec8f49f28bf6156243a4",
+        "stderr_sha256": "d248fdb67e1e6dc48a9f975708b255708ae48bd0c97c6d7f52af560ede453f59",
+        "binary_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+        "oracle_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+        "statistics_sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+      },
+      "observation": {
+        "status": "passed_observation",
+        "exit_code": 0,
+        "task_complete": false,
+        "release_approval": false,
+        "profile": "mixed",
+        "configured_concurrency": 4,
+        "offered": 900,
+        "outcomes": {
+          "success": 900
+        },
+        "observed_work_ns": 448015218771,
+        "actual_concurrency": {
+          "read": 0,
+          "build": 0,
+          "maximum": 4,
+          "read_build_overlap": true
+        },
+        "real_branch_switches": 50,
+        "observed_catalog_compactions": 6,
+        "statistics": {
+          "path": "statistics.json",
+          "sha256": "864d0c39b9e72a72f8c3361585e9227dc113b50fe30e2e3705dd52f121cd5d8b",
+          "replay_path": "statistics-replay.json",
+          "replay_identical": true,
+          "exit_code": 0,
+          "status": "all_original_terminal_outcomes_successful"
+        },
+        "parity_exit_code": 0,
+        "parity_sha256": "1e27f21baf827e3141cb2a4058e7e872fd33e9445ec3d547680213999b3b8ce1",
+        "raw_sha256": "1855de7382c391863d1ccf7eb2a5f39221b77c5655f40135dba5d8700fce2b37",
+        "plan_sha256": "ae2e13269c8d5b2d672bf901e571ffcf0326867a34b02f761d483fc204c476a2",
+        "artifact_seal_status": "sealed",
+        "owned_cleanup": {
+          "unfinished_work": 0,
+          "sampler_stopped": true,
+          "product_stopped": true,
+          "comparison_product_stopped": true,
+          "product_construction_pending": false,
+          "comparison_product_construction_pending": false
+        }
+      },
+      "logged_source": {
+        "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "source_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+        "input_count": 1090,
+        "manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+        "observer_count": 9,
+        "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+        "build_receipt_sha256": "e1772429a5910df940a073c7b4a7450e17426c8264092ad0e59de548adeb8304"
+      },
+      "verify": {
+        "status": "sealed_artifacts_verified",
+        "files": 2110,
+        "observation_status": "passed_observation",
+        "observation_exit_code": 0
+      },
+      "artifact": {
+        "id": 11605334001,
+        "name": "p8-mixed-c4-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 16949111,
+        "digest": "sha256:69c0e22802a481582151b785a66cba7a5c09256d3f3a665228c81c99b71c015d",
+        "workflow_run": {
+          "id": 37901930897,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        },
+        "expired": false,
+        "ZIP_read": false
+      },
+      "limitations": [
+        "Raw/build/plan and binary hashes are original logged values, not hashes recomputed from retained ZIP bytes in this review.",
+        "No source-transfer, fullN150 or release acceptance."
+      ]
+    },
+    {
+      "job": 113726259426,
+      "run": 37901930897,
+      "name": "mixed (1)",
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T09:02:31Z",
+      "completed_at": "2026-10-09T09:15:26Z",
+      "log": {
+        "git_blob": "e00aeabaeda7e26a8418593e08f0c281ff6ba4be",
+        "bytes": 279073,
+        "sha256": "4c0e54854dceba6630a1bfffc684e45f4876be5e57d23809a808514e24a5af05",
+        "official_blob_readback_exact": true
+      },
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "controls": {
+        "count": 68,
+        "original_result": "OK"
+      },
+      "build": {
+        "build_exit_code": 0,
+        "cargo_log_sha256": "8cf05c2943b03c270c06e0eb19f47534553e5af983ff63389be7894b89b0a91d",
+        "stderr_sha256": "2c14013ef27870c710136c945ac2dbd35d7aaee2a36a63c04cb78ffbbf67ddaf",
+        "binary_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+        "oracle_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+        "statistics_sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+      },
+      "observation": {
+        "status": "passed_observation",
+        "exit_code": 0,
+        "task_complete": false,
+        "release_approval": false,
+        "profile": "mixed",
+        "configured_concurrency": 1,
+        "offered": 900,
+        "outcomes": {
+          "success": 900
+        },
+        "observed_work_ns": 449504255491,
+        "actual_concurrency": {
+          "read": 0,
+          "build": 0,
+          "maximum": 1,
+          "read_build_overlap": false
+        },
+        "real_branch_switches": 50,
+        "observed_catalog_compactions": 6,
+        "statistics": {
+          "path": "statistics.json",
+          "sha256": "4c6915510b13ef768119879f35b81eeb1749efef54cfb4ffac834627d80b169f",
+          "replay_path": "statistics-replay.json",
+          "replay_identical": true,
+          "exit_code": 0,
+          "status": "all_original_terminal_outcomes_successful"
+        },
+        "parity_exit_code": 0,
+        "parity_sha256": "8314815721d6a9b72099f646a30101df35530f7252566c9e837e80355501b797",
+        "raw_sha256": "0d7bc635f5221caff40e1ceaa29b4740ad3f619b1916ec0589847deed8059963",
+        "plan_sha256": "8ec46b67004caaa4b406cb6567704d215d1916c90fd8406c6c1918451df76591",
+        "artifact_seal_status": "sealed",
+        "owned_cleanup": {
+          "unfinished_work": 0,
+          "sampler_stopped": true,
+          "product_stopped": true,
+          "comparison_product_stopped": true,
+          "product_construction_pending": false,
+          "comparison_product_construction_pending": false
+        }
+      },
+      "logged_source": {
+        "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "source_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+        "input_count": 1090,
+        "manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+        "observer_count": 9,
+        "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+        "build_receipt_sha256": "4fa06d89f77015903b36a1fe491f302d1914ab3ce03b276751573bc25ea9fb9d"
+      },
+      "verify": {
+        "status": "sealed_artifacts_verified",
+        "files": 2110,
+        "observation_status": "passed_observation",
+        "observation_exit_code": 0
+      },
+      "artifact": {
+        "id": 11606128255,
+        "name": "p8-mixed-c1-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 16564749,
+        "digest": "sha256:82ca67db084cedb9a03dbff6cf84b20ef293a3bdb304e3665c21ff6c2b744fd5",
+        "workflow_run": {
+          "id": 37901930897,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        },
+        "expired": false,
+        "ZIP_read": false
+      },
+      "limitations": [
+        "Raw/build/plan and binary hashes are original logged values, not hashes recomputed from retained ZIP bytes in this review.",
+        "No source-transfer, fullN150 or release acceptance."
+      ]
+    }
+  ],
+  "offline": {
+    "job": 113726260236,
+    "run": 37901931093,
+    "name": "offline (default)",
+    "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T09:02:11Z",
+    "completed_at": "2026-10-09T09:06:08Z",
+    "log": {
+      "git_blob": "2354ba2b40f3b3d2a1f768a25e5746891687017f",
+      "bytes": 55398,
+      "sha256": "f48234f2b0a51f91011c174e6ebcef5ce536611c7e40f1777994eb07770e366e",
+      "official_blob_readback_exact": true
+    },
+    "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "original_controls": {
+      "Python": 11,
+      "Rust_process_tree": 7
+    },
+    "trace": [
+      {
+        "status": "passed",
+        "output": "/home/runner/work/_temp/p7-offline/trace-controls"
+      },
+      {
+        "status": "passed",
+        "output": "/home/runner/work/_temp/p7-offline/trace-matrix"
+      }
+    ],
+    "runner_build": {
+      "status": "runner_built",
+      "binary": "/home/runner/work/_temp/p7-offline/p8-runner-build/cc-eval",
+      "receipt": "/home/runner/work/_temp/p7-offline/p8-runner-build/build-receipt.json",
+      "source": {
+        "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "source_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+        "input_count": 1090,
+        "manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893"
+      }
+    },
+    "candidate_execution": {
+      "actual_build_profile": "dev",
+      "archive": {
+        "archive": "/home/runner/work/_temp/p7-offline/p8-candidate-execution/archives/p8-candidate-7dc70806080d-7d65bd043d1a-9602d8f208c3-3eb8ca1a07cf",
+        "archive_sha256": "c639018c962dd758c0b7681bfdba6f5ffe17e287c750e15d5fb5a3f515d20224",
+        "corpus_content_status": "verified_explicit_corpus_files",
+        "gate": {
+          "candidate_sha256": "7dc70806080d9949ba566d57e7fe7f78aaa30ee929998f3614a8a432a17a8854",
+          "exit_code": 0,
+          "status": "baseline_recorded_not_quality_certified"
+        },
+        "latest_updated": false,
+        "scope": "local_engineering_only",
+        "status": "archived_local_evidence"
+      },
+      "candidate_sha256": "7dc70806080d9949ba566d57e7fe7f78aaa30ee929998f3614a8a432a17a8854",
+      "measured_rows": 1,
+      "release_certified": false,
+      "status": "executed_frozen_candidate"
+    },
+    "artifact": {
+      "id": 11605173643,
+      "name": "p7-offline-default-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "size_in_bytes": 146310809,
+      "digest": "sha256:851fc13e589ba42e89279b607c60c3a8032f5751d86ed90896f1406f3cb6418b",
+      "workflow_run": {
+        "id": 37901931093,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      },
+      "expired": false,
+      "ZIP_read": false
+    },
+    "limits": "This original dev-profile one-row candidate gate is baseline_recorded_not_quality_certified; release_certified remainsfalse. Full archived RPC/member/binary evidence has not been independently reread."
+  },
+  "closeout": {
+    "job": 113726260410,
+    "run": 37901931093,
+    "name": "closeout",
+    "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T09:15:53Z",
+    "completed_at": "2026-10-09T09:25:10Z",
+    "log": {
+      "git_blob": "868270122e64fb74e7d626fe2c920a56ef69d233",
+      "bytes": 1911893,
+      "sha256": "9ad49bd9da30ee3ec57e1e67141e06a6ef2239cc7aef47035003d58c1e69e4b8",
+      "official_blob_readback_exact": true
+    },
+    "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "actual_ready_fix_test": {
+      "binary": "tests/crash_independent_review.rs",
+      "binary_path": "/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98",
+      "test": "independently_observed_sigkill_boundaries",
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 1,
+      "ignored_entry": "independent_child; invoked only by owning parent with isolated directory",
+      "wall_seconds": 45.58,
+      "original_log_lines": [
+        1237,
+        1243
+      ]
+    },
+    "complete_Rust_result_records": {
+      "groups": 55,
+      "passed": 1026,
+      "failed": 0,
+      "ignored": 22
+    },
+    "original_scope_steps": [
+      {
+        "name": "Bind current source and isolated build",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:16:19Z"
+      },
+      {
+        "name": "Actual cache races, process faults and WAL recovery",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:19:08Z"
+      },
+      {
+        "name": "Original default, semantic and HTTP wiring contracts",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:21:37Z"
+      },
+      {
+        "name": "Original thirteen-checkpoint real stdio lifecycle",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:23:04Z"
+      },
+      {
+        "name": "Three-seed real product retry, crash, deletion, recovery and automatic GC",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:24:46Z"
+      },
+      {
+        "name": "Attributed resources and actual worker contention",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:25:05Z"
+      },
+      {
+        "name": "Preserve final source identity",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:25:05Z"
+      },
+      {
+        "name": "Archive exact commands and raw evidence",
+        "conclusion": "success",
+        "completed_at": "2026-10-09T09:25:07Z"
+      }
+    ],
+    "three_seed_actual_phase_records": [
+      {
+        "seed": 197,
+        "phase": "initial_ready"
+      },
+      {
+        "seed": 197,
+        "phase": "clean_restart_zero_document_calls"
+      },
+      {
+        "seed": 197,
+        "phase": "age_real_cache"
+      },
+      {
+        "seed": 197,
+        "phase": "rebuild_delete_http500_pending_and_automatic_gc"
+      },
+      {
+        "seed": 197,
+        "phase": "unchanged_30_second_backoff"
+      },
+      {
+        "seed": 197,
+        "phase": "real_lease_expiry_after_sigkill"
+      },
+      {
+        "seed": 197,
+        "phase": "sigkill_lease_reclaimed_ready"
+      },
+      {
+        "seed": 197,
+        "phase": "final_restart_cache_reuse_and_read_only_status"
+      },
+      {
+        "seed": 199,
+        "phase": "initial_ready"
+      },
+      {
+        "seed": 199,
+        "phase": "clean_restart_zero_document_calls"
+      },
+      {
+        "seed": 199,
+        "phase": "age_real_cache"
+      },
+      {
+        "seed": 199,
+        "phase": "rebuild_delete_http500_pending_and_automatic_gc"
+      },
+      {
+        "seed": 199,
+        "phase": "unchanged_30_second_backoff"
+      },
+      {
+        "seed": 199,
+        "phase": "real_lease_expiry_after_sigkill"
+      },
+      {
+        "seed": 199,
+        "phase": "sigkill_lease_reclaimed_ready"
+      },
+      {
+        "seed": 199,
+        "phase": "final_restart_cache_reuse_and_read_only_status"
+      },
+      {
+        "seed": 211,
+        "phase": "initial_ready"
+      },
+      {
+        "seed": 211,
+        "phase": "clean_restart_zero_document_calls"
+      },
+      {
+        "seed": 211,
+        "phase": "age_real_cache"
+      },
+      {
+        "seed": 211,
+        "phase": "rebuild_delete_http500_pending_and_automatic_gc"
+      },
+      {
+        "seed": 211,
+        "phase": "unchanged_30_second_backoff"
+      },
+      {
+        "seed": 211,
+        "phase": "real_lease_expiry_after_sigkill"
+      },
+      {
+        "seed": 211,
+        "phase": "sigkill_lease_reclaimed_ready"
+      },
+      {
+        "seed": 211,
+        "phase": "final_restart_cache_reuse_and_read_only_status"
+      }
+    ],
+    "final_source_preservation": {
+      "original_command": "source_snapshot -> source-after.json; assert parsed source-before == after",
+      "official_step_conclusion": "success",
+      "standalone_receipts_read": false
+    },
+    "artifact": {
+      "id": 11606169975,
+      "name": "p7-closeout-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "size_in_bytes": 20424754,
+      "digest": "sha256:586b222ca0b614815e6fa9d611ffdcb72d594cdd0783a24a800816f5724c9313",
+      "workflow_run": {
+        "id": 37901931093,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      },
+      "expired": false,
+      "ZIP_read": false
+    },
+    "retained_failure": {
+      "old_job": 113709066322,
+      "old_run": 37896539239,
+      "old_log_blob": "93ebefb560b74534bd3ac64d035b4bc818b8fd91",
+      "old_error": "ParseIntError { kind: Empty }",
+      "overwritten_or_reclassified": false
+    },
+    "limits": [
+      "Successful execution of the original fixed C8 SIGKILL parent test is now observed. This does not erase its previous9f failure or replace raw failure history.",
+      "Standalone source-before/after receipts, retained child evidence and ZIP member hashes have not been independently reread here. No new fault experiment was launched."
+    ]
+  },
+  "pending": [
+    {
+      "run": 37901930897,
+      "job": 113726259431,
+      "name": "soak",
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "status": "in_progress",
+      "current_steps": [
+        {
+          "name": "One-hour actual stdio session with Git switches and catalog churn",
+          "started_at": "2026-10-09T09:12:43Z"
+        }
+      ],
+      "as_of_utc": "2026-10-09T09:24:27Z"
+    },
+    {
+      "run": 37903872633,
+      "job": 113732521918,
+      "name": "check",
+      "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+      "status": "in_progress",
+      "current_steps": [
+        {
+          "name": "Fixed resource driver harmless fixtures and TODO consistency",
+          "started_at": "2026-10-09T09:16:49Z"
+        }
+      ],
+      "as_of_utc": "2026-10-09T09:24:27Z"
+    }
+  ],
+  "source_separation": {
+    "C8": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "old_PR180_G": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "current_PR180_head_reported_by_root": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "old_e6_results_borrowed_for_current_PR180": false,
+    "C8_results_borrowed_for_PR180": false
+  },
+  "prior_evidence_reused_without_refetch": {
+    "mixed16_review": "aa838c1656df9d0f4e4254fd8aeba5d41bb724c7",
+    "mixed8_review": "373ad23dbb9caa4a9678b47d4aee741f07cbcb4b"
+  },
+  "scope_boundary": "All outcome interpretations above come from complete official original logs plus job metadata. No archive ZIP was downloaded/extracted; archive metadata identity is not full raw acceptance.",
+  "TODO": {
+    "remaining": 29,
+    "closed": 0
+  }
+}

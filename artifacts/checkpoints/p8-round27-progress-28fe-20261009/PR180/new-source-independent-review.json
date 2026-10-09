@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/runtime_review",
+  "recorded_at_utc": "2026-10-09 09:32:39 UTC",
+  "verdict": "accepted_scoped_static_no_composition_blocker",
+  "scope": "Independent actual five-path E6-to-P composition review and preservation of nine pre-existing DB/oracle/ready files. No compile, test, benchmark, performance, platform, task or release approval.",
+  "identity": {
+    "repository": "jyqj/codecortex",
+    "pr": 180,
+    "actual_pr_head": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "integration_base": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "integration_base_tree": "3d01f935c76a6c4da4ca4f1348804888fe08d45e",
+    "product": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+    "product_tree": "618eb8514d111a78bb5559827dc36b29e8190721",
+    "review": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
+    "review_tree": "db32c66dc0bfef05131789fa1cba3570c93c8a5e",
+    "guard": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "guard_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+    "actual_chain": "E6 -> P -> R -> G; each child actual Git commit has its immediately preceding commit as sole parent.",
+    "actual_PR_base_at_read": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "donor181": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "old_C8_measurement_source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+  },
+  "method": [
+    "Read actual PR metadata, P/R/G Git commits and complete GitHub comparisons E6...P (1 commit, 5 paths) and P...G (2 commits, 71 paths). Both file lists are below the compare 300-file bound.",
+    "Read all five new file bodies and the three E6 modified file bodies. Recomputed UTF-8 bytes, SHA256 and canonical Git blob SHA1 in memory; all five new OIDs equal the actual product compare.",
+    "Read each of nine preserved E6 Rust bodies at the exact E6 ref, independently recomputed its SHA256, size and Git OID, and checked absence from both complete comparison lists. This establishes unchanged exact content through P and G.",
+    "Compared whole integrated snapshot to the exact donor snapshot, replacing only the old write_file_data call with E6's write_file_data_for_rebuild; resulting bytes equal the actual integrated file.",
+    "Read typed CALL/symbol/implements query implementations, the actual symbol UID UNIQUE schema, config-link resolution and PassContext overlay contract to assess the new early returns.",
+    "Read all ten new control definitions. No control, Cargo, compiler, native executable, artifact code, fault injection or measurement was executed."
+  ],
+  "changes": [
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "before": {
+        "git_blob": "1ec37855f7209426931dd90ae2d483cc1fe2ffc1",
+        "bytes": 11036,
+        "sha256": "6ffc3db9b08993cf4a82923da5488360b8a8ad78a35591d4849fe287226667ec"
+      },
+      "after": {
+        "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+        "bytes": 11716,
+        "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a"
+      }
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "before": null,
+      "after": {
+        "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+        "bytes": 9704,
+        "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41"
+      }
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "before": {
+        "git_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+      },
+      "after": {
+        "git_blob": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+        "bytes": 10488,
+        "sha256": "82074da7c0fadaf17d4b02b879132c4ef06ce5f20319b344c3f709c5d7e41d8b"
+      }
+    },
+    {
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "before": null,
+      "after": {
+        "git_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+        "bytes": 3850,
+        "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed"
+      }
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "before": {
+        "git_blob": "f667b72d7abc63c6aa06f92e453a3e2d14b505d7",
+        "bytes": 8621,
+        "sha256": "4c5e7a9b59a39edfb5628dc1ef60fde4345a3a658d424087925f0b331de98378"
+      },
+      "after": {
+        "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+        "bytes": 8621,
+        "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+      }
+    }
+  ],
+  "preserved_nine": [
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "git_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "sha256": "62224f028852c6c7230d3a4d72151f9daf4d86f3c91d41fe30928e67acd0ab6c",
+      "bytes": 30100
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "git_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+      "bytes": 24457
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "git_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
+      "bytes": 56654
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5",
+      "bytes": 8957
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf",
+      "bytes": 10939
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "git_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "sha256": "2c99786a75ac5df604ca2481e799ef9bc8da84d6bf138781b1cbbfa6b9693d3c",
+      "bytes": 14608
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15",
+      "bytes": 14710
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "git_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4",
+      "bytes": 29924
+    },
+    {
+      "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+      "git_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+      "sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+      "bytes": 19381
+    }
+  ],
+  "composition": {
+    "actual_changed_product_paths": 5,
+    "P_to_G_files": 71,
+    "P_to_G_artifact_additions": 69,
+    "P_to_G_nonartifact_paths": [
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ],
+    "no_product_or_workflow_change_after_P": true,
+    "snapshot": {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "donor_blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+      "donor_bytes": 10476,
+      "donor_sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5",
+      "whole_donor_plus_retained_E6_FTS_call_equals_actual": true,
+      "actual_FTS_entrypoint_line": 119,
+      "actual_empty_token_branch_line": 79,
+      "finding": "Only moves full catalog preparation behind the post-scan, post-typed-config-filter empty-token branch. Scan/signature ordering and errors are unchanged. Empty tokens cannot create a link: resolve_config_links only appends inside its token loop; the original helper then returns an empty Vec before config-file I/O. Timestamp, signature/raw-token cache, metadata publication and full snapshot replacement still execute.",
+      "nonempty_path": "Uses the same collect_symbol_targets, indexed_files and build_config_link_units_from_snapshot, before entering the rebuild closure.",
+      "FTS_and_transactions": "Actual line119 calls txn.write_file_data_for_rebuild. The remainder of snapshot write/publication adapters is exact E6, and snapshot_write_txn/FTS implementation is absent from both full diffs. No incremental writer, FTS trigger/rowid or transaction seam is replaced by donor181."
+    },
+    "interface_dispatch": {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "typed_symbols_line": 97,
+      "interface_guard_line": 109,
+      "typed_implements_line": 118,
+      "implements_guard_line": 119,
+      "finding": "Disabled handling, stale interface_dispatch cleanup, persisted CALL filtering, prior CALL overlay and no-call return are byte-identical through the old guard. Full typed symbol decoding still precedes the interface guard; malformed symbol rows remain errors even when implements is empty. Typed implements reading remains after calls and a valid nonempty interface set.",
+      "set_equivalence": "Actual schema index_v1.sql:155 declares symbol_uid TEXT UNIQUE; symbol_dispatch_rows in index_db_graph.rs:479 selects only non-NULL UIDs and collects every typed row into Result<Vec<_>>. Empty UIDs are still omitted. Therefore deriving interface/trait membership before UID lookup-map construction equals the original map-derived set for the admitted schema.",
+      "implements_equivalence": "index_db_edges.rs:258 still collects every typed pair and propagates query/type errors. The old map inserts every returned pair without filtering, so old map emptiness equals new vector emptiness. Only lookup allocation is avoided.",
+      "positive_path": "The original UID/name map-building loop is byte-identical. From original section3d (container/method maps) through final return the entire positive synthesis body is byte-identical, including cap, resolution fields, source line, dedup and edge ordering mechanics.",
+      "overlay_contract": "dispatch_synthesis/mod.rs:82 describes CALL-only prior overlay; prior passes produce RendersComponent semantic relations, not implements. The new early return does not invent a new overlay assumption."
+    },
+    "workflow": {
+      "path": ".github/workflows/p8-scale.yml",
+      "only_change": "measure.strategy.max-parallel:20 ->10",
+      "whole_file_exact_single_replacement": true,
+      "after_exact_old_original_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "unchanged": "Preflight5, all five successful rep0 cells before remaining matrix, 5 scales x30 repetitions, 150 shards/1500 samples, seeds, worker concurrency, 18000000ms native limit, 350-minute job timeout, resource limits, all15-table parity and original aggregation.",
+      "boundary": "Scheduling restoration only; it does not modify an already running C8 study or prove performance."
+    }
+  },
+  "controls_read": {
+    "interface_count": 8,
+    "snapshot_count": 2,
+    "execution": "not_run_by_this_review",
+    "interface_cases": [
+      "stale synthesized cleanup retains real calls; with and without interface",
+      "no-call guard does not read removed symbol/implements tables",
+      "ordinary/empty-UID interface/trait does not read implements",
+      "disabled pass schedules no cleanup/read",
+      "malformed CALL errors precede later symbol/implements errors",
+      "malformed symbol container is not hidden",
+      "malformed implements/query errors propagate after original guards",
+      "prior CALL overlay, interface/trait positive dispatch and fanout caps0/1"
+    ],
+    "snapshot_cases": [
+      "full rebuild replaces old config refs, persists empty cache/signature/timestamp, remains empty on a source-only incremental update, and relinks after config changes",
+      "typed tsconfig module alias still resolves when heuristic config tokens are empty"
+    ],
+    "limits": "These are meaningful original donor definitions, not a new test framework. This review does not import donor test outcomes into the actual G execution."
+  },
+  "guard_consistency": {
+    "verifier_changes_only_four_identity_assignments": true,
+    "assignments": [
+      "PRODUCT",
+      "REVIEW",
+      "REVIEW_PATH",
+      "REGISTRY_SHA256"
+    ],
+    "registry_git_blob": "53dae35d245acf7ca084d90a31b3086362adc7cf",
+    "registry_sha256": "bd73dcab83430d83a6a18c272386caf63547a498b1cd196c74f00b6aeea3cb04",
+    "review_blob": "329248fb4cd3f1c03e8ff455e1a21f8be4350dd8",
+    "review_sha256": "7e78a64eff0d5dc7a9d773fce30d0c108d44406efe7d9fa07671039f6ca9af58",
+    "registry_product_and_review_match_actual_commits": true,
+    "registry_review_sha_matches_actual_R_file": true,
+    "complete_inputs": 1092,
+    "historical_delta": 52,
+    "validation_inputs": 139,
+    "registry_maps_equal_actual_R_maps": true,
+    "boundary": "This is exact record/identity consistency, not a new execution of the source verifier or a full re-audit of all1092 source files. Existing observer/runtime/statistics files are not among the five product or two guard changes."
+  },
+  "preserved_limits": {
+    "previous_review": "6dbdb925b3a63ee5ebf24ecd02b827968c1412f2 is scoped to donor181, not G. It was corroborating context, not substituted for actual diffs.",
+    "donor_workspace_failure": {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "exit": 101,
+      "log_git_blob": "eb0b02beab9264ea9449ba0fb34faccbdc2e010e",
+      "finding": "live_child_snapshot_is_attributed_monotonic_and_disappears / sampler.rs:830:17 live child snapshot unavailable",
+      "disposition": "Retained as failed at its actual execution identity; sampler is unchanged, cause is not resolved or waived by this composition."
+    },
+    "previous_Mac_and_scale_failures": "Remain source/environment-specific failures or incomplete executions. This source review grants no red-to-green or coverage claim.",
+    "current_G_CI": "Not polled or executed for this task; no compile/fmt/clippy/source-guard/control pass asserted.",
+    "old_measurements": "C8/173/E6 and donor181 measurements, binary receipts and study sample counts remain bound to their original source identities. No pooling or rebinding to G.",
+    "todo": {
+      "original": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    },
+    "quality_or_release_approval": false
+  },
+  "blockers": [],
+  "evidence": {
+    "actual_product_compare": {
+      "endpoint": "/repos/jyqj/codecortex/compare/e6ab28bc5956e225e2015a57f601bc4d867d3732...b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+      "bytes": 34616,
+      "sha256": "6c6631aea35fcbb01c1be3e1fe1fed5b4fc634fc0f0c7bd06802576dc64f6345"
+    },
+    "actual_product_to_guard_compare": {
+      "endpoint": "/repos/jyqj/codecortex/compare/b13ba8c1b738bc9c24b81cad1e88711fc9734283...3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "bytes": 1134554,
+      "sha256": "454ea396c6edf1857922e9d7f18f20430fe1700b664f2821796ad96f97e4ea78"
+    },
+    "existing_nine_file_review": "bdd0c54f8df09fd956f0dc0be3f6808cbbf41b36",
+    "raw_transport_note": "Responses were read in this session through the official GitHub plugin; new report is persisted as an unreferenced blob. No claim that large API bodies were separately written to local disk."
+  },
+  "preserved_nine_verification": "All nine actual E6 bodies independently rehashed to these OIDs/SHA256/bytes; none changed in E6...P or P...G."
+}

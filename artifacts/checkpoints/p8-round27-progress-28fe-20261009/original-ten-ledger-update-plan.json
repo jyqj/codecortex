@@ -1,0 +1,113 @@
+{
+  "schema": "p8-original-ten-ledger-update-plan-v1",
+  "scope": "read_only_preparation; no task update or execution",
+  "fixed_main": "900539f25ed9f9f78cf15895257f82f78810831e",
+  "pr182": {
+    "head": "496854bca73548906215a893d52010d90fa91d0f",
+    "merged_main": "900539f25ed9f9f78cf15895257f82f78810831e",
+    "main_tasks_equal_head_bytes": true
+  },
+  "read_git_blobs": {
+    "docs/roadmap/code-index-v2/tasks.json": "1365970c32d0883cc05a37f9333ffb9589299141",
+    "scripts/code_index_plan.py": "378ff47434a67a78dd1194b1fdf15dffda3fbfc3",
+    "scripts/verify_historical_integrations_v2.py": "24b068c0e17ac3b49f98e8fb57843d3286ce264a",
+    "docs/roadmap/code-index-v2/08-HANDOFF.md": "aac0a878fcdf40cb279f9f9f1055879037852c88",
+    "scripts/verify_reviewed_source_v15.py": "053d9838c12d79ecc5d3552c3cca2df5db7a9a74",
+    "scripts/p8_facts.py": "34e3d8eb350f4b482ee240db8902ced996774d6b",
+    ".github/workflows/ci.yml": "8c7325eb88b791f909e72c4b6c79b417185e4386"
+  },
+  "current": {
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_closed": 0,
+    "current_phase": "P8",
+    "next_task": "P8-005"
+  },
+  "permitted_progress": {
+    "task_fields": [
+      "status",
+      "evidence",
+      "implementation_notes"
+    ],
+    "plan_fields": [
+      "status",
+      "current_phase",
+      "next_task",
+      "last_implementation_date",
+      "execution_note"
+    ],
+    "authority": "verify_historical_integrations_v2.py:28-30,183-214",
+    "invariants": "Keep all 192 IDs and order, all top keys, and all non-progress values unchanged. P8-011 may gain implementation_notes because it is explicitly permitted. Preserve old evidence/notes and append dated records."
+  },
+  "final_only_after_full_actual_acceptance": {
+    "dependency_order": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "external_dependencies_already_done": [
+      "P8-004",
+      "P8-001",
+      "P7-020"
+    ],
+    "one_atomic_commit_allowed": true,
+    "navigation": {
+      "status": "in_progress",
+      "current_phase": "P8",
+      "next_task": "P8-017",
+      "last_implementation_date": "actual completion date in YYYY-MM-DD"
+    },
+    "next_task_reason": "017 depends on016. Do not automatically choose or close conditional014 or blocked P7-018.",
+    "future_counts_if_only_these_ten_close": {
+      "done": 173,
+      "in_progress": 6,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 19
+    },
+    "evidence_minimum": "08-HANDOFF.md:94: target_sha, worktree_digest, commands, exit codes, run_id/artifact paths, review, rollback_status; all applicable original V conditions must actually pass.",
+    "warning": "The generator checks nonempty evidence and done hard dependencies, not substantive evidence acceptance. Its passed result cannot certify these ten tasks."
+  },
+  "generator_behavior": {
+    "file": "scripts/code_index_plan.py",
+    "navigation": "63-93 validates the operator-selected navigation/date; it does not select or advance a task. Leaving next_task=P8-005 after005 becomes done fails at81-82.",
+    "derived": [
+      "docs/roadmap/code-index-v2/05-TODO.md",
+      "README.md marked code-index-progress block",
+      "docs/roadmap/code-index-v2/README.md marked block",
+      "docs/roadmap/code-index-v2/08-HANDOFF.md marked block"
+    ],
+    "write": "197-224: reads tasks bytes; validates before writes; regenerates entire05-TODO and only three marked blocks; preserves text outside markers; emits actual JSON stdout. Does not write tasks.json or PLAN-CHECK.json.",
+    "top_usage": "status/current_phase/next_task/date are validated and rendered. task_count and phase_task_counts are validated; phase_order/names drive rendering. schema_version/design_date/baseline_sha/benchmark_reference_sha/state_authority/execution_note/dependency_semantics are not read by this generator; they remain protected by historical definition rules.",
+    "command_order": [
+      "python3 scripts/code_index_plan.py --write",
+      "python3 scripts/code_index_plan.py",
+      "python3 scripts/verify_historical_integrations_v2.py",
+      "python3 scripts/p8_facts.py --check",
+      "git diff --check"
+    ],
+    "plan_check_receipt": "Only after the normal no-argument generator actually exits0, save its exact stdout to docs/roadmap/code-index-v2/PLAN-CHECK.json. Preserve failures separately; do not write predicted passed output. Requirement08-HANDOFF:86,118.",
+    "original_ci": "Keep existing source_integrity/v15/history and other applicable CI unchanged. p8_facts does not consume task status; no facts --write is required just to close tasks."
+  },
+  "historical_subgate_boundary": {
+    "task": "P8-005",
+    "field": "acceptance_subgates.full_1k_5k_10k_50k_100k_scale_acceptance",
+    "preserved_value": "open",
+    "baseline": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+    "baseline_task_blob": "16ea909f6e7111b8bd2f5fa022fd503063273790",
+    "observation": "This exact object is already in the frozen definition baseline beside the dated fixed-e3 historical implementation note. Current value equals that baseline. It is not a mutable TASK_PROGRESS field and the generator does not consume it.",
+    "action": "Preserve the original historical object. Append a dated evidence/implementation_notes entry explicitly separating the old fixed-e3 subgate snapshot from the newly accepted fixed-source full study. Do not change this field or historical guards for green CI."
+  },
+  "checks_performed": "Read original code/definitions and pure in-memory comparison only. Current frozen task definitions/top values/order match the historical baseline after removing explicitly permitted progress fields. No replacement renderer, code execution, task write or ref change.",
+  "mutations": "Only this unreferenced report Git blob."
+}

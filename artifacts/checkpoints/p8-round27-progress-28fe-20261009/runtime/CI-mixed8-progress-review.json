@@ -1,0 +1,605 @@
+{
+  "schema": "round27-fixed-C8-and-PR180-CI-progress-review-v1",
+  "reviewer": "/root/recovery_audit",
+  "snapshot_utc": "2026-10-09T09:04:26Z",
+  "repository": "jyqj/codecortex",
+  "scope": "One fresh read of the four requested runs' jobs and steps. Only newly terminal C8 mixed8 full log read; no running logs, repeat logs, polling loop or new execution.",
+  "findings": [
+    "C8 check113726259355 remains in_progress. Format, clippy, every default test target compilation, authorized default regression and resource/TODO consistency have actual successful steps. Resource/TODO step completed09:03:56. Semantic HTTP step is running; remaining steps pending.",
+    "PR180 e6ab check113732521918 remains queued with steps empty. Its queued job.started_at is not evidence of test execution. Security/MSRV are success; old completed logs were not reread.",
+    "C8 closeout113726260410 remains queued with steps empty. This job provides no new ready/SIGKILL execution result. Offline(default) is building its adapter; mechanism and offline(semantic) already success and were not reread.",
+    "C8 runtime mixed8 newly success09:04:05. Mixed4 measuring, mixed1 building, soak queued. Prior mixed16 and fakebackfill success retained without log reread.",
+    "No new failed job in this snapshot. No assertion that either complete ordinary check or closeout has passed."
+  ],
+  "snapshots": [
+    {
+      "run": 37901930820,
+      "official_API_raw_sha256": "dc8b163a3c9f37afaa0d729a9571d7667dbe99a1630bd0601ee0e39291745562",
+      "jobs": [
+        {
+          "id": 113726259004,
+          "name": "msrv",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:24:19Z",
+          "completed_at": "2026-10-09T08:25:34Z",
+          "step_counts": {
+            "success": 9
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259179,
+          "name": "security",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:35:25Z",
+          "completed_at": "2026-10-09T08:38:51Z",
+          "step_counts": {
+            "success": 5
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259355,
+          "name": "check",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T08:44:15Z",
+          "completed_at": null,
+          "step_counts": {
+            "success": 9,
+            "in_progress": 1,
+            "pending": 24
+          },
+          "current_steps": [
+            {
+              "number": 10,
+              "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T09:03:56Z",
+              "completed_at": null
+            }
+          ],
+          "failed_or_skipped_steps": [],
+          "successful_completed_steps": [
+            {
+              "number": 1,
+              "name": "Set up job",
+              "completed_at": "2026-10-09T08:44:17Z"
+            },
+            {
+              "number": 2,
+              "name": "Run actions/checkout@v4",
+              "completed_at": "2026-10-09T08:44:43Z"
+            },
+            {
+              "number": 3,
+              "name": "Run dtolnay/rust-toolchain@stable",
+              "completed_at": "2026-10-09T08:44:45Z"
+            },
+            {
+              "number": 4,
+              "name": "Run Swatinem/rust-cache@v2",
+              "completed_at": "2026-10-09T08:44:56Z"
+            },
+            {
+              "number": 5,
+              "name": "Format check",
+              "completed_at": "2026-10-09T08:45:00Z"
+            },
+            {
+              "number": 6,
+              "name": "Clippy",
+              "completed_at": "2026-10-09T08:45:29Z"
+            },
+            {
+              "number": 7,
+              "name": "Compile every default test target",
+              "completed_at": "2026-10-09T08:47:54Z"
+            },
+            {
+              "number": 8,
+              "name": "Default regression within authorized scope",
+              "completed_at": "2026-10-09T08:52:28Z"
+            },
+            {
+              "number": 9,
+              "name": "Fixed resource driver harmless fixtures and TODO consistency",
+              "completed_at": "2026-10-09T09:03:56Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": 37903872633,
+      "official_API_raw_sha256": "a2e11cb8ee79ce0848fab019334ad782fb4fce6f19e225fd83eb624eb66bef9b",
+      "jobs": [
+        {
+          "id": 113732521178,
+          "name": "msrv",
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:39:20Z",
+          "completed_at": "2026-10-09T08:40:41Z",
+          "step_counts": {
+            "success": 9
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113732521513,
+          "name": "security",
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:44:11Z",
+          "completed_at": "2026-10-09T08:46:57Z",
+          "step_counts": {
+            "success": 5
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113732521918,
+          "name": "check",
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T08:15:43Z",
+          "completed_at": null,
+          "step_counts": {},
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        }
+      ]
+    },
+    {
+      "run": 37901930897,
+      "official_API_raw_sha256": "35c81b5a748111b0fc356d33ba8b5f85d7106d4605cd21766430f65851b89e76",
+      "jobs": [
+        {
+          "id": 113726258977,
+          "name": "fake_backfill",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:28:41Z",
+          "completed_at": "2026-10-09T08:37:30Z",
+          "step_counts": {
+            "success": 10
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259185,
+          "name": "mixed (8)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:52:25Z",
+          "completed_at": "2026-10-09T09:04:05Z",
+          "step_counts": {
+            "success": 11
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259202,
+          "name": "mixed (4)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T08:55:27Z",
+          "completed_at": null,
+          "step_counts": {
+            "success": 6,
+            "in_progress": 1,
+            "pending": 3
+          },
+          "current_steps": [
+            {
+              "number": 7,
+              "name": "Fixed offered read/build schedule and no-repair parity",
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T09:00:46Z",
+              "completed_at": null
+            }
+          ],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259337,
+          "name": "mixed (16)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:56:38Z",
+          "completed_at": "2026-10-09T08:09:43Z",
+          "step_counts": {
+            "success": 11
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259426,
+          "name": "mixed (1)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T09:02:31Z",
+          "completed_at": null,
+          "step_counts": {
+            "success": 5,
+            "in_progress": 1,
+            "pending": 4
+          },
+          "current_steps": [
+            {
+              "number": 6,
+              "name": "Build an exact release product and complete oracle",
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T09:03:19Z",
+              "completed_at": null
+            }
+          ],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726259431,
+          "name": "soak",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:56:34Z",
+          "completed_at": null,
+          "step_counts": {},
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        }
+      ]
+    },
+    {
+      "run": 37901931093,
+      "official_API_raw_sha256": "a47817fdc6642a64dc91ec01e5ba48fa87f13b6c472df0e3243cf3d0e686ab58",
+      "jobs": [
+        {
+          "id": 113726259977,
+          "name": "mechanism",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:58:00Z",
+          "completed_at": "2026-10-09T08:06:13Z",
+          "step_counts": {
+            "success": 8
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726260197,
+          "name": "offline (semantic)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:39:41Z",
+          "completed_at": "2026-10-09T08:42:15Z",
+          "step_counts": {
+            "success": 11,
+            "skipped": 3
+          },
+          "current_steps": [],
+          "failed_or_skipped_steps": [
+            {
+              "number": 9,
+              "name": "Build candidate scorer from the same fixed default source",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-09T08:42:11Z",
+              "completed_at": "2026-10-09T08:42:11Z"
+            },
+            {
+              "number": 10,
+              "name": "Freeze candidate, execute original MCP fixture and replay original scorer",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-09T08:42:11Z",
+              "completed_at": "2026-10-09T08:42:11Z"
+            },
+            {
+              "number": 11,
+              "name": "Print bounded offline failure diagnostics",
+              "status": "completed",
+              "conclusion": "skipped",
+              "started_at": "2026-10-09T08:42:11Z",
+              "completed_at": "2026-10-09T08:42:11Z"
+            }
+          ]
+        },
+        {
+          "id": 113726260236,
+          "name": "offline (default)",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T09:02:11Z",
+          "completed_at": null,
+          "step_counts": {
+            "success": 6,
+            "in_progress": 1,
+            "pending": 6
+          },
+          "current_steps": [
+            {
+              "number": 7,
+              "name": "Build committed adapter test runner",
+              "status": "in_progress",
+              "conclusion": null,
+              "started_at": "2026-10-09T09:03:47Z",
+              "completed_at": null
+            }
+          ],
+          "failed_or_skipped_steps": []
+        },
+        {
+          "id": 113726260410,
+          "name": "closeout",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:56:34Z",
+          "completed_at": null,
+          "step_counts": {},
+          "current_steps": [],
+          "failed_or_skipped_steps": []
+        }
+      ]
+    }
+  ],
+  "new_terminal_log_review": {
+    "build": {
+      "build_exit_code": 0,
+      "cargo_log_sha256": "df68738703babd45897598b9d00de219d70ba8cbd7165b1b97637098a95f6200",
+      "stderr_sha256": "4b804eba028a452152ad8693c18779a2f6a39b3c54baf04a403fa80639396830",
+      "binary_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+      "oracle_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+      "statistics_sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+    },
+    "report": {
+      "status": "passed_observation",
+      "exit_code": 0,
+      "task_complete": false,
+      "profile": "mixed",
+      "offered": 900,
+      "outcomes": {
+        "success": 900
+      },
+      "observed_work_ns": 448012355154,
+      "actual_concurrency": {
+        "read": 0,
+        "build": 0,
+        "maximum": 7,
+        "read_build_overlap": true
+      },
+      "real_branch_switches": 50,
+      "observed_catalog_compactions": 6,
+      "statistics": {
+        "path": "statistics.json",
+        "sha256": "afc4c4daa34f09ebdde7feeb5000245b5466d1cb7c6ac6461a17675225748a19",
+        "replay_path": "statistics-replay.json",
+        "replay_identical": true,
+        "exit_code": 0,
+        "status": "all_original_terminal_outcomes_successful"
+      },
+      "parity_exit_code": 0,
+      "parity_sha256": "ad186b306c26bc51e12f3086175530cf5b5dbeb088cee11787bedea83bcffc66",
+      "product_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+      "oracle_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+      "semantic_backfill": "not_run_in_default_product_profile",
+      "release_approval": false,
+      "owned_cleanup": {
+        "unfinished_work": 0,
+        "sampler_stopped": true,
+        "product_stopped": true,
+        "comparison_product_stopped": true,
+        "product_construction_pending": false,
+        "comparison_product_construction_pending": false
+      },
+      "raw_sha256": "f757777bff8fdaada5cc46ae843f0fc6225334fb7b6486e18d7581acb7288959",
+      "plan_sha256": "0709d24f198160c6fd64c0336e41ee59e913511e0f50bdbc509fdb3874163fa9",
+      "artifact_seal_status": "sealed",
+      "elapsed_ns": 449626484299,
+      "final_build_verification_keys": [
+        "source",
+        "observer",
+        "artifacts",
+        "toolchain",
+        "receipt_path",
+        "receipt_sha256",
+        "build_seal_sha256",
+        "verification_scope"
+      ]
+    },
+    "verified": {
+      "status": "sealed_artifacts_verified",
+      "files": 2110,
+      "observation_status": "passed_observation",
+      "observation_exit_code": 0
+    },
+    "source_identity": {
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "reported_source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "source_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+      "input_count": 1090,
+      "manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+      "observer_count": 9,
+      "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+      "build_receipt_sha256": "e6ab8e5e3f7ed1e8f3ac178c43ca97075de0ee3e1c67c86c5229fe5c1c35c851",
+      "build_seal_sha256": "8a177b24c387e5badcfbec3fdddb86fa9df635b854e2f4d9e2edca5f3d1db890"
+    },
+    "compiler": {
+      "cargo": {
+        "command": [
+          "/home/runner/.cargo/bin/cargo",
+          "--version",
+          "--verbose"
+        ],
+        "executable": "/home/runner/.cargo/bin/rustup",
+        "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+        "invocation": "/home/runner/.cargo/bin/cargo",
+        "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+      },
+      "rustc": {
+        "command": [
+          "/home/runner/.cargo/bin/rustc",
+          "--version",
+          "--verbose"
+        ],
+        "executable": "/home/runner/.cargo/bin/rustup",
+        "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+        "invocation": "/home/runner/.cargo/bin/rustc",
+        "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2"
+      }
+    },
+    "execution_environment": {
+      "system": "Linux",
+      "release": "6.17.0-1022-azure",
+      "machine": "x86_64",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "reported_logical_cpus": 4,
+      "runner_affinity_cpus": 4,
+      "cgroup_cpu_quota": null,
+      "cgroup_cpu_quota_status": "not_observed; logical or affinity counts are not a quota claim"
+    },
+    "reported_binary_chain": {
+      "codecortex": {
+        "bytes": 27092024,
+        "sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+        "copy_source": {
+          "path": "/home/runner/work/_temp/p8-runtime-target/release/codecortex",
+          "bytes": 27092024,
+          "sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671"
+        },
+        "compiler_manifest": "/home/runner/work/codecortex/codecortex/crates/cc-server/Cargo.toml",
+        "compiler_src": "/home/runner/work/codecortex/codecortex/crates/cc-server/src/main.rs",
+        "compiler_executable": "/home/runner/work/_temp/p8-runtime-target/release/codecortex",
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "fresh": false
+      },
+      "p8-oracle": {
+        "bytes": 2964184,
+        "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+        "copy_source": {
+          "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-oracle",
+          "bytes": 2964184,
+          "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e"
+        },
+        "compiler_manifest": "/home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml",
+        "compiler_src": "/home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-oracle.rs",
+        "compiler_executable": "/home/runner/work/_temp/p8-runtime-target/release/p8-oracle",
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "fresh": false
+      },
+      "p8-runtime-statistics": {
+        "bytes": 974880,
+        "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a",
+        "copy_source": {
+          "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-runtime-statistics",
+          "bytes": 974880,
+          "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+        },
+        "compiler_manifest": "/home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml",
+        "compiler_src": "/home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "compiler_executable": "/home/runner/work/_temp/p8-runtime-target/release/p8-runtime-statistics",
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        },
+        "features": [],
+        "fresh": false
+      }
+    },
+    "controls": {
+      "observed_original_unittest_count": 68,
+      "original_stdout": "Ran 68 tests in 16.218s / OK",
+      "new_tests_executed_by_reviewer": 0
+    },
+    "log": {
+      "git_blob": "1a3db4fe3ff51eac97b3018264c0d0b8cb42a54f",
+      "bytes": 277791,
+      "sha256": "536598e6e81910ea05bf02b82ecb118c3c84f8b0131c77e14eba1e1441fa7e3d",
+      "official_blob_readback_equal": true
+    },
+    "artifact": {
+      "id": 11606056565,
+      "node_id": "MDg6QXJ0aWZhY3QxMTYwNjA1NjU2NQ==",
+      "name": "p8-mixed-c8-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "size_in_bytes": 16592348,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11606056565",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11606056565/zip",
+      "expired": false,
+      "digest": "sha256:96f2baca1dbac361103eef75b90fa6ad017bda97eef029aafc8a647a3b767114",
+      "created_at": "2026-10-09T09:04:03Z",
+      "updated_at": "2026-10-09T09:04:03Z",
+      "expires_at": "2027-01-07T07:56:34Z",
+      "workflow_run": {
+        "id": 37901930897,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      }
+    },
+    "scope_limitations": [
+      "Official full UTF8 job log and original artifact metadata read. ZIP/archive members, standalone raw/build/plan bytes have not been downloaded or independently rehashed here.",
+      "Logged copied binary/Cargo/provenance hashes agree within this job, but this is not a new independent inspection of retained ELF bytes.",
+      "No full N150 acceptance, TODO completion, release approval or source transfer to PR180 e6ab."
+    ]
+  },
+  "not_run_by_reviewer": [
+    "Cargo",
+    "native",
+    "tests",
+    "validators",
+    "fault experiments",
+    "ZIP extraction"
+  ],
+  "changed_refs_or_tasks": false,
+  "TODO": {
+    "remaining": 29,
+    "closed": 0
+  }
+}

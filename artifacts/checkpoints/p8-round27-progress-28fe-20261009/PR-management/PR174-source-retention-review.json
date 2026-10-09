@@ -1,0 +1,280 @@
+{
+  "schema": "round27-PR174-supersession-and-PR178-base-independent-review-v1",
+  "reviewer": "/root/recovery_audit",
+  "repository": "jyqj/codecortex",
+  "observed_at_utc": "2026-10-09T09:31:13Z",
+  "conclusion": {
+    "close_safe_yes": true,
+    "meaning": "Safe to retain PR174 closed as superseded, without merging or deleting its original branch. It is already closed by an external actor. Four source changes are identical in C8; old binding records and unique archives remain reachable at the preserved original head.",
+    "additional_close_action_required": false,
+    "all_PR174_archives_copied_inside_C8": false,
+    "PR174_merged": false,
+    "original_TODO_completed": 0,
+    "remaining": 29
+  },
+  "current_PR174": {
+    "state": "closed",
+    "draft": true,
+    "head": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+    "branch": "task/p8-macos-integration-bfcc-20261009",
+    "base_ref": "main",
+    "base_sha_reported_by_PR_API": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "closed_at": "2026-10-09T09:27:14Z",
+    "merged": false,
+    "merged_at": null,
+    "merged_by": null,
+    "official_closed_event": {
+      "actor": "jyqj",
+      "created_at": "2026-10-09T09:27:15Z",
+      "commit_id": null
+    },
+    "explicit_superseded_comment": {
+      "id": 6078195424,
+      "url": "https://github.com/jyqj/codecortex/pull/174#issuecomment-6078195424",
+      "actor": "jyqj",
+      "created_at": "2026-10-09T09:27:14Z"
+    },
+    "branch_ref_observed": {
+      "sha": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+      "type": "commit",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/commits/ae77486dab0141173fcb2c4c99dd85d34e888157"
+    }
+  },
+  "relation": {
+    "immutable_174_head": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+    "immutable_C8_head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "official_compare": {
+      "status": "diverged",
+      "ahead": 9,
+      "behind": 3,
+      "merge_base": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+      "total_commits": 9
+    },
+    "interpretation": "The branches diverge. PR174 is not an ancestor of C8, and the GitHub three-dot compare file list is not a direct complete-tree preservation proof. The source and archive findings below instead use exact head file OIDs and directory trees.",
+    "PR174_actual_change_count": 63,
+    "PR174_change_partition": {
+      "product_test_modified": 4,
+      "binding_scripts_modified": 2,
+      "new_archive_files": 57
+    },
+    "actual_source_blob_equality": [
+      {
+        "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+        "PR174": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+        "C8": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+        "C8mode": "100644",
+        "content_equal": true
+      },
+      {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "PR174": "31b34057ff76e0b07e9242ef179951577ed22187",
+        "C8": "31b34057ff76e0b07e9242ef179951577ed22187",
+        "C8mode": "100644",
+        "content_equal": true
+      },
+      {
+        "path": "crates/cc-index/src/project_model/python_inventory.rs",
+        "PR174": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+        "C8": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+        "C8mode": "100644",
+        "content_equal": true
+      },
+      {
+        "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+        "PR174": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+        "C8": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+        "C8mode": "100644",
+        "content_equal": true
+      }
+    ],
+    "old_binding_disposition": "PR174's registry5a0da34c4fc6f297d10a224d0f833f9ec8c99406 and verifier058266858c2640e82aa8651c7272d8b6054fc184 identify its own P/R. They must not overwrite the combined C8 binding. C8's own original v15 execution passed on its P35a7b341/Ra9706a90 and1090 inputs; see reviewd469f6df98985b7723947af13bffb7778db7ce46.",
+    "independently_missing_product_changes": [],
+    "no_unreviewed_combination_or_new_runtime_claim": true
+  },
+  "archive_preservation": {
+    "checkpoint_entries_in_PR174": 193,
+    "checkpoint_entries_in_C8": 195,
+    "old_entries_identical_by_tree_OID": 192,
+    "old_entries_changed_in_C8": 0,
+    "unique_PR174_directory_not_copied_into_C8": {
+      "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009",
+      "tree": "32d16e5472715b898141fe7f6e154614973ca6cf",
+      "files": 57,
+      "bytes": 1923491,
+      "all_PR174_added_archive_paths_match_tree_OIDs": true,
+      "recursive_tree_truncated": false,
+      "leaf_map_sha256": "9a46c1d1423fad8fe19df47a3f0c229686464dfce73d8ec55fbd7a2280523929",
+      "fixed_url": "https://github.com/jyqj/codecortex/tree/ae77486dab0141173fcb2c4c99dd85d34e888157/artifacts/checkpoints/p8-macos-integration-bfcc-20261009"
+    },
+    "continuing_reachability": "refs/heads/task/p8-macos-integration-bfcc-20261009 was actually read and still points to ae77486dab0141173fcb2c4c99dd85d34e888157. Closing the PR does not modify this branch or its57 original files. Keep it as already requested; no duplicate archive copy is needed for this close-only action.",
+    "original_canonical": "c63b799179634f0cde1979fc6433fd9a2f78cf7e",
+    "original_complete_bridge": "53a803561e8bb7622e500d967fbd1e1fa627abe6",
+    "original_installed_manifest": "3aafee76e579fa5c966ea75d49a0faf945ba94b9",
+    "original_engineering_report": "00ce5b61a9b380a392dcf01e4fad644e685062e1",
+    "later_old_Mac_timeout_archive": {
+      "commit": "6e7959f5290f1d03e3e5c736e643c4d23a0b6ec7",
+      "prefix": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes",
+      "manifest_git_blob": "e3102326d60e81abe2fb3a3229360825564f1471",
+      "three_small_original_receipts_read_and_matched_manifest_bytes_SHA": true,
+      "receipts": [
+        {
+          "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes/review-ci/macos-integration-candidate/source-admission-attempt01/incomplete-execution-review.json",
+          "git_blob": "a6400c8e0899769712567400eac08cc363f022be",
+          "bytes": 1617,
+          "sha256": "6af0b0d5278b0f76c0ca4fa5684958e2503987fd0c7c539205946a6fa0c5a200"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes/review-ci/macos-integration-candidate/source-admission-attempt01/native-terminal-observation.json",
+          "git_blob": "00cf555ec8ee73e479074fbef18b433be1af46c3",
+          "bytes": 572,
+          "sha256": "6158534528b3177845199fa9f2b1bbf236ae1f15e680cd5a5e37f32bed583e65"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round10-source-bindings-and-native-outcomes/review-ci/macos-integration-candidate/source-admission-attempt01/runner-timeout-observation.json",
+          "git_blob": "9f67c575b27c7056768a3af28f14a01f63439e85",
+          "bytes": 965,
+          "sha256": "56a0995dc68826f90752bb943bb5b509638ab4bfb30c542ac7e5c86f4c776765"
+        }
+      ],
+      "retained_facts": {
+        "actual_head": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+        "original_181_suite": "not_passed",
+        "actual_completed_OK_methods": 139,
+        "terminal_suite_summary_present": false,
+        "native_runner_timeout_seconds": 3600,
+        "native_exit_code": -1,
+        "original_child_exit_code": null,
+        "original_v15": "not_run",
+        "old_receipts_rewritten": false
+      },
+      "limitation": "Only archive directory/manifest and three small original outcome receipts were read here. No old large logs, ELF, ZIP or incomplete job were rerun. The later timeout archive is separate from the original57-file PR174 archive and is not claimed to be inside C8."
+    }
+  },
+  "PR178_current_base": {
+    "state": "open",
+    "draft": true,
+    "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+    "base_ref": "main",
+    "base_repository": "jyqj/codecortex",
+    "base_sha_reported_by_PR_API": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "independent_current_main_ref": "900539f25ed9f9f78cf15895257f82f78810831e",
+    "mergeable": true,
+    "mergeable_state": "unstable",
+    "finding": "The target branch is unequivocally main, not a different branch. PR API base.sha60e5 differs from the actual refs/heads/main900539f read in this snapshot. Do not substitute the older field for the live branch tip or claim a reason for the discrepancy without further evidence."
+  },
+  "public_merge_information": {
+    "branch_main_API": {
+      "protected": false,
+      "protection": {
+        "enabled": false,
+        "required_status_checks": {
+          "enforcement_level": "off",
+          "contexts": [],
+          "checks": []
+        }
+      }
+    },
+    "rules_endpoint": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/rules/branches/main",
+      "read_result": "connector rejects endpoint HTTP400; ruleset information not independently obtained",
+      "no_ruleset_inference_from_error": true
+    },
+    "applicable_docs_at_main": "900539f25ed9f9f78cf15895257f82f78810831e",
+    "CONTRIBUTING": {
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780",
+      "bytes": 3565,
+      "precommit_commands": [
+        "cargo fmt --all -- --check",
+        "cargo clippy --workspace --all-targets -- -D warnings",
+        "cargo test --workspace",
+        "cargo test -p cc-eval -- integration_fixtures_and_corpus"
+      ],
+      "other_listed_benchmark": "CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture",
+      "scope": "MSRV1.95, no-D-warnings weakening; platform findings require source/OS/arch/toolchain/SDK and prepared-helper conditions. Commands are recorded requirements, not executed by this review."
+    },
+    "README": {
+      "git_blob": "8978a0da9afd699dae146f3f80988e091d1ebad9",
+      "sha256": "2fadb91a73fddaf52b9b9a374649d61d91a08a54d83488dbf68ccec4df8be711",
+      "bytes": 7151,
+      "task_counts": {
+        "done": 163,
+        "in_progress": 16,
+        "todo": 12,
+        "blocked": 1
+      },
+      "explicit_task_completion_not_release_certification": true
+    },
+    "interpretation": "The read README/CONTRIBUTING and observed branch protection response do not impose a universal rule barring every PR merge until150 formal scale shards complete. Do not invent that gate. Task closure and release acceptance retain their original separate evidence and hard dependencies. PR178 is still draft and mergeable_stateunstable at this snapshot; this report does not authorize its merge or draft change."
+  },
+  "existing_evidence_reused": {
+    "C8_CI_closeout_report": "d469f6df98985b7723947af13bffb7778db7ce46",
+    "C8_platform_report_from_root": "acef708eed1374963d2d7be787e3337ca3971c33",
+    "platform_reread": false
+  },
+  "action_boundary": {
+    "PR_updated": false,
+    "closed_by_this_reviewer": false,
+    "draft_changed": false,
+    "ref_changed": false,
+    "branch_deleted": false,
+    "new_test_or_native_run": false,
+    "new_large_log_read": false,
+    "Git_objects_created": "only this unreferenced report after review"
+  },
+  "input_receipts": {
+    "pr174": {
+      "bytes": 19660,
+      "sha256": "57942178422e6c269963351a08dff8e7f916200c1fda1412c7abf26198beb35e"
+    },
+    "pr178": {
+      "bytes": 22371,
+      "sha256": "3bfb4c4a620bf5812ef0e5e8adc5f29d1237f8709b8fbc2362e393b5ef169793"
+    },
+    "main": {
+      "bytes": 328,
+      "sha256": "50edaef60cec5fb4d778c0752c4d3c8d86c959b2ad89cea5989dcd6365ddbd6c"
+    },
+    "compare": {
+      "bytes": 1150851,
+      "sha256": "ba41323f534593cf1a7cc5d6eb8e923e03ff54a70ae8673dee7ad44f0e877e66"
+    },
+    "events": {
+      "bytes": 1191,
+      "sha256": "badea4210a3e03574d538d8e8c3025d68c28f22c25795d2d17a24a7dd2ec4f4d"
+    },
+    "branch-main": {
+      "bytes": 5489,
+      "sha256": "c7b2bdea27271ab06edfeb79b16885fd0d557523699a036832bef310885d9d65"
+    },
+    "174-files": {
+      "bytes": 400853,
+      "sha256": "59e5696433404f94a61a52e2e939b26f3fbe50b8f2e0f7605a6434c5982e490b"
+    },
+    "174-ref": {
+      "bytes": 447,
+      "sha256": "46ac30b3a9c5ad4d0213d1de02c9299560f95c12acf1e354e79a68d94678ab32"
+    },
+    "174-checkpoints": {
+      "bytes": 201748,
+      "sha256": "dfcd90be27ca1623bd948233b1d797d72e9b0b763df6dd64ef30d516d72fc2cd"
+    },
+    "C8-checkpoints": {
+      "bytes": 203848,
+      "sha256": "42396c7d70bc12451c927351bed6de67ebdfa03d4609fec9fdff080b26576f9d"
+    },
+    "174-archive": {
+      "bytes": 17250,
+      "sha256": "290cd3340c5a15065d1b088221201a900c50535465114900ececf7fbb18ee163"
+    },
+    "C8-crates": {
+      "bytes": 333470,
+      "sha256": "c7c33ef9cbc9a14fbf17ff22b3c1dd2ff5b7f3547ab8071d7598f61f2143473c"
+    },
+    "timeout-manifest": {
+      "bytes": 25251,
+      "sha256": "c27f136566c8afb8611b2a56f30047ff6f7a31c3b41e771507f79913f5e3b303"
+    }
+  }
+}

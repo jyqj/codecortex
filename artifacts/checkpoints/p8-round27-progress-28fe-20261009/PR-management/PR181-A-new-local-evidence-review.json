@@ -1,0 +1,268 @@
+{
+  "schema": "round27-PR181-A-local-execution-publication-addendum-v1",
+  "repository": "jyqj/codecortex",
+  "reviewer": "/root/recovery_audit",
+  "reviewed_at_utc": "2026-10-09T09:36:40Z",
+  "verdict": "newly_published_distinct_P2_logs_and_command_receipts_found_do_not_repeat_old_absence_claim",
+  "scope": "Only the newly published local index/corpus execution attribution, its exact four original files and the relevant G/A CI snapshot. No source re-review, runtime-attribution gap review, new test, native execution, dispatch, ref or PR mutation.",
+  "identity": {
+    "A": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "A_tree": "cc74aa4ea2fc05e25a346f3f8dbfaa26e2553352",
+    "sole_parent_G": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "P2": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "P2_tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da",
+    "A_delta": {
+      "total_files": 107,
+      "added_publication_files": 101,
+      "modified_documents": 6,
+      "no_changed_product_or_validation_paths": true
+    }
+  },
+  "previous_correction": {
+    "comment": "https://github.com/jyqj/codecortex/pull/181#issuecomment-6077813882",
+    "at": "2026-10-09T09:02:08Z",
+    "review_commit": "b3638f9e655a2d9df8f6db4ebbd2cea61374c8f4",
+    "review_path": "artifacts/checkpoints/p8-round26-progress-28fe-20261009/pr181-source-and-validation-scope-review.json",
+    "review_sha256": "d16fb821a2c917848ddd46e3e0fa89e29360100eb4db55e2a8c2454065f2fda8",
+    "old_index_log_git_blob": "f8b4919af6b1364d1281ae5a12b975e29405750f",
+    "old_index_log_sha256": "c70c207f576159c460bbe4e6b37d4d1ad22e9fee00440e5239b17a9528537627",
+    "preserved_conclusion": "The earlier review's inspected 37-file bundle had only the older target/debug + debuginfo combined run and the failed corrected-P2 wrapper. That wrapper's planned follow-up corpus command remains not_run. The new A files establish different separately recorded commands; they do not rewrite that wrapper or relabel the older log."
+  },
+  "new_original_inputs": {
+    "commit": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "directory": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication",
+    "manifest_git_blob": "78dabdd11db4dfcbf0f068d771073ab244afa730",
+    "files": [
+      {
+        "path": "p2-index-all-targets-receipt.json",
+        "git_blob": "334970eef788210cfb2eb6b8e344301771d984a2",
+        "bytes": 838,
+        "sha256": "9552deb4d02ce4434251e1524b7f1282a9e7275536f26582a4d88a6820fbeea9",
+        "manifest": {
+          "path": "p2-index-all-targets-receipt.json",
+          "bytes": 838,
+          "sha256": "9552deb4d02ce4434251e1524b7f1282a9e7275536f26582a4d88a6820fbeea9"
+        },
+        "exact": true
+      },
+      {
+        "path": "p2-index-all-targets.log",
+        "git_blob": "e089d02d2a66c9b9aea195a86566a26cec2721f9",
+        "bytes": 55969,
+        "sha256": "e6c8092b5c21e48350e649f6e7fa16cce764e66714ac15d0dc308e6993d8b03e",
+        "manifest": {
+          "path": "p2-index-all-targets.log",
+          "bytes": 55969,
+          "sha256": "e6c8092b5c21e48350e649f6e7fa16cce764e66714ac15d0dc308e6993d8b03e"
+        },
+        "exact": true
+      },
+      {
+        "path": "p2-eval-corpus-receipt.json",
+        "git_blob": "49ac9694b2ea7a1c85b25920af8466cfdee1fcca",
+        "bytes": 619,
+        "sha256": "637b8b4ce482fdb4aa86dec2455d22181d11a0d48347c0abbe2c3dd9f2318f72",
+        "manifest": {
+          "path": "p2-eval-corpus-receipt.json",
+          "bytes": 619,
+          "sha256": "637b8b4ce482fdb4aa86dec2455d22181d11a0d48347c0abbe2c3dd9f2318f72"
+        },
+        "exact": true
+      },
+      {
+        "path": "p2-eval-corpus.log",
+        "git_blob": "ea985d03fabc81c475c71ab62caed24f9f1b1753",
+        "bytes": 21522,
+        "sha256": "73a0675866041a8b095e932d5d9328f20e56a8dc9b47d6fca683104e281d15f2",
+        "manifest": {
+          "path": "p2-eval-corpus.log",
+          "bytes": 21522,
+          "sha256": "73a0675866041a8b095e932d5d9328f20e56a8dc9b47d6fca683104e281d15f2"
+        },
+        "exact": true
+      }
+    ],
+    "all_four_manifest_sizes_and_hashes_exact": true
+  },
+  "receipts": {
+    "index": {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-index",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "exit_code_observed_from_exec_session": 0,
+      "failed": 0,
+      "ignored": 3,
+      "log": "p2-index-all-targets.log",
+      "log_sha256": "e6c8092b5c21e48350e649f6e7fa16cce764e66714ac15d0dc308e6993d8b03e",
+      "passed": 590,
+      "profile_overrides": {
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0"
+      },
+      "recorded_at_utc": "2026-10-09T08:07:30.241039+00:00",
+      "scope": "Actual corrected-P2 cc-index regression only; does not waive failed cc-eval workspace test or claim scale/latency acceptance.",
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "source_tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da",
+      "test_targets": 23
+    },
+    "corpus": {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--locked",
+        "--offline",
+        "--",
+        "integration_fixtures_and_corpus"
+      ],
+      "exit_code_observed_from_exec_session": 0,
+      "failed": 0,
+      "ignored": 0,
+      "log": "p2-eval-corpus.log",
+      "log_sha256": "73a0675866041a8b095e932d5d9328f20e56a8dc9b47d6fca683104e281d15f2",
+      "passed": 1,
+      "recorded_at_utc": "2026-10-09T08:09:00.286541+00:00",
+      "scope": "Requested named corpus integration filter, not the cc-eval full suite.",
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "source_tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da"
+    }
+  },
+  "independently_recomputed_log_results": [
+    {
+      "name": "p2-index-all-targets",
+      "bytes": 55969,
+      "sha256": "e6c8092b5c21e48350e649f6e7fa16cce764e66714ac15d0dc308e6993d8b03e",
+      "git_blob": "e089d02d2a66c9b9aea195a86566a26cec2721f9",
+      "expected_blob": "e089d02d2a66c9b9aea195a86566a26cec2721f9",
+      "receipt_hash_equal": true,
+      "totals": {
+        "summaries": 23,
+        "passed": 590,
+        "failed": 0,
+        "ignored": 3,
+        "measured": 0,
+        "filtered": 0
+      },
+      "targets": 23,
+      "all_target_final": true,
+      "finished": [
+        "    Finished `test` profile [unoptimized] target(s) in 38.79s"
+      ]
+    },
+    {
+      "name": "p2-eval-corpus",
+      "bytes": 21522,
+      "sha256": "73a0675866041a8b095e932d5d9328f20e56a8dc9b47d6fca683104e281d15f2",
+      "git_blob": "ea985d03fabc81c475c71ab62caed24f9f1b1753",
+      "expected_blob": "ea985d03fabc81c475c71ab62caed24f9f1b1753",
+      "receipt_hash_equal": true,
+      "totals": {
+        "summaries": 89,
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 484
+      },
+      "targets": 88,
+      "all_target_final": true,
+      "finished": [
+        "    Finished `test` profile [unoptimized] target(s) in 0.39s"
+      ]
+    }
+  ],
+  "all_ten_new_tests": [
+    {
+      "name": "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+      "exact_ok_line": "test empty_config_full_rebuild_clears_old_links_and_can_relink_later ... ok"
+    },
+    {
+      "name": "typed_module_config_still_resolves_when_heuristic_tokens_are_empty",
+      "exact_ok_line": "test typed_module_config_still_resolves_when_heuristic_tokens_are_empty ... ok"
+    },
+    {
+      "name": "empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::empty_prerequisites_remove_stale_edges_without_removing_real_calls ... ok"
+    },
+    {
+      "name": "no_calls_still_returns_before_reading_symbols_or_implements",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::no_calls_still_returns_before_reading_symbols_or_implements ... ok"
+    },
+    {
+      "name": "ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::ordinary_symbols_and_empty_interface_uid_do_not_read_implements ... ok"
+    },
+    {
+      "name": "disabled_pass_does_not_read_or_schedule_cleanup",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::disabled_pass_does_not_read_or_schedule_cleanup ... ok"
+    },
+    {
+      "name": "malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_calls_are_not_hidden_by_empty_implements_or_later_errors ... ok"
+    },
+    {
+      "name": "malformed_symbols_are_not_hidden_by_empty_implements",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_symbols_are_not_hidden_by_empty_implements ... ok"
+    },
+    {
+      "name": "malformed_implements_and_query_errors_propagate_after_the_original_guards",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_implements_and_query_errors_propagate_after_the_original_guards ... ok"
+    },
+    {
+      "name": "prior_call_overlay_reaches_implementors_and_preserves_fanout_cap",
+      "exact_ok_line": "test dispatch_synthesis::interface_dispatch::tests::prior_call_overlay_reaches_implementors_and_preserves_fanout_cap ... ok"
+    }
+  ],
+  "attribution_limits": [
+    "The new command receipts explicitly declare P2 and its tree and observed exec-session exit0; both logs differ from the old combined log and match their receipt SHA256 exactly.",
+    "The logs themselves establish the target-final executable paths, no-debuginfo profile, actual named results and aggregate counts. Source and environment attribution additionally relies on the published original command receipts.",
+    "These two short receipts do not themselves include a fresh complete per-command before/after product map or a rustc -Vv stream. No new assertion of independently rehashed per-command 1091 inputs or independently reconstructed toolchain/environment is made.",
+    "The previously reviewed full P2 wrapper receipt independently records Rust1.95 and the jobs4/incremental0/debug0 environment, but is not relabeled as either new separate command.",
+    "No timing/performance/cold-platform/scale/TODO completion follows from the 590 or one-test result."
+  ],
+  "original_failures_retained": {
+    "corrected_P2_workspace_exit": 101,
+    "isolated_sampler_failed": true,
+    "wrapper_followup_corpus_not_run": true,
+    "old_test_and_clippy_failures_not_rewritten": true
+  },
+  "CI": {
+    "G": {
+      "run": 37903250638,
+      "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "official_current_status": "completed",
+      "official_current_conclusion": "success",
+      "run_attempt": 1,
+      "existing_independent_review_blob": "85cf7d2863440bc65832681ae9684a5d39cd83c5",
+      "actual_checkout": "0805905f48b963b60864f40e74fef6aed7c4f934",
+      "checkout_tree_equals_G": true,
+      "toolchain": "Rust1.99.0",
+      "scope": "Reused immutable independently reviewed CI report and fresh official run status; no second large log read."
+    },
+    "A": {
+      "head": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+      "visible_run_count": 0,
+      "visible_check_count": 0,
+      "accepted_execution": false,
+      "scope": "One official endpoint snapshot; no visible run/check means no A CI result established, not a promise no later run exists."
+    }
+  },
+  "suggested_more_precise_PR_paragraph": "**Local engineering evidence:** The newly published P2 command receipts record separate `cc-index --all-targets` and selected corpus executions on `b4fef72211e5967f4fba729d25d0ca2958094fd5`. Their distinct `target-final` logs show 23 cc-index targets with **590 passed, 0 failed, 3 existing ignored**, and the named corpus test **1 passed, 0 failed**. The cc-index receipt records four build jobs, incremental compilation disabled, and dev/test debug information disabled; the log reports the unoptimized profile without debuginfo. These are separate archived executions from the earlier `target/debug` log and from the initial P2 wrapper, whose workspace command exited **101** and therefore did not reach its planned subsequent corpus command. The original workspace and isolated sampler failures remain failures. Successful G-head CI run **37903250638** retains its own actual checkout/tree and Rust 1.99.0 scope; A-head CI has not yet been established by this review.",
+  "recommendation": "Do not restore the obsolete claim that no separate P2 590/corpus receipt exists. It is now published. If clarifying the body, name the new receipts/logs and preserve the distinct failed wrapper, old log, successful G CI and unestablished A CI.",
+  "todo": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "mutations": "Only this unreferenced report blob; no PR/source/ref/test/workflow change."
+}

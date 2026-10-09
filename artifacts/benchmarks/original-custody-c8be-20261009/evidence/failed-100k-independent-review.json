@@ -1,0 +1,458 @@
+{
+  "artifact_id": 11617588539,
+  "execution_scope": {
+    "accepted_samples_added": 0,
+    "cargo_or_sqlite_replay": false,
+    "full_zip_or_member_modified": false,
+    "new_native_measurement": false,
+    "original_helper_rerun": false,
+    "same_source_accepted_samples_remain": 41,
+    "same_source_accepted_shards_remain": 4
+  },
+  "expanded_member_bytes": 20446960,
+  "failure_interpretation": {
+    "direct_evidence": "Original native report declares deadline_exceeded and exit_code 3 under the unchanged 18,000,000 ms supervisor deadline; workflow wrapper subsequently exits 1.",
+    "not_inferred": [
+      "No OOM or disk-exhaustion cause is asserted",
+      "No cause inside the unfinished batch_10/full_control is proven",
+      "Zero stderr bytes do not establish complete stderr; original stderr_complete=false retained",
+      "Partial stage parity does not make the failed shard accepted",
+      "No result or timing is transferred to current C or G2"
+    ]
+  },
+  "formal_task_completion": false,
+  "limitations": [
+    "All outer SHA256 payload seals are verified; inner native BLAKE3 digest strings are preserved but were not independently recomputed in this read-only review.",
+    "No success collector/combine acceptance is claimed.",
+    "No full database parity was replayed; six completed raw parity observations are original producer claims only."
+  ],
+  "members": {
+    "disk-after.json": {
+      "bytes": 354,
+      "git_blob": "51998402797be708ac1778f3922c52d10bd7761a",
+      "sha256": "dcba15051396bdecc9ce9456e8a0661c6f45a5538db5b5c1c903564d4f5232d5",
+      "zip_external_mode": "0o100644"
+    },
+    "disk-preflight.json": {
+      "bytes": 354,
+      "git_blob": "c3dab3913401c72e719a31c680fddd8d33f3b25c",
+      "sha256": "5f9e5e77c9a9ce9b79ec1b6803bbe3e5950c0fb2ee4e5003995e261ea76ff0f6",
+      "zip_external_mode": "0o100644"
+    },
+    "native/plan.json": {
+      "bytes": 463,
+      "git_blob": "2b87d024b37ddc46aa9aed5548f0aa8deec88155",
+      "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801",
+      "zip_external_mode": "0o100644"
+    },
+    "native/raw.jsonl": {
+      "bytes": 20144893,
+      "git_blob": "604cfea3cfe7c2c38e39595b0cd94eb31c283701",
+      "sha256": "9bf309d05c2361e18edf41eb0e70208f9697e09630cdae35c2cac8d96976d65e",
+      "zip_external_mode": "0o100644"
+    },
+    "native/report.json": {
+      "bytes": 1175,
+      "git_blob": "fe11a0cfe3c6b54c909670b88df91505fd2dca42",
+      "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287",
+      "zip_external_mode": "0o100644"
+    },
+    "native/worker.stderr": {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "zip_external_mode": "0o100644"
+    },
+    "registered-plan.json": {
+      "bytes": 463,
+      "git_blob": "2b87d024b37ddc46aa9aed5548f0aa8deec88155",
+      "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801",
+      "zip_external_mode": "0o100644"
+    },
+    "shard.json": {
+      "bytes": 5033,
+      "git_blob": "e04174d2f010281b6d6624e8fc774c1d15fed249",
+      "sha256": "979c320e01f83a855537349c27b82b3a9020571ac92ee02ee89b20cd65973b23",
+      "zip_external_mode": "0o100644"
+    },
+    "source-after.json": {
+      "bytes": 146525,
+      "git_blob": "3bf9a1d98a795e545b5bd8f6875db092a5aafcb0",
+      "sha256": "324d8ad3d213d9a80e86effb11dfa6b40ab5fa82b8cc9b596b35012521c07a1a",
+      "zip_external_mode": "0o100644"
+    },
+    "source-before.json": {
+      "bytes": 146525,
+      "git_blob": "3bf9a1d98a795e545b5bd8f6875db092a5aafcb0",
+      "sha256": "324d8ad3d213d9a80e86effb11dfa6b40ab5fa82b8cc9b596b35012521c07a1a",
+      "zip_external_mode": "0o100644"
+    },
+    "supervisor.stderr": {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "zip_external_mode": "0o100644"
+    },
+    "supervisor.stdout": {
+      "bytes": 1175,
+      "git_blob": "fe11a0cfe3c6b54c909670b88df91505fd2dca42",
+      "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287",
+      "zip_external_mode": "0o100644"
+    }
+  },
+  "native_report_original": {
+    "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+    "executed_repetition_range": {
+      "end": 1,
+      "start": 0
+    },
+    "exit_code": 3,
+    "fixture_cleanup": {
+      "elapsed_ms": 18280,
+      "error": null
+    },
+    "full_100k_certification": "not_run",
+    "max_output_bytes": 536870912,
+    "plan_digest": "73cbbd6aeb996b180d564666757a7fc2974f0c235520bc71e6ab92b20ea2c97c",
+    "profile": "release",
+    "raw_digest": "c45ea74320426db61a7ef3204db9668451ec9ec3c22e25619bfac4004610db43",
+    "registered_repetitions": 30,
+    "release_certification": "not_run",
+    "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+    "schema_version": 1,
+    "shard_only": true,
+    "status": "deadline_exceeded",
+    "stderr_complete": false,
+    "summary": null,
+    "wall_ms": 18019626,
+    "worker_binary_digest_after": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+    "worker_binary_digest_before": "2033954369a546ba98d3b3d912ed4dec8b46d974f975a4381a0a68eb6b207ace",
+    "worker_binary_unchanged": true,
+    "worker_exit_code": null,
+    "worker_pid": 2461
+  },
+  "official_metadata": {
+    "bytes": 815,
+    "inode": 1835252,
+    "mode": "0644",
+    "mtime_ns": 1791552776453448051,
+    "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/external-178-study/artifacts/11617588539/artifact-metadata.json",
+    "sha256": "52e547e33d672b8ea4d2244ae9c296fdcd3adc6487f66f3a47941abe4bcf3c57"
+  },
+  "original_zip": {
+    "bytes": 5212266,
+    "inode": 1704062,
+    "mode": "0644",
+    "mtime_ns": 1791552744982877439,
+    "path": "/workspace/scratch/a217aaae3bde/recovered-originals/artifacts/11617588539/11617588539.zip",
+    "sha256": "f758ca519a6b5ed90bfe1040944ad32b1daad8248e44b8ea4c7d4840d4a43236"
+  },
+  "outer_seal": {
+    "all_recorded_sizes_and_sha256_verified": true,
+    "all_zip_crc_reads_succeeded": true,
+    "exact_11_payload_inventory": true,
+    "native_plan_equals_registered_and_shard_plan": true,
+    "native_report_equals_supervisor_stdout": true,
+    "source_before_after_and_admitted_build_source_bytes_equal": true,
+    "source_count": 1090,
+    "source_manifest_and_binary_and_build_receipt_and_driver_match_separately_admitted_same_source_state": true
+  },
+  "protected_after": {
+    "original-173-runtime/external-178-study/accepted-subset-004.json": {
+      "bytes": 62731,
+      "inode": 1751276,
+      "mode": "0644",
+      "mtime_ns": 1791542072759283943,
+      "sha256": "f29f627b469835217398996654ec585181a14260c3d2efcb2b2237922f5754d6"
+    },
+    "original-173-runtime/external-178-study/artifacts/11617588539/artifact-metadata.json": {
+      "bytes": 815,
+      "inode": 1835252,
+      "mode": "0644",
+      "mtime_ns": 1791552776453448051,
+      "sha256": "52e547e33d672b8ea4d2244ae9c296fdcd3adc6487f66f3a47941abe4bcf3c57"
+    },
+    "original-173-runtime/external-178-study/review_scale_fixed_source.py": {
+      "bytes": 19399,
+      "inode": 1725681,
+      "mode": "0644",
+      "mtime_ns": 1791536190785519480,
+      "sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee"
+    },
+    "original-173-runtime/external-178-study/validated/state.json": {
+      "bytes": 2470,
+      "inode": 1725665,
+      "mode": "0644",
+      "mtime_ns": 1791536194298466852,
+      "sha256": "e5d4345724d6cd4599a0e24b956798572889c0bf57e968f21ce8cdf46a9028a7"
+    },
+    "recovered-originals/artifacts/11617588539/11617588539.zip": {
+      "bytes": 5212266,
+      "inode": 1704062,
+      "mode": "0644",
+      "mtime_ns": 1791552744982877439,
+      "sha256": "f758ca519a6b5ed90bfe1040944ad32b1daad8248e44b8ea4c7d4840d4a43236"
+    }
+  },
+  "protected_before": {
+    "original-173-runtime/external-178-study/accepted-subset-004.json": {
+      "bytes": 62731,
+      "inode": 1751276,
+      "mode": "0644",
+      "mtime_ns": 1791542072759283943,
+      "sha256": "f29f627b469835217398996654ec585181a14260c3d2efcb2b2237922f5754d6"
+    },
+    "original-173-runtime/external-178-study/artifacts/11617588539/artifact-metadata.json": {
+      "bytes": 815,
+      "inode": 1835252,
+      "mode": "0644",
+      "mtime_ns": 1791552776453448051,
+      "sha256": "52e547e33d672b8ea4d2244ae9c296fdcd3adc6487f66f3a47941abe4bcf3c57"
+    },
+    "original-173-runtime/external-178-study/review_scale_fixed_source.py": {
+      "bytes": 19399,
+      "inode": 1725681,
+      "mode": "0644",
+      "mtime_ns": 1791536190785519480,
+      "sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee"
+    },
+    "original-173-runtime/external-178-study/validated/state.json": {
+      "bytes": 2470,
+      "inode": 1725665,
+      "mode": "0644",
+      "mtime_ns": 1791536194298466852,
+      "sha256": "e5d4345724d6cd4599a0e24b956798572889c0bf57e968f21ce8cdf46a9028a7"
+    },
+    "recovered-originals/artifacts/11617588539/11617588539.zip": {
+      "bytes": 5212266,
+      "inode": 1704062,
+      "mode": "0644",
+      "mtime_ns": 1791552744982877439,
+      "sha256": "f758ca519a6b5ed90bfe1040944ad32b1daad8248e44b8ea4c7d4840d4a43236"
+    }
+  },
+  "raw_readback": {
+    "bytes": 20144893,
+    "complete_json_lines": 2017,
+    "event_counts": {
+      "build_finished": 1001,
+      "build_started": 1002,
+      "cold_parity": 1,
+      "input": 1,
+      "mutation": 6,
+      "run_started": 1,
+      "stage_finished": 5
+    },
+    "final_newline": true,
+    "final_record": {
+      "event": "build_started",
+      "full": true,
+      "label": "scale-100000/repetition-0/batch_10/full_control",
+      "start_us": 17677216962
+    },
+    "partial_stage_observations": [
+      {
+        "complete": null,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00000.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00000.ts",
+          "passed": true
+        },
+        "event": "cold_parity",
+        "full_complete": null,
+        "incremental_builds": null,
+        "incremental_wall_us": null,
+        "label": null,
+        "line": 7,
+        "parity_wall_us": 962423883,
+        "passed": null,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      },
+      {
+        "complete": true,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00000.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00000.ts",
+          "passed": true
+        },
+        "event": "stage_finished",
+        "full_complete": true,
+        "incremental_builds": 1,
+        "incremental_wall_us": 4176668,
+        "label": "scale-100000/repetition-0/no_op",
+        "line": 13,
+        "parity_wall_us": 1201442244,
+        "passed": true,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      },
+      {
+        "complete": true,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00000.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00000.ts",
+          "passed": true
+        },
+        "event": "stage_finished",
+        "full_complete": true,
+        "incremental_builds": 490,
+        "incremental_wall_us": 3246714431,
+        "label": "scale-100000/repetition-0/body",
+        "line": 997,
+        "parity_wall_us": 825826550,
+        "passed": true,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      },
+      {
+        "complete": true,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00000.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00000.ts",
+          "passed": true
+        },
+        "event": "stage_finished",
+        "full_complete": true,
+        "incremental_builds": 171,
+        "incremental_wall_us": 1273166148,
+        "label": "scale-100000/repetition-0/api",
+        "line": 1343,
+        "parity_wall_us": 1070174288,
+        "passed": true,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      },
+      {
+        "complete": true,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00001.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00001.ts",
+          "passed": true
+        },
+        "event": "stage_finished",
+        "full_complete": true,
+        "incremental_builds": 330,
+        "incremental_wall_us": 2136536331,
+        "label": "scale-100000/repetition-0/config",
+        "line": 2007,
+        "parity_wall_us": 1399155430,
+        "passed": true,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      },
+      {
+        "complete": true,
+        "config_fact": {
+          "actual_targets": [
+            "m_0000/ts_00001.ts"
+          ],
+          "consumer": "m_0000/ts_00002.ts",
+          "expected_target": "m_0000/ts_00001.ts",
+          "passed": true
+        },
+        "event": "stage_finished",
+        "full_complete": true,
+        "incremental_builds": 1,
+        "incremental_wall_us": 10750054,
+        "label": "scale-100000/repetition-0/batch_1",
+        "line": 2013,
+        "parity_wall_us": 1144286734,
+        "passed": true,
+        "raw_parity_equal": true,
+        "raw_parity_status": "equal",
+        "raw_table_count": 15,
+        "scope": "Original producer-reported partial evidence, not a newly accepted sample or independent database replay"
+      }
+    ],
+    "run_finished_or_summary_event_present": false,
+    "sha256": "9bf309d05c2361e18edf41eb0e70208f9697e09630cdae35c2cac8d96976d65e",
+    "unmatched_build_started": [
+      {
+        "line": 2017,
+        "record": {
+          "event": "build_started",
+          "full": true,
+          "label": "scale-100000/repetition-0/batch_10/full_control",
+          "start_us": 17677216962
+        }
+      }
+    ]
+  },
+  "retained_small_original_members": [
+    {
+      "bytes": 1175,
+      "git_blob": "fe11a0cfe3c6b54c909670b88df91505fd2dca42",
+      "original_member": "native/report.json",
+      "retained_path": "original-173-runtime/external-178-study/failure-11617588539-readonly-review/original-members/native/report.json",
+      "sha256": "ad8b6d6fc05bc3d632cd60fcb268fe1665507e453e54bb37c4f1a647ef2d0287",
+      "zip_external_mode": "0o100644"
+    },
+    {
+      "bytes": 463,
+      "git_blob": "2b87d024b37ddc46aa9aed5548f0aa8deec88155",
+      "original_member": "registered-plan.json",
+      "retained_path": "original-173-runtime/external-178-study/failure-11617588539-readonly-review/original-members/registered-plan.json",
+      "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801",
+      "zip_external_mode": "0o100644"
+    },
+    {
+      "bytes": 5033,
+      "git_blob": "e04174d2f010281b6d6624e8fc774c1d15fed249",
+      "original_member": "shard.json",
+      "retained_path": "original-173-runtime/external-178-study/failure-11617588539-readonly-review/original-members/shard.json",
+      "sha256": "979c320e01f83a855537349c27b82b3a9020571ac92ee02ee89b20cd65973b23",
+      "zip_external_mode": "0o100644"
+    },
+    {
+      "bytes": 354,
+      "git_blob": "c3dab3913401c72e719a31c680fddd8d33f3b25c",
+      "original_member": "disk-preflight.json",
+      "retained_path": "original-173-runtime/external-178-study/failure-11617588539-readonly-review/original-members/disk-preflight.json",
+      "sha256": "5f9e5e77c9a9ce9b79ec1b6803bbe3e5950c0fb2ee4e5003995e261ea76ff0f6",
+      "zip_external_mode": "0o100644"
+    },
+    {
+      "bytes": 354,
+      "git_blob": "51998402797be708ac1778f3922c52d10bd7761a",
+      "original_member": "disk-after.json",
+      "retained_path": "original-173-runtime/external-178-study/failure-11617588539-readonly-review/original-members/disk-after.json",
+      "sha256": "dcba15051396bdecc9ce9456e8a0661c6f45a5538db5b5c1c903564d4f5232d5",
+      "zip_external_mode": "0o100644"
+    }
+  ],
+  "review_status": "verified_failed_original_not_admitted",
+  "run_id": 37902429727,
+  "schema": "c8-failed-100k-original-readonly-review-v1",
+  "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "source_manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+  "task_counts": {
+    "done": 163,
+    "remaining": 29
+  }
+}

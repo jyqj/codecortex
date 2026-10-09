@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "reviewed_at": "2026-10-09T12:20:00.296402+00:00",
+  "assessment": "accepted_scoped_source_and_external_selected_regression",
+  "actual_product": "3fd980c724e3272c6d936eb066cecf478667a553",
+  "actual_tree": "2b6b4f6d8962a0fa857608b387975d1b36b22ce2",
+  "parents": [
+    "9c77b1dac4741b61421d2b41ceadde41f4c3e915",
+    "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75"
+  ],
+  "scope": "Only three new lane-registry/query-policy/mechanism-control product paths; full source/validation composition separately audited by root/scale. No source mutation or native execution by this reviewer.",
+  "paths": [
+    {
+      "path": "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json",
+      "before": {
+        "bytes": 1455,
+        "sha256": "f24ae9777ce7c4c042624bb7144eb5ed3d100ca5f342184095ba54f76228b94b",
+        "git_blob": "96216fdb7dff3fc635820fef921cbe0a249c8047"
+      },
+      "after": {
+        "bytes": 1280,
+        "sha256": "07600c12e46ce7ae69bdd7f9563423122f5d426f94705d4735b74d3129655cc8",
+        "git_blob": "c979369c3a6e3d2ef6e16f1848648d8096465756"
+      },
+      "actual_product_content_url": "https://api.github.com/repos/jyqj/codecortex/contents/crates/cc-eval/src/benchmark/ablation/mechanism_controls.json?ref=3fd980c724e3272c6d936eb066cecf478667a553"
+    },
+    {
+      "path": "crates/cc-search/src/lanes.rs",
+      "before": {
+        "bytes": 31442,
+        "sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+        "git_blob": "9069edd85e1e76144930fcc03f073441138693c7"
+      },
+      "after": {
+        "bytes": 31723,
+        "sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+        "git_blob": "f760ca52ec32547215092a5c700d4cb977a9669d"
+      },
+      "actual_product_content_url": "https://api.github.com/repos/jyqj/codecortex/contents/crates/cc-search/src/lanes.rs?ref=3fd980c724e3272c6d936eb066cecf478667a553"
+    },
+    {
+      "path": "crates/cc-search/src/query_policy.rs",
+      "before": {
+        "bytes": 5795,
+        "sha256": "7934394278307dec06ffaa683cb3fc33619e3d5516fcc49811d4ec4711ebc612",
+        "git_blob": "d7642807baaab53c565d7e8f91568d1addbcd5b9"
+      },
+      "after": {
+        "bytes": 14087,
+        "sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+        "git_blob": "79873db31d8d93a86f1537b930038f2437b99594"
+      },
+      "actual_product_content_url": "https://api.github.com/repos/jyqj/codecortex/contents/crates/cc-search/src/query_policy.rs?ref=3fd980c724e3272c6d936eb066cecf478667a553"
+    }
+  ],
+  "semantic_findings": [
+    {
+      "area": "shared registry",
+      "finding": "The promoted static borrowed slice contains the original stateless Sync lane types in exact order ExactSymbol, Path, Lexical, Grep, Graph. All current lane_id methods return their unchanged string constants. No run method, DB read, lane enablement, weight or side-effectful operation is introduced by policy enumeration."
+    },
+    {
+      "area": "owned execution API",
+      "finding": "default_lanes still returns Vec<&static dyn RetrievalLane> with the same ordered elements via to_vec; all run_lanes/fusion/annotation/tie-break bodies outside this registry seam remain unchanged."
+    },
+    {
+      "area": "policy semantics",
+      "finding": "The whole production prefix of query_policy.rs differs only by replacing the old five-string loop with registry iteration and lane_id(). Roles, child timeout min caps, strategy errors/effective strategy, optional semantic suffix, field ordering/serialization, policy version and fingerprint method are byte-identical."
+    },
+    {
+      "area": "local ablation",
+      "finding": "Only local_retrieval exact on/off text changes. Off creates the owned Vec from the same registry then clears that Vec before execution. It leaves the registry and declared policy obligations intact. semantic_dense control is whole-object identical; replacement machinery is not modified."
+    },
+    {
+      "area": "regression quality",
+      "finding": "Two new tests cover 8 intents x 7 legal strategy/configuration cases x 2 budget caps (112 cases), preserving an independent fixed role table. Two complete literal JSON contracts independently pin local/auto wire ordering and fingerprint input. Existing explicit unavailable-semantic and engine fixed-order tests are retained."
+    }
+  ],
+  "static_controls": {
+    "policy_production_inverse_unique_and_byte_equal": true,
+    "semantic_dense_control_whole_object_equal": true,
+    "local_on_text_unique_and_off_still_clear_execution_vec": true,
+    "actual_M4_three_blob_contents_match_fixed_main_bundle": true,
+    "actual_M4_compare_has_exactly_these_three_product_changes": true
+  },
+  "external_execution": {
+    "actual_product": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "source_input_count": 1092,
+    "source_manifest_sha256": "b8c10023d20ace3b87545627e567d3d6ddaf2a8e0c084aabe74ffb92ecfad11d",
+    "source_before_after_equal": true,
+    "three_new_paths_exactly_match_actual_P5_input_hashes": true,
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "elapsed_seconds": 3.1801663119986188,
+        "exit_code": 0,
+        "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "log": "format.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name": "format",
+        "actual_log": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        }
+      },
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--locked",
+          "--offline",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "elapsed_seconds": 18.56948725500115,
+        "exit_code": 0,
+        "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "log": "clippy.log",
+        "log_sha256": "0eb2c215a4c8b92bf50e1e2c85a5a54c6d3917d3c8dc71110d4bf61c945065f7",
+        "name": "clippy",
+        "actual_log": {
+          "bytes": 333,
+          "sha256": "0eb2c215a4c8b92bf50e1e2c85a5a54c6d3917d3c8dc71110d4bf61c945065f7",
+          "git_blob": "f54a4e64ec2415124951da21677ea5ffd7db6429"
+        }
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-search",
+          "--lib",
+          "--locked",
+          "--offline"
+        ],
+        "elapsed_seconds": 11.626386918000208,
+        "exit_code": 0,
+        "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "log": "search-lib.log",
+        "log_sha256": "92e45c5580879273c88feb594da1d93ea98e5df384f31d9b754da71d19e89f68",
+        "name": "search-lib",
+        "actual_log": {
+          "bytes": 21889,
+          "sha256": "92e45c5580879273c88feb594da1d93ea98e5df384f31d9b754da71d19e89f68",
+          "git_blob": "7be8ebc09374ea47b5d1625c112cea06bcaacce5"
+        }
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-eval",
+          "--lib",
+          "--locked",
+          "--offline",
+          "fixed_controls_match_current_product_source_once"
+        ],
+        "elapsed_seconds": 20.66576741300014,
+        "exit_code": 0,
+        "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "log": "mechanism-anchor.log",
+        "log_sha256": "da3480dfc1b3d221489416aa53c864ba9ef222bc8474401dddaffa01b7e741a2",
+        "name": "mechanism-anchor",
+        "actual_log": {
+          "bytes": 664,
+          "sha256": "da3480dfc1b3d221489416aa53c864ba9ef222bc8474401dddaffa01b7e741a2",
+          "git_blob": "0aff023dd227bac087aad60870227ae3075d031d"
+        }
+      },
+      {
+        "command": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "scripts/p7_mechanism_build.py",
+          "--source",
+          "/workspace/scratch/50c364fd60b1/codecortex",
+          "--expected-head",
+          "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+          "--output",
+          "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/mechanism-prepare",
+          "--prepare-only"
+        ],
+        "elapsed_seconds": 1.7090470019975328,
+        "exit_code": 0,
+        "head_after": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "head_before": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+        "log": "mechanism-prepare.log",
+        "log_sha256": "74f03af2ae1560f5c09ae2977036e59a232204267c0a0d422dffb0637edc1da3",
+        "name": "mechanism-prepare",
+        "actual_log": {
+          "bytes": 108,
+          "sha256": "74f03af2ae1560f5c09ae2977036e59a232204267c0a0d422dffb0637edc1da3",
+          "git_blob": "7fa1953cf0eaac05e78663a55fb3472be6474aeb"
+        }
+      }
+    ],
+    "actual_named_search_tests_ok": [
+      "engine_lane_tests::default_lanes_registry_keeps_fusion_order",
+      "query_policy::tests::auto_without_port_is_local_and_explicit_semantic_is_unavailable",
+      "query_policy::tests::intent_and_budgets_are_fingerprinted_without_hiding_partial",
+      "query_policy::tests::obligations_follow_execution_order_with_intent_roles_and_budget_caps",
+      "query_policy::tests::registry_cleanup_preserves_policy_wire_and_fingerprint"
+    ],
+    "search_suite": "303 passed; 0 failed; 0 ignored",
+    "mechanism_anchor": "1 passed; 0 failed; 0 ignored; 66 filtered out",
+    "prepare_only": {
+      "compiled": false,
+      "variants": [
+        "none",
+        "local",
+        "dense_only",
+        "hybrid"
+      ]
+    },
+    "format_empty_log_handling": "Raw empty-file endpoint returned400; retained tool error. The official Git tree binds the canonical empty blob. Success relies on original receipt exit0, not on empty log alone.",
+    "provenance_limit": "Original repository-published local receipts/logs with fixed P5 source identities; not fresh M4 execution, not independent remote source-to-binary attestation."
+  },
+  "not_claimed": [
+    "M4 actual compilation or native execution",
+    "full workspace test suite on P5",
+    "compiled/executed ablation variants",
+    "performance improvement or causal speedup",
+    "full-scale study rerun requirement",
+    "TODO completion or release approval"
+  ],
+  "known_history": "P5 receipt explicitly retains older P2 full-workspace exit101 under its original identity. This review does not relabel it or earlier engineering runs as M4. Current C study remains fixed and unaffected.",
+  "unresolved_source_blockers": [],
+  "todo": {
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

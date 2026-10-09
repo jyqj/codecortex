@@ -1,0 +1,1307 @@
+
+running 197 tests
+test direct_writer::tests::extract_index_stmts ... ok
+test direct_writer::tests::split_sql_handles_comments_and_strings ... ok
+test capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved ... ok
+test direct_writer::tests::drop_index_stmts_match_create_set ... ok
+test direct_writer::tests::direct_writer_write_fn_error_propagates ... ok
+test direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions ... ok
+test epoch_rules::tests::effect_set_membership_and_union_are_exact ... ok
+test capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot ... ok
+test capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal ... ok
+test epoch_rules::tests::lookup_covers_known_tables_and_rejects_metadata ... ok
+test direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail ... ok
+test direct_writer::tests::direct_writer_creates_valid_db ... ok
+test direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes ... ok
+test direct_writer::tests::direct_writer_handles_fts_tables ... ok
+test direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input ... ok
+test direct_writer::tests::direct_writer_bulk_insert_perf ... ok
+test fts::tests::camel_case_split ... ok
+test fts::tests::expand_query ... ok
+test fts::tests::expand_query_snake_case ... ok
+test fts::tests::fts_sanitize_basic ... ok
+test epoch_rules::tests::boost_http_edge_confidence_bumps_evidence_clock ... ok
+test capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write ... ok
+test epoch_rules::tests::semantic_effect_starts_the_clock_from_none_to_one ... ok
+test epoch_rules::tests::auxiliary_commit_advances_no_clock ... ok
+test index_db::tests::chunk_text_encoding_reads_plain_and_zstd ... ok
+test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok
+test epoch_rules::tests::combined_index_and_semantic_commit_bumps_each_exactly_once ... ok
+test epoch_rules::tests::empty_effect_set_commits_without_touching_any_clock ... ok
+test epoch_rules::tests::evidence_method_family_bumps_evidence_only ... ok
+test capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn ... ok
+test file_state_cache::tests::cache_hit_shares_the_same_allocation ... ok
+test index_db::tests::mismatch_rebuild_stress_loop ... ignored
+test capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication ... ok
+test file_state_cache::tests::held_snapshot_is_immutable_across_batches ... ok
+test file_state_cache::tests::foreign_files_writer_invalidates_then_rewarns ... ok
+test epoch_rules::tests::declared_clock_matches_observed_bump_for_every_table ... ok
+test file_state_cache::tests::batch_delta_matches_direct_load ... ok
+test index_db::tests::empty_file_state ... ok
+test index_db::tests::app_maintained_fts_rowids_align_with_base_tables ... ok
+test index_db::tests::open_creates_schema ... ok
+test index_db::tests::http_call_cross_service_chain ... ok
+test index_db::tests::read_pool_connections_reject_writes ... ok
+test index_db::tests::metadata_round_trip ... ok
+test index_db::tests::resolver_seed_symbols_excludes_requested_files ... ok
+test index_db::tests::generation_starts_at_zero_and_index_writes_bump_index_epoch ... ok
+test index_db::tests::replace_in_place_keeps_test_edges_removal_cascades ... ok
+test index_db::tests::test_find_symbol_safe_with_unicode_injection ... ok
+test index_db::tests::test_find_symbol_safe_with_null_byte ... ok
+test index_db::tests::route_edge_resolution_provenance_round_trips ... ok
+test index_db::tests::test_find_symbol_safe_with_injection_string ... ok
+test index_db::tests::test_find_symbol_safe_with_union_injection ... ok
+test index_db_arch::tests::test_extract_package_from_path ... ok
+test index_db::tests::test_metadata_safe_with_injection_key ... ok
+test index_db_arch::tests::test_adr_crud ... ok
+test index_db_arch::tests::test_adr_upsert_conflict ... ok
+test index_db_arch::tests::test_architecture_languages ... ok
+test index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression ... ok
+test index_db_arch::tests::test_architecture_entry_points ... ok
+test index_db_arch::tests::test_architecture_routes ... ok
+test index_db_edges::tests::evidence_writes_bump_only_evidence_epoch ... ok
+test index_db_edges::tests::full_rebuild_matches_incremental_like_semantics ... ok
+test index_db_edges::tests::http_edge_match_prefers_method_then_falls_back_to_path ... ok
+test index_db_edges::tests::test_stem_to_base_clean ... ok
+test index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild ... ok
+test index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values ... ok
+test index_db::tests::full_rebuild_advances_both_epochs_past_previous_values ... ok
+test index_db_edges::tests::route_id_for_normalized_path_returns_first_match ... ok
+test index_db_edges::tests::test_co_change_edges_roundtrip ... ok
+test index_db_edges::tests::postprocess_writes_bump_index_epoch ... ok
+test index_db_edges::tests::test_dispatch_sites_roundtrip ... ok
+test index_db_edges::tests::test_runtime_evidence_lifecycle ... ok
+test index_db_edges::tests::test_rebuild_test_edges_for_files ... ok
+test index_db_edges::tests::test_semantic_edges_roundtrip ... ok
+test index_db_frontier::tests::test_http_calls_by_caller_uid ... ok
+test index_db_frontier::tests::test_route_nodes_by_normalized_path ... ok
+test index_db_frontier::tests::test_route_rows_by_path ... ok
+test index_db_graph::tests::test_find_symbols_by_names_and_kinds_matches_single ... ok
+test index_db_graph::tests::test_caller_callee_rows ... ok
+test index_db_graph::tests::test_get_export_fingerprints_batch_matches_single ... ok
+test index_db_graph::tests::test_get_export_fingerprints_empty_input ... ok
+test index_db_graph::tests::test_reexport_targets_for_files ... ok
+test index_db_graph::tests::step_error_after_side_connection_drop_is_err_not_empty_ok ... ok
+test index_db_graph::tests::test_caller_callee_rows_by_uids_match_single_uid_queries ... ok
+test index_db_graph::tests::test_reexport_targets_for_files_empty_input ... ok
+test index_db_graph::tests::test_symbol_degree_details_batch_matches_single ... ok
+test index_db_graph::tests::test_symbol_degree_details ... ok
+test index_db_graph::tests::test_symbols_covering ... ok
+test index_db_graph::tests::test_update_communities ... ok
+test index_db_graph_read::tests::async_consumer_rows_match_topic_in_name_or_properties ... ok
+test index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged ... ok
+test index_db_graph_read::tests::callees_with_nonself_callers_excludes_self_loops ... ok
+test index_db_graph_read::tests::call_edge_provenance_counts_breakdowns ... ok
+test index_db_graph_read::tests::child_symbol_outline_rows_ordered_by_start_line ... ok
+test index_db_graph_read::tests::community_adjacency_pairs_cross_community_only ... ok
+test index_db_graph_read::tests::dead_code_symbol_scan_applies_scope_like_filter ... ok
+test index_db_graph_read::tests::cross_file_call_file_pairs_skip_same_file_edges ... ok
+test index_db_graph_read::tests::file_import_pairs_returns_only_resolved_distinct_pairs ... ok
+test index_db_graph_read::tests::env_access_rows_filter_by_key_and_file_patterns ... ok
+test index_db_graph_read::tests::direct_importers_exclude_self_and_respect_limit ... ok
+test index_db_graph_read::tests::importers_of_paths_batches_into_single_query ... ok
+test index_db_graph_read::tests::param_counts_for_uids_maps_null_to_none ... ok
+test index_db_graph_read::tests::service_binding_rows_match_nodes_routes_and_edges ... ok
+test index_db_graph_read::tests::route_handler_rows_filters_by_path_substring ... ok
+test index_db_graph_read::tests::import_witness_rows_keeps_import_string ... ok
+test index_db_graph_read::tests::reverse_callers_applies_confidence_and_limit ... ok
+test index_db_graph_read::tests::suggested_test_files_distinct_and_ordered ... ok
+test index_db_graph_read::tests::symbol_kind_counts_orders_by_frequency ... ok
+test index_db::tests::batched_fts_deletes_cover_all_paths_across_chunk_boundary ... ok
+test index_db_graph_read::tests::symbol_names_for_uids_skips_missing ... ok
+test index_db_rebuild::fault_tests::rebuild_swap_child ... ignored, child entry; executed by the owning test with a private temporary database
+test index_db_graph_read::tests::symbol_ref_containers_for_targets_returns_uid_container_pairs ... ok
+test index_db_graph_read::tests::symbol_source_candidates_rank_exact_before_fuzzy ... ok
+test index_db_graph_read::tests::symbols_lite_in_files_skips_files_not_requested_and_uidless ... ok
+test index_db_query::tests::test_file_symbols ... ok
+test index_db_query::tests::count_table_rows_counts_and_errors_on_missing_table ... ok
+test index_db_query::tests::test_file_summary ... ok
+test index_db_query::tests::test_query_json ... ok
+test index_db_query::tests::test_find_symbol_exact_and_like ... ok
+test index_db_query::tests::read_pool_supports_explicit_read_transaction ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_empty_input ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_fetches_batch ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_rejects_unverified_cached_text ... ok
+test index_db_retrieval::tests::chunk_spans_for_files_groups_by_file ... ok
+test index_db_retrieval::tests::fts_file_summaries_applies_prefix_and_limit ... ok
+test index_db_retrieval::tests::fts_chunk_candidates_applies_scope_and_limit ... ok
+test index_db_retrieval::tests::fts_file_summaries_empty_for_no_match ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_spans_multiple_in_batches ... ok
+test index_db_retrieval::tests::fts_file_summaries_orders_by_bm25 ... ok
+test index_db_retrieval::tests::fts_file_summaries_prefix_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_substring_match_per_token ... ok
+test index_db_retrieval::tests::recent_indexed_files_newest_first ... ok
+test index_db_retrieval::tests::scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping ... ok
+test index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal ... ok
+test index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::symbol_seed_hits_exact_first_and_skips_null_uid ... ok
+test index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path ... ok
+test index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs ... ok
+test index_db_retrieval::tests::symbol_seed_hits_mixed_case_token_exact_first ... ok
+test index_db_retrieval::tests::symbol_seed_hits_treats_underscore_as_literal ... ok
+test read_generation::tests::identity_and_epoch_corruption_never_become_zero_generation ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_exact_name_first_per_token ... ok
+test index_migrate::tests::fresh_db_initializes_schema ... ok
+test index_migrate::tests::old_version_returns_mismatch ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering ... ok
+test seed_symbol_cache::tests::build_respects_capacity_cap ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_treats_underscore_as_literal ... ok
+test seed_symbol_cache::tests::materialize_orders_and_excludes ... ok
+test seed_symbol_cache::tests::projection_strips_non_seed_fields ... ok
+test index_db_retrieval::tests::symbol_uids_by_exact_names_matches_only_listed_names ... ok
+test index_db_rebuild::fault_tests::failed_writer_reopen_leaves_no_writable_ghost_or_stale_read_pool ... ok
+test index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok
+test index_migrate::tests::matching_version_returns_up_to_date ... ok
+test index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch ... ok
+test semantic_coverage::tests::coverage_reads_are_pure_and_zero_limit_is_rejected ... ok
+test semantic_coverage::tests::failed_counts_only_active_space_failures ... ok
+test semantic_coverage::tests::foreign_space_rows_never_count_as_published ... ok
+test seed_symbol_cache::tests::batch_delta_matches_direct_load ... ok
+test semantic_coverage::tests::full_coverage_reports_no_gap_and_no_reason ... ok
+test semantic_coverage::tests::partial_coverage_reports_the_gap_and_the_uncovered_list ... ok
+test index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild ... ok
+test seed_symbol_cache::tests::batch_duplicate_uid_folds_like_sql ... ok
+test seed_symbol_cache::tests::foreign_symbol_writer_invalidates_then_rewarns ... ok
+test semantic_coverage::tests::stale_counts_live_tasks_lagging_the_base_manifest ... ok
+test semantic_coverage::tests::unwired_semantic_reports_zero_coverage_without_inflating ... ok
+test semantic_coverage::tests::uncovered_projects_authoritative_language_without_dropping_missing_files ... ok
+test semantic_coverage::tests::zero_eligible_is_explained_by_documents_and_encoding ... ok
+test semantic_gc_reads::tests::exact_ref_mark_is_reflexive_and_checksum_scoped ... ok
+test semantic_gc_reads::tests::live_task_mark_covers_pending_and_claimed_but_not_terminal_states ... ok
+test semantic_gc_reads::tests::pair_mark_holds_across_spec_and_checksum_and_spaces_are_separate ... ok
+test signature_agg::tests::row_agg_add_remove_round_trips ... ok
+test signature_agg::tests::row_agg_distinguishes_duplicate_multisets ... ok
+test signature_agg::tests::serialize_round_trips_and_rejects_other_versions ... ok
+test semantic_manifest_reads::tests::empty_space_scans_empty_and_zero_batch_is_rejected ... ok
+test semantic_manifest_reads::tests::deleted_document_cascades_out_of_the_candidate_stream ... ok
+test sql_util::tests::escape_like_escapes_wildcards_and_backslash ... ok
+test semantic_manifest_reads::tests::published_row_reads_the_single_current_publication_whatever_space ... ok
+test semantic_manifest_reads::tests::scan_is_keyset_paginated_and_ordered ... ok
+test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok
+test semantic_manifest_reads::tests::scan_is_space_isolated_at_the_load_layer ... ok
+test semantic_manifest_reads::tests::scan_joins_language_and_carries_provenance_columns ... ok
+test unit_of_work::tests::commit_applies_all_writes_and_bumps_epoch_once ... ok
+test unit_of_work::tests::commit_with_evidence_bumps_evidence_only ... ok
+test signature_agg::tests::empty_batch_initializes_missing_baseline ... ok
+test signature_agg::tests::unit_of_work_synthesis_writes_converge ... ok
+test unit_of_work::tests::commit_with_index_and_semantic_bumps_both_exactly_once ... ok
+test read_generation::tests::staged_rebuild_gets_fresh_persistent_identity ... ok
+test unit_of_work::tests::default_commit_keeps_index_only_semantics_and_semantic_absent ... ok
+test signature_agg::tests::synthetic_call_edge_lifecycle_converges ... ok
+test unit_of_work::tests::repeat_ack_without_visible_change_does_not_bump_semantic_epoch ... ok
+test signature_agg::tests::file_scoped_writers_converge ... ok
+test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok
+test signature_agg::tests::incremental_batch_add_modify_remove_converges ... ok
+test index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok
+test index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement ... ok
+test index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement ... ok
+test index_db_rebuild::fault_tests::failed_read_pool_reopen_leaves_no_partially_installed_writer_or_stale_reads ... ok
+
+test result: ok. 195 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 32.67s
+
+
+running 5 tests
+test fresh_index_really_initializes_current_schema ... ok
+test nonadjacent_versions_still_require_rebuild ... ok
+test committed_v21_upgrade_invalidates_legacy_rows_and_incarnation ... ok
+test committed_v24_requires_rebuild_and_invalidates_legacy_rows ... ok
+test current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+running 13 tests
+test unknown_identifier_does_not_buy_recall_from_a_generic_fragment ... ok
+test one_distinct_component_never_degrades_to_generic_fragment ... ok
+test full_identifier_and_all_components_are_both_useful ... ok
+test snake_whole_preserves_phrase_and_parts_support_reordering ... ok
+test expansion_requires_all_components_not_just_one ... ok
+test unicode_original_terms_coexist_with_compound_all_components ... ok
+test oversized_identifier_group_is_omitted_as_a_whole ... ok
+test source_token_limit_is_explicit_and_does_not_claim_full_input_coverage ... ok
+test multiple_groups_share_one_atom_budget_without_dropping_originals ... ok
+test original_terms_have_priority_and_an_expansion_is_never_truncated ... ok
+test independent_natural_words_still_have_or_semantics ... ok
+test acronym_and_number_boundaries_preserve_every_distinct_component ... ok
+test literal_fts_operators_and_punctuation_cannot_control_match_syntax ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test bench_concurrent_reads_during_incremental_writes ... ignored, read-during-write micro-benchmark; run explicitly with --release
+test bench_incremental_batch_write_10k ... ignored, write-path micro-benchmark; run explicitly with --release
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test corrupt_payload_is_rejected ... ok
+test package_aggregate_tracks_files_and_test_visibility ... ok
+test dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok
+test bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+running 4 tests
+test stale_prepare_is_fenced_inside_the_writer_transaction ... ok
+test failed_file_batch_never_acknowledges_or_publishes_debt ... ok
+test invalid_frontier_fails_before_file_commit_and_bad_hash_is_not_ready ... ok
+test debt_and_file_facts_share_epoch_and_survive_reopen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 1 test
+test p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+
+running 3 tests
+test explicit_transition_registers_activates_and_records_revision_atomically ... ok
+test retired_or_stale_incarnation_cannot_register_or_switch ... ok
+test external_writer_wait_does_not_block_close_or_allow_late_switch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 6 tests
+test nonempty_surface_roundtrip_canonicalizes_declaration_order ... ok
+test a_bad_surface_rolls_back_the_whole_file_batch ... ok
+test surface_roundtrip_shares_file_epoch_and_cascades_on_delete ... ok
+test corrupt_fingerprint_and_new_format_fail_closed ... ok
+test batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown ... ok
+test previous_schema_cannot_reuse_absent_surface_evidence ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+
+running 4 tests
+test embedded_nul_api_observation ... ok
+test literal_set_semantics_null_safety_and_order ... ok
+test actual_legacy_overflow_or_fixed_large_inputs ... ok
+test fifty_thousand_file_database_real_queries ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.73s
+
+
+running 1 test
+test large_exclusion_keeps_literal_order_and_escaped_paths_without_bind_overflow ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 3 tests
+test unwired_facade_reports_honest_zero_and_none_epoch ... ok
+test primitive_counts_agree_with_facade_on_a_stable_database ... ok
+test coverage_facade_pairs_a_strict_generation_snapshot_with_publication ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 9 tests
+test wrong_token_and_owner_mismatch_are_fenced ... ok
+test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+test retry_exhaustion_dead_letters_to_failed ... ok
+test claim_skips_future_and_serves_oldest_with_identity ... ok
+test superseded_task_unclaimable_and_unackable ... ok
+test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+test concurrent_claim_exactly_one_winner ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+running 20 tests
+test ready_query_filters_and_orders ... ok
+test state_transition_table_is_exact ... ok
+test duplicate_live_upsert_conflicts_fail_stop ... ok
+test rewritten_doc_keeps_exactly_one_live_embed ... ok
+test ready_query_uses_the_ready_index ... ok
+test removals_revoke_manifest_and_supersede_without_embed ... ok
+test rollback_leaves_no_outbox_or_manifest_trace ... ok
+test no_active_space_is_a_full_noop ... ok
+test incremental_batch_without_active_space_keeps_default_behavior ... ok
+test two_active_spaces_fail_stop ... ok
+test upsert_supersedes_old_and_enqueues_one_pending_embed ... ok
+test replace_files_batch_enqueues_embed_with_semantic_effect ... ok
+test transition_guards_in_database ... ok
+test incremental_batch_with_active_space_enqueues_embed_and_bumps_semantic_once ... ok
+test failed_batch_rolls_back_no_half_task ... ok
+test guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries ... ok
+test remove_files_batch_supersedes_without_embed ... ok
+test file_removal_revokes_manifest_and_supersedes_without_embed ... ok
+test fifo_physical_index_preserves_existing_current_logical_data ... ok
+test original_and_guarded_fifo_have_identical_normal_cas_competition ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+
+running 11 tests
+test lost_lease_is_fenced_out_without_touching_anything ... ok
+test deleted_document_is_fenced_out ... ok
+test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+test non_active_space_is_fenced_out ... ok
+test stale_incarnation_is_fenced_out ... ok
+test expired_reclaimed_lease_fences_the_old_publish ... ok
+test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+test input_digest_mismatch_is_fenced_out ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+
+running 3 tests
+test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 3 tests
+test enqueue_semantic_rebuild_plan_requeues_desired_set_and_bumps_semantic_once_per_change ... ok
+test rebuild_epoch_vector_advances_and_semantic_epoch_starts_absent ... ok
+test pre_swap_process_is_fenced_out_of_publish_and_claim_after_the_swap ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+
+running 4 tests
+test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok
+test desired_set_bounded_keyset_pagination_matches_the_unbounded_projection ... ok
+test dead_letter_census_counts_only_the_active_space_failures ... ok
+test bounded_reclaim_pages_through_expired_leases_and_reports_exhaustion ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 6 tests
+test fresh_database_carries_semantic_tables_at_current_version ... ok
+test semantic_outbox_op_and_state_domains_are_typed ... ok
+test semantic_spaces_state_domain_and_active_read_pattern ... ok
+test semantic_manifest_pk_fk_and_cascade ... ok
+test semantic_outbox_at_most_one_live_task_per_doc_and_space ... ok
+test v21_file_database_requires_reindex ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 10 tests
+test space_transition_table_admits_exactly_the_three_edges ... ok
+test switch_requires_known_space_and_legal_target_state ... ok
+test register_inserts_backfilling_and_refuses_any_existing_row ... ok
+test first_activation_has_no_previous_active_and_no_epoch_bump ... ok
+test switch_revokes_old_activates_new_and_produces_revoke_tasks ... ok
+test switch_appends_pinned_false_audit_event_to_metadata_log ... ok
+test re_switch_of_a_revoked_space_supersedes_stale_live_revokes_before_reenqueue ... ok
+test consume_revoke_never_touches_another_space_row_and_loses_to_stale_token ... ok
+test consume_revoke_deletes_own_space_row_and_bumps_exactly_on_change ... ok
+test space_switch_facades_end_to_end_epoch_and_states ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+running 4 tests
+test malformed_flag_keeps_existing_error_and_transaction_rollback ... ok
+test no_tests_preserves_scoped_deletion_and_single_epoch_commit ... ok
+test a_real_test_file_retains_both_incremental_branches ... ok
+test fifty_thousand_non_test_additions_have_no_edges_and_one_commit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.59s
+
+
+running 64 tests
+test benchmark::ablation::mechanism::tests::fixed_controls_match_current_product_source_once ... ok
+test benchmark::adapters::mcp_stdio::inventory_tests::keyset_query_quotes_cursor_and_has_a_fixed_limit ... ok
+test benchmark::ablation::mechanism::tests::absent_duplicate_and_unexpected_receipts_cannot_prove_isolation ... ok
+test benchmark::adapters::mcp_stdio::inventory_tests::missing_inputs_remain_unknown_and_generated_config_is_explicit ... ok
+test benchmark::ablation::mechanism::tests::public_semantic_with_local_lanes_cannot_masquerade_as_dense_only ... ok
+test benchmark::adapters::mcp_stdio::inventory_tests::same_count_with_wrong_path_is_not_ready ... ok
+test benchmark::adapters::mcp_stdio::inventory_tests::size_count_and_epoch_drift_are_rejected ... ok
+test benchmark::adapters::mcp_stdio::inventory_tests::truncated_duplicate_or_inconsistent_pages_are_rejected ... ok
+test benchmark::oracle::streaming::tests::batch_inserts_reduce_actual_statements_with_bounded_pending_bytes ... ok
+test benchmark::ablation::tests::missing_target_dir_is_rejected ... ok
+test benchmark::ablation::tests::unknown_build_option_key_fails_closed ... ok
+test benchmark::oracle::streaming::tests::named_capacity_never_widens_general_oracle_admission ... ok
+test benchmark::ablation::tests::shared_target_dir_across_cells_is_rejected ... ok
+test benchmark::ablation::tests::matrix_requires_every_cell_and_unique_factor_paths ... ok
+test benchmark::oracle::streaming::tests::batched_spool_scratch_exhaustion_remains_an_error ... ok
+test benchmark::ablation::tests::rustc_version_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::ablation::tests::rustflags_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::p8_load::artifact_budget_tests::reservation_preserves_counter_on_overflow_or_budget_exhaustion ... ok
+test benchmark::oracle::streaming::tests::sole_primary_tree_preserves_duplicate_order_without_external_sorting ... ok
+test benchmark::ablation::tests::identical_options_except_target_dir_pass_with_positional_metrics ... ok
+test benchmark::p8_load::stderr_tests::stderr_drain_retains_only_the_bounded_prefix_and_accounts_for_suffix ... ok
+test benchmark::p8_load::artifact_budget_tests::rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries ... ok
+test benchmark::oracle::streaming::tests::batched_spool_budget_errors_match_original_and_never_commit_pending_rows ... ok
+test benchmark::p8_load::stderr_tests::stderr_write_failure_is_visible_and_input_is_still_drained ... ok
+test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+test benchmark::sampler::process_probe_tests::native_thread_count_uses_sdk_task_info_and_rejects_invalid_pid ... ok
+test benchmark::p8_load::artifact_budget_tests::concurrent_reservations_fill_only_whole_reservations_within_the_budget ... ok
+test benchmark::p8_load::artifact_budget_tests::contended_reservations_never_exceed_limit_or_lose_successes ... ok
+test benchmark::ablation::tests::malformed_plan_and_hints_fail_closed ... ok
+test benchmark::statistics::legacy_latency_ns_tests::preserves_empty_single_and_submicrosecond_wire_values ... ok
+test benchmark::statistics::legacy_latency_ns_tests::preserves_nearest_rank_boundaries_without_rounding_to_microseconds ... ok
+test tests::assertion_array_contains_item ... ok
+test tests::assertion_check_field_equals ... ok
+test tests::assertion_check_field_exists ... ok
+test tests::assertion_check_min_results ... ok
+test benchmark::ablation::tests::exact_source_controls_reject_undeclared_edits_and_files ... ok
+test tests::assertion_check_output_contains ... ok
+test tests::assertion_expected_error_fail ... ok
+test tests::assertion_expected_error_pass ... ok
+test tests::assertion_expected_symbols_enforces_recall_threshold ... ok
+test tests::bench_incremental_dirty_closure ... ignored, measures dirty-closure incremental rebuild latency; run explicitly
+test tests::bench_incremental_noop ... ignored, measures incremental no-op rebuild latency; run explicitly
+test tests::bench_incremental_single_file ... ignored, measures single-file incremental rebuild latency; run explicitly
+test tests::benchmark_incremental_index_report_correctness ... ignored, benchmarks incremental indexing report counters; run explicitly
+test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly
+test tests::assertion_negate ... ok
+test tests::assertion_output_not_contains ... ok
+test tests::incremental_latency_summary_computation ... ok
+test tests::assertion_field_matches_regex ... ok
+test tests::report_summary_computation ... ok
+test tests::corpus_load_new_format ... ok
+test benchmark::ablation::tests::binary_and_compiler_drift_cannot_be_compared ... ok
+test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+test benchmark::sampler::process_probe_tests::self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup ... ok
+test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+test benchmark::ablation::tests::profile_features_jobs_binding_drift_is_rejected ... ok
+test benchmark::ablation::tests::unknown_projection_kind_or_version_is_rejected ... ok
+test synth::tests::synth_ground_truth_facts_match_emitted_content ... ok
+test benchmark::ablation::tests::consistently_missing_required_semantic_key_is_rejected ... ok
+test synth::tests::synth_generation_is_deterministic ... ok
+test benchmark::oracle::streaming::tests::batched_spool_matches_original_at_tier_and_byte_boundaries ... ok
+test benchmark::sampler::process_probe_tests::converted_native_cpu_matches_getrusage_on_the_calibrated_kernel ... ok
+test tests::integration_fixtures_and_corpus ... ok
+test tests::benchmark_fixture ... ok
+
+test result: ok. 59 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 6.90s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test tests::missing_duplicate_reversed_and_false_success_rows_are_rejected ... ok
+test tests::rejected_and_failed_attempts_keep_the_original_denominator ... ok
+test tests::legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan ... ok
+test tests::legacy_ns_keeps_every_terminal_outcome_and_original_precision ... ok
+test tests::mutation_views_are_separate_and_never_added_to_the_primary_population ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test p7_offline::real_stdio_default_disabled_semantic_contract ... ignored, explicit default/semantic product binary; run with --include-ignored, optionally under verified per-process network denial
+test real_stdio_index_search_scope_and_tool_error ... ignored, requires CODECORTEX_BENCH_BINARY pointing at an explicitly built product
+test p7_offline::build_receipt_rejects_identity_feature_and_binary_mismatch ... ok
+test exited_child_is_protocol_error_not_empty_search ... ok
+
+test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 6 tests
+test zero_measurement_gate_is_invalid ... ok
+test unmeasurable_latency_cannot_pass_comparison ... ok
+test cli_bad_policy_is_recorded_without_overwriting_existing_report ... ok
+test cli_lock_failure_preserves_machine_readable_failure_and_raw ... ok
+test cli_inconclusive_is_nonzero ... ok
+test cli_quality_and_latency_failures_are_nonzero_and_keep_raw ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.83s
+
+
+running 9 tests
+test default_hidden_sources_keep_the_scanner_exclusion_reason ... ok
+test enabled_hidden_sources_admitted_but_not_indexed_have_an_unknown_reason ... ok
+test path_snapshot_distinguishes_observed_indexing_and_specific_exclusions ... ok
+test strict_incomplete_coverage_still_issues_zero_queries ... ok
+test measured_failures_remain_in_the_complete_diagnostic_row_set ... ok
+test even_ready_diagnostics_are_ineligible_for_a_valid_gate ... ok
+test cli_diagnostics_reject_quality_performance_and_non_mcp_backends ... ok
+test diagnostic_collects_every_query_without_promoting_unknown_readiness ... ok
+test diagnostics_do_not_bypass_prepare_status_or_warmup_errors ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+
+running 4 tests
+test source_fixtures_are_real_utf8_not_placeholder_references ... ok
+test observe_bm25_mapping_against_actual_preselect ... ok
+test canonical_oracle_preserves_target_identity_and_strategy ... ok
+test observe_soft_hints_excluding_actual_symbol ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+
+running 10 tests
+test external_import_count_alias_and_annotation_contract ... ok
+test duplicate_admitted_file_rejected ... ok
+test changed_question_rejected ... ok
+test same_filename_changed_content_rejected ... ok
+test symlink_source_is_not_admitted ... ok
+test changed_source_after_validation_rejected ... ok
+test lfs_pointer_is_not_source ... ok
+test unknown_schema_and_fields_rejected ... ok
+test snapshot_lock_and_copy_keep_original_unchanged ... ok
+test git_lock_rejects_dirty_even_with_same_head ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+
+running 8 tests
+test detects_content_multiplicity_and_missing_rows_without_hash_only_equality ... ok
+test preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests ... ok
+test malformed_schema_utf8_and_foreign_keys_cannot_be_equal ... ok
+test every_existing_table_remains_part_of_the_comparison ... ok
+test agrees_with_legacy_for_all_types_duplicates_and_physical_columns ... ok
+test row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix ... ok
+test cached_canonical_order_matches_original_serialized_key_bytes ... ok
+test compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.61s
+
+
+running 11 tests
+test slices_use_question_means_not_repetition_counts ... ok
+report-test: 1 queries, 1 admitted files, locks valid
+test readiness_failure_keeps_missing_measurements_in_gate ... ok
+report-test: 1 queries, 1 admitted files, locks valid
+test malformed_response_is_invalid_not_zero_hit_success ... ok
+test cli_single_and_suite_validate_lock_before_run ... ok
+test cancelled_run_is_never_green ... ok
+test wrong_source_text_fails_hard_gate ... ok
+test cancelled_factorial_child_is_not_left_green ... ok
+test raw_replay_reconstructs_identical_metrics ... ok
+test raw_and_normalized_drift_are_rejected ... ok
+test small_sample_comparison_is_inconclusive ... ok
+test raw_replay_reconstructs_costs_without_inventing_missing_measurements ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 21 tests
+test compatibility_repeated_path_does_not_spend_rank ... ok
+test invalid_paths_rejected ... ok
+test empty_expected_is_invalid ... ok
+test compatibility_glob_can_match_nested_path ... ok
+test duplicate_ids_and_cross_split_family_rejected ... ok
+test machine_pack_preserves_public_symbol_identity ... ok
+test malformed_public_result_is_not_no_match ... ok
+test native_duplicate_chunks_do_not_inflate_groups ... ok
+test native_supporting_top1_does_not_answer_primary ... ok
+test native_wrong_file_same_name_gets_no_credit ... ok
+test oce_path_parser_preserves_first_unique_order ... ok
+test partial_empty_is_not_a_correct_no_answer ... ok
+test compatibility_is_linear_gain ... ok
+test compatibility_supporting_is_top1_but_not_primary_grade ... ok
+test lane_only_incomplete_empty_never_scores_as_correct_no_answer ... ok
+test readiness_never_drops_failed_or_unknown_inputs ... ok
+test whole_file_return_is_not_perfect_span_precision ... ok
+test shuffle_and_bootstrap_reproducible ... ok
+test source_validation_catches_wrong_text_and_accepts_crlf ... ok
+test independent_python_fnmatch_goldens ... ok
+test rss_units_and_small_sample_labels ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 2 tests
+test stable_async_handler_returns_one_accepted_generation_and_verified_source ... ok
+test concurrent_real_rebuild_rejects_the_pre_rebuild_recall_generation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+
+running 3 tests
+test independent_real_legacy_and_generation_producers_remain_distinct ... ok
+test independent_default_scoped_gate_repack_and_bounded_width ... ok
+test independent_exact_pointer_and_near_known_negatives ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+
+running 2 tests
+test diag_p5e_measure_saved_receipts ... ignored, read-only measurement of saved stage receipts; requires evidence dir
+test diag_p5e_stage_receipts_same_microfixture ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+
+running 2 tests
+test diag_p5e_measure_saved_receipts ... ignored, read-only measurement of saved stage receipts; requires evidence dir
+test diag_p5e_stage_receipts_same_microfixture ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+
+running 1 test
+test p4d_document_identity_mutations_are_reversible_and_input_safe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+
+
+running 4 tests
+test seam_rejects_unknown_params ... ok
+test seam_rejects_unknown_tool ... ok
+test seam_rejects_schema_invalid_params ... ok
+test seam_result_is_unwrapped_handler_json ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+
+running 13 tests
+test p1a_stdio_bm25_contribution_is_monotonic ... ignored, requires CODECORTEX_BENCH_BINARY; execute explicitly for old/new product
+test p1a_stdio_soft_hints_and_path_intersection ... ignored, requires CODECORTEX_BENCH_BINARY; execute explicitly for old/new product
+test p1a_graph_evidence_obeys_the_same_hard_scope ... ok
+test p1a_repeated_dsl_paths_cannot_widen ... ok
+test p1a_unknown_or_empty_language_is_not_unrestricted ... ok
+test p1a_empty_hard_lists_are_also_empty_in_sql ... ok
+test p1a_disjoint_path_constraints_are_empty ... ok
+test p1a_soft_hints_do_not_mutate_the_callers_request ... ok
+test p1a_empty_scope_cannot_alias_an_empty_soft_hint_in_cache ... ok
+test p1a_files_language_and_path_combine_without_widening ... ok
+test p1a_caller_path_and_dsl_are_intersected ... ok
+test p1a_repeated_languages_intersect_and_aliases_agree ... ok
+test p1a_language_parameter_and_dsl_are_intersected ... ok
+
+test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+
+running 13 tests
+test p1b_stdio_boundaries_and_empty_partial ... ignored, requires CODECORTEX_BENCH_BINARY; explicit old/new subprocess
+test p1b_stdio_symbol_mode_honors_path_scope ... ignored, requires CODECORTEX_BENCH_BINARY; explicit old/new subprocess
+test p1b_soft_priority_recalls_old_midtoken_match_under_budget ... ok
+test p1b_invalid_hard_paths_are_not_silently_empty ... ok
+test p1b_scanner_and_source_guard_reject_external_symlinks ... ok
+test p1b_empty_partial_query_retains_scan_diagnostic ... ok
+test p1b_shared_scan_budget_deduplicates_all_stages_and_detects_exact_exhaustion ... ok
+test p1b_zero_scan_budget_is_explicit_and_cannot_decode ... ok
+test p1b_lexical_sql_filters_before_limit_and_preserves_case ... ok
+test p1b_decode_cap_is_checked_before_the_next_blob ... ok
+test p1b_exact_identifier_and_path_keep_top1_with_distractors ... ok
+test p1b_component_scope_and_separator_normalization ... ok
+test p1b_graph_scopes_seeds_and_neighbors_before_their_caps ... ok
+
+test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.69s
+
+
+running 1 test
+test p1b_scan_accounting_1000_files ... ignored, explicit 1000-file scan accounting experiment
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test p1c_fourteen_tools_valid_unknown_schema_and_modes ... ignored, requires CODECORTEX_BENCH_BINARY; full real stdio contract matrix
+test search_modes_optional_nulls_and_utf8_sanitize_are_stable ... ok
+test all_fourteen_parameter_types_deny_unknown_and_keep_default_requests ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test p1c_stdio_scope_explain_survives_cache_and_redacts_hints ... ignored, requires CODECORTEX_BENCH_BINARY; explicit old/new product
+test p1c_scope_explain_does_not_enumerate_explicit_file_set ... ok
+test p1c_scope_explanation_exists_on_cold_warm_and_empty_without_inventory_leak ... ok
+test p1c_warm_scope_variants_and_trace_remain_correct ... ok
+test p1c_config_reload_recreates_engine_and_empty_budget_diagnostics ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+
+running 5 tests
+test p1d_mcp_concurrent_search_and_incremental_calls_keep_scope ... ignored, requires explicit CODECORTEX_BENCH_BINARY; concurrent real stdio calls
+test mcp_retry_requires_explicit_generation_conflict_not_just_retryable ... ok
+test stats_metadata_does_not_reenter_single_connection_pool ... ok
+test one_connection_wait_release_and_sql_error_do_not_leak_pool_slots ... ok
+test concurrent_queries_writes_single_reader_keep_scope_and_quiescent_freshness ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.07s
+
+
+running 6 tests
+test p1d_mcp_cost_receipts_are_preserved_on_cache_hits ... ignored, requires explicit CODECORTEX_BENCH_BINARY; actual MCP cost receipts
+test old_or_unknown_work_receipts_are_unavailable_not_zero ... ok
+test measured_hydration_reuses_text_and_resets_cached_statement_counters ... ok
+test cached_text_is_a_hint_not_authority_for_versioned_rows ... ok
+test absent_identity_probe_is_charged_without_reusing_cached_authority ... ok
+test query_local_costs_cover_empty_cap_probe_and_all_text_reads ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+
+running 1 test
+test p1d_cost_quality_and_sql_work_matrix ... ignored, explicit 1k/5k cost probe; run release and retain all rows
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test p1d_documented_search_requests_respect_actual_scope_and_wire_shapes ... ignored, requires explicit CODECORTEX_BENCH_BINARY; execute documented JSON over MCP
+test search_examples_and_configuration_match_current_parameter_types ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test p2a_public_mcp_reports_coverage_and_refreshes_provider ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real MCP process
+test unsupported_language_remains_visible_in_public_build_coverage ... ok
+test original_rust_signature_matches_full_and_has_current_uid ... ok
+test original_python_signature_matches_full_and_has_current_uid ... ok
+test rust_workspace_pub_use_signature_change_converges ... ok
+test body_only_changes_keep_surface_and_do_not_promote_callers ... ok
+test direct_writer_surface_storage_delete_and_reopen ... ok
+test forwarding_alias_and_type_only_changes_survive_incremental_writes ... ok
+test python_package_forwarding_declares_star_incompleteness ... ok
+test typescript_signature_and_local_type_dependencies_converge ... ok
+test p2a_closeout_declaration_relocation_preserves_current_reference_addresses ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.53s
+
+
+running 14 tests
+test p2b_public_mcp_retracts_ambiguous_edges_and_updates_go_package ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real MCP process
+test go_unqualified_calls_do_not_bind_methods_from_peer_files ... ok
+test body_only_edit_keeps_dependent_evidence_and_noop_is_empty ... ok
+test dependency_fanout_over_budget_is_partial_not_normal ... ok
+test missing_name_then_provider_appears_refreshes_unchanged_consumer ... ok
+test go_internal_test_sees_production_not_reverse ... ok
+test declared_dependency_rename_retargets_after_p3b_workspace_migration ... ok
+test rust_chain_call_identities_survive_incremental_roundtrip ... ok
+test supported_package_name_config_changes_rebind_the_unchanged_importer ... ok
+test event_scoped_missing_file_and_candidate_changes_match_full_rebuild ... ok
+test repeated_warm_catalog_mutations_match_cold_rebuild ... ok
+test global_unique_becomes_ambiguous_then_unique_again ... ok
+test negative_path_and_precedence_changes_refresh_import_routes ... ok
+test go_package_files_and_same_name_other_packages_are_isolated ... ok
+
+test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.95s
+
+
+running 12 tests
+test p2c_public_mcp_reports_debt_resumes_and_survives_restart ... ignored, requires explicit CODECORTEX_BENCH_BINARY; actual MCP subprocess
+test budget_remainder_survives_reopen_and_an_empty_event_scope ... ok
+test pure_body_change_does_not_re_resolve_other_files ... ok
+test an_old_provider_root_can_itself_be_invalidated_by_a_later_provider ... ok
+test deleting_a_pending_root_revokes_every_consumers_old_target ... ok
+test late_provider_change_rebases_without_losing_old_consumers ... ok
+test disabled_propagation_retains_debt_until_reenabled_or_full_rebuild ... ok
+test budget_remainder_is_resumed_by_unchanged_incremental_builds ... ok
+test python_graph_rejects_false_calls_and_preserves_unsupported_shadow_on_reload ... ok
+test python_and_rust_forward_cycles_match_full_after_signature_changes ... ok
+test fanout_larger_than_a_lookup_window_is_not_truncated_out_of_debt ... ok
+test reexport_cycle_and_deep_chain_converge_across_bounded_rounds ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.85s
+
+
+running 1 test
+test p2d_release_incremental_growth_and_bounded_resume ... ignored, release mechanism cost; explicit execution required
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test p2d_public_mcp_multilanguage_rename_truth_and_no_fake_jsts_calls ... ignored, requires explicit product binary; actual public MCP process
+test unknown_surface_is_not_reported_as_a_proven_empty_interface ... ok
+test mutation_inputs_fail_closed ... ok
+test pending_changes_rebase_and_shrinker_cannot_certify_incomplete ... ok
+test python_changes_have_independent_truth ... ok
+test typescript_changes_have_independent_truth ... ok
+test rust_changes_have_independent_truth ... ok
+test go_changes_have_independent_truth ... ok
+test bounded_shrink_preserves_exact_failure_and_replays_standalone ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 21.59s
+
+
+running 2 tests
+test p3a_release_config_discovery_and_bounded_retarget ... ignored, explicit --release project-model mechanism measurements
+test p3a_release_many_imports_share_the_same_captured_inputs ... ignored, explicit --release immutable resolution cost observations
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test p3a_real_mcp_configuration_only_retarget_and_restart ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real MCP subprocess
+test p3a_inherited_paths_use_defining_config_directory_and_jsonc_strings ... ok
+test p3a_prepare_rejects_changed_configuration_before_publication ... ok
+test p3a_alias_uses_nearest_config_and_ordered_fallback_targets ... ok
+test p3a_hidden_configuration_event_retargets_the_index ... ok
+test p3a_corrupt_persisted_config_cache_is_not_reused ... ok
+test p3a_new_and_deleted_nested_roots_are_observed_with_scoped_events ... ok
+test p3a_unsupported_module_mode_cannot_be_upgraded_by_global_name_fallback ... ok
+test p3a_ignored_json_config_scoped_change_reloads_without_reparsing_source ... ok
+test p3a_a_new_higher_priority_alias_target_invalidates_old_imports ... ok
+test p3a_configuration_only_change_retargets_unchanged_consumers_and_survives_reopen ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.81s
+
+
+running 2 tests
+test package_config_resume_does_not_reparse_consumers_or_reload_per_import ... ignored, explicit --release package configuration mechanism measurements
+test rust_module_queries_reuse_captured_facts_and_indexed_lookup ... ignored, explicit --release Rust catalog/fact-cache observations
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test real_mcp_package_configuration_retarget_resumes_after_restart ... ignored, requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess
+test rust_crate_modules_resolve_to_the_declared_file ... ok
+test missing_imported_member_cannot_bind_an_unrelated_global_name ... ok
+test python_relative_import_never_uses_javascript_probes ... ok
+test workspace_package_export_retargets_after_manifest_only_change ... ok
+test rust_inline_scope_path_attribute_and_default_features_reconcile ... ok
+test python_namespace_and_src_config_change_retarget_without_running_code ... ok
+test import_require_dynamic_and_type_only_survive_restart ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+
+running 1 test
+test p3c_release_go_config_change_scales_with_consumers_not_unrelated_files ... ignored, explicit release Go config discovery and frontier cost
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test p3c_real_mcp_go_work_only_change_resumes_across_restart ... ignored, requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess
+test external_go_import_cannot_bind_unrelated_global_function ... ok
+test go_selector_and_reference_cannot_bind_same_file_leaf ... ok
+test local_go_replace_resolves_members_across_files_and_retargets_on_config_only ... ok
+test local_go_config_dependency_is_scoped_and_rebinds_on_condition_change ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+
+running 1 test
+test release_multilanguage_import_cost_and_disk_independence ... ignored, explicit release multi-package discovery, cache reuse and pure imports
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test real_mcp_multilanguage_graph_keeps_concrete_target_files ... ignored, explicit product binary; real MCP stdio
+test all_four_languages_keep_independent_targets_on_full_noop_and_reopen ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+
+running 1 test
+test release_hierarchical_chunks_preserve_all_bytes_and_report_costs ... ignored, explicit release source partition and boundary cost samples
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test real_mcp_indexes_original_bytes_and_source_coordinates ... ignored, explicit product binary; actual MCP subprocess and its isolated SQLite
+test legacy_normalized_line_proof_remains_separate_and_strict ... ok
+test byte_evidence_checks_raw_coordinates_and_rejects_tampering_without_legacy_fallback ... ok
+test source_evidence_and_text_agree_for_all_languages_and_sfc ... ok
+test original_chunks_survive_compression_dirty_reload_reopen_and_full_rebuild ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+
+running 7 tests
+test real_mcp_chunk_budget_changes_without_restarting_then_survives_restart ... ignored, explicit product binary; actual MCP configuration update and restart
+test configured_byte_budget_also_bounds_a_single_unicode_line ... ok
+test prepared_chunks_cannot_commit_under_a_different_policy ... ok
+test invalid_budget_is_a_failed_build_not_empty_success_or_default_policy ... ok
+test configured_line_budget_reaches_the_production_parser ... ok
+test changed_policy_expands_a_non_config_event_to_all_admitted_sources ... ok
+test policy_change_live_session_and_failed_file_do_not_acknowledge_one_another ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+
+running 1 test
+test release_chunk_merge_and_projection_costs ... ignored, explicit release parser/chunk/projection cost test
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test document_manifest_and_freshness_mechanism_cost ... ignored, release mechanism measurements
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test real_mcp_document_versions_and_disk_freshness ... ignored, explicit product binary; real MCP source/document lifecycle
+test old_symbol_lines_never_slice_new_disk_text ... ok
+test source_read_limits_and_path_guards_are_fail_closed ... ok
+test build_has_current_document_manifest_for_each_verified_chunk ... ok
+test valid_bytes_reappear_after_stale_or_deleted_reads_without_poisoning_cache ... ok
+test empty_files_and_render_failures_have_explicit_manifest_states ... ok
+test hydration_rejects_deleted_or_malformed_required_manifest ... ok
+test deleted_source_is_not_resurrected_by_warm_search_cache ... ok
+test failed_document_insert_rolls_back_files_chunks_and_fts ... ok
+test changed_renderer_spec_reprocesses_unchanged_source ... ok
+test direct_rebuild_and_standard_rebuild_produce_the_same_documents ... ok
+test context_keeps_flask_handler_after_freshness_metadata ... ok
+test manifest_reopen_delete_rename_policy_and_full_incremental_parity ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+
+running 1 test
+test release_chunk_build_memory_and_document_costs ... ignored, explicit release P4-D build/chunk/document/RSS mechanism measurements
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test chunk_policy_ablation_preserves_quality_and_measures_structure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+
+running 16 tests
+test lexical_diagnostics_retain_native_bm25_not_reciprocal_rank ... ok
+test same_line_sibling_definitions_do_not_share_exact_identity ... ok
+test absent_parser_method_signatures_are_not_fabricated_by_exact_lane ... ok
+test qualified_same_line_methods_do_not_promote_another_owner ... ok
+test prose_short_words_cannot_cast_path_votes_but_short_path_queries_work ... ok
+test exact_paths_preserve_document_type_and_case_sensitive_scope ... ok
+test literal_function_signature_uses_byte_columns_after_unicode_crlf_prefix ... ok
+test finite_but_overflowing_ranking_config_cannot_emit_nonfinite_scores ... ok
+test grep_execution_receipt_matches_zero_weight_and_empty_scope ... ok
+test exact_ambiguity_and_limit_are_scoped_before_truncation ... ok
+test path_token_budget_is_not_consumed_by_files_without_documents ... ok
+test exact_lane_finds_a_split_definition_and_its_literal_signature ... ok
+test path_token_truncation_is_explicit_and_bounded ... ok
+test graph_lane_read_failure_is_visible_and_not_result_cached ... ok
+test graph_internal_seed_and_neighbor_limits_never_claim_complete ... ok
+test identity_materialization_rejects_corruption_before_reranking ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.18s
+
+
+running 1 test
+test release_versioned_lane_costs_with_fixed_inputs ... ignored, explicit release P5-A lane/identity cost observations
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test real_mcp_exposes_versioned_exact_and_path_lanes ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real MCP P5-A lane contract
+test public_exact_and_path_lanes_are_versioned_scoped_and_replayable ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 1 test
+test release_bounded_admission_and_capacity_recovery ... ignored, explicit release P5-B bounded-execution cost observations
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real stdio query policy/handles
+test cancellation_and_future_drop_release_async_work_without_a_detached_task ... ok
+test local_never_invokes_installed_port_and_missing_auto_is_local ... ok
+test partial_receipt_and_provider_panics_remain_visible_not_complete_empty ... ok
+test semantic_timeout_keeps_local_result_visible_and_does_not_cache_failure ... ok
+test explicit_expired_request_cannot_return_a_warm_cache_hit ... ok
+test explicit_empty_scope_disables_optional_port_without_invoking_it ... ok
+test owned_handle_survives_idle_close_but_poison_recovery_invalidates_old_engine ... ok
+test semantic_candidates_are_hydrated_from_current_scoped_documents ... ok
+test slow_fake_does_not_hold_codeindex_lock_or_the_only_sql_connection ... ok
+test async_dispatch_preserves_resolution_freshness_and_project_identity ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.68s
+
+
+running 10 tests
+test real_stdio_search_preserves_full_json_budget_and_source_proofs ... ignored, explicit CODECORTEX_BENCH_BINARY; real MCP structured response budget
+test projected_lane_receipts_keep_partial_errors_and_reject_bad_headers ... ok
+test malformed_packing_status_cannot_be_interpreted_as_complete ... ok
+test post_handler_metadata_and_old_omission_flags_share_final_budget ... ok
+test malformed_context_objects_fail_without_panicking_or_erasing_old_status ... ok
+test actual_async_response_counts_final_freshness_and_survives_repacking ... ok
+test small_source_survives_metadata_compaction_and_size_is_self_accounted ... ok
+test first_huge_body_becomes_reference_not_unbounded_or_fake_slice ... ok
+test oversized_graph_and_diagnostic_metadata_yield_before_primary_source ... ok
+test lower_rank_references_never_evict_a_fitting_primary_body ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+
+running 1 test
+test release_final_evidence_and_packing_costs ... ignored, explicit release P5-C final evidence/packing cost observations
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test disk_changes_and_deletions_are_explicit_omissions_not_new_source ... ok
+test warm_context_revalidates_the_full_record_not_only_its_reference_mirror ... ok
+test graph_nodes_and_post_handler_metadata_keep_the_same_scope_and_generation ... ok
+test current_dense_basis_keeps_final_response_complete ... ok
+test warmed_search_cannot_hide_deleted_manifest_or_forged_snapshot ... ok
+test real_space_switch_during_recall_rejects_the_old_generation ... ok
+test final_hits_preserve_original_utf8_crlf_proofs_and_metadata ... ok
+test no_lane_may_substitute_final_identity_coordinates_or_scope ... ok
+test swap_same_epoch_and_cancel_reject_final_publication ... ok
+test dense_omission_persists_across_hydration_windows_but_generation_changes_fail ... ok
+test stable_generation_with_skipped_dense_basis_is_partial_in_final_response ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+
+running 8 tests
+test fix_reserves_test_evidence_but_never_displaces_rank_one ... ok
+test duplicate_source_is_suppressed_but_cross_file_copy_is_not ... ok
+test malformed_incarnation_fails_even_when_result_is_warm ... ok
+test a_single_file_can_contribute_multiple_disjoint_pieces ... ok
+test only_selected_evidence_can_suppress_an_overlapping_facet ... ok
+test locate_keeps_rank_order_without_forced_file_diversity ... ok
+test auxiliary_metadata_does_not_change_read_generation ... ok
+test public_context_reports_selection_and_cache_windows_do_not_alias ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+
+running 2 tests
+test real_stdio_policy_override_and_capability_state ... ignored, explicit CODECORTEX_BENCH_BINARY; actual public policy and capabilities contract
+test policy_parameters_are_optional_strict_and_documented ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test release_idle_sweep_preserves_pins_and_recovers_after_release ... ignored, explicit release P5-D idle/pin lifecycle cost
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test concurrent_cold_routes_share_one_instance_and_build_gate ... ok
+test idle_sweep_never_waits_for_write_or_build_lock ... ok
+test dropping_session_stops_recurring_tasks_and_releases_cached_db ... ok
+test cancelled_blocking_work_keeps_pin_until_actual_exit ... ok
+test cloned_views_hold_one_lease_until_last_drop ... ok
+test capability_readiness_distinguishes_absence_empty_error_and_semantic_port ... ok
+test explicit_unconfigured_semantic_is_never_reported_ready ... ok
+test explicit_context_policy_cannot_bypass_optional_port_via_direct_symbols ... ok
+test inflight_recall_survives_idle_and_lru_then_reclaims_resources ... ok
+test shutdown_prevents_late_watcher_and_idle_restart ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+
+running 4 tests
+test p5e_release_mixed_c1_c4_c8_c16 ... ignored, explicit release diagnostic; set P5E_MIXED_OUT to unique artifact directory
+test impossible_facet_is_rejected_before_starting_product ... ok
+test unrelated_query_cannot_buy_latency_by_losing_a_required_facet ... ok
+test mixed_public_dispatch_preserves_all_samples_and_facets ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+
+running 2 tests
+test distinctive_program_support_is_literal_bounded_owned_and_not_injected ... ok
+test mixed_language_framework_context_preserves_the_requested_handler ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+
+running 8 tests
+test nested_and_duplicate_file_uids_respect_hard_scope_and_cancellation ... ok
+test same_line_same_name_methods_keep_their_container_uids ... ok
+test same_line_unicode_siblings_do_not_share_the_graph_declaration_anchor ... ok
+test graph_neighbor_of_a_long_function_has_a_real_declaration_document ... ok
+test edited_then_deleted_graph_anchors_do_not_keep_old_document_versions ... ok
+test graph_candidates_reject_a_corrupted_document_manifest ... ok
+test real_bidirectional_fanout_maps_all_twenty_seeds_and_four_hundred_neighbors ... ok
+test four_hundred_twenty_real_uids_use_batched_projection_and_bounded_prefix_reads ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.84s
+
+
+running 2 tests
+test lexical_atom_budget_is_visible_not_a_complete_absence_claim ... ok
+test unknown_compound_identifier_does_not_recall_a_generic_loop_word ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 6 tests
+test real_path_lane_sql_tripwire_proves_exact_branch_does_not_scan_token_fts ... ok
+test actual_core_language_file_scope_and_markdown_identity_are_preserved ... ok
+test large_exact_file_is_still_truthfully_candidate_limited ... ok
+test canonical_exact_indexed_path_avoids_unrelated_thousand_file_token_inventory ... ok
+test exact_document_domain_edit_delete_and_stale_source_do_not_reuse_old_bodies ... ok
+test absent_basename_and_natural_language_paths_do_not_borrow_exact_doc_completeness ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.96s
+
+
+running 2 tests
+test known_domain_prose_compaction_has_numeric_width_margin_and_preserves_unknown_labels ... ok
+test real_final_mcp_context_keeps_trusted_facet_then_support_then_incidental_under_caps ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test source_only_partial_survives_removal_of_dense_fence_details ... ok
+test partial_dense_candidates_remain_usable_without_losing_receipt_counts_or_scores ... ok
+test budget_omission_cannot_upgrade_complete_dense_recall_to_empty_no_match ... ok
+test executed_lane_states_survive_real_projection_and_empty_result_classification ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.89s
+
+
+running 8 tests
+test actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source ... ignored, requires explicit current product path and SHA256; mechanism smoke, no quality certification
+test readiness_requires_checked_space_and_real_dense_coverage_not_file_count ... ok
+test configuration_rejects_implicit_network_remote_endpoint_and_fake_dense_name ... ok
+test public_budget_checks_policy_final_bytes_and_numeric_scope_without_rewriting_partial ... ok
+test paired_effects_use_family_units_and_do_not_label_fake_scores_as_quality ... ok
+test strategy_rejection_keeps_original_public_response_and_replay_cannot_self_authorize ... ok
+test equal_top_k_does_not_hide_different_output_cap_or_hard_scope ... ok
+test pending_dense_readiness_is_bounded_and_close_still_releases_client ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test failed_source_record_checks_keep_the_work_performed_before_rejection ... ok
+test repeated_validation_resets_cached_statements_and_accumulates_only_named_work ... ok
+test projection_failure_is_visible_and_multiple_batches_count_actual_yielded_rows ... ok
+test current_context_validation_is_charged_again_on_a_real_graph_cache_hit ... ok
+test empty_and_prequery_refusal_are_zero_but_missing_locators_are_measured ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test zero_or_unwitnessed_success_is_nonzero_with_immutable_failure_report ... ok
+test valid_source_cannot_erase_an_observed_cache_control_failure ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+
+running 9 tests
+test configuration_bounds_reject_unbounded_or_ambiguous_profiles_before_writing ... ok
+test total_deadline_kills_worker_and_keeps_nonzero_partial_receipt ... ok
+test worker_checks_its_actual_executable_digest_before_running_a_fixture ... ok
+test burst_admission_preserves_rejections_and_deadline_failures_in_denominators ... ok
+test cancellation_stops_offering_drains_and_keeps_final_reconciliation ... ok
+test supervisor_rejects_a_binary_removed_after_the_worker_self_check ... ok
+test cli_keeps_indexes_inside_fixtures_despite_an_inherited_external_cache_override ... ok
+test artifact_budget_and_existing_output_fail_without_truncating_evidence ... ok
+test real_mixed_load_drains_and_retains_exact_oracle_failure_or_success ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.31s
+
+
+running 2 tests
+test real_mcp_inventory_crosses_pages_and_preserves_exact_paths ... ignored, requires CODECORTEX_BENCH_BINARY pointing at an explicitly built product
+test real_mcp_wrong_input_with_same_count_is_rejected ... ignored, requires CODECORTEX_BENCH_BINARY pointing at an explicitly built product
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test lifecycle_requires_direct_consistent_evidence ... ok
+test costs_separate_currency_basis_and_deduplicate_receipts_without_assuming_usage ... ok
+test full_attempt_denominator_retains_timeouts_errors_partials_and_missing_times ... ok
+test disk_conflicts_empty_identity_and_overflow_cannot_produce_valid_total ... ok
+test disk_layout_counts_shared_storage_once_and_never_totals_partial_coverage ... ok
+test costs_reject_conflicts_and_preserve_missing_overflow_and_duplicate_charge_uncertainty ... ok
+test legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values ... ok
+test binomial_interval_matches_enumerated_small_sample_coverage ... ok
+test measured_zero_differs_from_missing_and_memory_alternatives_are_not_added ... ok
+test ps_tree_uses_checked_sum_and_never_discards_unreadable_children ... ok
+test tail_intervals_do_not_disguise_small_sample_or_unbounded_p99 ... ok
+test distribution_and_interval_keep_one_nearest_rank_convention ... ok
+test existing_runner_and_replay_emit_all_attempt_and_resource_ledgers ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 1 test
+test api_edit_keeps_route_manifest_equal_to_full_and_preserves_route_nodes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+
+running 12 tests
+test shards_partition_registered_repetitions_without_lowering_release_admission ... ok
+test matrix_and_release_admission_are_explicit_and_bounded ... ok
+test named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure ... ok
+test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... FAILED
+test complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging ... ok
+test failed_independent_fanout_truth_remains_a_failure ... ok
+test native_evidence_hash_uses_all_file_bytes_without_running_a_profile ... ok
+test bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity ... ok
+test subprocess_deadline_preserves_report_and_rejects_output_reuse ... ok
+test configured_evidence_budget_stops_without_overwriting_partial_raw ... ok
+test actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes ... ok
+test real_scale_smoke_preserves_builds_counts_mutations_and_full_parity ... ok
+
+failures:
+
+---- subprocess_descendant_cannot_hold_stderr_past_worker_deadline stdout ----
+
+thread 'subprocess_descendant_cannot_hold_stderr_past_worker_deadline' (36985417) panicked at crates/cc-eval/tests/p8_scale.rs:502:5:
+assertion `left == right` failed: {"deadline_scope":"entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms","executed_repetition_range":{"end":1,"start":0},"exit_code":3,"fixture_cleanup":{"elapsed_ms":0,"error":null},"full_100k_certification":"not_run","max_output_bytes":16777216,"plan_digest":"f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea","profile":"smoke","raw_digest":null,"registered_repetitions":1,"release_certification":"not_run","release_prerequisites":"P7-020/P8-001/P8-004 and source/binary release lock are separate gates","schema_version":1,"shard_only":false,"status":"deadline_exceeded","stderr_complete":true,"summary":null,"wall_ms":252,"worker_binary_digest_after":"761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b","worker_binary_digest_before":"761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b","worker_binary_unchanged":true,"worker_exit_code":null,"worker_pid":24615}
+  left: Number(3)
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    subprocess_descendant_cannot_hold_stderr_past_worker_deadline
+
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.50s
+

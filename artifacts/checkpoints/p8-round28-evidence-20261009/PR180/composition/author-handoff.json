@@ -1,0 +1,141 @@
+{
+  "schema": "p8_scale_supervisor_fixture_minimal_composition_v1",
+  "status": "author_candidate_static_only",
+  "author": "/root/scale_engineering",
+  "repository": "jyqj/codecortex",
+  "scope": "One existing Unix-only test fixture composition in crates/cc-eval/tests/p8_scale.rs. No product, deadline, measurement, source guard, task or ref mutation.",
+  "inputs": {
+    "current_pr180": {
+      "head": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "tree": "c40de30474ae9de97fb938dade9a51e6b028b7c6",
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "mode": "100644",
+      "git_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+    },
+    "root_pr184_p4": {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "git_blob": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+      "bytes": 21328,
+      "sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a",
+      "execution_note": "Root reports five original checks passed for P4, including workspace 2731 passed / 0 failed / 73 original ignored. This author did not rerun those checks and they are not execution evidence for this new composition."
+    },
+    "actual_pr180_supervisor": {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "git_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+      "bytes": 46137,
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "full_body_at_832f_verified": true
+    },
+    "root_overlap_report": {
+      "git_blob": "1d06ee037ba183fca0bb43eaa4fcedab7910894c",
+      "bytes": 14213,
+      "sha256": "c8a69e058531bc9b82d3eff203249ca267d804c512607f7ec304110830ce27cc"
+    }
+  },
+  "candidate": {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "mode": "100644",
+    "git_blob": "969ba37fe82092c419ddd738653d26631efab94e",
+    "bytes": 21190,
+    "sha256": "a4586c83da81a15ec0c77d80db3d2801f3f952a9cda956e7c2da8004dcfcdb0a",
+    "full_get_equal": true
+  },
+  "patch": {
+    "git_blob": "4e96e58cba948c59567173fcd3d739a0c12504d0",
+    "bytes": 620,
+    "sha256": "176bbf9b4b8329ad3fb4132aed34b133575f9c0f86a90ddf9aa30f4d3860c0b6",
+    "full_get_equal": true,
+    "base_git_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+    "added_lines": 2,
+    "deleted_lines": 0,
+    "hunks": 1
+  },
+  "composition": {
+    "method": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+    "decision": "Keep the existing PR180 body byte-for-byte and add only the two P4 assertions to the timed scenario.",
+    "exact_addition": "    assert_eq!(report[\"worker_exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"summary\"][\"passed\"], true, \"{report}\");\n",
+    "placement": "Immediately after the timed scenario's existing exit_code == 0 assertion.",
+    "retained_peer_setup": "Exactly one readiness run through the unchanged original supervisor with deadline_ms=2000, its own fresh output directory/process group, six original ready predicates, stderr diagnostic and temp.keep() on setup failure; no retries.",
+    "root_setup_intent": "Separate executable-readiness setup from the descendant-stderr scenario; do not treat cold launch readiness as the property under a 250ms scenario deadline.",
+    "coverage_reason": "Both variants launch the freshly created helper once before the scenario. PR180's existing supervised setup additionally exercises its same helper shell body, checks actual worker exit/summary/stderr/cleanup/certification and retains evidence on setup failure. Therefore retaining it covers the readiness intent without a second preflight or alteration of the current PR's setup.",
+    "explicit_difference": "The P4 no-descendant --fixture-preflight branch and its manual Command/try_wait/kill/wait loop are not copied. PR180 instead uses a fresh supervised process group and a sleeping descendant during readiness; the original supervisor stops that group before bounded stderr drain. These setup mechanisms are not claimed to be byte-identical or to prove equivalent runtime scheduling.",
+    "timing_constants_preserved": [
+      "readiness deadline_ms: 2_000",
+      "scenario deadline_ms: 250",
+      "shell sleep 20",
+      "strict scenario start.elapsed() < Duration::from_secs(2)",
+      "original separate deadline_ms: 1 failure/output-reuse control"
+    ],
+    "original_strict_deadline_semantics": "The actual production body checks started.elapsed() >= deadline before try_wait (lines319-324); it stops the fresh process group before stderr drain (329-341). No production line changes and no limit inflation. The readiness plan is the existing supervisor child/drain deadline; this report does not invent a separate hard two-second bound for all cleanup/file I/O.",
+    "assertion_semantics": "Original supervisor lines376-385 already derive exit_code=0 only from an actual exit0 and summary.passed=true with no termination/infrastructure error. The added explicit checks preserve P4's required observations and make them visible in this regression rather than relying only on the derived top-level code.",
+    "population": "All original 12 test declarations remain (the target test retains cfg(unix)); no new or removed method, ignored annotation, filter or workload."
+  },
+  "mechanical_verification": {
+    "performed_by": "pure V8 string/hash/unified-hunk checks only",
+    "checks": {
+      "original_sources_all_git_blob_sha1_match": true,
+      "actual_832f_production_blob_and_full_body_match": true,
+      "all_bytes_outside_target_equal_between_two_variants": true,
+      "only_two_added_assertion_lines": true,
+      "removal_of_two_lines_recovers_exact_peer_body": true,
+      "all_existing_test_method_names_preserved": true,
+      "original_250ms_scenario_body_plus_two_assertions_only": true,
+      "peer_fixture_and_readiness_full_prefix_preserved": true,
+      "root_scenario_assertions_preserved": true,
+      "existing_deadline_1ms_test_unchanged": true,
+      "no_timing_constant_or_comparator_change": true,
+      "test_methods": [
+        "matrix_and_release_admission_are_explicit_and_bounded",
+        "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+        "shards_partition_registered_repetitions_without_lowering_release_admission",
+        "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+        "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+        "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+        "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+        "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity",
+        "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "failed_independent_fanout_truth_remains_a_failure",
+        "configured_evidence_budget_stops_without_overwriting_partial_raw"
+      ]
+    },
+    "exact_patch_application": {
+      "implementation": "pure V8 exact unified-hunk application; not git apply, Rust AST, rustfmt or tests",
+      "hunk_count": 1,
+      "old_start_line": 527,
+      "old_line_count": 6,
+      "new_line_count": 8,
+      "applied_body_equals_candidate": true,
+      "inverse_equals_peer": true
+    },
+    "earlier_author_patch_draft_check": {
+      "status": "failed",
+      "scope": "author draft unified patch header location before any blob publication or product execution",
+      "error": "hunk old",
+      "correction": "derive exact 1-based hunk position from complete peer body and verify exact application"
+    },
+    "all_source_and_deliverable_git_sha1_and_sha256_checked": true
+  },
+  "validation_pending": {
+    "rust_ast": false,
+    "rustfmt": false,
+    "rust_compilation": false,
+    "rust_test_execution": false,
+    "new_measurement": false,
+    "suggested_existing_commands": [
+      "cargo test --locked --offline -p cc-eval --test p8_scale subprocess_descendant_cannot_hold_stderr_past_worker_deadline -- --exact --nocapture",
+      "cargo test --locked --offline -p cc-eval --test p8_scale subprocess_deadline_preserves_report_and_rejects_output_reuse -- --exact --nocapture"
+    ],
+    "note": "Use the ordinary planned CI/workspace checks for the final integrated source. These commands are proposed exact selectors, not executed results or new acceptance gates."
+  },
+  "publication_boundary": {
+    "unreferenced_blobs_only": true,
+    "no_tree_commit_ref_pr_or_workflow_created": true,
+    "require_fresh_base_blob_lease": "31b34057ff76e0b07e9242ef179951577ed22187",
+    "nonauthor_review_pending": true,
+    "root_owns_integration": true
+  },
+  "TODO_closed": 0
+}

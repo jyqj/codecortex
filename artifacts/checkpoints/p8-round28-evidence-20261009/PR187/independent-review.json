@@ -1,0 +1,61 @@
+{
+  "schema": "p8-014-optional-judge-doc-independent-static-review-v1",
+  "status": "accepted_scoped_documentation",
+  "reviewer": "acceptance_audit",
+  "path": "docs/BENCHMARK.md",
+  "base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+  "before": {
+    "blob": "03b976a8e4ae4849c347afdb2826e8abb9db2df5",
+    "bytes": 23611,
+    "sha256": "ca9c3c64dbcb3e8ced649ffd217e29da29de261f4308c4be9625121744927c90"
+  },
+  "after": {
+    "blob": "cb85c58cdac336950612498c4ed638c99d7f689e",
+    "bytes": 30838,
+    "sha256": "7f4f4cf16c97f557b3f1ad04c00cbbd7064e88e304eacebf382f126fb3ea35af"
+  },
+  "preserved_v1": {
+    "blob": "feb753c3cd5f93175bf0eccb6a9e0a9259a01625",
+    "bytes": 30660,
+    "sha256": "a6ccc3a4d85f039d97cb28e89964d8e9db0bf523caab69de5cbc5f10953ea7c7"
+  },
+  "checks": {
+    "original23611_byte_prefix_unchanged": true,
+    "final7227_byte_append_only": true,
+    "v1_to_v2_exact_two_prose_replacements_inverse_full_equal": true,
+    "original_helper_unchanged": true,
+    "no_task_status_dependency_definition_changed": true,
+    "no_model_or_test_or_native_execution": true
+  },
+  "basis": {
+    "helper": {
+      "blob": "9aa1edb76b0237730a284510957bec9502e5d0e9",
+      "sha256": "30569182753837fe29b390d29acb27328337abbf86e088e8ca3740359c3051ac"
+    },
+    "support_sha256": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a",
+    "task": {
+      "id": "P8-014",
+      "title": "可选LLM评审旁证流程",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-013"
+      ],
+      "acceptance": [
+        "不替代确定性gold，提示注入文本只作数据，费用需授权",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ]
+    },
+    "benchmark_contract": "Exact4ef docs/roadmap/code-index-v2/09-BENCHMARK.md section7: no same-system self-scoring, frozen prompt/model, preserved rationale and repeated consistency, optional corroboration rather than core deterministic gate.",
+    "existing_receipt": "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json at exact4ef; full read states18 offline controls and prepare/reconcile CLI succeeded, actual_judge_execution=not_run, model/network calls0, source helper hash identical."
+  },
+  "findings": [
+    "Documented prepare/reconcile argv, exact input keys, model-revision declaration, dev/fixture-only split, counts/size limits, evidence UTF8digest and no source-provenance authentication match actual implementation.",
+    "Exclusive outputs, original packet pin, private identity/gold custody, known-label regex limitations, strict all-candidate judgments and original failure retention are described accurately.",
+    "Both successful states remain prepared_not_run/manual_review_required with unverified external provenance; no authenticated live model claim or gold mutation is introduced.",
+    "Human dispute quarantine/versioning and repeated-review limits reflect original contract; v2 explicitly retains independent reviewer/self-scoring boundary.",
+    "This is documentation scope only. Existing18 controls were not rerun or independently re-certified here; their fixed original receipt is cited. No extra real-model authorization, new certification gate or TODOclosure is implied."
+  ],
+  "unresolved_blockers": [],
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

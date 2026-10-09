@@ -1,0 +1,128 @@
+{
+  "schema": "p8-pr184-native-G-descendant-isolation-v1",
+  "source": {
+    "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+    "status": ""
+  },
+  "platform": "darwin",
+  "versions": {
+    "python": {
+      "argv": [
+        "/usr/bin/python3",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Python 3.9.6\n",
+      "stderr": ""
+    },
+    "cargo": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": ""
+    },
+    "rustc": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "rustfmt": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustfmt",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.9.0-stable (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "clippy": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "clippy 0.1.95 (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "git": {
+      "argv": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "git version 2.50.1 (Apple Git-155)\n",
+      "stderr": ""
+    }
+  },
+  "runner": {
+    "bytes": 5690,
+    "sha256": "ccb6bb2ab27885d9326c091e308b0f9b94342e0433067b6db3ad42f09b3060fc"
+  },
+  "started_at_utc": "2026-10-09T13:00:53.311232+00:00",
+  "commands": [
+    {
+      "name": "descendant-isolated",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p8_scale",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "--",
+        "--exact"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 120,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T13:00:53.343165+00:00",
+      "status": "failed",
+      "exit_code": 101,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T13:00:54.008430+00:00",
+      "elapsed_seconds": 0.6648864579999999,
+      "stdout": {
+        "bytes": 1617,
+        "sha256": "e223a4bb76a299f9ec4810a11cde75f04ce7bb8c8f424ed38d9c8cf9f1cd6b9a"
+      },
+      "stderr": {
+        "bytes": 305,
+        "sha256": "b312a5276630b890983a238b48aff94d689250ec0610ceeacc78c7e90cbf30b0"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    }
+  ],
+  "product_source": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+  "product_manifest_sha256": "08137e6a2003063fe793bec0f728e4af238f56de62d0d7a0c12e23ed389a410f",
+  "review_source": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+  "sdk_root": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+  "scope": "Diagnostic isolation of the one actual original workspace failure on unchanged G, with the exact existing test and its unchanged 250 ms deadline. Original workspace failure remains failure; this is not a replacement full-workspace run or formal scale study.",
+  "status": "failed",
+  "completed_at_utc": "2026-10-09T13:00:54.066431+00:00",
+  "remaining_commands_not_run": []
+}

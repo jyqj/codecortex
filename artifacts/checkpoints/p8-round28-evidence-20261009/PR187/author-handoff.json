@@ -1,0 +1,171 @@
+{
+  "schema": "p8-round28-014-optional-judge-operator-documentation-handoff-v1",
+  "author": "/root/scale_engineering",
+  "status": "documentation_implementation_candidate_only_not_task_completion",
+  "repository": "jyqj/codecortex",
+  "base_source": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+  "original_contract": {
+    "tasks_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "tasks_identity": {
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "task_start_line": 12259,
+    "id": "P8-014",
+    "title": "可选LLM评审旁证流程",
+    "depends_on": [
+      "P8-013"
+    ],
+    "required_for": [
+      "optional-judge"
+    ],
+    "scope": [
+      "crates/cc-eval/benchmarks/manifests/",
+      "docs/BENCHMARK.md"
+    ],
+    "steps": [
+      "冻结judge prompt/model并盲化系统名",
+      "复核争议答案/证据充分性"
+    ],
+    "acceptance": [
+      "不替代确定性gold，提示注入文本只作数据，费用需授权",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "conditional": "可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。",
+    "additional_existing_clause": {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "line": 159,
+      "scope": "Independent judge versus answer generation; frozen prompt/model; evidence and repeat consistency; disputed gold quarantine and versioned review."
+    }
+  },
+  "concrete_gap": "The designated docs/BENCHMARK.md had no judge/LLM/optional-evidence entry. Existing offline prepare/reconcile and their strict packet/identity/manual-review boundaries were only discoverable by reading implementation/tests and historical artifacts. Add practical operator instructions without extending the tool or authorizing a model call.",
+  "patch": {
+    "path": "docs/BENCHMARK.md",
+    "mode": "100644",
+    "before": {
+      "git_blob": "03b976a8e4ae4849c347afdb2826e8abb9db2df5",
+      "bytes": 23611,
+      "sha256": "ca9c3c64dbcb3e8ced649ffd217e29da29de261f4308c4be9625121744927c90"
+    },
+    "after": {
+      "git_blob": "cb85c58cdac336950612498c4ed638c99d7f689e",
+      "bytes": 30838,
+      "sha256": "7f4f4cf16c97f557b3f1ad04c00cbbd7064e88e304eacebf382f126fb3ea35af",
+      "full_GET_byte_equal": true
+    },
+    "original_prefix_bytes": 23611,
+    "appended_bytes": 7227,
+    "whole_original_prefix_retained": true,
+    "inverse": "Remove exactly the appended final section; the entire original file returns byte-for-byte.",
+    "v1_preserved": {
+      "git_blob": "feb753c3cd5f93175bf0eccb6a9e0a9259a01625",
+      "bytes": 30660,
+      "sha256": "a6ccc3a4d85f039d97cb28e89964d8e9db0bf523caab69de5cbc5f10953ea7c7"
+    },
+    "v2_relative_to_v1": {
+      "replacements": [
+        {
+          "before": "如果已知系统名出现在题目、答案、路径、摘录或 rubric 中，会拒绝准备而不自动改写\n源码。",
+          "after": "如果题目、答案、路径、摘录或 rubric 中的身份被当前已知名称检测规则识别\n（不区分大小写、按词边界匹配），会拒绝准备而不自动改写源码。"
+        },
+        {
+          "before": "只有授权和预算明确后，才在工具之外安排真实评审。另存授权范围、预算、冻结的\nprompt/model/revision、实际调用记录和观察到的模型版本；",
+          "after": "只有授权和预算明确后，才在工具之外安排真实评审。评审者应独立于候选答案的\n生成系统，不能由同一系统生成答案后再给自己评分。另存授权范围、预算、冻结的\nprompt/model/revision、实际调用记录和观察到的模型版本；"
+        }
+      ],
+      "whole_inverse": true,
+      "before": {
+        "git_blob": "feb753c3cd5f93175bf0eccb6a9e0a9259a01625",
+        "bytes": 30660,
+        "sha256": "a6ccc3a4d85f039d97cb28e89964d8e9db0bf523caab69de5cbc5f10953ea7c7"
+      },
+      "after": {
+        "git_blob": "cb85c58cdac336950612498c4ed638c99d7f689e",
+        "bytes": 30838,
+        "sha256": "7f4f4cf16c97f557b3f1ad04c00cbbd7064e88e304eacebf382f126fb3ea35af"
+      }
+    }
+  },
+  "implemented_documentation": [
+    "Frozen input/model declaration versus observed execution; exact existing plan shape and input field bounds.",
+    "Exact prepare/reconcile CLI flags and fresh-output rule; pin packet bytes before review, preserve original inputs.",
+    "Known-name blinding limitations, private mapping and restored identity handling, independent judge requirement.",
+    "Complete opinion population, provided_unverified provenance, all-opinion manual queue, original failure retention.",
+    "Authorization/budget kept outside the strict tool schema; no code/link/instruction execution from candidate data.",
+    "Manual source/gold conflict handling and repeated original opinions; no automatic gold mutation or queue closure.",
+    "Current actual18 offline controls versus still-not-run model/repeat/human review evidence."
+  ],
+  "unchanged_source_identities": [
+    {
+      "path": "scripts/p8_judge_evidence.py",
+      "git_blob": "9aa1edb76b0237730a284510957bec9502e5d0e9",
+      "bytes": 20155,
+      "sha256": "30569182753837fe29b390d29acb27328337abbf86e088e8ca3740359c3051ac"
+    },
+    {
+      "path": "scripts/tests/test_p8_judge_evidence.py",
+      "git_blob": "6d3bc12c96d856910c229e75fea128489ad8bf5f",
+      "bytes": 14207,
+      "sha256": "6ab3541fdc63d90c3c02f667cbbd79c85ff7bff190ff69a0e63ac2a74ddc6625"
+    }
+  ],
+  "historical_execution": {
+    "receipt_path": "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json",
+    "receipt_git_blob": "558e139477d844beeeea4dec5b4b6744495d06d0",
+    "bytes": 3582,
+    "sha256": "1daaeba03640d5939842a394046bb606c8ab8be840e666cadf5f7a63a88e7927",
+    "tests": 18,
+    "prepare_and_reconcile_exit_codes": [
+      0,
+      0
+    ],
+    "actual_judge_execution": "not_run",
+    "model_calls": 0,
+    "network_calls": 0,
+    "current_helper_and_test_hashes_equal_original_receipt": true,
+    "scope": "Historical execution only. This turn read the exact receipt and matched source/test hashes; did not repeat Python or CLI execution."
+  },
+  "verification_this_turn": {
+    "V8_full_byte_hashes_and_inverse": true,
+    "actual_original_test_method_definitions": 18,
+    "CLI_flags_compared_to_actual_parser": true,
+    "JSON_example_shape_checked_against_actual_required_fields": true,
+    "all_four_added_relative_link_targets_read_from_fixed_main": true,
+    "code_fences_balanced": true,
+    "source_validation_maps": "docs/BENCHMARK.md is outside both product and validation maps; no sourceguard/registry edits proposed.",
+    "new_Python_tests_or_model_execution": false
+  },
+  "self_validation_plan": {
+    "documentation": "On application, verify original doc blob lease03b976 and exact replacementcb85, resolve the four source/contract/evidence links, keep original whole-file prefix. No new tests needed for this documentation-only change.",
+    "existing_offline_control_command": [
+      "python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_p8_judge_evidence.py",
+      "-v"
+    ],
+    "control_execution_status": "not_run_this_turn; documented existing entry, not an additional task gate"
+  },
+  "remaining": {
+    "own_task_evidence": [
+      "actual_authorized_model_judgments",
+      "observed_model_revision_and_execution_provenance",
+      "repeat_consistency_records",
+      "human_dispute_resolution"
+    ],
+    "dependency": "P8-013 remains open; no status/dependency/acceptance edits.",
+    "authorization": "No live/paid/model call authorized or performed by this patch.",
+    "scope": "Optional judge not_run does not block deterministic scoring or local/semantic release under original conditional."
+  },
+  "publication": "Only unreferenced blobs. Root retains ref/PR rights and should verify the before-doc lease on the final base; do not overwrite concurrent document changes.",
+  "original_todo_state": {
+    "newly_closed": 0,
+    "remaining": 29
+  }
+}

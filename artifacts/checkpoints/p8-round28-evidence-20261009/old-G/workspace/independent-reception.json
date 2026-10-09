@@ -1,0 +1,212 @@
+{
+  "schema": "p8-pr184-final-G-contribution-failure-independent-reception-v1",
+  "status": "accepted_original_failure_evidence_validation_not_passed",
+  "reviewer": "acceptance_audit",
+  "reviewed_at_utc": "2026-10-09 13:02:17 UTC",
+  "source": {
+    "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+    "status": ""
+  },
+  "product_source": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+  "product_manifest_sha256": "08137e6a2003063fe793bec0f728e4af238f56de62d0d7a0c12e23ed389a410f",
+  "review_source": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+  "platform": "darwin",
+  "sdk_root": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+  "toolchain": {
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n"
+  },
+  "custody": {
+    "project": "agent:device-50ff77e723614e43:codecortex-rust-2c9da139",
+    "session": "wc_sess_elC4fp-zntK_1UNM",
+    "native_directory": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-G-contribution-results",
+    "root_reported_native_job": "wc_job_N3L0smfrdKjQyBV9",
+    "root_reported_outer_runner_exit": 1,
+    "independent_read_method": "Full Git blob GET and complete native read_files for each of the3 originals. Accept exact returned text or one final LF exclusively when it equals the registered full original Git body; byte length, SHA256 and Git blob SHA1 verified. No command execution or rolling-log observation.",
+    "all_three_native_and_Git_raw_bytes_equal": true,
+    "originals": [
+      {
+        "kind": "manifest",
+        "blob": "8b6a6700357c35dae36d45ebdebe04ea627d7694",
+        "bytes": 3756,
+        "sha256": "5482f91ed3b19909ade7679bbaddbb7a8f59fc1e9749d69d0fc440b5b8d1cf60",
+        "native_read": {
+          "read_revision": 7928562570316064,
+          "restored_terminal_LF": true,
+          "Git_body_byte_equal": true
+        }
+      },
+      {
+        "kind": "stdout",
+        "blob": "5fc776f9ed1986b4691bde3f7ec785518e42eabe",
+        "bytes": 74393,
+        "sha256": "7752b00bbcc62495781bbb3ade6e9a5a994fb94be1c755b020188ee5d65401a2",
+        "native_read": {
+          "read_revision": 7928562570316066,
+          "restored_terminal_LF": true,
+          "Git_body_byte_equal": true
+        }
+      },
+      {
+        "kind": "stderr",
+        "blob": "e1bbfa5713ca1c80a3623d42d74c7b8d2b0dd283",
+        "bytes": 24150,
+        "sha256": "98a0e82b303e0464122453bab3228b59b15989d65337b3729ec1661beaf52354",
+        "native_read": {
+          "read_revision": 7928562570316065,
+          "restored_terminal_LF": true,
+          "Git_body_byte_equal": true
+        }
+      }
+    ],
+    "printed_output_boundary": "One diagnostic tool display exceeded its output limit; all parsing used the complete in-memory original bodies whose full byte hashes already matched, never the truncated display."
+  },
+  "actual_execution": {
+    "status": "failed",
+    "started_at_utc": "2026-10-09T12:45:58.329728+00:00",
+    "completed_at_utc": "2026-10-09T12:51:17.992171+00:00",
+    "command": {
+      "name": "workspace-tests",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--workspace",
+        "--locked"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 3600,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:45:58.360819+00:00",
+      "status": "failed",
+      "exit_code": 101,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:51:17.946177+00:00",
+      "elapsed_seconds": 319.582751417,
+      "stdout": {
+        "bytes": 74393,
+        "sha256": "7752b00bbcc62495781bbb3ade6e9a5a994fb94be1c755b020188ee5d65401a2"
+      },
+      "stderr": {
+        "bytes": 24150,
+        "sha256": "98a0e82b303e0464122453bab3228b59b15989d65337b3729ec1661beaf52354"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    "remaining_commands_not_run": [
+      "fixture-corpus"
+    ]
+  },
+  "complete_log_counts": {
+    "cargo_Running_entries": 102,
+    "complete_libtest_group_summaries": 102,
+    "individual_method_outcomes": 781,
+    "passed": 722,
+    "failed": 1,
+    "original_ignored": 58,
+    "measured": 0,
+    "filtered_out": 0,
+    "all_individual_method_outcomes_match_each_group_summary": true,
+    "all_method_names_unique_within_each_group": true,
+    "zero_test_groups": 8,
+    "counting_boundary": "Counts cover only the102 test invocations actually reached before Cargo stopped. They are not a full-workspace pass or an inventory of all remaining targets. Original58 ignored outcomes remain ignored; no --ignored or benchmark execution was added.",
+    "original_ignored_population_sha256": "caea3eabd6d8be59f37175cad9568dfbc207ca6c9acebfac4f08d51e62f3f1ed",
+    "original_group_counts_sha256": "20067e71c37bdd7a1a79d9cb0e698d552f20426b9d0839549a697c90e8da27f3"
+  },
+  "failure": {
+    "target": "cc-eval --test p8_scale",
+    "method": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+    "source_location": "crates/cc-eval/tests/p8_scale.rs:502:5",
+    "last_group": {
+      "declared": 12,
+      "passed": 11,
+      "failed": 1,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    "assertion": "left Number(3), right0; the complete original assertion report is preserved in stdout.",
+    "embedded_original_worker_report": {
+      "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+      "executed_repetition_range": {
+        "end": 1,
+        "start": 0
+      },
+      "exit_code": 3,
+      "fixture_cleanup": {
+        "elapsed_ms": 0,
+        "error": null
+      },
+      "full_100k_certification": "not_run",
+      "max_output_bytes": 16777216,
+      "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+      "profile": "smoke",
+      "raw_digest": null,
+      "registered_repetitions": 1,
+      "release_certification": "not_run",
+      "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+      "schema_version": 1,
+      "shard_only": false,
+      "status": "deadline_exceeded",
+      "stderr_complete": true,
+      "summary": null,
+      "wall_ms": 252,
+      "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_unchanged": true,
+      "worker_exit_code": null,
+      "worker_pid": 24615
+    },
+    "causality": "No root cause is asserted by this reception. The recorded worker report is a failing test's original observation, not the separate formal100k measurement."
+  },
+  "checks": {
+    "workspace_original_argv_with_explicit1_95_and_locked": true,
+    "workspace_actual_exit101": true,
+    "workspace_no_outer_timeout": true,
+    "exact_G_tree_clean_before_after": true,
+    "original_stdout_stderr_complete": true,
+    "unique_observed_failed_method": true,
+    "fixture_corpus_absent_from_commands_and_explicit_not_run": true,
+    "no_failed_output_overwritten": true
+  },
+  "CONTRIBUTING_boundary": {
+    "original": {
+      "blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+      "bytes": 3565,
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780"
+    },
+    "four_command_chain": [
+      "cargo fmt --all -- --check",
+      "cargo clippy --workspace --all-targets -- -D warnings",
+      "cargo test --workspace",
+      "cargo test -p cc-eval -- integration_fixtures_and_corpus"
+    ],
+    "previous_G_seven_command_reception": "57a5dccaa654fcf62cd40c63f15cb8316ef068cf",
+    "fmt_and_Clippy_previously_passed_remain_valid": true,
+    "workspace_contribution_gate": "failed",
+    "fixture_corpus_gate": "not_run_after_workspace_failure",
+    "full_contribution_validation_passed": false,
+    "remote_Actions_CI": "not observed or certified here",
+    "benchmark_opt_in": "The separately listed WRITE_REAL_BENCHMARK=1 --ignored command is outside this four-command chain; no new run or gate added."
+  },
+  "reviewer_actions": {
+    "native_execute": false,
+    "Cargo": false,
+    "Rust_tests": false,
+    "product": false,
+    "source_or_ref_or_PR_changes": false,
+    "pure_V8_full_byte_and_log_count_validation": true
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

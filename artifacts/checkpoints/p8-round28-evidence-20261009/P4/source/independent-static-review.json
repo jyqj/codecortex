@@ -1,0 +1,115 @@
+{
+  "schema": "p8-descendant-stderr-fixture-preflight-independent-static-review-v1",
+  "status": "accepted_scoped_for_actual_validation",
+  "reviewer": "acceptance_audit",
+  "author": "pr_audit",
+  "base": {
+    "source": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213"
+  },
+  "path": "crates/cc-eval/tests/p8_scale.rs",
+  "before": {
+    "blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+    "bytes": 19815,
+    "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+  },
+  "after": {
+    "blob": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+    "bytes": 21328,
+    "sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a"
+  },
+  "patch": {
+    "blob": "e41b1ba443c2c0f2fa1f4cb8e711ea0c02647c7b",
+    "bytes": 3212,
+    "sha256": "ae0ca66004bcd639292511e5b7e374612cd34af296e8c3b33278574d8d275264"
+  },
+  "author_handoff": {
+    "blob": "2e9bf1f07ad6fe0770c5814c8057ffeac8771757",
+    "bytes": 7637,
+    "sha256": "7d43f644624cb9333f2d6c900cbe244b60b51d4a4851231df5c7c3fded1be034"
+  },
+  "mechanical_checks": {
+    "forward_exact": true,
+    "inverse_exact": true,
+    "unified_patch_exact": true,
+    "hunks": 1,
+    "method_names": [
+      "matrix_and_release_admission_are_explicit_and_bounded",
+      "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+      "shards_partition_registered_repetitions_without_lowering_release_admission",
+      "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+      "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+      "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+      "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+      "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity",
+      "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+      "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+      "failed_independent_fanout_truth_remains_a_failure",
+      "configured_evidence_budget_stops_without_overwriting_partial_raw"
+    ],
+    "outside_one_method_byte_identical": true,
+    "added_assertions": 2,
+    "removed_assertions": 0
+  },
+  "semantic_findings": [
+    {
+      "scope": "fixture setup only",
+      "finding": "The helper's new --fixture-preflight branch is its first conditional and exits0 before parsing output, starting sleep20 or writing worker-summary. Only that branch is executed by the separate preparation call. The supervised helper invocation retains the original script work after the conditional."
+    },
+    {
+      "scope": "one preparation attempt",
+      "finding": "One spawn is made. The loop only polls this one child. Before accepting completed status it checks elapsed<2s; timeout or collection error kills/reaps then panics, and a nonzero exit also fails. There is no retry-until-success. Synchronous OS spawn/kill/wait can have their own latency; the2s check is a setup-success deadline, not a claimed hard real-time upper bound on arbitrary OS process operations."
+    },
+    {
+      "scope": "original measured lifetime",
+      "finding": "After preparation the original plan still uses250ms, and the original Instant+run_supervised still cover the new measured child invocation. No ready event restarts or suspends the supervisor deadline. The actual20-second descendant, summary write and inherited stderr behavior remain in the measured branch."
+    },
+    {
+      "scope": "assertions retained",
+      "finding": "Original measured wall<2s,exit_code0,stderr_complete=true,release_certification=not_run remain byte-for-byte. The added worker_exit_code0 and summary.passed=true require evidence that the real measured worker reached its summary and exited normally; the preflight cannot generate that summary."
+    },
+    {
+      "scope": "prepared versus cold executable",
+      "finding": "This candidate deliberately prepares a newly created fixture executable before testing descendant-held stderr. It must be reported as prepared-fixture supervision coverage, not proof of a successful first cold launch. Original workspace and isolated cold-fixture failures remain their original evidence."
+    },
+    {
+      "scope": "no production or study changes",
+      "finding": "Every byte outside this one existing method is unchanged; all12 original test names remain. No production supervisor/CLI/plan/N/deadline/budget/registered study source is altered by this one-file candidate."
+    }
+  ],
+  "failure_basis": {
+    "independently_received_original": "ca8cb4ef05ec774a3ab2b36e3a87eac6c942e352",
+    "workspace_stdout": "5fc776f9ed1986b4691bde3f7ec785518e42eabe",
+    "workspace_stderr": "e1bbfa5713ca1c80a3623d42d74c7b8d2b0dd283",
+    "workspace_manifest": "8b6a6700357c35dae36d45ebdebe04ea627d7694",
+    "original_observation": "The original failed report has exit3/deadline_exceeded,wall252ms,worker_exit_code=null,summary=null,stderr_complete=true. That observation does not establish the intended normally-exited-worker/descendant-held-pipe precondition.",
+    "root_reported_stage_probe": {
+      "source_blob": "f6422d634e9b779abbb5cd70ba0c284253e7f5a4",
+      "author_handoff_reference": true,
+      "reported_wall_ms": 254,
+      "reported_first_statement_tag_observed": false,
+      "reported_worker_stderr_bytes": 0,
+      "independent_probe_execution_by_this_reviewer": false
+    },
+    "causality_limit": "No particular OS loader/service/scheduling cause is asserted. Static acceptance does not predict that warming the helper will make the actual test pass."
+  },
+  "unresolved_static_blockers": [],
+  "execution_required": {
+    "fmt_compile_and_tests": "not yet executed for this candidate by this reviewer; root controls actual validation on a new exact source",
+    "target": "cargo +1.95.0 test --locked -p cc-eval --test p8_scale -- --nocapture",
+    "original_target_methods": 12,
+    "zero_filtered_or_missing_claims": "Any actual execution must preserve its real method counts and failures; no successful candidate execution is invented.",
+    "original_CONTRIBUTING": "The original failed workspace command remains failed and fixture-corpus remains not_run. Subsequent exact-source contribution validation is separately recorded."
+  },
+  "reviewer_actions": {
+    "full_Git_GET_hashes": true,
+    "pure_V8_forward_inverse_patch_application": true,
+    "native": false,
+    "Cargo": false,
+    "Rust_tests": false,
+    "product": false,
+    "ref_or_PR_changes": false
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

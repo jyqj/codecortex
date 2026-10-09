@@ -1,0 +1,119 @@
+{
+  "schema": "p8-descendant-stderr-fixture-preflight-candidate-v1",
+  "status": "pending_independent_static_review_and_actual_execution",
+  "author": "pr_audit",
+  "base": {
+    "source": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213"
+  },
+  "changed_file": {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "old_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+    "old_bytes": 19815,
+    "old_sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d",
+    "blob": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+    "bytes": 21328,
+    "sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a"
+  },
+  "patch": {
+    "bytes": 3212,
+    "sha256": "ae0ca66004bcd639292511e5b7e374612cd34af296e8c3b33278574d8d275264",
+    "blob": "e41b1ba443c2c0f2fa1f4cb8e711ea0c02647c7b"
+  },
+  "diagnosis": {
+    "original_failure": {
+      "manifest": "8b6a6700357c35dae36d45ebdebe04ea627d7694",
+      "stdout": "5fc776f9ed1986b4691bde3f7ec785518e42eabe",
+      "stderr": "e1bbfa5713ca1c80a3623d42d74c7b8d2b0dd283",
+      "full_bytes_sha256_git_sha1_independently_checked": true,
+      "report": {
+        "status": "deadline_exceeded",
+        "exit_code": 3,
+        "worker_exit_code": null,
+        "summary": null,
+        "wall_ms": 252,
+        "stderr_complete": true
+      }
+    },
+    "root_reported_isolated_original": {
+      "source_unchanged": true,
+      "exit_code": 101,
+      "wall_ms": 265,
+      "summary": null,
+      "worker_exit_code": null,
+      "scope": "Same original test exactly once, also failed. This disproves a workspace-concurrency-only explanation; no passing rerun is selected."
+    },
+    "stage_probe": {
+      "source_blob": "f6422d634e9b779abbb5cd70ba0c284253e7f5a4",
+      "root_executed": true,
+      "author_did_not_execute": true,
+      "root_reported_compile_exit": 0,
+      "root_reported_probe_exit": 3,
+      "report_sha256": "6a018bf06eeb7d054b33667d27ed0b7d4177fe2ff117a47f93b5344ead1c7cf3",
+      "helper_sha256": "68d71a7a661fbd08de81cb921446573c50c0626c88b6c69f38e32e27439134da",
+      "report": {
+        "wall_ms": 254,
+        "summary": null,
+        "worker_exit_code": null,
+        "stderr_complete": true
+      },
+      "worker_stderr_bytes": 0,
+      "finding": "No first-shell-statement tag was observed before termination. The intended worker-exited/descendant-held-pipe precondition was not reached."
+    },
+    "attribution_limit": "Observed delay before the first shell statement is compatible with newly created executable startup latency on this Mac, but no particular OS service, loader or scheduling cause has been proved. The production supervisor enforced its existing entire-child deadline."
+  },
+  "change": {
+    "fixture_preparation": "The same freshly created helper accepts --fixture-preflight and exits0 before argument parsing/fork/summary. Execute this branch exactly once before the measured scenario, with a separate2s setup bound; failure kills/reaps the preflight child and fails the test. No retry-until-green loop.",
+    "measured_invocation": "The original supervisor starts its own original clock before spawn, includes the entire measured child lifetime, retains250ms deadline, launches the real20s descendant and retains the existing<2s outer bound.",
+    "assertions": "All existing assertions are kept. Add explicit worker_exit_code0 and summary.passed=true so successful preparation alone cannot satisfy the descendant scenario.",
+    "scope": "Only one existing integration-test method changes. No production supervisor, CLI, formal plan, workload, repetitions, sample-selection policy, observer or registered-study source is changed."
+  },
+  "mechanical_proof": {
+    "unique_exact_replacements": [
+      {
+        "before": "        \"#!/bin/sh\\nwhile [ \\\"$#\\\" -gt 0 ]; do\\n case \\\"$1\\\" in --output) shift; out=\\\"$1\\\";; esac\\n shift\\ndone\\nsleep 20 &\\nprintf '{\\\"passed\\\":true}' > \\\"$out/worker-summary.json\\\"\\n\",",
+        "after": "        \"#!/bin/sh\\nif [ \\\"$1\\\" = \\\"--fixture-preflight\\\" ]; then exit 0; fi\\nwhile [ \\\"$#\\\" -gt 0 ]; do\\n case \\\"$1\\\" in --output) shift; out=\\\"$1\\\";; esac\\n shift\\ndone\\nsleep 20 &\\nprintf '{\\\"passed\\\":true}' > \\\"$out/worker-summary.json\\\"\\n\","
+      },
+      {
+        "before": "    std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();\n",
+        "after": "    std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();\n    // Preparing the freshly written executable is separate from the scenario:\n    // a cold executable launch may exceed 250ms before reaching the shell.\n    // Run this no-descendant branch exactly once, with its own bounded setup.\n    // The supervised invocation below still includes its entire child lifetime.\n    let preflight_started = std::time::Instant::now();\n    let mut preflight = std::process::Command::new(&helper)\n        .arg(\"--fixture-preflight\")\n        .stdin(std::process::Stdio::null())\n        .stdout(std::process::Stdio::null())\n        .spawn()\n        .unwrap();\n    loop {\n        if preflight_started.elapsed() >= std::time::Duration::from_secs(2) {\n            let _ = preflight.kill();\n            let _ = preflight.wait();\n            panic!(\"fixture preflight exceeded its 2s setup bound\");\n        }\n        match preflight.try_wait() {\n            Ok(Some(status)) => {\n                assert!(status.success(), \"fixture preflight failed: {status}\");\n                break;\n            }\n            Ok(None) => std::thread::sleep(std::time::Duration::from_millis(10)),\n            Err(error) => {\n                let _ = preflight.kill();\n                let _ = preflight.wait();\n                panic!(\"fixture preflight could not collect child status: {error}\");\n            }\n        }\n    }\n"
+      },
+      {
+        "before": "    assert_eq!(report[\"exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"stderr_complete\"], true);\n",
+        "after": "    assert_eq!(report[\"exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"worker_exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"summary\"][\"passed\"], true, \"{report}\");\n    assert_eq!(report[\"stderr_complete\"], true);\n"
+      }
+    ],
+    "full_inverse_restores_original": true,
+    "unified_patch_applies_to_exact_original": true,
+    "all_existing_method_names_and_order_unchanged": true,
+    "existing_test_methods": 12,
+    "removed_assertions": 0,
+    "added_assertions": 2,
+    "production_supervisor_unchanged_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+    "cli_unchanged_blob": "50a49186d4d079d901b7531e009e9c5839a8e095"
+  },
+  "validation": {
+    "actual_candidate_rustfmt": false,
+    "actual_candidate_compile": false,
+    "actual_candidate_tests": false,
+    "suggested_target_argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale",
+      "--",
+      "--nocapture"
+    ],
+    "target_population": 12,
+    "coverage": "Preserves original real supervision/deadline/output-reuse/evidence-budget tests and the existing measured60-file integration controls. This target is not a new formal scale study.",
+    "root_must_preserve_original_failure": true,
+    "root_contribution_checks": "The original failed workspace execution remains failed; root separately controls subsequent mandatory CONTRIBUTING verification on a new exact source."
+  },
+  "ref_changed": false,
+  "formal_study_retried": false,
+  "TODO_closed": 0
+}

@@ -150,7 +150,10 @@ fn named_wide_dirty_profile_is_distinct_and_preserves_legacy_budgets() {
 #[test]
 fn wide_dirty_cli_rejects_cross_profile_budgets_before_starting_work() {
     let root = tempfile::tempdir().unwrap();
-    for (profile, budget) in [("scale_wide_dirty_v1", "200"), ("scale_capacity_v1", "4096")] {
+    for (profile, budget) in [
+        ("scale_wide_dirty_v1", "200"),
+        ("scale_capacity_v1", "4096"),
+    ] {
         let output = root.path().join(profile);
         let result = std::process::Command::new(binary())
             .args([

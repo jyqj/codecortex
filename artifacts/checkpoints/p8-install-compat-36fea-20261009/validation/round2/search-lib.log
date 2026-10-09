@@ -1,0 +1,81 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling regex-automata v0.4.14
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling getrandom v0.4.2
+   Compiling log v0.4.29
+   Compiling serde_json v1.0.149
+   Compiling tracing-core v0.1.36
+   Compiling tracing v0.1.44
+   Compiling rand v0.10.3
+   Compiling scheduled-thread-pool v0.2.7
+   Compiling regex v1.12.3
+   Compiling r2d2 v0.8.10
+   Compiling uuid v1.23.0
+   Compiling cc-model v1.0.0 (/workspace/scratch/36fea31f96e3/codecortex/crates/cc-model)
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling toml_edit v0.22.27
+   Compiling chrono v0.4.44
+   Compiling tree-sitter v0.24.7
+   Compiling globset v0.4.18
+   Compiling r2d2_sqlite v0.35.0
+   Compiling errno v0.3.14
+   Compiling signal-hook-registry v1.4.8
+   Compiling ignore v0.4.25
+   Compiling cc-db v1.0.0 (/workspace/scratch/36fea31f96e3/codecortex/crates/cc-db)
+   Compiling cc-parsers v1.0.0 (/workspace/scratch/36fea31f96e3/codecortex/crates/cc-parsers)
+   Compiling toml v0.8.23
+   Compiling socket2 v0.6.3
+   Compiling mio v1.2.0
+   Compiling tempfile v3.27.0
+   Compiling tokio v1.50.0
+   Compiling cc-index v1.0.0 (/workspace/scratch/36fea31f96e3/codecortex/crates/cc-index)
+   Compiling cc-search v1.0.0 (/workspace/scratch/36fea31f96e3/codecortex/crates/cc-search)
+error: couldn't read `crates/cc-search/src/../../../artifacts/controls/query-target-v2-20261004/matrix.json`: No such file or directory (os error 2)
+   --> crates/cc-search/src/query_target.rs:390:60
+    |
+390 |           let rows: serde_json::Value = serde_json::from_str(include_str!(
+    |  ____________________________________________________________^
+391 | |             "../../../artifacts/controls/query-target-v2-20261004/matrix.json"
+392 | |         ))
+    | |_________^
+
+error: couldn't read `crates/cc-search/src/../../../artifacts/controls/query-target-20261004/matrix.json`: No such file or directory (os error 2)
+   --> crates/cc-search/src/query_target.rs:414:60
+    |
+414 |           let rows: serde_json::Value = serde_json::from_str(include_str!(
+    |  ____________________________________________________________^
+415 | |             "../../../artifacts/controls/query-target-20261004/matrix.json"
+416 | |         ))
+    | |_________^
+
+error: couldn't read `crates/cc-search/src/../../../artifacts/reviews/query-owner-lexical-spans-correction-20261004/lexical-matrix.json`: No such file or directory (os error 2)
+   --> crates/cc-search/src/query_target.rs:628:60
+    |
+628 |           let rows: serde_json::Value = serde_json::from_str(include_str!(
+    |  ____________________________________________________________^
+629 | |             "../../../artifacts/reviews/query-owner-lexical-spans-correction-20261004/lexical-matrix.json"
+630 | |         )).unwrap();
+    | |_________^
+
+error: couldn't read `crates/cc-search/src/../../../artifacts/reviews/query-owner-closing-qualifiers-correction-20261004/qualifier-matrix.json`: No such file or directory (os error 2)
+   --> crates/cc-search/src/query_target.rs:683:60
+    |
+683 |           let rows: serde_json::Value = serde_json::from_str(include_str!(
+    |  ____________________________________________________________^
+684 | |             "../../../artifacts/reviews/query-owner-closing-qualifiers-correction-20261004/qualifier-matrix.json"
+685 | |         )).unwrap();
+    | |_________^
+
+error: couldn't read `crates/cc-search/src/../../../artifacts/controls/query-context-owner-20261004/neutral-matrix.json`: No such file or directory (os error 2)
+   --> crates/cc-search/src/query_target.rs:721:60
+    |
+721 |           let spec: serde_json::Value = serde_json::from_str(include_str!(
+    |  ____________________________________________________________^
+722 | |             "../../../artifacts/controls/query-context-owner-20261004/neutral-matrix.json"
+723 | |         ))
+    | |_________^
+
+error: could not compile `cc-search` (lib test) due to 5 previous errors

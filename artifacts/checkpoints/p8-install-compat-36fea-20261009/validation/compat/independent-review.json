@@ -1,0 +1,85 @@
+{
+  "schema": "p8-017-independent-duplicate-test-review-v1",
+  "reviewer": "/root/scale_acceptance",
+  "reviewed_at_utc": "2026-10-09T09:15:53.533012+00:00",
+  "scope": "Independent source-only review of duplicate test removal; reviewer did not edit product/tests or compile/run test workloads.",
+  "base_sha": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "verdict": "accepted_static_conservation_runtime_pending_root_cc_search_lib",
+  "input_sha256": {
+    "before": "fff6c92ca746854e55bdcb381a6ee84e5049ee8cb3ddd244b382b91a7f3fdd68",
+    "after": "5b2cf052a1eb7b5d5b837d979759522aed5a06e91630ec14c148c65c4154ec4a",
+    "retained_module": "f6313e0a098f04be0692c9791927f0190d5cf6c3f3ae11a089372e584eb0e0a8",
+    "lib": "274c15f6f5f8a09087fa18844c837dd5a512bcc81c1c303f2783e445877b1583",
+    "proposal": "88f4130b63a7311e17b9f39c91b6a541c718796ad0d02ee9db265bcfd00e2614"
+  },
+  "production_prefix": {
+    "bytes": 18720,
+    "sha256": "4cc88b93e3db27bc5de0b9de4865df9db1299d7b9cc1d43b37ea5c2a51abc3fa",
+    "byte_identical": true
+  },
+  "checks": {
+    "retained_before_is_exact_base_engine": true,
+    "declared_before_hash_matches": true,
+    "declared_after_hash_matches": true,
+    "declared_retained_module_hash_matches": true,
+    "production_prefix_byte_identical": true,
+    "declared_production_hash_matches": true,
+    "retained_module_byte_identical_to_base": true,
+    "lib_byte_identical_to_base": true,
+    "removed_exactly_declared_18_tests": true,
+    "no_new_inline_test_names": true,
+    "all_17_unique_inline_tests_byte_identical": true,
+    "unique_inline_test_set_matches_declaration": true,
+    "all_removed_tests_retain_same_statements_and_assertions": true,
+    "module_registered_under_cfg_test": true,
+    "all_18_retained_tests_have_normal_test_attribute": true,
+    "retained_module_has_no_ignore_or_extra_conditional_attributes": true,
+    "build_plan_helper_preserved_in_both_owners": true,
+    "fake_candidate_chunk_helper_preserved_in_retained_module": true,
+    "unique_parallel_tests_fake_lane_struct_preserved": true,
+    "unique_parallel_tests_fake_lane_impl_preserved": true,
+    "unique_trace_helpers_preserved": true
+  },
+  "test_population": {
+    "inline_before": 35,
+    "inline_after": 17,
+    "registered_lane_module": 31,
+    "removed_duplicate_instances": 18,
+    "remaining_combined_tests": 48,
+    "distinct_test_name_union_unchanged": true
+  },
+  "retained_test_names": [
+    "default_lanes_registry_keeps_fusion_order",
+    "fuse_outcomes_accumulates_rrf_generically",
+    "graph_lane_adapter_ranks_seed_above_one_hop_neighbor",
+    "graph_lane_disabled_when_weight_is_zero",
+    "graph_lane_expands_caller_direction_at_decay",
+    "graph_lane_maps_symbol_to_smallest_containing_chunk",
+    "graph_lane_respects_languages_filter_by_file_extension",
+    "graph_lane_scores_fuzzy_seed_below_exact_seed",
+    "graph_lane_seeds_short_tokens_by_exact_name",
+    "graph_search_returns_empty_for_no_symbols",
+    "grep_lane_adapter_ranks_matches_and_caches_only_hits",
+    "grep_lane_disabled_when_request_excludes_grep",
+    "grep_lane_scan_budget_truncates_recency_first_and_deterministically",
+    "lane_opting_out_of_annotation_stays_fusion_only",
+    "lexical_lane_adapter_matches_inline_ranking",
+    "new_lane_declaring_score_slot_projects_without_plan_edits",
+    "new_lane_opting_into_annotation_gets_generic_hit_reasons",
+    "run_lanes_iterates_collection_and_skips_disabled_lane_before_work"
+  ],
+  "sole_function_text_difference": {
+    "name": "lexical_lane_adapter_matches_inline_ranking",
+    "scope": "Two explanatory comment lines in the old inline copy correspond to one explanatory comment line in the retained copy. All non-comment lines, including literal values and assertions, are identical."
+  },
+  "actual_execution": {
+    "compiled_by_this_reviewer": false,
+    "tests_run_by_this_reviewer": false,
+    "registration_verified_statically": true,
+    "root_required_command": "cargo test -p cc-search --lib",
+    "result": "pending_separate_root_receipt",
+    "claim_limit": "Source registration is verified; compilation, discovery and pass status must come from the root test receipt."
+  },
+  "original_task_status_changed": false,
+  "original_todo_completed_by_this_review": 0
+}

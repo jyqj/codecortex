@@ -49,7 +49,7 @@ fn cmd_serve(project_path: Option<PathBuf>) -> CcResult<()> {
 }
 
 fn cmd_install(force: bool) -> CcResult<()> {
-    let binary_path = std::env::current_exe().unwrap_or_default();
+    let binary_path = std::env::current_exe()?;
     let report = crate::installer::install_all(&binary_path, force);
     for agent in &report.agents_configured {
         println!("  Configured {}", agent);
@@ -61,7 +61,14 @@ fn cmd_install(force: bool) -> CcResult<()> {
         eprintln!("  Error: {}", err);
     }
     println!("\n{} agent(s) configured.", report.agents_configured.len());
-    Ok(())
+    if report.errors.is_empty() {
+        Ok(())
+    } else {
+        Err(CcError::Config(format!(
+            "installation failed for {} agent(s)",
+            report.errors.len()
+        )))
+    }
 }
 
 fn cmd_uninstall() -> CcResult<()> {
@@ -76,5 +83,12 @@ fn cmd_uninstall() -> CcResult<()> {
         "\nRemoved from {} agent(s).",
         report.agents_configured.len()
     );
-    Ok(())
+    if report.errors.is_empty() {
+        Ok(())
+    } else {
+        Err(CcError::Config(format!(
+            "uninstall failed for {} agent(s)",
+            report.errors.len()
+        )))
+    }
 }

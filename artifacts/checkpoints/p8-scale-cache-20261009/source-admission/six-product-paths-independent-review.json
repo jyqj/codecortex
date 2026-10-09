@@ -1,0 +1,184 @@
+{
+  "actual_native_execution_by_this_reviewer": false,
+  "auxiliary_execution": {
+    "actual_tests_passed": 41,
+    "commands": 13,
+    "failed": 0,
+    "full_254009_execution": false,
+    "ignored": 0,
+    "job": 113604866890,
+    "run": 37863581678,
+    "source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+    "source_before_after_equal": true
+  },
+  "auxiliary_original_evidence": {
+    "bytes": 23004,
+    "path": "/dev/shm/a217aaae3bde/platform-review/combined-254009-review/8e-controls-original-independent-review.json",
+    "sha256": "014c4850a7c051b63a0131c82107c34dfe6729e841d6793bad9d7c21fb3b198c"
+  },
+  "composition": {
+    "all_source_modes_preserved": true,
+    "evidence": {
+      "bytes": 300559,
+      "path": "/dev/shm/a217aaae3bde/platform-review/combined-254009-review/source-composition-independent-verification.json",
+      "sha256": "f79c7124668d1c31a31d26cdfa7ba7d9652cd9abe24dbd301d690a9cf040e27c"
+    },
+    "method_note": "First scratch verifier incorrectly assumed all historical corpus inputs were mode100644; it stopped before producing a report at an unchanged executable JavaScript fixture. The verifier was corrected to compare actual Git mode100644/100755. No source, mode, official metadata or threshold changed; final full verification passed.",
+    "official_root_and_all_recursive_crates_scripts_subtree_sha1": "independently reconstructed, exact",
+    "only_14_actual_deltas": true,
+    "previously_reviewed_30_paths": "29 remain byte-identical; streaming.rs is the only overlapping path and its incremental delta is reviewed here while prior unchanged implementation review remains inherited.",
+    "prior_core_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
+    "product_inputs": 1087,
+    "product_unchanged_vs_296": 1081,
+    "top_level_trees_changed": [
+      "crates",
+      "scripts"
+    ],
+    "validation_inputs": 138,
+    "validation_unchanged_vs_296": 130
+  },
+  "done": 163,
+  "formal_ci_coverage": {
+    "additional_existing_eval_command": "cargo test -p cc-eval --features eval-http --locked",
+    "covers_cc_eval_and_cc_index_lib": true,
+    "existing_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+    "new_seven_tests_feature_gated_or_ignored": false,
+    "only_package_exclusion": "cc-semantic",
+    "requirement": "Inspect new exact-source actualCI log for each of the seven names with ok; compiling all targets or old8e/296 success is not execution of these tests. No duplicate new workflow is necessary.",
+    "test_names": [
+      "batched_spool_matches_original_at_tier_and_byte_boundaries",
+      "batch_inserts_reduce_actual_statements_with_bounded_pending_bytes",
+      "batched_spool_budget_errors_match_original_and_never_commit_pending_rows",
+      "batched_spool_scratch_exhaustion_remains_an_error",
+      "materialized_dependency_window_matches_original_pending_sql",
+      "dependency_window_reloads_after_replacement_removal_and_reopen",
+      "consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ]
+  },
+  "formal_todo_completion": false,
+  "historical_base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "not_reviewed_here": [
+    "Semantic approval of eight validation path deltas belongs to /root/runtime_closeout and root; this review verifies their exact byte composition only."
+  ],
+  "parent": "55902428d49b09bb4a90cee6ccccf985680618bb",
+  "paths": {
+    "crates/cc-db/src/resolution_dependency_store.rs": {
+      "before_sha256": "f5fad6998e4ac37fc0ec20026d270615b006d1e4ca286db5ebdc6b9553bb59d4",
+      "bytes": 10207,
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "mode": "100644",
+      "origin": "8e-source",
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    "crates/cc-db/src/symbol_identity_store.rs": {
+      "before_sha256": "16274aaae066b6a5e87bcd6d24657a27de60c45c3ea50bd24cc6fceda9cc7d2b",
+      "bytes": 8890,
+      "git_blob": "c9200289e1cf67bc4824b25a161907edfc526490",
+      "mode": "100644",
+      "origin": "8e-source",
+      "sha256": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49"
+    },
+    "crates/cc-db/tests/p2b_resolution_store.rs": {
+      "before_sha256": "bd5cf52dcdea030916142d4dcaaa058f2be8d6ef89ace9eb577792dc4c67674f",
+      "bytes": 8252,
+      "git_blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+      "mode": "100644",
+      "origin": "8e-source",
+      "sha256": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772"
+    },
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+      "before_sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
+      "bytes": 29842,
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "mode": "100644",
+      "origin": "g4-source",
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    },
+    "crates/cc-index/src/indexer_phases/reconcile.rs": {
+      "before_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
+      "bytes": 15578,
+      "git_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "mode": "100644",
+      "origin": "g4-source",
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    "crates/cc-index/tests/qname_identity_transaction.rs": {
+      "before_sha256": "19107a29c077324fb478cc650263bf65b78a12b7571135945c89d3b18e16c630",
+      "bytes": 4594,
+      "git_blob": "258f2840f410faffe72ac981dfc70d6bb2e163ff",
+      "mode": "100644",
+      "origin": "8e-source",
+      "sha256": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b"
+    }
+  },
+  "pending_acceptance": [
+    "New complete-source CI/regressions and seven inline tests actual execution.",
+    "New fixed build and full registered150shards/1500samples study; retain original599100k failure and all failed/not_run evidence.",
+    "Actual cache-reuse observation to close originalP8-010 gap; successful original296soak does not cover it.",
+    "Affected runtime/platform/recovery native scopes on changed product source; no source-identity relabelling or inheritance of old performance samples."
+  ],
+  "preserved_prior_fixes": [
+    "crates/cc-server/src/project_session.rs",
+    "crates/cc-eval/src/bench.rs",
+    "crates/cc-eval/src/benchmark/statistics.rs",
+    "crates/cc-eval/src/report.rs",
+    "crates/cc-eval/tests/p8_measurements.rs",
+    "crates/cc-eval/src/benchmark/p8_scale.rs"
+  ],
+  "preserved_scope": {
+    "historical_guards_and_ci": "All existing guard logic and CI workflow selectors byte-identical in product254009. A later review/pin commit is still to be independently checked.",
+    "issue154_project_session": "Exact296 bytes retained, including oneshot actual-worker handoff and cancellation-before-handoff control; no stale whole8e project_session import.",
+    "p8_scale_contract": "Current p8_scale implementation and matrix validation script unchanged; no G4 style-only replacement, seed/N/profile/time/output-budget/threshold/closure or canonical-surface relaxation.",
+    "percentile_single_source": "Current nearest_rank/statistics/bench/report bytes retained.",
+    "tasks": "Exact original192 definitions and 163done/29remaining unchanged."
+  },
+  "remaining": 29,
+  "reviewer": "/root/pr_audit",
+  "schema_version": 1,
+  "scope": "independently_reviewed_six_incremental_product_paths_and_complete_source_composition",
+  "semantic_findings": [
+    {
+      "finding": "Three existing writes now use the pre-existing IndexDb::execute_cached helper; exact SQL text, parameter order and values, validation ordering, row-survivor checks and read-back identity checks remain unchanged.",
+      "paths": [
+        "crates/cc-db/src/resolution_dependency_store.rs",
+        "crates/cc-db/src/symbol_identity_store.rs"
+      ],
+      "performance_boundary": "Avoiding repeated prepare work is plausible; this source review makes no whole-build latency, 100k completion or N30 performance claim.",
+      "risk_control": "Original 8e source-bound tests actually exercise failed writes followed by reuse on the same writer, replacement dependency removal/payload binding, persisted generation across reopen, two distinct replacement identity associations, and the unchanged SQL-survivor rule.",
+      "transaction_reasoning": "The helper borrows the same Connection/Transaction, prepares a cached Statement, executes once and drops the statement at return. It adds no transaction/commit, connection/lease, metadata/epoch update, row filtering, schema or cache-format change. prepare_cached and execute errors still map through the existing db_err and propagate, preserving caller transaction rollback."
+    },
+    {
+      "execution": "Exact six path digests match original 8e source-before/after receipts; the two affected integration test targets passed 4 and 2 tests respectively. These are 8e executions, not executions of complete254009.",
+      "finding": "Only additive assertions and follow-up writes were inserted into existing tests. Existing corruption, invalid relation, generation preservation, duplicate declaration survivor and delete controls remain present.",
+      "independence": "Assertions read real persisted manifests, reverse lookup, generation and retrieval rows after failing and successful transactions plus database reopen; they do not merely assert that prepare_cached was called.",
+      "paths": [
+        "crates/cc-db/tests/p2b_resolution_store.rs",
+        "crates/cc-index/tests/qname_identity_transaction.rs"
+      ]
+    },
+    {
+      "boundary_cases": "budget0 retains one witness; disabled propagation admits zero; larger-than-domain budget exhausts all rows; usizeMAX saturating cap is bounded by the finite SQLite relation. An admitted>budget future-contract violation returns None and executes the original SQL fallback. The window owns no read lease and is never cached across prepares or database replacement/reopen.",
+      "concurrency": "This is not a long-lived SQLite read transaction. Existing build_plan prepared_index_epoch check under caller write lock rejects intervening indexed writes; reconcile commits additionally check expected_index_epoch within the Immediate transaction. These mechanisms and their tests are unchanged. No claim is made that the independent reads became one database snapshot.",
+      "finding": "A prepare-local, materialized initial dependency lookup window replaces only the second pending-dependency existence SQL. Original events, roots, fresh/excluded set, dirty closure policy, promotion budget, surface-dependent check, durable frontier and commit fences are retained.",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/reconcile.rs"
+      ],
+      "proof": "Initial SQL returns at most budget+1 globally sorted distinct non-completed paths, using per-batch excluded slack and a global BTreeSet cap. After that lookup this prepare only adds closure.promoted to completed, and the existing closure admits at most budget unique promotions. If any dependency remains beyond the window, at least one original budget+1 witness cannot have been consumed. If the window is smaller, it already enumerated the complete relevant set. Thus window.any(not completed) equals the original later existence probe for unchanged indexed facts.",
+      "tests": "New controls compare the helper to actual original pending SQL across multiple IN batches, kinds, overlapping consumers, excluded sets, budgets and alternating promotions; separately exercise same-pool writes/removal/reopen and conservative fallback. These three inline tests await actual new CI execution."
+    },
+    {
+      "execution_boundary": "The original8e integration streaming target passed8 tests, but the four new inline batching tests were not executed by that auxiliary command list. Await names in the actual new formal CI.",
+      "finding": "Only insertion scheduling changes: prepared batches64/8/1 write original canonical serialized rows with the same side and monotonically assigned ordinal into the existing primary B-tree. Every bind slot for each full tier is overwritten on each execution. Maximum statement variables192 remain bounded. Tail rows always flush before transaction commit.",
+      "limits_and_errors": "Buffered rows cap at64 and aggregate pending serialized bytes64KiB. A legal row larger than64KiB flushes the buffer and uses the original one-row statement, preserving the original max_row_bytes admission. All existing row, canonical byte, scratch-page and capacity-profile limits and their check order remain unchanged. SQL errors propagate; disposable scratch is dropped, never treated as a successful compared prefix. No row sampling or hash-only equality is introduced.",
+      "paths": [
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+      ],
+      "semantic_identity": "Projection, column selection, side-local ordinal order, duplicate retention, serialized BINARY ordering, Value equality including signed zero, digest construction, difference examples, 15table iteration, snapshots and output schema remain unchanged.",
+      "test_independence": "reference_spool in tests is token-identical to the old single-row spool except its function name and formatting, independently checked. New tests compare real SQL rows, order/duplicates, byte counts and digests at row/byte tier boundaries, check actual statement tier counts, preserve original budget-error behavior and scratch exhaustion errors."
+    }
+  ],
+  "source": "254009277688d64677361a0ca33e5dea73f295ef",
+  "tree": "4202266e59934dba86e1ea10154392247fff15e7",
+  "unresolved_source_blockers": [],
+  "verdict": "accepted_scoped_source_admission"
+}

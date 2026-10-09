@@ -813,7 +813,20 @@ def main(argv=None):
             if not args.expected_commit or not args.output_dir:
                 parser.error("collect requires --expected-commit and --output-dir")
             output = new_directory(args.output_dir)
-            record = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
+            try:
+                record = collect_cells(args.collect_cells, args.source_root.resolve(strict=True), args.expected_commit)
+            except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+                # Only this invocation's newly created directory is writable.
+                # Incomplete validation says nothing about whether individual
+                # producer cells ran; do not invent per-cell result counts.
+                write_json(output / "matrix.json", dict(
+                    schema_version=1, task="P8-012", status="invalid",
+                    scope="failed collection only; no platform or release certification",
+                    requested_commit=args.expected_commit, requested_source_root=str(args.source_root),
+                    artifact_directory=str(args.collect_cells), runner_sha256=digest(__file__),
+                    expected_cell_count=8, counts=None,
+                    error=f"{type(error).__name__}: {error}"))
+                raise
             write_json(output / "matrix.json", record)
             print(json.dumps(dict(status=record["status"], counts=record["counts"])))
             return 0

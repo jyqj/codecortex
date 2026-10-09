@@ -508,7 +508,7 @@ impl IndexDb {
     // the full-replacement path used OR REPLACE / the dirty-rewrite path used
     // plain INSERT (its per-file deletes already cleared the keyed rows).
 
-    fn insert_symbols_multi(
+    pub(crate) fn insert_symbols_multi(
         conn: &Connection,
         rows: &[&cc_model::symbol::SymbolRecord],
         or_replace: bool,
@@ -554,7 +554,7 @@ impl IndexDb {
         })
     }
 
-    fn insert_symbol_refs_multi(
+    pub(crate) fn insert_symbol_refs_multi(
         conn: &Connection,
         rows: &[&cc_model::symbol::SymbolRefRecord],
         or_replace: bool,
@@ -593,7 +593,7 @@ impl IndexDb {
         })
     }
 
-    fn insert_call_edges_multi(
+    pub(crate) fn insert_call_edges_multi(
         conn: &Connection,
         rows: &[&cc_model::edge::CallEdgeRecord],
     ) -> CcResult<()> {
@@ -622,7 +622,7 @@ impl IndexDb {
         )
     }
 
-    fn insert_semantic_edges_multi(
+    pub(crate) fn insert_semantic_edges_multi(
         conn: &Connection,
         rows: &[&cc_model::edge::SemanticEdgeRecord],
     ) -> CcResult<()> {
@@ -643,7 +643,7 @@ impl IndexDb {
         )
     }
 
-    fn insert_dispatch_sites_multi(
+    pub(crate) fn insert_dispatch_sites_multi(
         conn: &Connection,
         rows: &[&cc_model::dispatch_site::DispatchSiteRecord],
     ) -> CcResult<()> {
@@ -664,7 +664,7 @@ impl IndexDb {
         )
     }
 
-    fn insert_route_edges_multi(
+    pub(crate) fn insert_route_edges_multi(
         conn: &Connection,
         rows: &[&cc_model::edge::RouteEdgeRecord],
         or_replace: bool,

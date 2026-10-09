@@ -1,0 +1,68 @@
+--- runtime47/controller.py
++++ integrated50/controller.py
+@@ -14,10 +14,10 @@
+ 
+ ROOT = Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+ EXPECTED_SOURCE = os.environ['GITHUB_SHA']
+-RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/runtime-finalization-controls/test-expectations.json'
++RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/test-expectations.json'
+ MANIFEST = ROOT / RELATIVE_MANIFEST
+-MANIFEST_SHA = 'd0278ef5a24787aea32f5f95d6892b3aa46d19d01dcd8b10d30456c9665b4db9'
+-WORKFLOW = '.github/workflows/p8-runtime-finalization-controls.yml'
++MANIFEST_SHA = '11300b2e9dc47d5a8f1fa39e9a5da0d5b27d90cd34a31108f4340b084a96afad'
++WORKFLOW = '.github/workflows/p8-integrated-runtime-controls.yml'
+ MODULES = ['test_p8_runtime','test_p8_runtime_evidence','test_p8_runtime_cache','test_p8_runtime_finalization']
+ sys.path[:0] = [str(ROOT/'scripts'), str(ROOT/'scripts/tests')]
+ from p7_build_identity import json_bytes, source_snapshot
+@@ -63,8 +63,9 @@
+     require(not sys.flags.optimize, 'ordinary Python required')
+     require(sha(MANIFEST)==MANIFEST_SHA, 'expected static population changed')
+     manifest=read(MANIFEST)
+-    require(manifest['expected_methods']==47 and manifest['expected_explicit_subtests']==24, 'fixed method/subtest denominator')
+-    require([m['expected_count'] for m in manifest['modules']]==[14,12,13,8], 'fixed module denominator')
++    require(manifest['expected_methods']==50 and manifest['expected_explicit_subtests']==24, 'fixed method/subtest denominator')
++    require([m['expected_count'] for m in manifest['modules']]==[14,15,13,8], 'fixed module denominator')
++    require(len(manifest['fixed_observer_files'])==9, 'fixed observer denominator')
+     return manifest
+ 
+ def normalize(value):
+@@ -144,13 +145,13 @@
+     return code
+ 
+ def all_modules():
+-    out=Path(os.environ['RUNNER_TEMP'])/'runtime-finalization-controls'
++    out=Path(os.environ['RUNNER_TEMP'])/'integrated-runtime-controls'
+     out.mkdir(exist_ok=False)
+     commands=[]
+     for index,module in enumerate(MODULES):
+         commands.append([sys.executable,'-B','-u',str(Path(__file__).resolve()),'--module',module,'--out',str(out/f'module-{index:02}')])
+     record=dict(schema_version=1,status='running',expected_source=EXPECTED_SOURCE,commands=commands,results=[],
+-                expected_methods=47,expected_explicit_subtests=24,manifest_sha256=MANIFEST_SHA,
++                expected_methods=50,expected_explicit_subtests=24,manifest_sha256=MANIFEST_SHA,
+                 scope='Pure Python protocol/regression controls only; no Cargo, product workload, N30, task or release approval.',
+                 environment={k:os.environ.get(k) for k in ('GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REF','RUNNER_OS')},
+                 python=dict(executable=sys.executable,version=sys.version),started_utc=utc())
+@@ -161,9 +162,9 @@
+     try:
+         manifest=load_manifest()
+         require([m['module'] for m in manifest['modules']]==MODULES,'unexpected planned module')
+-        require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-runtime-finalization-controls-20261009', 'wrong attempt or branch')
++        require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-20261009', 'wrong attempt or branch')
+         before=source_snapshot(ROOT);observer=observer_snapshot(ROOT);inputs=fixed_inputs(manifest)
+-        require(before['source_commit']==EXPECTED_SOURCE and before['input_count']==1087 and before['manifest_sha256']==manifest['source_manifest_sha256'],'actual complete source does not match fixed production inputs')
++        require(before['source_commit']==EXPECTED_SOURCE and before['input_count']==1089 and before['manifest_sha256']==manifest['source_manifest_sha256'],'actual complete source does not match fixed production inputs')
+         write_new(out/'source-before.json',before);write_new(out/'observer-before.json',observer);write_new(out/'validation-before.json',inputs)
+         (out/'controller.py').write_bytes(Path(__file__).read_bytes());(out/'workflow.yml').write_bytes((ROOT/WORKFLOW).read_bytes());(out/'test-expectations.json').write_bytes(MANIFEST.read_bytes())
+         for index,command in enumerate(commands):
+@@ -186,9 +187,9 @@
+         record['status']='commands_completed' if code==0 else 'command_failed'
+         if code==0:
+             summaries=[read(out/f'module-{i:02}'/'summary.json') for i in range(4)]
+-            require(sum(s['tests_run'] for s in summaries)==47 and sum(sum(len(v) for v in s['actual_subtests'].values()) for s in summaries)==24,'actual aggregate population differs')
++            require(sum(s['tests_run'] for s in summaries)==50 and sum(sum(len(v) for v in s['actual_subtests'].values()) for s in summaries)==24,'actual aggregate population differs')
+             require(all(s['status']=='passed_exact_population' and s['exit_code']==0 for s in summaries),'partial child result')
+-            record.update(actual_methods=47,actual_explicit_subtests=24,failed=0,skipped=0)
++            record.update(actual_methods=50,actual_explicit_subtests=24,failed=0,skipped=0)
+     except BaseException as error:
+         code=2;record.update(status='invalid_or_interrupted_execution',error=f'{type(error).__name__}: {error}')
+     finally:

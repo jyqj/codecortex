@@ -1,5 +1,8 @@
 //! Source-bound identity authority. Every read uses the caller's SQLite snapshot.
-use crate::{index_db::FileWriteUnit, sql_util::db_err};
+use crate::{
+    index_db::{FileWriteUnit, IndexDb},
+    sql_util::db_err,
+};
 use cc_model::retrieval_cost::SqlWork;
 use cc_model::{
     identity::DocumentRef,
@@ -143,8 +146,8 @@ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()>
         if !symbol_matches_on(conn, identity, &mut None)? {
             continue;
         }
-        conn.execute("INSERT INTO chunk_symbol_identity(chunk_id,file_path,doc_key,doc_version,symbol_id,format_version,record_json) VALUES(?1,?2,?3,?4,?5,?6,?7)",
-            rusqlite::params![identity.chunk_id,identity.file_path,identity.document.doc_key,identity.document.doc_version,identity.symbol_id,identity.format_version,serde_json::to_string(identity)?]).map_err(db_err)?;
+        IndexDb::execute_cached(conn,"INSERT INTO chunk_symbol_identity(chunk_id,file_path,doc_key,doc_version,symbol_id,format_version,record_json) VALUES(?1,?2,?3,?4,?5,?6,?7)",
+            rusqlite::params![identity.chunk_id,identity.file_path,identity.document.doc_key,identity.document.doc_version,identity.symbol_id,identity.format_version,serde_json::to_string(identity)?])?;
         let qname = load_on(
             conn,
             Projection {

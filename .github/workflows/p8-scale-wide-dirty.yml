@@ -30,6 +30,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.95.0
+          components: rustfmt
       - name: Check formatting and both native scale protocol profiles
         env:
           CARGO_TARGET_DIR: ${{ runner.temp }}/p8-scale-wide-dirty-protocol-cargo

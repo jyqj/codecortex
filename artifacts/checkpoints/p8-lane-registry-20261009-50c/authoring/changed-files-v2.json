@@ -1,0 +1,149 @@
+{
+  "Cargo_build_test_or_Clippy_result": null,
+  "GitHub_or_study_mutations": false,
+  "Rust_candidate_bytes_equal_v1": true,
+  "actual_consumers_read": [
+    "crates/cc-search/src/engine.rs",
+    "crates/cc-search/src/engine_lane_tests.rs",
+    "crates/cc-eval/src/benchmark/ablation.rs",
+    "crates/cc-eval/src/benchmark/ablation/mechanism.rs",
+    "scripts/p7_mechanism_build.py"
+  ],
+  "author": "/root/pr_audit",
+  "base_source": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+  "base_tree": "6ed5ad8ed24aa6563184b737a36c4e2fe5d87de8",
+  "changed_files": [
+    {
+      "after_bytes": 31723,
+      "after_git_blob": "f760ca52ec32547215092a5c700d4cb977a9669d",
+      "after_sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+      "before_bytes": 31442,
+      "before_git_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+      "before_sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+      "candidate_relative_path": "candidate-v2/crates/cc-search/src/lanes.rs",
+      "mode": "100644",
+      "original_relative_path": "original/crates/cc-search/src/lanes.rs",
+      "path": "crates/cc-search/src/lanes.rs"
+    },
+    {
+      "after_bytes": 14087,
+      "after_git_blob": "79873db31d8d93a86f1537b930038f2437b99594",
+      "after_sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+      "before_bytes": 5795,
+      "before_git_blob": "d7642807baaab53c565d7e8f91568d1addbcd5b9",
+      "before_sha256": "7934394278307dec06ffaa683cb3fc33619e3d5516fcc49811d4ec4711ebc612",
+      "candidate_relative_path": "candidate-v2/crates/cc-search/src/query_policy.rs",
+      "mode": "100644",
+      "original_relative_path": "original/crates/cc-search/src/query_policy.rs",
+      "path": "crates/cc-search/src/query_policy.rs"
+    },
+    {
+      "after_bytes": 1280,
+      "after_git_blob": "c979369c3a6e3d2ef6e16f1848648d8096465756",
+      "after_sha256": "07600c12e46ce7ae69bdd7f9563423122f5d426f94705d4735b74d3129655cc8",
+      "before_bytes": 1455,
+      "before_git_blob": "96216fdb7dff3fc635820fef921cbe0a249c8047",
+      "before_sha256": "f24ae9777ce7c4c042624bb7144eb5ed3d100ca5f342184095ba54f76228b94b",
+      "candidate_relative_path": "candidate-v2/crates/cc-eval/src/benchmark/ablation/mechanism_controls.json",
+      "mode": "100644",
+      "original_relative_path": "original/crates/cc-eval/src/benchmark/ablation/mechanism_controls.json",
+      "path": "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json"
+    }
+  ],
+  "created_at_utc": "2026-10-09T11:05:44.247880+00:00",
+  "independent_review": "Pending /root/todo_audit for exact v2; author is recused from semantic source approval.",
+  "isolated_format": {
+    "argv": [
+      "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "--edition",
+      "2021",
+      "--config",
+      "skip_children=true",
+      "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/candidate/crates/cc-search/src/lanes.rs",
+      "/workspace/scratch/50c364fd60b1/validation/lane-ownership-round10/candidate/crates/cc-search/src/query_policy.rs"
+    ],
+    "exit_code": 0,
+    "finished_at_utc": "2026-10-09T11:02:36.422523+00:00",
+    "started_at_utc": "2026-10-09T11:02:36.334945+00:00",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "necessary_compatibility_update": {
+    "affected_control": "local_retrieval",
+    "changed_fields": [
+      "on_text",
+      "off_text"
+    ],
+    "file": "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json",
+    "off": "Clone the shared registry references into the execution Vec, clear it, then return it. No local lane executes. The static registry and policy obligations remain available, as before the cleanup.",
+    "on": "Match only the new default_lanes Vec-returning wrapper.",
+    "product_or_counterfactual_execution": false,
+    "pure_offline_text_replacement_checks": [
+      {
+        "id": "local_retrieval",
+        "off_occurrences_after_exact_replacement": 1,
+        "off_occurrences_before": 0,
+        "off_source_sha256": "2f90d715d1f8030b07c6ac30277a85843b8a07310c1d66b0b50c90e892afbf24",
+        "on_occurrences": 1,
+        "on_source_sha256": "c9c225e85424d97f345601bedb7a029d4e5535908ac93d589849de19b9ad5d24",
+        "path": "crates/cc-search/src/lanes.rs"
+      },
+      {
+        "id": "semantic_dense",
+        "off_occurrences_after_exact_replacement": 1,
+        "off_occurrences_before": 0,
+        "off_source_sha256": "f60a676a9aa9fbcc60a018c039c4e79a555d904daa20189649d9e387882b217e",
+        "on_occurrences": 1,
+        "on_source_sha256": "3f59df6d56d95113f7eb30b86d129b8cf13dc568e6faa12b2101502ae12efcea",
+        "path": "crates/cc-search/src/query_policy.rs"
+      }
+    ],
+    "reason": "The existing consumer performs a strict exactly-once literal source replacement; the v1 wrapper changed its anchor.",
+    "shared_registry_not_replaced_or_cleared": true,
+    "unchanged": [
+      "control id/path",
+      "semantic_dense complete entry",
+      "replacement validator",
+      "strict source-matching regression",
+      "all build/gate rules"
+    ]
+  },
+  "patch": {
+    "bytes": 11826,
+    "file": "lane-ownership-v2.patch",
+    "sha256": "adc12ac8b13558b99b90c180abc463df5a8177e9f4b26e47fe854873b174c10b"
+  },
+  "production_decision": "A static slice of the five existing stateless lane references is the sole catalog. QueryPolicy reads IDs directly from it; default_lanes retains its existing Vec return and clones only the references from that same slice. No second constant ID list, boxed lane allocation, DB read, worker construction or lane execution is added for policy.",
+  "project_or_source_guard_executed": false,
+  "regressions_added": [
+    "Eight intents x seven valid configured/explicit strategies x two deadline-cap fixtures compare policy local order against execution and independent intent-role expectations, plus optional semantic suffix and budgets.",
+    "Two fixed complete old policy serializations (explicit local and inherited configured auto) pin wire field order/labels/roles/caps and fingerprint against expected bytes. These tests have not yet executed."
+  ],
+  "repository_worktree_index_HEAD_or_refs_changed": false,
+  "root_existing_affected_regression_command": [
+    "cargo",
+    "test",
+    "-p",
+    "cc-eval",
+    "--lib",
+    "benchmark::ablation::mechanism::tests::fixed_controls_match_current_product_source_once",
+    "--",
+    "--exact"
+  ],
+  "schema": "round10-isolated-lane-owner-candidate-v2",
+  "task_status": {
+    "TODO_closed": 0,
+    "TODO_done": 163,
+    "TODO_remaining": 29
+  },
+  "v1_preserved": {
+    "candidate_root": "candidate",
+    "manifest": "changed-files.json",
+    "patch": {
+      "bytes": 10247,
+      "file": "lane-ownership.patch",
+      "sha256": "587da491941afdf937eec1dee8800e635fb3fe989c77bd4f12b0bb33305150c5"
+    },
+    "sha256": "9237b5a9a940128ccb1d162c6b1781ec83ada16a406dbb08af70fa9e2c2f6d60"
+  }
+}

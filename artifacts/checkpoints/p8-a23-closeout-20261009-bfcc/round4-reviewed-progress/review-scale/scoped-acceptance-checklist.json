@@ -1,0 +1,296 @@
+{
+  "current_evidence": {
+    "build": {
+      "artifact": 11591482043,
+      "job": 113633588386,
+      "review": "review-scale/build-11591482043-independent.json"
+    },
+    "capacity_review": "review-scale/preflight-capacity-independent.json",
+    "completed_shards": [
+      {
+        "artifact": 11591367982,
+        "index": 0,
+        "job": 113638100768,
+        "samples": 14,
+        "scale": 1000
+      },
+      {
+        "artifact": 11591464502,
+        "index": 0,
+        "job": 113638100858,
+        "samples": 9,
+        "scale": 5000
+      },
+      {
+        "artifact": 11591693031,
+        "index": 0,
+        "job": 113638100759,
+        "samples": 9,
+        "scale": 10000
+      }
+    ],
+    "pending": "50k/100k original index0 terminal results, all 145 remaining original shards, full original Linux aggregate and final independent task acceptance.",
+    "review_scope": "Original inspect_raw and static source/build/plan/SHA256 checks. Original native BLAKE3/full shard validators were not bypassed or claimed executed on Mac."
+  },
+  "never_convert_to_allowed_unknown": [
+    "Missing/failed/duplicate primary shard, absent required phase, deadline/output-budget termination, capacity not_run, incomplete closure or incomplete original full parity.",
+    "Unknown or inconsistent source/binary/driver/input/config identity, missing native hash verification, damaged/unsealed raw or incompatible population.",
+    "Missing actual files/symbol/chunk/edge counts or required main-build phase timing, parse/integrity/FK/config/caller truth failure.",
+    "Unexecuted or failed required old-function regression, or unresolved original hard task dependency."
+  ],
+  "observed_utc": "2026-10-09T02:52:49.102579+00:00",
+  "observer": "/root/execution_recon",
+  "original_tasks_closed": 0,
+  "permitted_unestablished_claims": [
+    {
+      "allowed": "not_established",
+      "basis": [
+        "tasks.json:P8-005.acceptance_subgates",
+        "09-BENCHMARK.md:section 10",
+        "P8-SCALE.md:heterogeneous coverage"
+      ],
+      "field": "strict_paired_causal_performance",
+      "reason": "Already recorded as such in P8-005 acceptance_subgates. These two tasks require real complete workload/timing evidence, not a causal speedup claim. Heterogeneous registration forbids pooled same-environment effects. Original 10% review/20% blocker guidance remains applicable only to a valid registered comparable target profile; do not infer performance pass from missing comparison."
+    },
+    {
+      "allowed": "unknown / null / unavailable with correct scope and units",
+      "basis": [
+        "tasks.json:P8-005.acceptance_subgates",
+        "tasks.json:P8-009",
+        "09-BENCHMARK.md:section 9",
+        "P8-SCALE.md:resources and capacity"
+      ],
+      "field": "whole_tree_memory_peak / unavailable resource observations",
+      "reason": "P8-005 already records whole_tree_memory_peak=unknown. Original scale report certifies worker snapshots only, not continuous process-tree peaks. Do not substitute zero, parent RSS or before/after disk readings. P8-009 resource accounting is separate."
+    },
+    {
+      "allowed": "not_established / not_computed_heterogeneous_coverage",
+      "basis": [
+        "09-BENCHMARK.md:sections 9-10",
+        "P8-SCALE.md:statistics/heterogeneous coverage",
+        "scripts/p8_scale_matrix.py:combine"
+      ],
+      "field": "stable_tail_latency / pooled_latency_statistics",
+      "reason": "Global N=30 establishes registered coverage only; each environment stratum may have N=1. Formal tail-profile N>=200/CI is not a newly added P8-005/006 gate. Do not claim stable p95/p99, CI precision or same-environment causal speedup."
+    },
+    {
+      "allowed": "state=disabled, count=null",
+      "basis": [
+        "P8-SCALE.md:real operations/SQLite counts"
+      ],
+      "field": "vector count",
+      "reason": "Original deterministic local scale profile disables semantic/network. Vector workload is transparently unmeasured, not measured as zero or counted as full semantic work."
+    },
+    {
+      "allowed": "unavailable or null when the original operation does not expose or execute it",
+      "basis": [
+        "P8-SCALE.md:fanout clock scope/build timing",
+        "scripts/p8_scale_matrix.py:summarize_group"
+      ],
+      "field": "fanout full-control phase timing / incremental full_staging_us",
+      "reason": "Original fanout tool omits full-rebuild phase timing; its complete canonical parity is still mandatory. Incremental full staging is not executed, so null/not_executed is correct. Missing required main-build timing/closure/parity is not covered by this exception."
+    },
+    {
+      "allowed": "not_run / not_run / not_evaluated / false",
+      "basis": [
+        "P8-SCALE.md:statistics/independent final acceptance",
+        "scripts/p8_scale_matrix.py:combine",
+        "crates/cc-eval/src/benchmark/p8_scale.rs:worker summary"
+      ],
+      "field": "release_certification / full_100k_certification / G8 / task_statuses_changed",
+      "reason": "The original completed scale tool intentionally retains these fields. They do not block independent scoped P8-005/006 completion after all original task gates pass, and do not award full P8, quality, semantic, platform or release certification. Preserve original dependencies and original report bytes."
+    },
+    {
+      "allowed": "not claimed / uncontrolled",
+      "basis": [
+        "09-BENCHMARK.md:section 9",
+        "P8-SCALE.md:statistics"
+      ],
+      "field": "cold OS page cache",
+      "reason": "Original cold means fresh index/parse cache. No OS cache clearing occurred or is required by this registration; do not rename it cold disk."
+    }
+  ],
+  "required_original_gates": [
+    {
+      "basis": [
+        "tasks.json:dependency_semantics",
+        "tasks.json:P8-005/P8-006.depends_on"
+      ],
+      "current": "P7-020/P8-001/P8-004 recorded done at frozen source. P8-005 still in_progress, so P8-006 cannot close yet.",
+      "id": "hard_dependencies",
+      "requirement": "Honor original depends_on. P8-005 requires P8-004; P8-006 additionally requires accepted P8-005, P7-020 and P8-001.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "tasks.json:P8-001.acceptance",
+        "P8-SCALE.md:matrix build/run/replay",
+        "scripts/p8_scale_matrix.py:validate_build/validate_shard"
+      ],
+      "current": "Original build job success; independent committed-source/SHA256/build-origin review accepted. Native original validate_build/full shard verification remain pending Linux aggregate.",
+      "id": "exact_candidate_and_original_build",
+      "requirement": "Successful original optimized release build and original build/source/driver/binary receipts; all measured shards bind to that one build, source before/after, registered input/config/seed and toolchain/profile. Preserve all original SHA256 and native BLAKE3 checks.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "P8-SCALE.md:capacity protocol/first-shard gate",
+        "scripts/p8_scale_matrix.py:combine",
+        ".github/workflows/p8-scale.yml"
+      ],
+      "current": "Three original index0 shards succeeded and were statically/raw inspected: 1k, 5k, 10k; 32 samples. 50k/100k index0 running; 145 later shards not created. No aggregate acceptance.",
+      "id": "complete_registered_population",
+      "requirement": "Exactly five scales 1k/5k/10k/50k/100k, thirty original global repetition IDs 0..29 per scale, 150 unique shards, fifty groups each N=30, 1500 total samples. Index0 preflights are original population; five must pass before 145 remaining. No missing/duplicate/failed cells or sample replacement.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "tasks.json:P8-005.steps/acceptance",
+        "09-BENCHMARK.md:sections 6-7",
+        "P8-SCALE.md:real operations and SQLite counts"
+      ],
+      "current": "Present and inspected in three completed original shards; full population pending.",
+      "id": "real_workload_and_counts",
+      "requirement": "Fixed-seed real generated workloads and release measurements at all five sizes. Retain actual files/symbols/chunks and separate edge-table counts, vector state, original input inventory, and DB/WAL/SHM size observations. Do not report only files or calculate multipliers between different workloads.",
+      "tasks": [
+        "P8-005"
+      ]
+    },
+    {
+      "basis": [
+        "tasks.json:P8-006.steps/acceptance",
+        "09-BENCHMARK.md:section 8",
+        "P8-SCALE.md:real operations/oracle",
+        "scripts/p8_scale_matrix.py:inspect_raw/check_parity"
+      ],
+      "current": "All nine main groups passed original inspect_raw in each of the three completed shards. Remaining primary population unexecuted or running.",
+      "id": "original_phase_truth_and_complete_parity",
+      "requirement": "Cold plus no-op/body/API/config and exact batch 1/10/100/1000 at every repetition, complete original fifteen-table canonical equality with integrity/FK checks and independent config witness. No-op must have actual zero changes; exact mutation operations/counts retained. Every closure and independent full control must finish successfully.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "P8-SCALE.md:fanout truth/capacity protocol",
+        "scripts/p8_scale_matrix.py:inspect_raw/combine"
+      ],
+      "current": "1k/index0 original fanout16/64/128 actually incomplete first, closed in 2/8/16 builds; all five fanout groups inspected. Twenty-nine repetitions each remain.",
+      "id": "fanout_and_actual_over_budget_closure",
+      "requirement": "Fanout 1/4/16/64/128 each N=30, owned only by 1k shards, complete caller-by-caller handwritten truth and full canonical parity, all real resume reports. At least one actual first_build_incomplete observation must subsequently close. Requested fanout alone is insufficient.",
+      "tasks": [
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "tasks.json:P8-006.acceptance",
+        "09-BENCHMARK.md:sections 9-10",
+        "P8-SCALE.md:timing/heterogeneous_stratified_coverage_v1",
+        "scripts/p8_scale_matrix.py:compact_build/combine"
+      ],
+      "current": "Original inspect_raw timing checks passed for completed shards; full original group/stratum aggregate pending.",
+      "id": "attributable_timing_and_honest_statistics",
+      "requirement": "Retain every original phase/count/timing and distinguish engine, outer incremental, full control, oracle and whole fanout replay clocks. Original timing conservation and containment checks must pass. Preserve all host/CPU/kernel strata and sample-to-environment IDs; report global/per-stratum N without pooling heterogeneous latency or best-of.",
+      "tasks": [
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "P8-SCALE.md:immutable evidence/exit codes/matrix replay",
+        "scripts/p8_scale_matrix.py:validate_build/validate_shard/aggregate"
+      ],
+      "current": "Not started; no full native validator replay claimed by Mac audits.",
+      "id": "unmodified_strict_aggregate_and_retained_failures",
+      "requirement": "Original Linux aggregate must actually validate the build and every original shard/raw/hash, return success with status=complete_measurement_coverage and passed=true, and retain complete population receipts. Native/supervisor exit must be zero, stderr complete, budgets and cleanup valid. Preserve any failure/deadline/infrastructure results; never relabel, exclude or replace them.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    },
+    {
+      "basis": [
+        "tasks.json:P8-005/P8-006.acceptance",
+        "06-VALIDATION.md:hard correctness",
+        "P8-SCALE.md:independent final task acceptance"
+      ],
+      "current": "Final exact-candidate regression evidence and final task acceptance are coordinated by root; scale-wide evidence incomplete. No task changed here.",
+      "id": "related_regressions_and_independent_task_acceptance",
+      "requirement": "Relevant old-function regressions must actually pass for the affected candidate/source. Independent review must reconcile original task clauses, current identities, complete raw/aggregate evidence and remaining limitations before task state change. Workflow existence or a green summary alone is insufficient.",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ]
+    }
+  ],
+  "requirement_policy": "Apply the original task scopes and the committed scale_capacity_v1 / heterogeneous_stratified_coverage_v1 registration. V07/V20 are validation packages, not automatic imports of every future scenario or G8.",
+  "schema_version": 1,
+  "scope": "Minimum original P8-005/P8-006 task acceptance. Evidence review only: no protocol, task state, threshold, dependency or failure status changed.",
+  "source_basis": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/docs/roadmap/code-index-v2/tasks.json"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/docs/roadmap/code-index-v2/P8-SCALE.md"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/docs/roadmap/code-index-v2/06-VALIDATION.md"
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/scripts/p8_scale_matrix.py"
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/.github/workflows/p8-scale.yml"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+      "url": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/crates/cc-eval/src/benchmark/p8_scale.rs"
+    }
+  ],
+  "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "status": "incomplete",
+  "task_state": {
+    "P8-005": {
+      "depends_on": [
+        "P8-004"
+      ],
+      "state": "in_progress"
+    },
+    "P8-006": {
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "state": "in_progress"
+    }
+  },
+  "workflow_run": 37872522779
+}

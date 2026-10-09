@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "status": "passed_raw_byte_and_source_binding",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "full_audit_sha256": "5a2891df8519544d498ffb20bcef66194a83e61aa6168c7920a71ab94664dc5a",
+  "complete_source_inventories": {
+    "original_source": {
+      "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+      "input_count": 1089,
+      "manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83"
+    },
+    "historical_source": {
+      "source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "source_tree": "992e3310f2e5595d53f66b05e9f1e8319273119e",
+      "input_count": 704,
+      "manifest_sha256": "aa075bde61e9aca29b43492bdf5d69009a7abc4fbde302eb7b48c40fa38d83a9"
+    }
+  },
+  "all_11_archives_match_original_github_digest": true,
+  "gate_original_files": 336,
+  "recovery_original_files": 495,
+  "original_report_hashes": {
+    "gates": "6e66bf55404399bbe06e6fb5449f12d756d931d48263421be0772d759e8085ba",
+    "full_recovery": "0697d4ec8e08084dabe02d951cd04a12a96829ecd3fd5c42fd415d78f6ef30b3",
+    "actual_version_pair": "52e03b0f4461b20678e76e7da17d87b914c4fd0ec40f4dc82d47a4bfe2e9b1f2",
+    "bounded_rollback": "418d720d041c055211af20eea51d8c547cfadd29b75003327217256803aa5eb9"
+  },
+  "checks": [
+    "Complete product manifest path set and every input SHA-256 compared to actual Git blob bytes at both source revisions",
+    "Original binary, execution/build receipts, exact test names, nonignored stdout counts and Cargo artifact/feature records match",
+    "Every selected archive entry and original full gate/recovery evidence inventory matches its own recorded hash",
+    "Observer-before/after and archived observer source match actual G275 bytes"
+  ],
+  "semantic_read_scope": "All inventory bytes were checked. This is not a claim of semantic review of every product file.",
+  "limit": "Byte/source/selection verification; task-specific raw semantic acceptance is recorded separately. No new compilation or measurement was run."
+}

@@ -1,0 +1,42 @@
+{
+  "all_passed": false,
+  "commands": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/source_integrity",
+        "-v"
+      ],
+      "elapsed_seconds": 1097.7388160069986,
+      "exit_code": 1,
+      "log": "native-suite.log",
+      "log_sha256": "1644159e1002188445cd638ecc819b5e5a54ff39de6e1e00b6dff93c236fba84",
+      "name": "native-suite"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "elapsed_seconds": 1.7081029750006564,
+      "exit_code": 1,
+      "log": "v15-cli.log",
+      "log_sha256": "49a60d01aa2ac42baad3e4760d5874ee2d40e9fce560f77253a431138441ea52",
+      "name": "v15-cli"
+    }
+  ],
+  "completed_at_utc": "2026-10-09T08:27:20.339455+00:00",
+  "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "head_after": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "product_source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+  "scope": "Original unchanged native source-integrity suite and v15 entry, per-command 3600s execution bound; a timeout is not a pass.",
+  "started_at_utc": "2026-10-09T08:09:00.879460+00:00"
+}

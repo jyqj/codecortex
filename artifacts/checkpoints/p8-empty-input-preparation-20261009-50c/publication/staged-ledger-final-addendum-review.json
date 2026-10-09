@@ -1,0 +1,793 @@
+{
+  "schema": "staged-ledger-final-addendum-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T09:09:17.473208+00:00",
+  "verdict": "accepted_exact_two_final_appends_and_unchanged_prior_nine_task_scope",
+  "scope": "Read-only tasks and referenced evidence verification. No product/native execution, derived-view verification, remote mutation, task closure or later-stage bytes certified.",
+  "ledger": {
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "baseline_commit": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "baseline_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "prior_reviewed_stage_sha256": "e7e19b6700b20b1a02754737cace7bbe5c21893dc67e3d6a29ffed00aa1ee828",
+    "final_staged_sha256": "a0d24b33c2f68dd33697b2b0a5c38cb5f633f3f8f8a199b8e578f372b3b99ec7",
+    "final_staged_bytes": 827709,
+    "total": 192,
+    "status_counts": {
+      "blocked": 1,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "done": 163,
+    "remaining": 29,
+    "original_tasks_closed": 0,
+    "requested_ten_original_task_goal": "not_completed",
+    "changed_task_ids_relative_to_G": [
+      "P8-005",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "unchanged_task_count_relative_to_G": 183,
+    "changed_task_ids_relative_to_prior_reviewed_stage": [
+      "P8-005",
+      "P8-007"
+    ],
+    "all_other_task_fields_definitions_acceptance_dependencies_and_statuses_preserved": true,
+    "task_order_ids_top_level_key_order_and_navigation_preserved": true,
+    "top_level_navigation": {
+      "current_phase": "P8",
+      "next_task": "P8-005",
+      "last_implementation_date": "2026-10-08"
+    },
+    "schema_detail": "P8-011 still has only the previously reviewed notes-field addition; no original field is removed."
+  },
+  "exact_prior_reconstruction": {
+    "method": "Remove the two exact final evidence entries and exact LF + summary + LF notes suffixes, then serialize with the original UTF-8 ensure_ascii=False indent2 final-LF format.",
+    "reconstructed_sha256": "e7e19b6700b20b1a02754737cace7bbe5c21893dc67e3d6a29ffed00aa1ee828",
+    "reconstructed_bytes": 822872,
+    "matches_prior_frozen_byte_hash": true,
+    "prior_independent_review": "validation/staged-ledger-independent-review.json",
+    "prior_review_sha256": "0c0e8cd689548c2fd01d34a935587b912353f9751bc80d317c23514647382089",
+    "prior_review_bytes_unchanged": true,
+    "append_entries": "validation/round6-ledger-append-entries.json",
+    "append_entries_sha256": "1f091b61018ef47e3596fefa417af0078e23da465eb17bcc45571e7db2ee90a3"
+  },
+  "two_new_appends": [
+    {
+      "id": "P8-005",
+      "new_entry_matches_recorded_append_exactly": true,
+      "new_entry_target_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "appended_notes_exact_form": "LF + summary + LF",
+      "prior_notes_and_evidence_prefix_unchanged": true,
+      "artifact_paths": [
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial/receipt.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-history-diagnosis/repair-verification.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/receipt.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/outcome-review.json"
+      ]
+    },
+    {
+      "id": "P8-007",
+      "new_entry_matches_recorded_append_exactly": true,
+      "new_entry_target_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "appended_notes_exact_form": "LF + summary + LF",
+      "prior_notes_and_evidence_prefix_unchanged": true,
+      "artifact_paths": [
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-location-review.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-inputs.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-ci-recheck.json",
+        "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-source-artifact-bridge.json"
+      ]
+    }
+  ],
+  "full_nine_task_deltas": [
+    {
+      "id": "P8-005",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 3,
+      "previous_evidence_count": 4,
+      "final_evidence_count": 5,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-007",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 3,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-008",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-009",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-010",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-011",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": false,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-012",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 2,
+      "previous_evidence_count": 3,
+      "final_evidence_count": 3,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-013",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    },
+    {
+      "id": "P8-016",
+      "status": "in_progress",
+      "changed_fields": [
+        "evidence",
+        "implementation_notes"
+      ],
+      "original_evidence_count": 1,
+      "previous_evidence_count": 2,
+      "final_evidence_count": 2,
+      "original_notes_field_present": true,
+      "original_notes_and_evidence_are_unchanged_prefixes": true,
+      "definitions_acceptance_dependencies_deliverables_subgates_and_all_other_fields_unchanged": true
+    }
+  ],
+  "new_direct_artifact_copies": [
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial/receipt.json",
+      "original_path": "validation/native-source-checks/receipt.json",
+      "sha256": "f03c60bd283831c13d7344a18e46588dc00c0a1d87261cf14803038f5d02da3a",
+      "bytes": 1416,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-history-diagnosis/repair-verification.json",
+      "original_path": "validation/native-source-history-diagnosis/repair-verification.json",
+      "sha256": "1684909993af78605e0526563f195d6bc989ba5a67e2d81dc5f9fc386a88771c",
+      "bytes": 75278,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/receipt.json",
+      "original_path": "validation/native-source-checks-hydrated/receipt.json",
+      "sha256": "a1fa063e889d04e2e14eb58015ee8b651df31a92af7a566fe29124d17764baeb",
+      "bytes": 2383,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/outcome-review.json",
+      "original_path": "validation/native-source-checks-hydrated/outcome-review.json",
+      "sha256": "803f336152498e089bda155219d838e156a1fecab9bb4ce3f06adaccfc150bc2",
+      "bytes": 2697,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+      "original_path": "validation/downstream-acceptance-gap-review.json",
+      "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982",
+      "bytes": 37046,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-location-review.json",
+      "original_path": "validation/p8-runtime-attribution-source-audit/source-location-review.json",
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5",
+      "bytes": 23799,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-inputs.json",
+      "original_path": "validation/p8-runtime-attribution-source-audit/source-inputs.json",
+      "sha256": "23bde0d50b395e043b821b1e6e76d4cd20b2f3bf28895192df87be9ccb03806f",
+      "bytes": 9627,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-ci-recheck.json",
+      "original_path": "validation/round6-g275-ci-recheck.json",
+      "sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b",
+      "bytes": 13348,
+      "byte_identical_to_original_fixed_report": true
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-source-artifact-bridge.json",
+      "original_path": "validation/round6-g275-source-artifact-bridge.json",
+      "sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794",
+      "bytes": 48624,
+      "byte_identical_to_original_fixed_report": true
+    }
+  ],
+  "prior_artifact_reconciliation": {
+    "previous_inventory_files": 64,
+    "old_artifacts_rehashed_unchanged": 63,
+    "prior_tasks_reconstructed_exactly": true,
+    "all_old_inventory_sizes_and_hashes_match": true
+  },
+  "native_initial_and_final_scope": [
+    {
+      "directory": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial",
+      "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "product_source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "original_command_exits": [
+        1,
+        1
+      ],
+      "all_receipt_log_hashes_and_original_local_copies_match": true
+    },
+    {
+      "directory": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks",
+      "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "product_source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "original_command_exits": [
+        0,
+        0
+      ],
+      "all_receipt_log_hashes_and_original_local_copies_match": true
+    }
+  ],
+  "claim_review": {
+    "P8-005": "The new entry accurately adds original G native source admission after explicit hydration of two historical objects. Both initial failures and the two actual final exit0 commands remain. Original 124/error4 and final181/OK identities are separate. No P2 workspace exit101 or scale gate is waived.",
+    "P8-007": "The new entry accurately preserves G275 scoped runtime evidence, the d53 actual CI checkout and explicit product/validation/artifact consumption bridge. It records the original section9 production backend/DB/worker attribution gap, existing client/build/harness scopes, required coordinated new candidate and observations, unchanged gates and dependencies.",
+    "source_and_runtime_boundaries": "P2, G, G275, main and inspected PR175 identities remain distinct; the entries claim no new workload or transferred runtime acceptance.",
+    "missing_hard_gates_not_invented": [
+      "exact client saturation",
+      "continuous peak certification",
+      "inner crash seed DB upload",
+      "published release-tag pair"
+    ],
+    "no_task_status_or_acceptance_change": true
+  },
+  "observed_file_inventory": [
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/config-independent-review.json",
+      "bytes": 6935,
+      "sha256": "9ec207415fe9aee9c1626f2962b2058a8b49a929182a5253df5ed9290b3d139c",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/final-product-checks/clippy.log",
+      "bytes": 599,
+      "sha256": "29eb62b1de14d5a2ffae098dbf6b66dfa3b2c05e1fc2352610f515fb837ae093",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/final-product-checks/format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/final-product-checks/receipt.json",
+      "bytes": 300323,
+      "sha256": "74ec6fecd6fc070e36e27e47c9b15d8be14c3b34cf761fd8b0683e0899d81977",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/final-product-checks/workspace-tests.log",
+      "bytes": 40896,
+      "sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/independent-source-review.json",
+      "bytes": 417012,
+      "sha256": "0c05f39dbea84e5d2158c5bc3c6962bd0b01bbb728d211232ab6415a9641d630",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/initial-product-checks/clippy.log",
+      "bytes": 7771,
+      "sha256": "6d5e15fbbd19521f5ceb3bfd7091410c91dc1858336f5134ef6b88d79edfa8c3",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/initial-product-checks/format.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/initial-product-checks/receipt.json",
+      "bytes": 299963,
+      "sha256": "f27f64ace2c1dabad244a59310b8b5135642e6f80238cefd3cc77369f5814fd1",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/interface-clippy-correction-review.json",
+      "bytes": 8563,
+      "sha256": "9e3279a89d52c9cd229102f69b41365992fdf078926db228889d5d2339ed2b3f",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/interface-independent-review.json",
+      "bytes": 8618,
+      "sha256": "3224324e6926ee987751fd0cecbd2f4a9c051e6fc5ce031733b4a913b1aecf21",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/product-publication-bridge.json",
+      "bytes": 924,
+      "sha256": "3478902fa9031494b49805c902b38254ada38076f9a1f241d4e8f58b82ad5dc9",
+      "read_from": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json",
+      "bytes": 37046,
+      "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g-binding-independent-review.json",
+      "bytes": 25601,
+      "sha256": "f931c3f94e896aab27b4b6cd9442ae695480cf371739cbe03766289439fbc047",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/README.md",
+      "bytes": 1869,
+      "sha256": "f92f9e7287a98e9a09eccb0ad4410812594d95e1cbb4d0027679967af060439b",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/artifact-metadata.json",
+      "bytes": 781,
+      "sha256": "c4c24a4c00711484e3a60cd1d6c5db26ce1bfd1b8eae82a5ef275634b69df2ae",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/download-receipt.json",
+      "bytes": 1091,
+      "sha256": "0b6928e6d4451e7d7f925f7a8417eb0f10b7568147fcc75862365a30b4164208",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/offline-replay-receipt.json",
+      "bytes": 13523,
+      "sha256": "75ca4533b176d2f5165cb217cab3b757461d4576b3c14ca0a1a2e1f7918cc4fa",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/offline-seal-receipt.json",
+      "bytes": 897,
+      "sha256": "998de7f39b2d559ac9d906c3a75b1abe7b94fa9f9a85980e1dd2cce5ec59dea2",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/original-observations-summary.json",
+      "bytes": 16221,
+      "sha256": "b1b84bd421b19cf7a48164259823c1f37cf7a341cb8fe50f18a03d995a03ecf1",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/publication-manifest.json",
+      "bytes": 2221,
+      "sha256": "b577810aab48b628101005dd69e43c731eb5f2f87d435c26b3c00a5c875c09ab",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/raw-review.json",
+      "bytes": 7271,
+      "sha256": "2e22e1bd4653afad5d7c81e38e9cfd7ad2227db6eb8404802cc75e87c153f58f",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/replay.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/replay.stdout",
+      "bytes": 174,
+      "sha256": "f4a793d175fb2027161959c3b18cfab81b252f0f78498b18f28aa6dd2161c724",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/run-metadata.json",
+      "bytes": 1522,
+      "sha256": "c377bf8136537a81200c7f0e3a563178afe4c34071e84aaf77b5b84b04197e79",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/sealed-inventory.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/sealed-inventory.stdout",
+      "bytes": 135,
+      "sha256": "ac93e7b505f3c73a4aab9117a06a01e771371aba5141eab833ba10565c341f9c",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/source-build-review.json",
+      "bytes": 2721,
+      "sha256": "5725129542a165ba07c34bb5cdcbfafb44cf4e6c40ed4cc8fbd1ceb421d013e4",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/acceptance-summary.json",
+      "bytes": 2750,
+      "sha256": "63ae4dcb934203e38ab98c3b34bfbbd6606e3722026d1a4f720f246f4d84a619",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/failure-gates-acceptance-review.json",
+      "bytes": 10360,
+      "sha256": "497bf8610b7a5342f39e1bbf3857d6a6373a153116c8f18d586d021071b8ee18",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-results/bad_policy.json",
+      "bytes": 568,
+      "sha256": "4f2bd6652f39af3fb39cf60bd622aec1bba934ea0afb14075c4ca185d3ffdf9f",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-results/inconclusive.json",
+      "bytes": 509,
+      "sha256": "a0bba99b39f560b5f12385f8a6566cbadf0d88ade2e717c0cf0e160781eba549",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-results/latency.json",
+      "bytes": 492,
+      "sha256": "e4e06446ee049ad6f32da94ef4cec7a9caa20389a6e33c51acd3ee88f6e8b1ec",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-results/quality.json",
+      "bytes": 520,
+      "sha256": "3eb616998568a4b54efe4d6d6cbf401c60b4ed02d19780a1bd0d1f99e586d6a2",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-results/raw_lock_drift.json",
+      "bytes": 563,
+      "sha256": "64a3225a442c22febd176533d27196254f9b08aeca72b297eaeadc73e347396f",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/gate-offline-zero-latency.json",
+      "bytes": 540,
+      "sha256": "e4b10415f9b0b53ba465fb6da6f6a3aa7319dbaf5ebb109fc13b42ce65115f1a",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/platform-acceptance-review.json",
+      "bytes": 9844,
+      "sha256": "9ed834a723302f5171039127d87a8c4c4548c8106b43b97dc0e2c72afb370069",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/platform-collector-matrix.json",
+      "bytes": 4206,
+      "sha256": "f582ec1097b14849f912d710d74077388052c98656cddc9a6310c22d7dbb15e3",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/platform-collector.log",
+      "bytes": 89,
+      "sha256": "296c3fa22886dde73d78795e8a5bb432f3060b8b0ef5ecabd5698247986bbabf",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/publication-manifest.json",
+      "bytes": 3376,
+      "sha256": "12979b75b7faf48e5f12384a826f7dbd6e7fd282be1406248202498b80eb2ad4",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/raw-integrity-summary.json",
+      "bytes": 2127,
+      "sha256": "1cbd5f625eb841bc92958ed7205642e8ecf7230067ea92268bf5b49c120be781",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/review_rollback_raw.py",
+      "bytes": 30313,
+      "sha256": "494877966547b7a16f9db0814c505072bfbc972dc11ce741185798e13b8b9b10",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-acceptance-review.json",
+      "bytes": 28801,
+      "sha256": "8f7d89a40ce00ed0656bc1030036fcb22706bdd525a3e9aa1175e72016c649fb",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-offline-01-receipt.json",
+      "bytes": 730,
+      "sha256": "42d99f054dce50438c7384172a5a61c40a3e220c7b073911cb11f3bde4d39f39",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-offline-01.log",
+      "bytes": 588,
+      "sha256": "56cb051fcb3d8c4249ffe61207dad1f69ded788d86cab35d3233ee94bb5e1367",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-offline-02-receipt.json",
+      "bytes": 1029,
+      "sha256": "1b6c816a2f659f541aadc91508a60b8051d482ac498468870e4f56870783e5ff",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-offline-02.log",
+      "bytes": 480,
+      "sha256": "dd7573d39f2ae0c96126cb7069515a7b17ccb2e5cd2ae5ea001c2511345b3cc3",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/source-artifacts.json",
+      "bytes": 9297,
+      "sha256": "bbd182aad0c27c967e985602280dd15b4b4890995c180f0a2f0b33772c8edbdb",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/README.md",
+      "bytes": 9439,
+      "sha256": "005bd86b8e7853a4e3ca6aa31203bac674a03a619a95da5c8b206c2a70ebff27",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/SHA256SUMS",
+      "bytes": 976,
+      "sha256": "df64c8208ac0f591c7009364da670fae477245f7a96fde4d21e46ba2b1e9c6de",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/artifact-manifest.json",
+      "bytes": 9208,
+      "sha256": "bfb2f131f5c3cbcc1ddce701c993ba058409e12d032dd1aa6e06c7deea3440ae",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/finalize_review.py",
+      "bytes": 13431,
+      "sha256": "0e9549e0f0e855c9dbcb1698d15a0ba1cf81091025bb2fa346e51aca05611439",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/queue-review-command-receipt.json",
+      "bytes": 498,
+      "sha256": "836bbcd1b7cbc8bfb08d6f6d78b3b9e7d8f7a360559dfb7bbd6c966c2b29cad2",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/queue-review.json",
+      "bytes": 4829,
+      "sha256": "335fc311a291d7fcdf2bb335bdf8c80e5af27d08f83e82881eafe5e7569fe32c",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/raw-review.json",
+      "bytes": 69648,
+      "sha256": "54bea82f81e7fefd353bacecc748b4f3ab646a151946af9fe225df48fa10c7dd",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/replay-receipts.json",
+      "bytes": 26995,
+      "sha256": "3bc199296c8b599440aba62ec33762657e3bec7d3ddb3288d3ab8bd107c17c21",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/review_integrity_and_replays.py",
+      "bytes": 13067,
+      "sha256": "8bb9d260cc264131478287b9c0c00cbf2fa8eab4a95230fcd97740b6d74cf5f6",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/review_queue_observations.py",
+      "bytes": 3465,
+      "sha256": "f2bdc440892058e7e9acebcf49364f708ee4433f13ca00eccb44a3205ce78330",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/review_raw_observations.py",
+      "bytes": 33912,
+      "sha256": "914d885e476092d66ca55a447f5ea5d84f2af26fcccf7d23a79473b3cace545e",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/source-manifest.json",
+      "bytes": 14409,
+      "sha256": "3918022cdaba14a132c394a7ae77e251fa61f011e978c8b76b0b9ee8399a60e8",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial/native-suite.log",
+      "bytes": 27080,
+      "sha256": "1644159e1002188445cd638ecc819b5e5a54ff39de6e1e00b6dff93c236fba84",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial/receipt.json",
+      "bytes": 1416,
+      "sha256": "f03c60bd283831c13d7344a18e46588dc00c0a1d87261cf14803038f5d02da3a",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks-initial/v15-cli.log",
+      "bytes": 1872,
+      "sha256": "49a60d01aa2ac42baad3e4760d5874ee2d40e9fce560f77253a431138441ea52",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/native-suite.log",
+      "bytes": 29281,
+      "sha256": "1f1213dcf359c12fe295b4bfcea0e3c974fe43c6d49e7395478895544d445430",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/outcome-review.json",
+      "bytes": 2697,
+      "sha256": "803f336152498e089bda155219d838e156a1fecab9bb4ce3f06adaccfc150bc2",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/receipt.json",
+      "bytes": 2383,
+      "sha256": "a1fa063e889d04e2e14eb58015ee8b651df31a92af7a566fe29124d17764baeb",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/v15-cli.log",
+      "bytes": 572,
+      "sha256": "3b5efb3db6a1cf7c66a52a8aabadb207a48f2117e295deeebede0b023306397f",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-history-diagnosis/repair-verification.json",
+      "bytes": 75278,
+      "sha256": "1684909993af78605e0526563f195d6bc989ba5a67e2d81dc5f9fc386a88771c",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p2-eval-corpus-receipt.json",
+      "bytes": 619,
+      "sha256": "637b8b4ce482fdb4aa86dec2455d22181d11a0d48347c0abbe2c3dd9f2318f72",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p2-eval-corpus.log",
+      "bytes": 21522,
+      "sha256": "73a0675866041a8b095e932d5d9328f20e56a8dc9b47d6fca683104e281d15f2",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p2-index-all-targets-receipt.json",
+      "bytes": 838,
+      "sha256": "9552deb4d02ce4434251e1524b7f1282a9e7275536f26582a4d88a6820fbeea9",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p2-index-all-targets.log",
+      "bytes": 55969,
+      "sha256": "e6c8092b5c21e48350e649f6e7fa16cce764e66714ac15d0dc308e6993d8b03e",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-inputs.json",
+      "bytes": 9627,
+      "sha256": "23bde0d50b395e043b821b1e6e76d4cd20b2f3bf28895192df87be9ccb03806f",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/p8-runtime-attribution-source-audit/source-location-review.json",
+      "bytes": 23799,
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-ci-recheck.json",
+      "bytes": 13348,
+      "sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/round6-g275-source-artifact-bridge.json",
+      "bytes": 48624,
+      "sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794",
+      "read_from": "publication-stage"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "bytes": 827709,
+      "sha256": "a0d24b33c2f68dd33697b2b0a5c38cb5f633f3f8f8a199b8e578f372b3b99ec7",
+      "read_from": "publication-stage"
+    }
+  ],
+  "limits": [
+    "Derived progress views are outside this review and may be generated separately.",
+    "The original failed native records and P2 workspace failure remain evidence, not deleted or rewritten.",
+    "This review validates exact staged bytes and evidence copies; it does not execute guards or certify a future publication commit."
+  ],
+  "mutations": "Only this scratch review script and its scratch JSON output. No staged/source/guard/task/ref/remote mutations."
+}

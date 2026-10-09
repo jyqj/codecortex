@@ -1,0 +1,326 @@
+{
+  "all_six_build_input_manifests_match_fixed_git": true,
+  "backfill_binary": {
+    "p7_worker_contention": {
+      "bytes": 24078264,
+      "fresh": false,
+      "original_cargo_path": "/home/runner/work/_temp/p8-backfill-target/release/deps/p7_worker_contention-9bf79018feee1c60",
+      "original_cargo_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": true
+      },
+      "sha256": "7601bc8860f2c4cbc4631e35ed0a5b788ba2f5d6dbe745e7d959733ea5ca0015"
+    }
+  },
+  "build_input_scope": "all 1,089 recorded Cargo/crates inputs; observer files separately verified against fixed Git blobs",
+  "input_count": 1089,
+  "integrity_review_script_sha256": "8bb9d260cc264131478287b9c0c00cbf2fa8eab4a95230fcd97740b6d74cf5f6",
+  "manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+  "no_current_machine_original_compiler_claim": true,
+  "observer_manifest": {
+    "files": {
+      "scripts/p7_build_identity.py": {
+        "bytes": 5940,
+        "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+        "git_mode": "100644",
+        "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+      },
+      "scripts/p7_stdio_build_receipt.py": {
+        "bytes": 9147,
+        "git_blob": "2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e",
+        "git_mode": "100644",
+        "sha256": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2"
+      },
+      "scripts/p8_backfill.py": {
+        "bytes": 8799,
+        "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+        "git_mode": "100644",
+        "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd"
+      },
+      "scripts/p8_cold_build.py": {
+        "bytes": 52649,
+        "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+        "git_mode": "100644",
+        "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa"
+      },
+      "scripts/p8_rollback.py": {
+        "bytes": 38818,
+        "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+        "git_mode": "100644",
+        "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+      },
+      "scripts/p8_runtime.py": {
+        "bytes": 58896,
+        "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "git_mode": "100644",
+        "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+      },
+      "scripts/p8_runtime_build.py": {
+        "bytes": 18068,
+        "git_blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+        "git_mode": "100644",
+        "sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db"
+      },
+      "scripts/resource_harness/__init__.py": {
+        "bytes": 74,
+        "git_blob": "2371ef6525a9815cf327d95d7f8aca1455257e8d",
+        "git_mode": "100644",
+        "sha256": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36"
+      },
+      "scripts/resource_harness/runtime.py": {
+        "bytes": 11117,
+        "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+        "git_mode": "100644",
+        "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+      }
+    },
+    "manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+    "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777"
+  },
+  "original_complete_integrity_result_sha256": "e0fd0ad1c5c07819e7cc08db26a2acd380fb2d71518047cdbffaf9492337b97e",
+  "original_task_records": [
+    {
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "depends_on": [
+        "P8-006"
+      ],
+      "id": "P8-007",
+      "status": "in_progress",
+      "title": "多并发与混合负载",
+      "validations": [
+        "V11",
+        "V20"
+      ]
+    },
+    {
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "depends_on": [
+        "P8-009"
+      ],
+      "id": "P8-010",
+      "status": "in_progress",
+      "title": "长时soak与连续修改",
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ]
+    }
+  ],
+  "original_toolchain": {
+    "cargo": {
+      "command": [
+        "/home/runner/.cargo/bin/cargo",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/home/runner/.cargo/bin/rustup",
+      "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+      "invocation": "/home/runner/.cargo/bin/cargo",
+      "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+    },
+    "rustc": {
+      "command": [
+        "/home/runner/.cargo/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "executable": "/home/runner/.cargo/bin/rustup",
+      "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+      "invocation": "/home/runner/.cargo/bin/rustc",
+      "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2"
+    }
+  },
+  "retained_runtime_binaries": {
+    "codecortex": {
+      "bytes": 27080376,
+      "fresh": false,
+      "original_cargo_path": "/home/runner/work/_temp/p8-runtime-target/release/codecortex",
+      "original_cargo_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a"
+    },
+    "p8-oracle": {
+      "bytes": 2964184,
+      "fresh": false,
+      "original_cargo_path": "/home/runner/work/_temp/p8-runtime-target/release/p8-oracle",
+      "original_cargo_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e"
+    },
+    "p8-runtime-statistics": {
+      "bytes": 974880,
+      "fresh": false,
+      "original_cargo_path": "/home/runner/work/_temp/p8-runtime-target/release/p8-runtime-statistics",
+      "original_cargo_profile": {
+        "debug_assertions": false,
+        "debuginfo": 0,
+        "opt_level": "3",
+        "overflow_checks": false,
+        "test": false
+      },
+      "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+    }
+  },
+  "selected_original_protocol_and_verifier_files": [
+    {
+      "bytes": 5782,
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "path": ".github/workflows/p8-runtime.yml",
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/.github/workflows/p8-runtime.yml"
+    },
+    {
+      "bytes": 802282,
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/docs/roadmap/code-index-v2/tasks.json"
+    },
+    {
+      "bytes": 17027,
+      "git_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+    },
+    {
+      "bytes": 1882,
+      "git_blob": "269116e2247e88e2ca3590f95fc4a039532cfc0a",
+      "path": "crates/cc-eval/src/bin/p8-oracle.rs",
+      "sha256": "135962540116e01d47db3a34daa9bfebe2117d25773a888b6b36fde85dabdd8e",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/src/bin/p8-oracle.rs"
+    },
+    {
+      "bytes": 12903,
+      "git_blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/src/benchmark/statistics.rs"
+    },
+    {
+      "bytes": 8780,
+      "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/src/benchmark/oracle.rs"
+    },
+    {
+      "bytes": 29842,
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/src/benchmark/oracle/streaming.rs"
+    },
+    {
+      "bytes": 23104,
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/crates/cc-eval/tests/p7_worker_contention.rs"
+    },
+    {
+      "bytes": 5940,
+      "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "path": "scripts/p7_build_identity.py",
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p7_build_identity.py"
+    },
+    {
+      "bytes": 9147,
+      "git_blob": "2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e",
+      "path": "scripts/p7_stdio_build_receipt.py",
+      "sha256": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p7_stdio_build_receipt.py"
+    },
+    {
+      "bytes": 8799,
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "path": "scripts/p8_backfill.py",
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_backfill.py"
+    },
+    {
+      "bytes": 52649,
+      "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "path": "scripts/p8_cold_build.py",
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_cold_build.py"
+    },
+    {
+      "bytes": 38818,
+      "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+      "path": "scripts/p8_rollback.py",
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_rollback.py"
+    },
+    {
+      "bytes": 58896,
+      "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "path": "scripts/p8_runtime.py",
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_runtime.py"
+    },
+    {
+      "bytes": 18068,
+      "git_blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+      "path": "scripts/p8_runtime_build.py",
+      "sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/p8_runtime_build.py"
+    },
+    {
+      "bytes": 74,
+      "git_blob": "2371ef6525a9815cf327d95d7f8aca1455257e8d",
+      "path": "scripts/resource_harness/__init__.py",
+      "sha256": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/resource_harness/__init__.py"
+    },
+    {
+      "bytes": 11117,
+      "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+      "path": "scripts/resource_harness/runtime.py",
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/scripts/resource_harness/runtime.py"
+    },
+    {
+      "bytes": 14819,
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    {
+      "bytes": 20488,
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    }
+  ],
+  "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+  "source_url": "https://github.com/jyqj/codecortex/tree/275e8799d4947d297329073eaa3ca675d3fd0777"
+}

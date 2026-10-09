@@ -1,0 +1,2097 @@
+{
+  "additional_retained_queue_counter_review": {
+    "file": "queue-review.json",
+    "native_status_observations": 10193,
+    "scope": "all original retained status observations; no continuous occupancy/transient-peak claim",
+    "sha256": "335fc311a291d7fcdf2bb335bdf8c80e5af27d08f83e82881eafe5e7569fe32c",
+    "status": "passed"
+  },
+  "artifact_manifest": "artifact-manifest.json",
+  "cross_source_certification": false,
+  "final_original_seals_and_zip_bytes_unchanged": true,
+  "finished_at": "2026-10-09T08:23:17.179133+00:00",
+  "full_task_complete": false,
+  "no_certification_of_pr181_or_later_candidate": true,
+  "offline_verifier_receipts": "replay-receipts.json",
+  "original_raw_review_report_sha256": "b158ceaf4131bf0e4b649faf583df2e0873d5f055eef37a415fd48ff6b85548e",
+  "original_runtime_run_id": 37890757030,
+  "original_runtime_run_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030",
+  "original_scope_acceptance": {
+    "P8-007": {
+      "covered": [
+        "mixed C1/C4/C8/C16 original 900 offered per cell",
+        "actual held fake-backfill with seeds 7/19/43 and original per-cell N32",
+        "original descriptive all-attempt latency/quantile owner replay"
+      ],
+      "independent_raw_subacceptance": "passed",
+      "unsatisfied_dependency": "P8-006, transitively P8-005",
+      "whole_task_status": "in_progress"
+    },
+    "P8-010": {
+      "covered": [
+        "original one-hour workload and all 3601 offered operations",
+        "actual branch/catalog/cache/resource coverage",
+        "complete unrepaired fifteen-table endpoint parity"
+      ],
+      "independent_raw_subacceptance": "passed",
+      "unsatisfied_dependency": "P8-009/P8-008/P8-007/P8-006/P8-005",
+      "whole_task_status": "in_progress"
+    }
+  },
+  "original_validator_sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+  "release_certified": false,
+  "remaining_original_todos": 29,
+  "results": [
+    {
+      "branch_commits": {
+        "p8-a": "c38b7363083369d4314915a50a5be94809dbc1f7",
+        "p8-b": "15c28e68fb4043af051c8fe1e272fbac2ea2f76d"
+      },
+      "configured_concurrency": 1,
+      "endpoint_fixture_files_equal": true,
+      "endpoint_fixture_inventory_sha256": "dc685ec3ecb18d63d9ef84a36e975234347c55e88afad81bbe692d6ee0bf2044",
+      "full_control_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 4,
+        "events": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "be98a16edc2647acb13bde301d855ebdcae897fdcd308b9d35f41c599f019341",
+        "original_wire_hashes_verified": true,
+        "requests": 4,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 710405354120
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 710405428734
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/fresh-full"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 1,
+            "name": "search"
+          }
+        ]
+      },
+      "full_task_complete": false,
+      "incremental_product_has_only_initial_full_index_and_planned_incrementals": true,
+      "interval_corroboration": {
+        "maximum_call_to_finish_intervals": 1,
+        "read_build_interval_overlap": false,
+        "scope": "call-start through final validation; upper bound on the narrower driver active-call counter"
+      },
+      "key": "c1",
+      "latency": {
+        "maximum_ns": 63935235,
+        "n": 900,
+        "p50_ns": 650747,
+        "p95_ns": 42251953,
+        "p99_ns": 54015954,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "build": {
+          "maximum_ns": 63935235,
+          "n": 300,
+          "p50_ns": 10743315,
+          "p95_ns": 53097743,
+          "p99_ns": 56249852,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "read": {
+          "maximum_ns": 3115899,
+          "n": 600,
+          "p50_ns": 594343,
+          "p95_ns": 1072786,
+          "p99_ns": 1420229,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "mutation_counts": {
+        "add": 50,
+        "bounded_symbol_churn": 50,
+        "delete": 50,
+        "real_git_branch_switch": 50,
+        "rename": 50,
+        "restore_api": 50
+      },
+      "no_late_catchup_index_in_original_rpc": true,
+      "observed_catalog_compactions": 6,
+      "offered": 900,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "original_hashes": {
+        "parity.json": "733d07c185fa08424a1d087879e1f59a260e8c45d5c44cd1dd317dbd289ecf4a",
+        "plan.json": "24606a5b439a384bca3e06fe17932dcd65582849391995aab07b7f19fa83ff3c",
+        "raw.jsonl": "93c997ab1c831c21733db15677cfd267f99885ce0b3149eafbe2b1fedbc609ff",
+        "report.json": "5e326f7325f0528ee0c61e39218ca79484f709cb359758fdfaaf3244482b976a",
+        "seal.json": "028add8c4eca9fbc9ae32ceba26babe8aef3b30d55956c16cbfcf2dfa34384ca",
+        "statistics.json": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9"
+      },
+      "original_observed_work_ns": 449502370493,
+      "outcomes": {
+        "success": 900
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 10420,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8526,
+          "tool_count": 14
+        }
+      },
+      "product_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 1355,
+        "events": {
+          "notification": 1,
+          "request": 1355,
+          "response": 1355,
+          "rpc_send": 1355,
+          "stdout_wire": 1355,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "4dac2fc9525ea922848ee6a340ac10f32aab4c7ef1d6acaa482564dda397e094",
+        "original_wire_hashes_verified": true,
+        "requests": 1355,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 710429180367
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 710429236663
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": false,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 300,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 601,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "aspect": "index"
+            },
+            "n": 451,
+            "name": "status"
+          }
+        ]
+      },
+      "raw_kind_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 900,
+        "oracle_process": 1,
+        "resources": 450
+      },
+      "raw_last_finished_minus_first_scheduled_ns": 449501616548,
+      "raw_last_operation_finished_ns": 450065443405,
+      "real_branch_switches": 50,
+      "release_certified": false,
+      "reported_active_client_concurrency": {
+        "build": 0,
+        "maximum": 1,
+        "read": 0,
+        "read_build_overlap": false
+      },
+      "resource_time_coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 563760582,
+        "last_ns": 449962922215,
+        "maximum_gap_ns": 1014625037,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 450,
+        "passed": true,
+        "work_end_ns": 450066197951,
+        "work_start_ns": 563826857
+      },
+      "rss": {
+        "allowed_bytes": 124106752,
+        "observed": 450,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 82939904,
+        "status": "observed",
+        "tail_median_bytes": 80273408,
+        "warmed_median_bytes": 72441856
+      },
+      "status": "passed",
+      "work_start_ns": 563826857
+    },
+    {
+      "branch_commits": {
+        "p8-a": "1e93bc9cc294720ccd1096be3a8389672fff824b",
+        "p8-b": "554452ccfd902b8fcfa6677dc3b8e6a27e880955"
+      },
+      "configured_concurrency": 4,
+      "endpoint_fixture_files_equal": true,
+      "endpoint_fixture_inventory_sha256": "dc685ec3ecb18d63d9ef84a36e975234347c55e88afad81bbe692d6ee0bf2044",
+      "full_control_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 4,
+        "events": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "e566bebe8252e58d34b905a4773116b1c8e34c6c363e567bf5458d915069ba83",
+        "original_wire_hashes_verified": true,
+        "requests": 4,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 841551356324
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 841551451577
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/fresh-full"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 1,
+            "name": "search"
+          }
+        ]
+      },
+      "full_task_complete": false,
+      "incremental_product_has_only_initial_full_index_and_planned_incrementals": true,
+      "interval_corroboration": {
+        "maximum_call_to_finish_intervals": 4,
+        "read_build_interval_overlap": true,
+        "scope": "call-start through final validation; upper bound on the narrower driver active-call counter"
+      },
+      "key": "c4",
+      "latency": {
+        "maximum_ns": 111147882,
+        "n": 900,
+        "p50_ns": 2063358,
+        "p95_ns": 57117507,
+        "p99_ns": 66060605,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "build": {
+          "maximum_ns": 111147882,
+          "n": 300,
+          "p50_ns": 25489984,
+          "p95_ns": 64373798,
+          "p99_ns": 71587159,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "read": {
+          "maximum_ns": 5494498,
+          "n": 600,
+          "p50_ns": 1836906,
+          "p95_ns": 3537783,
+          "p99_ns": 4841815,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "mutation_counts": {
+        "add": 50,
+        "bounded_symbol_churn": 50,
+        "delete": 50,
+        "real_git_branch_switch": 50,
+        "rename": 50,
+        "restore_api": 50
+      },
+      "no_late_catchup_index_in_original_rpc": true,
+      "observed_catalog_compactions": 6,
+      "offered": 900,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "original_hashes": {
+        "parity.json": "5a2801418a7cb9ffd768e04450787628aef75a9610877862362442c95638f596",
+        "plan.json": "7bc6bc21a322564a324be5034bba3a10de49f637f6317b514166453ac06613f0",
+        "raw.jsonl": "0e8512c1dbd4a31f4b833031af32333d5b72e2dd9f5e7846e86c9707dac9a0e4",
+        "report.json": "5bcc5e99b6bbbb76d2263b2db6066f9fb1ee2ce5d7dcd23db1d78ef739ae5b31",
+        "seal.json": "95be7e98ba007649a7ac4b42f0193773d2cd21214c2874ad2225b63f9db8a559",
+        "statistics.json": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c"
+      },
+      "original_observed_work_ns": 448012394598,
+      "outcomes": {
+        "success": 900
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 10445,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8579,
+          "tool_count": 14
+        }
+      },
+      "product_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 1353,
+        "events": {
+          "notification": 1,
+          "request": 1353,
+          "response": 1353,
+          "rpc_send": 1353,
+          "stdout_wire": 1353,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "7dbdd97e860ffc0858a606dbe154ae9d3be160f7aae612ff13810e427c77463a",
+        "original_wire_hashes_verified": true,
+        "requests": 1353,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 841578225071
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 841578324143
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": false,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 300,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 601,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "aspect": "index"
+            },
+            "n": 449,
+            "name": "status"
+          }
+        ]
+      },
+      "raw_kind_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 900,
+        "oracle_process": 1,
+        "resources": 448
+      },
+      "raw_last_finished_minus_first_scheduled_ns": 448011298049,
+      "raw_last_operation_finished_ns": 448611881204,
+      "real_branch_switches": 50,
+      "release_certified": false,
+      "reported_active_client_concurrency": {
+        "build": 0,
+        "maximum": 4,
+        "read": 0,
+        "read_build_overlap": true
+      },
+      "resource_time_coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 600522915,
+        "last_ns": 448213252478,
+        "maximum_gap_ns": 1018524858,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 448,
+        "passed": true,
+        "work_end_ns": 448612978484,
+        "work_start_ns": 600583155
+      },
+      "rss": {
+        "allowed_bytes": 156700672,
+        "observed": 448,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 111951872,
+        "status": "observed",
+        "tail_median_bytes": 110657536,
+        "warmed_median_bytes": 98516992
+      },
+      "status": "passed",
+      "work_start_ns": 600583155
+    },
+    {
+      "branch_commits": {
+        "p8-a": "4233d28e21c725b81d5180853ddaccecf4e725b9",
+        "p8-b": "c07b2edaf1a84b2619ab944ae0e7345499ba7a78"
+      },
+      "configured_concurrency": 8,
+      "endpoint_fixture_files_equal": true,
+      "endpoint_fixture_inventory_sha256": "dc685ec3ecb18d63d9ef84a36e975234347c55e88afad81bbe692d6ee0bf2044",
+      "full_control_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 4,
+        "events": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "f92e279f2ade99ddff939dea8b8e010870100b6af8f3ee6f22ae6c1972a43a1a",
+        "original_wire_hashes_verified": true,
+        "requests": 4,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 801731377118
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 801731486634
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/fresh-full"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 1,
+            "name": "search"
+          }
+        ]
+      },
+      "full_task_complete": false,
+      "incremental_product_has_only_initial_full_index_and_planned_incrementals": true,
+      "interval_corroboration": {
+        "maximum_call_to_finish_intervals": 7,
+        "read_build_interval_overlap": true,
+        "scope": "call-start through final validation; upper bound on the narrower driver active-call counter"
+      },
+      "key": "c8",
+      "latency": {
+        "maximum_ns": 108127475,
+        "n": 900,
+        "p50_ns": 4320830,
+        "p95_ns": 72796833,
+        "p99_ns": 103135519,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "build": {
+          "maximum_ns": 108127475,
+          "n": 300,
+          "p50_ns": 50689166,
+          "p95_ns": 89010902,
+          "p99_ns": 106327278,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "read": {
+          "maximum_ns": 6522519,
+          "n": 600,
+          "p50_ns": 3643518,
+          "p95_ns": 5916204,
+          "p99_ns": 6318359,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "mutation_counts": {
+        "add": 50,
+        "bounded_symbol_churn": 50,
+        "delete": 50,
+        "real_git_branch_switch": 50,
+        "rename": 50,
+        "restore_api": 50
+      },
+      "no_late_catchup_index_in_original_rpc": true,
+      "observed_catalog_compactions": 6,
+      "offered": 900,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "original_hashes": {
+        "parity.json": "a0f5f5da3954f9effe31e1a9d018eb4ff7b3a83891fcc45eab8b4e48fe6f0c97",
+        "plan.json": "e3320206152997fb20f179aa02db210eb92219073201318fddda98d69c4f6e4c",
+        "raw.jsonl": "b2c7d7b303e52cd2fc81578c47eec83f792ee07d34212e87f4eee8382feeae05",
+        "report.json": "2d73e6ed3f5ce0e124ad3f7b3a647dee5fd994a44312be18fe1db16a8375bddd",
+        "seal.json": "117aa437334dfee2481ddeb6a665e690535147e6f198d3c509c459ffeb379eae",
+        "statistics.json": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a"
+      },
+      "original_observed_work_ns": 448015606240,
+      "outcomes": {
+        "success": 900
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 10609,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8734,
+          "tool_count": 14
+        }
+      },
+      "product_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 1353,
+        "events": {
+          "notification": 1,
+          "request": 1353,
+          "response": 1353,
+          "rpc_send": 1353,
+          "stdout_wire": 1353,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "89e712cc56f13112e28a4cd5bca6fc1a1b369e38453de5b065a76ab2ba70bbc9",
+        "original_wire_hashes_verified": true,
+        "requests": 1353,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 801764374076
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 801764484289
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": false,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 300,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 601,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "aspect": "index"
+            },
+            "n": 449,
+            "name": "status"
+          }
+        ]
+      },
+      "raw_kind_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 900,
+        "oracle_process": 1,
+        "resources": 448
+      },
+      "raw_last_finished_minus_first_scheduled_ns": 448014046026,
+      "raw_last_operation_finished_ns": 448786899456,
+      "real_branch_switches": 50,
+      "release_certified": false,
+      "reported_active_client_concurrency": {
+        "build": 0,
+        "maximum": 7,
+        "read": 0,
+        "read_build_overlap": true
+      },
+      "resource_time_coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 772752734,
+        "last_ns": 448559324112,
+        "maximum_gap_ns": 1017793827,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 448,
+        "passed": true,
+        "work_end_ns": 448788460411,
+        "work_start_ns": 772853430
+      },
+      "rss": {
+        "allowed_bytes": 180503552,
+        "observed": 448,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 128376832,
+        "status": "observed",
+        "tail_median_bytes": 125890560,
+        "warmed_median_bytes": 117559296
+      },
+      "status": "passed",
+      "work_start_ns": 772853430
+    },
+    {
+      "branch_commits": {
+        "p8-a": "27c81a283600133914ecf1e9f96e42521faba412",
+        "p8-b": "1cab47e4dd2ba3797ce22507710489a7406fea5a"
+      },
+      "configured_concurrency": 16,
+      "endpoint_fixture_files_equal": true,
+      "endpoint_fixture_inventory_sha256": "dc685ec3ecb18d63d9ef84a36e975234347c55e88afad81bbe692d6ee0bf2044",
+      "full_control_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 4,
+        "events": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "b25eea10f345a7537380dfc98c1352dbb5fede160ed9823238c4544c3ec6b7ad",
+        "original_wire_hashes_verified": true,
+        "requests": 4,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 798031699546
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 798031799478
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/fresh-full"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 1,
+            "name": "search"
+          }
+        ]
+      },
+      "full_task_complete": false,
+      "incremental_product_has_only_initial_full_index_and_planned_incrementals": true,
+      "interval_corroboration": {
+        "maximum_call_to_finish_intervals": 12,
+        "read_build_interval_overlap": true,
+        "scope": "call-start through final validation; upper bound on the narrower driver active-call counter"
+      },
+      "key": "c16",
+      "latency": {
+        "maximum_ns": 167705107,
+        "n": 900,
+        "p50_ns": 7084398,
+        "p95_ns": 135087225,
+        "p99_ns": 150179098,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "build": {
+          "maximum_ns": 167705107,
+          "n": 300,
+          "p50_ns": 82256311,
+          "p95_ns": 147184946,
+          "p99_ns": 156021472,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "read": {
+          "maximum_ns": 10153059,
+          "n": 600,
+          "p50_ns": 6038116,
+          "p95_ns": 8596906,
+          "p99_ns": 9658522,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "mutation_counts": {
+        "add": 50,
+        "bounded_symbol_churn": 50,
+        "delete": 50,
+        "real_git_branch_switch": 50,
+        "rename": 50,
+        "restore_api": 50
+      },
+      "no_late_catchup_index_in_original_rpc": true,
+      "observed_catalog_compactions": 6,
+      "offered": 900,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "original_hashes": {
+        "parity.json": "f1941aa5beae0fe6cc4182023b115cd889902364e7987d45206f251962bd6b1e",
+        "plan.json": "0ecfaf7cdfd7718a0779747c9f2d215d5a1f4f7ce1d6bd1e4fbbf28a4ac83914",
+        "raw.jsonl": "49a8aa9de6eb39ae7c12c4e6d7cf482c251de7954edfddc0f47711683d90e3e6",
+        "report.json": "745d5c0900a35f0c61722c921719c31782c962373a7cfda9f80ac2d6403b79cb",
+        "seal.json": "4c84e26f703109d3f49c7b0bb269c86e301423306c1c1137a4ffd4f924273e5e",
+        "statistics.json": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1"
+      },
+      "original_observed_work_ns": 448014323441,
+      "outcomes": {
+        "success": 900
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 10666,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8800,
+          "tool_count": 14
+        }
+      },
+      "product_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 1353,
+        "events": {
+          "notification": 1,
+          "request": 1353,
+          "response": 1353,
+          "rpc_send": 1353,
+          "stdout_wire": 1353,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "5f0d35a09f4d786aee4fd64faf7384b738df9ccb06c5b9ebb48d63ece0b0e4bb",
+        "original_wire_hashes_verified": true,
+        "requests": 1353,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 798065501918
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 798065625132
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": false,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 300,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 601,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "aspect": "index"
+            },
+            "n": 449,
+            "name": "status"
+          }
+        ]
+      },
+      "raw_kind_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 900,
+        "oracle_process": 1,
+        "resources": 448
+      },
+      "raw_last_finished_minus_first_scheduled_ns": 448012719977,
+      "raw_last_operation_finished_ns": 448818753454,
+      "real_branch_switches": 50,
+      "release_certified": false,
+      "reported_active_client_concurrency": {
+        "build": 0,
+        "maximum": 12,
+        "read": 0,
+        "read_build_overlap": true
+      },
+      "resource_time_coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 805902906,
+        "last_ns": 448623382101,
+        "maximum_gap_ns": 1011863118,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 448,
+        "passed": true,
+        "work_end_ns": 448820357729,
+        "work_start_ns": 806033477
+      },
+      "rss": {
+        "allowed_bytes": 179080192,
+        "observed": 448,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 126361600,
+        "status": "observed",
+        "tail_median_bytes": 123080704,
+        "warmed_median_bytes": 116420608
+      },
+      "status": "passed",
+      "work_start_ns": 806033477
+    },
+    {
+      "branch_commits": {
+        "p8-a": "aad68e5853628ab7cb84863a107873f3959284b0",
+        "p8-b": "2f672b9eceb32e0bfb47de506376ebbf27374b2f"
+      },
+      "cache_reuse": {
+        "comparison_scope": "not directly comparable to the previous symbol-only read protocol",
+        "denominator": "one offered compound read; symbol+hybrid+two status RPCs and all their time/failures included; no extra latency samples",
+        "errors": [],
+        "expected_offered_reads": 2400,
+        "expected_requests_per_role": 2400,
+        "isolation": "soak read/build share original write admission lock; wait remains measured; mixed unchanged",
+        "observed": {
+          "hit": 1400,
+          "invalidations": 999,
+          "miss": 1000
+        },
+        "passed": true,
+        "preceding_mutation_coverage": {
+          "add": 400,
+          "bounded_symbol_churn": 400,
+          "delete": 400,
+          "real_git_branch_switch": 400,
+          "rename": 400,
+          "restore_api": 400
+        },
+        "protocol": "symbol_plus_local_hybrid_cache_v1",
+        "quarter_mutation_scope": "successful completed builds; every failure remains in original outcomes/statistics",
+        "quarter_time_basis": "actual hybrid RPC completion and actual mutation operation completion; never offered time",
+        "recorded_offered_reads": 2400,
+        "request_counts": {
+          "after_status": {
+            "success": 2400
+          },
+          "before_status": {
+            "success": 2400
+          },
+          "hybrid": {
+            "success": 2400
+          },
+          "symbol": {
+            "success": 2400
+          }
+        },
+        "status_request_counts": {
+          "success": 4800
+        },
+        "temporal_cache_coverage": true,
+        "time_quarters": [
+          {
+            "hits": 350,
+            "invalidations": 249,
+            "misses": 250,
+            "mutations": {
+              "add": 50,
+              "bounded_symbol_churn": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "rename": 50,
+              "restore_api": 50
+            },
+            "reads": 600
+          },
+          {
+            "hits": 350,
+            "invalidations": 250,
+            "misses": 250,
+            "mutations": {
+              "add": 50,
+              "bounded_symbol_churn": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "rename": 50,
+              "restore_api": 50
+            },
+            "reads": 600
+          },
+          {
+            "hits": 350,
+            "invalidations": 250,
+            "misses": 250,
+            "mutations": {
+              "add": 50,
+              "bounded_symbol_churn": 51,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "rename": 50,
+              "restore_api": 50
+            },
+            "reads": 600
+          },
+          {
+            "hits": 350,
+            "invalidations": 250,
+            "misses": 250,
+            "mutations": {
+              "add": 50,
+              "bounded_symbol_churn": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "rename": 50,
+              "restore_api": 50
+            },
+            "reads": 600
+          }
+        ],
+        "validated_reads": 2400
+      },
+      "configured_concurrency": 4,
+      "endpoint_fixture_files_equal": true,
+      "endpoint_fixture_inventory_sha256": "29f6e8668fbbd1726eeb4d1906eb9a6c79fbb546052843905ca6df1a5345ace0",
+      "full_control_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 4,
+        "events": {
+          "notification": 1,
+          "request": 4,
+          "response": 4,
+          "rpc_send": 4,
+          "stdout_wire": 4,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "96ea9ebe6810ca9d53d4a37902bc0e74752b25a68291538d586e01c504c256d4",
+        "original_wire_hashes_verified": true,
+        "requests": 4,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 3966888405254
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 3966888488373
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/fresh-full"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 1,
+            "name": "search"
+          }
+        ]
+      },
+      "full_task_complete": false,
+      "incremental_product_has_only_initial_full_index_and_planned_incrementals": true,
+      "interval_corroboration": {
+        "maximum_call_to_finish_intervals": 1,
+        "read_build_interval_overlap": false,
+        "scope": "call-start through final validation; upper bound on the narrower driver active-call counter"
+      },
+      "key": "soak",
+      "latency": {
+        "maximum_ns": 148043795,
+        "n": 3601,
+        "p50_ns": 11355811,
+        "p95_ns": 57134246,
+        "p99_ns": 59770707,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "build": {
+          "maximum_ns": 69852844,
+          "n": 1201,
+          "p50_ns": 16169004,
+          "p95_ns": 59066579,
+          "p99_ns": 60412149,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "read": {
+          "maximum_ns": 148043795,
+          "n": 2400,
+          "p50_ns": 7083284,
+          "p95_ns": 11916615,
+          "p99_ns": 12482669,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "mutation_counts": {
+        "add": 200,
+        "bounded_symbol_churn": 201,
+        "delete": 200,
+        "real_git_branch_switch": 200,
+        "rename": 200,
+        "restore_api": 200
+      },
+      "no_late_catchup_index_in_original_rpc": true,
+      "observed_catalog_compactions": 25,
+      "offered": 3601,
+      "operations": {
+        "build": 1201,
+        "read": 2400
+      },
+      "original_hashes": {
+        "parity.json": "ec82193f934fdc882bb24c01b28c277cea0cb140c6ec31d7cfaf151905ea2094",
+        "plan.json": "df8583f7bf3707778d7fa3059ca8bd0463bb62f6729c60883514d8628dfae33d",
+        "raw.jsonl": "609575c8b83d40cb7326574a31c815745d4c8c32c2c22d74d31dd0ef6aea59f4",
+        "report.json": "2d719db9585ebe86dee75f0a31f9fb39dc9b80d5112ebbbef2d20cf6496181d7",
+        "seal.json": "3c6f268de16b8ecdc0d5177120649c140efbdf88890ce09e726c0ab9fcfdc7be",
+        "statistics.json": "2e7b356c831989b1bee66b6dfd0453e44f88b46278bda59667cbe9dab9170c53"
+      },
+      "original_observed_work_ns": 3600053700026,
+      "outcomes": {
+        "success": 3601
+      },
+      "processes": {
+        "full-product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/fresh-full"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/full-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 22004,
+          "tool_count": 14
+        },
+        "product": {
+          "binary_sha256": "a5a39c7ee84f436b8f838424cded4909f5047eaf89e5cf2b9ebea890aa75767a",
+          "cleanup": "completed",
+          "command": [
+            "/home/runner/work/_temp/p8-build/codecortex",
+            "mcp",
+            "--project-path",
+            "/home/runner/work/_temp/p8-runtime/project"
+          ],
+          "environment": {
+            "CODECORTEX_PPID_POLL_MS": "0",
+            "CODECORTEX_SEMANTIC_CACHE_ROOT": "/home/runner/work/_temp/p8-runtime/semantic-cache",
+            "RAYON_NUM_THREADS": "2",
+            "TOKIO_WORKER_THREADS": "2"
+          },
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "initialized": true,
+          "pid": 8808,
+          "tool_count": 14
+        }
+      },
+      "product_rpc": {
+        "attribution_limit": "raw operation rows omit RPC IDs; exact response multiset corroboration, not an individual ID assignment for identical responses or separated backend queue/service timing",
+        "delivered_responses": 14400,
+        "events": {
+          "notification": 1,
+          "request": 14400,
+          "response": 14400,
+          "rpc_send": 14400,
+          "stdout_wire": 14400,
+          "terminal": 2
+        },
+        "every_request_id_closed": true,
+        "original_rpc_file_sha256": "57ed7478cd6b6be320acc482af1b0d9f866da423e89d22a93d98babadd66c5b9",
+        "original_wire_hashes_verified": true,
+        "requests": 14400,
+        "status": "passed",
+        "structured_response_and_status_projection_multisets_equal": true,
+        "terminal_events": [
+          {
+            "event": "terminal",
+            "kind": "stdout_eof",
+            "reason": "",
+            "time_ns": 3966929618059
+          },
+          {
+            "event": "terminal",
+            "exit_code": 0,
+            "kind": "process_exit",
+            "reason": "",
+            "time_ns": 3966929738705
+          }
+        ],
+        "tool_requests": [
+          {
+            "arguments": {
+              "full": false,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1201,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "full": true,
+              "path": "/home/runner/work/_temp/p8-runtime/project"
+            },
+            "n": 1,
+            "name": "index"
+          },
+          {
+            "arguments": {
+              "mode": "hybrid",
+              "query": "p8_runtime_stable_signal",
+              "retrieval_strategy": "local",
+              "top_k": 1
+            },
+            "n": 2400,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "mode": "symbol",
+              "query": "p8_runtime_stable_signal",
+              "top_k": 5
+            },
+            "n": 2401,
+            "name": "search"
+          },
+          {
+            "arguments": {
+              "aspect": "index"
+            },
+            "n": 8395,
+            "name": "status"
+          }
+        ]
+      },
+      "raw_kind_counts": {
+        "endpoint_public": 1,
+        "endpoint_status": 1,
+        "full_control": 1,
+        "initial_build": 1,
+        "operation": 3601,
+        "oracle_process": 1,
+        "resources": 3594
+      },
+      "raw_last_finished_minus_first_scheduled_ns": 3600045218965,
+      "raw_last_operation_finished_ns": 3600781415145,
+      "real_branch_switches": 200,
+      "release_certified": false,
+      "reported_active_client_concurrency": {
+        "build": 0,
+        "maximum": 1,
+        "read": 0,
+        "read_build_overlap": false
+      },
+      "resource_time_coverage": {
+        "allowed_maximum_gap_ns": 5000000000,
+        "first_ns": 736099674,
+        "last_ns": 3600313104126,
+        "maximum_gap_ns": 1025965648,
+        "method": "monotonic sample starts including work start and end gaps",
+        "observed_samples": 3594,
+        "passed": true,
+        "work_end_ns": 3600789897518,
+        "work_start_ns": 736196180
+      },
+      "rss": {
+        "allowed_bytes": 175020032,
+        "observed": 3594,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB",
+        "sampled_peak_bytes": 148467712,
+        "status": "observed",
+        "tail_median_bytes": 143433728,
+        "warmed_median_bytes": 113172480
+      },
+      "status": "passed",
+      "work_start_ns": 736196180
+    },
+    {
+      "full_task_complete": false,
+      "key": "backfill",
+      "nonduplicated_evidence_limit": "provider/queue unchanged after held queries and stale-symbol deletion are assertions in the fixed source executed by the retained passing binary; no separately retained held-after queue snapshot or final database is invented",
+      "original_stdout_sha256": "3ac532ae70108fb737da10c2a36d37f251c5a4f3abb2d70cc8134dbbbc809c3f",
+      "original_test_exit_code": 0,
+      "performance_scope": "descriptive all 32 samples per phase/concurrency/seed; fixed progress watchdogs, no new SLA/confidence interval or certified tail stability",
+      "scope": "actual post-index worker with held in-process synthetic provider; original selected test not rerun",
+      "seeds": [
+        {
+          "db_availability": {
+            "generation_after": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                92,
+                42,
+                73,
+                55,
+                92,
+                163,
+                210,
+                224,
+                177,
+                20,
+                148,
+                11,
+                103,
+                87,
+                93,
+                115
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_before": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                92,
+                42,
+                73,
+                55,
+                92,
+                163,
+                210,
+                224,
+                177,
+                20,
+                148,
+                11,
+                103,
+                87,
+                93,
+                115
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_unchanged": true,
+            "read_rows": 26,
+            "read_statement_us": 9,
+            "single_read_pool_checkout_us": 2,
+            "writer_acquire_and_rollback_us": 23,
+            "writer_busy_timeout_ms": 100
+          },
+          "fixed_cells": [
+            {
+              "concurrency": 1,
+              "max_us": 4750,
+              "n": 32,
+              "p50_us": 732,
+              "p95_us": 772,
+              "p99_us": 4750,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2622,
+              "n": 32,
+              "p50_us": 2138,
+              "p95_us": 2586,
+              "p99_us": 2622,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4333,
+              "n": 32,
+              "p50_us": 2749,
+              "p95_us": 4311,
+              "p99_us": 4333,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 7922,
+              "n": 32,
+              "p50_us": 5348,
+              "p95_us": 7814,
+              "p99_us": 7922,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 1,
+              "max_us": 3786,
+              "n": 32,
+              "p50_us": 746,
+              "p95_us": 780,
+              "p99_us": 3786,
+              "phase": "held"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2387,
+              "n": 32,
+              "p50_us": 2032,
+              "p95_us": 2271,
+              "p99_us": 2387,
+              "phase": "held"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4249,
+              "n": 32,
+              "p50_us": 2912,
+              "p95_us": 4240,
+              "p99_us": 4249,
+              "phase": "held"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 8687,
+              "n": 32,
+              "p50_us": 5033,
+              "p95_us": 8628,
+              "p99_us": 8687,
+              "phase": "held"
+            }
+          ],
+          "held_provider": {
+            "active": 4,
+            "entered": 30,
+            "fake_completed_calls": 26,
+            "held_inputs": [
+              "4b470a762927685db489daa61eabd912662e31403b14e804a23a22d3847afb18",
+              "86f7320d94296e72b029afc3e01fc12c02cb837cce511328baf5d32a824ee89c",
+              "a26d23b8f2d71c35901361b2ebb5a07261e4a7ca6804949494667531c366d3c0",
+              "a6b8673ed6fe085976363a31b9cb2fb555d6cb2cd8c568660598802f55bc30ff"
+            ],
+            "maximum_active": 4,
+            "waiting": 4
+          },
+          "held_queue": {
+            "attempt_count": 30,
+            "claimed": 4,
+            "pending": 20,
+            "published": 2,
+            "total": 50,
+            "uncovered": 24
+          },
+          "native_shared_owner_pid": 7818,
+          "new_provider_calls": 25,
+          "old_held_input_publications": 0,
+          "queue_final": {
+            "attempt_count": 55,
+            "claimed": 0,
+            "pending": 0,
+            "published": 25,
+            "total": 77,
+            "uncovered": 0
+          },
+          "recorded_requests": 256,
+          "resource_scope": "test_runner + CodeIndex + in-process fake_provider; no separate server/tree/external RSS",
+          "retained_raw_sha256": {
+            "held-before.json": "61c1a0f6a9923f64634f341dfed09b60519da15477d4f4be4df2399b9a045516",
+            "held-requests.json": "0a1d6d402da5a09504add0a8186856bf7fcd4f29d03960d753ede3316e9eb7b3",
+            "protocol.json": "a3de66acf1fb71a5752d2638255d35586a9b10db05d18c741ce5fadcc5cd932d",
+            "quiet-requests.json": "ef830db1ce5769322b203fa8b0d713e8a8c41d62833b3085f6fed630be988fea",
+            "summary.json": "aef38339e7b52218734771270689910d8c4a313688e94b886f7187bfcea7c9d0"
+          },
+          "seed": 7,
+          "status": "passed"
+        },
+        {
+          "db_availability": {
+            "generation_after": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                195,
+                214,
+                8,
+                156,
+                202,
+                155,
+                25,
+                39,
+                220,
+                210,
+                42,
+                225,
+                142,
+                160,
+                73,
+                91
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_before": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                195,
+                214,
+                8,
+                156,
+                202,
+                155,
+                25,
+                39,
+                220,
+                210,
+                42,
+                225,
+                142,
+                160,
+                73,
+                91
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_unchanged": true,
+            "read_rows": 26,
+            "read_statement_us": 10,
+            "single_read_pool_checkout_us": 3,
+            "writer_acquire_and_rollback_us": 23,
+            "writer_busy_timeout_ms": 100
+          },
+          "fixed_cells": [
+            {
+              "concurrency": 1,
+              "max_us": 4121,
+              "n": 32,
+              "p50_us": 754,
+              "p95_us": 828,
+              "p99_us": 4121,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2302,
+              "n": 32,
+              "p50_us": 2020,
+              "p95_us": 2298,
+              "p99_us": 2302,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4288,
+              "n": 32,
+              "p50_us": 2986,
+              "p95_us": 4269,
+              "p99_us": 4288,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 8451,
+              "n": 32,
+              "p50_us": 4961,
+              "p95_us": 8259,
+              "p99_us": 8451,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 1,
+              "max_us": 3782,
+              "n": 32,
+              "p50_us": 759,
+              "p95_us": 823,
+              "p99_us": 3782,
+              "phase": "held"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2414,
+              "n": 32,
+              "p50_us": 2061,
+              "p95_us": 2307,
+              "p99_us": 2414,
+              "phase": "held"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4385,
+              "n": 32,
+              "p50_us": 3274,
+              "p95_us": 4252,
+              "p99_us": 4385,
+              "phase": "held"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 8265,
+              "n": 32,
+              "p50_us": 5305,
+              "p95_us": 8257,
+              "p99_us": 8265,
+              "phase": "held"
+            }
+          ],
+          "held_provider": {
+            "active": 4,
+            "entered": 30,
+            "fake_completed_calls": 26,
+            "held_inputs": [
+              "30672cad2901d85a6203fb9de27e3bb45e4ac74039b34c6993da24215e1587c1",
+              "57314510815de5a5397dd6b281df17ef1c638cfea8c01c3b358be337560955ec",
+              "83701533f517c1b5e73265bd069bff47d68d7077a986ffdf8c653c1d7abbac0a",
+              "f6fa67c124547554d1c82bad25a43ce812eb5af76ce5b314278a7404ce716758"
+            ],
+            "maximum_active": 4,
+            "waiting": 4
+          },
+          "held_queue": {
+            "attempt_count": 30,
+            "claimed": 4,
+            "pending": 20,
+            "published": 2,
+            "total": 50,
+            "uncovered": 24
+          },
+          "native_shared_owner_pid": 7818,
+          "new_provider_calls": 25,
+          "old_held_input_publications": 0,
+          "queue_final": {
+            "attempt_count": 55,
+            "claimed": 0,
+            "pending": 0,
+            "published": 25,
+            "total": 77,
+            "uncovered": 0
+          },
+          "recorded_requests": 256,
+          "resource_scope": "test_runner + CodeIndex + in-process fake_provider; no separate server/tree/external RSS",
+          "retained_raw_sha256": {
+            "held-before.json": "47958752912e5b365a52d7bdd61a514b2a7ae886c488a5858040bf4053efb8cf",
+            "held-requests.json": "a4db7e799d26563b64909461f0cca8b247d6404478c869b6c9a895069da0669f",
+            "protocol.json": "014bf83940459a19bd1336208611acd359a2b510c6750f5a92a272ddeda85c16",
+            "quiet-requests.json": "024b4ddb9e77e7efe93815cbce0962204de98cf0bbedce4031041da0d19c16d9",
+            "summary.json": "e9905f9dbbe99b42c49e2f2777b576658267c1d122b7cf31cb4de26ac093b8ad"
+          },
+          "seed": 19,
+          "status": "passed"
+        },
+        {
+          "db_availability": {
+            "generation_after": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                158,
+                31,
+                91,
+                28,
+                22,
+                23,
+                107,
+                197,
+                201,
+                87,
+                31,
+                52,
+                200,
+                80,
+                199,
+                15
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_before": {
+              "evidence_epoch": 1,
+              "incarnation": [
+                158,
+                31,
+                91,
+                28,
+                22,
+                23,
+                107,
+                197,
+                201,
+                87,
+                31,
+                52,
+                200,
+                80,
+                199,
+                15
+              ],
+              "index_epoch": 10,
+              "semantic_epoch": 28
+            },
+            "generation_unchanged": true,
+            "read_rows": 26,
+            "read_statement_us": 11,
+            "single_read_pool_checkout_us": 3,
+            "writer_acquire_and_rollback_us": 27,
+            "writer_busy_timeout_ms": 100
+          },
+          "fixed_cells": [
+            {
+              "concurrency": 1,
+              "max_us": 3975,
+              "n": 32,
+              "p50_us": 749,
+              "p95_us": 805,
+              "p99_us": 3975,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2577,
+              "n": 32,
+              "p50_us": 2061,
+              "p95_us": 2540,
+              "p99_us": 2577,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4469,
+              "n": 32,
+              "p50_us": 2902,
+              "p95_us": 4317,
+              "p99_us": 4469,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 8275,
+              "n": 32,
+              "p50_us": 5025,
+              "p95_us": 8229,
+              "p99_us": 8275,
+              "phase": "quiet"
+            },
+            {
+              "concurrency": 1,
+              "max_us": 3796,
+              "n": 32,
+              "p50_us": 726,
+              "p95_us": 833,
+              "p99_us": 3796,
+              "phase": "held"
+            },
+            {
+              "concurrency": 4,
+              "max_us": 2299,
+              "n": 32,
+              "p50_us": 2024,
+              "p95_us": 2220,
+              "p99_us": 2299,
+              "phase": "held"
+            },
+            {
+              "concurrency": 8,
+              "max_us": 4384,
+              "n": 32,
+              "p50_us": 2900,
+              "p95_us": 4352,
+              "p99_us": 4384,
+              "phase": "held"
+            },
+            {
+              "concurrency": 16,
+              "max_us": 8313,
+              "n": 32,
+              "p50_us": 4838,
+              "p95_us": 8267,
+              "p99_us": 8313,
+              "phase": "held"
+            }
+          ],
+          "held_provider": {
+            "active": 4,
+            "entered": 30,
+            "fake_completed_calls": 26,
+            "held_inputs": [
+              "2cb04a508812586511cd501c93b45012e284f4bb2db3019d9a269a540892b265",
+              "c5583d6743f612bb907aa6015523d564ac49f752c5689c8378c9f0a9fd38e9a9",
+              "cb7600c503c4a97c487c004dfcc3e43ba10da2b2d018a7ded7010e66568781c7",
+              "da3dfa5a35dc39ed00aab66fce6bc11a367f73944dd4e5b619544537b2e502ac"
+            ],
+            "maximum_active": 4,
+            "waiting": 4
+          },
+          "held_queue": {
+            "attempt_count": 30,
+            "claimed": 4,
+            "pending": 20,
+            "published": 2,
+            "total": 50,
+            "uncovered": 24
+          },
+          "native_shared_owner_pid": 7818,
+          "new_provider_calls": 25,
+          "old_held_input_publications": 0,
+          "queue_final": {
+            "attempt_count": 55,
+            "claimed": 0,
+            "pending": 0,
+            "published": 25,
+            "total": 77,
+            "uncovered": 0
+          },
+          "recorded_requests": 256,
+          "resource_scope": "test_runner + CodeIndex + in-process fake_provider; no separate server/tree/external RSS",
+          "retained_raw_sha256": {
+            "held-before.json": "5f07e41afa98a31f22c3c8461cb39e53b558a5a5d98fe128cd9c11348b57ee54",
+            "held-requests.json": "c98e0039919b0fc1e4aa7c7a3aecd46d1442b7f13eae0c97d5080cc5c142c4cf",
+            "protocol.json": "90238547fa07046d635cd6d58dfb45821362f20a593e0cce597bd835bca30ebb",
+            "quiet-requests.json": "02b81ddae63d1e2a4f426d021673718f36752bcf78e5ec4603e87b37d5be7d8d",
+            "summary.json": "c8e81e757f4725f132ca85757b4de3215b4ec0cfb8060c009f88b1765ce48ca7"
+          },
+          "seed": 43,
+          "status": "passed"
+        }
+      ],
+      "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "status": "passed",
+      "total_original_requests": 768
+    }
+  ],
+  "review_limits": [
+    "No full TODO closure or release certificate: P8-005 scale acceptance and downstream dependency chain remain open.",
+    "Original default runtime disables semantic provider; backfill is a separately identified in-process fake-provider control. No live-provider gate is added.",
+    "Configured C8/C16 observed maximum active client calls 7/12; no claim of 8/16 simultaneously active calls, backend thread identity, separated queue/service timing or certified stable tails.",
+    "Soak C4 retains original shared write-admission lock and observed client maximum 1; its compound-read timing is not directly comparable to symbol-only mixed reads.",
+    "Backfill held-after provider/queue invariance and stale-symbol checks are executed source assertions backed by original successful selected-test output; no separately retained final database is invented.",
+    "No study/workload/product build was rerun. Original stats and read-only oracle binaries were copied and replayed only against retained originals or database copies."
+  ],
+  "reviewer_script_sha256": "914d885e476092d66ca55a447f5ea5d84f2af26fcccf7d23a79473b3cace545e",
+  "schema_version": 1,
+  "scope": "offline retained evidence corroboration; no new product/build/index/workload execution",
+  "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_manifest": "source-manifest.json",
+  "started_at": "2026-10-09T08:22:37.859955+00:00",
+  "status": "passed"
+}

@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "task": "P8-013",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "status": "accepted_original_tests_and_offline_controls_under_separate_criteria",
+  "run_id": 37890756917,
+  "job_id": 113690916001,
+  "artifact_id": 11598517678,
+  "original_zip_sha256": "f2fddad2d95b53731862b87a80fbeb6dacca5da46ceb3e00f0ecebe04d1d173b",
+  "original_six_exact_tests": [
+    {
+      "test_name": "unmeasurable_latency_cannot_pass_comparison",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "3268e68d41a11590415e4dfe89c9b906b61aa211d3273eafdc098e97a81e976b",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    },
+    {
+      "test_name": "zero_measurement_gate_is_invalid",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "9744b51fb5ce56be8115c8444162d3c8f7df7a8bad374b6ca2acebc2b0f17fdf",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    },
+    {
+      "test_name": "cli_quality_and_latency_failures_are_nonzero_and_keep_raw",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "be24112ac842c65d90faa64bcf5d65f75c45b78fb685fec8f5da76336cb1d67b",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    },
+    {
+      "test_name": "cli_inconclusive_is_nonzero",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "3b531516190eaece55de4b7e89a9441cb8b308d02f762cb87abbfd2ed22300e1",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    },
+    {
+      "test_name": "cli_lock_failure_preserves_machine_readable_failure_and_raw",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "a4c59f82aa92f3f4907f68d3139b7a1c94ae1b82ebd10d052956a1b52c8c1376",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    },
+    {
+      "test_name": "cli_bad_policy_is_recorded_without_overwriting_existing_report",
+      "package": "cc-eval",
+      "target": "benchmark_cli",
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "retained_binary_sha256": "cc35fac827f58f3124d3779e1a29efce2dc6cd9c69ba0b6e058b562b0bdb6c45",
+      "original_execution_stdout_sha256": "c77caa8afef2e5e888f413d3e149df33a4973b398cefc2e67af90129b48ebbb4",
+      "original_passed": 1,
+      "original_failed": 0,
+      "original_ignored": 0
+    }
+  ],
+  "original_test_counts": {
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  },
+  "original_test_report_sha256": "6e66bf55404399bbe06e6fb5449f12d756d931d48263421be0772d759e8085ba",
+  "offline_cli_sha256": "733ad2468a8340ade05d718fcec5764ba4947d13be89e49a6126158827337d56",
+  "actual_offline_invocations": 7,
+  "original_comparison_reports_cross_checked": 5,
+  "byte_identical_reports": 3,
+  "path_only_different_reports": 2,
+  "controls": [
+    {
+      "control": "zero_latency",
+      "actual_process_exit_code": 1,
+      "report_status": "inconclusive",
+      "report_exit_code": 1,
+      "reasons": [],
+      "p95_ratio": null,
+      "baseline_samples": 30,
+      "candidate_samples": 30,
+      "output_sha256": "e4b10415f9b0b53ba465fb6da6f6a3aa7319dbaf5ebb109fc13b42ce65115f1a",
+      "original_report": null,
+      "comparison_criterion": "Additional offline CLI control: original case-00 retained zero-latency fixture plus the same fixed-source policy retained by case-02. Expected inconclusive and OS/report exit 1; no original CLI comparison report exists."
+    },
+    {
+      "control": "quality",
+      "actual_process_exit_code": 1,
+      "report_status": "failed",
+      "report_exit_code": 1,
+      "reasons": [
+        "Top-1 regression",
+        "nDCG regression"
+      ],
+      "p95_ratio": 1.0,
+      "baseline_samples": 30,
+      "candidate_samples": 30,
+      "output_sha256": "3eb616998568a4b54efe4d6d6cbf401c60b4ed02d19780a1bd0d1f99e586d6a2",
+      "original_report": {
+        "artifact_relative_path": "case-02/retained-fixtures/cli_quality_and_latency_failures_are_nonzero_and_keep_raw-1l5lK5/quality-comparison.json",
+        "sha256": "3eb616998568a4b54efe4d6d6cbf401c60b4ed02d19780a1bd0d1f99e586d6a2"
+      },
+      "changed_json_fields": [],
+      "comparison_criterion": "Original and offline comparison-report bytes are identical."
+    },
+    {
+      "control": "latency",
+      "actual_process_exit_code": 1,
+      "report_status": "failed",
+      "report_exit_code": 1,
+      "reasons": [
+        "p95 regression"
+      ],
+      "p95_ratio": 10.0,
+      "baseline_samples": 30,
+      "candidate_samples": 30,
+      "output_sha256": "e4e06446ee049ad6f32da94ef4cec7a9caa20389a6e33c51acd3ee88f6e8b1ec",
+      "original_report": {
+        "artifact_relative_path": "case-02/retained-fixtures/cli_quality_and_latency_failures_are_nonzero_and_keep_raw-1l5lK5/latency-comparison.json",
+        "sha256": "e4e06446ee049ad6f32da94ef4cec7a9caa20389a6e33c51acd3ee88f6e8b1ec"
+      },
+      "changed_json_fields": [],
+      "comparison_criterion": "Original and offline comparison-report bytes are identical."
+    },
+    {
+      "control": "inconclusive",
+      "actual_process_exit_code": 1,
+      "report_status": "inconclusive",
+      "report_exit_code": 1,
+      "reasons": [],
+      "p95_ratio": 1.0,
+      "baseline_samples": 2,
+      "candidate_samples": 2,
+      "output_sha256": "a0bba99b39f560b5f12385f8a6566cbadf0d88ade2e717c0cf0e160781eba549",
+      "original_report": {
+        "artifact_relative_path": "case-03/retained-fixtures/cli_inconclusive_is_nonzero-vU02kJ/comparison.json",
+        "sha256": "a0bba99b39f560b5f12385f8a6566cbadf0d88ade2e717c0cf0e160781eba549"
+      },
+      "changed_json_fields": [],
+      "comparison_criterion": "Original and offline comparison-report bytes are identical."
+    },
+    {
+      "control": "raw_lock_drift",
+      "actual_process_exit_code": 2,
+      "report_status": "invalid_measurement",
+      "report_exit_code": 2,
+      "reasons": [
+        "invalid benchmark input: raw response drift"
+      ],
+      "p95_ratio": null,
+      "baseline_samples": null,
+      "candidate_samples": null,
+      "output_sha256": "64a3225a442c22febd176533d27196254f9b08aeca72b297eaeadc73e347396f",
+      "original_report": {
+        "artifact_relative_path": "case-04/retained-fixtures/cli_lock_failure_preserves_machine_readable_failure_and_raw-qCcmpZ/comparison.json",
+        "sha256": "a2f43034c9ccc9644cacbd99da55d4134dcad61def696a63227a1654a23c5837"
+      },
+      "changed_json_fields": [
+        "baseline",
+        "candidate",
+        "policy_path"
+      ],
+      "comparison_criterion": "Status, exit code, reasons and all non-path fields are identical; only baseline, candidate and policy_path reflect the copied fixture locations. Reports are not byte-identical."
+    },
+    {
+      "control": "bad_policy",
+      "actual_process_exit_code": 2,
+      "report_status": "invalid_measurement",
+      "report_exit_code": 2,
+      "reasons": [
+        "JSON: expected value at line 1 column 1"
+      ],
+      "p95_ratio": null,
+      "baseline_samples": null,
+      "candidate_samples": null,
+      "output_sha256": "4f2bd6652f39af3fb39cf60bd622aec1bba934ea0afb14075c4ca185d3ffdf9f",
+      "original_report": {
+        "artifact_relative_path": "case-05/retained-fixtures/cli_bad_policy_is_recorded_without_overwriting_existing_report-7hV8qq/comparison.json",
+        "sha256": "edccc35b110e2a1ca281525326d5a07cec65fed1ff6a99b0f6306d3ae9799224"
+      },
+      "changed_json_fields": [
+        "baseline",
+        "candidate",
+        "policy_path"
+      ],
+      "comparison_criterion": "Status, exit code, reasons and all non-path fields are identical; only baseline, candidate and policy_path reflect the copied fixture locations. Reports are not byte-identical."
+    },
+    {
+      "control": "output_overwrite_refused",
+      "actual_process_exit_code": 2,
+      "output_unchanged": true,
+      "preserved_output_sha256": "4f2bd6652f39af3fb39cf60bd622aec1bba934ea0afb14075c4ca185d3ffdf9f",
+      "original_report": null,
+      "comparison_criterion": "Second offline invocation refuses to overwrite the existing bad-policy output, exits 2, and preserves its exact pre-invocation bytes. It creates no seventh comparison report. Original source-bound exact test also exercises overwrite rejection."
+    }
+  ],
+  "zero_plan_in_memory_only": "Original fixed-source exact test zero_measurement_gate_is_invalid passed once and asserted invalid_measurement/exit 2; no new product/test execution is claimed for that in-memory-only case.",
+  "original_run_vs_offline_scope": "The original six exact tests, five existing comparison reports, extra offline zero-latency compare and overwrite-refusal invocation are distinct evidence. No absent original report is treated as an original run result.",
+  "raw_preservation": {
+    "original_all_bytes_unchanged": true,
+    "copied_raw_inputs_unchanged": true
+  },
+  "scope": "Replay the original retained deterministic CLI gate fixtures with the original hash-verified cc-eval comparison executable. No indexing, retrieval measurement, external provider, compilation or new workflow.",
+  "full_offline_review_sha256": "5bd8b4863ebde2b6efef2206c3a4180f2f8c43aae8ddbcf14e29fa5abbc76193",
+  "task_done": false,
+  "open_dependencies": [
+    "P8-012"
+  ],
+  "TODO_closed": 0,
+  "TODO_remaining": 29,
+  "cross_source_certification": false
+}

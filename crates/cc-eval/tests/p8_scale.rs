@@ -3,7 +3,8 @@
 use cc_eval::benchmark::{
     mutation_case,
     p8_scale::{
-        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope, RELEASE_SCALES,
+        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope,
+        RELEASE_SCALES,
     },
 };
 use serde_json::{json, Value};

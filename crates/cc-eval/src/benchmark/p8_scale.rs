@@ -289,9 +289,8 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
     // The supervisor owns all fixture directories, including those allocated
     // by the existing mutation runner; a deadline cannot orphan 100k trees.
     let workspace = tempfile::tempdir()?;
-    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1)).then(|| {
-        json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()})
-    });
+    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1))
+        .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
     let mut command = Command::new(binary);
     command
         .arg("--worker-plan")
@@ -1126,8 +1125,7 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
             "whole_fanout_fixture_replay_us":distribution(&samples,"fanout_replay_wall_us"),
             "first_build_incomplete_samples":samples.iter().filter(|s|s["first_build_incomplete"]==true).count()})
     }).collect();
-    let mut summary =
-        json!({"schema_version":1,"passed":passed,"sample_count":summaries.len(),"groups":groups,"raw_bytes":raw.written,
+    let mut summary = json!({"schema_version":1,"passed":passed,"sample_count":summaries.len(),"groups":groups,"raw_bytes":raw.written,
         "release_certification":"not_run","full_100k_certification":"not_run","prerequisite_gates":"not_evaluated",
         "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "not_selected_scales":RELEASE_SCALES.iter().filter(|n|!plan.files.contains(n)).collect::<Vec<_>>(),

@@ -99,13 +99,11 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     assert_eq!(report["equal"], true);
     for name in oracle::tables() {
         let row = table(&report, name);
-        let witnessed = table(&same_source, name);
-        assert_eq!(row["equal_input_order_witness"], false);
-        assert_eq!(witnessed["equal_input_order_witness"], true);
-        assert_eq!(witnessed["incremental_rows"], row["incremental_rows"]);
-        assert_eq!(witnessed["full_rows"], row["incremental_rows"]);
-        assert_eq!(witnessed["incremental_digest"], row["incremental_digest"]);
-        assert_eq!(witnessed["full_digest"], row["incremental_digest"]);
+        let same_source_row = table(&same_source, name);
+        assert_eq!(same_source_row["incremental_rows"], row["incremental_rows"]);
+        assert_eq!(same_source_row["full_rows"], row["incremental_rows"]);
+        assert_eq!(same_source_row["incremental_digest"], row["incremental_digest"]);
+        assert_eq!(same_source_row["full_digest"], row["incremental_digest"]);
         assert_eq!(row["incremental_rows"], legacy_a[*name].len());
         assert_eq!(row["full_rows"], legacy_b[*name].len());
         assert_eq!(
@@ -187,16 +185,12 @@ fn preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests() {
     );
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], true);
-    assert_eq!(
-        table(&report, "symbols")["equal_input_order_witness"],
-        false
-    );
     assert_eq!(table(&report, "symbols")["incremental_digest"], ad);
     assert_eq!(table(&report, "symbols")["full_digest"], bd);
 }
 
 #[test]
-fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_path() {
+fn distinct_sql_types_and_column_layouts_keep_the_original_results() {
     use rusqlite::types::Value as SqlValue;
     for (av, bv) in [
         (SqlValue::Integer(1), SqlValue::Real(1.0)),
@@ -219,7 +213,6 @@ fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_pat
         let cb = oracle::canonical(b.path()).unwrap();
         let report = compare(a.path(), b.path());
         let row = table(&report, "symbols");
-        assert_eq!(row["equal_input_order_witness"], false);
         assert_eq!(row["equal"], ca["symbols"] == cb["symbols"]);
         assert_eq!(
             row["incremental_digest"],
@@ -252,7 +245,6 @@ fn input_witness_keeps_distinct_sql_types_and_column_layouts_on_the_original_pat
     assert_eq!(ca, cb);
     let report = compare(a.path(), b.path());
     let row = table(&report, "symbols");
-    assert_eq!(row["equal_input_order_witness"], false);
     assert_eq!(row["equal"], true);
     assert_eq!(
         row["incremental_digest"],
@@ -340,21 +332,16 @@ fn compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change() {
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], true);
     assert_eq!(table(&report, "symbols")["incremental_rows"], 100_002);
-    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], true);
     open(b.path())
         .execute("UPDATE symbols SET value=-1 WHERE name='symbol-100001'", [])
         .unwrap();
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], false);
     assert_eq!(table(&report, "symbols")["different_row_count"], 1);
-    assert_eq!(
-        table(&report, "symbols")["equal_input_order_witness"],
-        false
-    );
 }
 
 #[test]
-fn equal_sequence_witness_still_checks_the_second_input_budget_and_first_error() {
+fn second_input_budgets_and_first_error_remain_enforced() {
     let a = fixture();
     let b = fixture();
     for root in [a.path(), b.path()] {
@@ -388,7 +375,7 @@ fn equal_sequence_witness_still_checks_the_second_input_budget_and_first_error()
         .contains("row budget exceeded: symbols side 1"));
 
     // A's original spool must fail before B's different, oversized row is
-    // inspected. An attempted witness must not change this error precedence.
+    // inspected. The second spool must not change this error precedence.
     open(a.path())
         .execute_batch("INSERT INTO symbols(name,value) VALUES ('bad',CAST(x'80' AS TEXT));")
         .unwrap();
@@ -430,7 +417,6 @@ fn views_and_virtual_tables_keep_the_original_two_spool_comparison() {
         let report = compare(a.path(), b.path());
         let row = table(&report, "symbols");
         assert_eq!(report["equal"], true);
-        assert_eq!(row["equal_input_order_witness"], false);
         assert_eq!(
             row["full_digest"],
             manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
@@ -512,4 +498,72 @@ fn malformed_schema_utf8_and_foreign_keys_cannot_be_equal() {
             .to_string()
             .contains("table missing")
     );
+}
+
+#[test]
+fn equal_inputs_must_both_fit_the_original_scratch_limit() {
+    let a = fixture();
+    let b = fixture();
+    let empty = fixture();
+    for root in [a.path(), b.path()] {
+        let db = open(root);
+        for index in 0..7 {
+            db.execute(
+                "INSERT INTO symbols(name,value) VALUES (?1,?2)",
+                params![format!("row-{index}"), "x".repeat(4096)],
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(
+        oracle::canonical(a.path()).unwrap(),
+        oracle::canonical(b.path()).unwrap()
+    );
+    let limits = oracle::StreamingLimits {
+        max_scratch_bytes: 64 * 1024,
+        ..oracle::StreamingLimits::default()
+    };
+    // The same source A and same limits succeed when B contributes no rows.
+    // This prevents an A-side disk failure from satisfying the regression.
+    let one_side = oracle::compare_streaming(a.path(), empty.path(), limits).unwrap();
+    assert_eq!(one_side["equal"], false);
+    assert_eq!(table(&one_side, "symbols")["incremental_rows"], 7);
+    assert_eq!(table(&one_side, "symbols")["full_rows"], 0);
+    assert!(one_side["scratch_peak_bytes"].as_u64().unwrap() <= limits.max_scratch_bytes);
+
+    // Equality cannot waive B's real SQLite writes. At 4096-byte pages this
+    // two-sided row store exceeds 16 pages, although the first side fits.
+    // The former equal-input witness incorrectly returned success here.
+    let error = oracle::compare_streaming(a.path(), b.path(), limits).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "protocol/infrastructure error: oracle DB: database or disk is full"
+    );
+    assert_eq!(compare(a.path(), b.path())["equal"], true);
+}
+
+#[test]
+fn public_table_json_retains_the_original_field_set() {
+    let a = fixture();
+    let report = compare(a.path(), a.path());
+    let expected = std::collections::BTreeSet::from([
+        "table",
+        "equal",
+        "incremental_rows",
+        "full_rows",
+        "incremental_digest",
+        "full_digest",
+        "different_row_count",
+        "difference_alignment",
+        "different_row_examples",
+    ]);
+    for row in report["tables"].as_array().unwrap() {
+        let keys = row
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(keys, expected);
+    }
 }

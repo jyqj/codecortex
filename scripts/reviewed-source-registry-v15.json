@@ -24,10 +24,10 @@
     "crates/cc-db/src/index_db_rebuild.rs": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b",
     "crates/cc-db/src/index_db_rebuild_fault_tests.rs": "31f4b60a574b14d2b29ca2a5aa71bb4641a96ea6d801d4de7e9990fee2841165",
     "crates/cc-db/src/index_db_retrieval.rs": "cb7363bd3a93a4e613c6eba6bce9129de6304e4a9cb7d98c9c67698e7b84aa19",
-    "crates/cc-db/src/index_db_snapshot_insert.rs": "a461358a0a6b9cdfa058e2c45a4582e0033599c8d8b586256e358b10a9e2548b",
+    "crates/cc-db/src/index_db_snapshot_insert.rs": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
     "crates/cc-db/src/index_db_tests.rs": "b20e04ef98ab3a778e4ef909045a8934aa185a894a606ca0cbd5a1819c6684f3",
     "crates/cc-db/src/index_db_types.rs": "f1b1b499879d721e6024b40e28050f705b74b2d13afdda98f55b8bc2c6591d67",
-    "crates/cc-db/src/index_db_write_batch.rs": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569",
+    "crates/cc-db/src/index_db_write_batch.rs": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
     "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
     "crates/cc-db/src/lib.rs": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f",
     "crates/cc-db/src/public_surface_store.rs": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5",
@@ -45,7 +45,8 @@
     "crates/cc-db/src/semantic_recovery.rs": "979eeb707c123e0874a9018e40b84b0be517339ed798395c8f857a720ac0579e",
     "crates/cc-db/src/semantic_space_switch.rs": "d0e18001df11af72e59eb3ca2d4501f458a1f45040b76fbea9756df2676d64d4",
     "crates/cc-db/src/signature_agg.rs": "a931651405dace905001548167c05336e798fbcdcd6009a3db51d6a60ab275c0",
-    "crates/cc-db/src/snapshot_write_txn.rs": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
+    "crates/cc-db/src/snapshot_fts_tests.rs": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+    "crates/cc-db/src/snapshot_write_txn.rs": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
     "crates/cc-db/src/sql/index_v1.sql": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
     "crates/cc-db/src/sql_util.rs": "762158a26d237b986b2b76a9bfd8edd895c5919e7e5c9ce491c003a9d62616c9",
     "crates/cc-db/src/statement_work.rs": "e32e6ce3e78cb78088b7aa126420d450db6cbbf37f624872c2663fa2ef2dbdfe",
@@ -725,7 +726,7 @@
     "crates/cc-index/src/indexer_phases/postprocess.rs": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
     "crates/cc-index/src/indexer_phases/reconcile.rs": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88",
     "crates/cc-index/src/indexer_phases/resolve.rs": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
-    "crates/cc-index/src/indexer_phases/snapshot.rs": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
+    "crates/cc-index/src/indexer_phases/snapshot.rs": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
     "crates/cc-index/src/indexer_phases/write.rs": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
     "crates/cc-index/src/infra_docker.rs": "fd1959e68ac71c87eb4359f80e573453a9078f53d29a56b60e75b2c47251d374",
     "crates/cc-index/src/infra_k8s.rs": "ffa65b589df021521c7b5cb9c3be6a45415912c4cb487c45bdba5801733b6a8f",
@@ -757,10 +758,10 @@
     "crates/cc-index/src/project_model/source_capture.rs": "9bfe28898deb745a5e2c9cd79aec3ec2daab46d4ffe3408ce633e9572888ba65",
     "crates/cc-index/src/project_model/typescript.rs": "c9665e4ce54499c65a4ad95b85dcad9df3d8ccd744926441891c19110346e22d",
     "crates/cc-index/src/resolver/cargo_workspace.rs": "cdf32bfc920e38fd1a5c6452c60e00c8777573d3279f9ce40b6c45d54002d9e6",
-    "crates/cc-index/src/resolver/catalog.rs": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1",
+    "crates/cc-index/src/resolver/catalog.rs": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be",
     "crates/cc-index/src/resolver/catalog_cache.rs": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a",
     "crates/cc-index/src/resolver/evidence.rs": "82054a03841eaac2c1a989eacc0d8b9c07f0d2bdb9f0d1c0a2e0c4d3f746d739",
-    "crates/cc-index/src/resolver/helpers.rs": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0",
+    "crates/cc-index/src/resolver/helpers.rs": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88",
     "crates/cc-index/src/resolver/mod.rs": "0e58207ee8c625512dec67cceea1b56761f6d9f9390060fef0357be4fde8f5c2",
     "crates/cc-index/src/resolver/p2b_tests.rs": "3c86027c83e9b5f28aac8f9e20aa6031421d52dcafd9b97ae726a97924dc9dd8",
     "crates/cc-index/src/resolver/resolve_core.rs": "eeb9676cddf1d9159511811106c61bd5c4ae5a8d7af0fc2d355243c19a5a09a8",
@@ -984,7 +985,7 @@
     "crates/cc-semantic/tests/artifact_cache.rs": "ee5de645dafd486ba5be8fe3cf0ce9621fae81afc056cd0000f6fe19e9c50518",
     "crates/cc-semantic/tests/attempt_lease_contract.rs": "58730a414bc5724879fab272ee2d59279e21830692bbda4b35d88d9f2ef5b121",
     "crates/cc-semantic/tests/bounded_parallel.rs": "a8a64072dd4328c0f061c2f2465c29465ca57a6bb6ebc1c831cd6939de928a7e",
-    "crates/cc-semantic/tests/crash_independent_review.rs": "fdc5291977db6bc05e1d380e9b24a4b1da92ce3afd5c9a042fabc38fc79d8aeb",
+    "crates/cc-semantic/tests/crash_independent_review.rs": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
     "crates/cc-semantic/tests/gc_concurrent_replacement.rs": "89419449ee27dd0373a8b14403dace732aeb2246a36dafba1c96793a03e6fc93",
     "crates/cc-semantic/tests/gc_unlink_accounting.rs": "8c5f84cd741349158d861f86d361e2ccdb019eb7fc54833921ffbb29fa567cf3",
     "crates/cc-semantic/tests/manifest_exact_integration.rs": "225965736937a01b54d464be0044247d74de2f2eb7ef009c4f61232b3dd92137",
@@ -1098,11 +1099,11 @@
     },
     "crates/cc-db/src/index_db_snapshot_insert.rs": {
       "before_sha256": null,
-      "sha256": "a461358a0a6b9cdfa058e2c45a4582e0033599c8d8b586256e358b10a9e2548b"
+      "sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b"
     },
     "crates/cc-db/src/index_db_write_batch.rs": {
       "before_sha256": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
-      "sha256": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569"
+      "sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c"
     },
     "crates/cc-db/src/index_migrate.rs": {
       "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
@@ -1120,9 +1121,13 @@
       "before_sha256": "f5fad6998e4ac37fc0ec20026d270615b006d1e4ca286db5ebdc6b9553bb59d4",
       "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"
     },
+    "crates/cc-db/src/snapshot_fts_tests.rs": {
+      "before_sha256": null,
+      "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d"
+    },
     "crates/cc-db/src/snapshot_write_txn.rs": {
       "before_sha256": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
-      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+      "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
     },
     "crates/cc-db/src/sql/index_v1.sql": {
       "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
@@ -1232,6 +1237,10 @@
       "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
       "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
     },
+    "crates/cc-index/src/indexer_phases/snapshot.rs": {
+      "before_sha256": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
+      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+    },
     "crates/cc-index/src/lib.rs": {
       "before_sha256": "9b55efd92672581ec0d7bf24bd2eca83d86d4da4d6b7e5ba526dd9949a39f731",
       "sha256": "1a6d8e4af4a745bf39dcc03b39c8aad805a620f6e70e96ef0a067354cc79035c"
@@ -1242,11 +1251,15 @@
     },
     "crates/cc-index/src/resolver/catalog.rs": {
       "before_sha256": "2dfc5ff05c972b824c1f7a467f0db99a19e70f2d333d623a2c6090402405aaf5",
-      "sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
+      "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be"
     },
     "crates/cc-index/src/resolver/catalog_cache.rs": {
       "before_sha256": "e60fd1f61ca5176813c6e5ff8c18c15f7f99d9b8dc6237b661dc6ef9d3425fb6",
       "sha256": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a"
+    },
+    "crates/cc-index/src/resolver/helpers.rs": {
+      "before_sha256": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0",
+      "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88"
     },
     "crates/cc-index/src/resource_accounting.rs": {
       "before_sha256": null,
@@ -1259,6 +1272,10 @@
     "crates/cc-index/tests/snapshot_leaf_batching.rs": {
       "before_sha256": null,
       "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
+    },
+    "crates/cc-semantic/tests/crash_independent_review.rs": {
+      "before_sha256": "fdc5291977db6bc05e1d380e9b24a4b1da92ce3afd5c9a042fabc38fc79d8aeb",
+      "sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545"
     },
     "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": {
       "before_sha256": "39b631321fde931c9ecd979beaf56e06fd41ee1b4a18b169171ce2cb14634751",
@@ -1274,9 +1291,9 @@
     }
   },
   "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "854df0d02b59d9f09408698bd77f68567bb1dce3",
-  "review_sha256": "95effeae8841662581c1ba5757296b6bb3783d7eba132f2afae4ed726c0d389a",
-  "review_source": "e5f056b995b7f592fd3de3a1b9d5ab6694f132aa",
+  "product_source": "86a6e8eb88ddc97ee50a534452839bea25d92d16",
+  "review_sha256": "919a2a92cf3163dc4d8658470c4df7c512f5c24358bdf122b4fa7c836abb9011",
+  "review_source": "cc73a151f7c1a47a3b05c3e49140d2e90771df46",
   "runtime_and_quality_claims": "require_separate_execution_evidence",
   "schema_version": 10,
   "scope": "independently_reviewed_source_and_validation_inputs",

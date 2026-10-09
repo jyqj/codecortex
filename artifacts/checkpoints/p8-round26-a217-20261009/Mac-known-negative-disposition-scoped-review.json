@@ -1,0 +1,209 @@
+{
+  "schema": "mac-supervision-known-negative-disposition-v1",
+  "created_at": "2026-10-09T09:19:55.586957+00:00",
+  "reviewer": "/root/pr_audit",
+  "assessment": "evidence_and_contract_review_only_no_native_execution",
+  "current_candidate": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "original_failed_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "old_negative_preserved": true,
+  "ledger": {
+    "done": 163,
+    "remaining": 29,
+    "formal_completion": false
+  },
+  "main_finding": "The observed failure is an unestablished success prerequisite of the original descendant fixture, not evidence that the product falsely passed a deadline or joined its descendant for 20 seconds. The precise cause of the prerequisite failure remains unmeasured.",
+  "original_exact_failure": {
+    "test": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+    "assertion_location": "crates/cc-eval/tests/p8_scale.rs:502",
+    "assertion": "report[exit_code] == 0",
+    "observed_exit_code": 3,
+    "status": "deadline_exceeded",
+    "isolated_wall_ms": 261,
+    "isolated_process_exit": 101,
+    "isolated_total_ns": 273636667,
+    "preceding_outer_two_second_assertion": "passed by control flow; panic is at the later exit-code assertion",
+    "stderr_complete": true,
+    "summary": null,
+    "worker_exit_code": null,
+    "persistent_observer_wall_ms": 263,
+    "persistent_observer_cleanup": {
+      "captured_at": "2026-10-09T04:49:16.390599+00:00",
+      "method": "Immediate after-call killpg(worker_pid,0) observation plus native ps PID/PPID/PGID snapshot. No diagnostic signal sent.",
+      "no_remaining_owned_sleep_proven_at_snapshot": true,
+      "owned_group_or_helper_rows": [],
+      "process_group_exists": false,
+      "ps_exit_code": 0,
+      "worker_pid": 83129
+    },
+    "does_not_establish": [
+      "The helper body completed before 250ms.",
+      "The parent observed a normal worker exit before 250ms.",
+      "A specific OS scheduling, spawn, process-group, quarantine or SDK cause.",
+      "A product guarantee that every newly written shell executable must start and exit successfully within 250ms."
+    ]
+  },
+  "original_contract": {
+    "helper_lines": "E tests/p8_scale.rs:484-488: specifically tests supervision, assumes a normally exiting worker and descendant retaining stderr.",
+    "timing_lines": "run_supervised:270 starts Instant before command.spawn;319 tests elapsed deadline before324 try_wait;327 sleeps10ms.",
+    "cleanup_lines": "332 closes owned process group;333-341 bounded stderr drain;373-385 cleanup and nonzero termination status;401 writes report before return.",
+    "limits": [
+      "The 261/263ms measured wall time includes polling and cleanup; it is not evidence of a <=250ms completion.",
+      "The original timeout produces a truthful nonzero result. No source or threshold has been changed by this review."
+    ]
+  },
+  "current_prepared_fixture": {
+    "location": "C tests/p8_scale.rs:492-518",
+    "one_time_precondition": "Same newly created helper is called once in separate readiness output, under an explicit 2000ms setup budget, through the same supervisor. No retry.",
+    "readiness_required_fields": [
+      "exit_code=0",
+      "worker_exit_code=0",
+      "summary.passed=true",
+      "stderr_complete=true",
+      "fixture_cleanup.error=null",
+      "release_certification=not_run"
+    ],
+    "failure_path": "preserves temp directory and panics rather than skipping or counting success",
+    "tested_operation": "subsequent separate run still includes spawn in original250ms supervisor deadline and retains original outer2s, exit0, stderr-complete and not_run assertions",
+    "product_run_supervised_entire_function_byte_identical_E": true,
+    "current_test_file_equals_archived_executed_Mac_source": true
+  },
+  "existing_Mac_prepared_actual_execution": {
+    "identity": "26768b5e38ed1784bf77a8c4fe57baf01a19c626 plus four recorded uncommitted source paths; not C3ff full-product execution",
+    "command": [
+      "cargo",
+      "test",
+      "--workspace"
+    ],
+    "exit_code": 0,
+    "source_before_equals_after": true,
+    "environment_overrides": {
+      "PATH": "/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin",
+      "RUSTUP_TOOLCHAIN": "1.95.0",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "original_stdout_sha256": "adbed4f790a00de6985eb22eaff4814756dd722af7e84e29701f697e8bfe249d",
+    "original_stderr_sha256": "51b7b6a89628b054869c5c05a1c79f332a409231b126a53ada9d7c185592cb87",
+    "actual_test_lines": [
+      {
+        "line": 1279,
+        "text": "test subprocess_descendant_cannot_hold_stderr_past_worker_deadline ... ok"
+      },
+      {
+        "line": 1282,
+        "text": "test subprocess_deadline_preserves_report_and_rejects_output_reuse ... ok"
+      }
+    ],
+    "scope": "Proves the identical prepared fixture and original timeout/reuse control on the recorded Mac execution source; does not relabel the old cold-helper failure or certify all current C product paths."
+  },
+  "hosted_diagnostic_boundary": {
+    "run_id": 37892853323,
+    "execution_head": "b17535f5e762bf8afbea9978ccf02f7070ba6940",
+    "target_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "runner_image": "macos-15-arm64/20260907.0337",
+    "artifact_id": 11599636755,
+    "existing_original_job_log_reviewed": true,
+    "raw_observer_timeline_reviewed_here": false,
+    "scope": "The preserved log shows normal diagnostic completion and artifact upload; it contains no raw spawn/first-poll timing values. Different hosted environment cannot prove the cause of the old local Mac26 failure."
+  },
+  "disposition_and_minimum_missing_observation": {
+    "permitted_current_disposition": "Treat the current change as an explicit fixture-precondition correction for the documented descendant-stderr scenario, supported by the recorded same-test-source Mac pass and unchanged real timeout negative control. Keep the original fresh-helper101 result and cold-start limitation visible; require the already-running current C relevant regressions for current combined-product claims. This is not a claim that old cold startup was fixed.",
+    "remaining_causal_observation_if_requested": "One trace of the unprepared exact old helper on the failing environment, retaining the original250ms policy, with parent monotonic spawn-before/spawn-returned/first-poll/last-running/exit-observed/deadline-observed timestamps; a body/summary marker may distinguish an unobserved-exit boundary. The existing recorded aggregate report cannot distinguish spawn startup from scheduling or deadline-before-try_wait ordering.",
+    "not_a_new_acceptance_gate": "No eight-platform workspace matrix, repeated cold experiment, platform exclusion, live test or altered timeout is introduced by this review. Exact causal diagnosis is required only for a claim about the old cold cause/fix, not fabricated from the current prepared pass."
+  },
+  "bindings": [
+    {
+      "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+      "bytes": 19815,
+      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "git_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+    },
+    {
+      "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+      "bytes": 46139,
+      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "git_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+      "bytes": 46137,
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+    },
+    {
+      "commit": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+      "git_blob": "2acbce4b608e251192bbc24bebf8f79ee82917ee",
+      "bytes": 1253,
+      "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b"
+    },
+    {
+      "commit": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/execution-receipt.json",
+      "git_blob": "de67c26083a4d86c26268f2257538a31b0db8f61",
+      "bytes": 1273,
+      "sha256": "86aea9a64753f4f179800a8f09d0ae0a4dac68dc7395d7041449b51c214f4d16"
+    },
+    {
+      "commit": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/run/report.json",
+      "git_blob": "c3a33169eb730bb0c0ba94236b2ed0163053f901",
+      "bytes": 1101,
+      "sha256": "388b2dca682ace62c9204477d5171b66c77aeb16e76f00e58351f1e264b33ea2"
+    },
+    {
+      "commit": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/execution-receipt.json",
+      "git_blob": "c20f049184b7101c28e4737856190e459465b105",
+      "bytes": 6000,
+      "sha256": "8fc2c130e9f121839c7d090492b47bb39c7cbc393629ecfe8336ecf52bed75cf"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.json",
+      "git_blob": "e49cb359ca912321386a5d66c06ea7e98281541b",
+      "bytes": 4356,
+      "sha256": "b3afc954d44a7b9ea4fb5fcfb7ef16e5a83f1c071cf0b0a59699b989ff15f06b"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.stdout",
+      "git_blob": "e83e617042b941836583360d82523cc91c4da97d",
+      "bytes": 237923,
+      "sha256": "adbed4f790a00de6985eb22eaff4814756dd722af7e84e29701f697e8bfe249d"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.stderr",
+      "git_blob": "d7f625f1ca5a858437e57d506a619e9e6210da12",
+      "bytes": 141638,
+      "sha256": "51b7b6a89628b054869c5c05a1c79f332a409231b126a53ada9d7c185592cb87"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source-files/crates/cc-eval/tests/p8_scale.rs",
+      "git_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+    },
+    {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "path": "artifacts/checkpoints/p8-round23-a217-20261009/mac-diagnostic/diagnostic.log",
+      "git_blob": "875f87c2122d0e4c322b0760eb002362c714c633",
+      "bytes": 98406,
+      "sha256": "d4961e62baa59634156ff8fdb3cfcb589ddb5778a7693f26eaf6c7f9fa1774e9"
+    }
+  ],
+  "work_performed": "Read fixed Git source, existing small receipts and existing complete preserved logs; checked hashes and same-source test/supervisor equality. No compilation, native subprocess test, new workflow, retry or remote mutation."
+}

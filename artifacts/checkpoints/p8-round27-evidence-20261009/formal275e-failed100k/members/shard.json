@@ -1,0 +1,169 @@
+{
+  "binary_blake3": "667c53bcae6ea302f98b310ee7d98b0b62abf029bbbe980b9dd7eec960a06d81",
+  "binary_sha256": "1cee91b943fe0b787e2767112872e93a6991281790c626bb46a23b07d21ba394",
+  "build_receipt_sha256": "dbfbe43fca5197853dcda87df3f3ed9b367fdf495ff9652dd0fdda13b177acd2",
+  "capacity_contract": {
+    "deadline_ms": 18000000,
+    "disk_requirement_scope": "preregistered capacity estimate, not an observed peak or sufficiency proof",
+    "environment_policy": "heterogeneous_stratified_coverage_v1",
+    "fanout_dirty_budget": 8,
+    "fanout_max_resume_builds": 128,
+    "id": "scale_capacity_v1",
+    "max_output_bytes": 536870912,
+    "minimum_free_bytes_per_file": 262144,
+    "minimum_free_fixed_bytes": 4294967296,
+    "one_repetition_per_shard": true,
+    "oracle_limits": {
+      "max_canonical_bytes": 17179869184,
+      "max_row_bytes": 1048576,
+      "max_rows_per_table": 5000000,
+      "max_scratch_bytes": 8589934592
+    },
+    "scale_dirty_budget": 200,
+    "scale_max_resume_builds": 1024,
+    "sorting_cache_kib": 2048,
+    "storage_layout": "without_rowid_value_ordinal_v1"
+  },
+  "command": [
+    "/home/runner/work/_temp/p8-scale-build/p8-scale",
+    "--profile",
+    "release",
+    "--files",
+    "100000",
+    "--seed",
+    "12648430",
+    "--repetitions",
+    "30",
+    "--shard-index",
+    "0",
+    "--shard-count",
+    "30",
+    "--dirty-budget",
+    "200",
+    "--max-resume-builds",
+    "1024",
+    "--batch-sizes",
+    "1,10,100,1000",
+    "--fanouts",
+    "1,4,16,64,128",
+    "--deadline-ms",
+    "18000000",
+    "--max-output-bytes",
+    "536870912",
+    "--output",
+    "/home/runner/work/_temp/p8-scale-shard-100000-0/native",
+    "--skip-fanout",
+    "--capacity-profile",
+    "scale_capacity_v1"
+  ],
+  "driver_source": {
+    "inputs": {
+      "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    "manifest_sha256": "f1ccf6b374eea2366e4d5828137fd18c94fbacab4c85294c5a6d3b9e4867d2ee",
+    "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777"
+  },
+  "environment": {
+    "cpu_count": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "host": "runnervmmprz5",
+    "machine": "x86_64",
+    "release": "6.17.0-1022-azure",
+    "rustflags": "",
+    "system": "Linux"
+  },
+  "error": "native shard failed",
+  "exit_code": 3,
+  "files": {
+    "disk-after.json": {
+      "bytes": 354,
+      "sha256": "ec3fc115fc41d31265a08a1ca53337641d8e16877bd06078192c13cbdd7cd496"
+    },
+    "disk-preflight.json": {
+      "bytes": 354,
+      "sha256": "27f6bf5312e58adcd1cef8d165b6d7e99e90a0c96b263851ae14e871a66ec84b"
+    },
+    "native/plan.json": {
+      "bytes": 463,
+      "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801"
+    },
+    "native/raw.jsonl": {
+      "bytes": 20144696,
+      "sha256": "a733872508d0bf6d2093f4baa7eec8daccd651b7a8324efa233267fb9b53cda1"
+    },
+    "native/report.json": {
+      "bytes": 1175,
+      "sha256": "7add8c98e8be1d920b5d37b22c89db17ea39a8a12af203fcba02d113d8f45973"
+    },
+    "native/worker.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "registered-plan.json": {
+      "bytes": 463,
+      "sha256": "6cee41ad471b55461b9ad64e08c92fa702ddfe762664d6884d231a8080d1f801"
+    },
+    "source-after.json": {
+      "bytes": 146411,
+      "sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9"
+    },
+    "source-before.json": {
+      "bytes": 146411,
+      "sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9"
+    },
+    "supervisor.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervisor.stdout": {
+      "bytes": 1175,
+      "sha256": "7add8c98e8be1d920b5d37b22c89db17ea39a8a12af203fcba02d113d8f45973"
+    }
+  },
+  "finished_utc": "2026-10-09T12:18:30.049421+00:00",
+  "kind": "shard",
+  "plan": {
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ],
+    "capacity_profile": "scale_capacity_v1",
+    "deadline_ms": 18000000,
+    "dirty_budget": 200,
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "files": [
+      100000
+    ],
+    "max_output_bytes": 536870912,
+    "max_resume_builds": 1024,
+    "profile": "release",
+    "repetitions": 30,
+    "schema_version": 1,
+    "seed": 12648430,
+    "shard": {
+      "count": 30,
+      "index": 0
+    },
+    "skip_fanout": true
+  },
+  "release_certification": "not_run",
+  "schema": "p8-scale-matrix-v1",
+  "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+  "started_utc": "2026-10-09T07:18:06.713969+00:00",
+  "status": "failed",
+  "temporary_environment": {
+    "TEMP": "/home/runner/work/_temp",
+    "TMP": "/home/runner/work/_temp",
+    "TMPDIR": "/home/runner/work/_temp"
+  }
+}

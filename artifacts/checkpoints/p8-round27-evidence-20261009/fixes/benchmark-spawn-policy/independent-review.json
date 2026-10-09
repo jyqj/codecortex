@@ -1,0 +1,94 @@
+{
+  "schema": "p8-macos-benchmark-spawn-policy-cfg-independent-review-v1",
+  "status": "accepted_scoped_static",
+  "reviewer": "/root/acceptance_audit",
+  "author": "/root/pr_audit",
+  "source": "2b286543e953b19d70cc41e22b9fdd581a2cdf41",
+  "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+  "before": {
+    "blob": "9466989bb3e1ccfea8c64fa20155e169b1b18d40",
+    "bytes": 38661,
+    "sha256": "b26cdce5faa8d2e8a35c2b62062e9fd161754b8b639bb1e7344edb219bf1d9c2"
+  },
+  "after": {
+    "blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+    "bytes": 38925,
+    "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c"
+  },
+  "patch": {
+    "blob": "f3ef1cd8d8e3d43143498799f7a6d57838524613",
+    "bytes": 1837,
+    "sha256": "5c4a0c57997c9a2c2cda0cc30fb8aecf0af00c339a62a9819409947b73e9f369"
+  },
+  "original_failure": {
+    "blob": "afdeb59baf62d728e70dacd21140284ad2daae5d",
+    "bytes": 1430,
+    "sha256": "47a14b1e75c284d0209bafd8d5a81ea8bb048b8623d1b783b30f4bb4615a520d"
+  },
+  "checks": {
+    "whole_original_and_candidate_read": true,
+    "all_Git_blob_SHA_and_SHA256_verified": true,
+    "standard_patch_hunks": 5,
+    "added_lines": 7,
+    "removed_lines": 0,
+    "only_added_Linux_cfg_attributes": true,
+    "whole_file_forward_inverse_exact": true,
+    "all_original_test_names_attributes_identical": true,
+    "original_test_population": [
+      {
+        "name": "real_stdio_index_search_scope_and_tool_error",
+        "attributes": "#[tokio::test]\n#[ignore = \"requires CODECORTEX_BENCH_BINARY pointing at an explicitly built product\"]"
+      },
+      {
+        "name": "exited_child_is_protocol_error_not_empty_search",
+        "attributes": "#[cfg(unix)]\n#[tokio::test]"
+      },
+      {
+        "name": "build_receipt_rejects_identity_feature_and_binary_mismatch",
+        "attributes": "#[test]"
+      },
+      {
+        "name": "real_stdio_default_disabled_semantic_contract",
+        "attributes": "#[tokio::test]\n    #[ignore = \"explicit default/semantic product binary; run with --include-ignored, optionally under verified per-process network denial\"]"
+      },
+      {
+        "name": "public_http_upload_ready_search_contract",
+        "attributes": "#[tokio::test]"
+      },
+      {
+        "name": "unknown_or_failed_inputs_do_not_become_ready",
+        "attributes": "#[tokio::test]"
+      },
+      {
+        "name": "errors_do_not_log_credentials_or_response_body",
+        "attributes": "#[tokio::test]"
+      },
+      {
+        "name": "external_transfer_and_endpoint_validation",
+        "attributes": "#[test]"
+      },
+      {
+        "name": "timeout_is_distinct_from_empty_results",
+        "attributes": "#[tokio::test]"
+      }
+    ]
+  },
+  "findings": [
+    "The sole constructor for KillOnNetwork is inside the existing cfg(linux) verified_network_guard. On other targets that same public helper still panics with the original message; no Direct fallback is added.",
+    "Linux retains the variant, proof arm, command arm, receipt arm, two receipt-only local variables and file_digest with identical effective executable bodies. The launcher's digest/probe/SIGSYS/pre-exec-receipt/security checks remain byte-identical.",
+    "Non-Linux keeps the Direct command, environment clearing, handshake deadline, kill_on_drop, product identity checks and original non-Linux security observation. Only code supporting the unreachable Linux variant is excluded.",
+    "file_digest is used only in the existing Linux constructor and variant arms. evidence/receipt_path are excluded together, avoiding newly unused locals on Mac. Existing imports stay because their bindings are used elsewhere.",
+    "No test deleted or newly ignored; no changed timeout, assertion, workload, warning suppression, guard or production code."
+  ],
+  "unresolved_blockers": [],
+  "execution": {
+    "native": false,
+    "Cargo": false,
+    "rustfmt": false,
+    "tests": false,
+    "refs_changed": false
+  },
+  "scope": "Static single-leaf test portability review. Actual next source fmt/Clippy/CI must be recorded independently; old P2 failure remains unchanged.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

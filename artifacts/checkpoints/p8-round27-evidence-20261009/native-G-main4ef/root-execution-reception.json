@@ -1,0 +1,525 @@
+{
+  "schema": "p8-pr184-final-G-native-execution-root-acceptance-v1",
+  "reviewer": "/root",
+  "job": "wc_job_0Tgr9qGNJb0QlQOD",
+  "source": {
+    "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+    "status": ""
+  },
+  "product_source": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+  "product_manifest_sha256": "08137e6a2003063fe793bec0f728e4af238f56de62d0d7a0c12e23ed389a410f",
+  "review_source": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+  "scope": "Actual native Mac execution on exact final G. Does not assert remote Actions CI success, original TODO closure, new scale or provider execution.",
+  "platform": "darwin",
+  "sdk_root": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+  "commands": [
+    {
+      "name": "source-guard",
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/verify_reviewed_source_v15.py",
+        "--source-version",
+        "p8-completion-source-20261009-v15"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:27:50.390065+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:43.349161+00:00",
+      "elapsed_seconds": 592.951627667,
+      "stdout": {
+        "bytes": 572,
+        "sha256": "7498d13d2a4162760ccc2420a2596b1210a1777e273bf8e4b91cf343ea12fdd1"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "historical-integrations",
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/verify_historical_integrations_v2.py"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:43.432478+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:44.311332+00:00",
+      "elapsed_seconds": 0.8783577500000774,
+      "stdout": {
+        "bytes": 3231,
+        "sha256": "face07a85612ba78fd0b3b3f60a674e24ce84b457db0a2e851c881bfc98f221e"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "fmt",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 300,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:44.382962+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:45.865831+00:00",
+      "elapsed_seconds": 1.4824057079999875,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 2400,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:45.931425+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:46.443970+00:00",
+      "elapsed_seconds": 0.5121334169999727,
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 72,
+        "sha256": "1f5852af1ed7025b5728e842e3c3c2f5d2f720d25557d84c38f1ffda99719c59"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "direct-writer",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "direct_writer::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:46.519686+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:46.760222+00:00",
+      "elapsed_seconds": 0.2401108749999139,
+      "stdout": {
+        "bytes": 989,
+        "sha256": "67d286a994150e8afd39a5540e5985f1901789a37496eef9ce0e9b65167ee57f"
+      },
+      "stderr": {
+        "bytes": 242,
+        "sha256": "6e2b82d73a5544d324c33322f2e8a9865a2a3186b7492d80ee2f2161d7d554a5"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "index-migrate",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "index_migrate::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:46.842953+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:47.026061+00:00",
+      "elapsed_seconds": 0.18252745799998138,
+      "stdout": {
+        "bytes": 478,
+        "sha256": "f16fbde5c2e739688996d84d04bdaeaa0c7e30e346a6f5cff1b2e38dac33c152"
+      },
+      "stderr": {
+        "bytes": 242,
+        "sha256": "29b9a054ff3583bef3aaf291b4e15b990d62ca012a45d585cd7325a732ec7b7e"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    {
+      "name": "schema-guard",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--test",
+        "ci_schema_guard_contract",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 1200,
+      "source_before": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T12:37:47.094652+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T12:37:47.332768+00:00",
+      "elapsed_seconds": 0.23761691700008214,
+      "stdout": {
+        "bytes": 456,
+        "sha256": "a5a1c6268c1dd47122842a3d9bd3e07ce1a0b08103642f5fa9fe2c52893e347c"
+      },
+      "stderr": {
+        "bytes": 274,
+        "sha256": "cf571df861a21dc3dab7bcee0d9169df607550a32a4925056055a5c571455755"
+      },
+      "source_after": {
+        "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+        "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+        "status": ""
+      },
+      "source_unchanged": true
+    }
+  ],
+  "versions": {
+    "python": {
+      "argv": [
+        "/usr/bin/python3",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Python 3.9.6\n",
+      "stderr": ""
+    },
+    "cargo": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": ""
+    },
+    "rustc": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "rustfmt": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustfmt",
+        "+1.95.0",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustfmt 1.9.0-stable (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "clippy": {
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "clippy 0.1.95 (59807616e1 2026-04-14)\n",
+      "stderr": ""
+    },
+    "git": {
+      "argv": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "git version 2.50.1 (Apple Git-155)\n",
+      "stderr": ""
+    }
+  },
+  "original_runner": {
+    "bytes": 6253,
+    "sha256": "9b22fb79daa33b62c752d01e600dbdd0a9549d418679abfb591fdae8c948a03e"
+  },
+  "tests": [
+    {
+      "command": "direct-writer",
+      "count": 11,
+      "passed": [
+        "direct_writer::tests::split_sql_handles_comments_and_strings",
+        "direct_writer::tests::extract_index_stmts",
+        "direct_writer::tests::drop_index_stmts_match_create_set",
+        "direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail",
+        "direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions",
+        "direct_writer::tests::direct_writer_write_fn_error_propagates",
+        "direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes",
+        "direct_writer::tests::direct_writer_creates_valid_db",
+        "direct_writer::tests::direct_writer_handles_fts_tables",
+        "direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input",
+        "direct_writer::tests::direct_writer_bulk_insert_perf"
+      ]
+    },
+    {
+      "command": "index-migrate",
+      "count": 5,
+      "passed": [
+        "index_migrate::tests::old_version_returns_mismatch",
+        "index_migrate::tests::fresh_db_initializes_schema",
+        "index_migrate::tests::matching_version_returns_up_to_date",
+        "index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch",
+        "index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild"
+      ]
+    },
+    {
+      "command": "schema-guard",
+      "count": 5,
+      "passed": [
+        "nonadjacent_versions_still_require_rebuild",
+        "fresh_index_really_initializes_current_schema",
+        "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+        "committed_v24_requires_rebuild_and_invalidates_legacy_rows",
+        "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade"
+      ]
+    }
+  ],
+  "expected_test_population": {
+    "blob": "6d03c6ca6356e2d5cda2942bf2bbc5600b1dc76a",
+    "original_source": "ae033369f015c416cd7995709c1853497773cf6a",
+    "current_source_bridge": "Exact three current source blob OIDs/SHA256 are unchanged from the original 11/5/5 expectation, and all exact names occur once as ok."
+  },
+  "checks": {
+    "all_seven_command_argv_original": true,
+    "all_seven_actual_exit_zero": true,
+    "all_seven_source_states_exact_clean": true,
+    "all_fourteen_complete_streams_match_manifest": true,
+    "all_twenty_one_exact_test_names_once": true,
+    "zero_failed_ignored": true,
+    "source_guard_executed_previous_v14_proof": true,
+    "historical_original192_tasks_163done_29remaining": true,
+    "original_failures_preserved": true
+  },
+  "files": [
+    {
+      "path": "native-G-main4ef/manifest.json",
+      "blob": "3be541d531fec9245c2b35099838c03f02b6c227",
+      "bytes": 11486,
+      "sha256": "04d0d50f71385a37bd27ee1ca51af093516a7428073ff686ec3dc5f6f34fa77d",
+      "kind": "original_manifest"
+    },
+    {
+      "path": "native-G-main4ef/source-guard.stdout.log",
+      "blob": "c9d6b9ca1775715b2a6b9a6df82bb09f7a00f631",
+      "bytes": 572,
+      "sha256": "7498d13d2a4162760ccc2420a2596b1210a1777e273bf8e4b91cf343ea12fdd1",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/source-guard.stderr.log",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/direct-writer.stdout.log",
+      "blob": "763bf899121281cd349d84e85cff14a9d6e7a6bf",
+      "bytes": 989,
+      "sha256": "67d286a994150e8afd39a5540e5985f1901789a37496eef9ce0e9b65167ee57f",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/direct-writer.stderr.log",
+      "blob": "c8e382cea40e5683401dd0a9ff4cea78e9fbc7b1",
+      "bytes": 242,
+      "sha256": "6e2b82d73a5544d324c33322f2e8a9865a2a3186b7492d80ee2f2161d7d554a5",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/index-migrate.stdout.log",
+      "blob": "2aad0e8fe0533f16bb0862df0a4d06a4191fd38f",
+      "bytes": 478,
+      "sha256": "f16fbde5c2e739688996d84d04bdaeaa0c7e30e346a6f5cff1b2e38dac33c152",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/index-migrate.stderr.log",
+      "blob": "8fd673b63d9a65cf8a2ffb117d8d7dfa26d32f5a",
+      "bytes": 242,
+      "sha256": "29b9a054ff3583bef3aaf291b4e15b990d62ca012a45d585cd7325a732ec7b7e",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/schema-guard.stdout.log",
+      "blob": "8b63fae575fc06739c29338afba4daede7ad82b9",
+      "bytes": 456,
+      "sha256": "a5a1c6268c1dd47122842a3d9bd3e07ce1a0b08103642f5fa9fe2c52893e347c",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/schema-guard.stderr.log",
+      "blob": "f909f6f22c9ac42e37dcc727cdce04fa11aed6a0",
+      "bytes": 274,
+      "sha256": "cf571df861a21dc3dab7bcee0d9169df607550a32a4925056055a5c571455755",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/historical-integrations.stderr.log",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/clippy.stderr.log",
+      "blob": "f9ef384cde6c6db7909db67b788cca5d8ecab820",
+      "bytes": 72,
+      "sha256": "1f5852af1ed7025b5728e842e3c3c2f5d2f720d25557d84c38f1ffda99719c59",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/clippy.stdout.log",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/fmt.stdout.log",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/fmt.stderr.log",
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "original_command_stream"
+    },
+    {
+      "path": "native-G-main4ef/historical-integrations.stdout.log",
+      "blob": "e1a064e547c9b2d213201002f5e2843d4eb61891",
+      "bytes": 3231,
+      "sha256": "face07a85612ba78fd0b3b3f60a674e24ce84b457db0a2e851c881bfc98f221e",
+      "kind": "original_command_stream"
+    }
+  ],
+  "remote_CI": "queued_at_latest_read_not_claimed_passed",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

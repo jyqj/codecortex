@@ -1,0 +1,151 @@
+{
+  "schema": "p8-python-inventory-linux-helper-cfg-fix-v1",
+  "status": "candidate_static_not_compiled",
+  "author": "/root/pr_audit",
+  "source_role_change": "Previously independent receiver; author of this new six-attribute patch. Acceptance audit/root must independently review.",
+  "path": "crates/cc-index/src/project_model/python_inventory.rs",
+  "mode": "100644",
+  "base": {
+    "commit": "ae033369f015c416cd7995709c1853497773cf6a",
+    "blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "bytes": 13123,
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2"
+  },
+  "also_exact_main": {
+    "commit": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "body_equal": true,
+    "blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "bytes": 13123,
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2"
+  },
+  "candidate": {
+    "blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+    "bytes": 13291,
+    "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e"
+  },
+  "patch": {
+    "blob": "ab8403ad2bbc644befe63428337c8e1937aaf545",
+    "bytes": 1665,
+    "sha256": "9cff4a90134470bbc594e674c061f90dfdf1b50d9a5e72cb2cb3d657f212abe6"
+  },
+  "actual_trigger": {
+    "source": "ae033369f015c416cd7995709c1853497773cf6a",
+    "run_scope": "root native SDK26 continuation; first SDK27 linker failure retained separately",
+    "stderr": {
+      "blob": "1b2f0f4966b59d90413f958e842da88696586269",
+      "bytes": 5805,
+      "sha256": "a3c8075997b74b8f09036d5730c23d801b3f75d7d510c9e306209af8f84a3ff9"
+    },
+    "warnings": 5,
+    "details": [
+      "unused imports config_cache::Loader and python",
+      "bound dead code",
+      "sum dead code",
+      "supported_document dead code",
+      "OutputMeter never constructed"
+    ],
+    "SDK_recovery": "Dependency linking succeeded with per-process SDK26.5; these are actual macOS cfg diagnostics under unchanged -D warnings."
+  },
+  "exact_replacements": [
+    {
+      "before": "use super::{config_cache::Loader, python};",
+      "after": "#[cfg(target_os = \"linux\")]\nuse super::{config_cache::Loader, python};"
+    },
+    {
+      "before": "fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {",
+      "after": "#[cfg(target_os = \"linux\")]\nfn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {"
+    },
+    {
+      "before": "fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {",
+      "after": "#[cfg(target_os = \"linux\")]\nfn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {"
+    },
+    {
+      "before": "fn supported_document(doc: &ConfigDocument) -> Result<()> {",
+      "after": "#[cfg(target_os = \"linux\")]\nfn supported_document(doc: &ConfigDocument) -> Result<()> {"
+    },
+    {
+      "before": "struct OutputMeter {",
+      "after": "#[cfg(target_os = \"linux\")]\nstruct OutputMeter {"
+    },
+    {
+      "before": "impl std::io::Write for OutputMeter {",
+      "after": "#[cfg(target_os = \"linux\")]\nimpl std::io::Write for OutputMeter {"
+    }
+  ],
+  "full_inverse_equal": true,
+  "added_lines": 6,
+  "removed_lines": 0,
+  "semantics": [
+    "The import pair is used only by existing target_os=linux capture_inner branch.",
+    "bound/sum are consumed only by that Linux capture branch and existing cfg(Linux) native submodule.",
+    "supported_document is called only from the same Linux capture branch; OutputMeter is constructed only there and its Write impl must share the type's cfg.",
+    "Existing Linux function/impl bodies, caller order, checked arithmetic, budgets, configuration filtering, serialization and native inventory/verification remain byte-identical.",
+    "Public structs/enums, capture_python_declarations, capture_inner and its preflight owner/scope/exclusion checks, explicit non-Linux UnsupportedPlatform branch, public revalidation API and receipt contracts remain byte-identical.",
+    "No allow/expect lint suppression, no altered compiler flags, no widening platform support, no feature or test deletion."
+  ],
+  "supporting_sources": [
+    {
+      "path": "crates/cc-index/src/project_model/mod.rs",
+      "blob": "dfb98b5feaa0808fddd2dcad62bde27d076b7123",
+      "bytes": 22957,
+      "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923",
+      "main_equal": true
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/native.rs",
+      "blob": "d490d5f62c21173ae8ea3917996edd6c1794d638",
+      "bytes": 10115,
+      "sha256": "7ab82bd3c6b3c23e21fa4e4eb0d445c645c638e427ba823bc14337ebbf3c67e8"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/revalidation.rs",
+      "blob": "e98629ae92fec41d12ccd450a35e63f932f9838d",
+      "bytes": 6613,
+      "sha256": "b69bcdccb65038625d9c4303a0e3c87f0d70c3b964f027b8e3d99fce3a2f6dec"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/tests.rs",
+      "blob": "a5346e303c562bf3f410aea6eba36902106b5b25",
+      "bytes": 3087,
+      "sha256": "fe805d7b2ee2624afbe8e2142ea0072805b44f64543c429cb322ee654ea1cdbb"
+    },
+    {
+      "path": "crates/cc-index/tests/python_inventory_capture.rs",
+      "blob": "2a335783d4197c1a452108abcfc7e06bb7ba243f",
+      "bytes": 18247,
+      "sha256": "444bdc2efff82c114f6a44f0be9d78dee8a523d3ac44852b59fb6fc43f2ac514",
+      "whole_target_linux_cfg": true
+    },
+    {
+      "path": "crates/cc-index/tests/python_inventory_resource_integration.rs",
+      "blob": "96683dc51362f71a9c9ac99251c0c4cf471af658",
+      "bytes": 7533,
+      "sha256": "250872d49612dc02137f4738fc2e296fdf8d955bd52f7a0cec439cecf5e554ab",
+      "whole_target_linux_cfg": true
+    },
+    {
+      "path": "crates/cc-index/tests/python_inventory_revalidation.rs",
+      "blob": "ab2172d44e979cafb4404ae23f70ca1950b51e97",
+      "bytes": 16121,
+      "sha256": "861957fd48104794760c190dce289403c2633c864d9c3fb5642501b2ff9f757a",
+      "whole_target_linux_cfg": true
+    }
+  ],
+  "validation_pending": {
+    "cargo_fmt": true,
+    "macOS_original_workspace_alltargets_clippy": true,
+    "linux_original_workspace_alltargets_clippy": true,
+    "linux_existing_inventory_tests": "11 capture +3 resource integration +11 revalidation +1 existing unit are retained, not executed by this patch author",
+    "no_new_test_methods": true,
+    "reason": "This is six cfg attributes around already Linux-only private implementation; the real Mac compilation failure is the regression trigger. No mirrored implementation-only test introduced."
+  },
+  "exclusions": "No tree/commit/ref/PR mutation, no Cargo/native/rustfmt/product execution by this author. Original failed logs and fixed ae033/main source untouched.",
+  "patch_packaging_correction": {
+    "superseded_patch": {
+      "blob": "ca6918000b90cd91991d8535825a52fdf583967e",
+      "bytes": 1703,
+      "sha256": "40977b89cfce5893cffe8f67c82b56ff0f576f8856f7ae1a6f0148669c9eb7f7"
+    },
+    "reason": "Merged two overlapping context hunks for struct/impl into one standard unified hunk. Candidate source and exact six replacements unchanged; no previous patch execution occurred."
+  }
+}

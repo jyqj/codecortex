@@ -1,0 +1,73 @@
+    Checking cc-index v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree/crates/cc-index)
+   Compiling serde_core v1.0.228
+   Compiling darling_macro v0.23.0
+    Checking futures-executor v0.3.32
+   Compiling zmij v1.0.21
+   Compiling serde_derive_internals v0.29.1
+   Compiling ref-cast-impl v1.0.25
+    Checking colorchoice v1.0.5
+    Checking anstyle-query v1.1.5
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstyle v1.0.14
+    Checking anstream v1.0.0
+   Compiling serde_json v1.0.149
+   Compiling schemars_derive v1.2.1
+    Checking ref-cast v1.0.25
+   Compiling darling v0.23.0
+    Checking futures v0.3.32
+    Checking nix v0.31.2
+   Compiling rmcp v2.2.0
+    Checking dyn-clone v1.0.20
+    Checking clap_lex v1.0.0
+    Checking lazy_static v1.5.0
+    Checking strsim v0.11.1
+   Compiling heck v0.5.0
+    Checking option-ext v0.2.0
+    Checking dirs-sys v0.4.1
+    Checking clap_builder v4.6.0
+   Compiling clap_derive v4.6.0
+   Compiling rmcp-macros v2.2.0
+    Checking process-wrap v9.1.0
+    Checking sharded-slab v0.1.7
+    Checking schemars v1.2.1
+    Checking tokio-util v0.7.18
+    Checking tokio-stream v0.1.18
+    Checking tracing-log v0.2.0
+    Checking matchers v0.2.0
+    Checking notify-types v2.1.0
+   Compiling async-trait v0.1.89
+    Checking fsevent-sys v4.1.0
+    Checking thread_local v1.1.9
+   Compiling pastey v0.2.1
+    Checking base64 v0.22.1
+    Checking nu-ansi-term v0.50.3
+    Checking notify v8.2.0
+    Checking tracing-subscriber v0.3.23
+    Checking clap v4.6.0
+    Checking dirs v5.0.1
+    Checking cc-search v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree/crates/cc-search)
+   Compiling version_check v0.9.5
+    Checking typenum v1.20.1
+   Compiling generic-array v0.14.7
+    Checking cpufeatures v0.2.17
+    Checking cc-semantic v1.0.0 (/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree/crates/cc-semantic)
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+error: unused imports: `Duration`, `Instant`, and `Path`
+  --> crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs:11:12
+   |
+11 |     path::{Path, PathBuf},
+   |            ^^^^
+12 |     sync::atomic::{AtomicU64, Ordering},
+13 |     time::{Duration, Instant},
+   |            ^^^^^^^^  ^^^^^^^
+   |
+   = note: `-D unused-imports` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: could not compile `cc-semantic` (test "p7_cache_allocation_independent_review") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

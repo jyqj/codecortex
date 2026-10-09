@@ -1,0 +1,124 @@
+{
+  "schema": "p8-pr184-benchmark-adapter-Linux-policy-cfg-author-handoff-v1",
+  "status": "candidate_static_only_pending_independent_review_and_actual_fmt_clippy",
+  "author": "pr_audit",
+  "base": {
+    "commit": "2b286543e953b19d70cc41e22b9fdd581a2cdf41",
+    "tree": "b6bd9b32953f3f6b132ee32546fe70482141b52d",
+    "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+    "blob": "9466989bb3e1ccfea8c64fa20155e169b1b18d40",
+    "bytes": 38661,
+    "sha256": "b26cdce5faa8d2e8a35c2b62062e9fd161754b8b639bb1e7344edb219bf1d9c2"
+  },
+  "candidate": {
+    "blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+    "bytes": 38925,
+    "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c"
+  },
+  "patch": {
+    "blob": "f3ef1cd8d8e3d43143498799f7a6d57838524613",
+    "bytes": 1837,
+    "sha256": "5c4a0c57997c9a2c2cda0cc30fb8aecf0af00c339a62a9819409947b73e9f369"
+  },
+  "trigger": {
+    "native_path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-P2-main4ef-results/clippy.stderr.log",
+    "blob": "afdeb59baf62d728e70dacd21140284ad2daae5d",
+    "bytes": 1430,
+    "sha256": "47a14b1e75c284d0209bafd8d5a81ea8bb048b8623d1b783b30f4bb4615a520d",
+    "error": "variant KillOnNetwork is never constructed; -D dead-code implied by -D warnings"
+  },
+  "exact_replacements": [
+    {
+      "before": "    fn file_digest(path: &Path) -> String {",
+      "after": "    #[cfg(target_os = \"linux\")]\n    fn file_digest(path: &Path) -> String {"
+    },
+    {
+      "before": "        KillOnNetwork {\n",
+      "after": "        #[cfg(target_os = \"linux\")]\n        KillOnNetwork {\n"
+    },
+    {
+      "before": "                Self::KillOnNetwork { probes, .. } => probes.clone(),",
+      "after": "                #[cfg(target_os = \"linux\")]\n                Self::KillOnNetwork { probes, .. } => probes.clone(),"
+    },
+    {
+      "before": "        let evidence = tempfile::tempdir().unwrap();\n        let receipt_path = evidence.path().join(\"pre-exec.json\");",
+      "after": "        #[cfg(target_os = \"linux\")]\n        let evidence = tempfile::tempdir().unwrap();\n        #[cfg(target_os = \"linux\")]\n        let receipt_path = evidence.path().join(\"pre-exec.json\");"
+    },
+    {
+      "before": "            SpawnPolicy::KillOnNetwork {\n",
+      "after": "            #[cfg(target_os = \"linux\")]\n            SpawnPolicy::KillOnNetwork {\n"
+    },
+    {
+      "before": "            SpawnPolicy::KillOnNetwork { digest, .. } => {",
+      "after": "            #[cfg(target_os = \"linux\")]\n            SpawnPolicy::KillOnNetwork { digest, .. } => {"
+    }
+  ],
+  "complete_preservation_proof": {
+    "added_lines": 7,
+    "removed_lines": 0,
+    "all_added_lines_exact_linux_cfg_attributes": true,
+    "inverse_restores_entire_original_file": true,
+    "unified_patch_five_hunks_pure_js_apply_exact": true,
+    "tests_unchanged": [
+      {
+        "name": "real_stdio_index_search_scope_and_tool_error",
+        "ignored": true
+      },
+      {
+        "name": "exited_child_is_protocol_error_not_empty_search",
+        "ignored": false
+      },
+      {
+        "name": "build_receipt_rejects_identity_feature_and_binary_mismatch",
+        "ignored": false
+      },
+      {
+        "name": "real_stdio_default_disabled_semantic_contract",
+        "ignored": true
+      },
+      {
+        "name": "public_http_upload_ready_search_contract",
+        "ignored": false
+      },
+      {
+        "name": "unknown_or_failed_inputs_do_not_become_ready",
+        "ignored": false
+      },
+      {
+        "name": "errors_do_not_log_credentials_or_response_body",
+        "ignored": false
+      },
+      {
+        "name": "external_transfer_and_endpoint_validation",
+        "ignored": false
+      },
+      {
+        "name": "timeout_is_distinct_from_empty_results",
+        "ignored": false
+      }
+    ],
+    "all_assertions_ignore_attributes_timeouts_and_execution_statements_unchanged": true
+  },
+  "platform_reasoning": [
+    "KillOnNetwork's only constructor is the already cfg(target_os=linux) verified_network_guard implementation. Its seccomp launcher verification, IPv4/IPv6 SIGSYS probe assertions and three variant match arms are unchanged.",
+    "Gate the private variant and each of its three match arms on Linux. The direct branch remains compiled with identical command/env/arguments, kill_on_drop, handshake and closing behavior on every platform.",
+    "file_digest is called only by the Linux verified_network_guard or KillOnNetwork match arms, so it receives the same Linux cfg. verify_build_receipt has its own original SHA calculation and remains cross-platform unchanged.",
+    "The spawn-local evidence temporary directory and pre-exec receipt_path are consumed only by KillOnNetwork; both receive Linux cfg to avoid cascading unused-variable warnings. No other temporary fixture or evidence directory is gated.",
+    "The original cfg(not Linux) verified_network_guard still panics with 'isolated offline acceptance requires Linux seccomp'. A requested restricted policy cannot silently become Direct, and no platform is newly reported as isolated.",
+    "No import is changed or suppressed. Original p7_procfs, ignored explicit-product tests, optional eval-http tests and all 14-tool contracts retain their exact source text."
+  ],
+  "validation_scope": "This test-harness platform compilation correction has not been formatted, compiled or executed by its author. Root will decide actual P3 and run the unchanged fmt/Clippy command. This is not a new network benchmark or product observation.",
+  "original_failures_preserved": true,
+  "execution": {
+    "rustfmt": false,
+    "Clippy": false,
+    "Cargo": false,
+    "tests": false,
+    "product": false,
+    "network_probe": false,
+    "ref_mutation": false
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29,
+  "population_note": "Nine source-defined methods remain (including two original ignored explicit-product methods and five methods behind eval-http). This is a source population, not an execution count."
+}

@@ -1,0 +1,1258 @@
+{
+  "schema": "p8-formal275e-failed100k-timing-observation-v1",
+  "scope": "Derived only from the original failed shard; incomplete observations are not complete acceptance or a new run.",
+  "raw": {
+    "bytes": 20144696,
+    "sha256": "a733872508d0bf6d2093f4baa7eec8daccd651b7a8324efa233267fb9b53cda1"
+  },
+  "event_counts": {
+    "run_started": 1,
+    "input": 1,
+    "build_started": 1002,
+    "build_finished": 1001,
+    "cold_parity": 1,
+    "mutation": 6,
+    "stage_finished": 5
+  },
+  "keys_by_event": {
+    "run_started": [
+      "engine",
+      "event",
+      "evidence_layer",
+      "executed_repetition_range",
+      "plan",
+      "registered_repetitions",
+      "release_certification",
+      "semantic",
+      "shard_only",
+      "statistics",
+      "tail_latency_estimate"
+    ],
+    "input": [
+      "auxiliary_visible_config_files",
+      "batch_target_policy",
+      "cold_definition",
+      "config_fixture_added_functions",
+      "config_fixture_augmented_code_files",
+      "event",
+      "files",
+      "fixture_version",
+      "generated_named_functions",
+      "input_digest",
+      "runtime_config",
+      "sample",
+      "seed",
+      "synthetic_files_requested",
+      "synthetic_files_written"
+    ],
+    "build_started": [
+      "event",
+      "full",
+      "label",
+      "start_us"
+    ],
+    "build_finished": [
+      "end_us",
+      "event",
+      "full",
+      "label",
+      "process_snapshot",
+      "report",
+      "resource_scope",
+      "start_us",
+      "wall_us"
+    ],
+    "cold_parity": [
+      "event",
+      "independent_config_fact",
+      "parity",
+      "parity_wall_us",
+      "sample"
+    ],
+    "mutation": [
+      "event",
+      "label",
+      "operations",
+      "receipts",
+      "requested_files"
+    ],
+    "stage_finished": [
+      "complete",
+      "event",
+      "full_complete",
+      "incremental_builds",
+      "incremental_wall_us",
+      "independent_config_fact",
+      "label",
+      "no_op_unchanged",
+      "parity",
+      "parity_wall_us",
+      "passed",
+      "phase_count_definition"
+    ]
+  },
+  "finished_builds": 1001,
+  "finished_wall_sum_us": 10602624090,
+  "full_builds": [
+    {
+      "label": "scale-100000/repetition-0/cold_incremental",
+      "full": true,
+      "start_us": 10361445,
+      "end_us": 471124399,
+      "wall_us": 460762954,
+      "build_timing": {
+        "between_stages_us": 3711186,
+        "commit_write_us": 10971593,
+        "full_staging_us": 388388086,
+        "postprocess_apply_us": 7806675,
+        "postprocess_compute_us": 4649345,
+        "prepare_snapshot_us": 1613730,
+        "prepare_us": 433518753,
+        "schema_version": 1,
+        "total_us": 460657556
+      },
+      "phase_timing": {
+        "analysis_ms": 411,
+        "parse_ms": 26340,
+        "postprocess_ms": 12034,
+        "resolve_ms": 13412,
+        "scan_diff_ms": 3755,
+        "write_ms": 10956
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 6,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/cold_full_control",
+      "full": true,
+      "start_us": 471127233,
+      "end_us": 1026991044,
+      "wall_us": 555863811,
+      "build_timing": {
+        "between_stages_us": 8672688,
+        "commit_write_us": 24395241,
+        "full_staging_us": 454729376,
+        "postprocess_apply_us": 8688885,
+        "postprocess_compute_us": 4807277,
+        "prepare_snapshot_us": 1650118,
+        "prepare_us": 509176937,
+        "schema_version": 1,
+        "total_us": 555741030
+      },
+      "phase_timing": {
+        "analysis_ms": 394,
+        "parse_ms": 26562,
+        "postprocess_ms": 13091,
+        "resolve_ms": 14732,
+        "scan_diff_ms": 11494,
+        "write_ms": 24379
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 6,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/no_op/full_control",
+      "full": true,
+      "start_us": 2111801988,
+      "end_us": 2672968153,
+      "wall_us": 561166165,
+      "build_timing": {
+        "between_stages_us": 4917413,
+        "commit_write_us": 24647748,
+        "full_staging_us": 429706994,
+        "postprocess_apply_us": 8723113,
+        "postprocess_compute_us": 4930617,
+        "prepare_snapshot_us": 1684053,
+        "prepare_us": 517759268,
+        "schema_version": 1,
+        "total_us": 560978162
+      },
+      "phase_timing": {
+        "analysis_ms": 568,
+        "parse_ms": 57355,
+        "postprocess_ms": 12963,
+        "resolve_ms": 16831,
+        "scan_diff_ms": 12171,
+        "write_ms": 24631
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 12,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/body/full_control",
+      "full": true,
+      "start_us": 6845586529,
+      "end_us": 7418979887,
+      "wall_us": 573393358,
+      "build_timing": {
+        "between_stages_us": 4892325,
+        "commit_write_us": 16794594,
+        "full_staging_us": 445543245,
+        "postprocess_apply_us": 8273313,
+        "postprocess_compute_us": 5382213,
+        "prepare_snapshot_us": 1647905,
+        "prepare_us": 537789048,
+        "schema_version": 1,
+        "total_us": 573131497
+      },
+      "phase_timing": {
+        "analysis_ms": 648,
+        "parse_ms": 61606,
+        "postprocess_ms": 12996,
+        "resolve_ms": 16868,
+        "scan_diff_ms": 12113,
+        "write_ms": 16789
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 18,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/api/full_control",
+      "full": true,
+      "start_us": 9515646142,
+      "end_us": 10194266622,
+      "wall_us": 678620480,
+      "build_timing": {
+        "between_stages_us": 3757468,
+        "commit_write_us": 26522818,
+        "full_staging_us": 541660296,
+        "postprocess_apply_us": 9116589,
+        "postprocess_compute_us": 5180506,
+        "prepare_snapshot_us": 1592216,
+        "prepare_us": 633788292,
+        "schema_version": 1,
+        "total_us": 678365675
+      },
+      "phase_timing": {
+        "analysis_ms": 488,
+        "parse_ms": 64565,
+        "postprocess_ms": 13799,
+        "resolve_ms": 14051,
+        "scan_diff_ms": 11910,
+        "write_ms": 26507
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 24,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/config/full_control",
+      "full": true,
+      "start_us": 13268135984,
+      "end_us": 13892293964,
+      "wall_us": 624157980,
+      "build_timing": {
+        "between_stages_us": 4732186,
+        "commit_write_us": 27410629,
+        "full_staging_us": 493286763,
+        "postprocess_apply_us": 9707684,
+        "postprocess_compute_us": 5186326,
+        "prepare_snapshot_us": 1637123,
+        "prepare_us": 576728810,
+        "schema_version": 1,
+        "total_us": 623765637
+      },
+      "phase_timing": {
+        "analysis_ms": 400,
+        "parse_ms": 54839,
+        "postprocess_ms": 14483,
+        "resolve_ms": 14732,
+        "scan_diff_ms": 12224,
+        "write_ms": 27394
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 30,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/batch_1/full_control",
+      "full": true,
+      "start_us": 15428957600,
+      "end_us": 16220586710,
+      "wall_us": 791629110,
+      "build_timing": {
+        "between_stages_us": 3974258,
+        "commit_write_us": 28635573,
+        "full_staging_us": 628742752,
+        "postprocess_apply_us": 10122858,
+        "postprocess_compute_us": 5913871,
+        "prepare_snapshot_us": 1766668,
+        "prepare_us": 742651780,
+        "schema_version": 1,
+        "total_us": 791298343
+      },
+      "phase_timing": {
+        "analysis_ms": 643,
+        "parse_ms": 79065,
+        "postprocess_ms": 15381,
+        "resolve_ms": 20829,
+        "scan_diff_ms": 12237,
+        "write_ms": 28629
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 36,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    }
+  ],
+  "longest_12_builds": [
+    {
+      "label": "scale-100000/repetition-0/batch_1/full_control",
+      "full": true,
+      "start_us": 15428957600,
+      "end_us": 16220586710,
+      "wall_us": 791629110,
+      "build_timing": {
+        "between_stages_us": 3974258,
+        "commit_write_us": 28635573,
+        "full_staging_us": 628742752,
+        "postprocess_apply_us": 10122858,
+        "postprocess_compute_us": 5913871,
+        "prepare_snapshot_us": 1766668,
+        "prepare_us": 742651780,
+        "schema_version": 1,
+        "total_us": 791298343
+      },
+      "phase_timing": {
+        "analysis_ms": 643,
+        "parse_ms": 79065,
+        "postprocess_ms": 15381,
+        "resolve_ms": 20829,
+        "scan_diff_ms": 12237,
+        "write_ms": 28629
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 36,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/api/full_control",
+      "full": true,
+      "start_us": 9515646142,
+      "end_us": 10194266622,
+      "wall_us": 678620480,
+      "build_timing": {
+        "between_stages_us": 3757468,
+        "commit_write_us": 26522818,
+        "full_staging_us": 541660296,
+        "postprocess_apply_us": 9116589,
+        "postprocess_compute_us": 5180506,
+        "prepare_snapshot_us": 1592216,
+        "prepare_us": 633788292,
+        "schema_version": 1,
+        "total_us": 678365675
+      },
+      "phase_timing": {
+        "analysis_ms": 488,
+        "parse_ms": 64565,
+        "postprocess_ms": 13799,
+        "resolve_ms": 14051,
+        "scan_diff_ms": 11910,
+        "write_ms": 26507
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 24,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/config/full_control",
+      "full": true,
+      "start_us": 13268135984,
+      "end_us": 13892293964,
+      "wall_us": 624157980,
+      "build_timing": {
+        "between_stages_us": 4732186,
+        "commit_write_us": 27410629,
+        "full_staging_us": 493286763,
+        "postprocess_apply_us": 9707684,
+        "postprocess_compute_us": 5186326,
+        "prepare_snapshot_us": 1637123,
+        "prepare_us": 576728810,
+        "schema_version": 1,
+        "total_us": 623765637
+      },
+      "phase_timing": {
+        "analysis_ms": 400,
+        "parse_ms": 54839,
+        "postprocess_ms": 14483,
+        "resolve_ms": 14732,
+        "scan_diff_ms": 12224,
+        "write_ms": 27394
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 30,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/body/full_control",
+      "full": true,
+      "start_us": 6845586529,
+      "end_us": 7418979887,
+      "wall_us": 573393358,
+      "build_timing": {
+        "between_stages_us": 4892325,
+        "commit_write_us": 16794594,
+        "full_staging_us": 445543245,
+        "postprocess_apply_us": 8273313,
+        "postprocess_compute_us": 5382213,
+        "prepare_snapshot_us": 1647905,
+        "prepare_us": 537789048,
+        "schema_version": 1,
+        "total_us": 573131497
+      },
+      "phase_timing": {
+        "analysis_ms": 648,
+        "parse_ms": 61606,
+        "postprocess_ms": 12996,
+        "resolve_ms": 16868,
+        "scan_diff_ms": 12113,
+        "write_ms": 16789
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 18,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/no_op/full_control",
+      "full": true,
+      "start_us": 2111801988,
+      "end_us": 2672968153,
+      "wall_us": 561166165,
+      "build_timing": {
+        "between_stages_us": 4917413,
+        "commit_write_us": 24647748,
+        "full_staging_us": 429706994,
+        "postprocess_apply_us": 8723113,
+        "postprocess_compute_us": 4930617,
+        "prepare_snapshot_us": 1684053,
+        "prepare_us": 517759268,
+        "schema_version": 1,
+        "total_us": 560978162
+      },
+      "phase_timing": {
+        "analysis_ms": 568,
+        "parse_ms": 57355,
+        "postprocess_ms": 12963,
+        "resolve_ms": 16831,
+        "scan_diff_ms": 12171,
+        "write_ms": 24631
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 12,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/cold_full_control",
+      "full": true,
+      "start_us": 471127233,
+      "end_us": 1026991044,
+      "wall_us": 555863811,
+      "build_timing": {
+        "between_stages_us": 8672688,
+        "commit_write_us": 24395241,
+        "full_staging_us": 454729376,
+        "postprocess_apply_us": 8688885,
+        "postprocess_compute_us": 4807277,
+        "prepare_snapshot_us": 1650118,
+        "prepare_us": 509176937,
+        "schema_version": 1,
+        "total_us": 555741030
+      },
+      "phase_timing": {
+        "analysis_ms": 394,
+        "parse_ms": 26562,
+        "postprocess_ms": 13091,
+        "resolve_ms": 14732,
+        "scan_diff_ms": 11494,
+        "write_ms": 24379
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 6,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/cold_incremental",
+      "full": true,
+      "start_us": 10361445,
+      "end_us": 471124399,
+      "wall_us": 460762954,
+      "build_timing": {
+        "between_stages_us": 3711186,
+        "commit_write_us": 10971593,
+        "full_staging_us": 388388086,
+        "postprocess_apply_us": 7806675,
+        "postprocess_compute_us": 4649345,
+        "prepare_snapshot_us": 1613730,
+        "prepare_us": 433518753,
+        "schema_version": 1,
+        "total_us": 460657556
+      },
+      "phase_timing": {
+        "analysis_ms": 411,
+        "parse_ms": 26340,
+        "postprocess_ms": 12034,
+        "resolve_ms": 13412,
+        "scan_diff_ms": 3755,
+        "write_ms": 10956
+      },
+      "files_parsed": 100000,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 0,
+          "statements": 0,
+          "vm_steps": 0
+        },
+        "file_budget": 0,
+        "parsed_files": 100000,
+        "reasons": [],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 0
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 6,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/api/incremental-0",
+      "full": false,
+      "start_us": 8275518997,
+      "end_us": 8310396723,
+      "wall_us": 34877726,
+      "build_timing": {
+        "between_stages_us": 96525,
+        "commit_write_us": 3391393,
+        "full_staging_us": null,
+        "postprocess_apply_us": 5874323,
+        "postprocess_compute_us": 5026434,
+        "prepare_snapshot_us": 805,
+        "prepare_us": 20215622,
+        "schema_version": 1,
+        "total_us": 34604299
+      },
+      "phase_timing": {
+        "analysis_ms": 390,
+        "parse_ms": 190,
+        "postprocess_ms": 10490,
+        "resolve_ms": 17271,
+        "scan_diff_ms": 2752,
+        "write_ms": 1620
+      },
+      "files_parsed": 1,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 402,
+          "sorts": 4,
+          "statements": 9,
+          "vm_steps": 9830
+        },
+        "file_budget": 200,
+        "parsed_files": 1,
+        "reasons": [
+          "body",
+          "public_surface",
+          "candidate_set"
+        ],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 200
+      },
+      "resolution_freshness": {
+        "basis_epoch": 500,
+        "complete": false,
+        "completed_files": 201,
+        "index_epoch": 505,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/config/incremental-0",
+      "full": false,
+      "start_us": 11191958674,
+      "end_us": 11226119554,
+      "wall_us": 34160880,
+      "build_timing": {
+        "between_stages_us": 102512,
+        "commit_write_us": 4648324,
+        "full_staging_us": null,
+        "postprocess_apply_us": 4939523,
+        "postprocess_compute_us": 5159089,
+        "prepare_snapshot_us": 166,
+        "prepare_us": 18833561,
+        "schema_version": 1,
+        "total_us": 33683012
+      },
+      "phase_timing": {
+        "analysis_ms": 65,
+        "parse_ms": 299,
+        "postprocess_ms": 10023,
+        "resolve_ms": 15576,
+        "scan_diff_ms": 2956,
+        "write_ms": 2977
+      },
+      "files_parsed": 0,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 567,
+          "sorts": 5,
+          "statements": 7,
+          "vm_steps": 620818
+        },
+        "file_budget": 200,
+        "parsed_files": 0,
+        "reasons": [
+          "configuration"
+        ],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 200
+      },
+      "resolution_freshness": {
+        "basis_epoch": 721,
+        "complete": false,
+        "completed_files": 200,
+        "index_epoch": 724,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/body/incremental-0",
+      "full": false,
+      "start_us": 3826764788,
+      "end_us": 3847809859,
+      "wall_us": 21045071,
+      "build_timing": {
+        "between_stages_us": 91674,
+        "commit_write_us": 4004503,
+        "full_staging_us": null,
+        "postprocess_apply_us": 5171633,
+        "postprocess_compute_us": 4649880,
+        "prepare_snapshot_us": 1643,
+        "prepare_us": 7003170,
+        "schema_version": 1,
+        "total_us": 20920862
+      },
+      "phase_timing": {
+        "analysis_ms": 402,
+        "parse_ms": 224,
+        "postprocess_ms": 9378,
+        "resolve_ms": 2804,
+        "scan_diff_ms": 3969,
+        "write_ms": 2356
+      },
+      "files_parsed": 1,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 685,
+          "sorts": 5,
+          "statements": 9,
+          "vm_steps": 1751170
+        },
+        "file_budget": 200,
+        "parsed_files": 1,
+        "reasons": [
+          "body",
+          "public_surface",
+          "bound_address",
+          "candidate_set"
+        ],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 200
+      },
+      "resolution_freshness": {
+        "basis_epoch": 6,
+        "complete": false,
+        "completed_files": 201,
+        "index_epoch": 11,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/api/incremental-111",
+      "full": false,
+      "start_us": 9074736790,
+      "end_us": 9090057647,
+      "wall_us": 15320857,
+      "build_timing": {
+        "between_stages_us": 26885,
+        "commit_write_us": 2946079,
+        "full_staging_us": null,
+        "postprocess_apply_us": 4342395,
+        "postprocess_compute_us": 4715792,
+        "prepare_snapshot_us": 195,
+        "prepare_us": 3192561,
+        "schema_version": 1,
+        "total_us": 15223714
+      },
+      "phase_timing": {
+        "analysis_ms": 67,
+        "parse_ms": 184,
+        "postprocess_ms": 8980,
+        "resolve_ms": 2293,
+        "scan_diff_ms": 714,
+        "write_ms": 1176
+      },
+      "files_parsed": 0,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 22602,
+          "sorts": 42,
+          "statements": 45,
+          "vm_steps": 569645
+        },
+        "file_budget": 200,
+        "parsed_files": 0,
+        "reasons": [
+          "body",
+          "public_surface",
+          "candidate_set",
+          "resumed"
+        ],
+        "rebased": false,
+        "resumed": true,
+        "selected_dependents": 200
+      },
+      "resolution_freshness": {
+        "basis_epoch": 500,
+        "complete": false,
+        "completed_files": 22401,
+        "index_epoch": 646,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      }
+    },
+    {
+      "label": "scale-100000/repetition-0/api/incremental-140",
+      "full": false,
+      "start_us": 9288222665,
+      "end_us": 9303510029,
+      "wall_us": 15287364,
+      "build_timing": {
+        "between_stages_us": 19875,
+        "commit_write_us": 2929300,
+        "full_staging_us": null,
+        "postprocess_apply_us": 4438575,
+        "postprocess_compute_us": 4613547,
+        "prepare_snapshot_us": 183,
+        "prepare_us": 3185962,
+        "schema_version": 1,
+        "total_us": 15187262
+      },
+      "phase_timing": {
+        "analysis_ms": 70,
+        "parse_ms": 178,
+        "postprocess_ms": 8971,
+        "resolve_ms": 2292,
+        "scan_diff_ms": 714,
+        "write_ms": 1190
+      },
+      "files_parsed": 0,
+      "files_scanned": 100000,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 28402,
+          "sorts": 54,
+          "statements": 57,
+          "vm_steps": 715977
+        },
+        "file_budget": 200,
+        "parsed_files": 0,
+        "reasons": [
+          "body",
+          "public_surface",
+          "candidate_set",
+          "resumed"
+        ],
+        "rebased": false,
+        "resumed": true,
+        "selected_dependents": 200
+      },
+      "resolution_freshness": {
+        "basis_epoch": 500,
+        "complete": false,
+        "completed_files": 28201,
+        "index_epoch": 683,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      }
+    }
+  ],
+  "unmatched_started_builds": [
+    {
+      "event": "build_started",
+      "full": true,
+      "label": "scale-100000/repetition-0/batch_10/full_control",
+      "start_us": 17693865647
+    }
+  ],
+  "last_event": {
+    "event": "build_started",
+    "full": true,
+    "label": "scale-100000/repetition-0/batch_10/full_control",
+    "start_us": 17693865647
+  },
+  "sample_summaries": [
+    {
+      "event": "cold_parity",
+      "parity_wall_us": 1081870328,
+      "sample": "scale-100000/repetition-0"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/no_op",
+      "requested_files": 0
+    },
+    {
+      "complete": true,
+      "event": "stage_finished",
+      "full_complete": true,
+      "incremental_builds": 1,
+      "incremental_wall_us": 2931489,
+      "label": "scale-100000/repetition-0/no_op",
+      "no_op_unchanged": true,
+      "parity_wall_us": 1153747769,
+      "passed": true,
+      "phase_count_definition": "raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/body",
+      "requested_files": 1
+    },
+    {
+      "complete": true,
+      "event": "stage_finished",
+      "full_complete": true,
+      "incremental_builds": 490,
+      "incremental_wall_us": 3018821741,
+      "label": "scale-100000/repetition-0/body",
+      "no_op_unchanged": true,
+      "parity_wall_us": 856460439,
+      "passed": true,
+      "phase_count_definition": "raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/api",
+      "requested_files": 1
+    },
+    {
+      "complete": true,
+      "event": "stage_finished",
+      "full_complete": true,
+      "incremental_builds": 171,
+      "incremental_wall_us": 1240127144,
+      "label": "scale-100000/repetition-0/api",
+      "no_op_unchanged": true,
+      "parity_wall_us": 997639712,
+      "passed": true,
+      "phase_count_definition": "raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/config",
+      "requested_files": 1
+    },
+    {
+      "complete": true,
+      "event": "stage_finished",
+      "full_complete": true,
+      "incremental_builds": 330,
+      "incremental_wall_us": 2076177310,
+      "label": "scale-100000/repetition-0/config",
+      "no_op_unchanged": true,
+      "parity_wall_us": 1528007607,
+      "passed": true,
+      "phase_count_definition": "raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/batch_1",
+      "requested_files": 1
+    },
+    {
+      "complete": true,
+      "event": "stage_finished",
+      "full_complete": true,
+      "incremental_builds": 1,
+      "incremental_wall_us": 8638176,
+      "label": "scale-100000/repetition-0/batch_1",
+      "no_op_unchanged": true,
+      "parity_wall_us": 1461677521,
+      "passed": true,
+      "phase_count_definition": "raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"
+    },
+    {
+      "event": "mutation",
+      "label": "scale-100000/repetition-0/batch_10",
+      "requested_files": 10
+    }
+  ]
+}

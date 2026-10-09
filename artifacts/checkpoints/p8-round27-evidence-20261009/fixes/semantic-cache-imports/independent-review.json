@@ -1,0 +1,91 @@
+{
+  "schema": "p8-macos-semantic-test-imports-independent-review-v1",
+  "reviewer": "/root/acceptance_audit",
+  "author": "/root/pr_audit",
+  "status": "accepted_scoped_static",
+  "reviewed_source": "d58e6c176959f4942639b022597038105c5c1c0f",
+  "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+  "before": {
+    "blob": "f35c2cd2cb14e4c257d7ab4ec143be0497bd905b",
+    "bytes": 15463,
+    "sha256": "39b631321fde931c9ecd979beaf56e06fd41ee1b4a18b169171ce2cb14634751"
+  },
+  "after": {
+    "blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+    "bytes": 15513,
+    "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495"
+  },
+  "patch": {
+    "blob": "46e38612900803cf2c4e86dbf7333637504bf3aa",
+    "bytes": 589,
+    "sha256": "b01475c24ace4367174428e797ceacde70669f84ac34d447a5b9e9950ad2ca8d"
+  },
+  "original_failure": {
+    "blob": "ae6043d946d40e6a016c94fa0be11feedf90e395",
+    "bytes": 2795,
+    "sha256": "a5e22ffe0d774235a3a58d93ee5be9e4d0ff58e9f7c2c286ace1eea565471116",
+    "meaning": "Actual Mac Clippy unused-imports diagnostic, not evidence that candidate compiled."
+  },
+  "actual_static_checks": {
+    "all_four_Git_bodies_fully_read_and_SHA1_SHA256_checked": true,
+    "unique_import_block_forward_inverse_whole_file_equal": true,
+    "body_from_struct_Allocator_onward_byte_identical": true,
+    "tests": [
+      {
+        "name": "legal_writer_extremes_and_exact_read_bound_preserve_f32_bits",
+        "linux": false,
+        "ignored": false
+      },
+      {
+        "name": "forged_dimensions_overflow_sparse_lengths_and_truncation_remain_bounded",
+        "linux": false,
+        "ignored": false
+      },
+      {
+        "name": "incomplete_corrupt_and_io_error_semantics_are_distinct",
+        "linux": false,
+        "ignored": false
+      },
+      {
+        "name": "actual_get_growth_after_open_and_atomic_replacement_do_not_bypass_budget",
+        "linux": true,
+        "ignored": false
+      },
+      {
+        "name": "metadata_stream_extra_probe_and_error_before_eof_are_bounded",
+        "linux": true,
+        "ignored": false
+      },
+      {
+        "name": "public_get_short_read_then_growing_payload_consumes_only_budget_plus_probe",
+        "linux": true,
+        "ignored": false
+      },
+      {
+        "name": "maximum_in_budget_json_diagnostics_remain_proportional_to_format_cap",
+        "linux": false,
+        "ignored": false
+      }
+    ],
+    "total_tests": 7,
+    "cross_platform_tests": 4,
+    "original_Linux_tests": 3
+  },
+  "findings": [
+    "PathBuf remains unconditionally imported for Fixture and its methods.",
+    "Path is used only by original cfg(linux) fifo and wait_payload_open. Duration/Instant references all remain inside the original cfg(linux) wait helper or three original Linux tests.",
+    "Linux imports retain the same bindings; macOS removes only bindings for already excluded code. Every original test name, body, attribute, timeout and assertion is unchanged.",
+    "No warning suppression, whole-file gate, deleted test, feature change, production logic or guard modification."
+  ],
+  "execution": {
+    "native": false,
+    "Cargo": false,
+    "rustfmt": false,
+    "tests": false,
+    "refs_changed": false
+  },
+  "unresolved_blockers": [],
+  "scope": "One import-only leaf; whole-candidate compilation/CI remains separately required. Original failure and d58 identity retained.",
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

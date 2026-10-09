@@ -1,0 +1,49 @@
+diff --git a/crates/cc-eval/tests/benchmark_adapters.rs b/crates/cc-eval/tests/benchmark_adapters.rs
+--- a/crates/cc-eval/tests/benchmark_adapters.rs
++++ b/crates/cc-eval/tests/benchmark_adapters.rs
+@@ -213,6 +213,7 @@
+         "adr",
+     ];
+ 
++    #[cfg(target_os = "linux")]
+     fn file_digest(path: &Path) -> String {
+         use sha2::{Digest, Sha256};
+         format!("{:x}", Sha256::digest(std::fs::read(path).unwrap()))
+@@ -220,6 +221,7 @@
+ 
+     enum SpawnPolicy {
+         Direct,
++        #[cfg(target_os = "linux")]
+         KillOnNetwork {
+             launcher: PathBuf,
+             digest: String,
+@@ -275,6 +277,7 @@
+         fn proof(&self) -> Value {
+             match self {
+                 Self::Direct => Value::Null,
++                #[cfg(target_os = "linux")]
+                 Self::KillOnNetwork { probes, .. } => probes.clone(),
+             }
+         }
+@@ -286,10 +289,13 @@
+     }
+ 
+     async fn spawn(binary: &Path, root: &Path, policy: &SpawnPolicy) -> (Client, ProductChild) {
++        #[cfg(target_os = "linux")]
+         let evidence = tempfile::tempdir().unwrap();
++        #[cfg(target_os = "linux")]
+         let receipt_path = evidence.path().join("pre-exec.json");
+         let mut command = match policy {
+             SpawnPolicy::Direct => tokio::process::Command::new(binary),
++            #[cfg(target_os = "linux")]
+             SpawnPolicy::KillOnNetwork {
+                 launcher, digest, ..
+             } => {
+@@ -334,6 +340,7 @@
+             .unwrap();
+         let guard_receipt = match policy {
+             SpawnPolicy::Direct => Value::Null,
++            #[cfg(target_os = "linux")]
+             SpawnPolicy::KillOnNetwork { digest, .. } => {
+                 let receipt: Value =
+                     serde_json::from_slice(&std::fs::read(receipt_path).unwrap()).unwrap();

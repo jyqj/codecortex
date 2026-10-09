@@ -1,0 +1,141 @@
+{
+  "schema": "p8-pr184-semantic-test-import-cfg-author-handoff-v1",
+  "status": "candidate_static_only_pending_independent_review_and_actual_formatter_clippy",
+  "author": "pr_audit",
+  "base": {
+    "commit": "d58e6c176959f4942639b022597038105c5c1c0f",
+    "tree": "9dc90e3f8fc157bc44ff2f127679e28f92d05b15",
+    "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+    "blob": "f35c2cd2cb14e4c257d7ab4ec143be0497bd905b",
+    "bytes": 15463,
+    "sha256": "39b631321fde931c9ecd979beaf56e06fd41ee1b4a18b169171ce2cb14634751"
+  },
+  "candidate": {
+    "blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+    "bytes": 15513,
+    "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495"
+  },
+  "patch": {
+    "blob": "46e38612900803cf2c4e86dbf7333637504bf3aa",
+    "bytes": 589,
+    "sha256": "b01475c24ace4367174428e797ceacde70669f84ac34d447a5b9e9950ad2ca8d"
+  },
+  "trigger": {
+    "observed_by": "root original P macOS SDK26.5 whole-workspace Clippy",
+    "native_path": "artifacts/benchmarks/p8-pr184-native-20261009-root/validation-P-main4ef-results/clippy.stderr.log",
+    "blob": "ae6043d946d40e6a016c94fa0be11feedf90e395",
+    "bytes": 2795,
+    "sha256": "a5e22ffe0d774235a3a58d93ee5be9e4d0ff58e9f7c2c286ace1eea565471116",
+    "error": "unused imports: Duration, Instant, and Path; -D unused-imports implied by -D warnings"
+  },
+  "exact_replacements": [
+    {
+      "before": "use std::{\n    alloc::{GlobalAlloc, Layout, System},\n    cell::Cell,\n    io::Write,\n    path::{Path, PathBuf},\n    sync::atomic::{AtomicU64, Ordering},\n    time::{Duration, Instant},\n};",
+      "after": "use std::{\n    alloc::{GlobalAlloc, Layout, System},\n    cell::Cell,\n    io::Write,\n    path::PathBuf,\n    sync::atomic::{AtomicU64, Ordering},\n};\n#[cfg(target_os = \"linux\")]\nuse std::{\n    path::Path,\n    time::{Duration, Instant},\n};"
+    }
+  ],
+  "preservation": {
+    "inverse_restores_entire_original_body": true,
+    "actual_pure_js_unified_patch_applies_to_exact_before_and_yields_exact_after": true,
+    "all_text_from_struct_Allocator_to_EOF_unchanged": true,
+    "only_import_block_changed": true,
+    "Linux_same_imported_identifiers": true,
+    "nonLinux_PathBuf_stays_available": true,
+    "test_attributes_and_assertions_unchanged": true,
+    "tests": [
+      {
+        "name": "legal_writer_extremes_and_exact_read_bound_preserve_f32_bits",
+        "platform": "all"
+      },
+      {
+        "name": "forged_dimensions_overflow_sparse_lengths_and_truncation_remain_bounded",
+        "platform": "all"
+      },
+      {
+        "name": "incomplete_corrupt_and_io_error_semantics_are_distinct",
+        "platform": "all"
+      },
+      {
+        "name": "actual_get_growth_after_open_and_atomic_replacement_do_not_bypass_budget",
+        "platform": "linux"
+      },
+      {
+        "name": "metadata_stream_extra_probe_and_error_before_eof_are_bounded",
+        "platform": "linux"
+      },
+      {
+        "name": "public_get_short_read_then_growing_payload_consumes_only_budget_plus_probe",
+        "platform": "linux"
+      },
+      {
+        "name": "maximum_in_budget_json_diagnostics_remain_proportional_to_format_cap",
+        "platform": "all"
+      }
+    ]
+  },
+  "usage_proof": {
+    "actual_occurrences": [
+      {
+        "line": 11,
+        "text": "    path::{Path, PathBuf},"
+      },
+      {
+        "line": 13,
+        "text": "    time::{Duration, Instant},"
+      },
+      {
+        "line": 268,
+        "text": "fn fifo(path: &Path) {"
+      },
+      {
+        "line": 278,
+        "text": "fn wait_payload_open(path: &Path) {"
+      },
+      {
+        "line": 279,
+        "text": "    let deadline = Instant::now() + Duration::from_secs(2);"
+      },
+      {
+        "line": 288,
+        "text": "        assert!(Instant::now() < deadline, \"get never opened payload\");"
+      },
+      {
+        "line": 355,
+        "text": "    let deadline = Instant::now() + Duration::from_secs(2);"
+      },
+      {
+        "line": 358,
+        "text": "            Instant::now() < deadline,"
+      },
+      {
+        "line": 396,
+        "text": "    let deadline = Instant::now() + Duration::from_secs(2);"
+      },
+      {
+        "line": 399,
+        "text": "            Instant::now() < deadline,"
+      },
+      {
+        "line": 409,
+        "text": "            Instant::now() < deadline,"
+      }
+    ],
+    "scope": "Path only appears in already cfg(linux) fifo and wait_payload_open function signatures; Duration/Instant occur in that helper and two already cfg(linux) tests. PathBuf is used by cross-platform Fixture and remains unconditional."
+  },
+  "review_scope": "Acceptance is the independent semantic reviewer. This author only creates a candidate blob and patch. Root alone decides actual P2, tests, guard installation and reference publication.",
+  "execution": {
+    "rustfmt": false,
+    "Cargo": false,
+    "Clippy": false,
+    "Rust_tests": false,
+    "product": false,
+    "ref_mutation": false
+  },
+  "failure_history": "Original P Clippy remains failed and original 2795-byte stderr is preserved. This candidate does not claim a new pass.",
+  "patch_packaging_history": {
+    "unused_first_patch_blob": "db93119d5b5c5ce2f0c348f6639332c09c947c06",
+    "reason": "Initial hunk header line counts were corrected in the final patch before delivery; source candidate did not change. Final hunk application was actually verified by pure JS."
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

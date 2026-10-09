@@ -1,0 +1,191 @@
+{
+  "schema": "p8-python-inventory-linux-cfg-independent-review-v1",
+  "reviewed_utc": "2026-10-09 11:59:16 UTC",
+  "reviewer": "/root/acceptance_audit",
+  "author": "/root/pr_audit",
+  "verdict": "accepted_scoped_static_for_actual_validation",
+  "blockers": [],
+  "path": "crates/cc-index/src/project_model/python_inventory.rs",
+  "mode": "100644",
+  "original": {
+    "commit": "ae033369f015c416cd7995709c1853497773cf6a",
+    "blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "bytes": 13123,
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+    "independent_full_read": true
+  },
+  "latest_main_comparison": {
+    "commit": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "body_equal": true,
+    "blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "bytes": 13123,
+    "sha256": "2d215cdbef2d68354c6c4617f54c8d6bc2e5e1fbba976dec666e4eabb465d4a2",
+    "independent_full_read": true,
+    "comparison": "Actual fixed main4ef and G ae033 bodies are byte-identical; no owner change is overwritten by applying this leaf at either recorded baseline."
+  },
+  "candidate": {
+    "blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+    "bytes": 13291,
+    "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e",
+    "independent_full_read": true
+  },
+  "patch": {
+    "blob": "ab8403ad2bbc644befe63428337c8e1937aaf545",
+    "bytes": 1665,
+    "sha256": "9cff4a90134470bbc594e674c061f90dfdf1b50d9a5e72cb2cb3d657f212abe6",
+    "independent_full_read": true
+  },
+  "author_handoff": {
+    "blob": "b4dc7372f3c72338190d5bb4544a1de451e2159c",
+    "bytes": 7155,
+    "sha256": "c648a9c43d27521846388689e6429df7203bf3a206c8b14bdbb1fc583c38d8c6"
+  },
+  "trigger": {
+    "source": "ae033369f015c416cd7995709c1853497773cf6a",
+    "run_scope": "root native SDK26 continuation; first SDK27 linker failure retained separately",
+    "stderr": {
+      "blob": "1b2f0f4966b59d90413f958e842da88696586269",
+      "bytes": 5805,
+      "sha256": "a3c8075997b74b8f09036d5730c23d801b3f75d7d510c9e306209af8f84a3ff9"
+    },
+    "warnings": 5,
+    "details": [
+      "unused imports config_cache::Loader and python",
+      "bound dead code",
+      "sum dead code",
+      "supported_document dead code",
+      "OutputMeter never constructed"
+    ],
+    "SDK_recovery": "Dependency linking succeeded with per-process SDK26.5; these are actual macOS cfg diagnostics under unchanged -D warnings.",
+    "reviewer_read_entire_stderr": true,
+    "scope": "The immutable original SDK26 continuation stderr actually reports exactly these five cc-index unused-import/dead-code errors. The earlier SDK27 failure and any later validation remain separate."
+  },
+  "actual_independent_static_checks": {
+    "forward_exact": true,
+    "inverse_exact": true,
+    "standard_unified_patch_exact": true,
+    "hunks": 5,
+    "added_lines": 6,
+    "removed_lines": 0,
+    "new_lint_suppressions": false,
+    "new_public_api_changes": false,
+    "main4ef_and_G_before_equal": true,
+    "execution": "Pure V8 string/coordinate comparisons, not Rust compilation or tests"
+  },
+  "conditional_items": [
+    {
+      "item": "use super::{config_cache::Loader, python};",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    },
+    {
+      "item": "fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    },
+    {
+      "item": "fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    },
+    {
+      "item": "fn supported_document(doc: &ConfigDocument) -> Result<()> {",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    },
+    {
+      "item": "struct OutputMeter {",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    },
+    {
+      "item": "impl std::io::Write for OutputMeter {",
+      "attribute": "#[cfg(target_os = \"linux\")]",
+      "Linux": "Included exactly as before",
+      "nonLinux": "Private implementation excluded consistently with its original Linux-only callers"
+    }
+  ],
+  "semantic_review": [
+    {
+      "subject": "Loader/python imports",
+      "finding": "Only referenced inside the already cfg(target_os=linux) capture_inner branch; Linux binding/body unchanged."
+    },
+    {
+      "subject": "bound and sum",
+      "finding": "Referenced by that Linux capture branch and native::inventory traversal; native module already has target_os=linux. Checked arithmetic and all resource errors are byte-identical."
+    },
+    {
+      "subject": "supported_document",
+      "finding": "Only called by the Linux capture branch. Raw configuration filtering, disallowed selectors, empty roots and error order unchanged."
+    },
+    {
+      "subject": "OutputMeter",
+      "finding": "Both struct and Write impl acquire the same target_os=linux cfg. Actual serialization byte counting, checked_add, limit predicate and original error behavior unchanged."
+    },
+    {
+      "subject": "Non-Linux public behavior",
+      "finding": "capture_inner remains present and unchanged. Scope/exclusion authorization then owner validity still precede UnsupportedPlatform. No filesystem capture is enabled on macOS or other non-Linux targets."
+    },
+    {
+      "subject": "Public revalidation and receipt",
+      "finding": "Public types, capture wrapper, receipt constants/hash/serialization and revalidate validation order remain present and byte-identical; revalidation ultimately calls the same capture function. This is not a new platform-support claim."
+    },
+    {
+      "subject": "Warnings and workloads",
+      "finding": "No allow/expect lint suppression, compiler-flag edit, public function removal, dependency/feature change, test removal or guard/workload/source-identity change is in this one-file delta."
+    }
+  ],
+  "supporting_sources": [
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/native.rs",
+      "blob": "d490d5f62c21173ae8ea3917996edd6c1794d638",
+      "bytes": 10115,
+      "sha256": "7ab82bd3c6b3c23e21fa4e4eb0d445c645c638e427ba823bc14337ebbf3c67e8",
+      "independent_full_read": true,
+      "modified": false
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/revalidation.rs",
+      "blob": "e98629ae92fec41d12ccd450a35e63f932f9838d",
+      "bytes": 6613,
+      "sha256": "b69bcdccb65038625d9c4303a0e3c87f0d70c3b964f027b8e3d99fce3a2f6dec",
+      "independent_full_read": true,
+      "modified": false
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory/tests.rs",
+      "blob": "a5346e303c562bf3f410aea6eba36902106b5b25",
+      "bytes": 3087,
+      "sha256": "fe805d7b2ee2624afbe8e2142ea0072805b44f64543c429cb322ee654ea1cdbb",
+      "independent_full_read": true,
+      "modified": false
+    }
+  ],
+  "validation_scope": {
+    "compiled": false,
+    "cargo": false,
+    "native_job_started": false,
+    "rustfmt": false,
+    "tests": false,
+    "source_refs_or_PRs_changed": false,
+    "checks_performed": "GitHub complete text reads plus pure-V8 full-file exact forward/inverse and strict unified-patch coordinate/context verification.",
+    "pending": "Actual formatting, Mac workspace/all-targets strict Clippy and ordinary relevant regression/CI on the eventual integrated source. Linux behavior preservation here is an exact-source/cfg argument, not a new Linux execution result.",
+    "not_claimed": "This fixes the five demonstrated unused items statically; it does not claim the remaining workspace is free of other errors, nor transfer old-G tests to a newly integrated G."
+  },
+  "preserved_history": {
+    "old_source": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "original_failure": "1b2f0f4966b59d90413f958e842da88696586269",
+    "superseded_patch": "ca6918000b90cd91991d8535825a52fdf583967e",
+    "superseded_patch_reason": "Merged two overlapping context hunks for struct/impl into one standard unified hunk. Candidate source and exact six replacements unchanged; no previous patch execution occurred."
+  },
+  "TODO": {
+    "changed": false,
+    "newly_closed": 0,
+    "remaining": 29
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "schema": "p8-pr184-main4ef-macos-P3-R-G-independent-binding-review-v1",
+  "verdict": "accepted_scoped_for_exact_object_and_trust_installation_binding",
+  "reviewer": "/root/pr_audit",
+  "role_boundary": "I authored the three platform cfg/import corrections. This report audits immutable Git composition and trust installation only, and does not self-approve those source semantics. Their independent semantic basis is acceptance_audit's three records and final canonical.",
+  "source_chain": [
+    {
+      "commit": "d58e6c176959f4942639b022597038105c5c1c0f",
+      "tree": "9dc90e3f8fc157bc44ff2f127679e28f92d05b15",
+      "parents": [
+        "ae033369f015c416cd7995709c1853497773cf6a",
+        "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75"
+      ]
+    },
+    {
+      "commit": "2b286543e953b19d70cc41e22b9fdd581a2cdf41",
+      "tree": "b6bd9b32953f3f6b132ee32546fe70482141b52d",
+      "parents": [
+        "d58e6c176959f4942639b022597038105c5c1c0f"
+      ]
+    },
+    {
+      "commit": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+      "tree": "56a920c25ff3ac3279e465f1ae0f88c7b5ab79e2",
+      "parents": [
+        "2b286543e953b19d70cc41e22b9fdd581a2cdf41"
+      ]
+    },
+    {
+      "commit": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+      "tree": "d6081301e83db62f6ecb93812ac179385a57c614",
+      "parents": [
+        "e0b56631a395ca34957c79e54a3e8d52b588306c"
+      ]
+    },
+    {
+      "commit": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+      "tree": "5af23abb6f53a182c18cbff228b87adab1bcb213",
+      "parents": [
+        "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335"
+      ]
+    }
+  ],
+  "canonical": {
+    "blob": "e5fdce1d5d7f03d11e5d25d59e7056fd631dd394",
+    "bytes": 779751,
+    "sha256": "2fda954710e062b59032f7f79aa5fd0b425f908717bbd9ea325a2a0d3077810f",
+    "path": "artifacts/checkpoints/p8-canonical-physical-indexes-main-4ef-macos-20261009/independent-source-review.json",
+    "source": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+    "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "verdict": "accepted_scoped",
+    "scope": "independently_reviewed_source_and_validation_inputs",
+    "independent_reviewers": [
+      "/root/acceptance_audit"
+    ],
+    "unresolved_blockers": []
+  },
+  "cfg_independent_reviews": [
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "review": "8b4c9a0730faaf6aeaea182e290931bab0a632d5",
+      "source_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18"
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "review": "877345eff7cb07cc0da1de36a015a3719b118061",
+      "source_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02"
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "review": "6d55baa92a49f665d3c767391a2c941fab63751b",
+      "source_blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17"
+    }
+  ],
+  "tree_checks": {
+    "method": "Direct actual Git tree API, complete entry lists with truncated=false; rebuild each SHA1 from Git-sorted mode/name/NUL/raw-OID entries. Recursively descend every changed subtree and retain equal mode/type/OID subtrees as full identity witnesses.",
+    "actual_unique_trees_hashed": 42,
+    "main_to_P": {
+      "main": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+      "main_tree": "1e8439b342fa7f1136ee640b17c5f493b2b512ab",
+      "product_modifications": 4,
+      "original184_review_artifact_additions": 5,
+      "all_other_entry_modes_and_OIDs_preserved": true
+    },
+    "P_to_P2": [
+      {
+        "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f35c2cd2cb14e4c257d7ab4ec143be0497bd905b",
+          "size": 15463
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+          "size": 15513
+        }
+      }
+    ],
+    "P2_to_P3": [
+      {
+        "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9466989bb3e1ccfea8c64fa20155e169b1b18d40",
+          "size": 38661
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+          "size": 38925
+        }
+      }
+    ],
+    "P3_to_R": [
+      {
+        "path": "artifacts/checkpoints/p8-canonical-physical-indexes-main-4ef-macos-20261009/independent-source-review.json",
+        "before": null,
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e5fdce1d5d7f03d11e5d25d59e7056fd631dd394",
+          "size": 779751
+        }
+      }
+    ],
+    "R_to_G": [
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "65e2e8b6963a4fc87c79cafc5aea418cc064de53",
+          "size": 175277
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "6fdf9ebb350c04315e338251bd8f6011a650f53c",
+          "size": 176235
+        }
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "cec25b90508c14478aa3390531012a0d7f47eb12",
+          "size": 11083
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "sha": "027acd87b3ea1ae3c13a52a47790bfed9c1f7494",
+          "size": 11107
+        }
+      }
+    ],
+    "unchanged_witness_counts": {
+      "main_to_P": 345,
+      "P3_to_R": 233,
+      "R_to_G": 84
+    },
+    "product_domain_P3_R_G_identical": true,
+    "validation_domain_P3_R_G_identical": true
+  },
+  "registry": {
+    "prior_main_blob": "65e2e8b6963a4fc87c79cafc5aea418cc064de53",
+    "new_blob": "6fdf9ebb350c04315e338251bd8f6011a650f53c",
+    "bytes": 176235,
+    "sha256": "e2190616cd589e53676668fe612ca128ac14240464124c5b86bb477357316b4c",
+    "exactly_changed_top_level_fields": [
+      "complete_inputs",
+      "delta",
+      "product_source",
+      "review_sha256",
+      "review_source"
+    ],
+    "complete_inputs": 1092,
+    "BASE_delta": 60,
+    "validation_inputs": 139,
+    "every_entry_equals_canonical_and_independent_expected_maps": true,
+    "expected_map_derivation": "Start from fixed main registry1092/56/139, retain every other entry, replace the exact original184 three DB source hashes and exact three cfg hashes. Only direct_writer and the three cfg paths add BASE delta entries. Independently read BASE bodies for all three cfg paths; before hashes equal their original bodies.",
+    "product_manifest_compact_sha256": "08137e6a2003063fe793bec0f728e4af238f56de62d0d7a0c12e23ed389a410f",
+    "validation_139_all_equal_main_and_old_ae033": true,
+    "original_schema_scope_BASE_previous_version_runtime_claims_unchanged": true
+  },
+  "guard": {
+    "prior_main_blob": "cec25b90508c14478aa3390531012a0d7f47eb12",
+    "new_blob": "027acd87b3ea1ae3c13a52a47790bfed9c1f7494",
+    "bytes": 11107,
+    "sha256": "170201d1fa037fa3eab8cc545d8bbe7601956a2553eeeabd48f007b078e94116",
+    "exact_pins": {
+      "PRODUCT": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+      "REVIEW": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+      "REVIEW_PATH": "artifacts/checkpoints/p8-canonical-physical-indexes-main-4ef-macos-20261009/independent-source-review.json",
+      "REGISTRY_SHA256": "e2190616cd589e53676668fe612ca128ac14240464124c5b86bb477357316b4c"
+    },
+    "inverse_substitution_of_exactly_four_unique_assignment_lines_equals_whole_prior_file": true,
+    "BASE_functions_validation_exclusions_and_frozen_list_unchanged": true,
+    "both_trust_files_mode": "100644"
+  },
+  "preserved_contracts": [
+    "All main4ef product changes, original validation/CI bytes, documentation, tasks ledger and prior artifact history remain present. Existing duplicate agent names retain their original recorded sessions and roles.",
+    "The canonical preserves original non-author path ownership and recusals for inherited source. This binding audit does not replace those semantic reviews.",
+    "R adds only its one fixed canonical path. G alters only the excluded v15 registry and verifier; it changes no reviewed implementation or validation input.",
+    "The original six v14 files, historical functions, original CI selector and workflows keep their inherited mode/OID. No acceptance rule, N, budget, timeout, test assertion or task state is relaxed."
+  ],
+  "observed_execution_boundary": {
+    "original_G_DB21": {
+      "source": "ae033369f015c416cd7995709c1853497773cf6a",
+      "review": "98e81baf4cb4f6ca51307fcfa1945d931258acc3",
+      "passed": 21,
+      "scope": "Only original G's actual11/5/5 DB methods; not relabeled to P3/G."
+    },
+    "actual_P3_precheck": {
+      "source": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+      "manifest": "fd80ab733956bcd06feca9ae5f12a957c625a774",
+      "manifest_sha256": "6842f0ecfaaf7a65b7927cdf6bee3f1268a94e33047a6f41fbdeac429883af4f",
+      "clippy_stderr": "5b4893ce10d64f98ab3e068b37e8a070ada9b49c",
+      "actual_fmt_exit": 0,
+      "actual_whole_workspace_all_targets_Clippy_exit": 0,
+      "full_fixed_manifest_and_stderr_read_and_hash_verified": true,
+      "source_before_after_clean_P3": true,
+      "not_product_measurement": true
+    },
+    "earlier_failures_preserved": [
+      "77160f474303e2b9e978b8b83437b4b63347a388",
+      "1b2f0f4966b59d90413f958e842da88696586269",
+      "ae6043d946d40e6a016c94fa0be11feedf90e395",
+      "afdeb59baf62d728e70dacd21140284ad2daae5d"
+    ],
+    "new_G_guard_or_CI_execution_claimed": false,
+    "no_scale_runtime_release_or_task_acceptance_inferred": true
+  },
+  "reviewer_actions": {
+    "Git_read_and_pure_JS_hash_comparison": true,
+    "created_only_this_unreferenced_review_blob": true,
+    "source_execution": false,
+    "Cargo": false,
+    "tests": false,
+    "job_observation": false,
+    "ref_or_PR_mutation": false
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

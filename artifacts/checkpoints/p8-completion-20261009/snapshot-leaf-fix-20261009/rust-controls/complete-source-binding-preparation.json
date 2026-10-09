@@ -1,0 +1,68 @@
+{
+  "schema": "p8-snapshot-leaf-fix-source-binding-v1",
+  "status": "static_complete_input_map_derived_from_independent_G1_review_and_one_actual_blob_not_execution",
+  "source_parent": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "source_commit": null,
+  "source_tree": null,
+  "production_input_count": 1089,
+  "historical_delta_count": 41,
+  "manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+  "previous_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+  "canonical_G1_review": {
+    "blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057",
+    "sha256": "42c45e8fd008554701197acb0dde27c708fa390d22215be9ddbf63019635402a"
+  },
+  "previous_preparation_blob": "6b0817e930573c30bb1e196f985b4358cab6f554",
+  "preserved_product_input_hashes": 1088,
+  "changed_product_inputs": [
+    {
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "before": {
+        "name": "oldTest",
+        "bytes": 13576,
+        "sha256": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
+        "git_blob": "636a9c45d6b2e0fe2dd6ded58948f40fcee7a134"
+      },
+      "after": {
+        "name": "newTest",
+        "bytes": 13586,
+        "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+        "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844"
+      },
+      "line_delta": [
+        {
+          "line": 149,
+          "old": "        .collect::<rusqlite::Result<_>>()",
+          "new": "        .collect::<rusqlite::Result<Vec<String>>>()"
+        }
+      ]
+    }
+  ],
+  "expected_scale_observers": {
+    "scripts/p7_build_identity.py": {
+      "bytes": 5940,
+      "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "mode": "100644",
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+    },
+    "scripts/p8_runner_capacity.py": {
+      "bytes": 11164,
+      "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "mode": "100644",
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    "scripts/p8_scale_matrix.py": {
+      "bytes": 65092,
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "mode": "100644",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    }
+  },
+  "sha256_method": "Original p7_build_identity.json_bytes serialization of the complete path-to-content-SHA256 mapping",
+  "independent_actual_hash_output": "{\"name\": \"complete_inputs\", \"bytes\": 139621, \"sha256\": \"46885e35dde79c3042a357039b80789957c57637345a8d384c1b842b5d952f19\", \"git_blob\": \"a2a2ee24b044ace26d826c749c3985515c46337a\", \"old_manifest\": \"d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d\", \"old_test_sha256\": \"be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29\", \"count\": 1089, \"new_manifest\": \"691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac\"}\r\n{\"name\": \"oldTest\", \"bytes\": 13576, \"sha256\": \"be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29\", \"git_blob\": \"636a9c45d6b2e0fe2dd6ded58948f40fcee7a134\"}\r\n{\"name\": \"newTest\", \"bytes\": 13586, \"sha256\": \"6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26\", \"git_blob\": \"307e4636016bd55edb8560bb131d63e5cfcfb844\"}\r\n",
+  "actual_source_bridge_required_after_publication": true,
+  "tests_executed": false,
+  "Cargo_executed": false,
+  "new_TODO_done": 0,
+  "TODO_remaining": 29
+}

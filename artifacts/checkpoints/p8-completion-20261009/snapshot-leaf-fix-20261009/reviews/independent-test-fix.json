@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/acceptance_audit",
+  "status": "accepted_scoped_single_test_type_annotation",
+  "base_source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+  "before_git_blob": "636a9c45d6b2e0fe2dd6ded58948f40fcee7a134",
+  "after": {
+    "bytes": 13586,
+    "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+    "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+    "old_sha256": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
+    "new_product_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+    "source_input_count": 1089
+  },
+  "actual_diff": [
+    {
+      "line": 149,
+      "before": "        .collect::<rusqlite::Result<_>>()",
+      "after": "        .collect::<rusqlite::Result<Vec<String>>>()"
+    }
+  ],
+  "methods_before": [
+    "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts",
+    "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+    "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+    "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+    "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+    "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes"
+  ],
+  "methods_after": [
+    "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts",
+    "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+    "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+    "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+    "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+    "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes"
+  ],
+  "original_error": {
+    "log_git_blob": "896eba09276fff035ea383a6fe74795f0b0a2568",
+    "rust_error": "E0282",
+    "line": 149,
+    "reason": "collect::<rusqlite::Result<_>>() leaves the intermediate collection type unconstrained before into_iter().",
+    "original_controls_zip_git_blob": "f581732f5884210863b06282f274cc382e553f59",
+    "prior_failures_preserved": true
+  },
+  "findings": [
+    "The query_map closure is already r.get::<_, String>(1); choosing Vec<String> as the successful Result collection preserves source order and the existing fallible collection behavior.",
+    "The following into_iter/filter/collect keeps the original files.indexed_at exclusion, rowid projection, typed rows and ordered equality. No assertions or selected methods are deleted or ignored.",
+    "Only this test body byte hash changes within the current1089 product manifest; the new manifest was independently recomputed as691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac.",
+    "Original compiler/test failure remains a true failed G observation. No successful compile, Clippy or Rust53 execution is inferred from this static correction."
+  ],
+  "audit_notes": [
+    "First static comparison incorrectly assumed the old generic collect spelling occurred only once in the file. It rejected that assumption; the subsequent complete line-by-line comparison confirms exactly one changed line at149. No original file or evidence was changed."
+  ],
+  "new_Cargo_or_tests_executed": false,
+  "new_product_workload": false,
+  "original_TODO_closed": 0,
+  "remaining_TODO": 29,
+  "required_next": "Bind actual new public source/tree and updated auxiliary source/branch metadata, complete independent source review and pins, then execute original required controls. Old G/PR/run receipts retain original identity."
+}

@@ -1,0 +1,153 @@
+{
+  "schema": "p8-snapshot-leaf-fix-auxiliary-binding-author-review-v1",
+  "status": "author_static_checks_passed_pending_non_author_review",
+  "author": "/root/pr_audit",
+  "source_parent": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "branch": "task/p8-snapshot-leaf-engineering-fix-20261009",
+  "product_inputs": 1089,
+  "historical_delta": 41,
+  "product_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+  "source_fix": {
+    "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+    "before_git_blob": "636a9c45d6b2e0fe2dd6ded58948f40fcee7a134",
+    "after_git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+    "line_delta": [
+      {
+        "line": 149,
+        "old": "        .collect::<rusqlite::Result<_>>()",
+        "new": "        .collect::<rusqlite::Result<Vec<String>>>()"
+      }
+    ]
+  },
+  "prior_canonical_review_blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057",
+  "prior_Python50_independent_review_blob": "19d812c3d1fb90fc883ab09fe4753c2948a5e7be",
+  "prior_Rust_workflow_independent_review_blob": "f3670bfabc86e7975ce2201794fb6b670fac4b09",
+  "no_previous_review_rewritten": true,
+  "author_independence": "This author transformed the auxiliary bindings and does not supply their non-author acceptance. Acceptance_audit and root review before publication.",
+  "static_result": {
+    "status": "static_checks_passed",
+    "tests_executed": false,
+    "Cargo_executed": false,
+    "source_input_count": 1089,
+    "historical_delta": 41,
+    "manifest": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+    "python_manifest_changed_keys": [
+      "branch",
+      "source_manifest_sha256"
+    ],
+    "python_controller_exact_inverse": true,
+    "python_workflow_exact_inverse": true,
+    "python_embedded_controller_equal": true,
+    "upload_two_paths_and_hidden_true_unchanged": true,
+    "rust_workflow_exact_inverse": true,
+    "rust_inline_python_blocks_parsed": 1,
+    "unchanged_Rust_commands": 18,
+    "unchanged_Rust_tests": 53,
+    "unchanged_Python_methods": 50,
+    "unchanged_Python_subtests": 24,
+    "unchanged_Python_observers": 9,
+    "source_delta": [
+      [
+        149,
+        "        .collect::<rusqlite::Result<_>>()",
+        "        .collect::<rusqlite::Result<Vec<String>>>()"
+      ]
+    ],
+    "plan_unchanged_fields": [
+      "commands",
+      "expected_tests",
+      "expected_unique_test_count",
+      "command_count",
+      "canonical_stream_budget_bytes",
+      "capacity_profile",
+      "control_build_timeout_minutes",
+      "diagnostic_order",
+      "diagnostic_repetition",
+      "diagnostic_scales",
+      "dirty_budget",
+      "fanout_dirty_budget",
+      "fanout_resume_iterations",
+      "job_timeout_minutes",
+      "native_deadline_ms",
+      "observer_sha256",
+      "oracle_scratch_budget_bytes",
+      "raw_budget_bytes",
+      "repetitions",
+      "resume_iterations",
+      "seed",
+      "shard_count",
+      "wrapper_minutes",
+      "test_population_admission"
+    ],
+    "file_hashes": {
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/test-expectations.json": {
+        "bytes": 24831,
+        "sha256": "cf31d17bad992c23ebb44552610a3336367040cd8a2af7c83742df8457dc1ad7",
+        "git_blob": "2561868a178ebf8006e52d08c5090a9427d3f747"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/controller.py": {
+        "bytes": 14449,
+        "sha256": "9af24bc301466eb64ae6998c05669ea0df4dc8c389c273fdb0deea3690c19bd9",
+        "git_blob": "21d3acf4949a29fc7e52df4438dedc299a66477a"
+      },
+      ".github/workflows/p8-integrated-runtime-controls.yml": {
+        "bytes": 18228,
+        "sha256": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94",
+        "git_blob": "9a9db59a2d387a5619d9ae68e7bcf52954d296e4"
+      },
+      ".github/workflows/p8-snapshot-leaf-engineering.yml": {
+        "bytes": 21496,
+        "sha256": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+        "git_blob": "1d396de9830f718c9dfb4d4baaa4043ca9ef02bb"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/complete-source-binding-preparation.json": {
+        "bytes": 3504,
+        "sha256": "6cdef2279c306235ff3d48b21d07d9d6a1831a433faaf183f7ff4d6d384e954d",
+        "git_blob": "ad8f6046c3d7926e4c966988d3b31f2381c143c4"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/static-population-review.json": {
+        "bytes": 5208,
+        "sha256": "4cb1378735f821ea7cea53f2206dd539fa4b88188edcde6a763bfef5bbe98fa5",
+        "git_blob": "4306c1db376f5f8f4298b5c7d8f267e617498ee8"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/test_population.py": {
+        "bytes": 1618,
+        "sha256": "c8a61f1b235b2156822f735ea12a9b995f5ab0f896ac6187d9f2acbf2433d09b",
+        "git_blob": "2e1a50655e9893aa418d60bc71382bb3086fac53"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/engineering-plan.json": {
+        "bytes": 12320,
+        "sha256": "ab78938728199a420c9798095a5dbd2a13d9832c8ac0825e7b7903fd00f37fcf",
+        "git_blob": "615fa9fe7f58b4ba0f4ebaf7c4092d1f5c9fd32f"
+      },
+      "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/README.md": {
+        "bytes": 2307,
+        "sha256": "fd92f8ad65cc0bcb109b2700bc20da34730e77c9efcf8d47912b7623e379c718",
+        "git_blob": "311bd47f4d1ea03bc8399fb259d22e7521766e2e"
+      }
+    },
+    "diffs": {
+      "python-controller": "--- G1/controller.py\n+++ fix/controller.py\n@@ -14,9 +14,9 @@\n \n ROOT = Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)\n EXPECTED_SOURCE = os.environ['GITHUB_SHA']\n-RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/test-expectations.json'\n+RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/test-expectations.json'\n MANIFEST = ROOT / RELATIVE_MANIFEST\n-MANIFEST_SHA = '11300b2e9dc47d5a8f1fa39e9a5da0d5b27d90cd34a31108f4340b084a96afad'\n+MANIFEST_SHA = 'cf31d17bad992c23ebb44552610a3336367040cd8a2af7c83742df8457dc1ad7'\n WORKFLOW = '.github/workflows/p8-integrated-runtime-controls.yml'\n MODULES = ['test_p8_runtime','test_p8_runtime_evidence','test_p8_runtime_cache','test_p8_runtime_finalization']\n sys.path[:0] = [str(ROOT/'scripts'), str(ROOT/'scripts/tests')]\n@@ -162,7 +162,7 @@\n     try:\n         manifest=load_manifest()\n         require([m['module'] for m in manifest['modules']]==MODULES,'unexpected planned module')\n-        require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-20261009', 'wrong attempt or branch')\n+        require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-fix-20261009', 'wrong attempt or branch')\n         before=source_snapshot(ROOT);observer=observer_snapshot(ROOT);inputs=fixed_inputs(manifest)\n         require(before['source_commit']==EXPECTED_SOURCE and before['input_count']==1089 and before['manifest_sha256']==manifest['source_manifest_sha256'],'actual complete source does not match fixed production inputs')\n         write_new(out/'source-before.json',before);write_new(out/'observer-before.json',observer);write_new(out/'validation-before.json',inputs)\n",
+      "python-workflow": "--- G1/python.yml\n+++ fix/python.yml\n@@ -2,7 +2,7 @@\n \n on:\n   push:\n-    branches: [task/p8-snapshot-leaf-engineering-20261009]\n+    branches: [task/p8-snapshot-leaf-engineering-fix-20261009]\n \n permissions:\n   contents: read\n@@ -46,9 +46,9 @@\n           \n           ROOT = Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)\n           EXPECTED_SOURCE = os.environ['GITHUB_SHA']\n-          RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/test-expectations.json'\n+          RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/test-expectations.json'\n           MANIFEST = ROOT / RELATIVE_MANIFEST\n-          MANIFEST_SHA = '11300b2e9dc47d5a8f1fa39e9a5da0d5b27d90cd34a31108f4340b084a96afad'\n+          MANIFEST_SHA = 'cf31d17bad992c23ebb44552610a3336367040cd8a2af7c83742df8457dc1ad7'\n           WORKFLOW = '.github/workflows/p8-integrated-runtime-controls.yml'\n           MODULES = ['test_p8_runtime','test_p8_runtime_evidence','test_p8_runtime_cache','test_p8_runtime_finalization']\n           sys.path[:0] = [str(ROOT/'scripts'), str(ROOT/'scripts/tests')]\n@@ -194,7 +194,7 @@\n               try:\n                   manifest=load_manifest()\n                   require([m['module'] for m in manifest['modules']]==MODULES,'unexpected planned module')\n-                  require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-20261009', 'wrong attempt or branch')\n+                  require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-fix-20261009', 'wrong attempt or branch')\n                   before=source_snapshot(ROOT);observer=observer_snapshot(ROOT);inputs=fixed_inputs(manifest)\n                   require(before['source_commit']==EXPECTED_SOURCE and before['input_count']==1089 and before['manifest_sha256']==manifest['source_manifest_sha256'],'actual complete source does not match fixed production inputs')\n                   write_new(out/'source-before.json',before);write_new(out/'observer-before.json',observer);write_new(out/'validation-before.json',inputs)\n",
+      "rust-workflow": "--- G1/rust.yml\n+++ fix/rust.yml\n@@ -2,7 +2,7 @@\n \n on:\n   push:\n-    branches: [task/p8-snapshot-leaf-engineering-20261009]\n+    branches: [task/p8-snapshot-leaf-engineering-fix-20261009]\n \n permissions:\n   contents: read\n@@ -84,7 +84,7 @@\n           commands = [['cargo', 'fmt', '--all', '--', '--check'], ['cargo', 'clippy', '--locked', '--offline', '-p', 'cc-index', '-p', 'cc-db', '-p', 'cc-eval', '--all-targets', '--', '-D', 'warnings'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'p2b_resolution_store'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--test', 'qname_identity_transaction'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--test', 'qname_identity_proof'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'public_surface_store'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'full_rebuild_advances_both_epochs_past_previous_values'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'rebuild_generation_exceeds_writes_committed_during_rebuild'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'staging_checkpoint_busy_preserves_wal_and_refuses_replacement'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'schema_mismatch_rebuild_advances_generation_past_old_values'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--test', 'p2d_dependency_cost'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'p8_scale'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-eval', '--test', 'benchmark_oracle_streaming'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'index_db_snapshot_insert::tests'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-index', '--test', 'snapshot_leaf_batching'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression', '--', '--exact'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path', '--', '--exact'], ['cargo', 'test', '--locked', '--offline', '-p', 'cc-db', '--lib', 'index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged', '--', '--exact']]\n           expected_tests = {2: ['bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches', 'corrupt_payload_is_rejected', 'dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback', 'package_aggregate_tracks_files_and_test_visibility'], 3: ['only_the_real_sql_surviving_declaration_gets_identity_without_candidate_deduplication', 'real_file_transaction_rejects_changed_relation_and_preserves_previous_generation'], 4: ['association_requires_unique_exact_complete_source_and_matching_existing_labels', 'decorated_body_call_owners_use_the_same_canonical_parser_identity', 'parser_lexical_qnames_distinguish_function_locals_class_methods_and_async_decorated_scopes', 'same_name_neighbor_owner_cannot_authorize_a_disjoint_body_chunk'], 5: ['a_bad_surface_rolls_back_the_whole_file_batch', 'batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown', 'corrupt_fingerprint_and_new_format_fail_closed', 'nonempty_surface_roundtrip_canonicalizes_declaration_order', 'previous_schema_cannot_reuse_absent_surface_evidence', 'surface_roundtrip_shares_file_epoch_and_cascades_on_delete'], 6: ['index_db::tests::full_rebuild_advances_both_epochs_past_previous_values'], 7: ['index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild'], 8: ['index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement'], 9: ['index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values'], 10: ['p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes'], 11: ['actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes', 'bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity', 'complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging', 'configured_evidence_budget_stops_without_overwriting_partial_raw', 'failed_independent_fanout_truth_remains_a_failure', 'matrix_and_release_admission_are_explicit_and_bounded', 'named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure', 'native_evidence_hash_uses_all_file_bytes_without_running_a_profile', 'real_scale_smoke_preserves_builds_counts_mutations_and_full_parity', 'shards_partition_registered_repetitions_without_lowering_release_admission', 'subprocess_deadline_preserves_report_and_rejects_output_reuse', 'subprocess_descendant_cannot_hold_stderr_past_worker_deadline'], 12: ['agrees_with_legacy_for_all_types_duplicates_and_physical_columns', 'cached_canonical_order_matches_original_serialized_key_bytes', 'compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change', 'detects_content_multiplicity_and_missing_rows_without_hash_only_equality', 'every_existing_table_remains_part_of_the_comparison', 'malformed_schema_utf8_and_foreign_keys_cannot_be_equal', 'preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests', 'row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix'], 13: ['index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal', 'index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables', 'index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs'], 14: ['snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values', 'snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes', 'snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal', 'snapshot_leaf_never_delays_identity_checks_past_the_next_file', 'snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts', 'snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts'], 15: ['index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression'], 16: ['index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path'], 17: ['index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged']}\n           expected_observers = {'scripts/p7_build_identity.py': '5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5', 'scripts/p8_scale_matrix.py': 'f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957', 'scripts/p8_runner_capacity.py': '2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939'}\n-          expected_product_manifest = 'd006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d'\n+          expected_product_manifest = '691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac'\n \n           out = Path(os.environ['RUNNER_TEMP']) / 'snapshot-leaf-controls'\n           out.mkdir(exist_ok=False)\n"
+    }
+  },
+  "preparation_failures_preserved": [
+    {
+      "kind": "static_checker_assertion",
+      "exit_code": 1,
+      "stdout_stderr": "Traceback (most recent call last):\r\n  File \"<string>\", line 53, in <module>\r\nAssertionError\r\n",
+      "cause": "The initial checker applied replace(...,1) to the first repeated collect pattern instead of the known modified line149. Candidate files were unchanged. The corrected checker modifies only line149 and asserts exact whole-file equality.",
+      "incorrect_check_line": "assert p[\"newTest\"]==p[\"oldTest\"].replace(\".collect::<rusqlite::Result<_>>()\",\".collect::<rusqlite::Result<Vec<String>>>()\",1)"
+    }
+  ],
+  "static_recheck_exit_code": 0,
+  "local_file_writes": false,
+  "local_Cargo_or_tests": false,
+  "product_workload": false,
+  "Git_commit_tree_ref_PR_mutation": false,
+  "old_branch_run_artifact_unchanged": true,
+  "new_primary_study": false,
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

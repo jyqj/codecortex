@@ -1,0 +1,11 @@
+# Snapshot leaf compilation fix: new auxiliary source
+
+This draft follows frozen G1 `f3c71a6bbafbc639413c4737c469c3b873a8888f`. Its Rust engineering run `37874665202` actually failed: formatting returned 0, Clippy returned 101 with E0282 at the test's collect expression, and the remaining 16 commands did not run. Release build and diagnostics were skipped. The original controls ZIP and failed run remain unchanged. G1's Python50 run belongs to G1; it is not an execution of this new source.
+
+The only product-input delta is `crates/cc-index/tests/snapshot_leaf_batching.rs` line 149: `rusqlite::Result<_>` becomes `rusqlite::Result<Vec<String>>`. The new blob is `307e4636016bd55edb8560bb131d63e5cfcfb844`, 13,586 bytes, SHA256 `6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26`. The other 1,088 input hashes remain equal to the independent G1 review. The new complete manifest is `691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac`; the historical delta still contains 41 paths.
+
+Both auxiliary workflows target only `task/p8-snapshot-leaf-engineering-fix-20261009`, attempt 1, actual pushed commit. The Rust workflow retains all 18 command arrays, 53 exact test names, build/diagnostic dependencies, compiler settings, raw/capacity/oracle limits and deadlines. The Python workflow retains all 50 method names, 24 explicit subtests, nine observers, actual-population checks, source snapshots, failure retention, 20-minute bound and two upload paths. The hidden-file upload fix stays enabled. Its standalone controller changes only the branch, manifest path and manifest hash; its embedded copy is identical.
+
+New bindings reside in this directory. Every older artifact and independent review keeps its original source and bytes; none is overwritten or called approval of this fix. The population parser is byte-identical to the prior artifact. New independent review and actual public tree verification remain required before acceptance. No commit, tree, ref, PR or Actions run is created by these draft blobs.
+
+This is prospective auxiliary engineering work. It launches no full primary scale study and makes no runtime, performance, completion or release claim. No local Cargo, tests or product workload was executed. Newly closed TODOs: **0**. Remaining TODOs: **29**.

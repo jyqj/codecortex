@@ -1,0 +1,373 @@
+{
+  "TODO_done": 0,
+  "TODO_remaining": 29,
+  "actual_source_bridge_required_after_publication": true,
+  "attempts": 1,
+  "base_13_argv_unchanged": true,
+  "base_41_test_names_exact": true,
+  "base_actual_controls_artifact": 11587252940,
+  "base_actual_controls_source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+  "base_workflow_sha256": "b68a2601e5c6577c54dce435eb2baba05b8588d09dcd35e5af574746be96735a",
+  "canonical_stream_budget_bytes": 17179869184,
+  "capacity_profile": "scale_capacity_v1",
+  "command_count": 18,
+  "commands": [
+    [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-db",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "p2b_resolution_store"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--test",
+      "qname_identity_transaction"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--test",
+      "qname_identity_proof"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "public_surface_store"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "full_rebuild_advances_both_epochs_past_previous_values"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "rebuild_generation_exceeds_writes_committed_during_rebuild"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "staging_checkpoint_busy_preserves_wal_and_refuses_replacement"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "schema_mismatch_rebuild_advances_generation_past_old_values"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "p2d_dependency_cost"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "benchmark_oracle_streaming"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "index_db_snapshot_insert::tests"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--test",
+      "snapshot_leaf_batching"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path",
+      "--",
+      "--exact"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged",
+      "--",
+      "--exact"
+    ]
+  ],
+  "control_build_timeout_minutes": 45,
+  "diagnostic_order": "All 18 commands/populations, then one original release build; 1k and 10k repetition0; 100k only after both succeed.",
+  "diagnostic_repetition": 0,
+  "diagnostic_scales": [
+    1000,
+    10000,
+    100000
+  ],
+  "dirty_budget": 200,
+  "existing_full_and_qname_controls": "Original argv indices 3/4 retain the complete qname transaction/proof targets; 6/7 retain the two exact full rebuild epoch method populations. Added indices 15..17 are exact precompressed and both DirectWriter methods, avoiding redundant execution.",
+  "expected_tests": {
+    "2": [
+      "bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches",
+      "corrupt_payload_is_rejected",
+      "dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback",
+      "package_aggregate_tracks_files_and_test_visibility"
+    ],
+    "3": [
+      "only_the_real_sql_surviving_declaration_gets_identity_without_candidate_deduplication",
+      "real_file_transaction_rejects_changed_relation_and_preserves_previous_generation"
+    ],
+    "4": [
+      "association_requires_unique_exact_complete_source_and_matching_existing_labels",
+      "decorated_body_call_owners_use_the_same_canonical_parser_identity",
+      "parser_lexical_qnames_distinguish_function_locals_class_methods_and_async_decorated_scopes",
+      "same_name_neighbor_owner_cannot_authorize_a_disjoint_body_chunk"
+    ],
+    "5": [
+      "a_bad_surface_rolls_back_the_whole_file_batch",
+      "batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown",
+      "corrupt_fingerprint_and_new_format_fail_closed",
+      "nonempty_surface_roundtrip_canonicalizes_declaration_order",
+      "previous_schema_cannot_reuse_absent_surface_evidence",
+      "surface_roundtrip_shares_file_epoch_and_cascades_on_delete"
+    ],
+    "6": [
+      "index_db::tests::full_rebuild_advances_both_epochs_past_previous_values"
+    ],
+    "7": [
+      "index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild"
+    ],
+    "8": [
+      "index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement"
+    ],
+    "9": [
+      "index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values"
+    ],
+    "10": [
+      "p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes"
+    ],
+    "11": [
+      "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+      "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+      "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+      "configured_evidence_budget_stops_without_overwriting_partial_raw",
+      "failed_independent_fanout_truth_remains_a_failure",
+      "matrix_and_release_admission_are_explicit_and_bounded",
+      "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+      "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+      "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity",
+      "shards_partition_registered_repetitions_without_lowering_release_admission",
+      "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+      "subprocess_descendant_cannot_hold_stderr_past_worker_deadline"
+    ],
+    "12": [
+      "agrees_with_legacy_for_all_types_duplicates_and_physical_columns",
+      "cached_canonical_order_matches_original_serialized_key_bytes",
+      "compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change",
+      "detects_content_multiplicity_and_missing_rows_without_hash_only_equality",
+      "every_existing_table_remains_part_of_the_comparison",
+      "malformed_schema_utf8_and_foreign_keys_cannot_be_equal",
+      "preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests",
+      "row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix"
+    ],
+    "13": [
+      "index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal",
+      "index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables",
+      "index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs"
+    ],
+    "14": [
+      "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+      "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes",
+      "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+      "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+      "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+      "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts"
+    ],
+    "15": [
+      "index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression"
+    ],
+    "16": [
+      "index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path"
+    ],
+    "17": [
+      "index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged"
+    ]
+  },
+  "expected_unique_test_count": 53,
+  "extra_control_profile": "Same original dev/test env and -p cc-index/cc-db/cc-eval all-target Clippy; no local Cargo/native execution.",
+  "fanout_dirty_budget": 8,
+  "fanout_resume_iterations": 128,
+  "job_timeout_minutes": 350,
+  "main_preservation": "The complete integrated G1 source, main improvements and all old artifacts remain unchanged except one explicit Vec<String> annotation in snapshot_leaf_batching.rs. Both auxiliary workflow bindings change to the new branch/manifest; runtime/Python source,53 names,50 names,24 subtests,9 runtime observers and3 scale observers remain unchanged.",
+  "main_source": "55902428d49b09bb4a90cee6ccccf985680618bb",
+  "native_deadline_ms": 18000000,
+  "native_leaf_delta": 13,
+  "new_N150_primary_study": false,
+  "observer_sha256": {
+    "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+    "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+    "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+  },
+  "oracle_scratch_budget_bytes": 8589934592,
+  "prior_draft_workflow_sha256": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
+  "publication_binding_explanation": "New source from frozen G1 f3c71a6: only one test collect type changes. This exact1089 manifest is checked before/after. Public commit/tree still requires independent bridge; no new commit SHA is invented and no old run is relabeled.",
+  "publication_source": null,
+  "publication_tree": null,
+  "raw_budget_bytes": 536870912,
+  "repetitions": 30,
+  "rerun_or_replacement": false,
+  "resume_iterations": 1024,
+  "schema": "p8-snapshot-leaf-fix-engineering-plan-v1",
+  "seed": 12648430,
+  "shard_count": 30,
+  "source_binding_preparation_sha256": "6cdef2279c306235ff3d48b21d07d9d6a1831a433faaf183f7ff4d6d384e954d",
+  "source_input_count": 1089,
+  "source_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+  "source_raw_build_contract": "Original full source/build/copy/observer/runtime/15-table validation and raw retention unchanged. Mandatory missing raw remains missing after runner loss.",
+  "status": "new_source_binding_draft_pending_independent_review_and_publication",
+  "test_population_admission": "Every selected libtest command must run the exact nonempty name population once, all ok, no failure/ignore/measured or missing/duplicate summary. Exit0 alone is insufficient.",
+  "test_population_source_map": "static-population-review.json",
+  "trigger_branch": "task/p8-snapshot-leaf-engineering-fix-20261009",
+  "workflow_sha256": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+  "wrapper_minutes": 302,
+  "source_parent": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "previous_plan_blob": "9d659c094842f310aaf0fda70c105eae6644e8a0",
+  "source_fix": {
+    "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+    "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+    "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
+  },
+  "prior_failed_run": {
+    "id": 37874665202,
+    "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "controls_artifact": 11591493572,
+    "fmt_exit_code": 0,
+    "clippy_exit_code": 101,
+    "not_run_command_indices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "Rust_tests_executed": 0,
+    "old_run_unchanged": true
+  }
+}

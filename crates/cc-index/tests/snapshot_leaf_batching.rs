@@ -146,7 +146,7 @@ fn rows(conn: &Connection, table: &str) -> Vec<Vec<Value>> {
         .unwrap()
         .query_map([], |r| r.get::<_, String>(1))
         .unwrap()
-        .collect::<rusqlite::Result<_>>()
+        .collect::<rusqlite::Result<Vec<String>>>()
         .unwrap()
         .into_iter()
         .filter(|c| !(table == "files" && c == "indexed_at"))

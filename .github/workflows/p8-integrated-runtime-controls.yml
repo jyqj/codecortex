@@ -2,7 +2,7 @@ name: P8 integrated runtime Python controls
 
 on:
   push:
-    branches: [task/p8-snapshot-leaf-engineering-20261009]
+    branches: [task/p8-snapshot-leaf-engineering-fix-20261009]
 
 permissions:
   contents: read
@@ -46,9 +46,9 @@ jobs:
           
           ROOT = Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
           EXPECTED_SOURCE = os.environ['GITHUB_SHA']
-          RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/test-expectations.json'
+          RELATIVE_MANIFEST = 'artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/test-expectations.json'
           MANIFEST = ROOT / RELATIVE_MANIFEST
-          MANIFEST_SHA = '11300b2e9dc47d5a8f1fa39e9a5da0d5b27d90cd34a31108f4340b084a96afad'
+          MANIFEST_SHA = 'cf31d17bad992c23ebb44552610a3336367040cd8a2af7c83742df8457dc1ad7'
           WORKFLOW = '.github/workflows/p8-integrated-runtime-controls.yml'
           MODULES = ['test_p8_runtime','test_p8_runtime_evidence','test_p8_runtime_cache','test_p8_runtime_finalization']
           sys.path[:0] = [str(ROOT/'scripts'), str(ROOT/'scripts/tests')]
@@ -194,7 +194,7 @@ jobs:
               try:
                   manifest=load_manifest()
                   require([m['module'] for m in manifest['modules']]==MODULES,'unexpected planned module')
-                  require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-20261009', 'wrong attempt or branch')
+                  require(os.environ['GITHUB_RUN_ATTEMPT']=='1' and os.environ['GITHUB_REF']=='refs/heads/task/p8-snapshot-leaf-engineering-fix-20261009', 'wrong attempt or branch')
                   before=source_snapshot(ROOT);observer=observer_snapshot(ROOT);inputs=fixed_inputs(manifest)
                   require(before['source_commit']==EXPECTED_SOURCE and before['input_count']==1089 and before['manifest_sha256']==manifest['source_manifest_sha256'],'actual complete source does not match fixed production inputs')
                   write_new(out/'source-before.json',before);write_new(out/'observer-before.json',observer);write_new(out/'validation-before.json',inputs)

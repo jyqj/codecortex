@@ -1,0 +1,306 @@
+--- a/crates/cc-eval/src/benchmark/mutation_case.rs
++++ b/crates/cc-eval/src/benchmark/mutation_case.rs
+@@ -156,7 +156,9 @@
+         if evidence["incremental_report"]["resolution_freshness"]["complete"] != true
+             || evidence["full_report"]["resolution_freshness"]["complete"] != true
+         {
+-            return Err(invalid("isolated fanout initial full builds are incomplete"));
++            return Err(invalid(
++                "isolated fanout initial full builds are incomplete",
++            ));
+         }
+         Some(evidence)
+     } else {
+@@ -209,9 +211,10 @@
+             build(&mut full, true)?;
+             None
+         };
+-        if full_report.as_ref().is_some_and(|report| {
+-            report["resolution_freshness"]["complete"] != true
+-        }) {
++        if full_report
++            .as_ref()
++            .is_some_and(|report| report["resolution_freshness"]["complete"] != true)
++        {
+             return Err(invalid("isolated fanout final full build is incomplete"));
+         }
+         let ca = oracle::canonical(a.path())?;
+@@ -253,7 +256,8 @@
+         if retain_initial {
+             let checkpoint = checkpoints.last_mut().unwrap();
+             checkpoint["full_report"] = full_report.unwrap();
+-            checkpoint["process_snapshot"] = json!(super::sampler::process_snapshot(std::process::id()));
++            checkpoint["process_snapshot"] =
++                json!(super::sampler::process_snapshot(std::process::id()));
+         }
+         if failure.is_some() {
+             break;
+--- a/crates/cc-eval/src/benchmark/p8_scale.rs
++++ b/crates/cc-eval/src/benchmark/p8_scale.rs
+@@ -71,7 +71,14 @@
+ }
+ 
+ pub const MUTATION_PROFILES: [&str; 8] = [
+-    "no_op", "body", "api", "config", "batch_1", "batch_10", "batch_100", "batch_1000",
++    "no_op",
++    "body",
++    "api",
++    "config",
++    "batch_1",
++    "batch_10",
++    "batch_100",
++    "batch_1000",
+ ];
+ 
+ /// A disjoint slice of the registered repetition population. A successful
+@@ -213,10 +220,11 @@
+                 "cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets",
+             ));
+         }
+-        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1))
+-            != self.profile_study.is_some()
++        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1)) != self.profile_study.is_some()
+         {
+-            return Err(invalid("isolated profile identity requires its own explicit scope"));
++            return Err(invalid(
++                "isolated profile identity requires its own explicit scope",
++            ));
+         }
+         if let Some(study) = &self.profile_study {
+             let fanout = study.mutation_profile == "fanout";
+@@ -227,10 +235,14 @@
+                 || self.files.len() != 1
+                 || self.shard.is_none_or(|s| s.count != self.repetitions)
+                 || self.skip_fanout == fanout
+-                || (!fanout && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
+-                    || study.fanout.is_some()))
+-                || (fanout && (!study.fanout.is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
+-                    || self.files != [1000]))
++                || (!fanout
++                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
++                        || study.fanout.is_some()))
++                || (fanout
++                    && (!study
++                        .fanout
++                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
++                        || self.files != [1000]))
+                 || (self.profile == Profile::Release
+                     && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
+                         || self.repetitions != 30
+@@ -240,7 +252,9 @@
+                         || self.batch_sizes != [1, 10, 100, 1000]
+                         || self.fanouts != [1, 4, 16, 64, 128]))
+             {
+-                return Err(invalid("invalid isolated profile, fanout, identity or fixed release population/budget"));
++                return Err(invalid(
++                    "invalid isolated profile, fanout, identity or fixed release population/budget",
++                ));
+             }
+         }
+         Ok(())
+@@ -339,7 +353,9 @@
+     // The supervisor owns all fixture directories, including those allocated
+     // by the existing mutation runner; a deadline cannot orphan 100k trees.
+     let workspace = tempfile::tempdir()?;
+-    let cold_temporary_environment = plan.stage_scope.is_some()
++    let cold_temporary_environment = plan
++        .stage_scope
++        .is_some()
+         .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
+     let mut command = Command::new(binary);
+     command
+@@ -920,7 +936,9 @@
+     if let Some(study) = &plan.profile_study {
+         stages.retain(|(stage, _)| stage == &study.mutation_profile);
+         if stages.len() != 1 {
+-            return Err(invalid("isolated scale cell must execute exactly one registered mutation"));
++            return Err(invalid(
++                "isolated scale cell must execute exactly one registered mutation",
++            ));
+         }
+     }
+     for (stage, requested) in stages {
+@@ -1024,9 +1042,7 @@
+         let fact = config_fact(
+             a.path(),
+             &config_files[2],
+-            if stage == "config"
+-                || (plan.profile_study.is_none() && stage.starts_with("batch_"))
+-            {
++            if stage == "config" || (plan.profile_study.is_none() && stage.starts_with("batch_")) {
+                 &config_files[1]
+             } else {
+                 &config_files[0]
+@@ -1133,7 +1149,9 @@
+     raw.emit(started)?;
+     let mut summaries = Vec::new();
+     for &files in plan.files.iter().filter(|_| {
+-        plan.profile_study.as_ref().is_none_or(|s| s.mutation_profile != "fanout")
++        plan.profile_study
++            .as_ref()
++            .is_none_or(|s| s.mutation_profile != "fanout")
+     }) {
+         for repetition in plan.repetition_range()? {
+             summaries.extend(scale_sample(plan, files, repetition, raw)?);
+@@ -1141,7 +1159,10 @@
+     }
+     for &fanout in plan.fanouts.iter().filter(|&&n| {
+         !plan.skip_fanout
+-            && plan.profile_study.as_ref().is_none_or(|s| s.fanout == Some(n))
++            && plan
++                .profile_study
++                .as_ref()
++                .is_none_or(|s| s.fanout == Some(n))
+     }) {
+         for repetition in plan.repetition_range()? {
+             let (dirty_budget, max_resume_builds) = plan.fanout_budgets();
+--- a/crates/cc-eval/src/bin/p8-scale.rs
++++ b/crates/cc-eval/src/bin/p8-scale.rs
+@@ -1,7 +1,9 @@
+ //! Development-only local P8 measurements. Never certifies a release.
+ use cc_eval::benchmark::{
+     invalid,
+-    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},
++    p8_scale::{
++        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,
++    },
+     Result,
+ };
+ use clap::{Parser, ValueEnum};
+@@ -121,7 +123,9 @@
+     if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))
+         || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some("fanout"))
+     {
+-        return Err(invalid("profile selection requires its explicit isolated scope"));
++        return Err(invalid(
++            "profile selection requires its explicit isolated scope",
++        ));
+     }
+     let plan = ScalePlan {
+         schema_version: 1,
+@@ -136,9 +140,15 @@
+             Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,
+             Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,
+         }),
+-        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+-            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),
+-        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
++        cold_study: identity
++            .clone()
++            .filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
++            .map(|(run_id, run_attempt)| ColdStudy {
++                run_id,
++                run_attempt,
++            }),
++        profile_study: identity
++            .filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+             .map(|(run_id, run_attempt)| ProfileStudy {
+                 run_id,
+                 run_attempt,
+--- a/crates/cc-eval/tests/p8_scale.rs
++++ b/crates/cc-eval/tests/p8_scale.rs
+@@ -690,7 +690,11 @@
+             mutation_profile: profile.into(),
+             fanout,
+         }),
+-        files: if fanout.is_some() { vec![1000] } else { vec![60] },
++        files: if fanout.is_some() {
++            vec![1000]
++        } else {
++            vec![60]
++        },
+         shard: Some(ScaleShard { index: 0, count: 1 }),
+         skip_fanout: fanout.is_none(),
+         dirty_budget: 8,
+@@ -713,7 +717,10 @@
+     plan.profile_study.as_mut().unwrap().mutation_profile = "cold".into();
+     assert!(plan.validate().is_err());
+     plan = isolated_smoke("body", None);
+-    plan.cold_study = Some(ColdStudy { run_id: "12345".into(), run_attempt: 1 });
++    plan.cold_study = Some(ColdStudy {
++        run_id: "12345".into(),
++        run_attempt: 1,
++    });
+     assert!(plan.validate().is_err());
+     plan.cold_study = None;
+     plan.stage_scope = None;
+@@ -734,22 +741,42 @@
+     assert_eq!(report["summary"]["stage_scope"], "profile_isolated_v1");
+     assert_eq!(report["summary"]["sample_count"], 2);
+     let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
++        .unwrap()
++        .lines()
++        .map(|line| serde_json::from_str(line).unwrap())
++        .collect();
+     assert_eq!(rows[0]["plan"], serde_json::to_value(&plan).unwrap());
+-    let initial = rows.iter().find(|row| row["event"] == "cold_parity").unwrap();
+-    let stages: Vec<_> = rows.iter().filter(|row| row["event"] == "stage_finished").collect();
++    let initial = rows
++        .iter()
++        .find(|row| row["event"] == "cold_parity")
++        .unwrap();
++    let stages: Vec<_> = rows
++        .iter()
++        .filter(|row| row["event"] == "stage_finished")
++        .collect();
+     assert_eq!(stages.len(), 1);
+     assert!(stages[0]["label"].as_str().unwrap().ends_with("/batch_1"));
+-    assert_eq!(initial["independent_config_fact"], stages[0]["independent_config_fact"]);
++    assert_eq!(
++        initial["independent_config_fact"],
++        stages[0]["independent_config_fact"]
++    );
+     for point in [initial, stages[0]] {
+         assert_eq!(point["parity"]["equal"], true);
+         assert_eq!(point["parity"]["tables"].as_array().unwrap().len(), 15);
+         assert_eq!(point["independent_config_fact"]["passed"], true);
+     }
+-    let mutations: Vec<_> = rows.iter().filter(|row| row["event"] == "mutation").collect();
++    let mutations: Vec<_> = rows
++        .iter()
++        .filter(|row| row["event"] == "mutation")
++        .collect();
+     assert_eq!(mutations.len(), 1);
+     assert_eq!(mutations[0]["operations"].as_array().unwrap().len(), 1);
+-    assert_eq!(rows.iter().filter(|row| row["event"] == "build_finished" && row["full"] == true).count(), 3);
++    assert_eq!(
++        rows.iter()
++            .filter(|row| row["event"] == "build_finished" && row["full"] == true)
++            .count(),
++        3
++    );
+     assert!(rows.iter().all(|row| row["event"] != "fanout_started"));
+ }
+ 
+@@ -762,7 +789,10 @@
+     assert_eq!(report["exit_code"], 0, "{report}");
+     assert_eq!(report["summary"]["sample_count"], 1);
+     let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
++        .unwrap()
++        .lines()
++        .map(|line| serde_json::from_str(line).unwrap())
++        .collect();
+     assert_eq!(rows.len(), 3);
+     assert_eq!(rows[1]["event"], "fanout_started");
+     assert_eq!(rows[1]["case"]["initial"].as_object().unwrap().len(), 17);
+@@ -774,9 +804,15 @@
+     assert_eq!(initial["equal"], true);
+     assert_eq!(initial["tables"].as_array().unwrap().len(), 15);
+     assert_eq!(initial["incremental"], initial["full"]);
+-    assert_eq!(initial["incremental"]["files"].as_array().unwrap().len(), 17);
++    assert_eq!(
++        initial["incremental"]["files"].as_array().unwrap().len(),
++        17
++    );
+     let point = &result["checkpoints"][0];
+     assert_eq!(point["incremental"], point["full"]);
+     assert_eq!(point["truth"].as_array().unwrap().len(), 16);
+-    assert_eq!(point["full_report"]["resolution_freshness"]["complete"], true);
+-}
++    assert_eq!(
++        point["full_report"]["resolution_freshness"]["complete"],
++        true
++    );
++}

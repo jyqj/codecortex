@@ -1,0 +1,784 @@
+﻿2026-10-09T17:12:58.9222033Z Current runner version: '2.337.0'
+2026-10-09T17:12:58.9242637Z ##[group]Runner Image Provisioner
+2026-10-09T17:12:58.9243395Z Hosted Compute Agent
+2026-10-09T17:12:58.9243895Z Version: 20261002.596
+2026-10-09T17:12:58.9244411Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T17:12:58.9245050Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T17:12:58.9245643Z Worker ID: {2d8c7124-582d-4cbc-894b-c6bbad0c3bf7}
+2026-10-09T17:12:58.9246219Z Region: westus3
+2026-10-09T17:12:58.9246732Z Cloud: Azure
+2026-10-09T17:12:58.9247212Z ##[endgroup]
+2026-10-09T17:12:58.9248296Z ##[group]Operating System
+2026-10-09T17:12:58.9248975Z Ubuntu
+2026-10-09T17:12:58.9249409Z 24.04.5
+2026-10-09T17:12:58.9249903Z LTS
+2026-10-09T17:12:58.9250336Z ##[endgroup]
+2026-10-09T17:12:58.9250810Z ##[group]Runner Image
+2026-10-09T17:12:58.9251355Z Image: ubuntu-24.04
+2026-10-09T17:12:58.9251819Z Version: 20261004.327.1
+2026-10-09T17:12:58.9252883Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T17:12:58.9254154Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T17:12:58.9254999Z ##[endgroup]
+2026-10-09T17:12:58.9256020Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T17:12:58.9257489Z Contents: read
+2026-10-09T17:12:58.9257990Z Metadata: read
+2026-10-09T17:12:58.9258567Z Packages: read
+2026-10-09T17:12:58.9259305Z ##[endgroup]
+2026-10-09T17:12:58.9261057Z Secret source: Actions
+2026-10-09T17:12:58.9261808Z Cache mode: write
+2026-10-09T17:12:58.9262467Z Prepare workflow directory
+2026-10-09T17:12:58.9580799Z Prepare all required actions
+2026-10-09T17:12:58.9621618Z Getting action download info
+2026-10-09T17:12:59.2325010Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T17:12:59.3661604Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:686976e191b89faba57d3206551f0f330d8cb249)
+2026-10-09T17:12:59.6039677Z Download action repository 'Swatinem/rust-cache@v2' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-10-09T17:13:00.5022769Z Complete job name: check
+2026-10-09T17:13:00.5892638Z ##[group]Run actions/checkout@v4
+2026-10-09T17:13:00.5893369Z with:
+2026-10-09T17:13:00.5893756Z   repository: jyqj/codecortex
+2026-10-09T17:13:00.5897275Z   token: ***
+2026-10-09T17:13:00.5897658Z   ssh-strict: true
+2026-10-09T17:13:00.5898039Z   ssh-user: git
+2026-10-09T17:13:00.5898421Z   persist-credentials: true
+2026-10-09T17:13:00.5899070Z   clean: true
+2026-10-09T17:13:00.5899461Z   sparse-checkout-cone-mode: true
+2026-10-09T17:13:00.5899907Z   fetch-depth: 1
+2026-10-09T17:13:00.5900270Z   fetch-tags: false
+2026-10-09T17:13:00.5900647Z   show-progress: true
+2026-10-09T17:13:00.5901040Z   lfs: false
+2026-10-09T17:13:00.5901413Z   submodules: false
+2026-10-09T17:13:00.5901821Z   set-safe-directory: true
+2026-10-09T17:13:00.5902248Z   allow-unsafe-pr-checkout: false
+2026-10-09T17:13:00.5902852Z env:
+2026-10-09T17:13:00.5903202Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:00.5903654Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:00.5904056Z ##[endgroup]
+2026-10-09T17:13:00.6707525Z Syncing repository: jyqj/codecortex
+2026-10-09T17:13:00.6709388Z ##[group]Getting Git version info
+2026-10-09T17:13:00.6710066Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T17:13:00.6711011Z [command]/usr/bin/git version
+2026-10-09T17:13:00.7140157Z git version 2.55.0
+2026-10-09T17:13:00.7154789Z ##[endgroup]
+2026-10-09T17:13:00.7166865Z Temporarily overriding HOME='/home/runner/work/_temp/e7516da0-d225-4df9-96bd-8be468e216cb' before making global git config changes
+2026-10-09T17:13:00.7168068Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T17:13:00.7171449Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T17:13:00.7214597Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T17:13:00.7217842Z ##[group]Initializing the repository
+2026-10-09T17:13:00.7221715Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T17:13:00.7322535Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T17:13:00.7324013Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T17:13:00.7325187Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T17:13:00.7326057Z hint: call:
+2026-10-09T17:13:00.7326552Z hint:
+2026-10-09T17:13:00.7327244Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T17:13:00.7327986Z hint:
+2026-10-09T17:13:00.7328482Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T17:13:00.7329728Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T17:13:00.7330391Z hint:
+2026-10-09T17:13:00.7330748Z hint: 	git branch -m <name>
+2026-10-09T17:13:00.7331155Z hint:
+2026-10-09T17:13:00.7331693Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T17:13:00.7332834Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T17:13:00.7334962Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T17:13:00.7412267Z ##[endgroup]
+2026-10-09T17:13:00.7412945Z ##[group]Disabling automatic garbage collection
+2026-10-09T17:13:00.7415423Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T17:13:00.7442233Z ##[endgroup]
+2026-10-09T17:13:00.7443292Z ##[group]Setting up auth
+2026-10-09T17:13:00.7447781Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T17:13:00.7472760Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T17:13:00.7759983Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T17:13:00.7786815Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T17:13:00.7973782Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T17:13:00.8003200Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T17:13:00.8190962Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T17:13:00.8255121Z ##[endgroup]
+2026-10-09T17:13:00.8256233Z ##[group]Fetching the repository
+2026-10-09T17:13:00.8263695Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +002e2a5b6a360eb8d5df87416ba17f22b1eec613:refs/remotes/pull/192/merge
+2026-10-09T17:13:25.7305048Z From https://github.com/jyqj/codecortex
+2026-10-09T17:13:25.7306160Z  * [new ref]           002e2a5b6a360eb8d5df87416ba17f22b1eec613 -> pull/192/merge
+2026-10-09T17:13:25.7308284Z ##[endgroup]
+2026-10-09T17:13:25.7308988Z ##[group]Determining the checkout info
+2026-10-09T17:13:25.7311227Z ##[endgroup]
+2026-10-09T17:13:25.7315518Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T17:13:25.7362286Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T17:13:25.7389048Z ##[group]Checking out the ref
+2026-10-09T17:13:25.7389484Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/192/merge
+2026-10-09T17:13:26.7869519Z Updating files:  50% (12269/24209)
+2026-10-09T17:13:26.7981199Z Updating files:  51% (12347/24209)
+2026-10-09T17:13:26.8118113Z Updating files:  52% (12589/24209)
+2026-10-09T17:13:26.8272111Z Updating files:  53% (12831/24209)
+2026-10-09T17:13:26.8407466Z Updating files:  54% (13073/24209)
+2026-10-09T17:13:26.8514057Z Updating files:  55% (13315/24209)
+2026-10-09T17:13:26.8624294Z Updating files:  56% (13558/24209)
+2026-10-09T17:13:26.8702275Z Updating files:  57% (13800/24209)
+2026-10-09T17:13:26.8783737Z Updating files:  58% (14042/24209)
+2026-10-09T17:13:26.8863370Z Updating files:  59% (14284/24209)
+2026-10-09T17:13:26.8942192Z Updating files:  60% (14526/24209)
+2026-10-09T17:13:26.9015675Z Updating files:  61% (14768/24209)
+2026-10-09T17:13:26.9086280Z Updating files:  62% (15010/24209)
+2026-10-09T17:13:26.9188060Z Updating files:  63% (15252/24209)
+2026-10-09T17:13:26.9310904Z Updating files:  64% (15494/24209)
+2026-10-09T17:13:27.0366237Z Updating files:  65% (15736/24209)
+2026-10-09T17:13:27.0616682Z Updating files:  66% (15978/24209)
+2026-10-09T17:13:27.1209942Z Updating files:  67% (16221/24209)
+2026-10-09T17:13:27.1584838Z Updating files:  68% (16463/24209)
+2026-10-09T17:13:27.1792590Z Updating files:  69% (16705/24209)
+2026-10-09T17:13:27.2105689Z Updating files:  70% (16947/24209)
+2026-10-09T17:13:27.3716768Z Updating files:  71% (17189/24209)
+2026-10-09T17:13:27.4232388Z Updating files:  72% (17431/24209)
+2026-10-09T17:13:27.6494124Z Updating files:  73% (17673/24209)
+2026-10-09T17:13:27.6690231Z Updating files:  74% (17915/24209)
+2026-10-09T17:13:27.6886606Z Updating files:  75% (18157/24209)
+2026-10-09T17:13:27.7106549Z Updating files:  76% (18399/24209)
+2026-10-09T17:13:27.7413148Z Updating files:  77% (18641/24209)
+2026-10-09T17:13:27.7887502Z Updating files:  78% (18884/24209)
+2026-10-09T17:13:28.2054874Z Updating files:  78% (19070/24209)
+2026-10-09T17:13:28.7833792Z Updating files:  79% (19126/24209)
+2026-10-09T17:13:29.4078470Z Updating files:  79% (19193/24209)
+2026-10-09T17:13:29.4296258Z Updating files:  80% (19368/24209)
+2026-10-09T17:13:29.4466934Z Updating files:  81% (19610/24209)
+2026-10-09T17:13:29.4605016Z Updating files:  82% (19852/24209)
+2026-10-09T17:13:29.4859487Z Updating files:  83% (20094/24209)
+2026-10-09T17:13:29.5706844Z Updating files:  84% (20336/24209)
+2026-10-09T17:13:29.6583744Z Updating files:  85% (20578/24209)
+2026-10-09T17:13:29.6913612Z Updating files:  86% (20820/24209)
+2026-10-09T17:13:29.7772294Z Updating files:  87% (21062/24209)
+2026-10-09T17:13:29.8168359Z Updating files:  87% (21225/24209)
+2026-10-09T17:13:29.8353431Z Updating files:  88% (21304/24209)
+2026-10-09T17:13:29.8479163Z Updating files:  89% (21547/24209)
+2026-10-09T17:13:29.8592793Z Updating files:  90% (21789/24209)
+2026-10-09T17:13:29.8747610Z Updating files:  91% (22031/24209)
+2026-10-09T17:13:30.1978560Z Updating files:  92% (22273/24209)
+2026-10-09T17:13:30.4552757Z Updating files:  93% (22515/24209)
+2026-10-09T17:13:30.4714811Z Updating files:  94% (22757/24209)
+2026-10-09T17:13:30.4846707Z Updating files:  95% (22999/24209)
+2026-10-09T17:13:30.5003062Z Updating files:  96% (23241/24209)
+2026-10-09T17:13:30.5193069Z Updating files:  97% (23483/24209)
+2026-10-09T17:13:30.5329976Z Updating files:  98% (23725/24209)
+2026-10-09T17:13:30.5558431Z Updating files:  99% (23967/24209)
+2026-10-09T17:13:30.5559023Z Updating files: 100% (24209/24209)
+2026-10-09T17:13:30.5559561Z Updating files: 100% (24209/24209), done.
+2026-10-09T17:13:30.6038704Z Note: switching to 'refs/remotes/pull/192/merge'.
+2026-10-09T17:13:30.6039134Z 
+2026-10-09T17:13:30.6039309Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T17:13:30.6039694Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T17:13:30.6040237Z state without impacting any branches by switching back to a branch.
+2026-10-09T17:13:30.6040444Z 
+2026-10-09T17:13:30.6040589Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T17:13:30.6040932Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T17:13:30.6041121Z 
+2026-10-09T17:13:30.6041215Z   git switch -c <new-branch-name>
+2026-10-09T17:13:30.6041355Z 
+2026-10-09T17:13:30.6041439Z Or undo this operation with:
+2026-10-09T17:13:30.6041569Z 
+2026-10-09T17:13:30.6041637Z   git switch -
+2026-10-09T17:13:30.6041738Z 
+2026-10-09T17:13:30.6041902Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T17:13:30.6042378Z 
+2026-10-09T17:13:30.6042648Z HEAD is now at 002e2a5b Merge 6e1b22b094a002620e6a656f88f29135b38bdae0 into 10ec828beb94200ec679302c45115760ebd55ee9
+2026-10-09T17:13:30.6434102Z ##[endgroup]
+2026-10-09T17:13:30.6478667Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T17:13:30.6499183Z 002e2a5b6a360eb8d5df87416ba17f22b1eec613
+2026-10-09T17:13:30.6833113Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-09T17:13:30.6833369Z with:
+2026-10-09T17:13:30.6833553Z   components: clippy, rustfmt
+2026-10-09T17:13:30.6833766Z   toolchain: stable
+2026-10-09T17:13:30.6833939Z env:
+2026-10-09T17:13:30.6834100Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:30.6834308Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:30.6834498Z ##[endgroup]
+2026-10-09T17:13:30.6887400Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-09T17:13:30.6973808Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T17:13:30.6974145Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T17:13:30.6974611Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T17:13:30.6975055Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T17:13:30.6975307Z [36;1m  exit 1[0m
+2026-10-09T17:13:30.6975621Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T17:13:30.6975944Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-09T17:13:30.6976347Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:30.6976723Z [36;1m  else[0m
+2026-10-09T17:13:30.6977036Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:30.6977381Z [36;1m  fi[0m
+2026-10-09T17:13:30.6977611Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T17:13:30.6978014Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:30.6978365Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T17:13:30.6979163Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:30.6979554Z [36;1melse[0m
+2026-10-09T17:13:30.6979723Z [36;1m  delimiter=EOF[0m
+2026-10-09T17:13:30.6979968Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T17:13:30.6980362Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:30.6980679Z [36;1mfi[0m
+2026-10-09T17:13:30.7563183Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:30.7563496Z env:
+2026-10-09T17:13:30.7563713Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:30.7563920Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:30.7564111Z   toolchain: stable
+2026-10-09T17:13:30.7564305Z ##[endgroup]
+2026-10-09T17:13:30.7694207Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=80]
+2026-10-09T17:13:30.7698253Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-09T17:13:30.7750885Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T17:13:30.7751270Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T17:13:30.7807691Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:30.7807963Z env:
+2026-10-09T17:13:30.7808129Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:30.7808322Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:30.7808512Z ##[endgroup]
+2026-10-09T17:13:30.8070823Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=37]
+2026-10-09T17:13:30.8072902Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-09T17:13:30.8236974Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T17:13:30.8237298Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T17:13:30.8237904Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T17:13:30.8238687Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T17:13:30.8239147Z [36;1mfi[0m
+2026-10-09T17:13:30.8297344Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:30.8297628Z env:
+2026-10-09T17:13:30.8297811Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:30.8298005Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:30.8298201Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:30.8298405Z ##[endgroup]
+2026-10-09T17:13:30.8460449Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=38]
+2026-10-09T17:13:30.8462827Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-09T17:13:30.8470637Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:13:30.8483420Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-09T17:13:30.8645975Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T17:13:30.8646525Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T17:13:30.8646858Z [36;1mflags=()[0m
+2026-10-09T17:13:30.8647085Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T17:13:30.8647398Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T17:13:30.8647782Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T17:13:30.8648119Z [36;1mlog=$(mktemp)[0m
+2026-10-09T17:13:30.8648312Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T17:13:30.8648540Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T17:13:30.8649186Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T17:13:30.8649611Z [36;1m    break[0m
+2026-10-09T17:13:30.8649778Z [36;1m  else[0m
+2026-10-09T17:13:30.8649945Z [36;1m    status=$?[0m
+2026-10-09T17:13:30.8650119Z [36;1m  fi[0m
+2026-10-09T17:13:30.8650350Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T17:13:30.8650773Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T17:13:30.8651123Z [36;1m    exit "$status"[0m
+2026-10-09T17:13:30.8651307Z [36;1m  fi[0m
+2026-10-09T17:13:30.8651592Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T17:13:30.8651916Z [36;1m  sleep 30[0m
+2026-10-09T17:13:30.8652090Z [36;1mdone[0m
+2026-10-09T17:13:30.8712548Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:30.8712821Z env:
+2026-10-09T17:13:30.8712987Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:30.8713179Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:30.8713372Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:30.8713571Z   toolchain: stable
+2026-10-09T17:13:30.8713755Z   targets: 
+2026-10-09T17:13:30.8713925Z   components: clippy, rustfmt
+2026-10-09T17:13:30.8714131Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T17:13:30.8714323Z ##[endgroup]
+2026-10-09T17:13:34.2129970Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-09T17:13:34.7079897Z info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:13:34.7260993Z info: component clippy is up to date
+2026-10-09T17:13:34.7261400Z info: component rustfmt is up to date
+2026-10-09T17:13:34.7271349Z 
+2026-10-09T17:13:34.7343350Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:13:34.7344108Z 
+2026-10-09T17:13:34.7724952Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=3924]
+2026-10-09T17:13:34.7730749Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-09T17:13:34.7865318Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T17:13:34.7865670Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T17:13:34.7920762Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:34.7921046Z env:
+2026-10-09T17:13:34.7921217Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:34.7921421Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:34.7921622Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:34.7921827Z   toolchain: stable
+2026-10-09T17:13:34.7921994Z ##[endgroup]
+2026-10-09T17:13:34.8352776Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-10-09T17:13:34.8879467Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-10-09T17:13:34.8879879Z 
+2026-10-09T17:13:34.8952655Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:13:34.8952967Z 
+2026-10-09T17:13:34.8969264Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=123]
+2026-10-09T17:13:34.8972775Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-09T17:13:34.9583831Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T17:13:34.9584508Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T17:13:34.9585012Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T17:13:34.9585404Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:13:34.9640977Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:34.9641256Z env:
+2026-10-09T17:13:34.9641425Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:34.9641623Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:34.9641816Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:34.9642016Z   toolchain: stable
+2026-10-09T17:13:34.9642184Z ##[endgroup]
+2026-10-09T17:13:35.0127660Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=115]
+2026-10-09T17:13:35.0130026Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-09T17:13:35.0146102Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T17:13:35.0146401Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T17:13:35.0146662Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T17:13:35.0146887Z [36;1mfi[0m
+2026-10-09T17:13:35.0201076Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:35.0201361Z env:
+2026-10-09T17:13:35.0201547Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.0201756Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.0201960Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.0202161Z ##[endgroup]
+2026-10-09T17:13:35.0271173Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=14]
+2026-10-09T17:13:35.0272987Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-09T17:13:35.0287559Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T17:13:35.0287859Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T17:13:35.0288129Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T17:13:35.0288408Z [36;1mfi[0m
+2026-10-09T17:13:35.0334902Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:35.0335174Z env:
+2026-10-09T17:13:35.0335338Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.0335531Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.0335866Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.0336064Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:35.0336238Z ##[endgroup]
+2026-10-09T17:13:35.0403466Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=12]
+2026-10-09T17:13:35.0406246Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-09T17:13:35.0422594Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T17:13:35.0422992Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T17:13:35.0423547Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T17:13:35.0424102Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T17:13:35.0424563Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T17:13:35.0424985Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T17:13:35.0425514Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T17:13:35.0425959Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T17:13:35.0426364Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T17:13:35.0426643Z [36;1m  fi[0m
+2026-10-09T17:13:35.0426804Z [36;1mfi[0m
+2026-10-09T17:13:35.0472671Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:35.0472931Z env:
+2026-10-09T17:13:35.0473097Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.0473289Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.0473487Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.0473686Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:35.0473857Z   toolchain: stable
+2026-10-09T17:13:35.0474023Z ##[endgroup]
+2026-10-09T17:13:35.0768671Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=36]
+2026-10-09T17:13:35.0772903Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-09T17:13:35.0808505Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T17:13:35.0809403Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T17:13:35.0809899Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T17:13:35.0810270Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T17:13:35.0810515Z [36;1mfi[0m
+2026-10-09T17:13:35.0864728Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:35.0864995Z env:
+2026-10-09T17:13:35.0865165Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.0865357Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.0865566Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.0865876Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:35.0866079Z   toolchain: stable
+2026-10-09T17:13:35.0866248Z ##[endgroup]
+2026-10-09T17:13:35.1048319Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=27]
+2026-10-09T17:13:35.1052685Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-09T17:13:35.1067721Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T17:13:35.1068036Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T17:13:35.1121442Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:13:35.1121718Z env:
+2026-10-09T17:13:35.1121895Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.1122096Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.1122298Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.1122503Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:35.1122677Z   toolchain: stable
+2026-10-09T17:13:35.1122993Z ##[endgroup]
+2026-10-09T17:13:35.1283771Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:13:35.1284068Z binary: rustc
+2026-10-09T17:13:35.1284295Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-09T17:13:35.1284560Z commit-date: 2026-09-28
+2026-10-09T17:13:35.1284753Z host: x86_64-unknown-linux-gnu
+2026-10-09T17:13:35.1284956Z release: 1.99.0
+2026-10-09T17:13:35.1285530Z LLVM version: 23.1.1
+2026-10-09T17:13:35.1302225Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=24]
+2026-10-09T17:13:35.1392715Z ##[group]Run Swatinem/rust-cache@v2
+2026-10-09T17:13:35.1392946Z with:
+2026-10-09T17:13:35.1393117Z   prefix-key: v0-rust
+2026-10-09T17:13:35.1393304Z   add-job-id-key: true
+2026-10-09T17:13:35.1393496Z   add-rust-environment-hash-key: true
+2026-10-09T17:13:35.1393712Z   cache-targets: true
+2026-10-09T17:13:35.1393885Z   cache-all-crates: false
+2026-10-09T17:13:35.1394082Z   cache-workspace-crates: false
+2026-10-09T17:13:35.1394283Z   save-if: true
+2026-10-09T17:13:35.1394467Z   cache-provider: github
+2026-10-09T17:13:35.1394646Z   cache-bin: true
+2026-10-09T17:13:35.1394807Z   lookup-only: false
+2026-10-09T17:13:35.1394975Z   cmd-format: {0}
+2026-10-09T17:13:35.1395132Z env:
+2026-10-09T17:13:35.1395289Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:35.1395480Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:35.1395673Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:35.1395879Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:35.1396052Z ##[endgroup]
+2026-10-09T17:13:38.2199540Z ##[group]Cache Configuration
+2026-10-09T17:13:38.2199953Z Cache Provider:
+2026-10-09T17:13:38.2200211Z     github
+2026-10-09T17:13:38.2200441Z Workspaces:
+2026-10-09T17:13:38.2200702Z     /home/runner/work/codecortex/codecortex
+2026-10-09T17:13:38.2201010Z Cache Paths:
+2026-10-09T17:13:38.2201274Z     /home/runner/.cargo/bin
+2026-10-09T17:13:38.2201576Z     /home/runner/.cargo/.crates.toml
+2026-10-09T17:13:38.2201975Z     /home/runner/.cargo/.crates2.json
+2026-10-09T17:13:38.2202322Z     /home/runner/.cargo/registry
+2026-10-09T17:13:38.2202664Z     /home/runner/.cargo/git
+2026-10-09T17:13:38.2202976Z     /home/runner/work/codecortex/codecortex/target
+2026-10-09T17:13:38.2203339Z Restore Key:
+2026-10-09T17:13:38.2203609Z     v0-rust-check-Linux-x64-cbcac849
+2026-10-09T17:13:38.2203925Z Cache Key:
+2026-10-09T17:13:38.2204213Z     v0-rust-check-Linux-x64-cbcac849-015a28e6
+2026-10-09T17:13:38.2204561Z .. Prefix:
+2026-10-09T17:13:38.2204802Z   - v0-rust-check-Linux-x64
+2026-10-09T17:13:38.2205097Z .. Environment considered:
+2026-10-09T17:13:38.2205390Z   - Rust Versions:
+2026-10-09T17:13:38.2205791Z     - 1.99.0 x86_64-unknown-linux-gnu b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-09T17:13:38.2206248Z   - CARGO_HOME
+2026-10-09T17:13:38.2206496Z   - CARGO_INCREMENTAL
+2026-10-09T17:13:38.2206759Z   - CARGO_TERM_COLOR
+2026-10-09T17:13:38.2207009Z   - RUSTFLAGS
+2026-10-09T17:13:38.2207255Z .. Lockfiles considered:
+2026-10-09T17:13:38.2207573Z   - /home/runner/work/codecortex/codecortex/Cargo.lock
+2026-10-09T17:13:38.2208076Z   - /home/runner/work/codecortex/codecortex/crates/cc-db/Cargo.toml
+2026-10-09T17:13:38.2208631Z   - /home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml
+2026-10-09T17:13:38.2209425Z   - /home/runner/work/codecortex/codecortex/crates/cc-index/Cargo.toml
+2026-10-09T17:13:38.2209984Z   - /home/runner/work/codecortex/codecortex/crates/cc-model/Cargo.toml
+2026-10-09T17:13:38.2210574Z   - /home/runner/work/codecortex/codecortex/crates/cc-parsers/Cargo.toml
+2026-10-09T17:13:38.2211168Z   - /home/runner/work/codecortex/codecortex/crates/cc-search/Cargo.toml
+2026-10-09T17:13:38.2211726Z   - /home/runner/work/codecortex/codecortex/crates/cc-semantic/Cargo.toml
+2026-10-09T17:13:38.2212264Z   - /home/runner/work/codecortex/codecortex/crates/cc-server/Cargo.toml
+2026-10-09T17:13:38.2212946Z ##[endgroup]
+2026-10-09T17:13:38.2213077Z 
+2026-10-09T17:13:38.2213183Z ... Restoring cache ...
+2026-10-09T17:13:38.4226655Z Cache hit for restore-key: v0-rust-check-Linux-x64-cbcac849-14b538d7
+2026-10-09T17:13:39.6364324Z Received 29360128 of 554473071 (5.3%), 28.0 MBs/sec
+2026-10-09T17:13:40.6370640Z Received 176160768 of 554473071 (31.8%), 84.0 MBs/sec
+2026-10-09T17:13:41.6369709Z Received 385875968 of 554473071 (69.6%), 122.7 MBs/sec
+2026-10-09T17:13:42.6274545Z Received 554473071 of 554473071 (100.0%), 132.5 MBs/sec
+2026-10-09T17:13:42.6275283Z Cache Size: ~529 MB (554473071 B)
+2026-10-09T17:13:42.6300460Z [command]/usr/bin/tar -xf /home/runner/work/_temp/e8e9a187-447d-482d-9a08-c2612fe6f3ec/cache.tzst -P -C /home/runner/work/codecortex/codecortex --use-compress-program unzstd
+2026-10-09T17:13:49.7439402Z Cache restored successfully
+2026-10-09T17:13:49.8387603Z Restored from cache key "v0-rust-check-Linux-x64-cbcac849-14b538d7" full match: false.
+2026-10-09T17:13:50.0126046Z ##[group]Run cargo fmt --all -- --check
+2026-10-09T17:13:50.0126485Z [36;1mcargo fmt --all -- --check[0m
+2026-10-09T17:13:50.0194487Z shell: /usr/bin/bash -e {0}
+2026-10-09T17:13:50.0194709Z env:
+2026-10-09T17:13:50.0194900Z   CARGO_TERM_COLOR: always
+2026-10-09T17:13:50.0195106Z   RUSTFLAGS: -D warnings
+2026-10-09T17:13:50.0195333Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:13:50.0195541Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:13:50.0195724Z   CACHE_ON_FAILURE: false
+2026-10-09T17:13:50.0195916Z ##[endgroup]
+2026-10-09T17:13:52.4867758Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-scale.rs:1:
+2026-10-09T17:13:52.4868480Z  //! Development-only local P8 measurements. Never certifies a release.
+2026-10-09T17:13:52.4873180Z  use cc_eval::benchmark::{
+2026-10-09T17:13:52.4873399Z      invalid,
+2026-10-09T17:13:52.4873770Z -    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},
+2026-10-09T17:13:52.4874252Z +    p8_scale::{
+2026-10-09T17:13:52.4874565Z +        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,
+2026-10-09T17:13:52.4874908Z +    },
+2026-10-09T17:13:52.4875055Z      Result,
+2026-10-09T17:13:52.4875224Z  };
+2026-10-09T17:13:52.4875398Z  use clap::{Parser, ValueEnum};
+2026-10-09T17:13:52.4875739Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-scale.rs:121:
+2026-10-09T17:13:52.4876283Z      if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))
+2026-10-09T17:13:52.4876760Z          || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some("fanout"))
+2026-10-09T17:13:52.4877073Z      {
+2026-10-09T17:13:52.4877337Z -        return Err(invalid("profile selection requires its explicit isolated scope"));
+2026-10-09T17:13:52.4877670Z +        return Err(invalid(
+2026-10-09T17:13:52.4877948Z +            "profile selection requires its explicit isolated scope",
+2026-10-09T17:13:52.4878220Z +        ));
+2026-10-09T17:13:52.4878374Z      }
+2026-10-09T17:13:52.4878534Z      let plan = ScalePlan {
+2026-10-09T17:13:52.4878847Z          schema_version: 1,
+2026-10-09T17:13:52.4879167Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-scale.rs:136:
+2026-10-09T17:13:52.4879534Z              Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,
+2026-10-09T17:13:52.4879851Z              Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,
+2026-10-09T17:13:52.4880119Z          }),
+2026-10-09T17:13:52.4880451Z -        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+2026-10-09T17:13:52.4880882Z -            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),
+2026-10-09T17:13:52.4881292Z -        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+2026-10-09T17:13:52.4881661Z +        cold_study: identity
+2026-10-09T17:13:52.4881855Z +            .clone()
+2026-10-09T17:13:52.4882119Z +            .filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+2026-10-09T17:13:52.4882433Z +            .map(|(run_id, run_attempt)| ColdStudy {
+2026-10-09T17:13:52.4882657Z +                run_id,
+2026-10-09T17:13:52.4883149Z +                run_attempt,
+2026-10-09T17:13:52.4883332Z +            }),
+2026-10-09T17:13:52.4883503Z +        profile_study: identity
+2026-10-09T17:13:52.4883790Z +            .filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+2026-10-09T17:13:52.4884111Z              .map(|(run_id, run_attempt)| ProfileStudy {
+2026-10-09T17:13:52.4884345Z                  run_id,
+2026-10-09T17:13:52.4884525Z                  run_attempt,
+2026-10-09T17:13:52.5836817Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/mutation_case.rs:156:
+2026-10-09T17:13:52.5837397Z          if evidence["incremental_report"]["resolution_freshness"]["complete"] != true
+2026-10-09T17:13:52.5838168Z              || evidence["full_report"]["resolution_freshness"]["complete"] != true
+2026-10-09T17:13:52.5838465Z          {
+2026-10-09T17:13:52.5838914Z -            return Err(invalid("isolated fanout initial full builds are incomplete"));
+2026-10-09T17:13:52.5839282Z +            return Err(invalid(
+2026-10-09T17:13:52.5839545Z +                "isolated fanout initial full builds are incomplete",
+2026-10-09T17:13:52.5839799Z +            ));
+2026-10-09T17:13:52.5839967Z          }
+2026-10-09T17:13:52.5840122Z          Some(evidence)
+2026-10-09T17:13:52.5840294Z      } else {
+2026-10-09T17:13:52.5840612Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/mutation_case.rs:209:
+2026-10-09T17:13:52.5840990Z              build(&mut full, true)?;
+2026-10-09T17:13:52.5841193Z              None
+2026-10-09T17:13:52.5841354Z          };
+2026-10-09T17:13:52.5841540Z -        if full_report.as_ref().is_some_and(|report| {
+2026-10-09T17:13:52.5841824Z -            report["resolution_freshness"]["complete"] != true
+2026-10-09T17:13:52.5842070Z -        }) {
+2026-10-09T17:13:52.5842234Z +        if full_report
+2026-10-09T17:13:52.5842402Z +            .as_ref()
+2026-10-09T17:13:52.5842666Z +            .is_some_and(|report| report["resolution_freshness"]["complete"] != true)
+2026-10-09T17:13:52.5842968Z +        {
+2026-10-09T17:13:52.5843213Z              return Err(invalid("isolated fanout final full build is incomplete"));
+2026-10-09T17:13:52.5843546Z          }
+2026-10-09T17:13:52.5843843Z          let ca = oracle::canonical(a.path())?;
+2026-10-09T17:13:52.5844451Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/mutation_case.rs:253:
+2026-10-09T17:13:52.5845040Z          if retain_initial {
+2026-10-09T17:13:52.5845392Z              let checkpoint = checkpoints.last_mut().unwrap();
+2026-10-09T17:13:52.5845844Z              checkpoint["full_report"] = full_report.unwrap();
+2026-10-09T17:13:52.5846503Z -            checkpoint["process_snapshot"] = json!(super::sampler::process_snapshot(std::process::id()));
+2026-10-09T17:13:52.5847086Z +            checkpoint["process_snapshot"] =
+2026-10-09T17:13:52.5847523Z +                json!(super::sampler::process_snapshot(std::process::id()));
+2026-10-09T17:13:52.5847864Z          }
+2026-10-09T17:13:52.5848031Z          if failure.is_some() {
+2026-10-09T17:13:52.5848221Z              break;
+2026-10-09T17:13:52.6229209Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:71:
+2026-10-09T17:13:52.6229666Z  }
+2026-10-09T17:13:52.6229816Z  
+2026-10-09T17:13:52.6229998Z  pub const MUTATION_PROFILES: [&str; 8] = [
+2026-10-09T17:13:52.6230324Z -    "no_op", "body", "api", "config", "batch_1", "batch_10", "batch_100", "batch_1000",
+2026-10-09T17:13:52.6230635Z +    "no_op",
+2026-10-09T17:13:52.6230797Z +    "body",
+2026-10-09T17:13:52.6230951Z +    "api",
+2026-10-09T17:13:52.6231104Z +    "config",
+2026-10-09T17:13:52.6231268Z +    "batch_1",
+2026-10-09T17:13:52.6231429Z +    "batch_10",
+2026-10-09T17:13:52.6231618Z +    "batch_100",
+2026-10-09T17:13:52.6231782Z +    "batch_1000",
+2026-10-09T17:13:52.6231945Z  ];
+2026-10-09T17:13:52.6232088Z  
+2026-10-09T17:13:52.6232329Z  /// A disjoint slice of the registered repetition population. A successful
+2026-10-09T17:13:52.6232769Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:213:
+2026-10-09T17:13:52.6233714Z                  "cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets",
+2026-10-09T17:13:52.6234162Z              ));
+2026-10-09T17:13:52.6234322Z          }
+2026-10-09T17:13:52.6234572Z -        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1))
+2026-10-09T17:13:52.6234881Z -            != self.profile_study.is_some()
+2026-10-09T17:13:52.6235233Z +        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1)) != self.profile_study.is_some()
+2026-10-09T17:13:52.6235569Z          {
+2026-10-09T17:13:52.6235974Z -            return Err(invalid("isolated profile identity requires its own explicit scope"));
+2026-10-09T17:13:52.6236326Z +            return Err(invalid(
+2026-10-09T17:13:52.6236597Z +                "isolated profile identity requires its own explicit scope",
+2026-10-09T17:13:52.6236875Z +            ));
+2026-10-09T17:13:52.6237033Z          }
+2026-10-09T17:13:52.6237213Z          if let Some(study) = &self.profile_study {
+2026-10-09T17:13:52.6237497Z              let fanout = study.mutation_profile == "fanout";
+2026-10-09T17:13:52.6237912Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:227:
+2026-10-09T17:13:52.6238267Z                  || self.files.len() != 1
+2026-10-09T17:13:52.6238535Z                  || self.shard.is_none_or(|s| s.count != self.repetitions)
+2026-10-09T17:13:52.6238990Z                  || self.skip_fanout == fanout
+2026-10-09T17:13:52.6239304Z -                || (!fanout && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
+2026-10-09T17:13:52.6239632Z -                    || study.fanout.is_some()))
+2026-10-09T17:13:52.6239952Z -                || (fanout && (!study.fanout.is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
+2026-10-09T17:13:52.6240255Z -                    || self.files != [1000]))
+2026-10-09T17:13:52.6240471Z +                || (!fanout
+2026-10-09T17:13:52.6240736Z +                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
+2026-10-09T17:13:52.6241047Z +                        || study.fanout.is_some()))
+2026-10-09T17:13:52.6241269Z +                || (fanout
+2026-10-09T17:13:52.6241452Z +                    && (!study
+2026-10-09T17:13:52.6241639Z +                        .fanout
+2026-10-09T17:13:52.6241873Z +                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
+2026-10-09T17:13:52.6242140Z +                        || self.files != [1000]))
+2026-10-09T17:13:52.6242386Z                  || (self.profile == Profile::Release
+2026-10-09T17:13:52.6242698Z                      && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
+2026-10-09T17:13:52.6243006Z                          || self.repetitions != 30
+2026-10-09T17:13:52.6243353Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:240:
+2026-10-09T17:13:52.6243755Z                          || self.batch_sizes != [1, 10, 100, 1000]
+2026-10-09T17:13:52.6244012Z                          || self.fanouts != [1, 4, 16, 64, 128]))
+2026-10-09T17:13:52.6244256Z              {
+2026-10-09T17:13:52.6244588Z -                return Err(invalid("invalid isolated profile, fanout, identity or fixed release population/budget"));
+2026-10-09T17:13:52.6244979Z +                return Err(invalid(
+2026-10-09T17:13:52.6245299Z +                    "invalid isolated profile, fanout, identity or fixed release population/budget",
+2026-10-09T17:13:52.6245619Z +                ));
+2026-10-09T17:13:52.6245781Z              }
+2026-10-09T17:13:52.6245941Z          }
+2026-10-09T17:13:52.6246098Z          Ok(())
+2026-10-09T17:13:52.6246400Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:339:
+2026-10-09T17:13:52.6246829Z      // The supervisor owns all fixture directories, including those allocated
+2026-10-09T17:13:52.6247205Z      // by the existing mutation runner; a deadline cannot orphan 100k trees.
+2026-10-09T17:13:52.6247618Z      let workspace = tempfile::tempdir()?;
+2026-10-09T17:13:52.6247893Z -    let cold_temporary_environment = plan.stage_scope.is_some()
+2026-10-09T17:13:52.6248171Z +    let cold_temporary_environment = plan
+2026-10-09T17:13:52.6248389Z +        .stage_scope
+2026-10-09T17:13:52.6248563Z +        .is_some()
+2026-10-09T17:13:52.6249048Z          .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
+2026-10-09T17:13:52.6249442Z      let mut command = Command::new(binary);
+2026-10-09T17:13:52.6249669Z      command
+2026-10-09T17:13:52.6249960Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:920:
+2026-10-09T17:13:52.6250424Z      if let Some(study) = &plan.profile_study {
+2026-10-09T17:13:52.6250717Z          stages.retain(|(stage, _)| stage == &study.mutation_profile);
+2026-10-09T17:13:52.6250996Z          if stages.len() != 1 {
+2026-10-09T17:13:52.6251666Z -            return Err(invalid("isolated scale cell must execute exactly one registered mutation"));
+2026-10-09T17:13:52.6252109Z +            return Err(invalid(
+2026-10-09T17:13:52.6252560Z +                "isolated scale cell must execute exactly one registered mutation",
+2026-10-09T17:13:52.6267693Z +            ));
+2026-10-09T17:13:52.6267905Z          }
+2026-10-09T17:13:52.6268070Z      }
+2026-10-09T17:13:52.6268238Z      for (stage, requested) in stages {
+2026-10-09T17:13:52.6268891Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:1024:
+2026-10-09T17:13:52.6269397Z          let fact = config_fact(
+2026-10-09T17:13:52.6269666Z              a.path(),
+2026-10-09T17:13:52.6269915Z              &config_files[2],
+2026-10-09T17:13:52.6270193Z -            if stage == "config"
+2026-10-09T17:13:52.6270567Z -                || (plan.profile_study.is_none() && stage.starts_with("batch_"))
+2026-10-09T17:13:52.6270942Z -            {
+2026-10-09T17:13:52.6271340Z +            if stage == "config" || (plan.profile_study.is_none() && stage.starts_with("batch_")) {
+2026-10-09T17:13:52.6271817Z                  &config_files[1]
+2026-10-09T17:13:52.6272071Z              } else {
+2026-10-09T17:13:52.6272296Z                  &config_files[0]
+2026-10-09T17:13:52.6272766Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:1133:
+2026-10-09T17:13:52.6273314Z      raw.emit(started)?;
+2026-10-09T17:13:52.6273610Z      let mut summaries = Vec::new();
+2026-10-09T17:13:52.6273970Z      for &files in plan.files.iter().filter(|_| {
+2026-10-09T17:13:52.6274467Z -        plan.profile_study.as_ref().is_none_or(|s| s.mutation_profile != "fanout")
+2026-10-09T17:13:52.6274974Z +        plan.profile_study
+2026-10-09T17:13:52.6275293Z +            .as_ref()
+2026-10-09T17:13:52.6275630Z +            .is_none_or(|s| s.mutation_profile != "fanout")
+2026-10-09T17:13:52.6275981Z      }) {
+2026-10-09T17:13:52.6276273Z          for repetition in plan.repetition_range()? {
+2026-10-09T17:13:52.6276754Z              summaries.extend(scale_sample(plan, files, repetition, raw)?);
+2026-10-09T17:13:52.6277429Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/benchmark/p8_scale.rs:1141:
+2026-10-09T17:13:52.6277979Z      }
+2026-10-09T17:13:52.6278272Z      for &fanout in plan.fanouts.iter().filter(|&&n| {
+2026-10-09T17:13:52.6278645Z          !plan.skip_fanout
+2026-10-09T17:13:52.6279226Z -            && plan.profile_study.as_ref().is_none_or(|s| s.fanout == Some(n))
+2026-10-09T17:13:52.6279669Z +            && plan
+2026-10-09T17:13:52.6279940Z +                .profile_study
+2026-10-09T17:13:52.6280234Z +                .as_ref()
+2026-10-09T17:13:52.6280552Z +                .is_none_or(|s| s.fanout == Some(n))
+2026-10-09T17:13:52.6280913Z      }) {
+2026-10-09T17:13:52.6281203Z          for repetition in plan.repetition_range()? {
+2026-10-09T17:13:52.6281671Z              let (dirty_budget, max_resume_builds) = plan.fanout_budgets();
+2026-10-09T17:13:52.8847902Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:690:
+2026-10-09T17:13:52.8848500Z              mutation_profile: profile.into(),
+2026-10-09T17:13:52.8849131Z              fanout,
+2026-10-09T17:13:52.8849409Z          }),
+2026-10-09T17:13:52.8849649Z -        files: if fanout.is_some() { vec![1000] } else { vec![60] },
+2026-10-09T17:13:52.8849958Z +        files: if fanout.is_some() {
+2026-10-09T17:13:52.8850168Z +            vec![1000]
+2026-10-09T17:13:52.8850348Z +        } else {
+2026-10-09T17:13:52.8850521Z +            vec![60]
+2026-10-09T17:13:52.8850689Z +        },
+2026-10-09T17:13:52.8850887Z          shard: Some(ScaleShard { index: 0, count: 1 }),
+2026-10-09T17:13:52.8851140Z          skip_fanout: fanout.is_none(),
+2026-10-09T17:13:52.8851695Z          dirty_budget: 8,
+2026-10-09T17:13:52.8852018Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:713:
+2026-10-09T17:13:52.8852431Z      plan.profile_study.as_mut().unwrap().mutation_profile = "cold".into();
+2026-10-09T17:13:52.8852739Z      assert!(plan.validate().is_err());
+2026-10-09T17:13:52.8852965Z      plan = isolated_smoke("body", None);
+2026-10-09T17:13:52.8853278Z -    plan.cold_study = Some(ColdStudy { run_id: "12345".into(), run_attempt: 1 });
+2026-10-09T17:13:52.8853592Z +    plan.cold_study = Some(ColdStudy {
+2026-10-09T17:13:52.8853830Z +        run_id: "12345".into(),
+2026-10-09T17:13:52.8854031Z +        run_attempt: 1,
+2026-10-09T17:13:52.8854206Z +    });
+2026-10-09T17:13:52.8854369Z      assert!(plan.validate().is_err());
+2026-10-09T17:13:52.8854586Z      plan.cold_study = None;
+2026-10-09T17:13:52.8854796Z      plan.stage_scope = None;
+2026-10-09T17:13:52.8855114Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:734:
+2026-10-09T17:13:52.8855509Z      assert_eq!(report["summary"]["stage_scope"], "profile_isolated_v1");
+2026-10-09T17:13:52.8855819Z      assert_eq!(report["summary"]["sample_count"], 2);
+2026-10-09T17:13:52.8856171Z      let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+2026-10-09T17:13:52.8856550Z -        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+2026-10-09T17:13:52.8856851Z +        .unwrap()
+2026-10-09T17:13:52.8857025Z +        .lines()
+2026-10-09T17:13:52.8857236Z +        .map(|line| serde_json::from_str(line).unwrap())
+2026-10-09T17:13:52.8857478Z +        .collect();
+2026-10-09T17:13:52.8857722Z      assert_eq!(rows[0]["plan"], serde_json::to_value(&plan).unwrap());
+2026-10-09T17:13:52.8858076Z -    let initial = rows.iter().find(|row| row["event"] == "cold_parity").unwrap();
+2026-10-09T17:13:52.8858484Z -    let stages: Vec<_> = rows.iter().filter(|row| row["event"] == "stage_finished").collect();
+2026-10-09T17:13:52.8859008Z +    let initial = rows
+2026-10-09T17:13:52.8859185Z +        .iter()
+2026-10-09T17:13:52.8859373Z +        .find(|row| row["event"] == "cold_parity")
+2026-10-09T17:13:52.8859606Z +        .unwrap();
+2026-10-09T17:13:52.8859783Z +    let stages: Vec<_> = rows
+2026-10-09T17:13:52.8859977Z +        .iter()
+2026-10-09T17:13:52.8860176Z +        .filter(|row| row["event"] == "stage_finished")
+2026-10-09T17:13:52.8860419Z +        .collect();
+2026-10-09T17:13:52.8860608Z      assert_eq!(stages.len(), 1);
+2026-10-09T17:13:52.8860884Z      assert!(stages[0]["label"].as_str().unwrap().ends_with("/batch_1"));
+2026-10-09T17:13:52.8861277Z -    assert_eq!(initial["independent_config_fact"], stages[0]["independent_config_fact"]);
+2026-10-09T17:13:52.8861609Z +    assert_eq!(
+2026-10-09T17:13:52.8861792Z +        initial["independent_config_fact"],
+2026-10-09T17:13:52.8862028Z +        stages[0]["independent_config_fact"]
+2026-10-09T17:13:52.8862238Z +    );
+2026-10-09T17:13:52.8862416Z      for point in [initial, stages[0]] {
+2026-10-09T17:13:52.8862655Z          assert_eq!(point["parity"]["equal"], true);
+2026-10-09T17:13:52.8862954Z          assert_eq!(point["parity"]["tables"].as_array().unwrap().len(), 15);
+2026-10-09T17:13:52.8863343Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:747:
+2026-10-09T17:13:52.8863890Z          assert_eq!(point["independent_config_fact"]["passed"], true);
+2026-10-09T17:13:52.8864157Z      }
+2026-10-09T17:13:52.8864427Z -    let mutations: Vec<_> = rows.iter().filter(|row| row["event"] == "mutation").collect();
+2026-10-09T17:13:52.8864754Z +    let mutations: Vec<_> = rows
+2026-10-09T17:13:52.8864960Z +        .iter()
+2026-10-09T17:13:52.8865146Z +        .filter(|row| row["event"] == "mutation")
+2026-10-09T17:13:52.8865372Z +        .collect();
+2026-10-09T17:13:52.8865553Z      assert_eq!(mutations.len(), 1);
+2026-10-09T17:13:52.8865828Z      assert_eq!(mutations[0]["operations"].as_array().unwrap().len(), 1);
+2026-10-09T17:13:52.8866345Z -    assert_eq!(rows.iter().filter(|row| row["event"] == "build_finished" && row["full"] == true).count(), 3);
+2026-10-09T17:13:52.8866700Z +    assert_eq!(
+2026-10-09T17:13:52.8866869Z +        rows.iter()
+2026-10-09T17:13:52.8867111Z +            .filter(|row| row["event"] == "build_finished" && row["full"] == true)
+2026-10-09T17:13:52.8867401Z +            .count(),
+2026-10-09T17:13:52.8867574Z +        3
+2026-10-09T17:13:52.8867724Z +    );
+2026-10-09T17:13:52.8867937Z      assert!(rows.iter().all(|row| row["event"] != "fanout_started"));
+2026-10-09T17:13:52.8868216Z  }
+2026-10-09T17:13:52.8868363Z  
+2026-10-09T17:13:52.8868633Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:762:
+2026-10-09T17:13:52.8869219Z      assert_eq!(report["exit_code"], 0, "{report}");
+2026-10-09T17:13:52.8869488Z      assert_eq!(report["summary"]["sample_count"], 1);
+2026-10-09T17:13:52.8869798Z      let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+2026-10-09T17:13:52.8870164Z -        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+2026-10-09T17:13:52.8870454Z +        .unwrap()
+2026-10-09T17:13:52.8870633Z +        .lines()
+2026-10-09T17:13:52.8870832Z +        .map(|line| serde_json::from_str(line).unwrap())
+2026-10-09T17:13:52.8871066Z +        .collect();
+2026-10-09T17:13:52.8871239Z      assert_eq!(rows.len(), 3);
+2026-10-09T17:13:52.8871463Z      assert_eq!(rows[1]["event"], "fanout_started");
+2026-10-09T17:13:52.8871755Z      assert_eq!(rows[1]["case"]["initial"].as_object().unwrap().len(), 17);
+2026-10-09T17:13:52.8872129Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:774:
+2026-10-09T17:13:52.8872453Z      assert_eq!(initial["equal"], true);
+2026-10-09T17:13:52.8872724Z      assert_eq!(initial["tables"].as_array().unwrap().len(), 15);
+2026-10-09T17:13:52.8873022Z      assert_eq!(initial["incremental"], initial["full"]);
+2026-10-09T17:13:52.8873349Z -    assert_eq!(initial["incremental"]["files"].as_array().unwrap().len(), 17);
+2026-10-09T17:13:52.8873637Z +    assert_eq!(
+2026-10-09T17:13:52.8873865Z +        initial["incremental"]["files"].as_array().unwrap().len(),
+2026-10-09T17:13:52.8874120Z +        17
+2026-10-09T17:13:52.8874277Z +    );
+2026-10-09T17:13:52.8874463Z      let point = &result["checkpoints"][0];
+2026-10-09T17:13:52.8874747Z      assert_eq!(point["incremental"], point["full"]);
+2026-10-09T17:13:52.8875048Z      assert_eq!(point["truth"].as_array().unwrap().len(), 16);
+2026-10-09T17:13:52.8875415Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/tests/p8_scale.rs:781:
+2026-10-09T17:13:52.8875828Z -    assert_eq!(point["full_report"]["resolution_freshness"]["complete"], true);
+2026-10-09T17:13:52.8876126Z +    assert_eq!(
+2026-10-09T17:13:52.8876347Z +        point["full_report"]["resolution_freshness"]["complete"],
+2026-10-09T17:13:52.8876603Z +        true
+2026-10-09T17:13:52.8876757Z +    );
+2026-10-09T17:13:52.8876906Z  }
+2026-10-09T17:13:52.8877056Z  
+2026-10-09T17:13:54.3360701Z ##[error]Process completed with exit code 1.
+2026-10-09T17:13:54.3516632Z Post job cleanup.
+2026-10-09T17:13:54.4168452Z [command]/usr/bin/git version
+2026-10-09T17:13:54.4198630Z git version 2.55.0
+2026-10-09T17:13:54.4226971Z Temporarily overriding HOME='/home/runner/work/_temp/a6aa54a4-515d-41aa-8ba1-13e36ae897af' before making global git config changes
+2026-10-09T17:13:54.4228215Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T17:13:54.4231675Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T17:13:54.4262143Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T17:13:54.4289744Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T17:13:54.4504032Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T17:13:54.4529141Z http.https://github.com/.extraheader
+2026-10-09T17:13:54.4536580Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T17:13:54.4565663Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T17:13:54.4775804Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T17:13:54.4802907Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T17:13:54.5129307Z Cleaning up orphan processes
+2026-10-09T17:13:54.5381954Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

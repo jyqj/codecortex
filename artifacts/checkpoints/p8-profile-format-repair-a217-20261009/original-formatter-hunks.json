@@ -1,0 +1,465 @@
+{
+  "original_log": {
+    "path": "/workspace/scratch/a217aaae3bde/p8-profile-isolated-integration/current-ci/job-113925388024/original.log",
+    "bytes": 59219,
+    "sha256": "cbd57d9695c4ff08baa6594ad07988e5ee8ecc77f89382a3d27257df0eac42df",
+    "git_blob": "d180d6606e42edb4605bfb1e890be9bfd6f7c225"
+  },
+  "hunks": [
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "original_line": 1,
+      "raw_lines": [
+        " //! Development-only local P8 measurements. Never certifies a release.",
+        " use cc_eval::benchmark::{",
+        "     invalid,",
+        "-    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},",
+        "+    p8_scale::{",
+        "+        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,",
+        "+    },",
+        "     Result,",
+        " };",
+        " use clap::{Parser, ValueEnum};"
+      ],
+      "before": "//! Development-only local P8 measurements. Never certifies a release.\nuse cc_eval::benchmark::{\n    invalid,\n    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},\n    Result,\n};\nuse clap::{Parser, ValueEnum};\n",
+      "after": "//! Development-only local P8 measurements. Never certifies a release.\nuse cc_eval::benchmark::{\n    invalid,\n    p8_scale::{\n        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,\n    },\n    Result,\n};\nuse clap::{Parser, ValueEnum};\n"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "original_line": 121,
+      "raw_lines": [
+        "     if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))",
+        "         || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some(\"fanout\"))",
+        "     {",
+        "-        return Err(invalid(\"profile selection requires its explicit isolated scope\"));",
+        "+        return Err(invalid(",
+        "+            \"profile selection requires its explicit isolated scope\",",
+        "+        ));",
+        "     }",
+        "     let plan = ScalePlan {",
+        "         schema_version: 1,"
+      ],
+      "before": "    if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))\n        || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some(\"fanout\"))\n    {\n        return Err(invalid(\"profile selection requires its explicit isolated scope\"));\n    }\n    let plan = ScalePlan {\n        schema_version: 1,\n",
+      "after": "    if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))\n        || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some(\"fanout\"))\n    {\n        return Err(invalid(\n            \"profile selection requires its explicit isolated scope\",\n        ));\n    }\n    let plan = ScalePlan {\n        schema_version: 1,\n"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "original_line": 136,
+      "raw_lines": [
+        "             Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,",
+        "             Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,",
+        "         }),",
+        "-        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))",
+        "-            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),",
+        "-        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))",
+        "+        cold_study: identity",
+        "+            .clone()",
+        "+            .filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))",
+        "+            .map(|(run_id, run_attempt)| ColdStudy {",
+        "+                run_id,",
+        "+                run_attempt,",
+        "+            }),",
+        "+        profile_study: identity",
+        "+            .filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))",
+        "             .map(|(run_id, run_attempt)| ProfileStudy {",
+        "                 run_id,",
+        "                 run_attempt,"
+      ],
+      "before": "            Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,\n            Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,\n        }),\n        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))\n            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),\n        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))\n            .map(|(run_id, run_attempt)| ProfileStudy {\n                run_id,\n                run_attempt,\n",
+      "after": "            Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,\n            Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,\n        }),\n        cold_study: identity\n            .clone()\n            .filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))\n            .map(|(run_id, run_attempt)| ColdStudy {\n                run_id,\n                run_attempt,\n            }),\n        profile_study: identity\n            .filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))\n            .map(|(run_id, run_attempt)| ProfileStudy {\n                run_id,\n                run_attempt,\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "original_line": 156,
+      "raw_lines": [
+        "         if evidence[\"incremental_report\"][\"resolution_freshness\"][\"complete\"] != true",
+        "             || evidence[\"full_report\"][\"resolution_freshness\"][\"complete\"] != true",
+        "         {",
+        "-            return Err(invalid(\"isolated fanout initial full builds are incomplete\"));",
+        "+            return Err(invalid(",
+        "+                \"isolated fanout initial full builds are incomplete\",",
+        "+            ));",
+        "         }",
+        "         Some(evidence)",
+        "     } else {"
+      ],
+      "before": "        if evidence[\"incremental_report\"][\"resolution_freshness\"][\"complete\"] != true\n            || evidence[\"full_report\"][\"resolution_freshness\"][\"complete\"] != true\n        {\n            return Err(invalid(\"isolated fanout initial full builds are incomplete\"));\n        }\n        Some(evidence)\n    } else {\n",
+      "after": "        if evidence[\"incremental_report\"][\"resolution_freshness\"][\"complete\"] != true\n            || evidence[\"full_report\"][\"resolution_freshness\"][\"complete\"] != true\n        {\n            return Err(invalid(\n                \"isolated fanout initial full builds are incomplete\",\n            ));\n        }\n        Some(evidence)\n    } else {\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "original_line": 209,
+      "raw_lines": [
+        "             build(&mut full, true)?;",
+        "             None",
+        "         };",
+        "-        if full_report.as_ref().is_some_and(|report| {",
+        "-            report[\"resolution_freshness\"][\"complete\"] != true",
+        "-        }) {",
+        "+        if full_report",
+        "+            .as_ref()",
+        "+            .is_some_and(|report| report[\"resolution_freshness\"][\"complete\"] != true)",
+        "+        {",
+        "             return Err(invalid(\"isolated fanout final full build is incomplete\"));",
+        "         }",
+        "         let ca = oracle::canonical(a.path())?;"
+      ],
+      "before": "            build(&mut full, true)?;\n            None\n        };\n        if full_report.as_ref().is_some_and(|report| {\n            report[\"resolution_freshness\"][\"complete\"] != true\n        }) {\n            return Err(invalid(\"isolated fanout final full build is incomplete\"));\n        }\n        let ca = oracle::canonical(a.path())?;\n",
+      "after": "            build(&mut full, true)?;\n            None\n        };\n        if full_report\n            .as_ref()\n            .is_some_and(|report| report[\"resolution_freshness\"][\"complete\"] != true)\n        {\n            return Err(invalid(\"isolated fanout final full build is incomplete\"));\n        }\n        let ca = oracle::canonical(a.path())?;\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "original_line": 253,
+      "raw_lines": [
+        "         if retain_initial {",
+        "             let checkpoint = checkpoints.last_mut().unwrap();",
+        "             checkpoint[\"full_report\"] = full_report.unwrap();",
+        "-            checkpoint[\"process_snapshot\"] = json!(super::sampler::process_snapshot(std::process::id()));",
+        "+            checkpoint[\"process_snapshot\"] =",
+        "+                json!(super::sampler::process_snapshot(std::process::id()));",
+        "         }",
+        "         if failure.is_some() {",
+        "             break;"
+      ],
+      "before": "        if retain_initial {\n            let checkpoint = checkpoints.last_mut().unwrap();\n            checkpoint[\"full_report\"] = full_report.unwrap();\n            checkpoint[\"process_snapshot\"] = json!(super::sampler::process_snapshot(std::process::id()));\n        }\n        if failure.is_some() {\n            break;\n",
+      "after": "        if retain_initial {\n            let checkpoint = checkpoints.last_mut().unwrap();\n            checkpoint[\"full_report\"] = full_report.unwrap();\n            checkpoint[\"process_snapshot\"] =\n                json!(super::sampler::process_snapshot(std::process::id()));\n        }\n        if failure.is_some() {\n            break;\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 71,
+      "raw_lines": [
+        " }",
+        " ",
+        " pub const MUTATION_PROFILES: [&str; 8] = [",
+        "-    \"no_op\", \"body\", \"api\", \"config\", \"batch_1\", \"batch_10\", \"batch_100\", \"batch_1000\",",
+        "+    \"no_op\",",
+        "+    \"body\",",
+        "+    \"api\",",
+        "+    \"config\",",
+        "+    \"batch_1\",",
+        "+    \"batch_10\",",
+        "+    \"batch_100\",",
+        "+    \"batch_1000\",",
+        " ];",
+        " ",
+        " /// A disjoint slice of the registered repetition population. A successful"
+      ],
+      "before": "}\n\npub const MUTATION_PROFILES: [&str; 8] = [\n    \"no_op\", \"body\", \"api\", \"config\", \"batch_1\", \"batch_10\", \"batch_100\", \"batch_1000\",\n];\n\n/// A disjoint slice of the registered repetition population. A successful\n",
+      "after": "}\n\npub const MUTATION_PROFILES: [&str; 8] = [\n    \"no_op\",\n    \"body\",\n    \"api\",\n    \"config\",\n    \"batch_1\",\n    \"batch_10\",\n    \"batch_100\",\n    \"batch_1000\",\n];\n\n/// A disjoint slice of the registered repetition population. A successful\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 213,
+      "raw_lines": [
+        "                 \"cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets\",",
+        "             ));",
+        "         }",
+        "-        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1))",
+        "-            != self.profile_study.is_some()",
+        "+        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1)) != self.profile_study.is_some()",
+        "         {",
+        "-            return Err(invalid(\"isolated profile identity requires its own explicit scope\"));",
+        "+            return Err(invalid(",
+        "+                \"isolated profile identity requires its own explicit scope\",",
+        "+            ));",
+        "         }",
+        "         if let Some(study) = &self.profile_study {",
+        "             let fanout = study.mutation_profile == \"fanout\";"
+      ],
+      "before": "                \"cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets\",\n            ));\n        }\n        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1))\n            != self.profile_study.is_some()\n        {\n            return Err(invalid(\"isolated profile identity requires its own explicit scope\"));\n        }\n        if let Some(study) = &self.profile_study {\n            let fanout = study.mutation_profile == \"fanout\";\n",
+      "after": "                \"cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets\",\n            ));\n        }\n        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1)) != self.profile_study.is_some()\n        {\n            return Err(invalid(\n                \"isolated profile identity requires its own explicit scope\",\n            ));\n        }\n        if let Some(study) = &self.profile_study {\n            let fanout = study.mutation_profile == \"fanout\";\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 227,
+      "raw_lines": [
+        "                 || self.files.len() != 1",
+        "                 || self.shard.is_none_or(|s| s.count != self.repetitions)",
+        "                 || self.skip_fanout == fanout",
+        "-                || (!fanout && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())",
+        "-                    || study.fanout.is_some()))",
+        "-                || (fanout && (!study.fanout.is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))",
+        "-                    || self.files != [1000]))",
+        "+                || (!fanout",
+        "+                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())",
+        "+                        || study.fanout.is_some()))",
+        "+                || (fanout",
+        "+                    && (!study",
+        "+                        .fanout",
+        "+                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))",
+        "+                        || self.files != [1000]))",
+        "                 || (self.profile == Profile::Release",
+        "                     && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)",
+        "                         || self.repetitions != 30"
+      ],
+      "before": "                || self.files.len() != 1\n                || self.shard.is_none_or(|s| s.count != self.repetitions)\n                || self.skip_fanout == fanout\n                || (!fanout && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())\n                    || study.fanout.is_some()))\n                || (fanout && (!study.fanout.is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))\n                    || self.files != [1000]))\n                || (self.profile == Profile::Release\n                    && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)\n                        || self.repetitions != 30\n",
+      "after": "                || self.files.len() != 1\n                || self.shard.is_none_or(|s| s.count != self.repetitions)\n                || self.skip_fanout == fanout\n                || (!fanout\n                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())\n                        || study.fanout.is_some()))\n                || (fanout\n                    && (!study\n                        .fanout\n                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))\n                        || self.files != [1000]))\n                || (self.profile == Profile::Release\n                    && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)\n                        || self.repetitions != 30\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 240,
+      "raw_lines": [
+        "                         || self.batch_sizes != [1, 10, 100, 1000]",
+        "                         || self.fanouts != [1, 4, 16, 64, 128]))",
+        "             {",
+        "-                return Err(invalid(\"invalid isolated profile, fanout, identity or fixed release population/budget\"));",
+        "+                return Err(invalid(",
+        "+                    \"invalid isolated profile, fanout, identity or fixed release population/budget\",",
+        "+                ));",
+        "             }",
+        "         }",
+        "         Ok(())"
+      ],
+      "before": "                        || self.batch_sizes != [1, 10, 100, 1000]\n                        || self.fanouts != [1, 4, 16, 64, 128]))\n            {\n                return Err(invalid(\"invalid isolated profile, fanout, identity or fixed release population/budget\"));\n            }\n        }\n        Ok(())\n",
+      "after": "                        || self.batch_sizes != [1, 10, 100, 1000]\n                        || self.fanouts != [1, 4, 16, 64, 128]))\n            {\n                return Err(invalid(\n                    \"invalid isolated profile, fanout, identity or fixed release population/budget\",\n                ));\n            }\n        }\n        Ok(())\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 339,
+      "raw_lines": [
+        "     // The supervisor owns all fixture directories, including those allocated",
+        "     // by the existing mutation runner; a deadline cannot orphan 100k trees.",
+        "     let workspace = tempfile::tempdir()?;",
+        "-    let cold_temporary_environment = plan.stage_scope.is_some()",
+        "+    let cold_temporary_environment = plan",
+        "+        .stage_scope",
+        "+        .is_some()",
+        "         .then(|| json!({\"parent_root\":std::env::temp_dir(),\"worker_root\":workspace.path()}));",
+        "     let mut command = Command::new(binary);",
+        "     command"
+      ],
+      "before": "    // The supervisor owns all fixture directories, including those allocated\n    // by the existing mutation runner; a deadline cannot orphan 100k trees.\n    let workspace = tempfile::tempdir()?;\n    let cold_temporary_environment = plan.stage_scope.is_some()\n        .then(|| json!({\"parent_root\":std::env::temp_dir(),\"worker_root\":workspace.path()}));\n    let mut command = Command::new(binary);\n    command\n",
+      "after": "    // The supervisor owns all fixture directories, including those allocated\n    // by the existing mutation runner; a deadline cannot orphan 100k trees.\n    let workspace = tempfile::tempdir()?;\n    let cold_temporary_environment = plan\n        .stage_scope\n        .is_some()\n        .then(|| json!({\"parent_root\":std::env::temp_dir(),\"worker_root\":workspace.path()}));\n    let mut command = Command::new(binary);\n    command\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 920,
+      "raw_lines": [
+        "     if let Some(study) = &plan.profile_study {",
+        "         stages.retain(|(stage, _)| stage == &study.mutation_profile);",
+        "         if stages.len() != 1 {",
+        "-            return Err(invalid(\"isolated scale cell must execute exactly one registered mutation\"));",
+        "+            return Err(invalid(",
+        "+                \"isolated scale cell must execute exactly one registered mutation\",",
+        "+            ));",
+        "         }",
+        "     }",
+        "     for (stage, requested) in stages {"
+      ],
+      "before": "    if let Some(study) = &plan.profile_study {\n        stages.retain(|(stage, _)| stage == &study.mutation_profile);\n        if stages.len() != 1 {\n            return Err(invalid(\"isolated scale cell must execute exactly one registered mutation\"));\n        }\n    }\n    for (stage, requested) in stages {\n",
+      "after": "    if let Some(study) = &plan.profile_study {\n        stages.retain(|(stage, _)| stage == &study.mutation_profile);\n        if stages.len() != 1 {\n            return Err(invalid(\n                \"isolated scale cell must execute exactly one registered mutation\",\n            ));\n        }\n    }\n    for (stage, requested) in stages {\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 1024,
+      "raw_lines": [
+        "         let fact = config_fact(",
+        "             a.path(),",
+        "             &config_files[2],",
+        "-            if stage == \"config\"",
+        "-                || (plan.profile_study.is_none() && stage.starts_with(\"batch_\"))",
+        "-            {",
+        "+            if stage == \"config\" || (plan.profile_study.is_none() && stage.starts_with(\"batch_\")) {",
+        "                 &config_files[1]",
+        "             } else {",
+        "                 &config_files[0]"
+      ],
+      "before": "        let fact = config_fact(\n            a.path(),\n            &config_files[2],\n            if stage == \"config\"\n                || (plan.profile_study.is_none() && stage.starts_with(\"batch_\"))\n            {\n                &config_files[1]\n            } else {\n                &config_files[0]\n",
+      "after": "        let fact = config_fact(\n            a.path(),\n            &config_files[2],\n            if stage == \"config\" || (plan.profile_study.is_none() && stage.starts_with(\"batch_\")) {\n                &config_files[1]\n            } else {\n                &config_files[0]\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 1133,
+      "raw_lines": [
+        "     raw.emit(started)?;",
+        "     let mut summaries = Vec::new();",
+        "     for &files in plan.files.iter().filter(|_| {",
+        "-        plan.profile_study.as_ref().is_none_or(|s| s.mutation_profile != \"fanout\")",
+        "+        plan.profile_study",
+        "+            .as_ref()",
+        "+            .is_none_or(|s| s.mutation_profile != \"fanout\")",
+        "     }) {",
+        "         for repetition in plan.repetition_range()? {",
+        "             summaries.extend(scale_sample(plan, files, repetition, raw)?);"
+      ],
+      "before": "    raw.emit(started)?;\n    let mut summaries = Vec::new();\n    for &files in plan.files.iter().filter(|_| {\n        plan.profile_study.as_ref().is_none_or(|s| s.mutation_profile != \"fanout\")\n    }) {\n        for repetition in plan.repetition_range()? {\n            summaries.extend(scale_sample(plan, files, repetition, raw)?);\n",
+      "after": "    raw.emit(started)?;\n    let mut summaries = Vec::new();\n    for &files in plan.files.iter().filter(|_| {\n        plan.profile_study\n            .as_ref()\n            .is_none_or(|s| s.mutation_profile != \"fanout\")\n    }) {\n        for repetition in plan.repetition_range()? {\n            summaries.extend(scale_sample(plan, files, repetition, raw)?);\n"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "original_line": 1141,
+      "raw_lines": [
+        "     }",
+        "     for &fanout in plan.fanouts.iter().filter(|&&n| {",
+        "         !plan.skip_fanout",
+        "-            && plan.profile_study.as_ref().is_none_or(|s| s.fanout == Some(n))",
+        "+            && plan",
+        "+                .profile_study",
+        "+                .as_ref()",
+        "+                .is_none_or(|s| s.fanout == Some(n))",
+        "     }) {",
+        "         for repetition in plan.repetition_range()? {",
+        "             let (dirty_budget, max_resume_builds) = plan.fanout_budgets();"
+      ],
+      "before": "    }\n    for &fanout in plan.fanouts.iter().filter(|&&n| {\n        !plan.skip_fanout\n            && plan.profile_study.as_ref().is_none_or(|s| s.fanout == Some(n))\n    }) {\n        for repetition in plan.repetition_range()? {\n            let (dirty_budget, max_resume_builds) = plan.fanout_budgets();\n",
+      "after": "    }\n    for &fanout in plan.fanouts.iter().filter(|&&n| {\n        !plan.skip_fanout\n            && plan\n                .profile_study\n                .as_ref()\n                .is_none_or(|s| s.fanout == Some(n))\n    }) {\n        for repetition in plan.repetition_range()? {\n            let (dirty_budget, max_resume_builds) = plan.fanout_budgets();\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 690,
+      "raw_lines": [
+        "             mutation_profile: profile.into(),",
+        "             fanout,",
+        "         }),",
+        "-        files: if fanout.is_some() { vec![1000] } else { vec![60] },",
+        "+        files: if fanout.is_some() {",
+        "+            vec![1000]",
+        "+        } else {",
+        "+            vec![60]",
+        "+        },",
+        "         shard: Some(ScaleShard { index: 0, count: 1 }),",
+        "         skip_fanout: fanout.is_none(),",
+        "         dirty_budget: 8,"
+      ],
+      "before": "            mutation_profile: profile.into(),\n            fanout,\n        }),\n        files: if fanout.is_some() { vec![1000] } else { vec![60] },\n        shard: Some(ScaleShard { index: 0, count: 1 }),\n        skip_fanout: fanout.is_none(),\n        dirty_budget: 8,\n",
+      "after": "            mutation_profile: profile.into(),\n            fanout,\n        }),\n        files: if fanout.is_some() {\n            vec![1000]\n        } else {\n            vec![60]\n        },\n        shard: Some(ScaleShard { index: 0, count: 1 }),\n        skip_fanout: fanout.is_none(),\n        dirty_budget: 8,\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 713,
+      "raw_lines": [
+        "     plan.profile_study.as_mut().unwrap().mutation_profile = \"cold\".into();",
+        "     assert!(plan.validate().is_err());",
+        "     plan = isolated_smoke(\"body\", None);",
+        "-    plan.cold_study = Some(ColdStudy { run_id: \"12345\".into(), run_attempt: 1 });",
+        "+    plan.cold_study = Some(ColdStudy {",
+        "+        run_id: \"12345\".into(),",
+        "+        run_attempt: 1,",
+        "+    });",
+        "     assert!(plan.validate().is_err());",
+        "     plan.cold_study = None;",
+        "     plan.stage_scope = None;"
+      ],
+      "before": "    plan.profile_study.as_mut().unwrap().mutation_profile = \"cold\".into();\n    assert!(plan.validate().is_err());\n    plan = isolated_smoke(\"body\", None);\n    plan.cold_study = Some(ColdStudy { run_id: \"12345\".into(), run_attempt: 1 });\n    assert!(plan.validate().is_err());\n    plan.cold_study = None;\n    plan.stage_scope = None;\n",
+      "after": "    plan.profile_study.as_mut().unwrap().mutation_profile = \"cold\".into();\n    assert!(plan.validate().is_err());\n    plan = isolated_smoke(\"body\", None);\n    plan.cold_study = Some(ColdStudy {\n        run_id: \"12345\".into(),\n        run_attempt: 1,\n    });\n    assert!(plan.validate().is_err());\n    plan.cold_study = None;\n    plan.stage_scope = None;\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 734,
+      "raw_lines": [
+        "     assert_eq!(report[\"summary\"][\"stage_scope\"], \"profile_isolated_v1\");",
+        "     assert_eq!(report[\"summary\"][\"sample_count\"], 2);",
+        "     let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))",
+        "-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();",
+        "+        .unwrap()",
+        "+        .lines()",
+        "+        .map(|line| serde_json::from_str(line).unwrap())",
+        "+        .collect();",
+        "     assert_eq!(rows[0][\"plan\"], serde_json::to_value(&plan).unwrap());",
+        "-    let initial = rows.iter().find(|row| row[\"event\"] == \"cold_parity\").unwrap();",
+        "-    let stages: Vec<_> = rows.iter().filter(|row| row[\"event\"] == \"stage_finished\").collect();",
+        "+    let initial = rows",
+        "+        .iter()",
+        "+        .find(|row| row[\"event\"] == \"cold_parity\")",
+        "+        .unwrap();",
+        "+    let stages: Vec<_> = rows",
+        "+        .iter()",
+        "+        .filter(|row| row[\"event\"] == \"stage_finished\")",
+        "+        .collect();",
+        "     assert_eq!(stages.len(), 1);",
+        "     assert!(stages[0][\"label\"].as_str().unwrap().ends_with(\"/batch_1\"));",
+        "-    assert_eq!(initial[\"independent_config_fact\"], stages[0][\"independent_config_fact\"]);",
+        "+    assert_eq!(",
+        "+        initial[\"independent_config_fact\"],",
+        "+        stages[0][\"independent_config_fact\"]",
+        "+    );",
+        "     for point in [initial, stages[0]] {",
+        "         assert_eq!(point[\"parity\"][\"equal\"], true);",
+        "         assert_eq!(point[\"parity\"][\"tables\"].as_array().unwrap().len(), 15);"
+      ],
+      "before": "    assert_eq!(report[\"summary\"][\"stage_scope\"], \"profile_isolated_v1\");\n    assert_eq!(report[\"summary\"][\"sample_count\"], 2);\n    let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))\n        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();\n    assert_eq!(rows[0][\"plan\"], serde_json::to_value(&plan).unwrap());\n    let initial = rows.iter().find(|row| row[\"event\"] == \"cold_parity\").unwrap();\n    let stages: Vec<_> = rows.iter().filter(|row| row[\"event\"] == \"stage_finished\").collect();\n    assert_eq!(stages.len(), 1);\n    assert!(stages[0][\"label\"].as_str().unwrap().ends_with(\"/batch_1\"));\n    assert_eq!(initial[\"independent_config_fact\"], stages[0][\"independent_config_fact\"]);\n    for point in [initial, stages[0]] {\n        assert_eq!(point[\"parity\"][\"equal\"], true);\n        assert_eq!(point[\"parity\"][\"tables\"].as_array().unwrap().len(), 15);\n",
+      "after": "    assert_eq!(report[\"summary\"][\"stage_scope\"], \"profile_isolated_v1\");\n    assert_eq!(report[\"summary\"][\"sample_count\"], 2);\n    let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))\n        .unwrap()\n        .lines()\n        .map(|line| serde_json::from_str(line).unwrap())\n        .collect();\n    assert_eq!(rows[0][\"plan\"], serde_json::to_value(&plan).unwrap());\n    let initial = rows\n        .iter()\n        .find(|row| row[\"event\"] == \"cold_parity\")\n        .unwrap();\n    let stages: Vec<_> = rows\n        .iter()\n        .filter(|row| row[\"event\"] == \"stage_finished\")\n        .collect();\n    assert_eq!(stages.len(), 1);\n    assert!(stages[0][\"label\"].as_str().unwrap().ends_with(\"/batch_1\"));\n    assert_eq!(\n        initial[\"independent_config_fact\"],\n        stages[0][\"independent_config_fact\"]\n    );\n    for point in [initial, stages[0]] {\n        assert_eq!(point[\"parity\"][\"equal\"], true);\n        assert_eq!(point[\"parity\"][\"tables\"].as_array().unwrap().len(), 15);\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 747,
+      "raw_lines": [
+        "         assert_eq!(point[\"independent_config_fact\"][\"passed\"], true);",
+        "     }",
+        "-    let mutations: Vec<_> = rows.iter().filter(|row| row[\"event\"] == \"mutation\").collect();",
+        "+    let mutations: Vec<_> = rows",
+        "+        .iter()",
+        "+        .filter(|row| row[\"event\"] == \"mutation\")",
+        "+        .collect();",
+        "     assert_eq!(mutations.len(), 1);",
+        "     assert_eq!(mutations[0][\"operations\"].as_array().unwrap().len(), 1);",
+        "-    assert_eq!(rows.iter().filter(|row| row[\"event\"] == \"build_finished\" && row[\"full\"] == true).count(), 3);",
+        "+    assert_eq!(",
+        "+        rows.iter()",
+        "+            .filter(|row| row[\"event\"] == \"build_finished\" && row[\"full\"] == true)",
+        "+            .count(),",
+        "+        3",
+        "+    );",
+        "     assert!(rows.iter().all(|row| row[\"event\"] != \"fanout_started\"));",
+        " }",
+        " "
+      ],
+      "before": "        assert_eq!(point[\"independent_config_fact\"][\"passed\"], true);\n    }\n    let mutations: Vec<_> = rows.iter().filter(|row| row[\"event\"] == \"mutation\").collect();\n    assert_eq!(mutations.len(), 1);\n    assert_eq!(mutations[0][\"operations\"].as_array().unwrap().len(), 1);\n    assert_eq!(rows.iter().filter(|row| row[\"event\"] == \"build_finished\" && row[\"full\"] == true).count(), 3);\n    assert!(rows.iter().all(|row| row[\"event\"] != \"fanout_started\"));\n}\n\n",
+      "after": "        assert_eq!(point[\"independent_config_fact\"][\"passed\"], true);\n    }\n    let mutations: Vec<_> = rows\n        .iter()\n        .filter(|row| row[\"event\"] == \"mutation\")\n        .collect();\n    assert_eq!(mutations.len(), 1);\n    assert_eq!(mutations[0][\"operations\"].as_array().unwrap().len(), 1);\n    assert_eq!(\n        rows.iter()\n            .filter(|row| row[\"event\"] == \"build_finished\" && row[\"full\"] == true)\n            .count(),\n        3\n    );\n    assert!(rows.iter().all(|row| row[\"event\"] != \"fanout_started\"));\n}\n\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 762,
+      "raw_lines": [
+        "     assert_eq!(report[\"exit_code\"], 0, \"{report}\");",
+        "     assert_eq!(report[\"summary\"][\"sample_count\"], 1);",
+        "     let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))",
+        "-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();",
+        "+        .unwrap()",
+        "+        .lines()",
+        "+        .map(|line| serde_json::from_str(line).unwrap())",
+        "+        .collect();",
+        "     assert_eq!(rows.len(), 3);",
+        "     assert_eq!(rows[1][\"event\"], \"fanout_started\");",
+        "     assert_eq!(rows[1][\"case\"][\"initial\"].as_object().unwrap().len(), 17);"
+      ],
+      "before": "    assert_eq!(report[\"exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"summary\"][\"sample_count\"], 1);\n    let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))\n        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();\n    assert_eq!(rows.len(), 3);\n    assert_eq!(rows[1][\"event\"], \"fanout_started\");\n    assert_eq!(rows[1][\"case\"][\"initial\"].as_object().unwrap().len(), 17);\n",
+      "after": "    assert_eq!(report[\"exit_code\"], 0, \"{report}\");\n    assert_eq!(report[\"summary\"][\"sample_count\"], 1);\n    let rows: Vec<Value> = std::fs::read_to_string(out.join(\"raw.jsonl\"))\n        .unwrap()\n        .lines()\n        .map(|line| serde_json::from_str(line).unwrap())\n        .collect();\n    assert_eq!(rows.len(), 3);\n    assert_eq!(rows[1][\"event\"], \"fanout_started\");\n    assert_eq!(rows[1][\"case\"][\"initial\"].as_object().unwrap().len(), 17);\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 774,
+      "raw_lines": [
+        "     assert_eq!(initial[\"equal\"], true);",
+        "     assert_eq!(initial[\"tables\"].as_array().unwrap().len(), 15);",
+        "     assert_eq!(initial[\"incremental\"], initial[\"full\"]);",
+        "-    assert_eq!(initial[\"incremental\"][\"files\"].as_array().unwrap().len(), 17);",
+        "+    assert_eq!(",
+        "+        initial[\"incremental\"][\"files\"].as_array().unwrap().len(),",
+        "+        17",
+        "+    );",
+        "     let point = &result[\"checkpoints\"][0];",
+        "     assert_eq!(point[\"incremental\"], point[\"full\"]);",
+        "     assert_eq!(point[\"truth\"].as_array().unwrap().len(), 16);"
+      ],
+      "before": "    assert_eq!(initial[\"equal\"], true);\n    assert_eq!(initial[\"tables\"].as_array().unwrap().len(), 15);\n    assert_eq!(initial[\"incremental\"], initial[\"full\"]);\n    assert_eq!(initial[\"incremental\"][\"files\"].as_array().unwrap().len(), 17);\n    let point = &result[\"checkpoints\"][0];\n    assert_eq!(point[\"incremental\"], point[\"full\"]);\n    assert_eq!(point[\"truth\"].as_array().unwrap().len(), 16);\n",
+      "after": "    assert_eq!(initial[\"equal\"], true);\n    assert_eq!(initial[\"tables\"].as_array().unwrap().len(), 15);\n    assert_eq!(initial[\"incremental\"], initial[\"full\"]);\n    assert_eq!(\n        initial[\"incremental\"][\"files\"].as_array().unwrap().len(),\n        17\n    );\n    let point = &result[\"checkpoints\"][0];\n    assert_eq!(point[\"incremental\"], point[\"full\"]);\n    assert_eq!(point[\"truth\"].as_array().unwrap().len(), 16);\n"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "original_line": 781,
+      "raw_lines": [
+        "-    assert_eq!(point[\"full_report\"][\"resolution_freshness\"][\"complete\"], true);",
+        "+    assert_eq!(",
+        "+        point[\"full_report\"][\"resolution_freshness\"][\"complete\"],",
+        "+        true",
+        "+    );",
+        " }",
+        " "
+      ],
+      "terminal_display_blank_omitted": "Last rustfmt display includes an unchanged empty logical line beyond final newline; exact oldfile EOF is one newline. Remove only that context line from both sides.",
+      "before": "    assert_eq!(point[\"full_report\"][\"resolution_freshness\"][\"complete\"], true);\n}\n",
+      "after": "    assert_eq!(\n        point[\"full_report\"][\"resolution_freshness\"][\"complete\"],\n        true\n    );\n}\n"
+    }
+  ]
+}

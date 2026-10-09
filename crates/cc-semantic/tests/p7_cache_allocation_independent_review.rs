@@ -8,8 +8,12 @@ use std::{
     alloc::{GlobalAlloc, Layout, System},
     cell::Cell,
     io::Write,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::atomic::{AtomicU64, Ordering},
+};
+#[cfg(target_os = "linux")]
+use std::{
+    path::Path,
     time::{Duration, Instant},
 };
 

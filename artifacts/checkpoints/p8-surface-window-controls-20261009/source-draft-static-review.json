@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "repository": "jyqj/codecortex",
+  "reviewer": "/root/pr_audit",
+  "author": "/root/acceptance_audit",
+  "status": "accepted_scoped_static_for_future_engineering_validation",
+  "scope": "Independent static review of one same-prepare surface-window Rust draft; not a source approval, compilation, regression execution, workload or TODO completion.",
+  "reviewed_at_utc": "2026-10-09 05:21:31 UTC",
+  "source": {
+    "base_commit": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "equal_path_in_p3": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+    "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "base_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+    "candidate_blob": "787b57a8e2042b9641af45c85632507b87e5a934",
+    "candidate_is_unreferenced_blob_not_measured_commit": true
+  },
+  "inputs": [
+    {
+      "label": "base",
+      "blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "bytes": 15578,
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    {
+      "label": "candidate",
+      "blob": "787b57a8e2042b9641af45c85632507b87e5a934",
+      "bytes": 33417,
+      "sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c"
+    },
+    {
+      "label": "build_plan",
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "bytes": 76225,
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    {
+      "label": "dirty_closure",
+      "blob": "8165b5f60c881b23365d1d6421deed032a8e653a",
+      "bytes": 23086,
+      "sha256": "d26072bd26bb5baa2db25500508b66e79730f3afba796036a5253301210048f2"
+    },
+    {
+      "label": "surface_store",
+      "blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "bytes": 8537,
+      "sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650"
+    },
+    {
+      "label": "write_batch",
+      "blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "bytes": 56106,
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+    }
+  ],
+  "artifact_inputs": [
+    {
+      "name": "patch",
+      "blob": "ffac294ddfdf802064f3299ae0a6f40b80ea9e90",
+      "bytes": 20801,
+      "sha256": "2c3a43999a050216ec569ed5057a4eeb14d5dc93d1a1e85f8e2db1fb998d7aa5"
+    },
+    {
+      "name": "design",
+      "blob": "78bdd0c14b673e7806d0454b8550b57db500896c",
+      "bytes": 9714,
+      "sha256": "6abb7d1fe7064221ad5ad07340a2534652a66e56111ddd3a7833f7d160cf4bcc"
+    },
+    {
+      "name": "author_handoff",
+      "blob": "ee51c7f3503887a4df26cd367dcd1d1e83ada95d",
+      "bytes": 10003,
+      "sha256": "5e974fe4bd5e2d970ea2c2383c6a456308da3776b752bf6d9c84d3508b172e62"
+    }
+  ],
+  "independent_executed_static_checks": {
+    "hunks": [
+      {
+        "old_start": 29,
+        "old_count": 6,
+        "new_count": 28,
+        "old_context_exact": true
+      },
+      {
+        "old_start": 86,
+        "old_count": 8,
+        "new_count": 8,
+        "old_context_exact": true
+      },
+      {
+        "old_start": 105,
+        "old_count": 8,
+        "new_count": 9,
+        "old_context_exact": true
+      },
+      {
+        "old_start": 119,
+        "old_count": 6,
+        "new_count": 11,
+        "old_context_exact": true
+      },
+      {
+        "old_start": 157,
+        "old_count": 13,
+        "new_count": 25,
+        "old_context_exact": true
+      },
+      {
+        "old_start": 367,
+        "old_count": 3,
+        "new_count": 419,
+        "old_context_exact": true
+      }
+    ],
+    "whole_patch_to_new": true,
+    "original_three_tests_exact": true,
+    "old_sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
+    "new_sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c",
+    "patch_sha256": "2c3a43999a050216ec569ed5057a4eeb14d5dc93d1a1e85f8e2db1fb998d7aa5"
+  },
+  "semantic_findings": [
+    {
+      "topic": "actual query and window",
+      "finding": "The capture occurs only after the actual surface_dependents_bounded callback completed for paths exactly equal to initial_seeds, before separate dependency/root paths are appended. The original helper has one extra witness, filters excluded paths, merges distinct results in BTreeSet order, and keeps its original per-table/per-IN-batch SQL."
+    },
+    {
+      "topic": "completed growth and eligibility",
+      "finding": "Between forming the original excluded set and the pending decision, completed grows only by closure.promoted. Eligibility requires promoted.len() <= the same effective closure budget and exact final seed-list equality. Missing window, changed seeds or admission violation executes the original tail query and merges its actual work."
+    },
+    {
+      "topic": "pending proof",
+      "finding": "For the same SQL basis, a retained eligible path is a real witness. If the materialized prefix is exhausted, either it contained all eligible rows or an overflow prefix contains more distinct witnesses than at most budget additions can consume. Promotions from dependency/root sets cannot invalidate the bound; they consume the same admission budget. No subset equivalence is guessed."
+    },
+    {
+      "topic": "preserved behavior",
+      "finding": "Original seed union, promotion ordering, dirty closure rounds and budgets, surface propagation, dependency-window path, persisted-root conservative predicate, frontier payload/status/reconcile decisions remain in their original order. Original three dependency tests are byte-identical."
+    },
+    {
+      "topic": "query errors and work",
+      "finding": "Every executed query still propagates errors and contributes its real SqlWork. The omitted eligible tail query cannot produce a query-specific error anymore. No zero-duration observation or global error-order equivalence is claimed."
+    },
+    {
+      "topic": "memory and lifespan",
+      "finding": "The clone is local to one planner call; no Indexer/DB/frontier field, held read lease, cross-prepare cache or persisted cursor is introduced. It is bounded by rows under the unchanged limit, not by a newly proven byte/RSS bound; new prepares execute fresh SQL."
+    }
+  ],
+  "fence_review": {
+    "global": {
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "epoch_capture_lines": [
+        224,
+        228
+      ],
+      "pass_to_planner_lines": [
+        260,
+        265
+      ],
+      "independent_unpack_lines": [
+        432,
+        433
+      ],
+      "unconditional_rejection_lines": [
+        451,
+        457
+      ],
+      "phase_write_only_after_lines": [
+        470,
+        480
+      ],
+      "covers_previous_none_pending_false_reconcile_none": true,
+      "unchanged_original_test": "build_plan::tests::stale_prepared_build_is_rejected_at_commit"
+    },
+    "transactional_some": {
+      "blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "no_op_requires_reconcile_none_line": 322,
+      "begin_immediate_line": 335,
+      "check_before_mutation_lines": [
+        337,
+        349
+      ]
+    },
+    "boundary": "Inherited caller write-lock and original epoch contracts only. This draft creates neither a whole-prepare SQLite snapshot nor new cross-process atomic check-and-write semantics."
+  },
+  "drafted_regressions": {
+    "new_count": 6,
+    "new_methods": [
+      "materialized_surface_window_matches_original_pending_sql",
+      "surface_window_requires_exact_queried_basis_and_bounded_admission",
+      "surface_window_reloads_after_replacement_removal_and_reopen",
+      "prepare_reuses_surface_window_without_changing_promotions",
+      "prepare_requeries_surface_when_propagation_adds_a_seed",
+      "reused_surface_window_keeps_external_write_epoch_fence"
+    ],
+    "old_count": 3,
+    "old_methods": [
+      "materialized_dependency_window_matches_original_pending_sql",
+      "dependency_window_reloads_after_replacement_removal_and_reopen",
+      "consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ],
+    "static_risk_coverage": [
+      "401 seed targets and overlapping consumers exercise original multiple IN batches and SQL result contract.",
+      "Budget 0/1/2/8/40/MAX and old completed holes include overflow witnesses and pool-size-one materialization.",
+      "Changed seed basis, missing window, reordered/duplicate/subset query and excess admissions require fallback.",
+      "Real replace/remove/reopen re-queries after mutation.",
+      "Planner tests check marked actions/status and actual SQL counter assertions, including a newly propagated facade requiring the old final SQL.",
+      "Intervening index write tests the Some-frontier transaction fence; the None-frontier global fence is independently established from unchanged build_plan, not falsely attributed to that new test."
+    ],
+    "compiled": false,
+    "rustfmt": false,
+    "rust_or_sql_tests_executed_by_reviewer": 0,
+    "caveat": "These are source-level regression designs. Exact method counts, nonzero execution, expected counters, types, formatting and pass/fail must be established by actual source-bound CI."
+  },
+  "finite_model_boundary": "The author's 1,048,576-case JavaScript enumeration is supplemental finite-set evidence. Reviewer has read its recorded scope and does not relabel it as independent Rust, SQLite or product execution.",
+  "remaining_required_before_runtime_claim": [
+    "Actual Rust fmt/Clippy/typecheck for adopted source.",
+    "Six new plus three preserved controls and unchanged whole-build/DB epoch controls on that source; retain complete original command logs and no ignored/zero-filter ambiguity.",
+    "Original appropriate source review and workload/parity gates; no source relabeling or retrospective substitution into a23/G2/P3 measurements."
+  ],
+  "unresolved_static_blockers": [],
+  "performance": {
+    "speedup": "unmeasured",
+    "prefix_problem": "Initial lookup and subsequent prepares still scan original prefixes; this does not solve global asymptotic cost.",
+    "measurement_admission": "No new primary study authorized or started by this report."
+  },
+  "mutations": {
+    "local_files": 0,
+    "source_refs": 0,
+    "remote_refs": 0,
+    "product_executions": 0,
+    "cargo_commands": 0,
+    "report_unreferenced_blob_only": true
+  },
+  "todo": {
+    "newly_closed": 0,
+    "remaining": 29
+  }
+}

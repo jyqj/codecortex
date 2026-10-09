@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "status": "draft_only_not_execution_ready_pending_actual_P_R_G_and_independent_workflow_review",
+  "scope": "Minimal actual Rust engineering validation for one prepare-local surface window change, not a scale study or task closure",
+  "source_candidate": {
+    "base_G2": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "equivalent_actual_P3": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+    "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+    "mode": "100644",
+    "before_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+    "after_blob": "787b57a8e2042b9641af45c85632507b87e5a934",
+    "bytes": 33417,
+    "sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c",
+    "independent_static_review": "ff7198b9a05230e98cc201af385cb427a4a8d370",
+    "independent_static_scope": "accepted_scoped_static_for_future_engineering_validation; no compiled/tested claim"
+  },
+  "precise_contracts_read": [
+    {
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "blob": "1d396de9830f718c9dfb4d4baaa4043ca9ef02bb",
+      "purpose": "Original approved G2 engineering runner, exact Cargo setup, strict libtest population parser, raw retention and source-before/after checks. Its release and diagnostic jobs are not part of the new controls-only scope.",
+      "bytes": 21496,
+      "sha256": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+      "read_scope": "complete body"
+    },
+    {
+      "path": "scripts/p7_build_identity.py",
+      "blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+      "purpose": "Original full crate/Cargo source_snapshot and json_bytes; no fabricated source_root field.",
+      "bytes": 5940,
+      "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "read_scope": "complete body"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "purpose": "Unchanged ordinary CI remains required at the new source, including all original source-integrity and historical gates.",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "read_scope": "complete body"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "blob": "8899dedc2e1f7440ceb330a1a0cc6d3aa6cbc111",
+      "purpose": "Read original G2 selected guard contract: full product and validation inventories, prior proof, independent review and fixed CI. Future current guard must retain its exact logic and historical basis; pins must name actual future P/R.",
+      "bytes": 11076,
+      "sha256": "d0fa01f580992902e08c19cbc3f92f0a994a6590128bc609f27309c082421584",
+      "read_scope": "complete body"
+    }
+  ],
+  "design_decision": {
+    "rust_targets": "Reuse existing cc-index --lib. Group filters select the six new and three old methods; the original whole-build stale test is selected by its exact full name. No new Rust test binary/target.",
+    "workflow": "A small separate controls-only workflow is required to avoid the old engineering workflow's automatic release build and 1k/10k/100k chain. The old workflow remains untouched.",
+    "proposed_workflow_path": ".github/workflows/p8-surface-window-controls.yml",
+    "proposed_workflow_blob": "3fec1c7f3c71618e10d3f39afd2b036c5ea18828",
+    "proposed_workflow_bytes": 12090,
+    "proposed_workflow_sha256": "e9e51e9bc84e63b35289e72cb14c6ef64ca133e71a1c5e348613e34f937bd9a1",
+    "proposed_branch_for_later_authorized_first_publication": "task/p8-surface-window-controls-20261009",
+    "branch_created": false,
+    "run_created": false,
+    "ref_changed": false,
+    "jobs": 1,
+    "job_name": "controls",
+    "host": "fresh github-hosted ubuntu-24.04",
+    "toolchain": "1.95.0",
+    "timeout_minutes": 45,
+    "first_attempt_only": true,
+    "permissions": {
+      "contents": "read"
+    },
+    "profile": "Original G2 dev/test profiles with debug=0, incremental=0, jobs=2; no release-performance claim.",
+    "no_scale_or_release_pipeline": true
+  },
+  "source_binding": {
+    "actual_future_product_commit": null,
+    "actual_future_review_commit": null,
+    "actual_future_gate_commit": null,
+    "input_count": 1089,
+    "previous_complete_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+    "proposed_complete_manifest_sha256": "5ef6b33f8ffdd4f9e936cf35063cc3a1cc7b594553087685afe50967b2328eba",
+    "serialization": "p7_build_identity.json_bytes: UTF-8 json.dumps(ensure_ascii=False, sort_keys=True, indent=2) plus newline; exact original manifest serialization independently matched before the single SHA replacement",
+    "changed_product_hashes": {
+      "crates/cc-index/src/indexer_phases/reconcile.rs": {
+        "before_sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
+        "sha256": "ac9d57cfd76b01178ea56a32b5285a48c79c447d0d19a4fc1cf3a4e6fce66c7c"
+      }
+    },
+    "base_7354_delta_count_remains": 41,
+    "reason_delta_count_unchanged": "reconcile.rs already belongs to the original 41-file product delta; one same-path body changes and no product path is added or removed.",
+    "expected_observers": {
+      "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "scripts/p8_scale_matrix.py": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    },
+    "three_observer_blobs_G2_equal_P3": true,
+    "actual_validation_inventory": "Must enumerate the eventual product commit completely. If based on current P3's 138 entries and this is the only new validation path, the projected count is 139; if based on G2's 140, it is 141. Never omit or exclude the new workflow. Actual tree, not this projection, decides.",
+    "guards": "Keep BASE7354, six frozen v14 files, original CI selector/logic and historical boundaries. Only the usual exact approval metadata/registry installation follows a newly reviewed actual P and R."
+  },
+  "publication_and_execution_sequence": [
+    {
+      "step": 1,
+      "action": "Keep candidate and this workflow as unreferenced blobs. Finish independent source and workflow review. No execution result is inferred."
+    },
+    {
+      "step": 2,
+      "action": "Parent selects a fixed approved base and constructs actual new P with the single product replacement, the reviewed controls workflow and immutable support evidence; retain all prior source/measurement identities."
+    },
+    {
+      "step": 3,
+      "action": "A non-author verifies actual P's entire product path/mode/blob inventory, full BASE7354 delta, complete validation inventory and exact prior input inheritance. Create canonical R only for that actual P."
+    },
+    {
+      "step": 4,
+      "action": "Parent installs exact R and product pins/registry in actual G; independently bridge P->R->G with no guard-logic, CI, task or historical acceptance changes. No branch is authorized by this draft."
+    },
+    {
+      "step": 5,
+      "action": "Only after separate first-publication authorization, run on a fresh hosted VM at exact G. Checkout github.sha, install original Rust1.95 components and cargo fetch --locked. Do not depend on unavailable local exec."
+    },
+    {
+      "step": 6,
+      "action": "Before engineering commands, the runner captures full source and three observer identities, then executes the unchanged selected v15 source guard. A stale P/R/G record, unknown validation file or changed input stops the command sequence."
+    },
+    {
+      "step": 7,
+      "action": "Execute original fmt and Clippy argv, then the three registered cc-index libtest selections. Stop after first nonzero or wrong/zero/ignored/missing population; preserve all attempted stdout/stderr and not-run indices."
+    },
+    {
+      "step": 8,
+      "action": "Always recheck complete source and observers and preserve receipt/plan/raw/SQL observations under RUNNER_TEMP/surface-window-controls; upload only that directory, including hidden files. A hard runner shutdown can leave missing raw and cannot count as a pass."
+    },
+    {
+      "step": 9,
+      "action": "Independently receive original artifact and actual job context, verify complete inventory and command exits, 6+3+1 exact successful names with 0failed/0ignored/0measured, source-before==after, fixed expected manifest and workflow source identity. Classify as engineering scope only."
+    },
+    {
+      "step": 10,
+      "action": "The original CI workflow must also pass on the new actual G, including full source_integrity, selected v15 guard, historical integrations, compile/default regression and other original gates. Auxiliary ten-method success is not a replacement. No scale label/dispatch, no new N150 and no old sample substitution."
+    }
+  ],
+  "setup_commands": [
+    [
+      "cargo",
+      "fetch",
+      "--locked"
+    ]
+  ],
+  "recorded_commands": [
+    [
+      "python3",
+      "scripts/verify_reviewed_source_v15.py",
+      "--source-version",
+      "p8-completion-source-20261009-v15"
+    ],
+    [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-db",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "indexer_phases::reconcile::surface_window_tests"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "indexer_phases::reconcile::dependency_window_tests"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--lib",
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit",
+      "--",
+      "--exact"
+    ]
+  ],
+  "recorded_command_count": 6,
+  "engineering_command_count": 5,
+  "rust_test_methods": {
+    "3": [
+      "indexer_phases::reconcile::surface_window_tests::materialized_surface_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_requires_exact_queried_basis_and_bounded_admission",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::surface_window_tests::prepare_reuses_surface_window_without_changing_promotions",
+      "indexer_phases::reconcile::surface_window_tests::prepare_requeries_surface_when_propagation_adds_a_seed",
+      "indexer_phases::reconcile::surface_window_tests::reused_surface_window_keeps_external_write_epoch_fence"
+    ],
+    "4": [
+      "indexer_phases::reconcile::dependency_window_tests::materialized_dependency_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::dependency_window_tests::dependency_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::dependency_window_tests::consuming_more_than_the_registered_window_budget_requires_fresh_sql"
+    ],
+    "5": [
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit"
+    ]
+  },
+  "rust_test_method_count": 10,
+  "original_source_approval_command_count": 1,
+  "output_paths": {
+    "root": "$RUNNER_TEMP/surface-window-controls",
+    "target": "$RUNNER_TEMP/surface-window-controls-cargo",
+    "observations": "$RUNNER_TEMP/surface-window-controls/observations",
+    "artifact_name": "p8-surface-window-controls-${GITHUB_RUN_ID}"
+  },
+  "original_ci_required_source_commands": [
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/source_integrity",
+      "-v"
+    ],
+    [
+      "python3",
+      "scripts/verify_reviewed_source_v15.py",
+      "--source-version",
+      "p8-completion-source-20261009-v15"
+    ],
+    [
+      "python3",
+      "scripts/verify_historical_integrations_v2.py"
+    ]
+  ],
+  "static_checks": {
+    "stdlib_libtest_validator_original_byte_equal": true,
+    "runner_execution_and_finalization_inverse_byte_equal": true,
+    "runner_metadata_inverse_fields": [
+      "output/target directory stem",
+      "expected test count 53 to 10",
+      "scope text"
+    ],
+    "registered_methods": [
+      "indexer_phases::reconcile::surface_window_tests::materialized_surface_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_requires_exact_queried_basis_and_bounded_admission",
+      "indexer_phases::reconcile::surface_window_tests::surface_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::surface_window_tests::prepare_reuses_surface_window_without_changing_promotions",
+      "indexer_phases::reconcile::surface_window_tests::prepare_requeries_surface_when_propagation_adds_a_seed",
+      "indexer_phases::reconcile::surface_window_tests::reused_surface_window_keeps_external_write_epoch_fence",
+      "indexer_phases::reconcile::dependency_window_tests::materialized_dependency_window_matches_original_pending_sql",
+      "indexer_phases::reconcile::dependency_window_tests::dependency_window_reloads_after_replacement_removal_and_reopen",
+      "indexer_phases::reconcile::dependency_window_tests::consuming_more_than_the_registered_window_budget_requires_fresh_sql",
+      "build_plan::tests::stale_prepared_build_is_rejected_at_commit"
+    ],
+    "method_count": 10,
+    "test_command_counts": [
+      6,
+      3,
+      1
+    ],
+    "cargo_fmt_and_clippy_argv_equal_original": true,
+    "toolchain": "1.95.0",
+    "ubuntu": "ubuntu-24.04",
+    "job_timeout_minutes": 45,
+    "source_observer_pins_equal_G2_and_P3": true,
+    "scale_workload_or_build_steps": 0,
+    "workflow_dispatch_triggers": 0,
+    "full_workflow_body_readback_pending": false,
+    "python_ast_and_yaml_parser_runs": 0,
+    "cargo_runs": 0,
+    "full_workflow_body_readback_equal": true
+  },
+  "actual_execution": {
+    "python_ast_parser": false,
+    "yaml_parser": false,
+    "rustfmt": false,
+    "clippy": false,
+    "cargo_tests": false,
+    "product_workloads": false,
+    "actions_run": false,
+    "test_outcomes": null
+  },
+  "limits": [
+    "No speedup ratio or RSS claim",
+    "Extra window clone cost remains unmeasured",
+    "No full-scale/150/N30 study",
+    "No original TODO is marked complete",
+    "No compilation or test success is fabricated",
+    "Current G2/P3/a23/ref and all previous raw remain unchanged"
+  ],
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "history": [
+    {
+      "blob": "786baee477f575bbd5b876bda54687d6073620b8",
+      "role": "pre-readback plan; final changes only this observed readback metadata and history pointer"
+    }
+  ]
+}

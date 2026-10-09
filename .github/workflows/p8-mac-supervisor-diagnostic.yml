@@ -1,0 +1,87 @@
+name: P8 Mac supervisor diagnostic
+
+on: [create]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p8-mac-supervisor-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  DIAG_SOURCE: a23bb72d3c954f385b99fe81ce9189885c208557
+
+jobs:
+  source_admission:
+    if: github.event.ref_type == 'branch' && github.event.ref == 'task/p8-mac-supervisor-diagnostic-a217-20261009'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify all fixed product and validation inputs with the unchanged v15 implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/mac-source-admission"
+          git rev-parse HEAD > "$RUNNER_TEMP/mac-source-admission/execution-head.txt"
+          set +e
+          python3 -B scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 > "$RUNNER_TEMP/mac-source-admission/stdout.log" 2> "$RUNNER_TEMP/mac-source-admission/stderr.log"
+          result=$?
+          set -e
+          echo "$result" > "$RUNNER_TEMP/mac-source-admission/exit-code.txt"
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-diagnostic-source-admission-${{ github.sha }}
+          path: ${{ runner.temp }}/mac-source-admission
+          if-no-files-found: error
+
+  diagnose:
+    needs: source_admission
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: admission
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          path: source-e
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Bind the two reviewed diagnostic sources and execute one observation pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib
+          from pathlib import Path
+          root = Path("admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009")
+          expected = {
+              "observer.rs": "b0f4c7c3b2aa9454b147bdc9ac36eebe6c08cec881d34b26d3784e04c01c3533",
+              "run_diagnostic.py": "be25d30eae5a3b59837b87845d9969867aa366a8453068fea6ce90cdad8b8455",
+          }
+          for name, digest in expected.items():
+              path = root / name
+              assert path.is_file() and not path.is_symlink()
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == digest, name
+          PY
+          python3 -B admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009/run_diagnostic.py --source "$GITHUB_WORKSPACE/source-e" --observer "$GITHUB_WORKSPACE/admission/artifacts/checkpoints/p8-mac-supervisor-diagnostic-20261009/observer.rs" --output "$RUNNER_TEMP/p8-mac-supervisor-diagnostic" --execution-sha "${{ github.sha }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-supervisor-diagnostic-${{ github.sha }}
+          path: ${{ runner.temp }}/p8-mac-supervisor-diagnostic
+          include-hidden-files: true
+          if-no-files-found: error

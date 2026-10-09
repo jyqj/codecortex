@@ -32,6 +32,7 @@ fn check_semantic_objects(conn: &Connection) {
         "semantic_outbox_fifo_pending",
         "chunk_symbol_identity",
         "chunk_symbol_identity_path",
+        "chunk_symbol_identity_doc_key",
         "chunk_symbol_identity_delete",
     ] {
         let found: i64 = conn
@@ -45,6 +46,31 @@ fn check_semantic_objects(conn: &Connection) {
     }
 }
 
+fn identity_cascade_plan(conn: &Connection) -> Vec<String> {
+    conn.pragma_update(None, "foreign_keys", true).unwrap();
+    conn.prepare("EXPLAIN QUERY PLAN DELETE FROM document_manifest WHERE chunk_id=?1")
+        .unwrap()
+        .query_map(["remove"], |row| row.get(3))
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap()
+}
+
+fn assert_indexed_identity_cascade(conn: &Connection) {
+    let plan = identity_cascade_plan(conn);
+    assert!(
+        plan.iter()
+            .any(|step| step.contains("SEARCH chunk_symbol_identity")
+                && step.contains("chunk_symbol_identity_doc_key")),
+        "document deletion must use the child-key index: {plan:?}"
+    );
+    assert!(
+        plan.iter()
+            .all(|step| !step.contains("SCAN chunk_symbol_identity")),
+        "document deletion must not scan all parser identities: {plan:?}"
+    );
+}
+
 #[test]
 fn fresh_index_really_initializes_current_schema() {
     let root = tempfile::tempdir().unwrap();
@@ -54,7 +80,113 @@ fn fresh_index_really_initializes_current_schema() {
     assert_eq!(db.reads().schema_version().unwrap(), CURRENT_SCHEMA_VERSION);
     let conn = Connection::open(&path).unwrap();
     check_semantic_objects(&conn);
+    assert_indexed_identity_cascade(&conn);
     assert_ne!(db.reads().read_generation().unwrap().incarnation, [0; 16]);
+}
+
+/// Same semantic schema, missing only the physical child-key access path.
+/// Normal writable open installs it without reparsing or replacing any rows.
+#[test]
+fn current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade() {
+    fn snapshot(conn: &Connection) -> Vec<(String, Vec<Vec<rusqlite::types::Value>>)> {
+        let tables: Vec<String> = conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            .unwrap()
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap();
+        tables
+            .into_iter()
+            .map(|name| {
+                let sql = format!("SELECT * FROM \"{}\"", name.replace('"', "\"\""));
+                let width = conn.prepare(&sql).unwrap().column_count();
+                let order = (1..=width)
+                    .map(|column| column.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                let mut statement = conn.prepare(&format!("{sql} ORDER BY {order}")).unwrap();
+                let rows = statement
+                    .query_map([], |row| {
+                        (0..width)
+                            .map(|column| row.get(column))
+                            .collect::<rusqlite::Result<Vec<rusqlite::types::Value>>>()
+                    })
+                    .unwrap()
+                    .collect::<rusqlite::Result<_>>()
+                    .unwrap();
+                (name, rows)
+            })
+            .collect()
+    }
+
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("same-version.sqlite3");
+    let conn = Connection::open(&path).unwrap();
+    conn.pragma_update(None, "foreign_keys", true).unwrap();
+    assert_eq!(migrate_index_db(&conn).unwrap(), SchemaStatus::Initialized);
+    assert_indexed_identity_cascade(&conn);
+    // Schema fixtures only: these rows test preservation and FK behavior,
+    // not the parser-authority validation of a SymbolIdentityRecord.
+    conn.execute_batch(
+        "INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at) VALUES('sentinel.rs','rust','hash',1,17,'fixture');
+         INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,text) VALUES
+           ('keep','sentinel.rs','rust',0,1,1,'fn keep() {}'),
+           ('remove','sentinel.rs','rust',1,2,2,'fn remove() {}');
+         INSERT INTO document_manifest(doc_key,doc_version,file_path,chunk_id,reference_json,record_json) VALUES
+           ('doc-keep','v1','sentinel.rs','keep','{}','{}'),
+           ('doc-remove','v1','sentinel.rs','remove','{}','{}');
+         INSERT INTO chunk_symbol_identity(chunk_id,file_path,doc_key,doc_version,symbol_id,format_version,record_json) VALUES
+           ('keep','sentinel.rs','doc-keep','v1','keep-symbol',1,'{}'),
+           ('remove','sentinel.rs','doc-remove','v1','remove-symbol',1,'{}');
+         INSERT INTO metadata(key,value) VALUES('index_epoch','17'),('evidence_epoch','23'),('semantic_epoch','31');
+         DROP INDEX chunk_symbol_identity_doc_key;",
+    )
+    .unwrap();
+    let before = snapshot(&conn);
+    assert!(identity_cascade_plan(&conn)
+        .iter()
+        .any(|step| step.contains("SCAN chunk_symbol_identity")));
+    // Missing physical indexes must not bypass the normal read-only refusal.
+    conn.pragma_update(None, "query_only", true).unwrap();
+    assert!(migrate_index_db(&conn).is_err());
+    assert_eq!(snapshot(&conn), before);
+    conn.pragma_update(None, "query_only", false).unwrap();
+    drop(conn);
+
+    for _ in 0..2 {
+        let (db, status) = IndexDb::open(&path).unwrap();
+        assert_eq!(status, SchemaStatus::UpToDate);
+        assert_eq!(db.reads().schema_version().unwrap(), CURRENT_SCHEMA_VERSION);
+        drop(db);
+        let conn = Connection::open(&path).unwrap();
+        assert_eq!(snapshot(&conn), before);
+        assert_indexed_identity_cascade(&conn);
+    }
+
+    let conn = Connection::open(&path).unwrap();
+    conn.pragma_update(None, "foreign_keys", true).unwrap();
+    conn.execute(
+        "DELETE FROM document_manifest WHERE chunk_id=?1",
+        ["remove"],
+    )
+    .unwrap();
+    let identities: Vec<String> = conn
+        .prepare("SELECT chunk_id FROM chunk_symbol_identity ORDER BY chunk_id")
+        .unwrap()
+        .query_map([], |row| row.get(0))
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap();
+    assert_eq!(identities, ["keep"]);
+    assert!(conn
+        .prepare("PRAGMA foreign_key_check")
+        .unwrap()
+        .query([])
+        .unwrap()
+        .next()
+        .unwrap()
+        .is_none());
 }
 
 #[test]

@@ -202,7 +202,18 @@ fn park_if_consistent(db: &Arc<IndexDb>, catalog: SymbolCatalog, token: RowAgg) 
         );
         return;
     }
-    if catalog.should_compact() || live > cc_db::seed_cache_max_symbols() {
+    if catalog.should_compact() {
+        // Record the actual production decision without changing its threshold.
+        // The next incremental build reconstructs from persisted seed rows.
+        tracing::info!(
+            phase = "resolve",
+            step = "catalog_compaction",
+            live,
+            "resolver catalog dropped for tombstone compaction"
+        );
+        return;
+    }
+    if live > cc_db::seed_cache_max_symbols() {
         return;
     }
     db.store_resolver_catalog(Box::new(CachedResolverCatalog { token, catalog }));

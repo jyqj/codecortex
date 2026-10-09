@@ -1,0 +1,362 @@
+{
+  "already_successful_599_evidence": {
+    "conclusion": "C8/C4 successful originals remain valid scoped599 observations: all offered outcomes present, original statistics and full oracle passed actual independent replay, seals immutable, owned products closed. A failed-control defect does not rewrite these originals.",
+    "product_closure_additional_checks": [
+      {
+        "artifact_id": 11575574524,
+        "success_original_owned_product_records": [
+          {
+            "cleanup": "completed",
+            "exit_code": 0,
+            "path": "/dev/shm/a217aaae3bde/ci-artifacts/11575574524/extracted/p8-runtime/product/process.json",
+            "pid": 7928,
+            "sha256": "8788f67b4e8fe719a911044c9307c6796d5d24b88348297a7100aa8946bb0e26"
+          },
+          {
+            "cleanup": "completed",
+            "exit_code": 0,
+            "path": "/dev/shm/a217aaae3bde/ci-artifacts/11575574524/extracted/p8-runtime/full-product/process.json",
+            "pid": 9850,
+            "sha256": "140dc82ce2284ae00c0d8a3216cca6d0c1bda5bd2f738799b7f33173832d3f0b"
+          }
+        ]
+      },
+      {
+        "artifact_id": 11577547528,
+        "success_original_owned_product_records": [
+          {
+            "cleanup": "completed",
+            "exit_code": 0,
+            "path": "/dev/shm/a217aaae3bde/ci-artifacts/11577547528/extracted/p8-runtime/product/process.json",
+            "pid": 8013,
+            "sha256": "42d33dfe3de99953ab870cf2e0fa95f6252b9d804cf84d21d55db5bb30263903"
+          },
+          {
+            "cleanup": "completed",
+            "exit_code": 0,
+            "path": "/dev/shm/a217aaae3bde/ci-artifacts/11577547528/extracted/p8-runtime/full-product/process.json",
+            "pid": 9875,
+            "sha256": "4615310252253af0f92f39d0de2d2a4217a2e8a2c4c076b5fcb6fc60e4fd4ab2"
+          }
+        ]
+      }
+    ],
+    "todo_claim": "007/010 full acceptance remains blocked by confirmed failure-protocol defect and outstanding matrix/dependency evidence"
+  },
+  "base_execution_head": "599a7050e7d52b5b7b93975c419138e175b3f754",
+  "changed_paths": [
+    "scripts/p8_runtime.py",
+    "scripts/tests/test_p8_runtime.py"
+  ],
+  "confirmed_defects": [
+    {
+      "id": "oracle-exit1-drops-statistics",
+      "new_observation": "all60 enter statistics and parity failure remains nonzero exit1",
+      "old_observation": "60 terminal rows retained but zero statistics calls, exit2 instead of observed parity-failure exit1"
+    },
+    {
+      "id": "raw-budget-can-seal-live-writer",
+      "new_observation": "128 queued futures canceled, real active worker stopped by bounded-drain control before sealed inventory; nonzero exit2 with retention errors preserved",
+      "old_observation": "queue rejection triggers actual Raw budget exception; actual ThreadPool worker remains live at seal; its later owned-file write invalidates inventory; verification raises, so this is not a observed false success"
+    },
+    {
+      "id": "unconfirmed-worker-sealed",
+      "new_observation": "report exit2; artifact_seal=null and artifact_seal_status=unsealed_owned_writers",
+      "old_observation": "same live-writer path creates a seal despite unconfirmed worker"
+    }
+  ],
+  "fixed599_not_modified": true,
+  "new_controls_sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0",
+  "observed_controls": {
+    "evidence": {
+      "original-evidence": [
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-52v7820u/control-observation.json",
+          "raised": null,
+          "report_exit_code": 0,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": false,
+          "sha256": "62fa9d10a604b1a8ea520fe85c906c9d770de352e89c2258e5d79e6f106dd9bc",
+          "statistics_calls": 1,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        },
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-5y8x4027/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": false,
+          "sha256": "07895b7492930aa423eecb77635436f9aa1a7454016e44d80799194b5515579d",
+          "statistics_calls": 0,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        },
+        {
+          "drain_timeouts": [],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-__tyy_go/control-observation.json",
+          "raised": "ValueError: runtime artifact inventory changed after sealing",
+          "report_exit_code": null,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": true,
+          "sha256": "c768af3b2c1603e855d8a6beacdae369ddc8adaf50317f8d5190ebec82f80f89",
+          "statistics_calls": 0,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        },
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-c2kop8kw/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": false,
+          "sha256": "6e48395b90890b04fceb1fd9b52f84e29226a7d346059f4184120045784289a8",
+          "statistics_calls": 0,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        },
+        {
+          "drain_timeouts": [],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-eolki4hu/control-observation.json",
+          "raised": "ValueError: runtime artifact inventory changed after sealing",
+          "report_exit_code": null,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": true,
+          "sha256": "f734482be4e54b56b4f484c14eb162683b4a59be75ba2630e3a19fe58331e847",
+          "statistics_calls": 0,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        },
+        {
+          "drain_timeouts": [
+            180,
+            70
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-evidence/runtime-protocol-xkote7nv/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": null,
+          "seal_while_worker_live": false,
+          "sha256": "2c538677bb3f2865b06c895c6c52cd9c389276c32d08ca1dfd274ece77f14087",
+          "statistics_calls": 0,
+          "worker_cleanup_status": null,
+          "worker_still_running": null
+        }
+      ],
+      "patched-evidence": [
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-a9u8g_3j/control-observation.json",
+          "raised": null,
+          "report_exit_code": 1,
+          "seal_exists": true,
+          "seal_status": "sealed",
+          "seal_while_worker_live": false,
+          "sha256": "4f7b69cc14b1be47bf4136801085e7584bd3e9ddb2717f497d336882062ab77b",
+          "statistics_calls": 1,
+          "worker_cleanup_status": "completed",
+          "worker_still_running": 0
+        },
+        {
+          "drain_timeouts": [
+            70
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-beguu50g/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": false,
+          "seal_status": "unsealed_owned_writers",
+          "seal_while_worker_live": false,
+          "sha256": "d8687c6b71adc0a08e008d24f7494e511f2b04ae458ff248299866446d088c03",
+          "statistics_calls": 0,
+          "worker_cleanup_status": "unconfirmed",
+          "worker_still_running": 1
+        },
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-hew_e2kr/control-observation.json",
+          "raised": null,
+          "report_exit_code": 0,
+          "seal_exists": true,
+          "seal_status": "sealed",
+          "seal_while_worker_live": false,
+          "sha256": "e2995bb1b720536fac3431e0fc45120a682f1f21ea100f47aa352d3cb2915e52",
+          "statistics_calls": 1,
+          "worker_cleanup_status": "completed",
+          "worker_still_running": 0
+        },
+        {
+          "drain_timeouts": [
+            180,
+            70
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-hwo50fwd/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": "sealed",
+          "seal_while_worker_live": false,
+          "sha256": "25bad4e227d2163c1197da22454bad8a9ccd125982f2ec23383626e7827b6263",
+          "statistics_calls": 0,
+          "worker_cleanup_status": "completed",
+          "worker_still_running": 0
+        },
+        {
+          "drain_timeouts": [
+            70
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-rnbga688/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": "sealed",
+          "seal_while_worker_live": false,
+          "sha256": "626840055cb27d3f0ff424f4cc5c314830fcf16641ca2f59f8da1c129a726d0f",
+          "statistics_calls": 0,
+          "worker_cleanup_status": "completed",
+          "worker_still_running": 0
+        },
+        {
+          "drain_timeouts": [
+            180
+          ],
+          "path": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-evidence/runtime-protocol-tfmdku19/control-observation.json",
+          "raised": null,
+          "report_exit_code": 2,
+          "seal_exists": true,
+          "seal_status": "sealed",
+          "seal_while_worker_live": false,
+          "sha256": "f03625472c7b64591001cbbb2c0dcfc3a40facd800212853ffca7360262c208b",
+          "statistics_calls": 0,
+          "worker_cleanup_status": "completed",
+          "worker_still_running": 0
+        }
+      ]
+    },
+    "original_tests": {
+      "failed": 3,
+      "log": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/original-tests.log",
+      "log_sha256": "0a74715940b4a2eceed8acc14fb1c548c182535d13b4133eaed2add85c881083",
+      "passed": 11,
+      "total": 14
+    },
+    "patched_tests": {
+      "failed": 0,
+      "log": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/patched-tests.log",
+      "log_sha256": "8e86c132b7918bdb712b369d3c36c6edf6793f0f049296f72ebbed98e7515334",
+      "passed": 14,
+      "total": 14
+    },
+    "scope": "Actual executor threads and actual owned-file post-seal writes; product/compiler/oracle/statistics are explicitly protocol fakes. Simulated timeout boundaries do not prove real70-second wall duration. No production-performance claim.",
+    "six_new_cases": [
+      "equal oracle clean control",
+      "oracle difference retains all60 statistics and exit1",
+      "oracle infrastructure failure keeps exit2",
+      "raw-budget failure drains actual ThreadPool worker before sealing",
+      "180-second drain uses one70-second cleanup and retains all60 terminal IDs",
+      "unconfirmed cleanup leaves artifact explicitly unsealed"
+    ]
+  },
+  "patch_git_blob_binding": {
+    "method": "reconstruct each full file from exact599 plus GitHub unified diff; git blob SHA1 equals original GitHub diff sha",
+    "scripts/p8_runtime.py": "dd0ab69ddde135c6b68a69e2ecc8997a2d5a4910",
+    "scripts/tests/test_p8_runtime.py": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba"
+  },
+  "patches": [
+    {
+      "bytes": 9915,
+      "path": "/dev/shm/a217aaae3bde/runtime-review/p8_runtime.py.pr160.patch",
+      "sha256": "88a816b417b60386555ba6c0b7f3e9ffd5f17c4af11497825334cf2bbc2fd78d"
+    },
+    {
+      "bytes": 11251,
+      "path": "/dev/shm/a217aaae3bde/runtime-review/test_p8_runtime.py.pr160.patch",
+      "sha256": "88921d35c6c72769a18e5c8168d6cc8f13723d03ada9b8d3507e2952b3326a31"
+    }
+  ],
+  "product_source_impact": {
+    "Rust_Cargo_changes": [],
+    "all_Cargo_and_crates_input_count": 1087,
+    "all_Cargo_and_crates_manifest_equal_fixed599": true,
+    "canonical_manifest_sha256": "ac7421155638a64b3690cb63d5434e562f1b0645f0145d298e9594ef62175a59",
+    "note": "No Cargo/crates path exists in patch; unchanged whole1087 inventory covers all engine paths in that inventory. The separate738 categorization was not rederived here."
+  },
+  "proposed_patch_source": "PR160 d2d492b329a5630bf4a5fa6bc4b6eac30d07b13c",
+  "required_followup": {
+    "backfill": "Backfill code and Rust workload unchanged, but its9-file observer identity includes p8_runtime.py. Existing599 backfill remains599 only; new-head claim under current strict receipt protocol requires new source-bound build/run, not rewritten metadata.",
+    "lifecycle_resources": "Their7 observer files and actual workload are unaffected by runtime-only patch;599 original observations stay usable at599. No measured-behavior reason to rerun solely for this patch, but any claim explicitly of a new executionHEAD requires fresh evidence under current whole-source-commit contract.",
+    "other_matrices": "No scale/platform/engine bytes changed by this patch. Do not relabel prior source. Root must preserve full required original matrix/regression gates; these6 controls are additional fault proof only.",
+    "runtime_new_observer_claim": "Run original full C1/4/8/16 mixed and actual1h soak with newly source-bound receipt/observer after integration. Patch executes on successful path before observed timestamps and changes sealing/report semantics, so synthetic controls alone cannot certify all new-observer observations. Preserve all599 results separately."
+  },
+  "runtime_after_sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
+  "runtime_before_sha256": "ef4ab630a362c3402ecbb268281e89f19355123daac0f2d2354c74473d752764",
+  "same_binary_dual_source_assessment": {
+    "binary_reuse_as_separate_diagnostic": "Technically possible to launch an unchanged retained599 product with a separately hashed fault-control harness, recording both origins plus binary digest, process cleanup and raw. It would be new diagnostic evidence with dual sources, not a599 p8_runtime observation nor a new-head matrix receipt.",
+    "direct_new_runtime_using_old_receipt": "Current verify_receipt binds current observer to build observer (includingp8_runtime.py) and checks original copy source. Therefore new runtime plus old599 build receipt must reject. Rewriting observer/receipt/seal or bypassing verify_build is not an acceptable production-evidence bridge.",
+    "recommendation": "Use new exact-source receipt for formal runtime matrix; retain old binary/original successful evidence. If root adds a separate actual-binary fault diagnostic, state the dual origin explicitly and do not substitute it for immutable original matrix requirements."
+  },
+  "schema_version": 1,
+  "status": "confirmed_failure_protocol_blocker_with_scoped_patch_controls_passed",
+  "success_path_impact": {
+    "full_success_path_ast_equal": false,
+    "material_differences": [
+      "operation finally releases semaphore even when raw.emit raises",
+      "normal pool shutdown now joins already-completed executor workers before observed-span timestamp; therefore elapsed-time bytes/timing are not asserted equivalent",
+      "parity process exit1 continues into statistics and failed report; exit0 proceeds as before",
+      "report adds parity_exit_code and owned_cleanup/seal status; final seal requires worker/sampler/product/reader completion"
+    ],
+    "offered_schedule_for_loop_ast_equal": true,
+    "operation_try_body_and_handlers_ast_equal": true,
+    "sampler_function_ast_equal": true,
+    "unchanged_gates": [
+      "900 mixed samples /3601 soak samples; C1/4/8/16; offered timing and workload mix",
+      "RSS warm+25%+32MiB / coverage<=5s / actualwork>=3600s",
+      "15-table no-repair oracle and original Rust statistics bytes",
+      "private target/fresh false/exact feature and source/observer/inventory binding"
+    ],
+    "unchanged_top_level_ast": [
+      "Raw",
+      "owned",
+      "git",
+      "hot_source",
+      "make_fixture",
+      "mutate",
+      "diagnostics",
+      "execution_environment",
+      "require_stable_symbol",
+      "median",
+      "rss_trend",
+      "sample_coverage",
+      "latency_summary",
+      "verify_build",
+      "replay_statistics",
+      "main"
+    ]
+  },
+  "unresolved_blockers": [
+    "Confirmed failure protocol is not fixed in frozen599; no new-source runtime matrix has been executed."
+  ],
+  "views": {
+    "original": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/599-original",
+    "patched": "/dev/shm/a217aaae3bde/runtime-review/runtime-failure-controls/599-plus-failure-patch"
+  }
+}

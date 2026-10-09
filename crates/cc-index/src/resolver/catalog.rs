@@ -538,6 +538,21 @@ impl SymbolCatalog {
             .unwrap_or_default()
     }
 
+    fn direct_exports(&self, file_path: &str, export_name: &str) -> Option<&[usize]> {
+        self.by_export
+            .get(file_path)
+            .and_then(|names| names.get(&export_name.to_lowercase()))
+            .map(Vec::as_slice)
+    }
+
+    /// Exactly the terminal direct-declaration branch of `exported` below.
+    /// A nonempty ambiguous set is terminal too: this does not assert uniqueness
+    /// or readiness, only that this name never consults forwarding routes.
+    pub(crate) fn has_direct_export(&self, file_path: &str, export_name: &str) -> bool {
+        self.direct_exports(file_path, export_name)
+            .is_some_and(|indices| !indices.is_empty())
+    }
+
     /// Find exported symbols by file + export name.
     pub(in crate::resolver) fn exported(&self, file_path: &str, export_name: &str) -> Vec<usize> {
         if let Some(files) = self.package_modules.get(file_path) {
@@ -563,14 +578,9 @@ impl SymbolCatalog {
             if seen.len() > 4096 {
                 return Vec::new();
             }
-            let exact = self
-                .by_export
-                .get(&file)
-                .and_then(|m| m.get(&name.to_lowercase()))
-                .cloned()
-                .unwrap_or_default();
+            let exact = self.direct_exports(&file, &name).unwrap_or_default();
             if !exact.is_empty() {
-                found.extend(exact);
+                found.extend_from_slice(exact);
                 continue;
             }
             if let Some(routes) = self.forward_routes.get(&file) {

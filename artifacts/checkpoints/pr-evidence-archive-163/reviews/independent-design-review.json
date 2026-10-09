@@ -1,0 +1,496 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-08T22:49:30.160241+00:00",
+  "assessment": "accepted_scoped_minimal_evidence_relocation_design_pending_actual_tree_and_CI",
+  "scope": "Read-only mapping/provenance and all currentverify/historical-module filesystempresence audit; no relocation, treewrite, execution or remoteaction",
+  "main_reviewed": "341db995e5f092fd95aed35af84cbc8b69e1af40",
+  "mapping": {
+    "schema_version": 1,
+    "from": "artifacts/checkpoints/localwidth4-100k-paired-20261003",
+    "to": "artifacts/checkpoints/pr-evidence-archive-163/relocated-originals/localwidth4-100k-paired-20261003",
+    "original_subtree": "347b848c78278c44622795e1a137987c2ca766aa",
+    "original_mode": "040000",
+    "source_pr": 126,
+    "source_head": "da8b618cbf8b67683c6b16880419089f7159c15e",
+    "archive_pr": 163,
+    "archive_merge": "b57b6a085107982eb9843cd5747bfbe083c6df9e"
+  },
+  "original_file_count": 188,
+  "original_total_bytes": 26428588,
+  "subtree_recomputed_from_188_original_manifest_mode_blob_entries": "347b848c78278c44622795e1a137987c2ca766aa",
+  "origin": {
+    "original_pr": 126,
+    "original_head": "da8b618cbf8b67683c6b16880419089f7159c15e",
+    "added_to_main_by_pr": 163,
+    "archive_merge": "b57b6a085107982eb9843cd5747bfbe083c6df9e",
+    "not_in_pr162": true,
+    "original_pr163_manifest_path": "artifacts/checkpoints/pr-evidence-archive-106-109-112-115-116-118-120-126-133/manifest.json",
+    "original_manifest_git_blob": "33935ca945720cdf6185efa05c2b8112960753a8",
+    "original_manifest_sha256": "76529c8626505edcc8c8825d72a961af8edb1b0aed8cbfc931857a5e8efb0c6c",
+    "original_manifest_and_readme_raw_git_blobs_verified": true
+  },
+  "exact_path_mapping_file": {
+    "path": "proposed-relocation-mapping.json",
+    "sha256": "fc4df67032e02651019c0f211c1f655c24589e3848fc2894f5430058c8d2f35e"
+  },
+  "required_tree_operations": [
+    {
+      "operation": "remove_tree_entry_at_original_location_only",
+      "path": "artifacts/checkpoints/localwidth4-100k-paired-20261003",
+      "old_mode": "040000",
+      "old_tree": "347b848c78278c44622795e1a137987c2ca766aa"
+    },
+    {
+      "operation": "attach_the_identical_tree_at_archive_location",
+      "path": "artifacts/checkpoints/pr-evidence-archive-163/relocated-originals/localwidth4-100k-paired-20261003",
+      "mode": "040000",
+      "tree": "347b848c78278c44622795e1a137987c2ca766aa"
+    },
+    {
+      "operation": "add_small_provenance_addendum",
+      "suggested_path": "artifacts/checkpoints/pr-evidence-archive-163/relocation-provenance.json",
+      "must_record": [
+        "actualbaseandresulttree",
+        "oldandnewprefix",
+        "originaltree/modes/blobs/188count/26428588bytes",
+        "originalPR126fixedhead andarchivePR163",
+        "reason: preserveexistingabsenceguard unchanged",
+        "historicalpaths inoriginalmanifests areoriginal-location records andresolveviaexplicitnewmapping",
+        "nooriginalfilebytes/reserialization/recompression/execution/statuschanges",
+        "no performanceorcorrectnessacceptance",
+        "original192taskcounts163done29remaining"
+      ]
+    }
+  ],
+  "original_metadata_impact": [
+    "Keepall188originalbytes/modes/blobs/subtreesincludingSHA256SUMS,README,curatedmanifest,absoluteandrelativepathsunaltered.",
+    "KeepPR163 original596-filemanifest andprovenancereviewsunchanged; theytruthfullyrecordoriginalarchiveplacementattheoldcommit. Newaddendum mustnotpretendtheoldprefixstillcurrentlyexists.",
+    "Do notleaveREADME,symlinkorredirectatoldprefix: os.path.lexistswouldstillfail. Navigationmustbeundernewarchivecontainer oritsparent.",
+    "PreserveoriginalPR126 failures: baseline timedout; candidate terminatedearlyby12GiB resourceguard; post-ready not_run; nofull300s pairedthroughput/statisticalsignificanceclaim.",
+    "The resourcedriver AST comparatorreadsimmutableda8commit via gitshow; thatobjectanditsoriginalpathremainunchanged. Movingthecurrentworkingtree archive doesnotrewriteorremovethehistoricalGitobject."
+  ],
+  "guard_inventory": [
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "sha256": "67be5bc25b0116f666a36af83e88d19acc79515868a3199c01e816d268afee21"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "sha256": "575c9922f74a62e44676802fc2565729afc042be3125ae7245caf9ade87f9ce6"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "sha256": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20"
+    },
+    {
+      "path": "scripts/verify_current_source.py",
+      "sha256": "17d526085b0e767e11ea13069eeb202df6fd62180b96b538c882b7c0565dcbe0"
+    },
+    {
+      "path": "scripts/verify_current_source_v2.py",
+      "sha256": "3c331139606840b92d496fcc84cac5ba60cf97e192b72730027125450fadd2ef"
+    },
+    {
+      "path": "scripts/verify_current_source_v3.py",
+      "sha256": "9ffcd3bc58b69437093f83daed7324b4525eaf7c51ccfcb0ec7314f939e7f3d4"
+    },
+    {
+      "path": "scripts/verify_fixed_e3_integration.py",
+      "sha256": "277f1544bcf51085e10ed2b94fdb5e403c3ec52a40033d70744fa3679ffe75d2"
+    },
+    {
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "sha256": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288"
+    },
+    {
+      "path": "scripts/verify_packing_integration.py",
+      "sha256": "b05c27464310dd41d759491d226b4e210e45178eb269c534b46bce48c0448ef6"
+    },
+    {
+      "path": "scripts/verify_reviewed_source.py",
+      "sha256": "019ce82b6f797920e5db3f786bb27c058b14a9a7b133e99f9b5d195ca12b81a8"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_joint22_v10.py",
+      "sha256": "34a53a3151d070e64b9940279173f7810e975bc281c05534757ed18f358d2efa"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_p7_v9.py",
+      "sha256": "4a39ddfa306c755e0da762d43cdf9ee928d24b1dac5a78f2a918cbec5e61a51a"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v10.py",
+      "sha256": "96ff8eb7125db80a89f9e839cea95cd6a4db6fad24159d8c71d28c91d2dbc9ab"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v11.py",
+      "sha256": "cb5d33530a4ea0462d1f6b780ea4917c1ec54aef53ce7fd14f72056fe6210ed9"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v12.py",
+      "sha256": "cc7963183bdcfb9730ad379374cb709d0a77f18e8730765f061d3f403cc50238"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "sha256": "a870137ff28085baaf435cb1f3e1700365a28f0247fb8774eae17f673887828a"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "sha256": "d37219bb0906f0f64d44fcf7ccf944865748e876f597ce83ffe79f5d35b3af70"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "sha256": "9758fd288bf39fef0bd8b6d0873ff373dd5add04b268584297c1410d5cfa8a12"
+    }
+  ],
+  "filesystem_presence_calls_reviewed": [
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "line": 58,
+      "call": "current.is_symlink()"
+    },
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "line": 72,
+      "call": "root.is_symlink()"
+    },
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "line": 87,
+      "call": "live.is_symlink()"
+    },
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "line": 72,
+      "call": "root.is_dir()"
+    },
+    {
+      "path": "scripts/p0_historical_corpus.py",
+      "line": 72,
+      "call": "root.iterdir()"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "line": 138,
+      "call": "root.is_dir()"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "line": 138,
+      "call": "root.is_symlink()"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "line": 175,
+      "call": "self.root.rglob(\"*\")"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "line": 176,
+      "call": "path.is_file()"
+    },
+    {
+      "path": "scripts/v14_historical_context.py",
+      "line": 176,
+      "call": "path.is_symlink()"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "line": 139,
+      "call": "root.is_dir()"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "line": 139,
+      "call": "root.is_symlink()"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "line": 176,
+      "call": "self.root.rglob(\"*\")"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "line": 177,
+      "call": "path.is_file()"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "line": 177,
+      "call": "path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_current_source.py",
+      "line": 172,
+      "call": "(root / 'crates').rglob('*')"
+    },
+    {
+      "path": "scripts/verify_current_source.py",
+      "line": 177,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_current_source.py",
+      "line": 173,
+      "call": "p.is_file()"
+    },
+    {
+      "path": "scripts/verify_current_source.py",
+      "line": 173,
+      "call": "p.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_current_source_v2.py",
+      "line": 98,
+      "call": "(root / path).is_symlink()"
+    },
+    {
+      "path": "scripts/verify_current_source_v3.py",
+      "line": 74,
+      "call": "(root / path).is_symlink()"
+    },
+    {
+      "path": "scripts/verify_fixed_e3_integration.py",
+      "line": 44,
+      "call": "(ROOT / forbidden).exists()"
+    },
+    {
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "line": 226,
+      "call": "os.path.lexists(Path(root) / FORBIDDEN)"
+    },
+    {
+      "path": "scripts/verify_reviewed_source.py",
+      "line": 111,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source.py",
+      "line": 180,
+      "call": "review_path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_joint22_v10.py",
+      "line": 133,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_joint22_v10.py",
+      "line": 202,
+      "call": "review_path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_p7_v9.py",
+      "line": 111,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_p7_v9.py",
+      "line": 170,
+      "call": "review_path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v10.py",
+      "line": 91,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v10.py",
+      "line": 76,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v11.py",
+      "line": 73,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v11.py",
+      "line": 56,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v12.py",
+      "line": 128,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v12.py",
+      "line": 100,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 74,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 102,
+      "call": "(root / directory).rglob(\"*\")"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 189,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 74,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 189,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 103,
+      "call": "path.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v13.py",
+      "line": 103,
+      "call": "path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 78,
+      "call": "root.is_dir()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 86,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 113,
+      "call": "(root / directory).rglob(\"*\")"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 213,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 78,
+      "call": "root.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 85,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 213,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 114,
+      "call": "path.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v14.py",
+      "line": 114,
+      "call": "path.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 81,
+      "call": "root.is_dir()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 89,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 116,
+      "call": "(root / directory).rglob(\"*\")"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 217,
+      "call": "target.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 81,
+      "call": "root.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 88,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 217,
+      "call": "target.is_symlink()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 117,
+      "call": "path.is_file()"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "line": 117,
+      "call": "path.is_symlink()"
+    }
+  ],
+  "new_directories_reviewed": [
+    "backfill-phase-costs-v2-20261003",
+    "fifo-100k-paired-decision-20261003",
+    "independent-capability-v2-review-20261003",
+    "independent-direct-writer-review-20261003",
+    "independent-fifo-claim-review-20261003",
+    "independent-go-call-fix-20261003",
+    "independent-parallel-drain-review-20261003",
+    "independent-v2-100k-release-20261003",
+    "independent-v24-migration-20261003",
+    "localwidth4-100k-paired-20261003",
+    "parallel-startup-100k-paired-20261003",
+    "pr-evidence-archive-104",
+    "pr-evidence-archive-105-108-124",
+    "pr-evidence-archive-106-109-112-115-116-118-120-126-133",
+    "public-dev-kind-review-20261003",
+    "v24-failure-triage-20261003"
+  ],
+  "other_15_new_directories": [
+    "backfill-phase-costs-v2-20261003",
+    "fifo-100k-paired-decision-20261003",
+    "independent-capability-v2-review-20261003",
+    "independent-direct-writer-review-20261003",
+    "independent-fifo-claim-review-20261003",
+    "independent-go-call-fix-20261003",
+    "independent-parallel-drain-review-20261003",
+    "independent-v2-100k-release-20261003",
+    "independent-v24-migration-20261003",
+    "parallel-startup-100k-paired-20261003",
+    "pr-evidence-archive-104",
+    "pr-evidence-archive-105-108-124",
+    "pr-evidence-archive-106-109-112-115-116-118-120-126-133",
+    "public-dev-kind-review-20261003",
+    "v24-failure-triage-20261003"
+  ],
+  "other_presence_gate_findings": "Noothernewdirectorymatchesanexists/lexistsabsencegate in currentverify*.py or*historical*.py. Productrglobislimitedtocrates;v13/v14/v15validationrglobslimitedtoscripts/.github/workflows/tests-source-integrity;v14/v15HistoricalContext.rglobisinitsnewtemporaryexactcatalogue, notentireliveartifacts. All172preexistingcheckpointtrees andotherartifactroots areunchanged, preservingexistingpositivepath/readrequirements. Literalnew-directorynamesin.github/scripts/tests occuronlyfortheforbiddenpathanditsimmutablehistoryresource-protocolreferences.",
+  "limits": [
+    "Staticpresence/path/immutable-subtreeanalysis isnot anewfullCLI/CI success. Actualrelocatedtree mustbe independentlychecked andnormalexistingCI/requiredgates observed.",
+    "Do notrelabelold4526CI asnewmergetree; no source/validation/guardweakening neededforthisfix.",
+    "Keepcurrent599scaleand296runtimeexecutionidentitiesandalloriginalartifacts.",
+    "Noarchivebodyoroldproductprogramwasexecuted. OnlyexistingmanifestandGit-tree identitieswereused; no805-blobredownload."
+  ],
+  "task_counts": {
+    "done": 163,
+    "total": 192,
+    "remaining": 29
+  }
+}

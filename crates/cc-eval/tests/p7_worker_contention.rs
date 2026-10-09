@@ -30,6 +30,7 @@ use std::{
 
 const SEEDS: [u64; 3] = [7, 19, 43];
 const SAMPLES_PER_CELL: usize = 32;
+const CONCURRENCIES: [usize; 4] = [1, 4, 8, 16];
 const LOCAL_QUERY_BOUND: Duration = Duration::from_secs(2);
 const PROGRESS_BOUND: Duration = Duration::from_secs(5);
 const LOCAL_ATTEMPT_WIDTH: usize = 4;
@@ -237,7 +238,7 @@ async fn db_control(db: Arc<IndexDb>) -> Value {
 
 async fn samples(index: SharedCodeIndex, seed: u64, phase: &str) -> Value {
     let mut rows = Vec::new();
-    for concurrency in [1, 4] {
+    for concurrency in CONCURRENCIES {
         for first in (0..SAMPLES_PER_CELL).step_by(concurrency) {
             let mut tasks = Vec::new();
             for offset in 0..concurrency {
@@ -287,7 +288,7 @@ async fn samples(index: SharedCodeIndex, seed: u64, phase: &str) -> Value {
             );
         }
     }
-    let cells: Vec<_> = [1,4].into_iter().map(|concurrency| {
+    let cells: Vec<_> = CONCURRENCIES.into_iter().map(|concurrency| {
         let mut times:Vec<u64>=rows.iter().filter(|r|r["concurrency"]==concurrency)
             .map(|r|r["offered_to_api_return_us"].as_u64().unwrap()).collect();
         times.sort_unstable();
@@ -303,7 +304,7 @@ async fn run(seed: u64) {
     save(
         seed,
         "protocol",
-        &json!({"seed":seed,"mutable_files":24,"concurrency_cells":[1,4],
+        &json!({"seed":seed,"mutable_files":24,"concurrency_cells":CONCURRENCIES,
         "samples_per_cell":SAMPLES_PER_CELL,"phases":["quiet","held"],"fake_delay_ms":10,
         "query_watchdog_ms":2000,"progress_watchdog_ms":5000,"writer_busy_timeout_ms":100,
         "worker_local_attempt_width":LOCAL_ATTEMPT_WIDTH,"worker_claim_round_cap":16,

@@ -24,6 +24,45 @@ class RecoveryControls(unittest.TestCase):
         (self.root / "src").mkdir()
         (self.root / "src/lib.rs").write_text("pub fn present_symbol() -> u32 { 1 }\n")
 
+    def test_command_failure_retains_both_raw_logs_and_cannot_pass(self):
+        output = self.root / "failed-command"
+        with self.assertRaisesRegex(ValueError, "command failed"):
+            recovery.retained_command([sys.executable, "-c", "import sys; print('raw-out'); print('raw-error', file=sys.stderr); sys.exit(7)"],
+                                      self.root, output, dict(recovery.os.environ), timeout=5)
+        record = json.loads((output / "command.json").read_text())
+        self.assertEqual((record["status"], record["exit_code"]), ("failed", 7))
+        self.assertIn("raw-out", (output / "stdout.log").read_text())
+        self.assertIn("raw-error", (output / "stderr.log").read_text())
+        self.assertEqual(set(record["logs_sha256"]), {"stdout.log", "stderr.log"})
+
+    def test_active_faults_refuse_a_different_binary_before_starting_any_fixture(self):
+        binary = self.root / "incorrect-product"
+        binary.write_bytes(b"no executable is launched by this negative control")
+        output = self.root / "must-not-exist"
+        with self.assertRaisesRegex(ValueError, "differs from its exact build"):
+            recovery.active_stdio_faults(binary, output, 223, "0" * 64)
+        self.assertFalse(output.exists())
+
+    def test_command_timeout_is_a_failed_owned_process_receipt(self):
+        output = self.root / "timed-command"
+        with self.assertRaisesRegex(ValueError, "command failed"):
+            recovery.retained_command([sys.executable, "-c", "import time; time.sleep(20)"],
+                                      self.root, output, dict(recovery.os.environ), timeout=0.05)
+        record = json.loads((output / "command.json").read_text())
+        self.assertEqual(record["status"], "failed")
+        self.assertIn("TimeoutExpired", record["error"])
+        self.assertNotEqual(record["exit_code"], 0)
+
+    def test_full_evidence_prunes_disposable_target_before_opening_files(self):
+        target = self.root / "cargo-target"
+        target.mkdir()
+        (target / "external-link").symlink_to("/does-not-exist")
+        manifest = recovery.full_evidence_manifest(self.root)
+        self.assertEqual(set(manifest), {"src/lib.rs"})
+        (self.root / "unexpected-link").symlink_to(self.root / "src/lib.rs")
+        with self.assertRaisesRegex(ValueError, "nonregular"):
+            recovery.full_evidence_manifest(self.root)
+
     def hit(self, **changes):
         return dict(name="present_symbol", qname="present_symbol", file_path="src/lib.rs",
                     start_line=1, end_line=1) | changes

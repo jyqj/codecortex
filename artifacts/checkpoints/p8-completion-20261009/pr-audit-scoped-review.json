@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "assessment": "accepted_scoped",
+  "source_commit_observed": "1a18ba44411ee2d2c98e3556cf9a992a5850fd9f",
+  "independent_scope": {
+    ".github/workflows/p8-platform.yml": "c5a41d9f15e02361c2ff4e7f7bfed86fc57842f96178cfd4004333fea04bb8b7",
+    ".github/workflows/p8-gates.yml": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
+    "scripts/p8_cold_build.py": "dfb3ee25e527afdc8c08a44a4f44cda5c7f9720da87cacce67648c69b2c32f31",
+    "scripts/p8_recovery.py": "b949d9621b62be8f636d8dbddc990d4d26e33a09ef0f77798bbd19e8e6fba287",
+    "scripts/p8_rollback.py": "5247ffaba63c43f5373227fa202991912ff070328ad194688ebfc2605c543829",
+    "scripts/p8_gate_controls.py": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7",
+    "scripts/tests/test_p8_platform.py": "33c43760add6c21f27b4fbd614a57a1f7f7fe1541f574ae8790edff6e8109cfc",
+    "scripts/tests/test_p8_recovery.py": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050",
+    "docs/P8_PLATFORM_RECOVERY.md": "ccebf7a845ca4d21922b9dd507faed17e337f136122c4459c22081c906336360",
+    "crates/cc-server/src/project_session.rs": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
+  },
+  "author_scope_not_independently_self_approved": {
+    "crates/cc-eval/src/bench.rs": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756",
+    "crates/cc-eval/src/report.rs": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0",
+    "crates/cc-eval/src/benchmark/statistics.rs": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+    "crates/cc-eval/tests/p8_measurements.rs": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0",
+    "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md": "6baaa02357983d2963556b37e611012208942e0b8c69a9c2d1f4395a941efe6e"
+  },
+  "author_scope_independent_reviewer": "root; root reported its independent merge review completed",
+  "conclusions": [
+    "Cold platform workflow requires one real passed selected cell and a separate complete eight-cell collection at one exact source; incomplete/failed cells cannot produce green collection.",
+    "Build and test timeouts, nonzero exits, changed source/binary and missing/synthetic test selections fail rather than certify success.",
+    "Recovery binds committed Cargo/crate source snapshots before and after actual Cargo builds, validates returned executable target/features/manifest, copies exact executable bytes, and binds actual test processes and fault seeds to hashes.",
+    "Historical schema rollback derives versions from each source manifest, requires distinct commits and an older actual schema, preserves original database/config/source backups, and does not relabel source builds as released packages.",
+    "Original failed and partial engineering runs remain unchanged; no new result is substituted for their source identities.",
+    "Test-only project_session oneshot now observes actual worker ownership before abort; cancelled-before-handoff path is independently controlled."
+  ],
+  "validation": {
+    "platform_python_controls": {
+      "passed": 38,
+      "failed": 0
+    },
+    "recovery_python_controls": {
+      "passed": 24,
+      "failed": 0
+    },
+    "declared_p8_facts_check": "passed; schema25,14tools,8crates,30base+5FTS,default network disabled",
+    "python_ast": "four scoped execution scripts parsed",
+    "rust_format_and_whitespace": "Rust1.95 rustfmt and git diff --check passed for hygiene; project_session diff check passed",
+    "engineering_archive": {
+      "archive_sha256": "b2e77d94d5a43ef3fee09f9462f8024fd3b518cec5849727e6135123f356ab61",
+      "manifest_payload_members_rehashed": 677,
+      "total_regular_members": 679,
+      "exact_manifest_and_inventory_verified": true
+    },
+    "scale_archive": {
+      "archive_sha256": "abfea29121b896965a71ee3208f749593c95f9af3d9460192fc10ceaae70f9a1",
+      "manifest_payload_members_rehashed": 29,
+      "total_regular_members": 30,
+      "exact_manifest_and_inventory_verified": true
+    }
+  },
+  "limitations": [
+    "Source approval only; no TODO completion, G8, quality/performance acceptance or release approval.",
+    "This review did not rerun the eight actual platform builds, full recovery matrix or original Rust gates; those exact candidate executions still require successful CI and retained raw.",
+    "New hygiene Rust tests were authored but not compiled locally due shared-workspace disk limits; final merged-source CI must run them.",
+    "Own hygiene changes are implementation-checked here and require root independent approval; this report does not self-sign those changes.",
+    "Source/Cargo binding is not a claim of fully hermetic compiler/dependency execution."
+  ]
+}

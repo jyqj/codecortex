@@ -4,6 +4,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -14,6 +15,11 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import p8_cold_build as cold
 import p8_rollback as rollback
+
+
+def synthetic_rustc_verbose(release, host):
+    return (f"rustc {release} (contract_fake; never a real compiler)\n"
+            f"binary: rustc\nrelease: {release}\nhost: {host}\n")
 
 
 class PlatformControls(unittest.TestCase):
@@ -30,6 +36,17 @@ class PlatformControls(unittest.TestCase):
             "crates/cc-server/src/main.rs": "fn main() {}\n",
         }.items():
             (self.root / name).write_text(value)
+        # The compiler and RPC data remain explicit synthetic contract fixtures.
+        # Preserve real observer source bytes in this fixture's own Git commit;
+        # only loaded-module location is adapted because the test module itself
+        # executes from the checkout under test, not this tiny source fixture.
+        for name in cold.FULL_OBSERVER_MODULES:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(Path(cold.__file__).resolve().parents[1] / name, path)
+        loaded = mock.patch.object(cold, "loaded_observer_path", side_effect=lambda _module, path: path)
+        loaded.start()
+        self.addCleanup(loaded.stop)
         self.git("init", "-q")
         self.git("config", "user.name", "P8 contract test")
         self.git("config", "user.email", "p8-contract@example.invalid")
@@ -57,7 +74,8 @@ path=target/host/('release' if release else 'debug')/'codecortex'
 path.parent.mkdir(parents=True)
 path.write_bytes(b'CONTRACT FAKE ONLY: not a CodeCortex product')
 path.chmod(0o755)
-artifact=dict(reason='compiler-artifact', target=dict(name='codecortex',kind=['bin']),
+artifact=dict(reason='compiler-artifact', target=dict(name='codecortex',kind=['bin'],
+    src_path=str(pathlib.Path.cwd()/'crates/cc-server/src/main.rs')),
     manifest_path=str(pathlib.Path.cwd()/'crates/cc-server/Cargo.toml'),
     executable=str(path),features=['semantic'] if '--features' in args else [],fresh=False,
     profile=dict(opt_level='3' if release else '0',debug_assertions=not release,test=False))
@@ -69,10 +87,12 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         rustc = directory / "rustc-contract-fake"
         rustc.write_text("contract fake rustc identity; never invoked as a real compiler\n")
         rustc.chmod(0o755)
+        host = "aarch64-apple-darwin" if cold.host_platform() == "macos" else "x86_64-unknown-linux-gnu"
         return dict(cargo=dict(path=str(cargo), sha256=cold.digest(cargo), version_verbose="contract_fake"),
-                    rustc=dict(path=str(rustc), sha256=cold.digest(rustc), version_verbose="contract_fake"),
+                    rustc=dict(path=str(rustc), sha256=cold.digest(rustc),
+                               version_verbose=synthetic_rustc_verbose("1.95.0", host)),
                     matrix_toolchain="1.95", channel="1.95.0", rustc_release="1.95.0",
-                    host="aarch64-apple-darwin" if cold.host_platform() == "macos" else "x86_64-unknown-linux-gnu")
+                    host=host)
 
     def build_receipt(self, package="default", failure=False):
         tools = self.toolchain(failure)
@@ -93,6 +113,109 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         record["cargo_artifact"] = lines[0]
         record["logs_sha256"]["cargo-build.jsonl"] = cold.digest(log)
         self.rewrite(path, record)
+
+    def smoke_fixture(self, path, record):
+        """Synthetic RPC evidence for parser controls, never product execution."""
+        directory = path.parent / "stdio-smoke"
+        project = directory / "fixture"
+        (project / "src").mkdir(parents=True)
+        process = directory / "process"
+        process.mkdir()
+        for name, text in rollback.FIXTURE_FILES.items():
+            (project / name).write_text(text)
+        values = {
+            "initialize": {"protocolVersion": "2024-11-05"},
+            "tools/list": {"tools": [{"name": f"fake-tool-{i}"} for i in range(14)]},
+            "index": {"files_scanned": 2},
+            "status": {"capabilities": {"search": True}, "retrieval": {
+                "semantic_state": "not_configured", "dense_state": "disabled"}},
+            "search": [{"name": rollback.MARKER, "file_path": "src/lib.rs", "start_line": 1, "end_line": 1}],
+        }
+        events = []
+        for request_id, (name, value) in enumerate(values.items(), 1):
+            tool = name in {"index", "status", "search"}
+            request = dict(id=request_id, method="tools/call" if tool else name,
+                           params={"name": name} if tool else {})
+            response = {"structuredContent": {"result": value} if isinstance(value, list) else value} if tool else value
+            events.extend([dict(event="request", payload=request),
+                           dict(event="response", payload=dict(id=request_id, result=response))])
+        (process / "rpc.jsonl").write_text("".join(json.dumps(row) + "\n" for row in events))
+        cold.write_json(process / "process.json", dict(exit_code=0, expected_exit_code=0,
+                        cleanup="completed", tool_count=14, binary_sha256=record["binary_sha256"]))
+        cold.write_json(process / "local.json", dict(tool_count=14, index=values["index"],
+                        capabilities=values["status"], search=values["search"]))
+        (process / "product-stderr.log").write_text("SYNTHETIC CONTRACT FIXTURE ONLY\n")
+        record["stdio_smoke"] = dict(status="passed", binary_sha256=record["binary_sha256"],
+            source_files=rollback.source_manifest(project),
+            logs_sha256={p.name: cold.digest(p) for p in process.iterdir()})
+        cold.write_json(path, record)
+
+    def bundle(self, parent, cell):
+        tools = self.toolchain()
+        tools["matrix_toolchain"] = cell["toolchain"]
+        tools["channel"] = "1.95.0" if cell["toolchain"] == "1.95" else "stable"
+        tools["host"] = "aarch64-apple-darwin" if cell["platform"] == "macos" else "x86_64-unknown-linux-gnu"
+        tools["rustc"]["version_verbose"] = synthetic_rustc_verbose(tools["rustc_release"], tools["host"])
+        output = cold.new_directory(self.base / f"bundle-build-{self.counter}")
+        record = cold.build_cell(self.root, output, cell, tools, "dev", 1, 10)
+        self.assertEqual(record["status"], "passed", record)
+        path = output / "receipt.json"
+        self.smoke_fixture(path, record)
+        rows = [dict(cell=dict(platform=os_name, toolchain=tc, package=pkg),
+                     status="not_run", reason="platform_unavailable" if os_name != cell["platform"] else "cell_not_selected")
+                for os_name in cold.PLATFORMS for tc in cold.TOOLCHAINS for pkg in cold.PACKAGES]
+        for row in rows:
+            if row["cell"] == cell:
+                row.clear()
+                row.update(cell=cell, status="passed", receipt=str(path), receipt_sha256=cold.digest(path))
+        matrix = output / "selection.json"
+        cold.write_json(matrix, dict(source=record["source_before"], cells=rows))
+        destination = parent / "-".join(cell.values())
+        cold.export_cell(matrix, cell, destination)
+        return destination
+
+    def test_selected_cell_requires_stdio_and_does_not_certify_other_seven(self):
+        parent = cold.new_directory(self.base / "bundles")
+        destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
+        with self.assertRaisesRegex(ValueError, "eight-cell.*received 1"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+        record = json.loads((destination / "receipt.json").read_text())
+        del record["stdio_smoke"]
+        with self.assertRaisesRegex(ValueError, "stdio smoke"):
+            cold.validate_smoke(destination, record)
+
+    def test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected(self):
+        import shutil
+        parent = cold.new_directory(self.base / "complete-bundles")
+        for os_name in cold.PLATFORMS:
+            for tc in cold.TOOLCHAINS:
+                for package in cold.PACKAGES:
+                    destination = self.bundle(parent, dict(platform=os_name, toolchain=tc, package=package))
+        result = cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+        self.assertEqual(result["counts"], dict(passed=8, failed=0, not_run=0))
+        shutil.copytree(destination, parent / "duplicate")
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_bundle_binary_mutation_and_unrequested_source_fail(self):
+        parent = cold.new_directory(self.base / "mutated-bundle")
+        destination = self.bundle(parent, dict(platform="linux", toolchain="1.95", package="default"))
+        with self.assertRaisesRegex(ValueError, "commit differs"):
+            cold.collect_cells(parent, self.root, "0" * 40)
+        (destination / "codecortex").chmod(0o755)
+        (destination / "codecortex").write_bytes(b"replaced synthetic binary")
+        with self.assertRaisesRegex(ValueError, "byte digest"):
+            cold.collect_cells(parent, self.root, self.git("rev-parse", "HEAD"))
+
+    def test_smoke_success_label_cannot_hide_missing_rpc_response(self):
+        path, record = self.build_receipt()
+        self.smoke_fixture(path, record)
+        log = path.parent / "stdio-smoke/process/rpc.jsonl"
+        lines = log.read_text().splitlines()
+        log.write_text("\n".join(lines[:-1]) + "\n")
+        record["stdio_smoke"]["logs_sha256"]["rpc.jsonl"] = cold.digest(log)
+        with self.assertRaisesRegex(ValueError, "response is missing"):
+            cold.validate_smoke(path.parent, record)
 
     def test_valid_cold_contract_replays(self):
         path, record = self.build_receipt()
@@ -187,6 +310,8 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         path, record = self.build_receipt()
         record["toolchain"]["rustc_release"] = "1.97.0"
         record["toolchain_after"]["rustc_release"] = "1.97.0"
+        for field in ("toolchain", "toolchain_after"):
+            record[field]["rustc"]["version_verbose"] = synthetic_rustc_verbose("1.97.0", record[field]["host"])
         self.rewrite(path, record)
         with self.assertRaisesRegex(ValueError, "non-MSRV"):
             cold.validate_cell(path)
@@ -275,6 +400,94 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         self.assertEqual(identity["source"]["source_commit"], self.git("rev-parse", "HEAD"))
         self.assertIn("not current-source", identity["claim"])
 
+    def schema_identity(self, label, version):
+        root = self.base / label
+        path = root / "crates/cc-db/src/index_migrate.rs"
+        path.parent.mkdir(parents=True)
+        path.write_text(f"pub const CURRENT_SCHEMA_VERSION: u32 = {version};\n")
+        manifest = root / "source-inputs.json"
+        cold.write_json(manifest, {"crates/cc-db/src/index_migrate.rs": cold.digest(path)})
+        return dict(source={"source_root": str(root), "source_commit": label,
+                            "manifest_sha256": cold.digest(manifest)},
+                    source_manifest_path=str(manifest))
+
+    def test_actual_version_pair_requires_distinct_revisions_and_older_real_schema(self):
+        current = self.schema_identity("current", 25)
+        older = self.schema_identity("previous", 24)
+        self.assertEqual(rollback.version_pair_contract(current, older), {"current": 25, "previous": 24})
+        with self.assertRaisesRegex(ValueError, "distinct actual source"):
+            rollback.version_pair_contract(current, current)
+        same_schema = self.schema_identity("different-commit-same-schema", 25)
+        with self.assertRaisesRegex(ValueError, "actually older schema"):
+            rollback.version_pair_contract(current, same_schema)
+        (Path(older["source"]["source_root"]) / "crates/cc-db/src/index_migrate.rs").write_text(
+            "pub const CURRENT_SCHEMA_VERSION: u32 = 23;\n")
+        with self.assertRaisesRegex(ValueError, "differs from the bound"):
+            rollback.version_pair_contract(current, older)
+
+    def test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths(self):
+        identity = self.schema_identity("cold-list-source", 24)
+        path = Path(identity["source_manifest_path"])
+        original = json.loads(path.read_text())
+        name, sha = next(iter(original.items()))
+        rows = [dict(path=name, sha256=sha, size=123, git_mode="100644", git_blob="a" * 40)]
+        cold.write_json(path, rows)
+        identity["source"]["manifest_sha256"] = cold.digest(path)
+        self.assertEqual(rollback.product_schema_version(identity), 24)
+        for invalid in (rows + rows, [], [dict(path=name, sha256="not-a-digest")]):
+            cold.write_json(path, invalid)
+            identity["source"]["manifest_sha256"] = cold.digest(path)
+            with self.subTest(manifest=invalid), self.assertRaises(ValueError):
+                rollback.product_schema_version(identity)
+        path.write_text('{"same":"' + sha + '","same":"' + sha + '"}')
+        with self.assertRaisesRegex(ValueError, "duplicate manifest"):
+            rollback.manifest_hashes(path)
+
+    def test_observer_rejects_uncommitted_bytes_and_loaded_foreign_module(self):
+        snapshot = cold.observer_snapshot(self.root)
+        self.assertEqual(snapshot["source_commit"], self.git("rev-parse", "HEAD"))
+        with mock.patch.object(cold, "loaded_observer_path", return_value=self.base / "foreign.py"):
+            with self.assertRaisesRegex(ValueError, "loaded from another checkout"):
+                cold.observer_snapshot(self.root)
+        observer = self.root / "scripts/p8_rollback.py"
+        observer.write_bytes(observer.read_bytes() + b"\n# changed observer\n")
+        with self.assertRaisesRegex(ValueError, "committed Git blob"):
+            cold.observer_snapshot(self.root)
+
+    def test_formal_observer_end_drift_cannot_leave_a_passed_receipt(self):
+        output = cold.new_directory(self.base / "observer-end-drift")
+        def operation():
+            observer = self.root / "scripts/p8_rollback.py"
+            observer.write_bytes(observer.read_bytes() + b"\n# mutated during observation\n")
+            return dict(status="passed", product_source="original historical product identity")
+        record = cold.observed_operation(self.root, output, "rollback", "receipt.json", operation, rollback.file_manifest)
+        self.assertEqual(record["status"], "failed")
+        self.assertIn("committed Git blob", record["observer_error"])
+        self.assertEqual(record["product_source"], "original historical product identity")
+        self.assertIn("observer-source/scripts/p8_rollback.py", record["evidence_files_sha256"])
+
+    def test_formal_observer_keeps_historical_product_and_current_driver_separate(self):
+        output = cold.new_directory(self.base / "observer-historical-pair")
+        record = cold.observed_operation(self.root, output, "rollback", "receipt.json",
+            lambda: dict(status="passed", product_source="277f2490fad3fa30f2812b5547bad033867c9ea5"), rollback.file_manifest)
+        self.assertEqual(record["status"], "passed")
+        self.assertEqual(record["observer_before"], record["observer_after"])
+        self.assertNotEqual(record["product_source"], record["observer_before"]["source_commit"])
+
+    def test_version_pair_public_probe_rejects_echo_wrong_path_and_false_span(self):
+        project = self.base / "public-fixture"
+        (project / "src").mkdir(parents=True)
+        (project / "src/lib.rs").write_text(rollback.FIXTURE_FILES["src/lib.rs"])
+        hit = dict(name=rollback.MARKER, file_path="src/lib.rs", start_line=1, end_line=1)
+        self.assertEqual(rollback.verify_fixture_search(project, [hit])["matching_symbols"], 1)
+        for value in ({"query": rollback.MARKER, "results": []}, [hit | {"file_path": "other.rs"}],
+                      [hit | {"start_line": 0}], [hit | {"end_line": 100}], "not structured"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                rollback.verify_fixture_search(project, value)
+        (project / "src/lib.rs").write_text("pub fn different_symbol() {}\n")
+        with self.assertRaisesRegex(ValueError, "does not define"):
+            rollback.verify_fixture_search(project, [hit])
+
     def test_rollback_rejects_wrong_package_or_changed_binary(self):
         path, record = self.build_receipt()
         binary = record["cargo_artifact"]["executable"]
@@ -339,6 +552,57 @@ print(json.dumps(dict(reason='build-finished',success=True)))
         with self.assertRaisesRegex(TimeoutError, "bounded deadline"):
             rollback.backup_database(source, backup, timeout_seconds=-1)
         self.assertTrue(backup.exists())
+
+    def test_readonly_snapshot_closes_connection_on_success_and_failure(self):
+        real_connect = sqlite3.connect
+        for invalid in (False, True):
+            with self.subTest(invalid=invalid):
+                source = self.base / f"snapshot-close-{invalid}.sqlite3"
+                with contextlib.closing(real_connect(source)) as connection:
+                    if not invalid:
+                        connection.execute("CREATE TABLE files(path TEXT)")
+                opened = []
+
+                def connect(*args, **kwargs):
+                    connection = real_connect(*args, **kwargs)
+                    opened.append(connection)
+                    return connection
+
+                with mock.patch.object(rollback.sqlite3, "connect", side_effect=connect):
+                    if invalid:
+                        with self.assertRaises(sqlite3.OperationalError):
+                            rollback.db_snapshot(source)
+                    else:
+                        self.assertEqual(rollback.db_snapshot(source)["integrity"], "ok")
+                self.assertEqual(len(opened), 1)
+                with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed database"):
+                    opened[0].execute("SELECT 1")
+
+    def test_backup_closes_all_connections_on_success_and_failure(self):
+        real_connect = sqlite3.connect
+        source = self.base / "backup-close-source.sqlite3"
+        with contextlib.closing(real_connect(source)) as connection:
+            connection.execute("CREATE TABLE files(path TEXT)")
+        for expired in (False, True):
+            with self.subTest(expired=expired):
+                opened = []
+
+                def connect(*args, **kwargs):
+                    connection = real_connect(*args, **kwargs)
+                    opened.append(connection)
+                    return connection
+
+                destination = self.base / f"backup-close-{expired}.sqlite3"
+                with mock.patch.object(rollback.sqlite3, "connect", side_effect=connect):
+                    if expired:
+                        with self.assertRaises(TimeoutError):
+                            rollback.backup_database(source, destination, timeout_seconds=-1)
+                    else:
+                        self.assertEqual(rollback.backup_database(source, destination)["snapshot"]["integrity"], "ok")
+                self.assertGreaterEqual(len(opened), 2)
+                for connection in opened:
+                    with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed database"):
+                        connection.execute("SELECT 1")
 
     def test_rebuild_controls_reject_reuse_sentinel_loss_and_bad_integrity(self):
         before = dict(schema_version=1025, future_sentinel_present=True)

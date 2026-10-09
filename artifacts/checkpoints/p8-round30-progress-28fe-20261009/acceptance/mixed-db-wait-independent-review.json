@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/recovery_audit",
+  "reviewed_at_utc": "2026-10-09 10:21:17 UTC",
+  "scope": "Independent readonly contract/design review of the narrow P8-007 DB acquisition observation gap; no implementation or execution approval",
+  "proposal_commit": "737be82178a906ba4cb66492bb4a5f1540d03328",
+  "inputs": {
+    "proposal": {
+      "blob": "dd57ee20473d1c09180e69dbb8d9c32048cf5997",
+      "bytes": 11544,
+      "sha256": "9c148274903dc3c1768b413a6b2cfad111322f2e21abe37e263bb8ced5ed9555",
+      "git_blob_recomputed": "dd57ee20473d1c09180e69dbb8d9c32048cf5997",
+      "git_blob_matches": true
+    },
+    "actual": {
+      "blob": "a30c3f564c3cfa27c6f37b680b4fd527804ea34e",
+      "bytes": 14975,
+      "sha256": "dc25b25e762ba339ba5535beb68264e6804d904bbc7d7b2a96ad6e59fa6b89ba",
+      "git_blob_recomputed": "a30c3f564c3cfa27c6f37b680b4fd527804ea34e",
+      "git_blob_matches": true
+    },
+    "readback": {
+      "blob": "eaf10d1766e76e06492bebde31f1ca2e3df6b9c1",
+      "bytes": 62607,
+      "sha256": "02c1b0d14d1813b838d31e5afd33d6fb1e9ef69436f466367873e48d73a8aab8",
+      "git_blob_recomputed": "eaf10d1766e76e06492bebde31f1ca2e3df6b9c1",
+      "git_blob_matches": true
+    },
+    "scope": {
+      "blob": "f52c7111096a00bdaa4a1c8ca3972cf0ab4c79e0",
+      "bytes": 10691,
+      "sha256": "9bfd52f945f628183d67ca667fb7e09472f161d08f9d2724c7ed2a62138da878",
+      "git_blob_recomputed": "f52c7111096a00bdaa4a1c8ca3972cf0ab4c79e0",
+      "git_blob_matches": true
+    }
+  },
+  "verdict": "original_gap_supported_minimal_opt_in_design_recommended_subject_to_actual_patch_review",
+  "source_boundaries": {
+    "original_raw_in_supplied_readback": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "code_examined": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "G3_existing_scale_run": 37910924354,
+    "current_main_preservation_head": "4652cad11dde4b41126544a38fddf25eb2fb7474",
+    "no_transfer": "The 173 raw streams are not G3/C8 measurements. Shared absent seams are a source-code finding, not a fabricated current G3 observation."
+  },
+  "original_contract": {
+    "benchmark_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+    "benchmark_line": 175,
+    "required_scope": "C1/4/8/16 mixed reads/builds: queue/service/end-to-end, throughput, errors/timeouts, DB lock wait and worker contention; offered load and queuing retained.",
+    "task": "P8-007",
+    "depends_on": "P8-006",
+    "constraints": "No original clause requires a full backend span tree, per-RPC correlation format, every SQLite lock class, four one-hour repeats, or another 150-cell study merely because this gap is confirmed."
+  },
+  "independent_source_findings": [
+    {
+      "blob": "58c30296ae0e635fe3ab0f383558c692f507e63b",
+      "path": "crates/cc-db/src/index_db.rs",
+      "lines": "147-153,713-725",
+      "finding": "Actual writer is std Mutex; read_conn obtains pool RwLock and then r2d2 checkout with original errors but no acquisition timer. Existing process-unique instance_id can support handle identity; reopen/incarnation boundaries still need explicit treatment."
+    },
+    {
+      "blob": "b1d6ca01f6d48d808ff4ccada75e489d5d1ce8bf",
+      "path": "crates/cc-db/src/unit_of_work.rs",
+      "lines": "59-65",
+      "finding": "Actual writer mutex acquisition precedes BEGIN IMMEDIATE. Mutex acquisition duration and SQLite acquisition/SQL duration are distinct; preserving original MutexGuard, poison/error and transaction lifetime is required."
+    },
+    {
+      "blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+      "lines": "213-236",
+      "finding": "The retained db_control genuinely times one read checkout/read statement and a separate Connection BEGIN IMMEDIATE+ROLLBACK availability probe per seed. It is useful real held-worker evidence, not timing of each mixed workload operation, and not pure SQLite blocked time."
+    },
+    {
+      "blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "lines": "173-206,278-283",
+      "finding": "Current distributions derive from client offered/start/call/finish timestamps and explicitly disclaim separated backend queue/service. These cannot reconstruct DB acquisition timestamps."
+    },
+    {
+      "blob": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+      "path": "scripts/p8_runtime.py",
+      "finding": "Original runtime verifies build identity and exact binaries and preserves original statistics/raw. A supplemental feature profile must not weaken its existing default-feature identity check or edit old receipts."
+    }
+  ],
+  "recommended_minimum": [
+    "Implement only after author ownership/authorization: one compile-time opt-in diagnostics feature, absent from defaults and original scale build; fixed categories for writer mutex acquisition, read-pool RwLock acquisition and connection checkout. Keep original cfg-off types/bodies/imports/status output and dependency versions unchanged.",
+    "Observe the real selected acquisition calls during the original mixed C1/4/8/16 protocol. Bounded per-handle counters/sum/max are an adequate narrowly labelled diagnostic design; no full per-request trace architecture or invented latency threshold is required.",
+    "Record acquisition wall time with honest names. Mutex/RwLock timing includes clock/acquire overhead; checkout can include creation/validation. SQLite engine busy waiting remains separately unobserved. Do not claim exhaustive/pure SQL lock wait or per-operation percentiles from aggregate counters.",
+    "Specify attempted, completed success, completed poison/error and in-flight/censored accounting. Increment before acquisition; preserve pending observations at timeouts/shutdown. Take coherent or explicitly consistency-checked snapshots: independent relaxed atomic fields can otherwise produce impossible denominators. Preserve overflow/reset/unavailable rather than zero-filling.",
+    "Bind start/end windows to db_instance/incarnation and observe initial-build/status/oracle inclusions explicitly. Do not subtract across handle replacement or silently count status-probe acquisitions as workload-only. Final quiescent snapshot or declared outstanding attempts must close the diagnostic denominator without changing original deadlines or cleanup.",
+    "Return original std guard/results; no policy, lock ordering, poison mapping, SQL busy_timeout, retry, transaction lifetime or cancellation change. Diagnostic counter publication can extend held-lock wall time and must be disclosed as instrumented overhead; no zero-overhead or causal speedup claim.",
+    "Keep a separately named supplemental build/profile and its exact source, Cargo features, compiler, binary and observer receipts. Collect original raw outcomes plus diagnostics and retain its own counts/errors/timings. Missing diagnostics fail only the new diagnostic completeness claim and never erase original failures."
+  ],
+  "implementation_review_controls": [
+    "Barrier-controlled actual writer contention and exhausted read-pool checkout prove an acquisition is really pending and accounted for until release, without changing time budgets or inventing a speed threshold.",
+    "Poison/error/try_lock-WouldBlock and unavailable/reset/overflow/handle-change cases retain original results and cannot be reported as success or zero wait.",
+    "Default-feature compile and feature graph show diagnostics are absent from every original scale build path; real cfg-on build independently verifies fixed fields, population consistency and bounded storage.",
+    "Original positive/negative raw/source/build gates remain. No test has been run by this review; author-designed controls are not credited as passing."
+  ],
+  "G3_preservation": [
+    "Leave G3 run37910924354 and all existing samples at source3ffcefc3 unchanged; no cancellation, restart, new scale, ordinal reset, label or dispatch is justified by this proposal.",
+    "A real future cfg-off patch may support an explicit, domain-specific applicability argument for existing G3 results only after feature resolution and actual default-path review. It does not make source or executable identity equal and is not automatic task closure.",
+    "P8-SCALE.md lines278-281 still bind each complete study/build receipt to its full Git SHA. Old validators must keep validating G3 against G3; a new-source build requires its own receipt. No instrumented waits may be inserted into old default timing/sample populations.",
+    "No automatic four-hour soak is added. Whether other evidence must be repeated depends on actual default behavior changes and the final target claim; no patch exists yet, so neither blanket rerun nor blanket equivalence is approved."
+  ],
+  "evidence_limits": [
+    "Read the four exact Git blobs and original contract/source blobs. Did not download/replay ZIP/raw streams independently; raw absence assessment uses the frozen member-field readback plus directly checked source seams.",
+    "This result narrows the prior complementary backfill mapping: retain its real fairness/availability success, but do not treat it as complete mixed DB-wait attribution.",
+    "No source/refs/PR/workflow changes, native operations, provider calls or tests. No task status change: 163 done/29 remaining/0 newly complete."
+  ]
+}

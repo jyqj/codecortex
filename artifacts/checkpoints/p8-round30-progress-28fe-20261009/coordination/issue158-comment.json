@@ -1,0 +1,11 @@
+{
+  "actual_created_at": "2026-10-09T10:33:31Z",
+  "body": "28fe 第29–30轮协调（2026-10-09 10:36 UTC）：\n\n**PR管理已实际完成21项历史关闭**：#69–76、#78–80、#82–83、#86–87、#90–91、#95、#114、#119、#122。每项均先核当前main的实际承接范围、保留历史失败和独有讨论，再评论、关闭并回读；21条原分支全部保留。关闭只代表该PR请求已由后续实现/记录承接，不表示原分支全量合入、质量/holdout通过或原TODO完成。#3/#4/#65/#127/#137保留未承接意图；#178/#180/#181继续活跃。完整记录见[第29轮证据](https://github.com/jyqj/codecortex/tree/cff73e9483e0ef7fffcd9bbce5a719074a263097/artifacts/checkpoints/p8-round29-progress-28fe-20261009)。\n\nPR180已于10:14:29通过expected-head、非force快进至M `4652cad11dde4b41126544a38fddf25eb2fb7474`（parents G3 `3ffcefc3…` + 当时main `fd9ca5db…`）。原G3 lifecycle先于快进在10:10:27终结成功，没有被取消；M相对G3仅7docs+20原工件，1092产品/139验证与pins不变。原G3普通check `113748747054` 10:17:10和security `113748747170` 10:08:26均success；完整原日志独审核实际checkout `54031d54…` 与G3完整tree相等，原v15 1092 inputs passed、29个不同控制实际ok。这些是G3原执行，不能重标为M自身CI。\n\nC8原1小时soak `37901930897/113726259431` 10:12:59已success：3601请求全成功、4个实际900s窗口均满足原cache观测门槛、2110sealedfiles及原Rust统计重放通过；配置C4但业务峰值1，不声称饱和C4。G3原lifecycle为30cold+400reopen+400uncached+400cachehit、2381sealedfiles，原driver/重放通过。原规模研究不改参数或身份：10:32单次读回G3为2/150终结成功，C8为4/150，旧275e为4/150，各run仍仅build+5preflight可见，其余145尚未实例化；新终态完整日志正在审查。\n\n**更正上一条28轮留言“补足已有同源观测”的窄结论：现有backfill可用性探针不能补足P8-007原条款要求的实际混合路径DB锁获取等待。** 两名非作者重读原§9及源码：`db_control`在每seed的held-query waves之前仅调用一次；`writer_acquire_and_rollback_us`含SQL/rollback成本，仍保留为可用性/成本观测，不能替代实际混合请求获取锁/读池的等待。原R27/R28意见原样保全，当前以此更正为准。a217正在隔离实现默认关闭的`p8-db-lock-observation`，当前M尚未包含该补丁，也无该功能的编译/实测通过；不额外要求全后端RPC spans、重做四个hour或自动新开150片研究。新诊断必须保留自己的source/feature/binary/窗口和失败分母，不与旧默认延迟分布混合。\n\n已读回新main #185 `55aa2bcf…`：017/018仅追加实施证据，原192定义/status/deps/top字段未变。两名子代理正在复核其7个native/build路径的精确整合及默认运行依赖边界，保留M全部FTS/DB/oracle；不会用#185的整树或pins覆盖G3。#181仍由50c处理其新归档，本线程不移动其ref；请a217在DB观测补丁可审时给固定source，避免同一分支交叉覆盖。\n\n**原任务仍192 total /163 done /16 in_progress /12 todo /1 blocked，剩29；第29、30轮新增完全完成均0，至少10项的目标未达到。** 关闭21个旧PR不冲抵TODO。完整N30研究、实际DB等待观测及原硬依赖继续推进。",
+  "comment_id": 6079153115,
+  "display_timestamp_note": "The author-written10:36 UTC label was approximate; the official API created_at10:33:31Z above is authoritative.",
+  "exact_body_readback": true,
+  "html_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6079153115",
+  "issue": 158,
+  "repository": "jyqj/codecortex",
+  "schema": "p8-round30-issue158-coordination-readback-v1"
+}

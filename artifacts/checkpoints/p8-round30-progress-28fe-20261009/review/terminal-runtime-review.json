@@ -1,0 +1,719 @@
+{
+  "schema": "round30-fixed-C8-soak-and-G3-lifecycle-terminal-log-review-v1",
+  "reviewer": "/root/runtime_review",
+  "official_snapshot_utc": "2026-10-09 10:13:17 UTC",
+  "scope": "One actual terminal snapshot followed by complete completed-job logs and official artifact metadata. No running-job log, native execution, replay, compiler, dispatch, ref mutation or ZIP extraction.",
+  "verdict": "accepted_scoped_original_executor_and_original_verifier_success_observed; original_source_identities_separate; no_task_closure",
+  "C8_soak": {
+    "run": {
+      "id": 37901930897,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "event": "pull_request",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-09T07:56:33Z",
+      "updated_at": "2026-10-09T10:13:00Z"
+    },
+    "job": {
+      "id": 113726259431,
+      "name": "soak",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T09:07:12Z",
+      "completed_at": "2026-10-09T10:12:59Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:13Z",
+          "completed_at": "2026-10-09T09:07:14Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:14Z",
+          "completed_at": "2026-10-09T09:07:29Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:29Z",
+          "completed_at": "2026-10-09T09:07:38Z"
+        },
+        {
+          "name": "Fetch locked dependencies before measurement",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:38Z",
+          "completed_at": "2026-10-09T09:07:42Z"
+        },
+        {
+          "name": "Runtime receipt and retained-evidence negative controls",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:42Z",
+          "completed_at": "2026-10-09T09:07:59Z"
+        },
+        {
+          "name": "Build an exact release product and complete oracle",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:07:59Z",
+          "completed_at": "2026-10-09T09:12:43Z"
+        },
+        {
+          "name": "One-hour actual stdio session with Git switches and catalog churn",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T09:12:43Z",
+          "completed_at": "2026-10-09T10:12:48Z"
+        },
+        {
+          "name": "Verify every retained runtime and build artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:12:48Z",
+          "completed_at": "2026-10-09T10:12:49Z"
+        },
+        {
+          "name": "Preserve every execution including failures",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:12:49Z",
+          "completed_at": "2026-10-09T10:12:58Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:12:58Z",
+          "completed_at": "2026-10-09T10:12:58Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:12:58Z",
+          "completed_at": "2026-10-09T10:12:58Z"
+        }
+      ]
+    },
+    "log": {
+      "git_blob": "84327409e04e21b620f59b8a9de01fb4c3d949ef",
+      "bytes": 285188,
+      "sha256": "d800043010735bf94ddac57e7c96ec31434013b5152709aad393a5002dae2130",
+      "official_blob_readback_exact": true,
+      "line_count": 2468
+    },
+    "checkout": {
+      "requested_and_git_log_actual": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "lines": [
+        37,
+        186
+      ],
+      "not_PR_merge_ref": true
+    },
+    "controls": {
+      "command": "python3 -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v",
+      "tests": 68,
+      "result": "OK",
+      "seconds": 17.532,
+      "lines": [
+        755,
+        835,
+        837
+      ]
+    },
+    "invocation": {
+      "driver": "scripts/p8_runtime.py",
+      "profile": "soak",
+      "concurrency": 4,
+      "operations": 3601,
+      "files": 1000,
+      "interval_ms": 1000,
+      "exact_arguments_log_lines": [
+        857,
+        864
+      ],
+      "source_driver_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8"
+    },
+    "build": {
+      "printed_build_exit_code": 0,
+      "source_commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "source_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+      "input_count": 1090,
+      "source_manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+      "full_source_input_map": "All1090 path/SHA256 entries retained in original full log; compared complete path set to original C8 Git tree with no missing/extra. This review did not reread1090 source bodies.",
+      "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+      "observer_count": 9,
+      "observer_OID_mode_size_check": "All9 log-observed helper entries match original C8 scripts tree OID/mode/size; exact runtime observer source also previously read.",
+      "artifacts": {
+        "codecortex": {
+          "sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+          "bytes": 27092024,
+          "original_copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/codecortex",
+            "bytes": 27092024,
+            "sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671"
+          },
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        },
+        "p8-oracle": {
+          "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+          "bytes": 2964184,
+          "original_copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-oracle",
+            "bytes": 2964184,
+            "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e"
+          },
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        },
+        "p8-runtime-statistics": {
+          "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a",
+          "bytes": 974880,
+          "original_copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-runtime-statistics",
+            "bytes": 974880,
+            "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+          },
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        }
+      },
+      "toolchain": {
+        "cargo": {
+          "command": [
+            "/home/runner/.cargo/bin/cargo",
+            "--version",
+            "--verbose"
+          ],
+          "executable": "/home/runner/.cargo/bin/rustup",
+          "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+          "invocation": "/home/runner/.cargo/bin/cargo",
+          "version": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]"
+        },
+        "rustc": {
+          "command": [
+            "/home/runner/.cargo/bin/rustc",
+            "--version",
+            "--verbose"
+          ],
+          "executable": "/home/runner/.cargo/bin/rustup",
+          "executable_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+          "invocation": "/home/runner/.cargo/bin/rustc",
+          "version": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2"
+        }
+      },
+      "receipt_sha256": "4b182068f2bd44780822848c84c4b3369d2a4907acd8b3329109180a4b2f98ce",
+      "build_seal_sha256": "b2147aeb01a11e737d9f7adce64c4ea6fd00eb1988f514e0f32af310922ce9d0",
+      "scope": "original Cargo target, copied artifacts and committed observer available in this job"
+    },
+    "observed_report": {
+      "status": "passed_observation",
+      "exit_code": 0,
+      "offered": 3601,
+      "outcomes": {
+        "success": 3601
+      },
+      "observed_work_ns": 3600054553094,
+      "actual_concurrency": {
+        "read": 0,
+        "build": 0,
+        "maximum": 1,
+        "read_build_overlap": false
+      },
+      "real_branch_switches": 200,
+      "observed_catalog_compactions": 25,
+      "rss": {
+        "status": "observed",
+        "observed": 3594,
+        "warmed_median_bytes": 113766400,
+        "tail_median_bytes": 132988928,
+        "allowed_bytes": 175762432,
+        "sampled_peak_bytes": 137678848,
+        "passed": true,
+        "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB"
+      },
+      "resource_time_coverage": {
+        "passed": true,
+        "observed_samples": 3594,
+        "first_ns": 779533419,
+        "last_ns": 3600300385069,
+        "work_start_ns": 779623700,
+        "work_end_ns": 3600834178077,
+        "maximum_gap_ns": 1022839505,
+        "allowed_maximum_gap_ns": 5000000000,
+        "method": "monotonic sample starts including work start and end gaps"
+      },
+      "execution_environment": {
+        "system": "Linux",
+        "release": "6.17.0-1022-azure",
+        "machine": "x86_64",
+        "cpu_model": "AMD EPYC 7763 64-Core Processor",
+        "reported_logical_cpus": 4,
+        "runner_affinity_cpus": 4,
+        "cgroup_cpu_quota": null,
+        "cgroup_cpu_quota_status": "not_observed; logical or affinity counts are not a quota claim"
+      },
+      "observer_concurrency_scope": "one separate status RPC; excluded from workload C and latency",
+      "latency": {
+        "n": 3601,
+        "p50_ns": 11278824,
+        "p95_ns": 56558277,
+        "p99_ns": 60084610,
+        "maximum_ns": 157934032,
+        "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+        "tail_stability_claim": false
+      },
+      "latency_by_operation": {
+        "read": {
+          "n": 2400,
+          "p50_ns": 7078540,
+          "p95_ns": 11958501,
+          "p99_ns": 12647888,
+          "maximum_ns": 157934032,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        },
+        "build": {
+          "n": 1201,
+          "p50_ns": 16057637,
+          "p95_ns": 59317698,
+          "p99_ns": 61051644,
+          "maximum_ns": 68684971,
+          "scope": "all_offered_terminal_outcomes_including_rejections_and_failures",
+          "tail_stability_claim": false
+        }
+      },
+      "failures": [],
+      "statistics": {
+        "path": "statistics.json",
+        "sha256": "f726390637397e2563d86905060efe13f4b970ad36a353524e8fd3ccc4d3b11e",
+        "replay_path": "statistics-replay.json",
+        "replay_identical": true,
+        "exit_code": 0,
+        "status": "all_original_terminal_outcomes_successful"
+      },
+      "parity_exit_code": 0,
+      "parity_sha256": "c215bf165d949ab69e6351898663ac86f46c901916322df31af154878a38bd40",
+      "cache_reuse": {
+        "protocol": "symbol_plus_local_hybrid_cache_v1",
+        "passed": true,
+        "expected_offered_reads": 2400,
+        "recorded_offered_reads": 2400,
+        "validated_reads": 2400,
+        "observed": {
+          "miss": 1000,
+          "invalidations": 999,
+          "hit": 1400
+        },
+        "request_counts": {
+          "before_status": {
+            "success": 2400
+          },
+          "symbol": {
+            "success": 2400
+          },
+          "hybrid": {
+            "success": 2400
+          },
+          "after_status": {
+            "success": 2400
+          }
+        },
+        "status_request_counts": {
+          "success": 4800
+        },
+        "expected_requests_per_role": 2400,
+        "errors": [],
+        "time_quarters": [
+          {
+            "reads": 600,
+            "hits": 350,
+            "misses": 250,
+            "invalidations": 249,
+            "mutations": {
+              "bounded_symbol_churn": 50,
+              "add": 50,
+              "rename": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "restore_api": 50
+            }
+          },
+          {
+            "reads": 600,
+            "hits": 350,
+            "misses": 250,
+            "invalidations": 250,
+            "mutations": {
+              "bounded_symbol_churn": 50,
+              "add": 50,
+              "rename": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "restore_api": 50
+            }
+          },
+          {
+            "reads": 600,
+            "hits": 350,
+            "misses": 250,
+            "invalidations": 250,
+            "mutations": {
+              "bounded_symbol_churn": 51,
+              "add": 50,
+              "rename": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "restore_api": 50
+            }
+          },
+          {
+            "reads": 600,
+            "hits": 350,
+            "misses": 250,
+            "invalidations": 250,
+            "mutations": {
+              "add": 50,
+              "rename": 50,
+              "delete": 50,
+              "real_git_branch_switch": 50,
+              "restore_api": 50,
+              "bounded_symbol_churn": 50
+            }
+          }
+        ],
+        "preceding_mutation_coverage": {
+          "bounded_symbol_churn": 400,
+          "add": 400,
+          "rename": 400,
+          "delete": 400,
+          "real_git_branch_switch": 400,
+          "restore_api": 400
+        },
+        "quarter_time_basis": "actual hybrid RPC completion and actual mutation operation completion; never offered time",
+        "quarter_mutation_scope": "successful completed builds; every failure remains in original outcomes/statistics",
+        "temporal_cache_coverage": true,
+        "denominator": "one offered compound read; symbol+hybrid+two status RPCs and all their time/failures included; no extra latency samples",
+        "comparison_scope": "not directly comparable to the previous symbol-only read protocol",
+        "isolation": "soak read/build share original write admission lock; wait remains measured; mixed unchanged"
+      },
+      "owned_cleanup": {
+        "unfinished_work": 0,
+        "sampler_stopped": true,
+        "product_stopped": true,
+        "comparison_product_stopped": true,
+        "product_construction_pending": false,
+        "comparison_product_construction_pending": false
+      },
+      "raw_sha256": "805e0b8659ab5c5202a8c98625cdf2fcf7200a70a4014c0f5ef5ad3972c4d21d",
+      "plan_sha256": "29feb2692df9461a680e2212f742100f5a0cb641d2929cd33dbc5038ae5fa2ee",
+      "artifact_seal": "seal.json",
+      "artifact_seal_status": "sealed",
+      "elapsed_ns": 3603853394905,
+      "task_complete": false,
+      "release_approval": false,
+      "semantic_backfill": "not_run_in_default_product_profile"
+    },
+    "original_verify": {
+      "status": "sealed_artifacts_verified",
+      "files": 2110,
+      "observation_status": "passed_observation",
+      "observation_exit_code": 0,
+      "line": 2412
+    },
+    "artifact": {
+      "id": 11609019055,
+      "name": "p8-soak-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "size_in_bytes": 50973180,
+      "digest": "sha256:40fb5824303044b8bb679def386b76caeab42189d2808302962eade1aea06360",
+      "created_at": "2026-10-09T10:12:57Z",
+      "expired": false,
+      "workflow_run": {
+        "id": 37901930897,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      }
+    },
+    "upload_binding": {
+      "files": 2129,
+      "log_lines": [
+        2434,
+        2447,
+        2449,
+        2450
+      ],
+      "API_and_upload_id_name_size_digest_equal": true
+    },
+    "method_scope": {
+      "actual_gate_definition": "C8 scripts/p8_runtime.py:798-819 replays original raw stats, requires all offered terminal IDs, all-success outcomes, >=1h actual span, RSS trend, <=5s complete interval coverage, actual compaction/branch switches and cache evidence;317-377 validate full2400 compound reads and four actual-completion quarters.",
+      "endpoint": "Original --oracle invocation uses the complete no-repair endpoint comparison. The log reports parity_exit_code0 and binds parity.json SHA; this review did not separately open parity.json from the ZIP or invent per-table counts.",
+      "concurrency": "ConfiguredC4 is not actualC4 saturation: original report actual maximum1/read_build_overlapfalse. Soak's original shared lock serializes reads/builds; mixed scopes are separate.",
+      "statistics": "Original replay exit0 and replay_identical true observed. All3601 outcomes retained;2400 reads/1201 builds. C8 legacy quantile owner remains C8; not relabelled as PR175/G3 statistics.",
+      "retention": "Original verify observed2110 runtime inventory files, separately bound build seal. Upload2129 includes build evidence. Counts describe different scopes, not a mismatch.",
+      "not_claimed": "No new ZIP-bytes audit, raw row reconstruction, stable-tail claim, provider billing, mixed-concurrency result, newG3/M runtime result or release approval."
+    }
+  },
+  "G3_lifecycle": {
+    "run": {
+      "id": 37908825715,
+      "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "event": "pull_request",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-09T09:03:32Z",
+      "updated_at": "2026-10-09T10:10:28Z"
+    },
+    "job": {
+      "id": 113748746643,
+      "name": "lifecycle",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T10:01:06Z",
+      "completed_at": "2026-10-09T10:10:27Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:01:07Z",
+          "completed_at": "2026-10-09T10:01:08Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:01:08Z",
+          "completed_at": "2026-10-09T10:01:43Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:01:43Z",
+          "completed_at": "2026-10-09T10:01:52Z"
+        },
+        {
+          "name": "Prepare locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:01:52Z",
+          "completed_at": "2026-10-09T10:01:57Z"
+        },
+        {
+          "name": "Build one fixed release product with an actual receipt",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:01:57Z",
+          "completed_at": "2026-10-09T10:06:03Z"
+        },
+        {
+          "name": "Build and bind the original measurement replay owners",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:06:03Z",
+          "completed_at": "2026-10-09T10:08:26Z"
+        },
+        {
+          "name": "Execute original cold, reopen, uncached and cache-hit strata",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:08:26Z",
+          "completed_at": "2026-10-09T10:10:16Z"
+        },
+        {
+          "name": "Preserve the fixed candidate, all raw data and failures",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:10:16Z",
+          "completed_at": "2026-10-09T10:10:25Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:10:25Z",
+          "completed_at": "2026-10-09T10:10:25Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T10:10:25Z",
+          "completed_at": "2026-10-09T10:10:25Z"
+        }
+      ]
+    },
+    "log": {
+      "git_blob": "86a84340f748ef2608af31de8bace3cfcf8ad582",
+      "bytes": 116049,
+      "sha256": "9ad9f856d0fb31f9d8a2809aea3d0168314c8d39b8a6c650a4e9eadb6445ebe1",
+      "official_blob_readback_exact": true,
+      "line_count": 1243
+    },
+    "checkout": {
+      "requested_and_git_log_actual": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "lines": [
+        37,
+        536
+      ],
+      "not_PR_merge_ref": true
+    },
+    "product_build": {
+      "binary": "/home/runner/work/_temp/p8-lifecycle/product/codecortex",
+      "receipt": "/home/runner/work/_temp/p8-lifecycle/product/build-receipt.json",
+      "package_kind": "default",
+      "features": [],
+      "sha256": "902568e41f5eba485c1a7304e87207cdfb651e31d8b584d8298bd3f2c73b43dc",
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "source_inputs": 1092,
+      "profile": "release"
+    },
+    "product_build_scope": "Actualdefault release build printed1092source inputs and binarySHA. Replay-owner locked/offline/release build hasoriginal source/copy/target assertions in log1116-1166 and completed step; fullCargo metadata lives in preserved ZIP, not falsely extracted here.",
+    "invocation": {
+      "driver": "scripts/p8_lifecycle.py",
+      "driver_blob": "4d413c2b23930f2856139a4bfef0f9c114254df3",
+      "profile": "release",
+      "cold_samples": 30,
+      "query_samples": 400,
+      "files": 32,
+      "run_timeout_seconds": 3600,
+      "artifact_budget_bytes": 536870912,
+      "expected_sample_arithmetic": 1230,
+      "lines": [
+        1167,
+        1177
+      ]
+    },
+    "result": {
+      "status": "complete_observation",
+      "exit_code": 0,
+      "output": "/home/runner/work/_temp/p8-lifecycle/measurement"
+    },
+    "original_verify": {
+      "status": "sealed_raw_verified",
+      "files": 2381,
+      "receipt_sha256": "1acda4e90cd8f25e0820e4f39795f51401d6e61dfb193a4e9f6c8cd70c2cb014"
+    },
+    "artifact": {
+      "id": 11609403178,
+      "name": "p8-lifecycle-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "size_in_bytes": 49230392,
+      "digest": "sha256:33b0c0c362e7134a3e434224bf9aed200b8d469b59307aeee2afbc0f1009ba0e",
+      "created_at": "2026-10-09T10:10:25Z",
+      "expired": false,
+      "workflow_run": {
+        "id": 37908825715,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "integrate/p8-snapshot-oracle-28fe-20261009",
+        "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302"
+      }
+    },
+    "upload_binding": {
+      "files": 2391,
+      "log_lines": [
+        1210,
+        1222,
+        1224,
+        1225
+      ],
+      "API_and_upload_id_name_size_digest_equal": true
+    },
+    "actual_method_readback": {
+      "strata": "Original driver440-467 executes30cold,400process reopen,400warm uncached,400cache hits, with an excluded warmup and unchanged persisted/source facts checks.",
+      "replay": "Original finish483-522 writes allraw queries/resources/disk partitions to originalRust evaluator input, requires evaluator unchanged, exit/report match and second replay byte-identical. complete_observation requires nofailures andcode0. No second evaluator was executed by this reviewer.",
+      "seal": "Original inventory verify135-137 and546-549 compares all retained runfiles except receipt. Actual verify printed2381files/receiptSHA. Uploaded2391includes product/replay build metadata.",
+      "boundaries": "ActualCLI0/complete_observation and originalsealed_raw_verified are observed. The fullreceipt and numerical latency/resource/storage/replay report remain inside officialZIP and are not claimed independently read here.",
+      "resource_definition": "Originaldriver525 stage samples with SELF and validated owned tree when identity mapping succeeds, not continuous peak proof;526 final inventory of allretained cold fixtures, not oneactive index;523 OS page cache not cleared/unknown;527-530 disabled-provider cost unavailable/NAnotzero."
+    },
+    "scheduling_effect": "G3 lifecycle actually completed10:10:27 before parent's later reported PR180fast-forward. The earlier queued-lifecycle cancellation concern for this exact run is resolved by terminalsuccess, not by changing workflow concurrency."
+  },
+  "C8_scale_same_snapshot": {
+    "run": {
+      "id": 37902429727,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "event": "workflow_dispatch",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T08:01:31Z",
+      "updated_at": "2026-10-09T08:20:44Z"
+    },
+    "total_jobs": 6,
+    "completed": "build and1k/5k/10krep0 success",
+    "still_running": [
+      {
+        "id": 113731945708,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "step": {
+          "name": "Execute all phases for this registered single-repetition capacity slice",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 7,
+          "started_at": "2026-10-09T08:16:52Z",
+          "completed_at": null
+        }
+      },
+      {
+        "id": 113731945732,
+        "name": "preflight (50000, 0)",
+        "status": "in_progress",
+        "conclusion": null,
+        "step": {
+          "name": "Execute all phases for this registered single-repetition capacity slice",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 7,
+          "started_at": "2026-10-09T08:16:32Z",
+          "completed_at": null
+        }
+      }
+    ],
+    "remaining_measure_jobs": "145 not instantiated until all5preflight success",
+    "no_running_logs_read": true,
+    "no_second_poll": true
+  },
+  "identity_boundary": "C8soak belongs only to C8. G3lifecycle belongs only to G3. ActualM4652 source-domain bridge fbf5ecfc72ddfffb1512757f70df7fedd25246e1 may support narrowly scoped applicability with originals unchanged; M is not the execution checkout. C8 differs materially fromG3 and cannot be silently relabelled.",
+  "new_gap_note": "Parent's newer PR180 claim about actual mixed-path DB acquisition wait is not evaluated or dismissed by this terminal-log review. It does not overwrite earlier reports and no007/010task was closed.",
+  "task_state": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  },
+  "raw_access_boundary": "Officialcomplete decoded joblogs are byte-preserved asGitblobs includingBOM/newlines. API declares ZIPsha256/size and uploadlog independently agrees. Thisreview did not download/re-hash or open eitherZIP; originalcollector/verify success is accepted at its evidencedscope without inventing a secondbusinessgate."
+}

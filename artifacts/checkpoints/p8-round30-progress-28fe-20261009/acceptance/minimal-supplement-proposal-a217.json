@@ -1,0 +1,128 @@
+{
+  "schema": "minimal-runtime-lock-attribution-proposal-v1",
+  "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "decision": "read_only_proposal_not_implemented",
+  "existing_byte_options": [
+    {
+      "candidate": "Recover from original raw/status",
+      "result": "not_possible_for_actual_lock_acquisition_wait",
+      "why": "Client timestamps, resource executor occupancy, build stage durations and three held-provider availability probes contain no independent actual mixed-operation DB acquisition timestamps."
+    },
+    {
+      "candidate": "Public unchanged C library hooks",
+      "result": "no_existing_hook_found_at_required_seams",
+      "paths": [
+        "cc-db IndexDb::read_conn index_db.rs:713",
+        "WriteOps::begin_unit_of_work index_db.rs:980",
+        "UnitOfWork::begin unit_of_work.rs:59"
+      ],
+      "why": "These return already-acquired guards/units, not acquisition receipts or an observer callback. Wrapping the caller's entire query/transaction includes work; a separate BEGIN/ROLLBACK connection only probes availability."
+    },
+    {
+      "candidate": "Existing build timings",
+      "result": "not_lock_wait",
+      "why": "prepare_snapshot_us is specifically OutputSnapshot::from_resolved_units plus precompress_chunks in build_plan.rs:297-309, in the lock-free prepare phase. between_stages_us is an aggregate gap among stage clocks, not an identified DB wait. Correction to preliminary wording: prepare_snapshot itself is not a DB lock measurement."
+    },
+    {
+      "candidate": "Dynamic external syscall/debugger tracing",
+      "result": "not_a_ready_minimal_validated_route",
+      "why": "No existing permitted collector or proven attribution map for the exact release binary is available. Generic futex time mixes executor/CodeIndex/DB locks. Do not promise this closes the original requirement without a concrete independently verified collector and runner permissions."
+    }
+  ],
+  "recommended_design": {
+    "principle": "New explicitly instrumented supplemental build under a compile-time opt-in feature, while all default/scale compiled branches remain their original implementations. This enables a narrow actual-path equivalence proof instead of changing active default scale code merely for diagnostics.",
+    "not_automatic_equivalence": "The following is a design property to prove after a real patch, not a claim that source identity or all binaries are already identical. Old C raw and receipts continue to carry C.",
+    "feature": "Proposed cc-db runtime-lock-diagnostics, propagated by a same-purpose cc-server feature; absent from every default list and the scale workflow's exact Cargo invocation.",
+    "seams": [
+      {
+        "path": "crates/cc-db/src/index_db.rs",
+        "scope": "writer field at148 and constructor243",
+        "design": "Keep the existing std::sync::Mutex<Connection> field and Mutex::new expression in cfg-off blocks exactly. In cfg-on use an observed mutex with identical lock()/try_lock() result types; all existing write sites still receive std MutexGuard/PoisonError. New timing happens only around the actual acquisition, before SQL. Do not edit dozens of write call sites or replace locking policy."
+      },
+      {
+        "path": "crates/cc-db/src/index_db.rs",
+        "scope": "read_conn713-725",
+        "design": "Keep the entire old method body under cfg-off. A cfg-on alternate preserves original pool.read()/pool.get() expressions, failures and ordering, adding separate acquisition elapsed for the pool RwLock and checkout. Do not combine pool connection validation/creation elapsed with pure mutex wait."
+      },
+      {
+        "path": "crates/cc-db/src/new opt-in diagnostics module and lib.rs",
+        "scope": "new bounded accounting owner",
+        "design": "Fixed metric categories and bounded per-handle counters only: no per-request growing list, background task or telemetry DB. Lock wrapper returns original standard guard/result unmodified. Record before trying, clock result, accumulate outside the semantic lock operation; retain poison/error observations. Atomic overflow explicitly invalidates diagnostic completeness instead of wrapping to zero."
+      },
+      {
+        "path": "crates/cc-server/src/engine.rs",
+        "scope": "diagnostics_info608-655",
+        "design": "Only cfg-on add a separately versioned lock_diagnostics object from the actual IndexDb handle. cfg-off emits the exact old JSON object. This must not acquire an additional database lock to report counters. Include db instance/incarnation scope and reset/availability semantics."
+      },
+      {
+        "path": "crates/cc-db/Cargo.toml; crates/cc-server/Cargo.toml",
+        "scope": "feature declaration/propagation",
+        "design": "Only add explicit optional feature propagation; keep default/dependency versions and Cargo.lock unchanged. Prove no existing workspace feature unification accidentally enables diagnostics."
+      },
+      {
+        "path": "new dedicated supplemental runner/build verifier or explicitly isolated profile in existing scripts",
+        "scope": "real original mixed protocol",
+        "design": "Bind exact source, compiler/private target, binary, actual Cargo features and diagnostic schema. Do not weaken original []-features validator or rewrite old receipts. Call the original C1/4/8/16 workload with the original operations/files/intervals/deadlines/raw limits/terminal cleanup, preserving each new run's own timing and failures. Observer captures actual diagnostic snapshots and original raw together."
+      }
+    ],
+    "fields": {
+      "identity": [
+        "schema_version",
+        "measurement_scope",
+        "db_instance_id",
+        "generation_or_incarnation_boundary",
+        "observed_start/end",
+        "reset_or_overflow_status"
+      ],
+      "categories": [
+        "db_writer_mutex_acquire",
+        "db_read_pool_rwlock_acquire",
+        "db_read_connection_checkout"
+      ],
+      "per_category": [
+        "attempts",
+        "successes",
+        "poisoned_or_failed_attempts",
+        "elapsed_acquire_ns_sum",
+        "elapsed_acquire_ns_max",
+        "observed_or_unavailable"
+      ],
+      "semantics": "Acquisition wall includes clock/acquire overhead; it is not a subtraction-based pure blocked-time estimate. Read connection checkout may include connection validation/create work and stays separately named. Aggregate population covers all actual calls for this DB within the workload window, including explicitly identified status/observer calls unless a separately reviewed exclusion is implemented. It is not a per-operation latency distribution.",
+      "sqlite_boundary": "SQLite engine/file-lock busy wait remains a distinct unobserved metric. This plan must not advertise the three metrics as exhaustive SQLite busy time. Original literal DB lock wait does not specify every lock class; the accepted scope must explicitly name the in-process DB synchronization measured. If the intended closure requires engine busy wait too, a separate bounded design is needed; BEGIN IMMEDIATE elapsed alone cannot supply it."
+    },
+    "mandatory_preservation": [
+      "Original lock ordering, poisoning, timeout/backoff, transaction lifetime, failure behavior and guard ownership",
+      "Original query/cache/index semantics, C1/4/8/16 populations and failure denominator",
+      "No extra server worker, no unbounded vector or product telemetry DB",
+      "No renaming of client call elapsed as backend service",
+      "Existing held-worker contention observations retain their actual fake-provider scope"
+    ]
+  },
+  "meaningful_validation_before_new_evidence": [
+    "With explicit barriers, hold the actual observed writer mutex and prove a competing real acquisition remains incomplete until release and increments exactly its corresponding success/elapsed fields; no arbitrary performance threshold.",
+    "Poison and failure controls preserve the original LockResult/guard/error semantics and classify the attempt without turning it into success.",
+    "Exhaust the actual read pool, release a connection and verify checkout records the actual operation; closed pool/failure remains an error and observed/missing is not zero-filled.",
+    "Unavailable/reset/overflow counters are rejected for diagnostic completeness; snapshot subtraction cannot cross an unrecognized handle/epoch.",
+    "Default-feature source after cfg elimination has the original types, methods, call sites, imports, layout and status JSON; check feature graphs and actual scale Cargo command. Independently review all added code and prove disabled code is excluded, rather than trusting a runtime boolean.",
+    "Supplemental profile verifies declared diagnostic feature and all actual acquisition fields, whole raw/seals/terminal rows/source/binary like the original profile. Missing diagnostic fields fail the supplemental claim while preserving original raw and outcomes."
+  ],
+  "which_measurements_change": {
+    "old_173": "None of the original measured values become false. Existing narrower successes retain173 identity; they do not contain the missing wait observations.",
+    "current_C_scale": "Continue its original150/1500 protocol unchanged. No automatic restart is justified solely by this proposal. If the real patch proves feature-off executed paths/configuration/dependencies unchanged, original C scale can be cited through an explicit relevant-input applicability proof; b107 still verifies C originals against C, never against a rewritten receipt.",
+    "scale_closure_fact": "Scale uses p8_scale.rs:640 build→CodeIndexBackend::build_index_report runner.rs:131→real in-process MCP index→handlers/core.rs→DB; therefore unconditional DB/server wrappers or runtime if branches would touch its actual path. This motivates compile-time exclusion, not a claim that server code is outside scale.",
+    "supplemental_mixed": "New exact-source explicitly feature-enabled C1/4/8/16 runs required for the new actual-workload lock observations, with their own full timing/error denominators. Do not splice instrumented waits into old default latency distributions.",
+    "soak": "No original clause adds a new 4x-hour soak for this gap. If feature-off default source applicability is proven, C's real soak remains applicable to that default path. Feature-on supplemental mixed does not claim a diagnostic-enabled hour. Any actual change of default lock/control/cleanup semantics invalidates this narrow bridge and requires reevaluating affected runtime/lifecycle/recovery evidence.",
+    "worker": "No new provider or paid/live run; use actual held-worker/backfill evidence and any directly affected controls, without inventing per-worker timing histograms.",
+    "not_approved": "Root has not authorized implementation or any new run. No modifications, compile, native operation or CI/ref mutation was performed."
+  },
+  "peer_design_scope": {
+    "reviewer": "/root/scale_closeout",
+    "message_summary": "Compile-time cfg-off original types/call paths is suitable for a scoped default-scale applicability proof, unlike unconditional wrappers/runtime if. Must disable all fields/types/imports/timing/atomics/status changes; verify Cargo feature unification and actual scale flags. Preserve lock/poison/guard lifetimes and distinguish writer mutex, pool lock, checkout and SQLite busy. Design opinion only, no implementation/equivalence/native approval."
+  },
+  "ledger": {
+    "done": 163,
+    "remaining": 29,
+    "formal_completion": false
+  }
+}
+

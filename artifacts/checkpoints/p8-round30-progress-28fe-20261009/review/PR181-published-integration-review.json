@@ -1,0 +1,135 @@
+{
+  "schema": "p8-pr181-main-integration-independent-review-v1",
+  "reviewer": "/root/acceptance_review",
+  "repository": "jyqj/codecortex",
+  "verdict": "accepted_static_composition_only_execution_pending",
+  "scope": "Prior completed official readback and exact tree/body comparisons. This record does not refresh CI or rerun code.",
+  "identities": {
+    "main": "fd9ca5db6485b575872c722995c451db926d05c9",
+    "old_A": "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+    "P": {
+      "commit": "fced7366cee6aa727aa10d775539c3ef9df5c8d2",
+      "tree": "fca215a49ca56240711ad45170c342190e3e08e1",
+      "parents": [
+        "73885e5f98a56c0dd6e5120f7907a2559398a7ac",
+        "fd9ca5db6485b575872c722995c451db926d05c9"
+      ]
+    },
+    "R": {
+      "commit": "d9581c4c9fa0c46cdd792cffb1a19689af946c6d",
+      "tree": "96c34a80c4025757479da58a25b4e5934edc8824",
+      "parent": "fced7366cee6aa727aa10d775539c3ef9df5c8d2"
+    },
+    "G": {
+      "commit": "4866ec5558f1cedd34c7dc54231af65b77f706ec",
+      "tree": "7236f68d4d814d4e607d8c2c774ac227a91a092b",
+      "parent": "d9581c4c9fa0c46cdd792cffb1a19689af946c6d"
+    },
+    "comparison_G3": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "comparison_M": "4652cad11dde4b41126544a38fddf25eb2fb7474"
+  },
+  "four_native_paths_relative_to_main": [
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d"
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de"
+    },
+    {
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "blob": "c900883bd45b427a605330b6ce4ac359f99506ef"
+    }
+  ],
+  "native_findings": {
+    "four_paths_equal_old_A": true,
+    "main_175_179_native_and_runtime_changes_retained": true,
+    "G3_M_contains_original_four_path_optimization": true,
+    "snapshot_difference": {
+      "G3_M_blob": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+      "line": 119,
+      "P181": "txn.write_file_data(write_units, chunk_blobs)?;",
+      "G3_M": "txn.write_file_data_for_rebuild(write_units, chunk_blobs)?;",
+      "other_245_lines_exact": true
+    },
+    "G3_M_vs_new181_native_path_differences": 16,
+    "decision": "No new native optimization from this four-file PR needs transplanting to M. Whole-file replacement of snapshot would remove the G3 FTS rebuild entry; do not overwrite G3 native/registry/guard with PR181."
+  },
+  "task_merge": {
+    "base_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "main_blob": "1365970c32d0883cc05a37f9333ffb9589299141",
+    "A_blob": "d42fd5d2f84b015acb2e014cb6e99e98b2eaf295",
+    "P_G_blob": "5c3bfd50e882dad86652e1118e3b039f7ad3510f",
+    "sha256": "8e4742e00ee114fac549c86d560c6776f3384b4f0ad30179365b5a6ebbe678c3",
+    "all_192_definitions_status_dependencies_acceptance_validations_and_top_fields_unchanged": true,
+    "evidence_order": "Exact original base prefix + main additions + A additions, per task.",
+    "main_added_evidence": 10,
+    "A_added_evidence": 11,
+    "A_added_note_suffixes": 9,
+    "errors": [],
+    "derived_views": "Composition checked; PLAN-CHECK remains expected output, not a newly executed generator receipt."
+  },
+  "archive_union": {
+    "all_205_main_checkpoint_children_exact": true,
+    "P_added_old_A_namespace": "p8-empty-input-preparation-20261009-50c",
+    "old_A_namespace_tree": "433145fb1a0a0c5dd244368ff0e75bd4d6913852",
+    "old_A_original_namespace_retained_exact": true,
+    "R_only_six_added_artifacts_under": "artifacts/checkpoints/p8-pr181-main-integration-20261009/",
+    "no_main_or_A_history_overwritten": true,
+    "main_183_ARCHITECTURE_and_MCP_TOOLS_exact": true
+  },
+  "admission": {
+    "native_complete": 1091,
+    "delta": 46,
+    "validation": 139,
+    "complete_product_mode_type_blob_inventory_matches_actual_P": true,
+    "validation_exact_inherited_main": true,
+    "registry_complete_validation_delta_match_review": true,
+    "independent_review_blob": "e2c104c2fe8f6f33d064fb42f702a42662f0dadb",
+    "independent_review_sha256": "98e6382f62ccdbede80095dca68f1898fc9c6600b0eea483e55014dc0b98ad16",
+    "registry_blob": "4f821afa24e7c548ed75eafa4f2aa4fb92e5a9f0",
+    "registry_sha256": "100da85f2f57b3a5dd8a6bf8ea6f384ed5dfe5b8c7efd2afdc2a1520a72f0840",
+    "guard_blob": "573c42c369c00a7c47ffa88210119f9c31d4e140",
+    "G_only_two_original_pin_files_modified": true,
+    "guard_only_changed_values": [
+      "PRODUCT",
+      "REVIEW",
+      "REVIEW_PATH",
+      "REGISTRY_SHA256"
+    ],
+    "BASE_FROZEN_exclusions_and_guard_logic_unchanged": true
+  },
+  "CI_observation": {
+    "head": "4866ec5558f1cedd34c7dc54231af65b77f706ec",
+    "runs": {
+      "ordinary_ci": 37915967559,
+      "engineering": 37915967598,
+      "closeout": 37915967656,
+      "gates": 37915967479,
+      "platform": 37915967699,
+      "lifecycle": 37915967618,
+      "runtime": 37915967659
+    },
+    "all_status_at_review": "queued",
+    "all_conclusions_at_review": null,
+    "old_50d_A_or_other_head_execution_not_transferred": true
+  },
+  "management": "Retain PR181 pending its actual CI. Future M reconciliation is mainly its additional docs/task evidence/archive, preserving G3 native and pins. Static merge acceptance is not approval of every historical narrative or a TODO closure.",
+  "execution": {
+    "native": false,
+    "tests": false,
+    "source_proof": false,
+    "task_or_ref_changes": false
+  },
+  "task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema": "codecortex.p8.round36.g3-failure-phase-accounting.v1",
+  "derived_at_utc": "2026-10-09T15:45:00Z",
+  "source_artifact": {
+    "run_id": 37910924354,
+    "artifact_id": 11626430756,
+    "raw_sha256": "f523933e515b3f2d01a92bf9778b4b30ad97b5eee19275d3f82ab18706f5b947",
+    "raw_lines": 2018
+  },
+  "method": "read-only jq aggregation of paired build_finished start_us/end_us records; no native execution",
+  "totals": {
+    "driver_wall_seconds": 18022.655,
+    "build_finished_records": 1002,
+    "build_wall_seconds_sum": 10856.106503,
+    "non_build_or_interstage_seconds": 7166.548497
+  },
+  "by_kind": {
+    "full": {
+      "count": 8,
+      "total_wall_seconds": 4593.003925,
+      "mean_wall_seconds": 574.125490625,
+      "max_wall_seconds": 731.400455
+    },
+    "incremental": {
+      "count": 994,
+      "total_wall_seconds": 6263.102578,
+      "mean_wall_seconds": 6.300908026,
+      "max_wall_seconds": 26.867756
+    }
+  },
+  "by_stage": [
+    {
+      "stage": "cold_incremental",
+      "count": 1,
+      "total_wall_seconds": 417.696101,
+      "max_wall_seconds": 417.696101
+    },
+    {
+      "stage": "cold_full_control",
+      "count": 1,
+      "total_wall_seconds": 480.378274,
+      "max_wall_seconds": 480.378274
+    },
+    {
+      "stage": "no_op",
+      "count": 2,
+      "total_wall_seconds": 608.266808,
+      "max_wall_seconds": 605.725897
+    },
+    {
+      "stage": "body",
+      "count": 491,
+      "total_wall_seconds": 3590.215508,
+      "max_wall_seconds": 617.438743
+    },
+    {
+      "stage": "api",
+      "count": 172,
+      "total_wall_seconds": 1775.670116,
+      "max_wall_seconds": 587.087282
+    },
+    {
+      "stage": "config",
+      "count": 331,
+      "total_wall_seconds": 2692.143356,
+      "max_wall_seconds": 619.820951
+    },
+    {
+      "stage": "batch_1",
+      "count": 2,
+      "total_wall_seconds": 741.465881,
+      "max_wall_seconds": 731.400455
+    },
+    {
+      "stage": "batch_10",
+      "count": 2,
+      "total_wall_seconds": 550.270459,
+      "max_wall_seconds": 533.456222
+    }
+  ],
+  "terminal_gap": {
+    "last_event": "batch_10/full_control build_finished",
+    "batch_10_stage_finished": false,
+    "batch_100_started": false,
+    "batch_1000_started": false,
+    "run_summary": false
+  },
+  "interpretation": [
+    "The failure is not attributable from this accounting to one confirmed SQL function.",
+    "The recorded wall is distributed across 994 incremental builds, eight full builds, and substantial non-build/interstage time.",
+    "A candidate that only reduces one query's returned rows/VM steps cannot be admitted as the causal repair without fixed paired wall-time evidence.",
+    "This analysis does not change the registered protocol, deadline, denominator, or task state."
+  ]
+}

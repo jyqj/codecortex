@@ -1,0 +1,64 @@
+name: Original receiver deliveries complete offline intake
+
+on:
+  push:
+    branches: [task/p8-full-delivery-intake-20261009]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  full_intake:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: G4-runtime
+            source: 260f596582f2d82b8d7c707b61a6b8b6a43b069f
+          - profile: G2-platform
+            source: 0272a1fb152fd76a7cfb22386a580629d4038a64
+    name: Complete original intake ${{ matrix.profile }}
+    steps:
+      - name: Check out fixed intake controller at the actual event commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-full-delivery-intake-20261009/
+      - name: Check out this profile's immutable original source separately
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.source }}
+          path: source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Cargo.toml
+            /Cargo.lock
+            /crates/
+            /scripts/
+      - name: Full original archive and evidence intake without product execution
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          python3 -B -u controller/artifacts/checkpoints/p8-full-delivery-intake-20261009/controller.py '${{ matrix.profile }}'
+      - name: Retain complete safe report without wrapping giant ZIPs or raw signed-URL logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-full-delivery-intake-${{ matrix.profile }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-full-intake-reports-${{ matrix.profile }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 21
